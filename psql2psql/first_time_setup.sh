@@ -6,7 +6,6 @@ pipx install virtualenv
 export LDFLAGS="-L/usr/local/opt/openssl/lib"
 export CPPFLAGS="-I/usr/local/opt/openssl/include"
 ./install_connector.sh tap-postgres
-./install_connector target-postgres singer-target-postgres
-
+./install_connector.sh target-postgres singer-target-postgres
 
 
