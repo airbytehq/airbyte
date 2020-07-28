@@ -14,5 +14,4 @@
 
 # Load data from remote database
 #./tap-postgres/bin/tap-postgres --config remote_tap_config.json
-./tap-postgres/bin/tap-postgres --config remote_tap_config.json --properties remote_tap_catalog.json | ./singer-target-postgres/bin/target-postgres --config target_config.json >> state.json
-
+./tap-postgres/bin/tap-postgres --config remote_tap_config.json --properties remote_tap_catalog.json | ./target-postgres/bin/target-postgres --config target_config.json >> state.json
