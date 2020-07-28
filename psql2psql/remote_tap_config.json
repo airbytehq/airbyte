@@ -1,0 +1,7 @@
+{
+  "dbname":"pfmegrnargs",
+  "user":"reader",
+  "password":"NWDMCE5xdipIjRrp",
+  "port":"5432",
+  "host":"hh-pgsql-public.ebi.ac.uk"
+}

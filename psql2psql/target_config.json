@@ -1,0 +1,10 @@
+{
+  "postgres_host": "localhost",
+  "postgres_port": 9999,
+  "postgres_database": "postgres",
+  "postgres_username": "postgres",
+  "postgres_password": "",
+  "postgres_schema": "public",
+  "persist_empty_tables": true
+}
+
