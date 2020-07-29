@@ -4,7 +4,7 @@ set -e
 
 _usage="
 Usage: ./tools/oss/push_oss.sh <target-branch> <force (optional)>
-Example: ./tools/oss/push_oss.sh my-branch force>
+Example: ./tools/oss/push_oss.sh my-branch force
 "
 
 function _error() {
@@ -80,4 +80,3 @@ function main() {
 }
 
 main "$@"
-
