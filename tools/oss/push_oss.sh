@@ -26,10 +26,13 @@ function _in_sync_with_remote() {
       echo "Up-to-date"
   elif [ $LOCAL = $BASE ]; then
       echo "Need to pull"
+      exit 1
   elif [ $REMOTE = $BASE ]; then
       echo "Need to push"
+      exit 1
   else
       echo "Diverged"
+      exit 1
   fi
 }
 
