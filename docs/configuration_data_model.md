@@ -71,7 +71,7 @@ The source object needs to be able to do 2 things:
             "_validation": "string less than or equal to characters"
           },
           "database": {
-            "type": "integer"
+            "type": "string"
           }
         }
       }
