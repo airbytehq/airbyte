@@ -18,7 +18,9 @@ This section enumerates the full set of features we expect to give to these mode
    1. These are all connections that can be polled.
 1. Support for "push" connections.
    1. Fivetran supports push connections that accept data when the data provider emits the data (instead of polling for it).
-1. Scheduled syncs (**MVP**)
+1. Scheduled syncs
+   1. Every X minutes / hours / days (**MVP**)
+   1. Full linux crontab scheduling
 1. Ability to use any singer tap / target by providing existing config, catalog, and state. (**MVP**)???
 1. Transformations - allow basic transformations e.g. upper-casing, column name changes, hashing of values etc. Otherwise, data will be transported "as is".
 1. Determine when a record was last synced in the target warehouse
@@ -182,6 +184,7 @@ The connected source object needs to be able to do 2 things:
 1.  **scheduled sync**: this feature will require some additional configuration that will be standard across all pull sources. syncs triggered by scheduled sync will consume all of the same configuration as the manual sync.
     ```json
     {
-      "schedule": "* * * * *"
+      "timeUnit": "days",
+      "units": 4
     }
     ```
