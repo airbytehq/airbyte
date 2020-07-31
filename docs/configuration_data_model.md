@@ -170,15 +170,18 @@ The connected source object needs to be able to do 2 things:
           ```
           (`sync_mode` is an enum of full_refresh and incremental)
 
-    1. _output_: the sync output will report standardized information which is the _same_ for all sources:
+    1. _output_: the sync will output one standard object that is the same for all taps. then optionally it will also return one that is tap-specific.
+        1. standard:
 
-       ```json
-       {
-         "status": "completed",
-         "records_synced": "10",
-         "checkpoint": 1596143669
-       }
-       ```
+           ```json
+           {
+             "status": "completed",
+             "records_synced": "10",
+             "checkpoint": 1596143669
+           }
+           ```
+        1. tap-specific:
+        
 
        (`status` will be an enum of: completed, failed, cancelled)
 
