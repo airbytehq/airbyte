@@ -90,7 +90,7 @@ The source object needs to be able to do 2 things:
 
    (`connectionStatus` would be an enum of: success and failed)
 
-1. **schema discovery**: run a process that can detect the schema that exists in the data source.
+1. **schema discovery**: run a process that can detect the schema that exists in the data source. (note: if irrelevant to an integration, this can be a no op)
    1. input: while in the future we may potentially want to allow for custom configuration for now we will assume there is no additional user-specified configuration allowed.
       1. the test_connection configuration will be available to the schema discovery function.
    1. output: while in the future we may potentially want to allow for a custom output. for now we will use this standard output.
