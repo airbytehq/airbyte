@@ -29,6 +29,7 @@ This section enumerates the full set of features we expect to give to these mode
 
 1. Add a source _without_ needing to write HTML. They should be responsible for only 2 things:
    1. Define Configuration: define a json object which describes which properties need to be collected by a user. Then the UI figures out how to render it.
+      1. **Note: For MVP we will only be supporting declaring the needed configuration, not the auto-rendering the UI. Someone who is implementing an integration will need to write the HTML pages for test connection and sync configurations.**
    1. Implement: test connector, discover schema, and sync. These functions should only rely on the configurations defined in the json and should return objects that match the interfaces that are described below.
    1. (Note: Not doing this means that we need to create custom html pages for each integration.)
 1. Support "easy" integration of singer taps
