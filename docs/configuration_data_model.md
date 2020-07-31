@@ -21,7 +21,7 @@ This section enumerates the full set of features we expect to give to these mode
 1. Scheduled syncs (**MVP**)
 1. Ability to use any singer tap / target by providing existing config, catalog, and state. (**MVP**)???
 1. Transformations - allow basic transformations e.g. upper-casing, column name changes, hashing of values etc. Otherwise, data will be transported "as is".
-1. Report when a record was sync in the target warehouse
+1. Determine when a record was last synced in the target warehouse
 
 ### Persona: OSS Contributor
 
