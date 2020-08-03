@@ -1,0 +1,149 @@
+{
+  "id": "http://json-schema.org/geo",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "description": "sync configurations needed to configure a postgres tap",
+  "type": "object",
+  "definitions": {
+    "schema": {
+      "description": "describes the available schema.",
+      "type": "object",
+      "properties": {
+        "tables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "columns"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["name", "dataType"],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "dataType": {
+                      "type": "string",
+                      "enum": ["string", "number", "uuid", "boolean"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "postgresConnectionConfiguration": {
+      "description": "all configuration information needed for creating a connection.",
+      "type": "object",
+      "required": ["host", "port", "user"],
+      "properties": {
+        "host": {
+          "type": "string",
+          "format": "hostname"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "user": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "password": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "database": {
+          "type": "string"
+        }
+      }
+    },
+    "standardConnectionStatus": {
+      "description": "describes the result of a 'test connection' action.",
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["success", "failure"]
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "standardDiscoveryOutput": {
+      "description": "describes the standard output for any discovery run.",
+      "type": "object",
+      "required": ["schema"],
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/schema"
+        }
+      }
+    },
+    "standardSyncConfiguration": {
+      "description": "configuration required for sync for ALL taps",
+      "type": "object",
+      "properties": {
+        "syncMode": {
+          "type": "string",
+          "enum": ["full_refresh", "append"]
+        }
+      }
+    },
+    "postgresSyncConfiguration": {
+      "description": "postgres specific configuration for sync step",
+      "type": "object",
+      "required": ["tables"],
+      "properties": {
+        "tables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["columns"],
+            "properties": {
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["name"],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "standardSyncOutput": {
+      "description": "standard information output by ALL taps for a sync step (our version of state.json)",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["completed", "failed", "cancelled"]
+        },
+        "recordsSynced": {
+          "type": "integer"
+        },
+        "version": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
