@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    // targets and compatibility
+    "allowJs": true,
+    "moduleResolution": "node",
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "lib": ["ES2019"],
+    "outDir": "./build",
+    "target": "ES2019",
+    "resolveJsonModule": true,
+
+    // typing rules.
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "alwaysStrict": true,
+    "strict": true,
+    "noUnusedLocals": true,
+
+    // debugging
+    "sourceMap": true,
+    "declarationMap": true,
+    "declaration": true
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules"]
+}
