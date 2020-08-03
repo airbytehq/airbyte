@@ -96,4 +96,115 @@ const postgresConduitTapImplementation: ConduitTap<
   }
 };
 
-export { ConduitTap, postgresConduitTapImplementation };
+// now let's try to create an abstraction to make it "easier" to implement existing singer taps.
+// instead of implementing all of the singer stuff over and over again, you can just implement converters from our
+// configuration to the inputs / outputs singer expects.
+interface SingerTap<
+  ConnectionConfiguration,
+  SingerConfiguration,
+  SyncConfiguration,
+  Catalog,
+  State
+> {
+  toConfiguration(
+    connectionConfiguration: ConnectionConfiguration
+  ): SingerConfiguration;
+
+  toStandardConnectionStatus(catalog: Catalog): StandardConnectionStatus;
+  toStandardDiscoveryOutput(catalog: Catalog): StandardDiscoveryOutput;
+
+  toCatalog(
+    catalog: Catalog,
+    syncConfiguration: SyncConfiguration,
+    standardSyncConfiguration: StandardSyncConfiguration
+  ): Catalog;
+
+  toStandardSyncOutput(state: State): StandardSyncOutput;
+}
+
+class SingerTapImpl<
+  ConnectionConfiguration,
+  SingerConfiguration,
+  SyncConfiguration,
+  Catalog,
+  State
+> implements ConduitTap<ConnectionConfiguration, SyncConfiguration, State> {
+  private singerTap: SingerTap<
+    ConnectionConfiguration,
+    SingerConfiguration,
+    SyncConfiguration,
+    Catalog,
+    State
+  >;
+
+  constructor(
+    singerTap: SingerTap<
+      ConnectionConfiguration,
+      SingerConfiguration,
+      SyncConfiguration,
+      Catalog,
+      State
+    >
+  ) {
+    this.singerTap = singerTap;
+  }
+
+  testConnection(
+    connectionConfiguration: ConnectionConfiguration
+  ): StandardConnectionStatus {
+    const singerConfiguration = this.singerTap.toConfiguration(
+      connectionConfiguration
+    );
+    // run singer discover
+    const catalog = this.singerDiscover(singerConfiguration);
+    return this.singerTap.toStandardConnectionStatus(catalog);
+  }
+
+  discover(
+    connectionConfiguration: ConnectionConfiguration
+  ): StandardDiscoveryOutput {
+    const singerConfiguration = this.singerTap.toConfiguration(
+      connectionConfiguration
+    );
+    // run singer discover
+    const catalog = this.singerDiscover(singerConfiguration);
+    return this.singerTap.toStandardDiscoveryOutput(catalog);
+  }
+
+  sync(
+    connectionConfiguration: ConnectionConfiguration,
+    syncConfiguration: SyncConfiguration,
+    standardSyncConfiguration: StandardSyncConfiguration,
+    state: State
+  ): [StandardSyncOutput, State] {
+    const singerConfiguration = this.singerTap.toConfiguration(
+      connectionConfiguration
+    );
+
+    // run singer discover
+    const catalog = this.singerDiscover(singerConfiguration);
+    const modifiedCatalog = this.singerTap.toCatalog(
+      catalog,
+      syncConfiguration,
+      standardSyncConfiguration
+    );
+    // run singer sync
+    const newState = this.singerSync(modifiedCatalog, state);
+    return [this.singerTap.toStandardSyncOutput(newState), newState];
+  }
+
+  singerDiscover(singerConfiguration: SingerConfiguration): Catalog {
+    // equivalent of:
+    // ./tap-postgres/bin/tap-postgres --config local_tap_config.json --discover > local_tap_catalog.json
+    return <Catalog>{};
+  }
+
+  singerSync(catalog: Catalog, state: State): State {
+    // equivalent of:
+    // ./tap-postgres/bin/tap-postgres --config local_tap_config.json --properties local_tap_catalog.json |
+    //  ./target-postgres/bin/target-postgres --config target_config.json >> state.json
+    return <State>{};
+  }
+}
+
+export { ConduitTap, postgresConduitTapImplementation, SingerTapImpl };
