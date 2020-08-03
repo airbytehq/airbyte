@@ -11,10 +11,6 @@ export interface PostgresTap {
    */
   postgresSyncConfiguration?: PostgresSyncConfiguration;
   /**
-   * state file that singer tap users internally. not to be exposed to ender user
-   */
-  postgresSyncState?: { [key: string]: any };
-  /**
    * describes the result of a 'test connection' action.
    */
   standardConnectionStatus?: StandardConnectionStatus;
@@ -37,10 +33,10 @@ export interface PostgresTap {
  */
 export interface PostgresConnectionConfiguration {
   database?: string;
-  host: string;
+  host:      string;
   password?: string;
-  port: number;
-  user: string;
+  port:      number;
+  user:      string;
 }
 
 /**
@@ -52,6 +48,7 @@ export interface PostgresSyncConfiguration {
 
 export interface PostgresSyncConfigurationTable {
   columns: PurpleColumn[];
+  name:    string;
 }
 
 export interface PurpleColumn {
@@ -63,12 +60,12 @@ export interface PurpleColumn {
  */
 export interface StandardConnectionStatus {
   message?: string;
-  status: StandardConnectionStatusStatus;
+  status:   StandardConnectionStatusStatus;
 }
 
 export enum StandardConnectionStatusStatus {
   Failure = "failure",
-  Success = "success"
+  Success = "success",
 }
 
 /**
@@ -87,19 +84,19 @@ export interface Schema {
 
 export interface SchemaTable {
   columns: FluffyColumn[];
-  name: string;
+  name:    string;
 }
 
 export interface FluffyColumn {
   dataType: DataType;
-  name: string;
+  name:     string;
 }
 
 export enum DataType {
   Boolean = "boolean",
   Number = "number",
   String = "string",
-  UUID = "uuid"
+  UUID = "uuid",
 }
 
 /**
@@ -111,7 +108,7 @@ export interface StandardSyncConfiguration {
 
 export enum SyncMode {
   Append = "append",
-  FullRefresh = "full_refresh"
+  FullRefresh = "full_refresh",
 }
 
 /**
@@ -119,12 +116,12 @@ export enum SyncMode {
  */
 export interface StandardSyncOutput {
   recordsSynced?: number;
-  status?: StandardSyncOutputStatus;
-  version?: number;
+  status?:        StandardSyncOutputStatus;
+  version?:       number;
 }
 
 export enum StandardSyncOutputStatus {
   Cancelled = "cancelled",
   Completed = "completed",
-  Failed = "failed"
+  Failed = "failed",
 }

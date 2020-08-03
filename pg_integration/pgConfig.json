@@ -110,8 +110,11 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["columns"],
+            "required": ["name", "columns"],
             "properties": {
+              "name": {
+                "type": "string"
+              },
               "columns": {
                 "type": "array",
                 "items": {
