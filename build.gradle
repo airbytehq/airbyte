@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+}
+
+group 'io.dataline'
+version = rootProject.file('.version').text.trim()
+
+repositories {
+    mavenCentral()
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    compile group: 'com.google.guava', name: 'guava', version: '29.0-jre'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+}
+
+task fatjar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'io.dataline.playground.HelloWorld'
+    }
+    baseName "${rootProject.name}-fatjar"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
