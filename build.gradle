@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'io.dataline'
-version '1.0-SNAPSHOT'
+version = rootProject.file('.version').text.trim()
 
 repositories {
     mavenCentral()
