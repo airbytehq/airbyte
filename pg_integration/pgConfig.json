@@ -64,6 +64,36 @@
         },
         "database": {
           "type": "string"
+        },
+        "sshConnection": {
+          "type": "object",
+          "oneOf": [
+            {
+              "title": "https",
+              "type": "null"
+            },
+            {
+              "title": "ssh",
+              "properties": {
+                "sshHost": {
+                  "title": "ssh host",
+                  "type": "string"
+                },
+                "sshPort": {
+                  "title": "ssh port",
+                  "type": "integer"
+                },
+                "sshUser": {
+                  "title": "ssh user",
+                  "type": "string"
+                },
+                "publicKey": {
+                  "title": "public key",
+                  "type": "string"
+                }
+              }
+            }
+          ]
         }
       }
     },
