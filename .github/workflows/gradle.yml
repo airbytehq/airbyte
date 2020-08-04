@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: Conduit CI
 
 on: push
 
@@ -13,7 +13,5 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 14
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build --no-daemon
