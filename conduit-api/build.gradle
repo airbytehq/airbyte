@@ -1,0 +1,26 @@
+plugins {
+    id "org.openapi.generator" version "4.3.1"
+}
+
+def specFile = "$projectDir/src/main/resources/conduit.yaml".toString()
+
+openApiGenerate {
+    generatorName = "jaxrs-cxf"
+    inputSpec = specFile
+    outputDir = "$projectDir/src/main/java".toString()
+
+    apiPackage = "io.dataline.conduit.api"
+    invokerPackage = "io.dataline.conduit.api.invoker"
+    modelPackage = "io.dataline.conduit.api.model"
+
+    configOptions = [
+            dateLibrary: "java8"
+    ]
+}
+
+openApiValidate {
+    inputSpec = specFile
+    recommend = true
+}
+
+compileJava.dependsOn tasks.openApiGenerate

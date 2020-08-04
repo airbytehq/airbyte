@@ -1,4 +1,4 @@
-package io.dataline.playground;
+package io.dataline.conduit.commons;
 
 import org.junit.jupiter.api.Test;
 
