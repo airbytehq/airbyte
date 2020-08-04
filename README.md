@@ -1,7 +1,14 @@
 # Conduit
-## First run
+## Getting Started
+
+### Docker
+```
+docker run --rm -it dataline/conduit:$VERSION
+```
+
+### Repo
 ```
 VERSION=$(cat .version)
-docker build . -t conduit:$VERSION
-docker run --rm -it conduit:$VERSION
+docker build . -t dataline/conduit:$VERSION
+docker run --rm -it dataline/conduit:$VERSION
 ```
