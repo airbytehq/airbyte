@@ -1,0 +1,3 @@
+.gradle
+.idea
+build
