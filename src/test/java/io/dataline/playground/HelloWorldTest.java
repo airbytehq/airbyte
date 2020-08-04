@@ -7,6 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class HelloWorldTest {
     @Test
     void name() {
-        assertEquals(1, 2);
+        assertEquals(1, 1);
     }
 }
