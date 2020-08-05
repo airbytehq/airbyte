@@ -16,10 +16,10 @@ subprojects {
     }
 
     dependencies {
-        compile group: 'com.google.guava', name: 'guava', version: '29.0-jre'
+        implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
-        testCompile group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
+        testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
     }
 }
