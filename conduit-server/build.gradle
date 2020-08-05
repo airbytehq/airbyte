@@ -1,4 +1,28 @@
+plugins {
+    id 'application'
+}
+
 dependencies {
-    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.31.v20200723'
-    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.31.v20200723'
+    implementation group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.31.v20200723'
+    implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.31.v20200723'
+
+    implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.3'
+    implementation group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.31'
+    implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: '2.31'
+    implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: '2.31'
+
+    implementation project(':conduit-api')
+}
+
+application {
+    mainClass = 'io.dataline.conduit.server.ServerApp'
+}
+
+task fatjar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'io.dataline.conduit.server.ServerApp'
+    }
+    baseName "${rootProject.name}-fatjar"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
