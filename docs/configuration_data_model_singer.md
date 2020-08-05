@@ -286,7 +286,8 @@ This object tracks metadata on where the run ended. Our hope is that it can repl
       "enum": ["pending", "in_progress","completed", "failed", "cancelled"]
     },
     "recordsSynced": {
-      "type": "integer"
+      "type": "integer",
+      "minValue": 0
     },
     "version": {
       "type": "integer"
