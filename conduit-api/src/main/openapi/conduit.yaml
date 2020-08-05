@@ -610,13 +610,6 @@ components:
         initialSetupComplete:
           type: boolean
     # SLUG
-    SlugAvailableRead:
-      type: object
-      required:
-      - available
-      properties:
-        available:
-          type: boolean
     SlugRequestBody:
       type: object
       required:
