@@ -340,9 +340,7 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  destinationSpecification:
-                    $ref: "#/components/schemas/DestinationSpecificationRead"
+                $ref: "#/components/schemas/DestinationSpecificationRead"
         "404":
           description: Destination not found
         "422":
