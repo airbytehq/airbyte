@@ -344,7 +344,7 @@ sync(
 ) => [StandardSyncOutput, ConduitState]
 ```
 
-#### scheduledSync
+#### scheduleSync
 
 This feature will require some additional configuration that will be standard across all pull sources. syncs triggered by scheduled sync will consume all of the same configuration as the manual sync.
 
