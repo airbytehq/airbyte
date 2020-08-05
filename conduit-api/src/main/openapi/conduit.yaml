@@ -1,712 +1,1050 @@
----
-openapi: 3.0.2
+openapi: 3.0.0
 info:
-  title: Swagger Petstore - OpenAPI 3.0
-  description: |-
-    This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about
-    Swagger at [http://swagger.io](http://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!
-    You can now help us improve the API whether it's by making changes to the definition itself or to the code.
-    That way, with time, we can improve the API in general, and expose some of the new features in OAS3.
+  description: |
+    Conduit API
+    [http://dataline.io](http://dataline.io).
 
-    Some useful links:
-    - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)
-    - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)
-  termsOfService: http://swagger.io/terms/
+    This API is a collection HTTP RPC-style methods. While it is not a REST API, those familiar with REST should find the conventions of this API recognizable.
+
+    Here are some conventions that this API follows:
+    * All endpoints are http POST methods.
+    * All endpoints accept data via `application/json` request bodies. The API does not accept any data via query params.
+    *  The naming convention for endpoints is: api.dataline.io/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `api.dataline.io/v1/connections/create` or `api.dataline.io/v1/connections/set_payment_method`.
+    * For all `update` method, the whole object must be passed in, even the fields that did not change.
+
+    Change Management:
+    * The major version of the API endpoint can be determined / specified in the URL `api.dataline.io/v1/connections/create`
+    * Minor version bumps will be visible to the end user. The user cannot specify minor versions in requests.
+    * All backwards incompatible changes will happen in major version bumps. We will not make backwards incompatible changes in minor version bumps. Examples of non-breaking changes (includes but not limited to...):
+      * Adding fields to request or response bodies.
+      * Adding new HTTP endpoints.
+
+  version: "1.0.0-oas3"
+  title: Conduit Configuration API
   contact:
-    email: apiteam@swagger.io
+    email: contact@dataline.io
   license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 1.0.5
-externalDocs:
-  description: Find out more about Swagger
-  url: http://swagger.io
-servers:
-  - url: "/api/v3"
+    name: MIT
+    url: "https://opensource.org/licenses/MIT"
 tags:
-  - name: pet
-    description: Everything about your Pets
-    externalDocs:
-      description: Find out more
-      url: http://swagger.io
-  - name: store
-    description: Operations about user
-  - name: user
-    description: Access to Petstore orders
-    externalDocs:
-      description: Find out more about our store
-      url: http://swagger.io
+- name: workspace
+  description: Workspace related resources.
+- name: source
+  description: Source related resources.
+- name: source_specification
+  description: Source specification related resources.
+- name: source_implementation
+  description: Source implementation related resources.
+- name: destination
+  description: Destination related resources.
+- name: destination_specification
+  description: Destination specification related resources.
+- name: destination_implementation
+  description: Destination implementation related resources.
+- name: connection
+  description: Connection between sources and destinations.
+
 paths:
-  "/pet":
-    put:
+  /v1/workspaces/get:
+    post:
       tags:
-        - pet
-      summary: Update an existing pet
-      description: Update an existing pet by Id
-      operationId: updatePet
+      - workspace
+      summary: Find workspace by ID
+      operationId: getWorkspace
       requestBody:
-        description: Update an existent pet in the store
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/Pet"
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
         required: true
       responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/Pet"
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Pet not found
-        '405':
-          description: Validation exception
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
+                $ref: "#/components/schemas/WorkspaceRead"
+        "404":
+          description: Workspace not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/workspaces/get_by_slug:
     post:
       tags:
-        - pet
-      summary: Add a new pet to the store
-      description: Add a new pet to the store
-      operationId: addPet
+      - workspace
+      summary: Find workspace by slug
+      operationId: getWorkspaceBySlug
       requestBody:
-        description: Create a new pet in the store
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/Pet"
+              $ref: "#/components/schemas/SlugRequestBody"
         required: true
       responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/Pet"
-        '405':
-          description: Invalid input
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  "/pet/findByStatus":
-    get:
-      tags:
-        - pet
-      summary: Finds Pets by status
-      description: Multiple status values can be provided with comma separated strings
-      operationId: findPetsByStatus
-      parameters:
-        - name: status
-          in: query
-          description: Status values that need to be considered for filter
-          required: false
-          explode: true
-          schema:
-            type: string
-            default: available
-            enum:
-              - available
-              - pending
-              - sold
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  "$ref": "#/components/schemas/Pet"
-        '400':
-          description: Invalid status value
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  "/pet/findByTags":
-    get:
-      tags:
-        - pet
-      summary: Finds Pets by tags
-      description: Multiple tags can be provided with comma separated strings. Use
-        tag1, tag2, tag3 for testing.
-      operationId: findPetsByTags
-      parameters:
-        - name: tags
-          in: query
-          description: Tags to filter by
-          required: false
-          explode: true
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  "$ref": "#/components/schemas/Pet"
-        '400':
-          description: Invalid tag value
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  "/pet/{petId}":
-    get:
-      tags:
-        - pet
-      summary: Find pet by ID
-      description: Returns a single pet
-      operationId: getPetById
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to return
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/Pet"
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Pet not found
-      security:
-        - api_key: []
-        - petstore_auth:
-            - write:pets
-            - read:pets
+                $ref: "#/components/schemas/WorkspaceRead"
+        "404":
+          description: Workspace not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/sources/list:
     post:
       tags:
-        - pet
-      summary: Updates a pet in the store with form data
-      description: ''
-      operationId: updatePetWithForm
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet that needs to be updated
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: name
-          in: query
-          description: Name of pet that needs to be updated
-          schema:
-            type: string
-        - name: status
-          in: query
-          description: Status of pet that needs to be updated
-          schema:
-            type: string
+      - source
+      summary: List all of the sources that Dataline supports
+      operationId: listSources
       responses:
-        '405':
-          description: Invalid input
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-    delete:
-      tags:
-        - pet
-      summary: Deletes a pet
-      description: ''
-      operationId: deletePet
-      parameters:
-        - name: api_key
-          in: header
-          description: ''
-          required: false
-          schema:
-            type: string
-        - name: petId
-          in: path
-          description: Pet id to delete
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '400':
-          description: Invalid pet value
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  "/pet/{petId}/uploadImage":
-    post:
-      tags:
-        - pet
-      summary: uploads an image
-      description: ''
-      operationId: uploadFile
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to update
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: additionalMetadata
-          in: query
-          description: Additional Metadata
-          required: false
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/octet-stream:
-            schema:
-              type: string
-              format: binary
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/ApiResponse"
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  "/store/inventory":
-    get:
-      tags:
-        - store
-      summary: Returns pet inventories by status
-      description: Returns a map of status codes to quantities
-      operationId: getInventory
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: integer
-                  format: int32
-      security:
-        - api_key: []
-  "/store/order":
-    post:
-      tags:
-        - store
-      summary: Place an order for a pet
-      description: Place a new order in the store
-      operationId: placeOrder
-      requestBody:
-        content:
-          application/json:
-            schema:
-              "$ref": "#/components/schemas/Order"
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/Order"
-        '405':
-          description: Invalid input
-  "/store/order/{orderId}":
-    get:
-      tags:
-        - store
-      summary: Find purchase order by ID
-      description: For valid response try integer IDs with value <= 5 or > 10. Other
-        values will generated exceptions
-      operationId: getOrderById
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of order that needs to be fetched
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/Order"
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Order not found
-    delete:
-      tags:
-        - store
-      summary: Delete purchase order by ID
-      description: For valid response try integer IDs with value < 1000. Anything
-        above 1000 or nonintegers will generate API errors
-      operationId: deleteOrder
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of the order that needs to be deleted
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Order not found
-  "/user":
-    post:
-      tags:
-        - user
-      summary: Create user
-      description: This can only be done by the logged in user.
-      operationId: createUser
-      requestBody:
-        description: Created user object
-        content:
-          application/json:
-            schema:
-              "$ref": "#/components/schemas/User"
-      responses:
-        default:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/User"
-  "/user/createWithList":
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      description: Creates list of users with given input array
-      operationId: createUsersWithListInput
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                "$ref": "#/components/schemas/User"
-      responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/User"
-        default:
-          description: successful operation
-  "/user/login":
-    get:
+                $ref: "#/components/schemas/SourceReadList"
+  /v1/sources/get:
+    post:
       tags:
-        - user
-      summary: Logs user into the system
-      description: ''
-      operationId: loginUser
-      parameters:
-        - name: username
-          in: query
-          description: The user name for login
-          required: false
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the user
-              schema:
-                type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when toekn expires
-              schema:
-                type: string
-                format: date-time
-          content:
-            application/json:
-              schema:
-                type: string
-        '400':
-          description: Invalid username/password supplied
-  "/user/logout":
-    get:
-      tags:
-        - user
-      summary: Logs out current logged in user session
-      description: ''
-      operationId: logoutUser
-      parameters: []
-      responses:
-        default:
-          description: successful operation
-  "/user/{username}":
-    get:
-      tags:
-        - user
-      summary: Get user by user name
-      description: ''
-      operationId: getUserByName
-      parameters:
-        - name: username
-          in: path
-          description: 'The name that needs to be fetched. Use user1 for testing. '
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/User"
-        '400':
-          description: Invalid username supplied
-        '404':
-          description: User not found
-    put:
-      tags:
-        - user
-      summary: Update user
-      description: This can only be done by the logged in user.
-      operationId: updateUser
-      parameters:
-        - name: username
-          in: path
-          description: name that need to be deleted
-          required: true
-          schema:
-            type: string
+      - source
+      summary: Get source
+      operationId: getSource
       requestBody:
-        description: Update an existent user in the store
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/User"
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
       responses:
-        default:
-          description: successful operation
-    delete:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+        "404":
+          description: Source not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/source_specifications/get:
+    post:
       tags:
-        - user
-      summary: Delete user
-      description: This can only be done by the logged in user.
-      operationId: deleteUser
-      parameters:
-        - name: username
-          in: path
-          description: The name that needs to be deleted
-          required: true
-          schema:
-            type: string
+      - source_specification
+      summary: Get specification for a source.
+      operationId: getSourceSpecification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
       responses:
-        '400':
-          description: Invalid username supplied
-        '404':
-          description: User not found
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceSpecificationRead"
+        "404":
+          description: Source Specification not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/source_implementations/create:
+    post:
+      tags:
+      - source_implementation
+      summary: Create a source implementation
+      operationId: createSourceImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceImplementationCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceImplementationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/source_implementations/update:
+    post:
+      tags:
+      - source_implementation
+      summary: Update a source
+      operationId: updateSourceImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceImplementationUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceImplementationRead"
+        "404":
+          description: Source Implementation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/source_implementations/list:
+    post:
+      tags:
+      - source_implementation
+      summary: Get source implementations for workspace
+      operationId: getSourceImplementationsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceImplementationReadList"
+        "404":
+          description: Workspace not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/source_implementations/get:
+    post:
+      tags:
+      - source_implementation
+      summary: Get source implementation
+      operationId: getSourceImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceImplementationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceImplementationRead"
+        "404":
+          description: Source Implementation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/source_implementations/test_connection:
+    post:
+      tags:
+      - source_implementation
+      summary: Test connection to the source implementation
+      operationId: testConnectiontoSourceImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceImplementationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceImplementationTestConnectionRead"
+        "404":
+          description: Source Implementation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/source_implementations/discover_schema:
+    post:
+      tags:
+      - source_implementation
+      summary: Discover the schema of the source implementation
+      operationId: discoverSchemaForSourceImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceImplementationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceImplementationDiscoverSchemaRead"
+        "404":
+          description: Source Implementation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/destinations/list:
+    post:
+      tags:
+      - destination
+      summary: List all of the destinations that Dataline supports
+      operationId: listDestinations
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationReadList"
+  /v1/destinations/get:
+    post:
+      tags:
+      - destination
+      summary: Get destination
+      operationId: getDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationRead"
+        "404":
+          description: Destination not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/destination_specifications/get:
+    post:
+      tags:
+      - destination_specification
+      summary: Get specification for a destination
+      operationId: getDestinationSpecification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  destinationSpecification:
+                    $ref: "#/components/schemas/DestinationSpecificationRead"
+        "404":
+          description: Destination not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/destination_implementations/create:
+    post:
+      tags:
+      - destination_implementation
+      summary: Create a destination implementation
+      operationId: createDestinationImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationImplementationCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationImplementationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/destination_implementations/update:
+    post:
+      tags:
+      - destination_implementation
+      summary: Update a destination implementation
+      operationId: updateDestinationImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationImplementationUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationImplementationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/destination_implementations/list:
+    post:
+      tags:
+      - destination_implementation
+      summary: List configured destinations for a workspace
+      operationId: listDestinationImplementationsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationImplementationReadList"
+        "404":
+          description: Workspace not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/destination_implementations/get:
+    post:
+      tags:
+      - destination_implementation
+      summary: get configured destination
+      operationId: getDestinationImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationImplementationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationImplementationRead"
+        "404":
+          description: Destination Implementation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/connections/create:
+    post:
+      tags:
+      - connection
+      summary: Create a connection between a source implementation and a destination implementation
+      operationId: createConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/connections/update:
+    post:
+      tags:
+      - connection
+      summary: Updated a connection status
+      operationId: updateConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/connections/list:
+    post:
+      tags:
+      - connection
+      summary: Returns all connections for a workspace.
+      operationId: listConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionReadList"
+        "404":
+          description: Workspace not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/connections/get:
+    post:
+      tags:
+      - connection
+      summary: Get a connection
+      operationId: getConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionRead"
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/connections/deploy:
+    post:
+      tags:
+      - connection
+      summary: Deploy connnection with current configuration
+      operationId: deployConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionDeployRead"
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/connections/sync:
+    post:
+      tags:
+      - connection
+      summary: Trigger a manual sync of the connection
+      operationId: syncConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionSyncRead"
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+externalDocs:
+  description: Find out more about Dataline
+  url: "http://dataline.io"
+servers:
+- url: "https://virtserver.swaggerhub.com/cgardens6/dataline/1.0.0"
+- url: "http://virtserver.swaggerhub.com/cgardens6/dataline/1.0.0"
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
-    Order:
+    # WORKSPACE
+    WorkspaceId:
+      type: string
+      format: uuid
+    WorkspaceIdRequestBody:
       type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        petId:
-          type: integer
-          format: int64
-          example: 198772
-        quantity:
-          type: integer
-          format: int32
-          example: 7
-        shipDate:
-          type: string
-          format: date-time
-        status:
-          type: string
-          description: Order Status
-          example: approved
-          enum:
-            - placed
-            - approved
-            - delivered
-        complete:
-          type: boolean
-    Customer:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 100000
-        username:
-          type: string
-          example: fehguy
-        address:
-          type: array
-          items:
-            "$ref": "#/components/schemas/Address"
-    Address:
-      type: object
-      properties:
-        street:
-          type: string
-          example: 437 Lytton
-        city:
-          type: string
-          example: Palo Alto
-        state:
-          type: string
-          example: CA
-        zip:
-          type: string
-          example: '94301'
-    Category:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 1
-        name:
-          type: string
-          example: Dogs
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        username:
-          type: string
-          example: theUser
-        firstName:
-          type: string
-          example: John
-        lastName:
-          type: string
-          example: James
-        email:
-          type: string
-          example: john@email.com
-        password:
-          type: string
-          example: '12345'
-        phone:
-          type: string
-          example: '12345'
-        userStatus:
-          type: integer
-          description: User Status
-          format: int32
-          example: 1
-    Tag:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-    Pet:
       required:
-        - name
-        - photoUrls
-      type: object
+      - workspaceId
       properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+    WorkspaceRead:
+      type: object
+      required:
+      - workspaceId
+      - name
+      - slug
+      - initialSetupComplete
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
-          example: doggie
-        category:
-          "$ref": "#/components/schemas/Category"
-        photoUrls:
+        slug:
+          type: string
+        initialSetupComplete:
+          type: boolean
+    # SLUG
+    SlugAvailableRead:
+      type: object
+      required:
+      - available
+      properties:
+        available:
+          type: boolean
+    SlugRequestBody:
+      type: object
+      required:
+      - slug
+      properties:
+        slug:
+          type: string
+    # SOURCE
+    SourceId:
+      type: string
+      format: uuid
+    SourceIdRequestBody:
+      type: object
+      required:
+      - sourceId
+      properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+    SourceRead:
+      type: object
+      required:
+      - sourceId
+      - name
+      properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        name:
+          type: string
+    SourceReadList:
+      type: object
+      required:
+      - sources
+      properties:
+        sources:
           type: array
           items:
-            type: string
-        tags:
+            $ref: "#/components/schemas/SourceRead"
+    # SOURCE SPECIFICATION
+    SourceSpecificationId:
+      type: string
+      format: uuid
+    SourceSpecificationRead:
+      type: object
+      required:
+      - sourceSpecificationId
+      - sourceId
+      - specification
+      properties:
+        sourceSpecificationId:
+          $ref: "#/components/schemas/SourceSpecificationId"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        connectionSpecification:
+          description: The specification for what values are required to configure the source.
+          example: { user: { type: string } }
+    # SOURCE IMPLEMENTATION
+    SourceImplementationId:
+      type: string
+      format: uuid
+    SourceImplementationIdRequestBody:
+      type: object
+      required:
+      - sourceId
+      properties:
+        sourceImplementationId:
+          $ref: "#/components/schemas/SourceImplementationId"
+    SourceConfigurationField:
+      description: The values required to configure the source. The schema for this must match the schema return by source_specifications/get for the source.
+      example: { user: "charles" }
+    SourceImplementationCreate:
+      type: object
+      required:
+      - workspaceId
+      - sourceSpecificationId
+      - connectionConfiguration
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceSpecificationId:
+          $ref: "#/components/schemas/SourceSpecificationId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfigurationField"
+    SourceImplementationUpdate:
+      type: object
+      required:
+      - sourceImplementationId
+      - connectionConfiguration
+      properties:
+        sourceImplementationId:
+          $ref: "#/components/schemas/SourceImplementationId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfigurationField"
+    SourceImplementationRead:
+      type: object
+      required:
+      - sourceImplementationId
+      - workspaceId
+      - sourceSpecificationId
+      - connectionConfiguration
+      properties:
+        sourceImplementationId:
+          $ref: "#/components/schemas/SourceImplementationId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceSpecificationId:
+          $ref: "#/components/schemas/SourceSpecificationId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfigurationField"
+    SourceImplementationReadList:
+      type: object
+      required:
+      - sources
+      properties:
+        sources:
           type: array
           items:
-            "$ref": "#/components/schemas/Tag"
+            $ref: "#/components/schemas/SourceImplementationRead"
+    SourceImplementationTestConnectionRead:
+      type: object
+      required:
+      - status
+      properties:
         status:
           type: string
-          description: pet status in the store
           enum:
-            - available
-            - pending
-            - sold
-    ApiResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        type:
-          type: string
+          - success
+          - failure
         message:
           type: string
-  requestBodies:
-    Pet:
-      description: Pet object that needs to be added to the store
-      content:
-        application/json:
-          schema:
-            "$ref": "#/components/schemas/Pet"
-    UserArray:
-      description: List of user object
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              "$ref": "#/components/schemas/User"
-  securitySchemes:
-    petstore_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
-          scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+    SourceImplementationDiscoverSchemaRead:
+      type: object
+      required:
+      - schema
+      properties:
+        schema:
+          $ref: "#/components/schemas/SourceSchema"
+    # DESTINATION
+    DestinationId:
+      type: string
+      format: uuid
+    DestinationIdRequestBody:
+      type: object
+      required:
+      - destinationId
+      properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+    DestinationRead:
+      type: object
+      required:
+      - destinationId
+      - name
+      properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        name:
+          type: string
+    DestinationReadList:
+      type: object
+      required:
+      - destinations
+      properties:
+        destinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationRead"
+    # DESTINATION SPECIFICATION
+    DestinationSpecificationId:
+      type: string
+      format: uuid
+    DestinationSpecificationRead:
+      type: object
+      required:
+      - destinationSpecificationId
+      - destinationId
+      - specification
+      properties:
+        destinationSpecificationId:
+          $ref: "#/components/schemas/DestinationSpecificationId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        connectionSpecification:
+          description: The specification for what values are required to configure the destination.
+          example: { user: { type: string } }
+    # DESTINATION IMPLEMENTATION
+    DestinationImplementationId:
+      type: string
+      format: uuid
+    DestinationImplementationIdRequestBody:
+      type: object
+      required:
+      - destinationImplementationId
+      properties:
+        destinationImplementationId:
+          $ref: "#/components/schemas/SourceImplementationId"
+    DestinationImplementationCreate:
+      type: object
+      required:
+      - workspaceId
+      - destinationSpecificationId
+      - connectionConfiguration
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        destinationSpecificationId:
+          $ref: "#/components/schemas/DestinationSpecificationId"
+        connectionConfiguration:
+          description: The values required to configure the destination. The schema for this must match the schema return by destination_specifications/get for the source.
+          example: { user: "charles" }
+    DestinationImplementationUpdate:
+      type: object
+      required:
+      - destinationImplementationId
+      - connectionConfiguration
+      properties:
+        destinationImplementationId:
+          $ref: "#/components/schemas/DestinationImplementationId"
+        connectionConfiguration:
+          description: The values required to configure the destination. The schema for this must match the schema return by destination_specifications/get for the source.
+          example: { user: "charles" }
+    DestinationImplementationRead:
+      type: object
+      required:
+      - destinationImplementationId
+      - workspaceId
+      - destinationSpecificationId
+      - connectionConfiguration
+      properties:
+        destinationImplementationId:
+          $ref: "#/components/schemas/DestinationImplementationId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        destinationSpecificationId:
+          $ref: "#/components/schemas/DestinationSpecificationId"
+        connectionConfiguration:
+          description: The values required to configure the destination. The schema for this must match the schema return by destination_specifications/get for the source.
+          example: { user: "charles" }
+    DestinationImplementationReadList:
+      type: object
+      required:
+      - destinations
+      properties:
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationImplementationRead"
+    # CONNECTION
+    ConnectionId:
+      type: string
+      format: uuid
+    ConnectionIdRequestBody:
+      type: object
+      required:
+      - connectionId
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+    ConnectionCreate:
+      type: object
+      required:
+      - sourceImplementationId
+      - destinationImplementationId
+      - syncMode
+      - schema
+      - status
+      properties:
+        name:
+          type: string
+          description: Optional name of the connection
+        sourceImplementationIdId:
+          $ref: "#/components/schemas/SourceImplementationId"
+        destinationImplementationId:
+          $ref: "#/components/schemas/DestinationImplementationId"
+        syncMode:
+          type: string
+          enum:
+          - full_refresh
+          - append
+        syncSchema:
+          $ref: "#/components/schemas/SourceSchema"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+    ConnectionUpdate:
+      type: object
+      required:
+      - sourceImplementationId
+      - destinationImplementationId
+      - syncSchema
+      - schedule
+      - status
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        syncSchema:
+          $ref: "#/components/schemas/SourceSchema"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+    ConnectionRead:
+      type: object
+      required:
+      - connectionId
+      - name
+      - sourceImplementationId
+      - destinationImplementationId
+      - syncMode
+      - schema
+      - schedule
+      - status
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        name:
+          type: string
+        sourceImplementationId:
+          $ref: "#/components/schemas/SourceImplementationId"
+        destinationImplementationId:
+          $ref: "#/components/schemas/DestinationImplementationId"
+        syncMode:
+          type: string
+          enum:
+          - full_refresh
+          - append
+        syncSchema:
+          $ref: "#/components/schemas/SourceSchema"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+    ConnectionReadList:
+      type: object
+      required:
+      - connections
+      properties:
+        connections:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConnectionRead"
+    ConnectionStatus:
+      type: string
+      description: Active means that data is flowing through the connection. Inactive means it is not. Deprecated means the connection is off and cannot be re-activated. the schema field describes the elements of the schema that will be synced.
+      enum:
+      - active
+      - inactive
+      - deprecated
+    ConnectionSchedule:
+      type: object
+      oneOf:
+      - $ref: "#/components/schemas/ScheduleImplementation"
+      - $ref: "#/components/schemas/NoOpSchedule"
+    NoOpSchedule:
+      type: string
+      enum:
+      - noop
+    ScheduleImplementation:
+      type: object
+      required:
+      - units
+      - timeUnit
+      properties:
+        units:
+          type: number
+        timeUnit:
+          type: string
+          enum:
+          - minutes
+          - hours
+          - days
+          - weeks
+          - months
+    ConnectionDeployRead:
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum:
+          - success
+          - fail
+    ConnectionSyncRead:
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum:
+          - success
+          - fail
+    # SCHEMA
+    SourceSchema:
+      description: describes the available schema.
+      type: object
+      properties:
+        tables:
+          type: array
+          items:
+            type: object
+            required:
+            - name
+            - columns
+            properties:
+              name:
+                type: string
+              columns:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - name
+                  - dataType
+                  properties:
+                    name:
+                      type: string
+                    dataType:
+                      type: string
+                      enum:
+                      - string
+                      - number
+                      - uuid
+                      - boolean
+  responses:
+    InvalidInput:
+      description: Invalid Input
+# apply the security globally to all operations
+security:
+- bearerAuth: []
