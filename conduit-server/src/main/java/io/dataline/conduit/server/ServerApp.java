@@ -1,6 +1,6 @@
 package io.dataline.conduit.server;
 
-import io.dataline.conduit.server.apis.PetApi;
+import io.dataline.conduit.server.apis.ConduitConfigurationApi;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -19,7 +19,8 @@ public class ServerApp {
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    ResourceConfig rc = new ResourceConfig().registerClasses(PetApi.class);
+        ResourceConfig rc = new ResourceConfig()
+                .registerClasses(ConduitConfigurationApi.class);
 
     ServletHolder conduitServlet = new ServletHolder(new ServletContainer(rc));
 
