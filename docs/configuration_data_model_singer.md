@@ -283,7 +283,7 @@ This object tracks metadata on where the run ended. Our hope is that it can repl
   "properties": {
     "status": {
       "type": "string",
-      "enum": ["completed", "failed", "cancelled"]
+      "enum": ["pending", "in_progress","completed", "failed", "cancelled"]
     },
     "recordsSynced": {
       "type": "integer"
