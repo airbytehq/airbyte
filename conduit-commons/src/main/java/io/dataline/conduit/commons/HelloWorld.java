@@ -1,4 +1,4 @@
-package io.dataline.playground;
+package io.dataline.conduit.commons;
 
 import com.google.common.base.Strings;
 

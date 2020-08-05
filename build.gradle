@@ -1,30 +1,25 @@
-plugins {
-    id 'java'
+allprojects {
+    group = "io.dataline.${rootProject.name}"
+    version = rootProject.file('.version').text.trim()
 }
 
-group 'io.dataline'
-version = rootProject.file('.version').text.trim()
+// For java projects (might need to add some filtering once we have the UI)
+subprojects {
+    apply plugin: 'java'
 
-repositories {
-    mavenCentral()
-}
-
-test {
-    useJUnitPlatform()
-}
-
-dependencies {
-    compile group: 'com.google.guava', name: 'guava', version: '29.0-jre'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
-}
-
-task fatjar(type: Jar) {
-    manifest {
-        attributes 'Main-Class': 'io.dataline.playground.HelloWorld'
+    repositories {
+        mavenCentral()
     }
-    baseName "${rootProject.name}-fatjar"
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
+
+    test {
+        useJUnitPlatform()
+    }
+
+    dependencies {
+        implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
+
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+        testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
+    }
 }
