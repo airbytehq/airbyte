@@ -12,6 +12,6 @@ EXPOSE 8080
 WORKDIR /app/conduit-server
 
 COPY --from=build /code/conduit-server/build/distributions/*.tar conduit-server.tar
-RUN tar xvf conduit-server.tar --strip-components=1
+RUN tar xf conduit-server.tar --strip-components=1
 
 CMD bin/conduit-server
