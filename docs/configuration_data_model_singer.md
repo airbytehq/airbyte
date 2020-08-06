@@ -146,7 +146,6 @@ The schema for the `schema` field. This will get reused elsewhere.
 {
   "id": "http://json-schema.org/geo",
   "$schema": "http://json-schema.org/draft-06/schema#",
-  "description": "sync configurations needed to configure a postgres tap",
   "type": "object",
   "definitions": {
     "schema": {
