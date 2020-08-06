@@ -2,7 +2,7 @@
 
 Simply run
 
-```text
+```shell
 ./tools/app/start.sh
 ```
 
