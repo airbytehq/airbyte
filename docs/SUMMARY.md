@@ -6,3 +6,7 @@
 
 * [abc](test/abc.md)
 
+## Test2
+
+* [Changelog](test2/changelog.md)
+
