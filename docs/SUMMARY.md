@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Test](../README.md)
+* [Getting Started](../README.md)
 
 ## test
 
