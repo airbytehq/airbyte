@@ -1,4 +1,4 @@
 # Table of contents
 
-* [Conduit](README.md)
+* [Getting Started](README.md)
 
