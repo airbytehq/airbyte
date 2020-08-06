@@ -1,6 +1,5 @@
 # Table of contents
 
-* [Getting Started](README.md)
-* [Integrations](integrations/README.md)
-  * [Untitled](integrations/untitled.md)
+* [Initial page](README.md)
+* [Test](test.md)
 
