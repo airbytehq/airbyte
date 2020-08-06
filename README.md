@@ -1,4 +1,4 @@
-# Conduit
+# Getting Started
 
 ## Getting Started
 
