@@ -6,8 +6,11 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServerApp {
+    private final static Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
     public ServerApp() {
     }
@@ -31,7 +34,7 @@ public class ServerApp {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Starting Server...");
+        LOGGER.info("Starting server...");
 
         new ServerApp().start();
     }
