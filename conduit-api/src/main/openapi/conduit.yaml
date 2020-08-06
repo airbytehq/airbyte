@@ -521,29 +521,6 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-  /v1/connections/deploy:
-    post:
-      tags:
-      - connection
-      summary: Deploy connnection with current configuration
-      operationId: deployConnection
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ConnectionIdRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ConnectionDeployRead"
-        "404":
-          description: Connection not found
-        "422":
-          $ref: "#/components/responses/InvalidInput"
   /v1/connections/sync:
     post:
       tags:
@@ -981,16 +958,6 @@ components:
           - days
           - weeks
           - months
-    ConnectionDeployRead:
-      type: object
-      required:
-      - status
-      properties:
-        status:
-          type: string
-          enum:
-          - success
-          - fail
     ConnectionSyncRead:
       type: object
       required:
