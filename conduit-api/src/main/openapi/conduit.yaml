@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   description: |
     Conduit API
-    [http://dataline.io](http://dataline.io).
+    [https://dataline.io](https://dataline.io).
 
     This API is a collection HTTP RPC-style methods. While it is not a REST API, those familiar with REST should find the conventions of this API recognizable.
 
