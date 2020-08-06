@@ -7,6 +7,7 @@ import io.dataline.conduit.api.model.*;
 
 @Path("/v1")
 public class ConduitConfigurationApi implements io.dataline.conduit.api.V1Api {
+
     @Override
     public ConnectionRead createConnection(@Valid ConnectionCreate connectionCreate) {
         return null;
@@ -19,11 +20,6 @@ public class ConduitConfigurationApi implements io.dataline.conduit.api.V1Api {
 
     @Override
     public SourceImplementationRead createSourceImplementation(@Valid SourceImplementationCreate sourceImplementationCreate) {
-        return null;
-    }
-
-    @Override
-    public ConnectionDeployRead deployConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
         return null;
     }
 
