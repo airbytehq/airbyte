@@ -271,7 +271,7 @@ Configuration that is the SAME for all tap / target combinations. Describes the 
 
 (note: we may need to add some notion that some sources or destinations are only compatible with full_refresh)
 
-#### StandardConduitOutput
+#### ConduitSyncSummary
 
 This object tracks metadata on where the run ended. Our hope is that it can replace the ConduitState object (see [below](#ConduitState)) entirely. The reason to define this type now is so that in the UI we can provide feedback to the user on where the sync has gotten to.
 
@@ -280,6 +280,10 @@ This object tracks metadata on where the run ended. Our hope is that it can repl
   "description": "standard information output by ALL taps for a sync step (our version of state.json)",
   "type": "object",
   "properties": {
+    "attemptId": {
+      "type": "string",
+      "format": "uuid"
+    },
     "status": {
       "type": "string",
       "enum": ["pending", "in_progress","completed", "failed", "cancelled"]
@@ -305,6 +309,14 @@ This object tracks metadata on where the run ended. Our hope is that it can repl
           }
         }
       }
+    },
+    "startTime": {
+      "type": "integer"
+    },
+    "endTime": {
+      "type": "integer"
+    },
+    "logs": {
     }
   }
 }
