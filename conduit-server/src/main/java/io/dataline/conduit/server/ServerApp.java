@@ -10,32 +10,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ServerApp {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
-    public ServerApp() {
-    }
+  public ServerApp() {}
 
-    public void start() throws Exception {
-        Server server = new Server(8080);
+  public void start() throws Exception {
+    Server server = new Server(8080);
 
-        ServletContextHandler handler = new ServletContextHandler();
+    ServletContextHandler handler = new ServletContextHandler();
 
-        ResourceConfig rc = new ResourceConfig()
-                .registerClasses(PetApi.class);
+    ResourceConfig rc = new ResourceConfig().registerClasses(PetApi.class);
 
-        ServletHolder conduitServlet = new ServletHolder(new ServletContainer(rc));
+    ServletHolder conduitServlet = new ServletHolder(new ServletContainer(rc));
 
-        handler.addServlet(conduitServlet, "/api/v1/*");
+    handler.addServlet(conduitServlet, "/api/v1/*");
 
-        server.setHandler(handler);
+    server.setHandler(handler);
 
-        server.start();
-        server.join();
-    }
+    server.start();
+    server.join();
+  }
 
-    public static void main(String[] args) throws Exception {
-        LOGGER.info("Starting server...");
+  public static void main(String[] args) throws Exception {
+    LOGGER.info("Starting server...");
 
-        new ServerApp().start();
-    }
+    new ServerApp().start();
+  }
 }
