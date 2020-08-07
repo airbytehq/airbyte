@@ -1,5 +1,14 @@
 plugins {
     id 'application'
+    id "com.diffplug.spotless" version "5.1.1"
+}
+
+compileJava.dependsOn 'spotlessApply'
+
+spotless {
+    java {
+        googleJavaFormat('1.8')
+    }
 }
 
 dependencies {
