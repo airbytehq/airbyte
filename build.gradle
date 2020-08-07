@@ -39,5 +39,7 @@ subprojects {
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
         testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
+
+        compile group: "com.google.googlejavaformat", name: "google-java-format", version: "1.8"
     }
 }
