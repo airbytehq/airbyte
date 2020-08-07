@@ -1,0 +1,36 @@
+group 'io.dataline.conduit'
+version '0.1.0'
+
+//https://github.com/joelittlejohn/jsonschema2pojo/tree/master/jsonschema2pojo-gradle-plugin
+apply plugin: 'jsonschema2pojo'
+
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+//        classpath 'org.jsonschema2pojo:jsonschema2pojo-gradle-plugin:${js2p.version}'
+        classpath 'org.jsonschema2pojo:jsonschema2pojo-gradle-plugin:1.0.2'
+    }
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    // Required if generating JSR-303 annotations
+    compile 'javax.validation:validation-api:1.1.0.CR2'
+    // Required if generating Jackson 2 annotations
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
+    // Required if generating JodaTime data types
+    compile 'joda-time:joda-time:2.2'
+}
+
+jsonSchema2Pojo {
+}
