@@ -11,6 +11,7 @@ spotless {
     }
 }
 
+
 dependencies {
     implementation group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.31.v20200723'
     implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.31.v20200723'
@@ -24,7 +25,7 @@ dependencies {
     compile(group: "com.networknt", name: "json-schema-validator", version: "1.0.42");
 
     implementation project(':conduit-api')
-    implementation project(':conduit-commons')
+    implementation project(':conduit-config')
 }
 
 application {

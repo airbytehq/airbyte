@@ -2,7 +2,13 @@ package io.dataline.conduit.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.networknt.schema.*;
+import io.dataline.conduit.commons.HelloWorld;
+import io.dataline.conduit.conduit_config.BlahMah;
+import io.dataline.conduit.conduit_config.StandardConnectionStatus;
+import io.dataline.conduit.conduit_config.StandardScheduleConfiguration;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
@@ -30,5 +36,15 @@ public class ValidateJson {
 
     Set<ValidationMessage> validateInvalid = jsonSchema.validate(jsonNoteInvalidObject);
     System.out.println("validateInvalid = " + validateInvalid);
+
+    // schema
+    File scheduleSchemaFile = new File("/Users/charles/code/conduit/conduit-config/src/main/resources/json/StandardScheduleConfiguration.json");
+    JsonNode scheduleSchema = objectMapper.readTree(scheduleSchemaFile);
+
+//    ObjectReader objectReader = objectMapper.readerFor(StandardScheduleConfiguration.class);
+    File scheduleObjectFile = new File("/Users/charles/code/conduit/scheduleObject.json");
+    objectMapper.readValue(scheduleObjectFile, StandardScheduleConfiguration.class);
+    Set<ValidationMessage> validateSchedule = jsonSchema.validate(scheduleSchema);
+    System.out.println("validateSchedule = " + validateSchedule);
   }
 }

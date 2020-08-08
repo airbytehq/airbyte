@@ -22,6 +22,7 @@ subprojects {
     }
 
     dependencies {
+
         implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
         implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
