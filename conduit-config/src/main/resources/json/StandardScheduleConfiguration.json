@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "StandardScheduleConfiguration",
+  "title": "StandardScheduleConfiguration",
+  "type": "object",
+  "properties": {
+    "timeUnit": {
+      "type": "string",
+      "enum": ["minutes", "hours", "days", "weeks"]
+    },
+    "units": {
+      "type": "integer"
+    }
+  }
+}
