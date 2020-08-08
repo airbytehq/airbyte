@@ -22,7 +22,6 @@ subprojects {
     }
 
     dependencies {
-
         implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
         implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
@@ -40,7 +39,5 @@ subprojects {
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
         testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
-
-        compile group: "com.google.googlejavaformat", name: "google-java-format", version: "1.8"
     }
 }
