@@ -3,3 +3,5 @@ rootProject.name = 'conduit'
 include 'conduit-api'
 include 'conduit-server'
 include 'conduit-commons'
+include 'conduit-config'
+
