@@ -1,12 +1,8 @@
 group 'io.dataline.conduit'
 version '0.1.0'
 
-<<<<<<< HEAD
 // todo: make sure we use the non-deprecated version of this.
 // https://github.com/joelittlejohn/jsonschema2pojo/tree/master/jsonschema2pojo-gradle-plugin
-=======
-//https://github.com/joelittlejohn/jsonschema2pojo/tree/master/jsonschema2pojo-gradle-plugin
->>>>>>> whatever
 apply plugin: 'jsonschema2pojo'
 
 
