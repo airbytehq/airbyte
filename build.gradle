@@ -1,3 +1,9 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
 allprojects {
     group = "io.dataline.${rootProject.name}"
     version = rootProject.file('.version').text.trim()

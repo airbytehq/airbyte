@@ -1,7 +1,7 @@
 package io.dataline.conduit.server;
 
 import io.dataline.conduit.commons.db.DatabaseHelper;
-import io.dataline.conduit.server.apis.PetApi;
+import io.dataline.conduit.server.apis.ConduitConfigurationApi;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -11,34 +11,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ServerApp {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
-    public ServerApp() {
-    }
+  public ServerApp() {}
 
-    public void start() throws Exception {
-        DatabaseHelper.initializeDatabase();
+  public void start() throws Exception {
+    DatabaseHelper.initializeDatabase();
+    Server server = new Server(8080);
 
-        Server server = new Server(8080);
-
-        ServletContextHandler handler = new ServletContextHandler();
+    ServletContextHandler handler = new ServletContextHandler();
 
         ResourceConfig rc = new ResourceConfig()
-                .registerClasses(PetApi.class);
+                .registerClasses(ConduitConfigurationApi.class);
 
-        ServletHolder conduitServlet = new ServletHolder(new ServletContainer(rc));
+    ServletHolder conduitServlet = new ServletHolder(new ServletContainer(rc));
 
-        handler.addServlet(conduitServlet, "/api/v1/*");
+    handler.addServlet(conduitServlet, "/api/v1/*");
 
-        server.setHandler(handler);
+    server.setHandler(handler);
 
-        server.start();
-        server.join();
-    }
+    server.start();
+    server.join();
+  }
 
-    public static void main(String[] args) throws Exception {
-        LOGGER.info("Starting server...");
+  public static void main(String[] args) throws Exception {
+    LOGGER.info("Starting server...");
 
-        new ServerApp().start();
-    }
+    new ServerApp().start();
+  }
 }

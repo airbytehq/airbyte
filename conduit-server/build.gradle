@@ -1,5 +1,14 @@
 plugins {
     id 'application'
+    id "com.diffplug.spotless" version "5.1.1"
+}
+
+compileJava.dependsOn 'spotlessApply'
+
+spotless {
+    java {
+        googleJavaFormat('1.8')
+    }
 }
 
 dependencies {
@@ -11,11 +20,11 @@ dependencies {
     implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: '2.31'
     implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: '2.31'
 
-
-    implementation group:'org.xerial', name:'sqlite-jdbc', version:'3.8.11.2'
-    implementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
+    compile(group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.8");
+    compile(group: "com.networknt", name: "json-schema-validator", version: "1.0.42");
 
     implementation project(':conduit-api')
+    implementation project(':conduit-config')
     implementation project(':conduit-commons')
 }
 
