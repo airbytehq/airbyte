@@ -4,7 +4,7 @@ FROM gradle:jdk14 AS cache
 WORKDIR /code
 
 # for i in **/*.gradle; do echo COPY ./$i $(dirname $i)/; done
-COPY ./.version ./
+COPY ./.env ./
 COPY ./build.gradle ./
 COPY ./conduit-api/build.gradle conduit-api/
 COPY ./conduit-commons/build.gradle conduit-commons/

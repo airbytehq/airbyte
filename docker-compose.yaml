@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: server.Dockerfile
-    image: server:dev
+    image: dataline/conduit-server:${VERSION}
     container_name: conduit-server
     ports:
       - 8001:8000
@@ -13,7 +13,7 @@ services:
     build:
       context: .
       dockerfile: webapp.Dockerfile
-    image: webapp:dev
+    image: dataline/conduit-webapp:${VERSION}
     container_name: conduit-webapp
     ports:
       - 8000:80
