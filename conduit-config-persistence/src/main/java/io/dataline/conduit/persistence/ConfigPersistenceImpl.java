@@ -30,7 +30,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
 
   @Override
   public <T> T getStandardConfig(
-          PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz) {
+      PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz) {
     // find file
     File configFile = getFileOrThrow(persistenceConfigType, configId);
 
@@ -42,7 +42,8 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   }
 
   @Override
-  public <T> Set<T> getStandardConfigs(PersistenceConfigType persistenceConfigType, Class<T> clazz) {
+  public <T> Set<T> getStandardConfigs(
+      PersistenceConfigType persistenceConfigType, Class<T> clazz) {
     return getConfigIds(persistenceConfigType).stream()
         .map(configId -> getStandardConfig(persistenceConfigType, configId, clazz))
         .collect(Collectors.toSet());
@@ -50,7 +51,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
 
   @Override
   public <T> void writeStandardConfig(
-          PersistenceConfigType persistenceConfigType, String configId, T config, Class<T> clazz) {
+      PersistenceConfigType persistenceConfigType, String configId, T config, Class<T> clazz) {
     try {
       objectMapper.writeValue(new File(getConfigPath(persistenceConfigType, configId)), config);
     } catch (IOException e) {
@@ -108,7 +109,8 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
     return String.format("%s.json", id);
   }
 
-  private ConfigSchema standardConfigTypeToConfigSchema(PersistenceConfigType persistenceConfigType) {
+  private ConfigSchema standardConfigTypeToConfigSchema(
+      PersistenceConfigType persistenceConfigType) {
     switch (persistenceConfigType) {
       case SOURCE_CONNECTION_CONFIGURATION:
         return ConfigSchema.SOURCE_CONNECTION_CONFIGURATION;
@@ -131,12 +133,13 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
       default:
         throw new RuntimeException(
             String.format(
-                "No mapping from StandardConfigType to ConfigSchema for %s", persistenceConfigType));
+                "No mapping from StandardConfigType to ConfigSchema for %s",
+                persistenceConfigType));
     }
   }
 
   private void validateJson(
-          File configFile, PersistenceConfigType persistenceConfigType, String configId) {
+      File configFile, PersistenceConfigType persistenceConfigType, String configId) {
     JsonNode configJson;
     try {
       configJson = objectMapper.readTree(configFile);
@@ -150,7 +153,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
       throw new IllegalStateException(
           String.format(
               "json schema validation failed. type: %s id: %s \n errors: %s \n schema: \n%s \n object: \n%s",
-                  persistenceConfigType,
+              persistenceConfigType,
               configId,
               validationMessages.stream()
                   .map(ValidationMessage::toString)
