@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.*;
 import io.dataline.conduit.conduit_config.ConfigSchema;
-import io.dataline.conduit.conduit_config.StandardScheduleConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
