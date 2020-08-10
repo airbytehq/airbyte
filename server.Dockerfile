@@ -9,7 +9,6 @@ COPY ./build.gradle ./
 COPY ./conduit-api/build.gradle conduit-api/
 COPY ./conduit-commons/build.gradle conduit-commons/
 COPY ./conduit-server/build.gradle conduit-server/
-COPY ./conduit-ui/build.gradle conduit-ui/
 COPY ./settings.gradle ./
 
 RUN gradle --gradle-user-home=/tmp/gradle_cache clean dependencies --no-daemon
