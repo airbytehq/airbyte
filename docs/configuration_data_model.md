@@ -119,22 +119,7 @@ Any credentials needed to establish a connection with the data source. This conf
 
 This is the output of the `testConnection` method. It is the same schema for ALL taps.
 
-```json
-{
-  "description": "describes the result of a 'test connection' action.",
-  "type": "object",
-  "required": ["status"],
-  "properties": {
-    "status": {
-      "type": "string",
-      "enum": ["success", "failure"]
-    },
-    "message": {
-      "type": "string"
-    }
-  }
-}
-```
+The type declaration can be found [here](conduit-config/src/main/resources/json/StandardConnectionStatus.json).
 
 #### StandardDiscoveryOutput
 
