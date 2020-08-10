@@ -10,7 +10,7 @@ This section enumerates the full set of features we expect to give to these mode
 1. Discover Schema (**MVP**)
 1. Discover Schema with complex configuration (e.g. multi-nested file systems)
 1. Sync Data
-   1. Full refresh (**MVP**)
+   1. Full refresh
    1. Append only - no concept of a primary key, simply ads new data to the end of a table. (**MVP**)
    1. Full deltas - detects when a record is already present in the data set and updates it.
    1. Historical mode - detects when a record is already present, groups it on a primary key, but retains old and new versions of the record. ([fivetran historical mode docs](https://fivetran.com/docs/getting-started/feature/history-mode))
@@ -173,8 +173,6 @@ testConnection(DestinationConnectionConfiguration) => StandardConnectionStatus
 
 ## Connection
 
-_aka: a "line", a "connection"._
-
 ### Connection Types
 
 #### StandardSyncConfiguration
@@ -187,7 +185,7 @@ The type declaration can be found [here](../conduit-config/src/main/resources/js
 
 #### StandardSyncSummary
 
-This object tracks metadata on where the run ended. Our hope is that it can replace the State object (see [below](#ConduitState)) entirely. The reason to define this type now is so that in the UI we can provide feedback to the user on where the sync has gotten to.
+This object tracks metadata on where the run ended. Our hope is that it can replace the State object (see [below](#State)) entirely. The reason to define this type now is so that in the UI we can provide feedback to the user on where the sync has gotten to.
 
 The type declaration can be found [here](../conduit-config/src/main/resources/json/StandardSyncSummary.json).
 
@@ -195,7 +193,7 @@ The type declaration can be found [here](../conduit-config/src/main/resources/js
 
 This field will be treated as a json blob that will _only_ be used inside the implementation of the integration. This is our escape strategy to handle any special state that needs to be tracked specially for specific taps.
 
-#### ScheduleConfiguration
+#### StandardScheduleConfiguration
 
 This object defines the schedule for a given connection. It is the same for all taps / targets.
 
@@ -225,7 +223,7 @@ This feature will require some additional configuration that will be standard ac
 
 ```
 scheduleSync(
-    ScheduleConfiguration,
+    StandardScheduleConfiguration,
     SourceConnectionConfiguration,
     DestinationConnectionConfiguration,
     StandardSyncConfiguration,
