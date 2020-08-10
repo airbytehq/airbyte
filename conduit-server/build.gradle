@@ -11,6 +11,10 @@ dependencies {
     implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: '2.31'
     implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: '2.31'
 
+
+    implementation group:'org.xerial', name:'sqlite-jdbc', version:'3.8.11.2'
+    implementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
+
     implementation project(':conduit-api')
     implementation project(':conduit-commons')
 }

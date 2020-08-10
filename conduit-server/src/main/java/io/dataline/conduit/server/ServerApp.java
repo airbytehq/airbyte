@@ -1,5 +1,6 @@
 package io.dataline.conduit.server;
 
+import io.dataline.conduit.commons.db.DatabaseHelper;
 import io.dataline.conduit.server.apis.PetApi;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -16,6 +17,8 @@ public class ServerApp {
     }
 
     public void start() throws Exception {
+        DatabaseHelper.initializeDatabase();
+
         Server server = new Server(8080);
 
         ServletContextHandler handler = new ServletContextHandler();

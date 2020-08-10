@@ -2,3 +2,4 @@
 .idea
 build
 .DS_Store
+conduit.db

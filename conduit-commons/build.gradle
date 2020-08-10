@@ -1,0 +1,8 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    implementation group:'org.xerial', name:'sqlite-jdbc', version:'3.8.11.2'
+    implementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
+}
