@@ -10,6 +10,7 @@ main() {
   assert_root
 
   docker run --rm -it \
+    -e ENV=prod \
     -p $PORT:8080 \
     dataline/conduit:$VERSION
 }
