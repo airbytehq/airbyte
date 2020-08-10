@@ -29,7 +29,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getStandardConfig(
+  public <T> T getConfig(
       PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz) {
     // find file
     File configFile = getFileOrThrow(persistenceConfigType, configId);
@@ -42,15 +42,15 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   }
 
   @Override
-  public <T> Set<T> getStandardConfigs(
+  public <T> Set<T> getConfigs(
       PersistenceConfigType persistenceConfigType, Class<T> clazz) {
     return getConfigIds(persistenceConfigType).stream()
-        .map(configId -> getStandardConfig(persistenceConfigType, configId, clazz))
+        .map(configId -> getConfig(persistenceConfigType, configId, clazz))
         .collect(Collectors.toSet());
   }
 
   @Override
-  public <T> void writeStandardConfig(
+  public <T> void writeConfig(
       PersistenceConfigType persistenceConfigType, String configId, T config, Class<T> clazz) {
     try {
       objectMapper.writeValue(new File(getConfigPath(persistenceConfigType, configId)), config);

@@ -3,11 +3,11 @@ package io.dataline.conduit.persistence;
 import java.util.Set;
 
 public interface ConfigPersistence {
-  <T> T getStandardConfig(
+  <T> T getConfig(
       PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz);
 
-  <T> Set<T> getStandardConfigs(PersistenceConfigType persistenceConfigType, Class<T> clazz);
+  <T> Set<T> getConfigs(PersistenceConfigType persistenceConfigType, Class<T> clazz);
 
-  <T> void writeStandardConfig(
+  <T> void writeConfig(
       PersistenceConfigType persistenceConfigType, String configId, T config, Class<T> clazz);
 }
