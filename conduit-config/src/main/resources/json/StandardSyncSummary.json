@@ -4,6 +4,8 @@
   "title": "StandardSyncSummary",
   "description": "standard information output by ALL taps for a sync step (our version of state.json)",
   "type": "object",
+  "required": ["attemptId", "tables", "recordsSynced", "version", "status", "startTime", "endTime"],
+  "additionalProperties": false,
   "properties": {
     "attemptId": {
       "type": "string",
