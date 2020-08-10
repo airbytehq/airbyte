@@ -119,7 +119,7 @@ Any credentials needed to establish a connection with the data source. This conf
 
 This is the output of the `testConnection` method. It is the same schema for ALL taps.
 
-The type declaration can be found [here](../conduit-config/src/main/resources/json/State.json).
+The type declaration can be found [here](../conduit-config/src/main/resources/json/StandardConnectionStatus.json).
 
 #### StandardDiscoveryOutput
 
@@ -127,63 +127,7 @@ This is the output of the `discoverSchema` method. It is the same schema for ALL
 
 The schema for the `schema` field. This will get reused elsewhere.
 
-```json
-{
-  "id": "http://json-schema.org/geo",
-  "$schema": "http://json-schema.org/draft-06/schema#",
-  "type": "object",
-  "definitions": {
-    "schema": {
-      "description": "describes the available schema.",
-      "type": "object",
-      "properties": {
-        "tables": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["name", "columns"],
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "columns": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "required": ["name", "dataType"],
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "dataType": {
-                      "type": "string",
-                      "enum": ["string", "number", "uuid", "boolean"]
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-```json
-{
-  "description": "describes the standard output for any discovery run.",
-  "type": "object",
-  "required": ["schema"],
-  "properties": {
-    "schema": {
-      "description": "describes the available schema.",
-      "$ref": "#/definitions/schema"
-    }
-  }
-}
-```
+The type declaration can be found [here](../conduit-config/src/main/resources/json/StandardDiscoveryOutput.json).
 
 ### Source Methods
 
@@ -227,102 +171,37 @@ Tests that the docker image can reach that destination given the information pro
 testConnection(DestinationConnectionConfiguration) => StandardConnectionStatus
 ```
 
-## Conduit
+## Connection
 
 _aka: a "line", a "connection"._
 
-### Conduit Types
+### Connection Types
 
-#### StandardConduitConfiguration
+#### StandardSyncConfiguration
 
 Configuration that is the SAME for all tap / target combinations. Describes the sync mode (full refresh or append) as well what part of the schema will be synced.
 
-```json
-{
-  "description": "configuration required for sync for ALL taps",
-  "type": "object",
-  "properties": {
-    "syncMode": {
-      "type": "string",
-      "enum": ["full_refresh", "append"]
-    },
-    "schema": {
-      "description": "describes the elements of the schema that will be synced.",
-      "$ref": "#/definitions/schema"
-    }
-  }
-}
-```
+The type declaration can be found [here](../conduit-config/src/main/resources/json/StandardSyncConfiguration.json).
 
 (note: we may need to add some notion that some sources or destinations are only compatible with full_refresh)
 
-#### ConduitSyncSummary
+#### StandardSyncSummary
 
-This object tracks metadata on where the run ended. Our hope is that it can replace the ConduitState object (see [below](#ConduitState)) entirely. The reason to define this type now is so that in the UI we can provide feedback to the user on where the sync has gotten to.
+This object tracks metadata on where the run ended. Our hope is that it can replace the State object (see [below](#ConduitState)) entirely. The reason to define this type now is so that in the UI we can provide feedback to the user on where the sync has gotten to.
 
-```json
-{
-  "description": "standard information output by ALL taps for a sync step (our version of state.json)",
-  "type": "object",
-  "properties": {
-    "attemptId": {
-      "type": "string",
-      "format": "uuid"
-    },
-    "status": {
-      "type": "string",
-      "enum": ["pending", "in_progress","completed", "failed", "cancelled"]
-    },
-    "recordsSynced": {
-      "type": "integer",
-      "minValue": 0
-    },
-    "version": {
-      "type": "integer"
-    },
-    "tables": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "lastRecord": {
-            "description": "blob of the last record",
-            "type": "object"
-          },
-          "version": {
-            "type": "integer"
-          }
-        }
-      }
-    },
-    "startTime": {
-      "type": "integer"
-    },
-    "endTime": {
-      "type": "integer"
-    },
-    "logs": {
-    }
-  }
-}
-```
+The type declaration can be found [here](../conduit-config/src/main/resources/json/StandardSyncSummary.json).
 
-#### ConduitState
+#### State
 
 This field will be treated as a json blob that will _only_ be used inside the implementation of the integration. This is our escape strategy to handle any special state that needs to be tracked specially for specific taps.
 
 #### ScheduleConfiguration
 
-This object defines the schedule for a given conduit. It is the same for all taps / targets.
+This object defines the schedule for a given connection. It is the same for all taps / targets.
 
-```json
-{
-  "timeUnit": "days",
-  "units": 4
-}
-```
+The type declaration can be found [here](../conduit-config/src/main/resources/json/StandardSyncSchedule.json).
 
-### Conduit Methods
+### Connection Methods
 
 The connected source object needs to be able to do 2 things:
 
@@ -334,10 +213,10 @@ This includes detecting if there is in fact new data to sync. if there is, it tr
 sync(
     SourceConnectionConfiguration,
     DestinationConnectionConfiguration,
-    StandardConduitConfiguration,
-    StandardSyncOutput,
-    ConduitState
-) => [StandardSyncOutput, ConduitState]
+    StandardSyncConfiguration,
+    StandardSyncSummary,
+    State
+) => [StandardSyncSummary, State]
 ```
 
 #### scheduleSync
@@ -349,8 +228,8 @@ scheduleSync(
     ScheduleConfiguration,
     SourceConnectionConfiguration,
     DestinationConnectionConfiguration,
-    StandardConduitConfiguration,
+    StandardSyncConfiguration,
     StandardSyncOutput,
-    ConduitState
+    State
 ) => void
 ```
