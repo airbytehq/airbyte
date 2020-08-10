@@ -13,7 +13,7 @@ public class ServerApp {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
     public void start() throws Exception {
-        Server server = new Server(8080);
+        Server server = new Server(8000);
 
         ServletContextHandler handler = new ServletContextHandler();
 

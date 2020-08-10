@@ -1,8 +1,6 @@
 # Prepare gradle dependency cache
 FROM gradle:jdk14 AS cache
 
-ENV cache=1
-
 WORKDIR /code
 
 # for i in **/*.gradle; do echo COPY ./$i $(dirname $i)/; done
@@ -26,9 +24,10 @@ COPY . /code
 RUN gradle clean distTar --no-daemon
 RUN ls /code/conduit-server/build/distributions/
 
-# RUN
+# Build final image
 FROM openjdk:14.0.2-slim
-EXPOSE 8080
+
+EXPOSE 8000
 
 WORKDIR /app/conduit-server
 
