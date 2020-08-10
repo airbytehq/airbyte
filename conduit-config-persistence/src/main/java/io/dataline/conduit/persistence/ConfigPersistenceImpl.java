@@ -42,8 +42,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   }
 
   @Override
-  public <T> Set<T> getConfigs(
-      PersistenceConfigType persistenceConfigType, Class<T> clazz) {
+  public <T> Set<T> getConfigs(PersistenceConfigType persistenceConfigType, Class<T> clazz) {
     return getConfigIds(persistenceConfigType).stream()
         .map(configId -> getConfig(persistenceConfigType, configId, clazz))
         .collect(Collectors.toSet());
