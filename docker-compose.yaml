@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    ports:
+      - 8000:8000
+  webapp:
+    build:
+      context: .
+      dockerfile: webapp.Dockerfile
+    command: echo webapp
+    environment:
+      DEBUG: "true"
+    depends_on:
+      - server

@@ -11,6 +11,7 @@ allprojects {
 
 // For java projects (might need to add some filtering once we have the UI)
 subprojects {
+
     apply plugin: 'java'
 
     repositories {
