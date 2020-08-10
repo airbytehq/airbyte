@@ -5,16 +5,15 @@ services:
     build:
       context: .
       dockerfile: server.Dockerfile
+    image: server:dev
     ports:
       - 8001:8000
   webapp:
     build:
       context: .
       dockerfile: webapp.Dockerfile
+    image: webapp:dev
     ports:
-      - 8000:8000
-    command: echo webapp
-    environment:
-      DEBUG: "true"
+      - 8000:80
     depends_on:
       - server
