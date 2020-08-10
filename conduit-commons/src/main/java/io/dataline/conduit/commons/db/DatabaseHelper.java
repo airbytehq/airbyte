@@ -27,7 +27,7 @@ public class DatabaseHelper {
         if(connectionPool == null) {
             connectionPool = new BasicDataSource();
             connectionPool.setDriverClassName("org.sqlite.JDBC");
-            connectionPool.setUrl(Env.isTest() ? "jdbc:sqlite::memory:" : "jdbc:sqlite:conduit.db");
+            connectionPool.setUrl(Env.isTest() ? "jdbc:sqlite::memory:" : "jdbc:sqlite:data/conduit.db");
             connectionPool.setInitialSize(Env.isTest() ? 1 : 5);
         }
 
