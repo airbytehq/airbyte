@@ -4,6 +4,8 @@
   "title": "StandardSyncConfiguration",
   "description": "configuration required for sync for ALL taps",
   "type": "object",
+  "required": ["syncMode", "schema"],
+  "additionalProperties": false,
   "properties": {
     "syncMode": {
       "type": "string",
