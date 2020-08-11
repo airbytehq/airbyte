@@ -25,6 +25,7 @@ dependencies {
     compile(group: "com.networknt", name: "json-schema-validator", version: "1.0.42");
 
     implementation project(':dataline-api')
+    implementation project(':dataline-commons')
     implementation project(':dataline-config')
 }
 
