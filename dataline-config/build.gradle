@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation 'javax.validation:validation-api:1.1.0.CR2'
+    implementation 'javax.validation:validation-api:1.1.0.Final'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
 }
 
