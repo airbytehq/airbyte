@@ -21,5 +21,3 @@ FROM nginx:1.19-alpine
 EXPOSE 80
 
 COPY --from=build /code/build /usr/share/nginx/html
-
-#CMD nginx -g 'daemon off;'
