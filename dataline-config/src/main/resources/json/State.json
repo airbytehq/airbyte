@@ -12,6 +12,7 @@
       "format": "uuid"
     },
     "state": {
+      "description": "type any. information here varies by integration"
     }
   }
 }

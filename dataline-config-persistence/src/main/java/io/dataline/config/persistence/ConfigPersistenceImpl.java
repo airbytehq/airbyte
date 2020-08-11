@@ -129,30 +129,32 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   private ConfigSchema standardConfigTypeToConfigSchema(
       PersistenceConfigType persistenceConfigType) {
     switch (persistenceConfigType) {
-      case SOURCE_CONNECTION_IMPLEMENTATION:
-        return ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION;
-      case STANDARD_CONNECTION_STATUS:
-        return ConfigSchema.STANDARD_CONNECTION_STATUS;
-      case STANDARD_DISCOVERY_OUTPUT:
-        return ConfigSchema.STANDARD_DISCOVERY_OUTPUT;
-      case DESTINATION_CONNECTION_CONFIGURATION:
-        return ConfigSchema.DESTINATION_CONNECTION_CONFIGURATION;
-      case STANDARD_SYNC_CONFIGURATION:
-        return ConfigSchema.STANDARD_SYNC_CONFIGURATION;
-      case STANDARD_SYNC_SUMMARY:
-        return ConfigSchema.STANDARD_SYNC_SUMMARY;
-      case STANDARD_SYNC_STATE:
-        return ConfigSchema.STANDARD_SYNC_STATE;
-      case STATE:
-        return ConfigSchema.STATE;
-      case STANDARD_SYNC_SCHEDULE:
-        return ConfigSchema.STANDARD_SYNC_SCHEDULE;
-      case STANDARD_WORKSPACE_CONFIGURATION:
-        return ConfigSchema.STANDARD_WORKSPACE_CONFIGURATION;
+      case STANDARD_WORKSPACE:
+        return ConfigSchema.STANDARD_WORKSPACE;
       case STANDARD_SOURCE:
         return ConfigSchema.STANDARD_SOURCE;
       case SOURCE_CONNECTION_SPECIFICATION:
         return ConfigSchema.SOURCE_CONNECTION_SPECIFICATION;
+      case SOURCE_CONNECTION_IMPLEMENTATION:
+        return ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION;
+      case STANDARD_DESTINATION:
+        return ConfigSchema.STANDARD_DESTINATION;
+      case DESTINATION_CONNECTION_SPECIFICATION:
+        return ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION;
+      case DESTINATION_CONNECTION_IMPLEMENTATION:
+        return ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION;
+      case STANDARD_CONNECTION_STATUS:
+        return ConfigSchema.STANDARD_CONNECTION_STATUS;
+      case STANDARD_DISCOVERY_OUTPUT:
+        return ConfigSchema.STANDARD_DISCOVERY_OUTPUT;
+      case STANDARD_SYNC:
+        return ConfigSchema.STANDARD_SYNC;
+      case STANDARD_SYNC_SUMMARY:
+        return ConfigSchema.STANDARD_SYNC_SUMMARY;
+      case STANDARD_SYNC_SCHEDULE:
+        return ConfigSchema.STANDARD_SYNC_SCHEDULE;
+      case STATE:
+        return ConfigSchema.STATE;
       default:
         throw new RuntimeException(
             String.format(

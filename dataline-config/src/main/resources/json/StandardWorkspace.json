@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/StandardWorkspaceConfiguration.json",
-  "title": "StandardWorkspaceConfiguration",
+  "title": "StandardWorkspace",
   "description": "workspace configuration",
   "type": "object",
   "required": ["workspaceId", "name", "slug", "initialSetupComplete"],

@@ -32,7 +32,7 @@ public class WorkspacesHandler {
     try {
       workspace =
           configPersistence.getConfig(
-              PersistenceConfigType.STANDARD_WORKSPACE_CONFIGURATION,
+              PersistenceConfigType.STANDARD_WORKSPACE,
               workspaceId,
               StandardWorkspaceConfiguration.class);
     } catch (ConfigNotFoundException e) {
@@ -57,7 +57,7 @@ public class WorkspacesHandler {
     try {
       persistedWorkspace =
           configPersistence.getConfig(
-              PersistenceConfigType.STANDARD_WORKSPACE_CONFIGURATION,
+              PersistenceConfigType.STANDARD_WORKSPACE,
               workspaceId,
               StandardWorkspaceConfiguration.class);
     } catch (ConfigNotFoundException e) {
