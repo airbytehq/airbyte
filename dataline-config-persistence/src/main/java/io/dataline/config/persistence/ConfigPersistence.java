@@ -7,6 +7,5 @@ public interface ConfigPersistence {
 
   <T> Set<T> getConfigs(PersistenceConfigType persistenceConfigType, Class<T> clazz);
 
-  <T> void writeConfig(
-      PersistenceConfigType persistenceConfigType, String configId, T config, Class<T> clazz);
+  <T> void writeConfig(PersistenceConfigType persistenceConfigType, String configId, T config);
 }

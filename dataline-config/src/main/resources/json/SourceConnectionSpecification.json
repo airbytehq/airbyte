@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "SourceSpecification",
+  "title": "StandardWorkspaceConfiguration",
+  "description": "workspace configuration",
+  "type": "object",
+  "required": ["sourceId", "specification"],
+  "additionalProperties": false,
+  "properties": {
+    "sourceId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "sourceSpecificationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "specification": {
+    }
+  }
+}

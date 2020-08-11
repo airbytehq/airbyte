@@ -8,6 +8,7 @@ import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import io.dataline.config.ConfigSchema;
+import io.dataline.config.StandardSyncSchedule;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -53,7 +54,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(
-      PersistenceConfigType persistenceConfigType, String configId, T config, Class<T> clazz) {
+      PersistenceConfigType persistenceConfigType, String configId, T config) {
     try {
       objectMapper.writeValue(new File(getConfigPath(persistenceConfigType, configId)), config);
     } catch (IOException e) {
@@ -65,13 +66,13 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
     String configSchemaFilename =
         standardConfigTypeToConfigSchema(persistenceConfigType).getSchemaFilename();
     File schemaFile = new File(String.format("%s/%s", CONFIG_SCHEMA_ROOT, configSchemaFilename));
-    JsonNode schema;
+    JsonNode schemaJson;
     try {
-      schema = objectMapper.readTree(schemaFile);
+      schemaJson = objectMapper.readTree(schemaFile);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    return jsonSchemaFactory.getSchema(schema, schemaValidatorsConfig);
+    return jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig);
   }
 
   private Set<Path> getFiles(PersistenceConfigType persistenceConfigType) {
@@ -114,8 +115,8 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   private ConfigSchema standardConfigTypeToConfigSchema(
       PersistenceConfigType persistenceConfigType) {
     switch (persistenceConfigType) {
-      case SOURCE_CONNECTION_CONFIGURATION:
-        return ConfigSchema.SOURCE_CONNECTION_CONFIGURATION;
+      case SOURCE_CONNECTION_IMPLEMENTATION:
+        return ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION;
       case STANDARD_CONNECTION_STATUS:
         return ConfigSchema.STANDARD_CONNECTION_STATUS;
       case STANDARD_DISCOVERY_OUTPUT:
@@ -132,6 +133,12 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
         return ConfigSchema.STATE;
       case STANDARD_SYNC_SCHEDULE:
         return ConfigSchema.STANDARD_SYNC_SCHEDULE;
+      case STANDARD_WORKSPACE_CONFIGURATION:
+        return ConfigSchema.STANDARD_WORKSPACE_CONFIGURATION;
+      case STANDARD_SOURCE:
+        return ConfigSchema.STANDARD_SOURCE;
+      case SOURCE_CONNECTION_SPECIFICATION:
+        return ConfigSchema.SOURCE_CONNECTION_SPECIFICATION;
       default:
         throw new RuntimeException(
             String.format(
@@ -180,5 +187,29 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  // example code
+  public static void main(String[] args) {
+    final Path path = Paths.get("/Users/charles/code///conduit");
+    System.out.println("path = " + path);
+
+    final File file = new File("conduit-config/src/main/resources/json///State.json");
+    System.out.println("file = " + file);
+    System.out.println("file.exists() = " + file.exists());
+
+    ConfigPersistence persistence = new ConfigPersistenceImpl();
+
+    StandardSyncSchedule standardConfig =
+        persistence.getConfig(
+            PersistenceConfigType.STANDARD_SYNC_SCHEDULE, "1", StandardSyncSchedule.class);
+    System.out.println("standardConfig = " + standardConfig);
+
+    persistence.writeConfig(PersistenceConfigType.STANDARD_SYNC_SCHEDULE, "2", standardConfig);
+
+    StandardSyncSchedule standardConfig2 =
+        persistence.getConfig(
+            PersistenceConfigType.STANDARD_SYNC_SCHEDULE, "1", StandardSyncSchedule.class);
+    System.out.println("standardConfig2 = " + standardConfig2);
   }
 }
