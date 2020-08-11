@@ -1,4 +1,4 @@
-package io.dataline.conduit.workers.singer;
+package io.dataline.workers.singer;
 
 public class SingerSyncWorker {
   private final SingerTap tap;

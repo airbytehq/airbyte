@@ -1,4 +1,4 @@
-package io.dataline.conduit.workers.singer;
+package io.dataline.workers.singer;
 
 interface ISingerTapOrTarget {
     String getPythonVirtualEnvName();

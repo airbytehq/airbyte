@@ -1,4 +1,4 @@
-package io.dataline.conduit.workers.singer;
+package io.dataline.workers.singer;
 
 import java.io.File;
 import java.io.IOException;

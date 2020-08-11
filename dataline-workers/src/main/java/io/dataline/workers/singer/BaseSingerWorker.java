@@ -1,7 +1,7 @@
-package io.dataline.conduit.workers.singer;
+package io.dataline.workers.singer;
 
-import io.dataline.conduit.workers.IWorker;
-import io.dataline.conduit.workers.WorkerStatus;
+import io.dataline.workers.IWorker;
+import io.dataline.workers.WorkerStatus;
 
 import java.io.*;
 import java.nio.file.Path;

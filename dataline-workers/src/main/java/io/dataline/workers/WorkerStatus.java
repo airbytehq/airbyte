@@ -1,4 +1,4 @@
-package io.dataline.conduit.workers;
+package io.dataline.workers;
 
 public enum WorkerStatus {
   NOT_STARTED,

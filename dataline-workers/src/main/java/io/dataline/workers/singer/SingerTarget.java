@@ -1,6 +1,4 @@
-package io.dataline.conduit.workers.singer;
-
-import java.nio.file.Paths;
+package io.dataline.workers.singer;
 
 public enum SingerTarget implements ISingerTapOrTarget {
     // TODO

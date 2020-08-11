@@ -1,4 +1,4 @@
-package io.dataline.conduit.workers;
+package io.dataline.workers;
 
 public interface IWorker<OutputType> {
     WorkerStatus getStatus();

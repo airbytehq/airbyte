@@ -1,4 +1,4 @@
-package io.dataline.conduit.workers.singer;
+package io.dataline.workers.singer;
 
 public enum SingerTap implements ISingerTapOrTarget{
   // TODO
