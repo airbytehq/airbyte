@@ -23,7 +23,7 @@ public class SourceImplementationsHandler {
         new SourceConnectionImplementationValidation(configPersistence);
     validator.validate(
         sourceImplementationCreate.getSourceSpecificationId(),
-        sourceImplementationCreate.getConfiguration());
+        sourceImplementationCreate.getConnectionConfiguration());
 
     // persist
     final UUID sourceImplementationId = UUID.randomUUID();
@@ -32,7 +32,8 @@ public class SourceImplementationsHandler {
     sourceConnectionImplementation.setSourceSpecificationId(
         sourceImplementationCreate.getSourceSpecificationId());
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setConfiguration(sourceImplementationCreate.getConfiguration());
+    sourceConnectionImplementation.setConfiguration(
+        sourceImplementationCreate.getConnectionConfiguration());
 
     configPersistence.writeConfig(
         PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,

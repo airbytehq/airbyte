@@ -704,23 +704,23 @@ components:
       required:
       - workspaceId
       - sourceSpecificationId
-      - configuration
+      - connectionConfiguration
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
         sourceSpecificationId:
           $ref: "#/components/schemas/SourceSpecificationId"
-        configuration:
+        connectionConfiguration:
           $ref: "#/components/schemas/SourceConfigurationField"
     SourceImplementationUpdate:
       type: object
       required:
       - sourceImplementationId
-      - configuration
+      - connectionConfiguration
       properties:
         sourceImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
-        configuration:
+        connectionConfiguration:
           $ref: "#/components/schemas/SourceConfigurationField"
     SourceImplementationRead:
       type: object
@@ -728,7 +728,7 @@ components:
       - sourceImplementationId
       - workspaceId
       - sourceSpecificationId
-      - configuration
+      - connectionConfiguration
       properties:
         sourceImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
@@ -736,7 +736,7 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         sourceSpecificationId:
           $ref: "#/components/schemas/SourceSpecificationId"
-        configuration:
+        connectionConfiguration:
           $ref: "#/components/schemas/SourceConfigurationField"
     SourceImplementationReadList:
       type: object
