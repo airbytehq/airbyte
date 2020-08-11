@@ -1,8 +1,8 @@
-rootProject.name = 'conduit'
+rootProject.name = 'dataline'
 
-include 'conduit-api'
-include 'conduit-server'
-include 'conduit-commons'
-include 'conduit-config'
+include 'dataline-api'
+include 'dataline-commons'
+include 'dataline-config'
+include 'dataline-config-persistence'
+include 'dataline-server'
 include 'conduit-workers'
-

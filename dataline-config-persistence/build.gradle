@@ -1,0 +1,6 @@
+dependencies {
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.8"
+    implementation group: "com.networknt", name: "json-schema-validator", version: "1.0.42"
+
+    implementation project(':dataline-config')
+}

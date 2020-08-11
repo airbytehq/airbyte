@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "StandardConnectionStatus",
+  "title": "StandardConnectionStatus",
+  "description": "describes the result of a 'test connection' action.",
+  "type": "object",
+  "required": ["status"],
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["success", "failure"]
+    },
+    "message": {
+      "type": "string"
+    }
+  }
+}
