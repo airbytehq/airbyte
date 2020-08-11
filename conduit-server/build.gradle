@@ -31,12 +31,3 @@ dependencies {
 application {
     mainClass = 'io.dataline.conduit.server.ServerApp'
 }
-
-task fatjar(type: Jar) {
-    manifest {
-        attributes 'Main-Class': 'io.dataline.conduit.server.ServerApp'
-    }
-    baseName "${rootProject.name}-fatjar"
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
