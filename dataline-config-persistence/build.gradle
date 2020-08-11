@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+    id "com.diffplug.spotless" version "5.1.1"
+}
+
+group 'io.dataline'
+version '0.1.0'
+
+repositories {
+    mavenCentral()
+}
+
+compileJava.dependsOn 'spotlessApply'
+
+spotless {
+    java {
+        googleJavaFormat('1.8')
+    }
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.8"
+    compile group: "com.networknt", name: "json-schema-validator", version: "1.0.42"
+
+    implementation project(':dataline-config')
+
+}

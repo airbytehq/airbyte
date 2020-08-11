@@ -1,0 +1,47 @@
+plugins {
+    id "org.openapi.generator" version "4.3.0"
+    id "java-library"
+}
+
+def specFile = "$projectDir/src/main/openapi/config.yaml".toString()
+
+openApiGenerate {
+    generatorName = "jaxrs-spec"
+    inputSpec = specFile
+    outputDir = "$buildDir/generated".toString()
+
+    apiPackage = "io.dataline.api"
+    invokerPackage = "io.dataline.api.invoker"
+    modelPackage = "io.dataline.api.model"
+
+    generateApiDocumentation = false
+
+    configOptions = [
+            dateLibrary  : "java8",
+            generatePom  : "false",
+            interfaceOnly: "true"
+    ]
+}
+
+dependencies {
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.2'
+
+    implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2'
+
+    implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
+    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
+    implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "$buildDir/generated/src/gen/java"
+        }
+        resources {
+            srcDir "$projectDir/src/main/openapi/"
+        }
+    }
+}
+
+compileJava.dependsOn tasks.openApiGenerate
