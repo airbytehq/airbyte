@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: server.Dockerfile
     image: server:dev
-    container_name: conduit-server
+    container_name: dataline-server
     ports:
       - 8001:8000
   webapp:
@@ -14,7 +14,7 @@ services:
       context: .
       dockerfile: webapp.Dockerfile
     image: webapp:dev
-    container_name: conduit-webapp
+    container_name: dataline-webapp
     ports:
       - 8000:80
     depends_on:
