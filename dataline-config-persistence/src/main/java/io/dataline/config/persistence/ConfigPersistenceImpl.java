@@ -3,7 +3,6 @@ package io.dataline.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.ConfigSchema;
-import io.dataline.config.StandardSyncSchedule;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,7 +12,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+// we force all interaction with disk storage to be effectively single threaded.
 public class ConfigPersistenceImpl implements ConfigPersistence {
+  private static final Object lock = new Object();
   private static final String CONFIG_STORAGE_ROOT = "data/config/";
   private static final String CONFIG_SCHEMA_ROOT = "dataline-config/src/main/resources/json/";
 
@@ -27,7 +28,16 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
 
   @Override
   public <T> T getConfig(
-      PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz) {
+      PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz)
+      throws ConfigNotFoundException {
+    synchronized (lock) {
+      return getConfigInternal(persistenceConfigType, configId, clazz);
+    }
+  }
+
+  private <T> T getConfigInternal(
+      PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz)
+      throws ConfigNotFoundException {
     // find file
     File configFile = getFileOrThrow(persistenceConfigType, configId);
 
@@ -40,18 +50,30 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
 
   @Override
   public <T> Set<T> getConfigs(PersistenceConfigType persistenceConfigType, Class<T> clazz) {
-    return getConfigIds(persistenceConfigType).stream()
-        .map(configId -> getConfig(persistenceConfigType, configId, clazz))
-        .collect(Collectors.toSet());
+    synchronized (lock) {
+      return getConfigIds(persistenceConfigType).stream()
+          .map(
+              configId -> {
+                try {
+                  return getConfig(persistenceConfigType, configId, clazz);
+                  // this should not happen, because we just looked up these ids.
+                } catch (ConfigNotFoundException e) {
+                  throw new RuntimeException(e);
+                }
+              })
+          .collect(Collectors.toSet());
+    }
   }
 
   @Override
   public <T> void writeConfig(
       PersistenceConfigType persistenceConfigType, String configId, T config) {
-    try {
-      objectMapper.writeValue(new File(getConfigPath(persistenceConfigType, configId)), config);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    synchronized (lock) {
+      try {
+        objectMapper.writeValue(new File(getConfigPath(persistenceConfigType, configId)), config);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 
@@ -150,13 +172,15 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
     jsonSchemaValidation.validateThrow(schema, configJson);
   }
 
-  private File getFileOrThrow(PersistenceConfigType persistenceConfigType, String configId) {
+  private File getFileOrThrow(PersistenceConfigType persistenceConfigType, String configId)
+      throws ConfigNotFoundException {
     return getFile(persistenceConfigType, configId)
         .map(Path::toFile)
         .orElseThrow(
             () ->
-                new RuntimeException(
-                    String.format("config %s %s not found", persistenceConfigType, configId)));
+                new ConfigNotFoundException(
+                    String.format(
+                        "config type: %s id: %s not found", persistenceConfigType, configId)));
   }
 
   private <T> T fileToPojo(File file, Class<T> clazz) {
@@ -165,29 +189,5 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  // example code
-  public static void main(String[] args) {
-    final Path path = Paths.get("/Users/charles/code///conduit");
-    System.out.println("path = " + path);
-
-    final File file = new File("conduit-config/src/main/resources/json///State.json");
-    System.out.println("file = " + file);
-    System.out.println("file.exists() = " + file.exists());
-
-    ConfigPersistence persistence = new ConfigPersistenceImpl();
-
-    StandardSyncSchedule standardConfig =
-        persistence.getConfig(
-            PersistenceConfigType.STANDARD_SYNC_SCHEDULE, "1", StandardSyncSchedule.class);
-    System.out.println("standardConfig = " + standardConfig);
-
-    persistence.writeConfig(PersistenceConfigType.STANDARD_SYNC_SCHEDULE, "2", standardConfig);
-
-    StandardSyncSchedule standardConfig2 =
-        persistence.getConfig(
-            PersistenceConfigType.STANDARD_SYNC_SCHEDULE, "1", StandardSyncSchedule.class);
-    System.out.println("standardConfig2 = " + standardConfig2);
   }
 }
