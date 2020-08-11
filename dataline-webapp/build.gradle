@@ -4,7 +4,6 @@ plugins {
 }
 
 npm_run_build {
-    // make sure the build task is executed only when appropriate files change
     inputs.files fileTree('public')
     inputs.files fileTree('src')
     inputs.file 'package.json'
