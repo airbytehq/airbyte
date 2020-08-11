@@ -8,7 +8,6 @@ PORT=${PORT:-8080}
 
 main() {
   assert_root
-
   docker-compose -f docker-compose.dev.yaml up --build
 }
 
