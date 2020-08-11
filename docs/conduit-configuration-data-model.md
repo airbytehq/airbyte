@@ -1,2 +1,0 @@
-# Conduit Configuration Data Model
-
