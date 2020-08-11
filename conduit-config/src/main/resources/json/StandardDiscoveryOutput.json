@@ -5,6 +5,7 @@
   "description": "describes the standard output for any discovery run.",
   "type": "object",
   "required": ["schema"],
+  "additionalProperties": false,
   "properties": {
     "schema": {
       "description": "describes the available schema.",

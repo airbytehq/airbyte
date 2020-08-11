@@ -5,6 +5,7 @@
   "description": "describes the result of a 'test connection' action.",
   "type": "object",
   "required": ["status"],
+  "additionalProperties": false,
   "properties": {
     "status": {
       "type": "string",
