@@ -1,6 +1,7 @@
 package io.dataline.conduit.workers.singer;
 
 public enum SingerTap implements ISingerTapOrTarget{
+  // TODO
   S3_CSV("", ""),
   POSTGRES("", ""),
   STRIPE("", "");
