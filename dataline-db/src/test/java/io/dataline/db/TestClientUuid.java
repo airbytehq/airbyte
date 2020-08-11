@@ -12,9 +12,10 @@ public class TestClientUuid {
   void testUuidFormat() throws SQLException, IOException {
     DatabaseHelper.initializeDatabase();
     String uuid = ClientUuid.get();
+    System.out.println("uuid = " + uuid);
     assertTrue(
         uuid.matches(
-            "/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/"));
+            "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
   }
 
   @Test
