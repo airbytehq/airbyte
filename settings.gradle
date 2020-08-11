@@ -4,4 +4,5 @@ include 'conduit-api'
 include 'conduit-server'
 include 'conduit-commons'
 include 'conduit-config'
+include 'conduit-workers'
 
