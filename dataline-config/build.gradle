@@ -1,33 +1,10 @@
-group 'io.dataline'
-version '0.1.0'
-
-// todo: make sure we use the non-deprecated version of this.
-// https://github.com/joelittlejohn/jsonschema2pojo/tree/master/jsonschema2pojo-gradle-plugin
-apply plugin: 'jsonschema2pojo'
-
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'org.jsonschema2pojo:jsonschema2pojo-gradle-plugin:1.0.2'
-    }
-}
-
-
-repositories {
-    mavenCentral()
+plugins {
+    id "com.github.eirnym.js2p" version "1.0"
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-
-    // Required if generating JSR-303 annotations
-    compile 'javax.validation:validation-api:1.1.0.CR2'
-    // Required if generating Jackson 2 annotations
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
+    implementation 'javax.validation:validation-api:1.1.0.Final'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
 }
 
 jsonSchema2Pojo {
