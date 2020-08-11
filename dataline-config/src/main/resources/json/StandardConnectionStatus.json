@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "StandardConnectionStatus",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/StandardConnectionStatus.json",
   "title": "StandardConnectionStatus",
   "description": "describes the result of a 'test connection' action.",
   "type": "object",
