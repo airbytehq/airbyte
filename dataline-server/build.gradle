@@ -15,6 +15,7 @@ dependencies {
     implementation project(':dataline-commons')
     implementation project(':dataline-config')
     implementation project(':dataline-db')
+    implementation project(':dataline-scheduler')
 }
 
 application {

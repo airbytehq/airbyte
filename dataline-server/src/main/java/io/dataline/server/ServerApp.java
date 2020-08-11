@@ -1,6 +1,7 @@
 package io.dataline.server;
 
 import io.dataline.db.DatabaseHelper;
+import io.dataline.scheduler.Scheduler;
 import io.dataline.server.apis.ConfigurationApi;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -13,8 +14,7 @@ import org.slf4j.LoggerFactory;
 public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
-  public void start() throws Exception {
-    DatabaseHelper.initializeDatabase();
+  public void startAndBlock() throws Exception {
     Server server = new Server(8000);
 
     ServletContextHandler handler = new ServletContextHandler();
@@ -32,8 +32,13 @@ public class ServerApp {
   }
 
   public static void main(String[] args) throws Exception {
-    LOGGER.info("Starting server...");
+    LOGGER.info("Establishing database schema...");
+    DatabaseHelper.initializeDatabase();
 
-    new ServerApp().start();
+    LOGGER.info("Launching scheduler...");
+    new Scheduler().start();
+
+    LOGGER.info("Starting server...");
+    new ServerApp().startAndBlock();
   }
 }
