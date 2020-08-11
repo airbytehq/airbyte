@@ -8,11 +8,7 @@ PORT=${PORT:-8080}
 
 main() {
   assert_root
-
-  docker run --rm -it \
-    -e ENV=prod \
-    -p $PORT:8080 \
-    dataline/conduit:$VERSION
+  docker-compose -f docker-compose.dev.yaml up --build
 }
 
 main "$@"

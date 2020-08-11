@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    image: server:dev
+    container_name: dataline-server
+    environment:
+      - ENV=docker
+    ports:
+      - 8001:8000
+  webapp:
+    build:
+      context: .
+      dockerfile: webapp.Dockerfile
+    image: webapp:dev
+    container_name: dataline-webapp
+    ports:
+      - 8000:80
+    depends_on:
+      - server
