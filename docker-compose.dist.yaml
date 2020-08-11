@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  server:
+    image: dataline/conduit-server:${VERSION}
+  webapp:
+    image: dataline/conduit-webapp:${VERSION}
