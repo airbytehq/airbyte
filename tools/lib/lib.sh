@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-VERSION=$(cat .version)
+VERSION=$(cat .env | grep "^VERSION=" | cut -d = -f 2)
 
 error() {
   echo "$@"

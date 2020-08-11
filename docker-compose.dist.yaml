@@ -2,6 +2,6 @@ version: '3'
 
 services:
   server:
-    image: dataline/conduit-server:${VERSION}
+    image: dataline/dataline-server:${VERSION}
   webapp:
-    image: dataline/conduit-webapp:${VERSION}
+    image: dataline/dataline-webapp:${VERSION}
