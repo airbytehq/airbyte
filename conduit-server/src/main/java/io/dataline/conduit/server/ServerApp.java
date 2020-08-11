@@ -12,15 +12,12 @@ import org.slf4j.LoggerFactory;
 public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
-  public ServerApp() {}
-
   public void start() throws Exception {
-    Server server = new Server(8080);
+    Server server = new Server(8000);
 
     ServletContextHandler handler = new ServletContextHandler();
 
-        ResourceConfig rc = new ResourceConfig()
-                .registerClasses(ConduitConfigurationApi.class);
+    ResourceConfig rc = new ResourceConfig().registerClasses(ConduitConfigurationApi.class);
 
     ServletHolder conduitServlet = new ServletHolder(new ServletContainer(rc));
 

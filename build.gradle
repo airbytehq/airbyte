@@ -6,11 +6,17 @@ buildscript {
 
 allprojects {
     group = "io.dataline.${rootProject.name}"
-    version = rootProject.file('.version').text.trim()
+    version = rootProject.file('.env').eachLine {
+        if (it =~ /^VERSION=/) {
+            return it.split(/=/, 2)[1]
+        }
+        throw new Exception("Unknown version")
+    }
 }
 
 // For java projects (might need to add some filtering once we have the UI)
 subprojects {
+
     apply plugin: 'java'
 
     repositories {
