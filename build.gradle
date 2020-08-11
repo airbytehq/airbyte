@@ -1,10 +1,5 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-}
-
 plugins {
+    id "base"
     id "com.diffplug.spotless" version "5.1.1" apply false
 }
 
@@ -20,42 +15,47 @@ allprojects {
 
 // For java projects (might need to add some filtering once we have the UI)
 subprojects {
+    if (project.name != "dataline-webapp") {
+        apply plugin: 'java'
+        apply plugin: 'com.diffplug.spotless'
 
-    apply plugin: 'java'
-    apply plugin: 'com.diffplug.spotless'
+        repositories {
+            mavenCentral()
+        }
 
-    repositories {
-        mavenCentral()
-    }
+        spotless {
+            java {
+                googleJavaFormat('1.8')
+            }
+        }
+        compileJava.dependsOn 'spotlessApply'
 
-    spotless {
-        java {
-            googleJavaFormat('1.8')
+        test {
+            useJUnitPlatform()
+        }
+
+        dependencies {
+            implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
+
+            implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+
+            // SLF4J as a facade over Log4j2 required dependencies
+            implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'
+            implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
+            implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.0'
+
+            // Bridges from other logging implementations to SLF4J
+            implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.30' // JUL bridge
+            implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.30' //JCL bridge
+            implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.30' // log4j1.2 bridge
+
+            testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+            testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+            testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
         }
     }
-    compileJava.dependsOn 'spotlessApply'
-
-    test {
-        useJUnitPlatform()
-    }
-
-    dependencies {
-        implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
-
-        implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
-
-        // SLF4J as a facade over Log4j2 required dependencies
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.0'
-
-        // Bridges from other logging implementations to SLF4J
-        implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.30' // JUL bridge
-        implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.30' //JCL bridge
-        implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.30' // log4j1.2 bridge
-
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
-        testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
-    }
 }
+
+//clean {
+//    delete "${rootDir}/build/"
+//}
