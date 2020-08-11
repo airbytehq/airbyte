@@ -2,11 +2,6 @@ package io.dataline.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SchemaValidatorsConfig;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
 import io.dataline.config.ConfigSchema;
 import io.dataline.config.StandardSyncSchedule;
 import java.io.File;
@@ -23,13 +18,11 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   private static final String CONFIG_SCHEMA_ROOT = "dataline-config/src/main/resources/json/";
 
   private final ObjectMapper objectMapper;
-  private final SchemaValidatorsConfig schemaValidatorsConfig;
-  private final JsonSchemaFactory jsonSchemaFactory;
+  final JsonSchemaValidation jsonSchemaValidation;
 
   public ConfigPersistenceImpl() {
+    jsonSchemaValidation = JsonSchemaValidation.getInstance();
     objectMapper = new ObjectMapper();
-    schemaValidatorsConfig = new SchemaValidatorsConfig();
-    jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
   }
 
   @Override
@@ -39,7 +32,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
     File configFile = getFileOrThrow(persistenceConfigType, configId);
 
     // validate file with schema
-    validateJson(configFile, persistenceConfigType, configId);
+    validateJson(configFile, persistenceConfigType);
 
     // cast file to type
     return fileToPojo(configFile, clazz);
@@ -62,17 +55,15 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
     }
   }
 
-  private JsonSchema getSchema(PersistenceConfigType persistenceConfigType) {
+  private JsonNode getSchema(PersistenceConfigType persistenceConfigType) {
     String configSchemaFilename =
         standardConfigTypeToConfigSchema(persistenceConfigType).getSchemaFilename();
     File schemaFile = new File(String.format("%s/%s", CONFIG_SCHEMA_ROOT, configSchemaFilename));
-    JsonNode schemaJson;
     try {
-      schemaJson = objectMapper.readTree(schemaFile);
+      return objectMapper.readTree(schemaFile);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    return jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig);
   }
 
   private Set<Path> getFiles(PersistenceConfigType persistenceConfigType) {
@@ -147,8 +138,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
     }
   }
 
-  private void validateJson(
-      File configFile, PersistenceConfigType persistenceConfigType, String configId) {
+  private void validateJson(File configFile, PersistenceConfigType persistenceConfigType) {
     JsonNode configJson;
     try {
       configJson = objectMapper.readTree(configFile);
@@ -156,20 +146,8 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
       throw new RuntimeException(e);
     }
 
-    JsonSchema schema = getSchema(persistenceConfigType);
-    Set<ValidationMessage> validationMessages = schema.validate(configJson);
-    if (validationMessages.size() > 0) {
-      throw new IllegalStateException(
-          String.format(
-              "json schema validation failed. type: %s id: %s \n errors: %s \n schema: \n%s \n object: \n%s",
-              persistenceConfigType,
-              configId,
-              validationMessages.stream()
-                  .map(ValidationMessage::toString)
-                  .collect(Collectors.joining(",")),
-              schema.getSchemaNode().toPrettyString(),
-              configJson.toPrettyString()));
-    }
+    JsonNode schema = getSchema(persistenceConfigType);
+    jsonSchemaValidation.validateThrow(schema, configJson);
   }
 
   private File getFileOrThrow(PersistenceConfigType persistenceConfigType, String configId) {

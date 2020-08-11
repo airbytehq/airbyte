@@ -5,7 +5,7 @@ import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.PersistenceConfigType;
-import io.dataline.config.persistence.SourceConnectionImplementationValidation;
+import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.util.UUID;
 
 public class SourceImplementationsHandler {
@@ -19,9 +19,9 @@ public class SourceImplementationsHandler {
       SourceImplementationCreate sourceImplementationCreate) {
 
     // validate configuration
-    final SourceConnectionImplementationValidation validator =
-        new SourceConnectionImplementationValidation(configPersistence);
-    validator.validate(
+    final IntegrationSchemaValidation validator =
+        new IntegrationSchemaValidation(configPersistence);
+    validator.validateSourceConnectionConfiguration(
         sourceImplementationCreate.getSourceSpecificationId(),
         sourceImplementationCreate.getConnectionConfiguration());
 
