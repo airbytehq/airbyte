@@ -14,6 +14,7 @@ dependencies {
     implementation project(':dataline-api')
     implementation project(':dataline-commons')
     implementation project(':dataline-config')
+    implementation project(':dataline-db')
 }
 
 application {
