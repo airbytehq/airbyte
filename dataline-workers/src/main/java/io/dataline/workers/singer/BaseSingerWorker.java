@@ -1,6 +1,6 @@
 package io.dataline.workers.singer;
 
-import io.dataline.workers.IWorker;
+import io.dataline.workers.Worker;
 import io.dataline.workers.WorkerStatus;
 
 import java.io.*;
@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public abstract class BaseSingerWorker<OutputType> implements IWorker<OutputType> {
+public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType> {
   private static String WORKSPACES_ROOT = "workspace/worker/";
   private static String SINGER_LIBS_ROOT = "lib/singer";
 

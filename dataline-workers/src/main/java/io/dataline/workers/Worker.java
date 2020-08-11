@@ -1,6 +1,6 @@
 package io.dataline.workers;
 
-public interface IWorker<OutputType> {
+public interface Worker<OutputType> {
     WorkerStatus getStatus();
 
     void run();
