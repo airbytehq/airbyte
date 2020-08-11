@@ -1,4 +1,4 @@
-package io.dataline.conduit.commons.db;
+package io.dataline.db;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -1,7 +1,7 @@
-package io.dataline.conduit.commons.db;
+package io.dataline.db;
 
 import com.google.common.io.Resources;
-import io.dataline.conduit.commons.env.Env;
+import io.dataline.commons.env.Env;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public class DatabaseHelper {
         if(connectionPool == null) {
             connectionPool = new BasicDataSource();
             connectionPool.setDriverClassName("org.sqlite.JDBC");
-            connectionPool.setUrl(Env.isTest() ? "jdbc:sqlite::memory:" : "jdbc:sqlite:data/conduit.db");
+            connectionPool.setUrl(Env.isTest() ? "jdbc:sqlite::memory:" : "jdbc:sqlite:data/dataline.db");
             connectionPool.setInitialSize(Env.isTest() ? 1 : 5);
         }
 

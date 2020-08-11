@@ -1,7 +1,6 @@
 package io.dataline.server;
 
-import io.dataline.conduit.commons.db.DatabaseHelper;
-import io.dataline.conduit.server.apis.ConduitConfigurationApi;
+import io.dataline.db.DatabaseHelper;
 import io.dataline.server.apis.ConfigurationApi;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -14,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
-  public void start() throws Exception {=
+  public void start() throws Exception {
     DatabaseHelper.initializeDatabase();
     Server server = new Server(8000);
 
