@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 import org.junit.jupiter.api.Test;
 
-public class TestClientUuid {
+public class TestServerUuid {
   @Test
   void testUuidFormat() throws SQLException, IOException {
     DatabaseHelper.initializeDatabase();
-    String uuid = ClientUuid.get();
+    String uuid = ServerUuid.get();
     System.out.println("uuid = " + uuid);
     assertTrue(
         uuid.matches(
@@ -21,10 +21,10 @@ public class TestClientUuid {
   @Test
   void testSameUuidOverInitializations() throws SQLException, IOException {
     DatabaseHelper.initializeDatabase();
-    String uuid1 = ClientUuid.get();
+    String uuid1 = ServerUuid.get();
 
     DatabaseHelper.initializeDatabase();
-    String uuid2 = ClientUuid.get();
+    String uuid2 = ServerUuid.get();
 
     assertEquals(uuid1, uuid2);
   }
