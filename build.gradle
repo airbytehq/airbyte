@@ -4,6 +4,10 @@ buildscript {
     }
 }
 
+plugins {
+    id "com.diffplug.spotless" version "5.1.1" apply false
+}
+
 allprojects {
     group = "io.dataline.${rootProject.name}"
     version = rootProject.file('.env').eachLine {
@@ -18,10 +22,18 @@ allprojects {
 subprojects {
 
     apply plugin: 'java'
+    apply plugin: 'com.diffplug.spotless'
 
     repositories {
         mavenCentral()
     }
+
+    spotless {
+        java {
+            googleJavaFormat('1.8')
+        }
+    }
+    compileJava.dependsOn 'spotlessApply'
 
     test {
         useJUnitPlatform()
