@@ -1,5 +1,6 @@
 package io.dataline.server;
 
+import io.dataline.db.DatabaseHelper;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.CatchAllExceptionMapper;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
@@ -20,6 +21,7 @@ public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
   public void start() throws Exception {
+    DatabaseHelper.initializeDatabase();
     Server server = new Server(8000);
 
     ServletContextHandler handler = new ServletContextHandler();
