@@ -18,6 +18,9 @@ public class SourceSpecificationsHandler {
   public SourceSpecificationRead getSourceSpecification(SourceIdRequestBody sourceIdRequestBody) {
     final SourceConnectionSpecification sourceConnection;
     try {
+      // todo (cgardens) - this is a shortcoming of rolling our own disk storage. since we are not
+      //   querying on a the primary key, we have to list all of the specification objects and then
+      //   filter.
       sourceConnection =
           configPersistence
               .getConfigs(
@@ -28,7 +31,13 @@ public class SourceSpecificationsHandler {
                   sourceSpecification ->
                       sourceSpecification.getSourceId().equals(sourceIdRequestBody.getSourceId()))
               .findFirst()
-              .orElseThrow(() -> new RuntimeException("blah"));
+              .orElseThrow(
+                  () ->
+                      new KnownException(
+                          404,
+                          String.format(
+                              "Could not find a source specification for source: %s",
+                              sourceIdRequestBody.getSourceId())));
     } catch (JsonValidationException e) {
       throw new KnownException(422, e.getMessage(), e);
     }
