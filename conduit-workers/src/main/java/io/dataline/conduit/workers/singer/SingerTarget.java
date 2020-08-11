@@ -2,22 +2,26 @@ package io.dataline.conduit.workers.singer;
 
 import java.nio.file.Paths;
 
-public enum SingerTarget {
+public enum SingerTarget implements ISingerTapOrTarget {
   LOCAL_FILE("", ""),
   BIG_QUERY("", ""),
   POSTGRES("", "");
 
-  private final String pythonVenvName;
+  private final String pythonVirtualEnvName;
   private final String executableName;
 
-  SingerTarget(String pythonVenvName, String executableName) {
-    this.pythonVenvName = pythonVenvName;
+  SingerTarget(String pythonVirtualEnvName, String executableName) {
+    this.pythonVirtualEnvName = pythonVirtualEnvName;
     this.executableName = executableName;
   }
 
-  public String getExecutablePath() {
-    return Paths.get(SingerConstants.SINGER_LIB_ROOT_PATH, pythonVenvName, "bin", executableName)
-        .toAbsolutePath()
-        .toString();
+  @Override
+  public String getPythonVirtualEnvName() {
+    return pythonVirtualEnvName;
+  }
+
+  @Override
+  public String getExecutableName() {
+    return executableName;
   }
 }
