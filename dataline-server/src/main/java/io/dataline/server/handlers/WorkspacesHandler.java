@@ -5,9 +5,8 @@ import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
 import io.dataline.config.StandardWorkspaceConfiguration;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.PersistenceConfigType;
-import io.dataline.config.persistence.WorkspaceConstants;
+import io.dataline.config.persistence.*;
+import io.dataline.server.errors.KnownException;
 import java.util.UUID;
 
 public class WorkspacesHandler {
@@ -21,6 +20,7 @@ public class WorkspacesHandler {
     return getWorkspaceFromId(workspaceIdRequestBody.getWorkspaceId());
   }
 
+  @SuppressWarnings("unused")
   public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody) {
     // for now we assume there is one workspace and it has a default uuid.
     return getWorkspaceFromId(WorkspaceConstants.DEFAULT_WORKSPACE_ID);
@@ -28,11 +28,18 @@ public class WorkspacesHandler {
 
   private WorkspaceRead getWorkspaceFromId(UUID workspaceIdUuid) {
     final String workspaceId = workspaceIdUuid.toString();
-    final StandardWorkspaceConfiguration workspace =
-        configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_WORKSPACE_CONFIGURATION,
-            workspaceId,
-            StandardWorkspaceConfiguration.class);
+    final StandardWorkspaceConfiguration workspace;
+    try {
+      workspace =
+          configPersistence.getConfig(
+              PersistenceConfigType.STANDARD_WORKSPACE_CONFIGURATION,
+              workspaceId,
+              StandardWorkspaceConfiguration.class);
+    } catch (ConfigNotFoundException e) {
+      throw new KnownException(404, e.getMessage(), e);
+    } catch (JsonValidationException e) {
+      throw new KnownException(422, e.getMessage(), e);
+    }
 
     final WorkspaceRead workspaceRead = new WorkspaceRead();
     workspaceRead.setWorkspaceId(workspace.getWorkspaceId());
@@ -46,11 +53,18 @@ public class WorkspacesHandler {
   public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate) {
     final String workspaceId = workspaceUpdate.getWorkspaceId().toString();
 
-    final StandardWorkspaceConfiguration persistedWorkspace =
-        configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_WORKSPACE_CONFIGURATION,
-            workspaceId,
-            StandardWorkspaceConfiguration.class);
+    final StandardWorkspaceConfiguration persistedWorkspace;
+    try {
+      persistedWorkspace =
+          configPersistence.getConfig(
+              PersistenceConfigType.STANDARD_WORKSPACE_CONFIGURATION,
+              workspaceId,
+              StandardWorkspaceConfiguration.class);
+    } catch (ConfigNotFoundException e) {
+      throw new KnownException(404, e.getMessage(), e);
+    } catch (JsonValidationException e) {
+      throw new KnownException(422, e.getMessage(), e);
+    }
 
     if (workspaceUpdate.getEmail() != null && !workspaceUpdate.getEmail().equals("")) {
       persistedWorkspace.setEmail(workspaceUpdate.getEmail());

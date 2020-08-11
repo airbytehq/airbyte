@@ -1,8 +1,11 @@
 package io.dataline.server.apis;
 
 import io.dataline.api.model.*;
+import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.ConfigPersistenceImpl;
+import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.server.errors.KnownException;
 import io.dataline.server.handlers.SourceImplementationsHandler;
 import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
@@ -66,7 +69,21 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   @Override
   public SourceImplementationRead createSourceImplementation(
       @Valid SourceImplementationCreate sourceImplementationCreate) {
-    return sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
+    try {
+      return sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
+    } catch (JsonValidationException e) {
+      throw new KnownException(
+          422,
+          String.format(
+              "The provided configuration does not fulfill the specification. Errors: %s",
+              e.getMessage()));
+    } catch (ConfigNotFoundException e) {
+      throw new KnownException(
+          422,
+          String.format(
+              "Could not find source specification: %s.",
+              sourceImplementationCreate.getSourceSpecificationId()));
+    }
   }
 
   @Override

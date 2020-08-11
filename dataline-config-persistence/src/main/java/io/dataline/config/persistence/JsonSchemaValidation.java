@@ -26,10 +26,11 @@ public class JsonSchemaValidation {
     return schema.validate(configJson);
   }
 
-  public void validateThrow(JsonNode schemaJson, JsonNode configJson) {
+  public void validateThrow(JsonNode schemaJson, JsonNode configJson)
+      throws JsonValidationException {
     final Set<ValidationMessage> validationMessages = validate(schemaJson, configJson);
     if (validationMessages.size() > 0) {
-      throw new IllegalStateException(
+      throw new JsonValidationException(
           String.format(
               "json schema validation failed. \nerrors: %s \nschema: \n%s \nobject: \n%s",
               validationMessages.stream()

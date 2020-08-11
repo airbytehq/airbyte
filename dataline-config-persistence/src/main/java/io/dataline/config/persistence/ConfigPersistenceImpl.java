@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,7 +30,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   @Override
   public <T> T getConfig(
       PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz)
-      throws ConfigNotFoundException {
+      throws ConfigNotFoundException, JsonValidationException {
     synchronized (lock) {
       return getConfigInternal(persistenceConfigType, configId, clazz);
     }
@@ -37,7 +38,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
 
   private <T> T getConfigInternal(
       PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz)
-      throws ConfigNotFoundException {
+      throws ConfigNotFoundException, JsonValidationException {
     // find file
     File configFile = getFileOrThrow(persistenceConfigType, configId);
 
@@ -49,19 +50,19 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   }
 
   @Override
-  public <T> Set<T> getConfigs(PersistenceConfigType persistenceConfigType, Class<T> clazz) {
+  public <T> Set<T> getConfigs(PersistenceConfigType persistenceConfigType, Class<T> clazz)
+      throws JsonValidationException {
     synchronized (lock) {
-      return getConfigIds(persistenceConfigType).stream()
-          .map(
-              configId -> {
-                try {
-                  return getConfig(persistenceConfigType, configId, clazz);
-                  // this should not happen, because we just looked up these ids.
-                } catch (ConfigNotFoundException e) {
-                  throw new RuntimeException(e);
-                }
-              })
-          .collect(Collectors.toSet());
+      final Set<T> configs = new HashSet<>();
+      for (String configId : getConfigIds(persistenceConfigType)) {
+        try {
+          configs.add(getConfig(persistenceConfigType, configId, clazz));
+          // this should not happen, because we just looked up these ids.
+        } catch (ConfigNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      return configs;
     }
   }
 
@@ -160,7 +161,8 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
     }
   }
 
-  private void validateJson(File configFile, PersistenceConfigType persistenceConfigType) {
+  private void validateJson(File configFile, PersistenceConfigType persistenceConfigType)
+      throws JsonValidationException {
     JsonNode configJson;
     try {
       configJson = objectMapper.readTree(configFile);

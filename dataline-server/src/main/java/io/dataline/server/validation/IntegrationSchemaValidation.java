@@ -3,9 +3,7 @@ package io.dataline.server.validation;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.SourceConnectionSpecification;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.JsonSchemaValidation;
-import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.config.persistence.*;
 import java.util.UUID;
 
 public class IntegrationSchemaValidation {
@@ -22,7 +20,8 @@ public class IntegrationSchemaValidation {
   }
 
   public void validateSourceConnectionConfiguration(
-      UUID sourceConnectionSpecificationId, Object configuration) {
+      UUID sourceConnectionSpecificationId, Object configuration)
+      throws JsonValidationException, ConfigNotFoundException {
     final SourceConnectionSpecification sourceConnectionSpecification =
         configPersistence.getConfig(
             PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,

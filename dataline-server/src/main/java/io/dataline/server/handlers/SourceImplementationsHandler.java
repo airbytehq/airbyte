@@ -3,7 +3,9 @@ package io.dataline.server.handlers;
 import io.dataline.api.model.SourceImplementationCreate;
 import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.util.UUID;
@@ -16,7 +18,8 @@ public class SourceImplementationsHandler {
   }
 
   public SourceImplementationRead createSourceImplementation(
-      SourceImplementationCreate sourceImplementationCreate) {
+      SourceImplementationCreate sourceImplementationCreate)
+      throws JsonValidationException, ConfigNotFoundException {
 
     // validate configuration
     final IntegrationSchemaValidation validator =
