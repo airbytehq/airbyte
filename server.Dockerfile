@@ -18,9 +18,6 @@ FROM gradle:jdk14 AS build
 
 WORKDIR /code
 
-# TODO: add data mount instead
-RUN mkdir data
-
 COPY --from=cache /tmp/gradle_cache /home/gradle/.gradle
 COPY . /code
 RUN gradle clean distTar --no-daemon
@@ -32,6 +29,9 @@ FROM openjdk:14.0.2-slim
 EXPOSE 8000
 
 WORKDIR /app/dataline-server
+
+# TODO: add data mount instead
+RUN mkdir data
 
 COPY --from=build /code/dataline-server/build/distributions/*.tar dataline-server.tar
 RUN tar xf dataline-server.tar --strip-components=1
