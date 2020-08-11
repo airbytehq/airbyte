@@ -21,7 +21,7 @@ public class ServerApp {
 
     ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
 
-    handler.addServlet(configServlet, "/api/v1/*");
+    handler.addServlet(configServlet, "/api/*");
 
     server.setHandler(handler);
 
