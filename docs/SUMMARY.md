@@ -31,7 +31,17 @@
 
 * [High Level Overview](architecture/high-level-overview.md)
 
-## About Us
+## Community
 
-* [Company Handbook](about-us/company-handbook.md)
+* [Support](community/support.md)
+* [Code of Conduct](community/code-of-conduct.md)
+
+## Company Handbook
+
+* [Company Handbook](company-handbook/company-handbook.md)
+* [Future Milestones](company-handbook/future-milestones.md)
+
+---
+
+* [License](license.md)
 
