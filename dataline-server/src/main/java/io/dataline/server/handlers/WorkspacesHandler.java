@@ -4,7 +4,7 @@ import io.dataline.api.model.SlugRequestBody;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
-import io.dataline.config.StandardWorkspaceConfiguration;
+import io.dataline.config.StandardWorkspace;
 import io.dataline.config.persistence.*;
 import io.dataline.server.errors.KnownException;
 import java.util.UUID;
@@ -28,13 +28,11 @@ public class WorkspacesHandler {
 
   private WorkspaceRead getWorkspaceFromId(UUID workspaceIdUuid) {
     final String workspaceId = workspaceIdUuid.toString();
-    final StandardWorkspaceConfiguration workspace;
+    final StandardWorkspace workspace;
     try {
       workspace =
           configPersistence.getConfig(
-              PersistenceConfigType.STANDARD_WORKSPACE,
-              workspaceId,
-              StandardWorkspaceConfiguration.class);
+              PersistenceConfigType.STANDARD_WORKSPACE, workspaceId, StandardWorkspace.class);
     } catch (ConfigNotFoundException e) {
       throw new KnownException(404, e.getMessage(), e);
     } catch (JsonValidationException e) {
@@ -53,13 +51,11 @@ public class WorkspacesHandler {
   public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate) {
     final String workspaceId = workspaceUpdate.getWorkspaceId().toString();
 
-    final StandardWorkspaceConfiguration persistedWorkspace;
+    final StandardWorkspace persistedWorkspace;
     try {
       persistedWorkspace =
           configPersistence.getConfig(
-              PersistenceConfigType.STANDARD_WORKSPACE,
-              workspaceId,
-              StandardWorkspaceConfiguration.class);
+              PersistenceConfigType.STANDARD_WORKSPACE, workspaceId, StandardWorkspace.class);
     } catch (ConfigNotFoundException e) {
       throw new KnownException(404, e.getMessage(), e);
     } catch (JsonValidationException e) {
