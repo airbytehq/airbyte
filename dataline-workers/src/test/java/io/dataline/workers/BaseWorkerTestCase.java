@@ -1,11 +1,13 @@
 package io.dataline.workers;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
-import org.apache.commons.io.*;
+
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -14,12 +16,9 @@ public abstract class BaseWorkerTestCase {
 
   @BeforeAll
   public void init() {
-
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {}));
+    createTestWorkspace();
+    deleteWorkspaceUponJvmExit();
   }
-
-  @AfterAll
-  public void teardown() {}
 
   protected Path getWorkspacePath() {
     return workspaceDirectory;
@@ -27,13 +26,23 @@ public abstract class BaseWorkerTestCase {
 
   private void createTestWorkspace() {
     try {
-
-      workspaceDirectory =
-          Files.createDirectories(Paths.get("/tmp/tests/dataline-" + UUID.randomUUID().toString()));
+      workspaceDirectory = Paths.get("/tmp/tests/dataline-" + UUID.randomUUID().toString());
+      FileUtils.forceMkdir(workspaceDirectory.toFile());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void deleteTestWorkspace() {}
+  private void deleteWorkspaceUponJvmExit() {
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  try {
+                    FileUtils.deleteDirectory(workspaceDirectory.toFile());
+                  } catch (IOException e) {
+                    throw new RuntimeException(e);
+                  }
+                }));
+  }
 }

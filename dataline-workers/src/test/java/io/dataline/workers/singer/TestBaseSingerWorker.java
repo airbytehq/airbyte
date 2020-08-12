@@ -1,30 +1,21 @@
 package io.dataline.workers.singer;
 
+import io.dataline.workers.BaseWorkerTestCase;
 import org.junit.Test;
 
-public class TestBaseSingerWorker {
+// TODO once singer env PR is merged in
+public class TestBaseSingerWorker extends BaseWorkerTestCase {
 
   @Test
-  public void testSuccessfulWorkerWithZeroExit() {}
+  public void testSuccessfulWorkerWithZeroExit() {
+
+  }
 
   @Test
   public void testSuccessfulWorkerWithNonZeroExit() {}
 
   @Test
   public void testFailedWorker() {
-    //    final RuntimeException failureReason =
-    //        new RuntimeException("Failure is the predecessor of success");
-    //    BaseSingerWorker failingSingerWorker =
-    //        new BaseSingerWorker() {
-    //          @Override
-    //          protected Process runInternal() {
-    //            throw failureReason;
-    //          }
-    //
-    //          @Override
-    //          protected Object getOutputInternal() {
-    //            return null;
-    //          }
-    //        };
+
   }
 }
