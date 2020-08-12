@@ -1,5 +1,6 @@
 package io.dataline.workers.singer;
 
+import io.dataline.workers.DiscoveryOutput;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
@@ -11,11 +12,12 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
 
   private final String configDotJson;
   private final SingerTap tap;
-  private DiscoveryOutput output = null;
+  private DiscoveryOutput output;
 
-  public SingerDiscoveryWorker(String configDotJson, SingerTap tap) {
+  public SingerDiscoveryWorker(
+      String configDotJson, SingerTap tap, String workspaceRoot, String singerLibsRoot) {
     // TODO Worker ID should probably be an input from the scheduler for easier debugging
-    super(UUID.randomUUID().toString());
+    super(UUID.randomUUID().toString(), workspaceRoot, singerLibsRoot);
     this.configDotJson = configDotJson;
     this.tap = tap;
   }
@@ -23,9 +25,9 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   @Override
   protected Process runInternal() {
     // write config.json to disk
+    // TODO use format converter here
     String configPath = writeFileToWorkspace(CONFIG_JSON_FILENAME, configDotJson);
 
-    // get path for tap binary
     String tapPath = getExecutableAbsolutePath(tap);
 
     String catalogDotJsonPath =

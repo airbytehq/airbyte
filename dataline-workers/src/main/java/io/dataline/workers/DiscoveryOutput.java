@@ -1,4 +1,4 @@
-package io.dataline.workers.singer;
+package io.dataline.workers;
 
 public class DiscoveryOutput {
   // TODO line this up with conduit config type

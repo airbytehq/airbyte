@@ -2,27 +2,29 @@ package io.dataline.workers.singer;
 
 import io.dataline.workers.Worker;
 import io.dataline.workers.WorkerStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType> {
   private static Logger LOG = LoggerFactory.getLogger(BaseSingerWorker.class);
-  private static String WORKSPACES_ROOT = "workspace/worker/";
-  private static String SINGER_LIBS_ROOT = "lib/singer";
 
   protected String workerId;
   protected Process workerProcess;
 
+  private final String workspaceRoot; // "workspace/worker/";
+  private final String singerLibsRoot; // "lib/singer";
   private WorkerStatus workerStatus;
 
-  protected BaseSingerWorker(String workerId) {
+  protected BaseSingerWorker(String workerId, String workspaceRoot, String singerLibsRoot) {
     this.workerId = workerId;
+    this.workspaceRoot = workspaceRoot;
+    this.singerLibsRoot = singerLibsRoot;
+
     this.workerStatus = WorkerStatus.NOT_STARTED;
   }
 
@@ -91,7 +93,7 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
   // TODO add getError and have base worker redirect standard
 
   protected Path getWorkspacePath() {
-    return Paths.get(WORKSPACES_ROOT, workerId);
+    return Paths.get(workspaceRoot, workerId);
   }
 
   protected String readFileFromWorkspace(String fileName) {
@@ -117,7 +119,7 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
 
   protected String getExecutableAbsolutePath(SingerConnector tapOrTarget) {
     return Paths.get(
-            SINGER_LIBS_ROOT,
+            singerLibsRoot,
             tapOrTarget.getPythonVirtualEnvName(),
             "bin",
             tapOrTarget.getExecutableName())
@@ -129,7 +131,7 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
     return getWorkspacePath().resolve(fileName).toAbsolutePath().toString();
   }
 
-  private boolean inTerminalStatus(){
+  private boolean inTerminalStatus() {
     return WorkerStatus.TERMINAL_STATUSES.contains(getStatus());
   }
 
