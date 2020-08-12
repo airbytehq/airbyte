@@ -15,17 +15,20 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   private DiscoveryOutput output;
 
   public SingerDiscoveryWorker(
-      String configDotJson, SingerTap tap, String workspaceRoot, String singerLibsRoot) {
-    // TODO Worker ID should probably be an input from the scheduler for easier debugging
-    super(UUID.randomUUID().toString(), workspaceRoot, singerLibsRoot);
+      String workerId,
+      String configDotJson,
+      SingerTap tap,
+      String workspaceRoot,
+      String singerLibsRoot) {
+    super(workerId, workspaceRoot, singerLibsRoot);
     this.configDotJson = configDotJson;
     this.tap = tap;
   }
 
   @Override
   protected Process runInternal() {
-    // write config.json to disk
     // TODO use format converter here
+    // write config.json to disk
     String configPath = writeFileToWorkspace(CONFIG_JSON_FILENAME, configDotJson);
 
     String tapPath = getExecutableAbsolutePath(tap);
