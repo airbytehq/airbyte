@@ -8,13 +8,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Conduit
-      uses: actions/checkout@v2
+      - name: Checkout Conduit
+        uses: actions/checkout@v2
 
-    - name: Set up JDK 14
-      uses: actions/setup-java@v1
-      with:
-        java-version: 14
+      - name: Set up JDK 14
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
 
-    - name: Build with Gradle
-      run: ./gradlew build --no-daemon
+      - name: Build with Gradle
+        run: ./gradlew build --no-daemon
+
+      - name: Ensure no file change
+        run: git diff-index --quiet HEAD
