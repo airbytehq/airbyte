@@ -42,10 +42,10 @@ public class SourceSpecificationsHandler {
       throw new KnownException(422, e.getMessage(), e);
     }
 
-    return standardSourceToSourceRead(sourceConnection);
+    return toSourceSpecificationRead(sourceConnection);
   }
 
-  private static SourceSpecificationRead standardSourceToSourceRead(
+  private static SourceSpecificationRead toSourceSpecificationRead(
       SourceConnectionSpecification sourceConnectionSpecification) {
     final SourceSpecificationRead sourceSpecificationRead = new SourceSpecificationRead();
     sourceSpecificationRead.setSourceId(sourceConnectionSpecification.getSourceId());

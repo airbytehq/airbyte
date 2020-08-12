@@ -26,7 +26,7 @@ public class SourcesHandler {
           configPersistence
               .getConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class)
               .stream()
-              .map(SourcesHandler::standardSourceToSourceRead)
+              .map(SourcesHandler::toSourceRead)
               .collect(Collectors.toList());
     } catch (JsonValidationException e) {
       throw new KnownException(422, e.getMessage(), e);
@@ -49,10 +49,10 @@ public class SourcesHandler {
     } catch (JsonValidationException e) {
       throw new KnownException(422, e.getMessage(), e);
     }
-    return standardSourceToSourceRead(standardSource);
+    return toSourceRead(standardSource);
   }
 
-  private static SourceRead standardSourceToSourceRead(StandardSource standardSource) {
+  private static SourceRead toSourceRead(StandardSource standardSource) {
     final SourceRead sourceRead = new SourceRead();
     sourceRead.setSourceId(standardSource.getSourceId());
     sourceRead.setName(standardSource.getName());

@@ -50,7 +50,7 @@ public class SourceImplementationsHandler {
               sourceImplementationId.toString(),
               SourceConnectionImplementation.class);
 
-      return ToSourceImplementationRead(
+      return toSourceImplementationRead(
           retrievedSourceConnectionImplementation);
     } catch (JsonValidationException e) {
       throw new KnownException(
@@ -67,7 +67,7 @@ public class SourceImplementationsHandler {
     }
   }
 
-  private SourceImplementationRead ToSourceImplementationRead(
+  private SourceImplementationRead toSourceImplementationRead(
       SourceConnectionImplementation sourceConnectionImplementation) {
     final SourceImplementationRead sourceImplementationRead = new SourceImplementationRead();
     sourceConnectionImplementation.setSourceImplementationId(
