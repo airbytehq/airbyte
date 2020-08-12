@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "DestinationConnectionConfiguration",
-  "title": "DestinationConnectionConfiguration",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/State.json",
+  "title": "State",
   "description": "information output by the connection.",
   "type": "object",
   "required": ["connectionId", "state"],
@@ -12,6 +12,7 @@
       "format": "uuid"
     },
     "state": {
+      "description": "type any. information here varies by integration"
     }
   }
 }
