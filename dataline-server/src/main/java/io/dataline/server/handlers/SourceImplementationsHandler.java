@@ -7,6 +7,7 @@ import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.server.errors.KnownException;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.util.UUID;
 
@@ -18,8 +19,7 @@ public class SourceImplementationsHandler {
   }
 
   public SourceImplementationRead createSourceImplementation(
-      SourceImplementationCreate sourceImplementationCreate)
-      throws JsonValidationException, ConfigNotFoundException {
+      SourceImplementationCreate sourceImplementationCreate) {
     try {
       // validate configuration
       final IntegrationSchemaValidation validator =
@@ -50,8 +50,7 @@ public class SourceImplementationsHandler {
               sourceImplementationId.toString(),
               SourceConnectionImplementation.class);
 
-      return toSourceImplementationRead(
-          retrievedSourceConnectionImplementation);
+      return toSourceImplementationRead(retrievedSourceConnectionImplementation);
     } catch (JsonValidationException e) {
       throw new KnownException(
           422,

@@ -1,11 +1,8 @@
 package io.dataline.server.apis;
 
 import io.dataline.api.model.*;
-import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.ConfigPersistenceImpl;
-import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.server.errors.KnownException;
 import io.dataline.server.handlers.SourceImplementationsHandler;
 import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
