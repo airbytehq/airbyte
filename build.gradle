@@ -1,10 +1,5 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-}
-
 plugins {
+    id "base"
     id "com.diffplug.spotless" version "5.1.1" apply false
 }
 
@@ -18,8 +13,12 @@ allprojects {
     }
 }
 
-// For java projects (might need to add some filtering once we have the UI)
+// Java projects common configurations
 subprojects {
+
+    if (project.name == "dataline-webapp") {
+        return
+    }
 
     apply plugin: 'java'
     apply plugin: 'com.diffplug.spotless'
