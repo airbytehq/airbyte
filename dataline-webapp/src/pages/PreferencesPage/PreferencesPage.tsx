@@ -9,7 +9,7 @@ import PreferencesForm from "./components/PreferencesForm";
 
 const PreferencesPage: React.FC = () => {
   const { push } = useRouter();
-  const onSubmit = () => push(Routes.Root); // TODO: add real onSubmit
+  const onSubmit = () => push(Routes.Onboarding); // TODO: add real onSubmit
 
   return (
     <PageViewContainer>

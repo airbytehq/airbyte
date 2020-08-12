@@ -14,13 +14,17 @@ type IProps = {
 const Card = styled.div`
   background: ${({ theme }) => theme.whiteColor};
   border-radius: 8px;
-  box-shadow: 0px 1px 2px ${({ theme }) => theme.shadowColor};
+  box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
+  border: 1px solid ${({ theme }) => theme.greyColor20};
 `;
 
 const Title = styled(H5)`
-  padding: 23px 37px 24px 29px;
+  padding: 25px 25px 22px;
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
   color: ${({ theme }) => theme.darkPrimaryColor};
+  box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
+  font-weight: 600;
+  letter-spacing: 0.008em;
 `;
 
 const Attention = styled.span`

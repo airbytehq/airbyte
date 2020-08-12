@@ -6,9 +6,9 @@ import Label from "../Label/Label";
 
 type IProps = {
   error?: boolean;
-  message?: string;
+  message?: React.ReactNode;
   labelAdditionLength?: number;
-  label?: string | React.ReactNode;
+  label?: React.ReactNode;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
 const InputContainer = styled.div`

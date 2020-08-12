@@ -109,7 +109,7 @@ const Table: React.FC<IProps> = ({ columns, data, onClickRow }) => {
                 {...row.getRowProps()}
                 key={`table-row-${row.id}`}
                 hasClick={!!onClickRow}
-                onClick={() => onClickRow(row.original)}
+                onClick={() => onClickRow && onClickRow(row.original)}
               >
                 {row.cells.map((cell, key) => {
                   return (

@@ -17,5 +17,16 @@
   "preferences.anonymizeData": "Anonymize my usage data.",
   "preferences.featureUpdates": "Receive feature updates.",
   "preferences.unsubcribeAnyTime": " You can unsubcribe any time.",
-  "preferences.securityUpdates": "Receive emails about security updates."
+  "preferences.securityUpdates": "Receive emails about security updates.",
+
+  "onboarding.title": "Let’s set up your first connection.",
+  "onboarding.subtitle": "Connections are automated data pipelines that sync data from a source to a destination.",
+  "onboarding.createSource": "Create a source",
+  "onboarding.setUpSource": "Set up the source",
+  "onboarding.setUpSource.buttonText": "Set up source",
+  "onboarding.createDestination": "Create a destination",
+  "onboarding.setUpDestination": "Set up the destination",
+  "onboarding.setUpDestination.buttonText": "Set up destination",
+  "onboarding.setUpConnection": "Set up connection",
+  "onboarding.setConnection": "Set up the connection"
 }

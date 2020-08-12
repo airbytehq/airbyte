@@ -4,8 +4,8 @@ import styled from "styled-components";
 import Toggle from "../Toggle";
 
 type IProps = {
-  message?: string;
-  label?: string | React.ReactNode;
+  message?: React.ReactNode;
+  label?: React.ReactNode;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
 const ToggleContainer = styled.div`

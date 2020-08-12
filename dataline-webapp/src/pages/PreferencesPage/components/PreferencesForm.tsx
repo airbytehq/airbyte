@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Field, Form, Formik } from "formik";
+import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
 import { BigButton } from "../../../components/CenteredPageComponents";
@@ -71,7 +71,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
         <MainForm>
           <FormItem>
             <Field name="email">
-              {({ field, meta }) => (
+              {({ field, meta }: FieldProps<string>) => (
                 <LabeledInput
                   {...field}
                   label={<FormattedMessage id="form.emailOptional" />}
@@ -96,7 +96,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
             <FormattedMessage
               id={"preferences.collectData"}
               values={{
-                docs: (...docs) => (
+                docs: (...docs: React.ReactNode[]) => (
                   <DocsLink target="_blank" href="https://dataline.io">
                     {docs}
                   </DocsLink>
@@ -106,7 +106,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
           </Text>
           <FormItem>
             <Field name="anonymizeData">
-              {({ field }) => (
+              {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
                   disabled={!values.email}
@@ -120,12 +120,14 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
           </Subtitle>
           <FormItem>
             <Field name="news">
-              {({ field }) => (
+              {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
                   disabled={!values.email}
                   label={<FormattedMessage id="preferences.featureUpdates" />}
-                  message={<FormattedMessage id="preferences.unsubcribeAnyTime" />}
+                  message={
+                    <FormattedMessage id="preferences.unsubcribeAnyTime" />
+                  }
                 />
               )}
             </Field>
@@ -135,7 +137,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
           </Subtitle>
           <FormItem>
             <Field name="security">
-              {({ field }) => (
+              {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
                   disabled={!values.email}

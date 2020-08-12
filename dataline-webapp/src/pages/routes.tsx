@@ -9,11 +9,13 @@ import {
 import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
 import PreferencesPage from "./PreferencesPage";
+import OnboardingPage from "./OnboardingPage";
 import LoadingPage from "../components/LoadingPage";
 import MainView from "../components/MainView";
 
 export enum Routes {
   Preferences = "/preferences",
+  Onboarding = "/onboarding",
 
   Destination = "/destination",
   Root = "/"
@@ -44,6 +46,9 @@ export const Routing = () => {
         <Switch>
           <Route path={Routes.Preferences}>
             <PreferencesPage />
+          </Route>
+          <Route path={Routes.Onboarding}>
+            <OnboardingPage />
           </Route>
           <MainViewRoutes />
 
