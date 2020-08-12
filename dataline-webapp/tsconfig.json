@@ -18,15 +18,16 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react",
-
+    "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
     "noUnusedParameters": true,
     "noUnusedLocals": true,
-
-    "strictNullChecks": false,
-    "noImplicitAny": false
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "src"
