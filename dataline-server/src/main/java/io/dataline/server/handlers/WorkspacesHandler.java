@@ -11,7 +11,6 @@ import java.util.UUID;
 
 public class WorkspacesHandler {
   private final ConfigPersistence configPersistence;
-  
 
   public WorkspacesHandler(ConfigPersistence configPersistence) {
     this.configPersistence = configPersistence;
