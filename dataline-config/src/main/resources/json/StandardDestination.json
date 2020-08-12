@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/Destination.json",
+  "title": "Source",
+  "description": "describes a destination",
+  "type": "object",
+  "required": [
+    "destinationId",
+    "name"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "destinationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "name": {
+      "type": "string"
+    }
+  }
+}

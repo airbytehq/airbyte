@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "StandardSyncConfiguration",
-  "title": "StandardSyncConfiguration",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/StandardSyncConfiguration.json",
+  "title": "StandardSync",
   "description": "configuration required for sync for ALL taps",
   "type": "object",
   "required": ["syncMode", "schema"],
