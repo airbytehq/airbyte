@@ -70,7 +70,7 @@ public class WorkspacesHandler {
       persistedWorkspace.setEmail(workspaceUpdate.getEmail());
     }
     persistedWorkspace.setInitialSetupComplete(workspaceUpdate.getInitialSetupComplete());
-    persistedWorkspace.setAnonymousDataCollection(workspaceUpdate.getNews());
+    persistedWorkspace.setAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection());
     persistedWorkspace.setNews(workspaceUpdate.getNews());
     persistedWorkspace.setSecurityUpdates(workspaceUpdate.getSecurityUpdates());
 
