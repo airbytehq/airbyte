@@ -7,24 +7,16 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",
-    "lint": "eslint --ext js,ts,tsx src",
-    "deploy-dev": "./tools/deploy.sh dev",
-    "deploy-staging": "./tools/deploy.sh staging",
-    "deploy-prod": "./tools/deploy.sh prod"
+    "lint": "eslint --ext js,ts,tsx src"
   },
   "dependencies": {
-    "@aws-amplify/auth": "^2.1.5",
     "@fortawesome/fontawesome-svg-core": "^1.2.27",
     "@fortawesome/free-solid-svg-icons": "^5.12.1",
     "@fortawesome/pro-light-svg-icons": "^5.14.0",
     "@fortawesome/pro-regular-svg-icons": "^5.12.1",
     "@fortawesome/react-fontawesome": "^0.1.8",
-    "@sentry/browser": "^5.15.5",
-    "@stripe/react-stripe-js": "^1.1.2",
-    "@stripe/stripe-js": "^1.4.0",
     "@types/yup": "^0.26.32",
     "formik": "^2.1.4",
-    "fp-ts": "^2.5.1",
     "react": "^16.12.0",
     "react-app-polyfill": "^1.0.6",
     "react-code-input": "^3.9.0",
@@ -57,8 +49,7 @@
     "react-app-rewired": "^2.1.5",
     "react-hot-loader": "^4.12.20",
     "react-scripts": "3.4.1",
-    "typescript": "~3.7.2",
-    "yarn": "^1.22.4"
+    "typescript": "~3.7.2"
   },
   "husky": {
     "hooks": {
