@@ -8,3 +8,5 @@ include 'dataline-db'
 include 'dataline-scheduler'
 include 'dataline-server'
 include 'dataline-webapp'
+include 'dataline-workers'
+
