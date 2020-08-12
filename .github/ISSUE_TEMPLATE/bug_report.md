@@ -1,20 +1,20 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Report a bug to help us improve
 title: ''
 labels: bug
 
 ---
-## Bug description
-*Describe the bug with details.*  
+## Expected Behavior
+*Tell us what should happen*
 
-*Don't hesitate to add screenshots if it affects the frontend*  
+## Current Behavior
+*Tell us what happens instead of the expected behavior*
 
-## Expected behavior
-
-## How to reproduce
-1. 
-1. 
-1. 
+## Steps to Reproduce
+1.
+1.
+1.
 
 ## Additional context
+*Environment, version, integration...*
