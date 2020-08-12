@@ -11,9 +11,13 @@ dependencies {
     implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: '2.31'
     implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: '2.31'
 
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.8"
+    implementation group: "com.networknt", name: "json-schema-validator", version: "1.0.42"
+
     implementation project(':dataline-api')
     implementation project(':dataline-commons')
     implementation project(':dataline-config')
+    implementation project(':dataline-config-persistence')
     implementation project(':dataline-db')
 }
 

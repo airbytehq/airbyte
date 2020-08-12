@@ -91,6 +91,29 @@ paths:
           description: Workspace not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/workspaces/update:
+    post:
+      tags:
+      - workspace
+      summary: Update workspace state
+      operationId: updateWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+        "404":
+          description: Workspace not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/sources/list:
     post:
       tags:
@@ -245,7 +268,7 @@ paths:
       tags:
       - source_implementation
       summary: Test connection to the source implementation
-      operationId: testConnectiontoSourceImplementation
+      operationId: testConnectionToSourceImplementation
       requestBody:
         content:
           application/json:
@@ -583,6 +606,28 @@ components:
         slug:
           type: string
         initialSetupComplete:
+          type: boolean
+    WorkspaceUpdate:
+      type: object
+      required:
+      - workspaceId
+      - initialSetupComplete
+      - anonymousDataCollection
+      - news
+      - securityUpdates
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        email:
+          type: string
+          format: email
+        initialSetupComplete:
+          type: boolean
+        anonymousDataCollection:
+          type: boolean
+        news:
+          type: boolean
+        securityUpdates:
           type: boolean
     # SLUG
     SlugRequestBody:

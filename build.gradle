@@ -3,14 +3,17 @@ plugins {
     id "com.diffplug.spotless" version "5.1.1" apply false
 }
 
+Properties env = new Properties()
+File envFile = new File('.env')
+envFile.withInputStream {env.load(it) }
+
+if (!env.containsKey("VERSION")) {
+    throw new Exception("Version not specified in .env file...")
+}
+
 allprojects {
     group = "io.dataline.${rootProject.name}"
-    version = rootProject.file('.env').eachLine {
-        if (it =~ /^VERSION=/) {
-            return it.split(/=/, 2)[1]
-        }
-        throw new Exception("Unknown version")
-    }
+    version = env.VERSION
 }
 
 // Java projects common configurations

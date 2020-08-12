@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/SourceSpecification.json",
+  "title": "SourceConnectionSpecification",
+  "description": "specification for how to configure a connection to a source",
+  "type": "object",
+  "required": ["sourceId", "sourceSpecificationId", "specification"],
+  "additionalProperties": false,
+  "properties": {
+    "sourceId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "sourceSpecificationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "specification": {
+      "description": "type any. information here varies by integration"
+    }
+  }
+}

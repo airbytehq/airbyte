@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "StandardDiscoveryOutput",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/StandardDiscoveryOutput.json",
   "title": "StandardDiscoveryOutput",
   "description": "describes the standard output for any discovery run.",
   "type": "object",

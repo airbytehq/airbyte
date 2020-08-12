@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "StandardDataSchema",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/StandardDataSchema.json",
   "title": "StandardDataSchema",
   "type": "object",
   "definitions": {
