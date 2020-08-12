@@ -1,6 +1,6 @@
 package io.dataline.workers.singer;
 
-public enum SingerTarget implements ISingerTapOrTarget {
+public enum SingerTarget implements SingerConnector {
     // TODO
     LOCAL_FILE("", ""),
     BIG_QUERY("", ""),

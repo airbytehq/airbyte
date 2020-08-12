@@ -1,6 +1,6 @@
 package io.dataline.workers.singer;
 
-interface ISingerTapOrTarget {
+interface SingerConnector {
     String getPythonVirtualEnvName();
     String getExecutableName();
 }

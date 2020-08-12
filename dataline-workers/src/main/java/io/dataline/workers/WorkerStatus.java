@@ -1,5 +1,9 @@
 package io.dataline.workers;
 
+import com.google.common.collect.Sets;
+
+import java.util.Set;
+
 public enum WorkerStatus {
   NOT_STARTED,
   IN_PROGRESS,
@@ -14,5 +18,7 @@ public enum WorkerStatus {
    */
   FAILED,
   /** Underlying process ran to completion. */
-  COMPLETED
+  COMPLETED;
+
+  public static Set<WorkerStatus> TERMINAL_STATUSES = Sets.newHashSet(CANCELLED, FAILED, COMPLETED);
 }
