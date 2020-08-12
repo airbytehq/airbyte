@@ -69,21 +69,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   @Override
   public SourceImplementationRead createSourceImplementation(
       @Valid SourceImplementationCreate sourceImplementationCreate) {
-    try {
-      return sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
-    } catch (JsonValidationException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "The provided configuration does not fulfill the specification. Errors: %s",
-              e.getMessage()));
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "Could not find source specification: %s.",
-              sourceImplementationCreate.getSourceSpecificationId()));
-    }
+    return sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
   }
 
   @Override

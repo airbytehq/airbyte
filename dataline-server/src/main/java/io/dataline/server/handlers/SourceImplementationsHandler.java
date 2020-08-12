@@ -20,38 +20,51 @@ public class SourceImplementationsHandler {
   public SourceImplementationRead createSourceImplementation(
       SourceImplementationCreate sourceImplementationCreate)
       throws JsonValidationException, ConfigNotFoundException {
+    try {
+      // validate configuration
+      final IntegrationSchemaValidation validator =
+          new IntegrationSchemaValidation(configPersistence);
+      validator.validateSourceConnectionConfiguration(
+          sourceImplementationCreate.getSourceSpecificationId(),
+          sourceImplementationCreate.getConnectionConfiguration());
 
-    // validate configuration
-    final IntegrationSchemaValidation validator =
-        new IntegrationSchemaValidation(configPersistence);
-    validator.validateSourceConnectionConfiguration(
-        sourceImplementationCreate.getSourceSpecificationId(),
-        sourceImplementationCreate.getConnectionConfiguration());
+      // persist
+      final UUID sourceImplementationId = UUID.randomUUID();
+      final SourceConnectionImplementation sourceConnectionImplementation =
+          new SourceConnectionImplementation();
+      sourceConnectionImplementation.setSourceSpecificationId(
+          sourceImplementationCreate.getSourceSpecificationId());
+      sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
+      sourceConnectionImplementation.setConfiguration(
+          sourceImplementationCreate.getConnectionConfiguration());
 
-    // persist
-    final UUID sourceImplementationId = UUID.randomUUID();
-    final SourceConnectionImplementation sourceConnectionImplementation =
-        new SourceConnectionImplementation();
-    sourceConnectionImplementation.setSourceSpecificationId(
-        sourceImplementationCreate.getSourceSpecificationId());
-    sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setConfiguration(
-        sourceImplementationCreate.getConnectionConfiguration());
+      configPersistence.writeConfig(
+          PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+          sourceImplementationId.toString(),
+          sourceConnectionImplementation);
 
-    configPersistence.writeConfig(
-        PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-        sourceImplementationId.toString(),
-        sourceConnectionImplementation);
+      // read configuration from db
+      final SourceConnectionImplementation sourceConnectionImplementation2 =
+          configPersistence.getConfig(
+              PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+              sourceImplementationId.toString(),
+              SourceConnectionImplementation.class);
 
-    // read configuration from db
-    final SourceConnectionImplementation sourceConnectionImplementation2 =
-        configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-            sourceImplementationId.toString(),
-            SourceConnectionImplementation.class);
-
-    return sourceConnectionImplementationToSourceImplementationRead(
-        sourceConnectionImplementation2);
+      return sourceConnectionImplementationToSourceImplementationRead(
+          sourceConnectionImplementation2);
+    } catch (JsonValidationException e) {
+      throw new KnownException(
+          422,
+          String.format(
+              "The provided configuration does not fulfill the specification. Errors: %s",
+              e.getMessage()));
+    } catch (ConfigNotFoundException e) {
+      throw new KnownException(
+          422,
+          String.format(
+              "Could not find source specification: %s.",
+              sourceImplementationCreate.getSourceSpecificationId()));
+    }
   }
 
   private SourceImplementationRead sourceConnectionImplementationToSourceImplementationRead(
