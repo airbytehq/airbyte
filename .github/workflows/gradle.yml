@@ -11,6 +11,7 @@ jobs:
       - name: Checkout Dataline
         uses: actions/checkout@v2
 
+      # Impact is fairly limited, might actually need to cache node_modules
       - name: Cache node modules
         uses: actions/cache@v2
         with:
