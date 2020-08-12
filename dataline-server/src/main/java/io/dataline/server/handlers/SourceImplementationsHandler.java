@@ -30,28 +30,28 @@ public class SourceImplementationsHandler {
 
       // persist
       final UUID sourceImplementationId = UUID.randomUUID();
-      final SourceConnectionImplementation sourceConnectionImplementation =
+      final SourceConnectionImplementation newSourceConnectionImplementation =
           new SourceConnectionImplementation();
-      sourceConnectionImplementation.setSourceSpecificationId(
+      newSourceConnectionImplementation.setSourceSpecificationId(
           sourceImplementationCreate.getSourceSpecificationId());
-      sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-      sourceConnectionImplementation.setConfiguration(
+      newSourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
+      newSourceConnectionImplementation.setConfiguration(
           sourceImplementationCreate.getConnectionConfiguration());
 
       configPersistence.writeConfig(
           PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
           sourceImplementationId.toString(),
-          sourceConnectionImplementation);
+          newSourceConnectionImplementation);
 
       // read configuration from db
-      final SourceConnectionImplementation sourceConnectionImplementation2 =
+      final SourceConnectionImplementation retrievedSourceConnectionImplementation =
           configPersistence.getConfig(
               PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
               sourceImplementationId.toString(),
               SourceConnectionImplementation.class);
 
-      return sourceConnectionImplementationToSourceImplementationRead(
-          sourceConnectionImplementation2);
+      return ToSourceImplementationRead(
+          retrievedSourceConnectionImplementation);
     } catch (JsonValidationException e) {
       throw new KnownException(
           422,
@@ -67,7 +67,7 @@ public class SourceImplementationsHandler {
     }
   }
 
-  private SourceImplementationRead sourceConnectionImplementationToSourceImplementationRead(
+  private SourceImplementationRead ToSourceImplementationRead(
       SourceConnectionImplementation sourceConnectionImplementation) {
     final SourceImplementationRead sourceImplementationRead = new SourceImplementationRead();
     sourceConnectionImplementation.setSourceImplementationId(
