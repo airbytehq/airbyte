@@ -14,7 +14,7 @@ public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
   public void start() throws Exception {
-    DatabaseHelper.initializeDatabase();
+        DatabaseHelper.initializeDatabase();
     Server server = new Server(8000);
 
     ServletContextHandler handler = new ServletContextHandler();
