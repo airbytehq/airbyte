@@ -5,29 +5,16 @@ title: ''
 labels: bug
 
 ---
-
 ## Bug description
+*Describe the bug with details.*  
 
-*Please describe.*  
-*If this affects the front-end, screenshots would be of great help.*  
+*Don't hesitate to add screenshots if it affects the frontend*  
 
 ## Expected behavior
 
-
-
 ## How to reproduce
-
 1. 
-2. 
-3. 
-
-## Environment
-
-- PostHog cloud or self-managed?
-- PostHog version/commit
+1. 
+1. 
 
 ## Additional context
-
-
-
-#### *Thank you* for your bug report – we love squashing them!
