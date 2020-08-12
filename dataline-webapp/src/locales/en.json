@@ -1,0 +1,21 @@
+{
+  "sidebar.sources": "Sources",
+  "sidebar.destination": "Destination",
+  "sidebar.help": "Help",
+  "sidebar.docs": "Docs",
+
+  "form.continue": "Continue",
+  "form.emailOptional": "Your email (optional)",
+  "form.email.placeholder": "you@company.com",
+  "form.email.error": "This email address doesn’t seem correct.",
+
+  "preferences.title": "Specify your preferences",
+  "preferences.anonymizeUsage": "Anonymize usage data collection",
+  "preferences.collectData": "We collect data only for product improvements, see the <docs>docs</docs>.",
+  "preferences.news": "News and feature updates",
+  "preferences.security": "Security updates",
+  "preferences.anonymizeData": "Anonymize my usage data.",
+  "preferences.featureUpdates": "Receive feature updates.",
+  "preferences.unsubcribeAnyTime": " You can unsubcribe any time.",
+  "preferences.securityUpdates": "Receive emails about security updates."
+}
