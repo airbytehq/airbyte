@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
-// TODO once singer env PR is merged in
 public class TestBaseSingerWorker extends BaseWorkerTestCase {
 
   @Test
@@ -40,7 +39,7 @@ public class TestBaseSingerWorker extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testSuccessfulWorkerWithZeroExit() {
+  public void testCompletedWorkerWithZeroExit() {
     String someOutput = "hi";
     Worker<String> worker =
         createMockSingerWorker(
@@ -55,13 +54,13 @@ public class TestBaseSingerWorker extends BaseWorkerTestCase {
             () -> someOutput);
 
     assertEquals(NOT_STARTED, worker.getStatus());
-    worker.run();
+    String output = worker.run();
     assertEquals(COMPLETED, worker.getStatus());
-    assertEquals(someOutput, worker.getOutput());
+    assertEquals(someOutput, output);
   }
 
   @Test
-  public void testSuccessfulWorkerWithNonZeroExit() {
+  public void testCompletedWorkerWithNonZeroExit() {
     String someOutput = "hi";
     Worker<String> worker =
         createMockSingerWorker(
@@ -76,9 +75,9 @@ public class TestBaseSingerWorker extends BaseWorkerTestCase {
             () -> someOutput);
 
     assertEquals(NOT_STARTED, worker.getStatus());
-    worker.run();
+    String output = worker.run();
     assertEquals(COMPLETED, worker.getStatus());
-    assertEquals(someOutput, worker.getOutput());
+    assertEquals(someOutput, output);
   }
 
   @Test

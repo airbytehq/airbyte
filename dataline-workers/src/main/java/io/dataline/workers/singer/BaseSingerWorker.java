@@ -1,7 +1,6 @@
 package io.dataline.workers.singer;
 
 import io.dataline.workers.Worker;
-import io.dataline.workers.WorkerOutputAndStatus;
 import io.dataline.workers.WorkerStatus;
 import java.io.*;
 import java.nio.file.Path;
@@ -11,6 +10,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// With the exception of "cancel", most operations in this class are not thread safe
 public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType> {
   private static Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
 
@@ -35,14 +35,12 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
   }
 
   @Override
-  public WorkerOutputAndStatus run() {
+  public OutputType run() {
     if (!getStatus().equals(WorkerStatus.NOT_STARTED)) {
       LOGGER.debug(
           "Attempted to run worker {} which has already started and has status {}",
           workerId,
           getStatus());
-
-      return;
     }
     try {
       transitionStatusIfValid(WorkerStatus.IN_PROGRESS);
@@ -81,18 +79,7 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
     }
   }
 
-  @Override
-  public OutputType getOutput() {
-    if (!inTerminalStatus()) {
-      throw new IllegalStateException(
-          "Can only get output when worker is in a terminal status. Worker status: " + getStatus());
-    }
-
-    return getOutputInternal();
-  }
-
   // TODO add getError and have base worker redirect standard
-
   protected Path getWorkspacePath() {
     return Paths.get(workspaceRoot, workerId);
   }

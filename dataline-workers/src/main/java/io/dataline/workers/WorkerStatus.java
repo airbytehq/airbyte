@@ -4,8 +4,6 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 
 public enum WorkerStatus {
-  NOT_STARTED,
-  IN_PROGRESS,
   /** Manually cancelled by the user */
   CANCELLED,
   /**
@@ -18,6 +16,4 @@ public enum WorkerStatus {
   FAILED,
   /** Underlying process ran to completion. */
   COMPLETED;
-
-  public static Set<WorkerStatus> TERMINAL_STATUSES = Sets.newHashSet(CANCELLED, FAILED, COMPLETED);
 }

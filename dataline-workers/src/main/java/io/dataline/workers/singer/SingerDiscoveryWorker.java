@@ -3,7 +3,6 @@ package io.dataline.workers.singer;
 import io.dataline.workers.DiscoveryOutput;
 import java.io.File;
 import java.io.IOException;
-import java.util.UUID;
 
 public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   private static String CONFIG_JSON_FILENAME = "config.json";
