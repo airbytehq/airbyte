@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/DestinationConnectionImplementation.json",
+  "title": "DestinationConnectionImplementation",
+  "description": "information required for connection to a destination.",
+  "type": "object",
+  "required": ["destinationSpecificationId", "destinationImplementationId", "configuration"],
+  "additionalProperties": false,
+  "properties": {
+    "destinationSpecificationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "destinationImplementationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "configuration": {
+      "description": "type any. information here varies by integration. this data is validated against a specification"
+    }
+  }
+}
