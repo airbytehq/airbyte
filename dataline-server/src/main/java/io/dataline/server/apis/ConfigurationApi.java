@@ -18,7 +18,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final SourceImplementationsHandler sourceImplementationsHandler;
 
   public ConfigurationApi() {
-    ConfigPersistence configPersistence = new ConfigPersistenceImpl();
+    ConfigPersistence configPersistence = ConfigPersistenceImpl.get();
     workspacesHandler = new WorkspacesHandler(configPersistence);
     sourcesHandler = new SourcesHandler(configPersistence);
     sourceSpecificationsHandler = new SourceSpecificationsHandler(configPersistence);
@@ -70,21 +70,16 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   @Override
-  public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(
-      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    return null;
-  }
-
-  @Override
   public SourceImplementationRead getSourceImplementation(
       @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    return null;
+    return sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
   }
 
   @Override
-  public SourceImplementationReadList getSourceImplementationsForWorkspace(
+  public SourceImplementationReadList listSourceImplementationsForWorkspace(
       @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return null;
+    return sourceImplementationsHandler.listSourceImplementationsForWorkspace(
+        workspaceIdRequestBody);
   }
 
   @Override
@@ -96,6 +91,12 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   @Override
   public SourceImplementationRead updateSourceImplementation(
       @Valid SourceImplementationUpdate sourceImplementationUpdate) {
+    return sourceImplementationsHandler.updateSourceImplementation(sourceImplementationUpdate);
+  }
+
+  @Override
+  public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(
+      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return null;
   }
 

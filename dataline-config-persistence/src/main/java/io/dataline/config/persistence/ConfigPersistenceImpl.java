@@ -12,18 +12,32 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
 
 // we force all interaction with disk storage to be effectively single threaded.
 public class ConfigPersistenceImpl implements ConfigPersistence {
   private static final Object lock = new Object();
-  private static final String CONFIG_STORAGE_ROOT = "data/config/";
-  private static final String CONFIG_SCHEMA_ROOT = "dataline-config/src/main/resources/json/";
+  private static final String CONFIG_STORAGE_ROOT = "../data/config/";
+  private static final String TEST_STORAGE_ROOT = "/tmp/data/config/";
+  private static final String CONFIG_SCHEMA_ROOT = "../dataline-config/src/main/resources/json/";
 
   private final ObjectMapper objectMapper;
-  final JsonSchemaValidation jsonSchemaValidation;
+  private final JsonSchemaValidation jsonSchemaValidation;
+  private final String storageRoot;
+  private final boolean testEnv;
 
-  public ConfigPersistenceImpl() {
-    jsonSchemaValidation = JsonSchemaValidation.getInstance();
+  public static ConfigPersistenceImpl get() {
+    return new ConfigPersistenceImpl(CONFIG_STORAGE_ROOT, false);
+  }
+
+  public static ConfigPersistenceImpl getTest() {
+    return new ConfigPersistenceImpl(TEST_STORAGE_ROOT, true);
+  }
+
+  private ConfigPersistenceImpl(String storageRoot, boolean testEnv) {
+    this.storageRoot = storageRoot;
+    this.testEnv = testEnv;
+    jsonSchemaValidation = JsonSchemaValidation.getSingletonInstance();
     objectMapper = new ObjectMapper();
   }
 
@@ -70,11 +84,25 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   public <T> void writeConfig(
       PersistenceConfigType persistenceConfigType, String configId, T config) {
     synchronized (lock) {
+      final String configPath = getConfigPath(persistenceConfigType, configId);
+      ensureDirectory(getConfigDirectory(persistenceConfigType));
       try {
-        objectMapper.writeValue(new File(getConfigPath(persistenceConfigType, configId)), config);
+        objectMapper.writeValue(new File(configPath), config);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  public void deleteAll() {
+    if (!testEnv) {
+      throw new RuntimeException("deleteAll operation is only allowed in test environment");
+    }
+
+    try {
+      FileUtils.forceDelete(new File(storageRoot));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -99,7 +127,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   }
 
   private String getConfigDirectory(PersistenceConfigType persistenceConfigType) {
-    return String.format("%s/%s", CONFIG_STORAGE_ROOT, persistenceConfigType.toString());
+    return String.format("%s/%s", storageRoot, persistenceConfigType.toString());
   }
 
   private String getConfigPath(PersistenceConfigType persistenceConfigType, String configId) {
@@ -113,8 +141,8 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   }
 
   private Optional<Path> getFile(PersistenceConfigType persistenceConfigType, String id) {
-    String configPath = getConfigPath(persistenceConfigType, id);
-    final Path path = Paths.get(configPath);
+    ensureDirectory(getConfigDirectory(persistenceConfigType));
+    final Path path = Paths.get(getConfigPath(persistenceConfigType, id));
     if (Files.exists(path)) {
       return Optional.of(path);
     } else {
@@ -184,12 +212,23 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
             () ->
                 new ConfigNotFoundException(
                     String.format(
-                        "config type: %s id: %s not found", persistenceConfigType, configId)));
+                        "config type: %s id: %s not found in path %s",
+                        persistenceConfigType,
+                        configId,
+                        getConfigPath(persistenceConfigType, configId))));
   }
 
   private <T> T fileToPojo(File file, Class<T> clazz) {
     try {
       return objectMapper.readValue(file, clazz);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void ensureDirectory(String path) {
+    try {
+      FileUtils.forceMkdir(new File(path));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

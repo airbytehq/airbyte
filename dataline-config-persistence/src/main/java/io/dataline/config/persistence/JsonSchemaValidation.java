@@ -11,7 +11,7 @@ public class JsonSchemaValidation {
 
   private static final JsonSchemaValidation INSTANCE = new JsonSchemaValidation();
 
-  public static JsonSchemaValidation getInstance() {
+  public static JsonSchemaValidation getSingletonInstance() {
     return INSTANCE;
   }
 

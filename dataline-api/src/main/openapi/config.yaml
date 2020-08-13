@@ -222,7 +222,7 @@ paths:
       tags:
       - source_implementation
       summary: Get source implementations for workspace
-      operationId: getSourceImplementationsForWorkspace
+      operationId: listSourceImplementationsForWorkspace
       requestBody:
         content:
           application/json:
