@@ -24,7 +24,8 @@
 ## Contributing
 
 * [Contributing to Dataline](contributing/contributing-to-dataline.md)
-* [Developing Locally](contributing/developing-locally.md)
+* [Developing Locally](contributing/developing-locally/README.md)
+  * [Code style](contributing/developing-locally/code-style.md)
 * [Updating Documentation](contributing/updating-documentation.md)
 
 ## Architecture

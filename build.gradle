@@ -44,6 +44,8 @@ subprojects {
     dependencies {
         implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
+        implementation group: 'commons-io', name: 'commons-io', version: '2.7'
+
         implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
 
         // SLF4J as a facade over Log4j2 required dependencies
