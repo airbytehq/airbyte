@@ -21,6 +21,7 @@ import io.dataline.server.helpers.SourceSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.io.File;
 import java.io.IOException;
+import io.dataline.server.helpers.SourceImplementationHelpers;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +41,11 @@ class SourceImplementationsHandlerTest {
     configPersistence = mock(ConfigPersistence.class);
     validator = mock(IntegrationSchemaValidation.class);
     uuidGenerator = mock(Supplier.class);
+    sourceConnectionSpecification =
+        SourceSpecificationHelpers.generateSourceSpecification();
+    sourceConnectionImplementation =
+        SourceImplementationHelpers.generateSourceImplementationMock(
+            configPersistence, sourceConnectionSpecification.getSourceSpecificationId());
 
     sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
     sourceConnectionImplementation =
@@ -91,7 +97,8 @@ class SourceImplementationsHandlerTest {
     sourceImplementationCreate.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
     sourceImplementationCreate.setSourceSpecificationId(
         sourceConnectionSpecification.getSourceSpecificationId());
-    sourceImplementationCreate.setConnectionConfiguration(getTestImplementationJson().toString());
+    sourceImplementationCreate.setConnectionConfiguration(
+        SourceImplementationHelpers.getTestImplementationJson().toString());
 
     final SourceImplementationRead actualSourceImplementationRead =
         sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
@@ -104,7 +111,7 @@ class SourceImplementationsHandlerTest {
     expectedSourceImplementationRead.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
     expectedSourceImplementationRead.setConnectionConfiguration(
-        getTestImplementationJson().toString());
+        SourceImplementationHelpers.getTestImplementationJson().toString());
 
     assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead);
 

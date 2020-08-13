@@ -130,7 +130,7 @@ public class SourceImplementationsHandler {
               e.getMessage()));
     } catch (ConfigNotFoundException e) {
       throw new KnownException(
-          422, String.format("Could not find source specification: %s.", sourceImplementationId));
+          422, String.format("Could not find source implementation: %s.", sourceImplementationId));
     }
 
     return toSourceImplementationRead(retrievedSourceConnectionImplementation);

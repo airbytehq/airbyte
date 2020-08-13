@@ -9,4 +9,5 @@ dependencies {
 
 jsonSchema2Pojo {
     targetPackage = 'io.dataline.config'
+    removeOldOutput = false
 }
