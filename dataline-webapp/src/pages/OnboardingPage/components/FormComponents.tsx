@@ -5,6 +5,7 @@ const FormContainer = styled.div`
 `;
 
 const ButtonContainer = styled.div`
+  margin-top: 34px;
   text-align: right;
 `;
 

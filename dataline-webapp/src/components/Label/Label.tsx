@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 type IProps = {
   error?: boolean;
+  success?: boolean;
   message?: string | React.ReactNode;
   additionLength?: number;
   className?: string;
@@ -11,11 +12,12 @@ type IProps = {
 
 const Content = styled.label<{ additionLength?: number | string }>`
   display: block;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 14px;
   line-height: 17px;
   color: ${({ theme }) => theme.textColor};
   padding-bottom: 5px;
+  width: 100%;
   width: calc(
     100% +
       ${({ additionLength }) =>
@@ -23,9 +25,13 @@ const Content = styled.label<{ additionLength?: number | string }>`
   );
 `;
 
-const MessageText = styled.span<{ error: boolean | undefined }>`
+const MessageText = styled.span<{ error?: boolean; success?: boolean }>`
   color: ${props =>
-    props.error ? props.theme.dangerColor : props.theme.successColor};
+    props.error
+      ? props.theme.dangerColor
+      : props.success
+      ? props.theme.successColor
+      : props.theme.greyColor40};
   font-size: 13px;
 `;
 

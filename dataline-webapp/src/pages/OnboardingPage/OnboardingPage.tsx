@@ -13,7 +13,8 @@ import { Routes } from "../routes";
 const Content = styled.div`
   width: 100%;
   max-width: 638px;
-  margin: 33px auto;
+  margin: 0 auto;
+  padding: 33px 0;
 `;
 
 const Img = styled.img`

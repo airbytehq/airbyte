@@ -1,24 +1,26 @@
 import React from "react";
 import styled from "styled-components";
 
-import Input from "../Input";
 import Label from "../Label/Label";
+import DropDown from "../DropDown";
+import { IProps as DropDownProps } from "../DropDown/DropDown";
 
 type IProps = {
+  className?: string;
   error?: boolean;
   success?: boolean;
   message?: React.ReactNode;
   labelAdditionLength?: number;
   label?: React.ReactNode;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+} & DropDownProps;
 
 const InputContainer = styled.div`
   width: 100%;
   display: inline-block;
 `;
 
-const LabeledInput: React.FC<IProps> = props => (
-  <InputContainer>
+const LabeledDropDown: React.FC<IProps> = props => (
+  <InputContainer className={props.className}>
     <Label
       error={props.error}
       success={props.success}
@@ -27,8 +29,8 @@ const LabeledInput: React.FC<IProps> = props => (
     >
       {props.label}
     </Label>
-    <Input {...props} />
+    <DropDown {...props} />
   </InputContainer>
 );
 
-export default LabeledInput;
+export default LabeledDropDown;
