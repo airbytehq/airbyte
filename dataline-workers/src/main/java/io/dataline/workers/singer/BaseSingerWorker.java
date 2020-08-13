@@ -1,8 +1,9 @@
 package io.dataline.workers.singer;
 
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.Worker;
+import static io.dataline.workers.JobStatus.*;
+
 import io.dataline.workers.JobStatus;
+import io.dataline.workers.Worker;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,8 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.dataline.workers.JobStatus.*;
 
 public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType> {
   private static Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
