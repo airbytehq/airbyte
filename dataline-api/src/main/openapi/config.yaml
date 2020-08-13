@@ -1049,9 +1049,6 @@ components:
     JobId:
       type: integer
       format: int64
-    JobAttemptId:
-      type: integer
-      format: int64
     JobIdRequestBody:
       type: object
       required:
@@ -1090,39 +1087,6 @@ components:
             - failed
             - completed
             - cancelled
-    JobAttempt:
-      type: object
-      required:
-        - id
-        - job_id
-        - created_at
-        - started_at
-        - updated_at
-        - status
-      properties:
-        id:
-          $ref: "#/components/schemas/JobAttemptId"
-        job_id:
-          $ref: "#/components/schemas/JobId"
-        created_at:
-          type: integer
-          format: int64
-        started_at:
-          type: integer
-          format: int64
-        updated_at:
-          type: integer
-          format: int64
-        status:
-          type: string
-          enum:
-            - pending
-            - running
-            - failed
-            - timed_out
-            - completed
-            - cancelled
-
   responses:
     InvalidInput:
       description: Invalid Input

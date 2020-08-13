@@ -6,4 +6,5 @@ dependencies {
     implementation project(':dataline-commons')
     implementation project(':dataline-db')
     implementation project(':dataline-api')
+    implementation project(':dataline-workers')
 }
