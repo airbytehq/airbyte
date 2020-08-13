@@ -872,7 +872,7 @@ components:
       required:
       - destinations
       properties:
-        sources:
+        destinations:
           type: array
           items:
             $ref: "#/components/schemas/DestinationImplementationRead"

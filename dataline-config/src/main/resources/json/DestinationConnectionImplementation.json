@@ -4,10 +4,19 @@
   "title": "DestinationConnectionImplementation",
   "description": "information required for connection to a destination.",
   "type": "object",
-  "required": ["destinationSpecificationId", "destinationImplementationId", "configuration"],
+  "required": [
+    "destinationSpecificationId",
+    "workspaceId",
+    "destinationImplementationId",
+    "configuration"
+  ],
   "additionalProperties": false,
   "properties": {
     "destinationSpecificationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "workspaceId": {
       "type": "string",
       "format": "uuid"
     },
