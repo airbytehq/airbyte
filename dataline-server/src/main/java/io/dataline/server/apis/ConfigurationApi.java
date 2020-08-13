@@ -19,6 +19,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final SourceSpecificationsHandler sourceSpecificationsHandler;
   private final SourceImplementationsHandler sourceImplementationsHandler;
   private final DestinationsHandler destinationsHandler;
+  private final DestinationSpecificationsHandler destinationSpecificationsHandler;
 
   public ConfigurationApi() {
     // todo: configure with env variable.
@@ -30,6 +31,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
         new SourceImplementationsHandler(
             configPersistence, new IntegrationSchemaValidation(configPersistence));
     destinationsHandler = new DestinationsHandler(configPersistence);
+    destinationSpecificationsHandler = new DestinationSpecificationsHandler(configPersistence);
   }
 
   // WORKSPACE
@@ -119,15 +121,19 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     return destinationsHandler.getDestination(destinationIdRequestBody);
   }
 
-  @Override
-  public DestinationImplementationRead getDestinationImplementation(
-      @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
-    return null;
-  }
+  // DESTINATION SPECIFICATION
 
   @Override
   public DestinationSpecificationRead getDestinationSpecification(
       @Valid DestinationIdRequestBody destinationIdRequestBody) {
+    return destinationSpecificationsHandler.getDestinationSpecification(destinationIdRequestBody);
+  }
+
+  // DESTINATION IMPLEMENTATION
+
+  @Override
+  public DestinationImplementationRead getDestinationImplementation(
+      @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
     return null;
   }
 
