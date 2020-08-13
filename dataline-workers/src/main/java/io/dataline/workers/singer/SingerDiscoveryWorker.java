@@ -1,10 +1,18 @@
 package io.dataline.workers.singer;
 
 import io.dataline.workers.DiscoveryOutput;
+import io.dataline.workers.OutputAndStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 
+import static io.dataline.workers.JobStatus.FAILED;
+import static io.dataline.workers.JobStatus.SUCCESSFUL;
+
 public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
+  private static Logger LOGGER = LoggerFactory.getLogger(SingerDiscoveryWorker.class);
   private static String CONFIG_JSON_FILENAME = "config.json";
   private static String CATALOG_JSON_FILENAME = "catalog.json";
   private static String ERROR_LOG_FILENAME = "err.log";
@@ -25,7 +33,7 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   }
 
   @Override
-  protected Process runInternal() {
+  public OutputAndStatus<DiscoveryOutput> run() {
     // TODO use format converter here
     // write config.json to disk
     String configPath = writeFileToWorkspace(CONFIG_JSON_FILENAME, configDotJson);
@@ -38,18 +46,21 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
         getWorkspacePath().resolve(ERROR_LOG_FILENAME).toAbsolutePath().toString();
     // exec
     try {
-      return new ProcessBuilder(tapPath, "--config " + configPath, "--discover")
-          .redirectError(new File(errorLogPath))
-          .redirectOutput(new File(catalogDotJsonPath))
-          .start();
-    } catch (IOException e) {
+      Process workerProcess =
+          new ProcessBuilder(tapPath, "--config " + configPath, "--discover")
+              .redirectError(new File(errorLogPath))
+              .redirectOutput(new File(catalogDotJsonPath))
+              .start();
+      workerProcess.wait();
+      if (workerProcess.exitValue() == 0) {
+        String catalog = readFileFromWorkspace(CATALOG_JSON_FILENAME);
+        return new OutputAndStatus<>(new DiscoveryOutput(catalog), SUCCESSFUL);
+      } else {
+        return new OutputAndStatus<>(null, FAILED);
+      }
+    } catch (IOException | InterruptedException e) {
+      LOGGER.error("Exception running discovery: ", e);
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public DiscoveryOutput getOutputInternal() {
-    String catalog = readFileFromWorkspace(CATALOG_JSON_FILENAME);
-    return new DiscoveryOutput(catalog);
   }
 }
