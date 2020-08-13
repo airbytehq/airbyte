@@ -23,7 +23,8 @@
 
 ## Contributing
 
-* [Contributing to Dataline](contributing/contributing-to-dataline.md)
+* [Contributing to Dataline](contributing/contributing-to-dataline/README.md)
+  * [Code style](contributing/contributing-to-dataline/code-style.md)
 * [Developing Locally](contributing/developing-locally.md)
 * [Updating Documentation](contributing/updating-documentation.md)
 
