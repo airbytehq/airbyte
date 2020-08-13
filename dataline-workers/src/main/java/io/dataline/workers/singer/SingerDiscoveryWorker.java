@@ -12,6 +12,7 @@ import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
 public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
+  // TODO log errors to specified file locations
   private static Logger LOGGER = LoggerFactory.getLogger(SingerDiscoveryWorker.class);
   private static String CONFIG_JSON_FILENAME = "config.json";
   private static String CATALOG_JSON_FILENAME = "catalog.json";
