@@ -1,11 +1,18 @@
 package io.dataline.workers;
 
-public class OutputAndStatus<OutputType> {
-  public final OutputType output;
-  public final WorkerStatus status;
+import java.util.Optional;
 
-  public OutputAndStatus(OutputType output, WorkerStatus status) {
-    this.output = output;
+public class OutputAndStatus<OutputType> {
+  public final Optional<OutputType> output;
+  public final JobStatus status;
+
+  public OutputAndStatus(JobStatus status, OutputType output) {
+    this.output = Optional.of(output);
     this.status = status;
+  }
+
+  public OutputAndStatus(JobStatus status) {
+    this.status = status;
+    this.output = Optional.empty();
   }
 }
