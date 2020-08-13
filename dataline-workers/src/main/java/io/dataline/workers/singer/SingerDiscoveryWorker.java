@@ -54,9 +54,9 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
       workerProcess.wait();
       if (workerProcess.exitValue() == 0) {
         String catalog = readFileFromWorkspace(CATALOG_JSON_FILENAME);
-        return new OutputAndStatus<>(new DiscoveryOutput(catalog), SUCCESSFUL);
+        return new OutputAndStatus<>(SUCCESSFUL, new DiscoveryOutput(catalog));
       } else {
-        return new OutputAndStatus<>(null, FAILED);
+        return new OutputAndStatus<>(FAILED);
       }
     } catch (IOException | InterruptedException e) {
       LOGGER.error("Exception running discovery: ", e);
