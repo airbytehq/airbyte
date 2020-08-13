@@ -8,6 +8,7 @@ import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
 import io.dataline.server.handlers.WorkspacesHandler;
 import io.dataline.server.validation.IntegrationSchemaValidation;
+import io.dataline.server.handlers.*;
 import javax.validation.Valid;
 import javax.ws.rs.Path;
 
@@ -17,6 +18,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final SourcesHandler sourcesHandler;
   private final SourceSpecificationsHandler sourceSpecificationsHandler;
   private final SourceImplementationsHandler sourceImplementationsHandler;
+  private final DestinationsHandler destinationsHandler;
 
   public ConfigurationApi() {
     // todo: configure with env variable.
@@ -27,6 +29,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     sourceImplementationsHandler =
         new SourceImplementationsHandler(
             configPersistence, new IntegrationSchemaValidation(configPersistence));
+    destinationsHandler = new DestinationsHandler(configPersistence);
   }
 
   // WORKSPACE
@@ -104,25 +107,16 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     return null;
   }
 
-  @Override
-  public ConnectionRead createConnection(@Valid ConnectionCreate connectionCreate) {
-    return null;
-  }
+  // DESTINATION
 
   @Override
-  public DestinationImplementationRead createDestinationImplementation(
-      @Valid DestinationImplementationCreate destinationImplementationCreate) {
-    return null;
-  }
-
-  @Override
-  public ConnectionRead getConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    return null;
+  public DestinationReadList listDestinations() {
+    return destinationsHandler.listDestinations();
   }
 
   @Override
   public DestinationRead getDestination(@Valid DestinationIdRequestBody destinationIdRequestBody) {
-    return null;
+    return destinationsHandler.getDestination(destinationIdRequestBody);
   }
 
   @Override
@@ -138,6 +132,22 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   @Override
+  public ConnectionRead getConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+    return null;
+  }
+
+  @Override
+  public ConnectionRead createConnection(@Valid ConnectionCreate connectionCreate) {
+    return null;
+  }
+
+  @Override
+  public DestinationImplementationRead createDestinationImplementation(
+      @Valid DestinationImplementationCreate destinationImplementationCreate) {
+    return null;
+  }
+
+  @Override
   public ConnectionReadList listConnectionsForWorkspace(
       @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return null;
@@ -146,11 +156,6 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   @Override
   public DestinationImplementationReadList listDestinationImplementationsForWorkspace(
       @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return null;
-  }
-
-  @Override
-  public DestinationReadList listDestinations() {
     return null;
   }
 
