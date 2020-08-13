@@ -9,6 +9,7 @@ services:
     container_name: dataline-server
     environment:
       - ENV=docker
+      - POSTGRES_VERSION=${POSTGRES_VERSION}
     ports:
       - 8001:8000
   webapp:
@@ -21,3 +22,7 @@ services:
       - 8000:80
     depends_on:
       - server
+  db:
+    image: postgres:${POSTGRES_VERSION}
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
