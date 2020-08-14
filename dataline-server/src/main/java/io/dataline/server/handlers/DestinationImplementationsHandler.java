@@ -135,7 +135,7 @@ public class DestinationImplementationsHandler {
       throw new KnownException(
           422,
           String.format(
-              "Could not find destination specification: %s.", destinationImplementationId));
+              "Could not find destination implementation: %s.", destinationImplementationId));
     }
 
     return toDestinationImplementationRead(retrievedDestinationConnectionImplementation);

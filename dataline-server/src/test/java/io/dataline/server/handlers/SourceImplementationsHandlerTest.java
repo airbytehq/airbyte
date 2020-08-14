@@ -17,6 +17,7 @@ import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.server.helpers.SourceImplementationHelpers;
 import io.dataline.server.helpers.SourceSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.io.File;
@@ -40,6 +41,10 @@ class SourceImplementationsHandlerTest {
     configPersistence = mock(ConfigPersistence.class);
     validator = mock(IntegrationSchemaValidation.class);
     uuidGenerator = mock(Supplier.class);
+    sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
+    sourceConnectionImplementation =
+        SourceImplementationHelpers.generateSourceImplementationMock(
+            sourceConnectionSpecification.getSourceSpecificationId());
 
     sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
     sourceConnectionImplementation =
@@ -91,7 +96,8 @@ class SourceImplementationsHandlerTest {
     sourceImplementationCreate.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
     sourceImplementationCreate.setSourceSpecificationId(
         sourceConnectionSpecification.getSourceSpecificationId());
-    sourceImplementationCreate.setConnectionConfiguration(getTestImplementationJson().toString());
+    sourceImplementationCreate.setConnectionConfiguration(
+        SourceImplementationHelpers.getTestImplementationJson().toString());
 
     final SourceImplementationRead actualSourceImplementationRead =
         sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
@@ -104,7 +110,7 @@ class SourceImplementationsHandlerTest {
     expectedSourceImplementationRead.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
     expectedSourceImplementationRead.setConnectionConfiguration(
-        getTestImplementationJson().toString());
+        SourceImplementationHelpers.getTestImplementationJson().toString());
 
     assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead);
 
