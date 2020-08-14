@@ -12,18 +12,22 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import me.andrz.jackson.JsonReferenceException;
+import me.andrz.jackson.JsonReferenceProcessor;
+import org.apache.commons.io.FileUtils;
 
 // we force all interaction with disk storage to be effectively single threaded.
-public class ConfigPersistenceImpl implements ConfigPersistence {
+public class DefaultConfigPersistence implements ConfigPersistence {
   private static final Object lock = new Object();
-  private static final String CONFIG_STORAGE_ROOT = "data/config/";
-  private static final String CONFIG_SCHEMA_ROOT = "dataline-config/src/main/resources/json/";
+  private static final String CONFIG_SCHEMA_ROOT = "../dataline-config/src/main/resources/json/";
 
   private final ObjectMapper objectMapper;
-  final JsonSchemaValidation jsonSchemaValidation;
+  private final JsonSchemaValidation jsonSchemaValidation;
+  private final String storageRoot;
 
-  public ConfigPersistenceImpl() {
-    jsonSchemaValidation = JsonSchemaValidation.getInstance();
+  public DefaultConfigPersistence(String storageRoot) {
+    this.storageRoot = storageRoot;
+    jsonSchemaValidation = new JsonSchemaValidation();
     objectMapper = new ObjectMapper();
   }
 
@@ -70,8 +74,10 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   public <T> void writeConfig(
       PersistenceConfigType persistenceConfigType, String configId, T config) {
     synchronized (lock) {
+      final String configPath = getConfigPath(persistenceConfigType, configId);
+      ensureDirectory(getConfigDirectory(persistenceConfigType));
       try {
-        objectMapper.writeValue(new File(getConfigPath(persistenceConfigType, configId)), config);
+        objectMapper.writeValue(new File(configPath), config);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -83,8 +89,12 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
         standardConfigTypeToConfigSchema(persistenceConfigType).getSchemaFilename();
     File schemaFile = new File(String.format("%s/%s", CONFIG_SCHEMA_ROOT, configSchemaFilename));
     try {
-      return objectMapper.readTree(schemaFile);
-    } catch (IOException e) {
+      // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
+      // this.
+      final JsonReferenceProcessor jsonReferenceProcessor = new JsonReferenceProcessor();
+      jsonReferenceProcessor.setMaxDepth(-1); // no max.
+      return jsonReferenceProcessor.process(schemaFile);
+    } catch (IOException | JsonReferenceException e) {
       throw new RuntimeException(e);
     }
   }
@@ -99,7 +109,7 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   }
 
   private String getConfigDirectory(PersistenceConfigType persistenceConfigType) {
-    return String.format("%s/%s", CONFIG_STORAGE_ROOT, persistenceConfigType.toString());
+    return String.format("%s/%s", storageRoot, persistenceConfigType.toString());
   }
 
   private String getConfigPath(PersistenceConfigType persistenceConfigType, String configId) {
@@ -113,8 +123,8 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   }
 
   private Optional<Path> getFile(PersistenceConfigType persistenceConfigType, String id) {
-    String configPath = getConfigPath(persistenceConfigType, id);
-    final Path path = Paths.get(configPath);
+    ensureDirectory(getConfigDirectory(persistenceConfigType));
+    final Path path = Paths.get(getConfigPath(persistenceConfigType, id));
     if (Files.exists(path)) {
       return Optional.of(path);
     } else {
@@ -184,12 +194,23 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
             () ->
                 new ConfigNotFoundException(
                     String.format(
-                        "config type: %s id: %s not found", persistenceConfigType, configId)));
+                        "config type: %s id: %s not found in path %s",
+                        persistenceConfigType,
+                        configId,
+                        getConfigPath(persistenceConfigType, configId))));
   }
 
   private <T> T fileToPojo(File file, Class<T> clazz) {
     try {
       return objectMapper.readValue(file, clazz);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void ensureDirectory(String path) {
+    try {
+      FileUtils.forceMkdir(new File(path));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

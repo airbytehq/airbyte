@@ -13,44 +13,53 @@
         "tables": {
           "type": "array",
           "items": {
-            "type": "object",
-            "required": [
-              "name",
-              "columns"
-            ],
-            "additionalProperties": false,
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "columns": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "required": [
-                    "name",
-                    "dataType"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "dataType": {
-                      "type": "string",
-                      "enum": [
-                        "string",
-                        "number",
-                        "boolean"
-                      ]
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "StandardDataSchema.json#/definitions/table"
           }
         }
       }
+    },
+    "table": {
+      "type": "object",
+      "required": [
+        "name",
+        "columns"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "StandardDataSchema.json#/definitions/column"
+          }
+        }
+      }
+    },
+    "column": {
+      "type": "object",
+      "required": [
+        "name",
+        "dataType"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "dataType": {
+          "$ref": "StandardDataSchema.json#/definitions/dataType"
+        }
+      }
+    },
+    "dataType": {
+      "type": "string",
+      "enum": [
+        "string",
+        "number",
+        "boolean"
+      ]
     }
   }
 }
