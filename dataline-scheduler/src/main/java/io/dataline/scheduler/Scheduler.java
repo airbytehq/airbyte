@@ -7,21 +7,28 @@ import io.dataline.api.model.ConnectionSchedule;
 import io.dataline.api.model.ConnectionStatus;
 import io.dataline.api.model.Job;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
-import io.dataline.workers.WorkerStatus;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.*;
+
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.table;
+
+// todo: handle the fact these arent connection ids anymore
+// todo: split into separate files
 // todo: add comment blurb to describe purpose of this class
 public class Scheduler {
   private static final Logger LOGGER = LoggerFactory.getLogger(Scheduler.class);
@@ -31,10 +38,13 @@ public class Scheduler {
   private static final int MAX_THREADS = MAX_WORKERS + JOB_SUBMITTER_THREAD;
   private static final ThreadFactory THREAD_FACTORY =
       new ThreadFactoryBuilder().setNameFormat("scheduler-%d").build();
+  private final BasicDataSource connectionPool;
 
   // todo: make endpoints in the API for reading job state
 
-  public Scheduler() {}
+  public Scheduler(BasicDataSource connectionPool) {
+    this.connectionPool = connectionPool;
+  }
 
   private static class SchedulerShutdownHookThread extends Thread {
     private ExecutorService threadPool;
@@ -67,7 +77,7 @@ public class Scheduler {
     @Override
     public OutputAndStatus<String> run() {
       LOGGER.info("Hello World");
-      return new OutputAndStatus<>("echoed", WorkerStatus.COMPLETED);
+      return new OutputAndStatus<>(JobStatus.SUCCESSFUL, "echoed");
     }
 
     @Override
@@ -80,30 +90,29 @@ public class Scheduler {
   private static class WorkerWrapper<T> implements Runnable {
     private final long jobId;
     private final Worker<T> worker;
+    private BasicDataSource connectionPool;
 
-    public WorkerWrapper(long jobId, Worker<T> worker) {
+    public WorkerWrapper(long jobId, Worker<T> worker, BasicDataSource connectionPool) {
       this.jobId = jobId;
       this.worker = worker;
+      this.connectionPool = connectionPool;
     }
 
     @Override
     public void run() {
       LOGGER.info("executing worker wrapper...");
       try {
-        setJobStatus(jobId, Job.StatusEnum.RUNNING);
+        setJobStatus(connectionPool, jobId, Job.StatusEnum.RUNNING);
         // todo: use attempt here
 
         OutputAndStatus<T> outputAndStatus = worker.run();
 
         switch (outputAndStatus.status) {
-          case CANCELLED:
-            setJobStatus(jobId, Job.StatusEnum.CANCELLED);
-            break;
           case FAILED:
-            setJobStatus(jobId, Job.StatusEnum.FAILED);
+            setJobStatus(connectionPool, jobId, Job.StatusEnum.FAILED);
             break;
-          case COMPLETED:
-            setJobStatus(jobId, Job.StatusEnum.COMPLETED);
+          case SUCCESSFUL:
+            setJobStatus(connectionPool, jobId, Job.StatusEnum.COMPLETED);
             break;
         }
 
@@ -111,7 +120,7 @@ public class Scheduler {
         LOGGER.info("output " + outputAndStatus.output.toString());
       } catch (Exception e) {
         LOGGER.error("worker error", e);
-        setJobStatus(jobId, Job.StatusEnum.FAILED);
+        setJobStatus(connectionPool, jobId, Job.StatusEnum.FAILED);
       }
     }
   }
@@ -121,7 +130,7 @@ public class Scheduler {
   private static Set<ConnectionRead> getAllActiveConnections() {
     // todo: get this from the api or a helper
     ConnectionSchedule testConnectionSchedule = new ConnectionSchedule();
-    testConnectionSchedule.setUnits(new BigDecimal(1));
+    testConnectionSchedule.setUnits(1);
     testConnectionSchedule.setTimeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES);
 
     ConnectionRead testConnection = new ConnectionRead();
@@ -135,11 +144,18 @@ public class Scheduler {
     return Sets.newHashSet(testConnection);
   }
 
-  private static void setJobStatus(long jobId, Job.StatusEnum status) {
+  private static void setJobStatus(
+      BasicDataSource connectionPool, long jobId, Job.StatusEnum status) {
     LOGGER.info("setting job status to " + status + " for job " + jobId);
     try {
-      DatabaseHelper.execute(
-          String.format("UPDATE jobs SET status = '%s' WHERE id = %d", status.toString(), jobId));
+      DatabaseHelper.query(
+          connectionPool,
+          ctx -> {
+            return ctx.update(table("jobs"))
+                .set(field("status"), status.toString().toLowerCase())
+                .where(field("id").eq(jobId))
+                .execute();
+          });
     } catch (SQLException e) {
       LOGGER.error("sql", e);
       throw new RuntimeException(e); // todo: actually handle this error
@@ -150,9 +166,11 @@ public class Scheduler {
 
   private static class JobSubmitterThread implements Runnable {
     private final ExecutorService threadPool;
+    private BasicDataSource connectionPool;
 
-    public JobSubmitterThread(ExecutorService threadPool) {
+    public JobSubmitterThread(ExecutorService threadPool, BasicDataSource connectionPool) {
       this.threadPool = threadPool;
+      this.connectionPool = connectionPool;
     }
 
     @Override
@@ -162,29 +180,32 @@ public class Scheduler {
           LOGGER.info("running job-submitter...");
           Set<ConnectionRead> activeConnections = getAllActiveConnections();
           for (ConnectionRead connection : activeConnections) {
-            DatabaseHelper.executeQuery(
-                "SELECT * FROM jobs",
-                rs -> {
-                  printResultSet("JOBS", rs);
-                  return null;
-                });
-
             Optional<Job> lastJob =
-                DatabaseHelper.executeQuery(
-                    String.format(
-                        "SELECT * FROM jobs WHERE (connection_id = '%s' AND NOT status = 'cancelled') ORDER BY created_at DESC LIMIT 1",
-                        connection.getConnectionId().toString()),
-                    rs -> {
-                      boolean hasJobEntry = rs.next();
-                      if (hasJobEntry) {
-                        Job job = new Job();
-                        job.setId(rs.getLong("id"));
-                        job.setConnection(connection);
-                        job.setCreatedAt(rs.getLong("created_at"));
-                        job.setStartedAt(rs.getLong("started_at"));
-                        job.setStatus(Job.StatusEnum.fromValue(rs.getString("status")));
-                        job.setUpdatedAt(rs.getLong("created_at"));
+                DatabaseHelper.query(
+                    connectionPool,
+                    ctx -> {
+                      Optional<Record> jobEntryOptional =
+                          ctx
+                              .select()
+                              .from("jobs")
+                              .where(field("scope").eq(connection.getConnectionId().toString()))
+                              .and(field("status").notEqual("cancelled"))
+                              .orderBy(field("created_at").desc())
+                              .limit(1)
+                              .fetch()
+                              .stream()
+                              .findFirst();
 
+                      if (jobEntryOptional.isPresent()) {
+                        Record jobEntry = jobEntryOptional.get();
+                        Job job = new Job();
+                        job.setId(jobEntry.getValue("id", Long.class));
+                        job.setConnection(connection);
+                        job.setCreatedAt(jobEntry.getValue("created_at", Long.class));
+                        job.setStartedAt(jobEntry.getValue("started_at", Long.class));
+                        job.setStatus(
+                            Job.StatusEnum.fromValue(jobEntry.getValue("status", String.class)));
+                        job.setUpdatedAt(jobEntry.getValue("updated_at", Long.class));
                         return Optional.of(job);
                       } else {
                         return Optional.empty();
@@ -193,7 +214,7 @@ public class Scheduler {
 
             if (lastJob.isEmpty()) {
               LOGGER.info("creating pending job for empty last job...");
-              createPendingJob(connection.getConnectionId());
+              createPendingJob(connectionPool, connection.getConnectionId());
               LOGGER.info("created pending job for empty last job...");
             } else {
               Job job = lastJob.get();
@@ -203,14 +224,15 @@ public class Scheduler {
                   ConnectionSchedule schedule = connection.getSchedule();
                   long nextRunStart = job.getUpdatedAt() + getIntervalInSeconds(schedule);
                   if (nextRunStart < Instant.now().getEpochSecond()) {
-                    createPendingJob(job.getConnection().getConnectionId());
+                    createPendingJob(connectionPool, job.getConnection().getConnectionId());
                   }
                   break; // executes on next iteration
                 case PENDING:
                 case FAILED: // infinite retries for now
                   // todo: select kind of worker object to create
                   LOGGER.info("submitting job to thread pool...");
-                  threadPool.submit(new WorkerWrapper<>(job.getId(), new EchoWorker()));
+                  threadPool.submit(
+                      new WorkerWrapper<>(job.getId(), new EchoWorker(), connectionPool));
                 case RUNNING:
                 case CANCELLED:
                   //  no-op
@@ -227,30 +249,24 @@ public class Scheduler {
       }
     }
 
-    private static void printResultSet(String table, ResultSet rs) throws SQLException {
-      System.out.println("ALL " + table + " START");
-      ResultSetMetaData rsmd = rs.getMetaData();
-      int columnsNumber = rsmd.getColumnCount();
-      while (rs.next()) {
-        for (int i = 1; i <= columnsNumber; i++) {
-          if (i > 1) System.out.print(",  ");
-          String columnValue = rs.getString(i);
-          System.out.print(columnValue + " " + rsmd.getColumnName(i));
-        }
-        System.out.println("");
-      }
-
-      System.out.println("ALL " + table + " END");
-    }
-
-    private static void createPendingJob(UUID connectionId) {
+    private static void createPendingJob(BasicDataSource connectionPool, UUID connectionId) {
       LOGGER.info("creating pending job for connection: " + connectionId.toString());
       long now = Instant.now().getEpochSecond();
       try {
-        DatabaseHelper.execute(
-            String.format(
-                "INSERT INTO jobs VALUES (null, '%s', %d, %d, %d, '%s', '', '')",
-                connectionId.toString(), now, now, now, Job.StatusEnum.PENDING.toString()));
+        DatabaseHelper.query(
+            connectionPool,
+            ctx ->
+                ctx.insertInto(table("jobs"))
+                    .values(
+                        null,
+                        connectionId.toString(),
+                        now,
+                        now,
+                        now,
+                        Job.StatusEnum.PENDING.toString(),
+                        "",
+                        "")
+                    .execute());
       } catch (SQLException e) {
         LOGGER.error("sql", e);
         e.printStackTrace();
@@ -280,7 +296,7 @@ public class Scheduler {
   public void start() {
     ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREADS, THREAD_FACTORY);
 
-    threadPool.submit(new JobSubmitterThread(threadPool));
+    threadPool.submit(new JobSubmitterThread(threadPool, connectionPool));
 
     Runtime.getRuntime().addShutdownHook(new SchedulerShutdownHookThread(threadPool));
   }

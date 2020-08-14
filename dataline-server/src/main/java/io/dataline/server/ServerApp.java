@@ -24,9 +24,6 @@ public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
   public void startAndBlock() throws Exception {
-    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
-    System.out.println("server-uuid = " + ServerUuid.get(connectionPool));
-
     Server server = new Server(8000);
 
     ServletContextHandler handler = new ServletContextHandler();
@@ -63,10 +60,12 @@ public class ServerApp {
   }
 
   public static void main(String[] args) throws Exception {
-    LOGGER.info("Launching scheduler...");
-    new Scheduler().start();
+    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
 
-    LOGGER.info("Starting server...");
+    LOGGER.info("Launching scheduler...");
+    new Scheduler(connectionPool).start();
+
+    LOGGER.info("Starting server " + ServerUuid.get(connectionPool) + "...");
     new ServerApp().startAndBlock();
   }
 }
