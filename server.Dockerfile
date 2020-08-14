@@ -25,6 +25,7 @@ WORKDIR /code
 
 COPY --from=cache /tmp/gradle_cache /home/gradle/.gradle
 COPY . /code
+RUN ./tools/singer/setup_singer_env.buster.sh
 RUN gradle clean distTar --no-daemon
 RUN ls /code/dataline-server/build/distributions/
 
