@@ -36,4 +36,10 @@ RUN mkdir data
 COPY --from=build /code/dataline-server/build/distributions/*.tar dataline-server.tar
 RUN tar xf dataline-server.tar --strip-components=1
 
-CMD bin/dataline-server
+# add docker-compose-wait tool
+ENV WAIT_VERSION 2.7.2
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/$WAIT_VERSION/wait wait
+RUN chmod +x wait
+
+# wait for postgres to become available before starting server
+CMD ./wait && bin/dataline-server
