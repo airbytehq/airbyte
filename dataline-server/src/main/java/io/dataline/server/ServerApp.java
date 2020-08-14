@@ -24,20 +24,19 @@
 
 package io.dataline.server;
 
-import io.dataline.db.DatabaseHelper;
-import io.dataline.db.ServerUuid;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
 import io.dataline.server.errors.InvalidJsonExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
 import io.dataline.server.errors.UncaughtExceptionMapper;
 import java.util.logging.Level;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.jersey.logging.LoggingFeature;
+import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
@@ -53,18 +52,28 @@ public class ServerApp {
   }
 
   public void start() throws Exception {
-    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
-    System.out.println("server-uuid = " + ServerUuid.get(connectionPool));
+    //    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+    //    System.out.println("server-uuid = " + ServerUuid.get(connectionPool));
 
     Server server = new Server(8000);
 
     ServletContextHandler handler = new ServletContextHandler();
 
+    ConfigurationApiFactory.setDbRoot(dbRoot);
+
     ResourceConfig rc =
         new ResourceConfig()
             // api
             .register(ConfigurationApi.class)
-            .register(new ConfigurationApi(dbRoot))
+            .register(
+                new AbstractBinder() {
+                  @Override
+                  public void configure() {
+                    bindFactory(ConfigurationApiFactory.class)
+                        .to(ConfigurationApi.class)
+                        .in(RequestScoped.class);
+                  }
+                })
             // exception handling
             .register(InvalidJsonExceptionMapper.class)
             .register(InvalidInputExceptionMapper.class)
