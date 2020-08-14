@@ -7,42 +7,44 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 public class TestServerUuid {
-  private static final PostgreSQLContainer CONTAINER;
-  private static final BasicDataSource CONNECTION_POOL;
+  private static PostgreSQLContainer container;
+  private static BasicDataSource connectionPool;
 
-  static {
-    CONTAINER =
+  @BeforeAll
+  public static void dbSetup() {
+    container =
         new PostgreSQLContainer("postgres:13-alpine")
             .withDatabaseName("dataline")
             .withUsername("docker")
             .withPassword("docker");
     ;
-    CONTAINER.start();
+    container.start();
 
     try {
-      CONTAINER.copyFileToContainer(
+      container.copyFileToContainer(
           MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
       // execInContainer uses Docker's EXEC so it needs to be split up like this
-      CONTAINER.execInContainer(
+      container.execInContainer(
           "psql", "-d", "dataline", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
     } catch (InterruptedException | IOException e) {
       throw new RuntimeException(e);
     }
 
-    CONNECTION_POOL =
+    connectionPool =
         DatabaseHelper.getConnectionPool(
-            CONTAINER.getUsername(), CONTAINER.getPassword(), CONTAINER.getJdbcUrl());
+            container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }
 
   @Test
   void testUuidFormat() throws SQLException, IOException {
-    Optional<String> uuid = ServerUuid.get(CONNECTION_POOL);
+    Optional<String> uuid = ServerUuid.get(connectionPool);
     assertTrue(
         uuid.get()
             .matches(
@@ -51,8 +53,8 @@ public class TestServerUuid {
 
   @Test
   void testSameUuidOverInitializations() throws SQLException, IOException {
-    Optional<String> uuid1 = ServerUuid.get(CONNECTION_POOL);
-    Optional<String> uuid2 = ServerUuid.get(CONNECTION_POOL);
+    Optional<String> uuid1 = ServerUuid.get(connectionPool);
+    Optional<String> uuid2 = ServerUuid.get(connectionPool);
 
     assertEquals(uuid1, uuid2);
   }
