@@ -15,7 +15,11 @@ public abstract class BaseWorkerTestCase {
   @BeforeAll
   public void init() {
     createTestWorkspace();
-    deleteWorkspaceUponJvmExit();
+    try {
+      FileUtils.forceDeleteOnExit(workspaceDirectory.toFile());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   protected Path getWorkspacePath() {
@@ -24,23 +28,11 @@ public abstract class BaseWorkerTestCase {
 
   private void createTestWorkspace() {
     try {
-      workspaceDirectory = Paths.get("/tmp/tests/dataline-" + UUID.randomUUID().toString());
+      workspaceDirectory =
+          Paths.get("/tmp/tests/dataline-" + UUID.randomUUID().toString().substring(0, 8));
       FileUtils.forceMkdir(workspaceDirectory.toFile());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private void deleteWorkspaceUponJvmExit() {
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  try {
-                    FileUtils.deleteDirectory(workspaceDirectory.toFile());
-                  } catch (IOException e) {
-                    throw new RuntimeException(e);
-                  }
-                }));
   }
 }

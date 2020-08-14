@@ -25,12 +25,13 @@ FROM openjdk:14.0.2-slim AS build
 
 WORKDIR /code
 
+# Setup singer environment. Since this is an expensive operation, we run it as early as possible in the buld stage.
+RUN mkdir -p /usr/local/lib/singer
+RUN ./tools/singer/setup_singer_env.buster.sh /usr/local/lib/singer
+
 COPY --from=cache /tmp/gradle_cache /home/gradle/.gradle
 COPY . /code
 
-# Setup singer environment
-RUN mkdir -p /lib/singer
-RUN ./tools/singer/setup_singer_env.buster.sh /lib/singer
 
 # Install Node. While the UI is not going to be served from this container, running UI tests is part of the build.
 RUN apt-get update \
@@ -39,7 +40,7 @@ RUN apt-get update \
     && apt-get install -y nodejs
 
 # Run build
-RUN ./gradlew clean build distTar --no-daemon -console rich --stacktrace
+RUN ./gradlew clean build distTar --no-daemon -console rich
 RUN ls /code/dataline-server/build/distributions/
 
 # Build final image

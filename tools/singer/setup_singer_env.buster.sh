@@ -1,5 +1,5 @@
 #!/bin/bash
-# Currently this assumes debian (buster)
+# Sets up the Singer environment on a Debian (Buster) distro
 
 set -e
 

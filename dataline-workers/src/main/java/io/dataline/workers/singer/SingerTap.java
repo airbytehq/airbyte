@@ -3,7 +3,7 @@ package io.dataline.workers.singer;
 public enum SingerTap implements SingerConnector {
   // TODO
   S3_CSV("", ""),
-  POSTGRES("", ""),
+  POSTGRES("tap-postgres", "tap-postgres"),
   STRIPE("", "");
 
   private final String getPythonVirtualEnvName;
