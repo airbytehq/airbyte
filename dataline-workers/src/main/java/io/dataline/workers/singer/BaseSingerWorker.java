@@ -1,10 +1,11 @@
 package io.dataline.workers.singer;
 
-import static io.dataline.workers.JobStatus.*;
-
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.Worker;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +32,7 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
   @Override
   public void cancel() {
     try {
-      jobStatus = FAILED;
+      jobStatus = JobStatus.FAILED;
       workerProcess.destroy();
       workerProcess.wait(TimeUnit.SECONDS.toMillis(10));
       if (workerProcess.isAlive()) {
