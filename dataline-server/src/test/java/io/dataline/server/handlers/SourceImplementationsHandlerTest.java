@@ -146,7 +146,6 @@ class SourceImplementationsHandlerTest {
             sourceConnectionImplementation.getSourceImplementationId().toString(),
             SourceConnectionImplementation.class))
         .thenReturn(sourceConnectionImplementation)
-        .thenReturn(expectedSourceConnectionImplementation)
         .thenReturn(expectedSourceConnectionImplementation);
 
     final SourceImplementationUpdate sourceImplementationUpdate = new SourceImplementationUpdate();
