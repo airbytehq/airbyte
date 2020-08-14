@@ -15,28 +15,16 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 
 // we force all interaction with disk storage to be effectively single threaded.
-public class ConfigPersistenceImpl implements ConfigPersistence {
+public class DefaultConfigPersistence implements ConfigPersistence {
   private static final Object lock = new Object();
-  private static final String CONFIG_STORAGE_ROOT = "../data/config/";
-  private static final String TEST_STORAGE_ROOT = "/tmp/data/config/";
   private static final String CONFIG_SCHEMA_ROOT = "../dataline-config/src/main/resources/json/";
 
   private final ObjectMapper objectMapper;
   private final JsonSchemaValidation jsonSchemaValidation;
   private final String storageRoot;
-  private final boolean testEnv;
 
-  public static ConfigPersistenceImpl get() {
-    return new ConfigPersistenceImpl(CONFIG_STORAGE_ROOT, false);
-  }
-
-  public static ConfigPersistenceImpl getTest() {
-    return new ConfigPersistenceImpl(TEST_STORAGE_ROOT, true);
-  }
-
-  private ConfigPersistenceImpl(String storageRoot, boolean testEnv) {
+  public DefaultConfigPersistence(String storageRoot) {
     this.storageRoot = storageRoot;
-    this.testEnv = testEnv;
     jsonSchemaValidation = JsonSchemaValidation.getSingletonInstance();
     objectMapper = new ObjectMapper();
   }
@@ -95,10 +83,6 @@ public class ConfigPersistenceImpl implements ConfigPersistence {
   }
 
   public void deleteAll() {
-    if (!testEnv) {
-      throw new RuntimeException("deleteAll operation is only allowed in test environment");
-    }
-
     try {
       FileUtils.forceDelete(new File(storageRoot));
     } catch (IOException e) {

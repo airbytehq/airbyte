@@ -9,8 +9,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.dataline.api.model.*;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.SourceConnectionSpecification;
-import io.dataline.config.persistence.ConfigPersistenceImpl;
+import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.server.fixtures.SourceSpecificationFixtures;
 import java.io.File;
 import java.io.IOException;
@@ -20,14 +21,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SourceImplementationsHandlerTest {
-  private ConfigPersistenceImpl configPersistence;
+  private DefaultConfigPersistence configPersistence;
   private SourceConnectionSpecification sourceConnectionSpecification;
   private SourceConnectionImplementation sourceConnectionImplementation;
   private SourceImplementationsHandler sourceImplementationsHandler;
 
   @BeforeEach
   void setUp() {
-    configPersistence = ConfigPersistenceImpl.getTest();
+    configPersistence = new DefaultConfigPersistence(PersistenceConstants.DEFAULT_TEST_ROOT);
     sourceConnectionSpecification =
         SourceSpecificationFixtures.createSourceConnectionSpecification(configPersistence);
     sourceConnectionImplementation =

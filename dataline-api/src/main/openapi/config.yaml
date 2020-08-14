@@ -221,7 +221,7 @@ paths:
     post:
       tags:
       - source_implementation
-      summary: Get source implementations for workspace
+      summary: List source implementations for workspace
       operationId: listSourceImplementationsForWorkspace
       requestBody:
         content:

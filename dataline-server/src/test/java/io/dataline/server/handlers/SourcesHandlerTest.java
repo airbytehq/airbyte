@@ -6,8 +6,9 @@ import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceRead;
 import io.dataline.api.model.SourceReadList;
 import io.dataline.config.StandardSource;
-import io.dataline.config.persistence.ConfigPersistenceImpl;
+import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.config.persistence.PersistenceConstants;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -15,14 +16,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SourcesHandlerTest {
-  private ConfigPersistenceImpl configPersistence;
+  private DefaultConfigPersistence configPersistence;
   private StandardSource source;
   private SourcesHandler sourceHandler;
 
   @BeforeEach
   void setUp() {
-    configPersistence = ConfigPersistenceImpl.getTest();
-    source = creatSource();
+    configPersistence = new DefaultConfigPersistence(PersistenceConstants.DEFAULT_TEST_ROOT);
+    source = creatSourceMock();
     sourceHandler = new SourcesHandler(configPersistence);
   }
 
@@ -31,7 +32,7 @@ class SourcesHandlerTest {
     configPersistence.deleteAll();
   }
 
-  private StandardSource creatSource() {
+  private StandardSource creatSourceMock() {
     final UUID sourceId = UUID.randomUUID();
 
     final StandardSource standardSource = new StandardSource();
@@ -46,7 +47,7 @@ class SourcesHandlerTest {
 
   @Test
   void listSources() {
-    final StandardSource source2 = creatSource();
+    final StandardSource source2 = creatSourceMock();
     configPersistence.writeConfig(
         PersistenceConfigType.STANDARD_SOURCE, source2.getSourceId().toString(), source2);
 

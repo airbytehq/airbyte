@@ -14,19 +14,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class WorkspacesHandlerTest {
-  private ConfigPersistenceImpl configPersistence;
+  private DefaultConfigPersistence configPersistence;
   private StandardWorkspace workspace;
   private WorkspacesHandler workspacesHandler;
 
   @BeforeEach
   void setUp() {
-    configPersistence = ConfigPersistenceImpl.getTest();
+    configPersistence = new DefaultConfigPersistence(PersistenceConstants.DEFAULT_TEST_ROOT);
     workspace = creatWorkspace();
     workspacesHandler = new WorkspacesHandler(configPersistence);
   }
 
   private StandardWorkspace creatWorkspace() {
-    final UUID workspaceId = WorkspaceConstants.DEFAULT_WORKSPACE_ID;
+    final UUID workspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
 
     final StandardWorkspace standardWorkspace = new StandardWorkspace();
     standardWorkspace.setWorkspaceId(workspaceId);

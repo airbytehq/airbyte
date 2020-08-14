@@ -23,7 +23,7 @@ public class WorkspacesHandler {
   @SuppressWarnings("unused")
   public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody) {
     // for now we assume there is one workspace and it has a default uuid.
-    return getWorkspaceFromId(WorkspaceConstants.DEFAULT_WORKSPACE_ID);
+    return getWorkspaceFromId(PersistenceConstants.DEFAULT_WORKSPACE_ID);
   }
 
   private WorkspaceRead getWorkspaceFromId(UUID workspaceIdUuid) {

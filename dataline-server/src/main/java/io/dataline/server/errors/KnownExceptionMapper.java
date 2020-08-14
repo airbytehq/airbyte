@@ -13,7 +13,7 @@ public class KnownExceptionMapper implements ExceptionMapper<KnownException> {
 
   @Override
   public Response toResponse(KnownException e) {
-    LOGGER.debug("known exception", e);
+    LOGGER.debug("Known exception", e);
     return Response.status(e.getHttpCode())
         .entity(new ObjectMapper().createObjectNode().put("message", e.getMessage()))
         .type("application/json")

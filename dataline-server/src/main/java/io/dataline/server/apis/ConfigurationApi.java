@@ -2,7 +2,7 @@ package io.dataline.server.apis;
 
 import io.dataline.api.model.*;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.ConfigPersistenceImpl;
+import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.server.handlers.SourceImplementationsHandler;
 import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
@@ -18,7 +18,8 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final SourceImplementationsHandler sourceImplementationsHandler;
 
   public ConfigurationApi() {
-    ConfigPersistence configPersistence = ConfigPersistenceImpl.get();
+    // todo: configure with env variable.
+    ConfigPersistence configPersistence = new DefaultConfigPersistence("../data/config/");
     workspacesHandler = new WorkspacesHandler(configPersistence);
     sourcesHandler = new SourcesHandler(configPersistence);
     sourceSpecificationsHandler = new SourceSpecificationsHandler(configPersistence);
