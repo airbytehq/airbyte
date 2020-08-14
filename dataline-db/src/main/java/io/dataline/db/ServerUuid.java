@@ -17,7 +17,10 @@ public class ServerUuid {
         connectionPool,
         ctx -> {
           Result<Record> result =
-              ctx.select().from("dataline_metadata").where(field("id").eq("server-uuid")).fetch();
+              ctx.select()
+                  .from("public.dataline_metadata")
+                  .where(field("id").eq("server-uuid"))
+                  .fetch();
           Optional<Record> first = result.stream().findFirst();
 
           if (first.isEmpty()) {

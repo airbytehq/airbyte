@@ -10,8 +10,6 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=db-${POSTGRES_DB}
-    ports:
-      - 5432:5432
   server:
     build:
       context: .
