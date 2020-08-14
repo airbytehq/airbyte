@@ -31,9 +31,7 @@ public class SourceImplementationsHandler {
   public SourceImplementationsHandler(
       ConfigPersistence configPersistence,
       IntegrationSchemaValidation integrationSchemaValidation) {
-    this.configPersistence = configPersistence;
-    this.validator = integrationSchemaValidation;
-    this.uuidGenerator = UUID::randomUUID;
+    this(configPersistence, integrationSchemaValidation, UUID::randomUUID);
   }
 
   public SourceImplementationRead createSourceImplementation(
