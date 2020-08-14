@@ -9,13 +9,7 @@ public class JsonSchemaValidation {
   private final SchemaValidatorsConfig schemaValidatorsConfig;
   private final JsonSchemaFactory jsonSchemaFactory;
 
-  private static final JsonSchemaValidation INSTANCE = new JsonSchemaValidation();
-
-  public static JsonSchemaValidation getInstance() {
-    return INSTANCE;
-  }
-
-  private JsonSchemaValidation() {
+  public JsonSchemaValidation() {
     this.schemaValidatorsConfig = new SchemaValidatorsConfig();
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
   }
