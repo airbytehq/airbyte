@@ -20,8 +20,10 @@ allprojects {
 subprojects {
 
     if (project.name == "dataline-webapp") {
+        print("cancelling ")
         return
     }
+    print("resuming ")
 
     apply plugin: 'java'
     apply plugin: 'com.diffplug.spotless'

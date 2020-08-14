@@ -5,6 +5,7 @@ set -e
 
 . tools/lib/lib.sh
 
+assert_root
 SINGER_ROOT=$1
 [ -z "$SINGER_ROOT" ] && error "singer_root is required"
 

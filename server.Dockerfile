@@ -11,7 +11,6 @@ COPY ./dataline-config-persistence/build.gradle dataline-config-persistence/
 COPY ./dataline-config/build.gradle dataline-config/
 COPY ./dataline-db/build.gradle dataline-db/
 COPY ./dataline-server/build.gradle dataline-server/
-COPY ./dataline-webapp/build.gradle dataline-webapp/
 COPY ./dataline-workers/build.gradle dataline-workers/
 COPY ./settings.gradle ./
 COPY ./.env ./
@@ -27,9 +26,18 @@ WORKDIR /code
 
 COPY --from=cache /tmp/gradle_cache /home/gradle/.gradle
 COPY . /code
-RUN mkdir -p /lib/singer
-RUN ./tools/singer/setup_singer_env.buster.sh /lib/singer
-RUN ./gradlew clean distTar --no-daemon
+
+# Begin installing singer deps
+#RUN mkdir -p /lib/singer
+#RUN ./tools/singer/setup_singer_env.buster.sh /lib/singer
+# End installing singer deps
+
+RUN apt-get update \
+    && apt-get install -y curl \
+    && curl -sL https://deb.nodesource.com/setup_14.x | bash - \
+    && apt-get install -y nodejs
+
+RUN ./gradlew clean build distTar --no-daemon -console rich --stacktrace
 RUN ls /code/dataline-server/build/distributions/
 
 # Build final image
