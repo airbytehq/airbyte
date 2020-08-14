@@ -3,12 +3,12 @@ package io.dataline.server.apis;
 import io.dataline.api.model.*;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.DefaultConfigPersistence;
+import io.dataline.server.handlers.*;
 import io.dataline.server.handlers.SourceImplementationsHandler;
 import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
 import io.dataline.server.handlers.WorkspacesHandler;
 import io.dataline.server.validation.IntegrationSchemaValidation;
-import io.dataline.server.handlers.*;
 import javax.validation.Valid;
 import javax.ws.rs.Path;
 
@@ -25,15 +25,17 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   public ConfigurationApi() {
     // todo: configure with env variable.
     ConfigPersistence configPersistence = new DefaultConfigPersistence("../data/config/");
+    final IntegrationSchemaValidation integrationSchemaValidation =
+        new IntegrationSchemaValidation(configPersistence);
     workspacesHandler = new WorkspacesHandler(configPersistence);
     sourcesHandler = new SourcesHandler(configPersistence);
     sourceSpecificationsHandler = new SourceSpecificationsHandler(configPersistence);
     sourceImplementationsHandler =
-        new SourceImplementationsHandler(
-            configPersistence, new IntegrationSchemaValidation(configPersistence));
+        new SourceImplementationsHandler(configPersistence, integrationSchemaValidation);
     destinationsHandler = new DestinationsHandler(configPersistence);
     destinationSpecificationsHandler = new DestinationSpecificationsHandler(configPersistence);
-    destinationImplementationsHandler = new DestinationImplementationsHandler(configPersistence);
+    destinationImplementationsHandler =
+        new DestinationImplementationsHandler(configPersistence, integrationSchemaValidation);
   }
 
   // WORKSPACE

@@ -2,56 +2,56 @@ package io.dataline.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Sets;
 import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationRead;
 import io.dataline.api.model.DestinationReadList;
 import io.dataline.config.StandardDestination;
-import io.dataline.config.persistence.ConfigPersistenceImpl;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DestinationsHandlerTest {
-  private ConfigPersistenceImpl configPersistence;
+  private ConfigPersistence configPersistence;
   private StandardDestination destination;
   private DestinationsHandler destinationHandler;
 
   @BeforeEach
   void setUp() {
-    configPersistence = ConfigPersistenceImpl.getTest();
-    destination = creatDestination();
+    configPersistence = mock(ConfigPersistence.class);
+    destination = generateDestination();
     destinationHandler = new DestinationsHandler(configPersistence);
   }
 
-  @AfterEach
-  void tearDown() {
-    configPersistence.deleteAll();
-  }
-
-  private StandardDestination creatDestination() {
+  private StandardDestination generateDestination() {
     final UUID destinationId = UUID.randomUUID();
 
     final StandardDestination standardDestination = new StandardDestination();
     standardDestination.setDestinationId(destinationId);
     standardDestination.setName("presto");
 
-    configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_DESTINATION, destinationId.toString(), standardDestination);
-
     return standardDestination;
   }
 
   @Test
-  void listDestinations() {
-    final StandardDestination destination2 = creatDestination();
+  void testListDestinations() throws JsonValidationException {
+    final StandardDestination destination2 = generateDestination();
     configPersistence.writeConfig(
         PersistenceConfigType.STANDARD_DESTINATION,
         destination2.getDestinationId().toString(),
         destination2);
+
+    when(configPersistence.getConfigs(
+            PersistenceConfigType.STANDARD_DESTINATION, StandardDestination.class))
+        .thenReturn(Sets.newHashSet(destination, destination2));
 
     DestinationRead expectedDestinationRead1 = new DestinationRead();
     expectedDestinationRead1.setDestinationId(destination.getDestinationId());
@@ -83,7 +83,13 @@ class DestinationsHandlerTest {
   }
 
   @Test
-  void getDestination() {
+  void testGetDestination() throws JsonValidationException, ConfigNotFoundException {
+    when(configPersistence.getConfig(
+            PersistenceConfigType.STANDARD_DESTINATION,
+            destination.getDestinationId().toString(),
+            StandardDestination.class))
+        .thenReturn(destination);
+
     DestinationRead expectedDestinationRead = new DestinationRead();
     expectedDestinationRead.setDestinationId(destination.getDestinationId());
     expectedDestinationRead.setName(destination.getName());
