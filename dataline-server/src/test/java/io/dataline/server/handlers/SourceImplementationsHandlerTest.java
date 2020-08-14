@@ -17,11 +17,11 @@ import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.server.helpers.SourceImplementationHelpers;
 import io.dataline.server.helpers.SourceSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.io.File;
 import java.io.IOException;
-import io.dataline.server.helpers.SourceImplementationHelpers;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,11 +41,10 @@ class SourceImplementationsHandlerTest {
     configPersistence = mock(ConfigPersistence.class);
     validator = mock(IntegrationSchemaValidation.class);
     uuidGenerator = mock(Supplier.class);
-    sourceConnectionSpecification =
-        SourceSpecificationHelpers.generateSourceSpecification();
+    sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
     sourceConnectionImplementation =
         SourceImplementationHelpers.generateSourceImplementationMock(
-            configPersistence, sourceConnectionSpecification.getSourceSpecificationId());
+            sourceConnectionSpecification.getSourceSpecificationId());
 
     sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
     sourceConnectionImplementation =

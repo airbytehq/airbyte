@@ -3,15 +3,13 @@ package io.dataline.server.helpers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.PersistenceConfigType;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
 public class SourceImplementationHelpers {
   public static SourceConnectionImplementation generateSourceImplementationMock(
-      ConfigPersistence configPersistence, UUID sourceSpecificationId) {
+      UUID sourceSpecificationId) {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
 

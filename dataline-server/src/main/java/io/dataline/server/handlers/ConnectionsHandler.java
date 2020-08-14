@@ -9,17 +9,24 @@ import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.errors.KnownException;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class ConnectionsHandler {
   private final ConfigPersistence configPersistence;
+  private final Supplier<UUID> uuidGenerator;
+
+  public ConnectionsHandler(ConfigPersistence configPersistence, Supplier<UUID> uuidGenerator) {
+    this.configPersistence = configPersistence;
+    this.uuidGenerator = uuidGenerator;
+  }
 
   public ConnectionsHandler(ConfigPersistence configPersistence) {
-    this.configPersistence = configPersistence;
+    this(configPersistence, UUID::randomUUID);
   }
 
   public ConnectionRead createConnection(ConnectionCreate connectionCreate) {
-    final UUID connectionId = UUID.randomUUID();
+    final UUID connectionId = uuidGenerator.get();
 
     // persist sync
     final StandardSync standardSync = new StandardSync();

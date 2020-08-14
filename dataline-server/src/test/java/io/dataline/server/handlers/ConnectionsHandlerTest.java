@@ -1,47 +1,253 @@
 package io.dataline.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.dataline.api.model.*;
-import io.dataline.config.*;
-import io.dataline.config.persistence.ConfigPersistenceImpl;
+import com.google.common.collect.Sets;
+import io.dataline.api.model.ConnectionCreate;
+import io.dataline.api.model.ConnectionIdRequestBody;
+import io.dataline.api.model.ConnectionRead;
+import io.dataline.api.model.ConnectionReadList;
+import io.dataline.api.model.ConnectionSchedule;
+import io.dataline.api.model.ConnectionStatus;
+import io.dataline.api.model.ConnectionUpdate;
+import io.dataline.api.model.SourceSchema;
+import io.dataline.api.model.SourceSchemaColumn;
+import io.dataline.api.model.SourceSchemaTable;
+import io.dataline.api.model.WorkspaceIdRequestBody;
+import io.dataline.config.Column;
+import io.dataline.config.Schedule;
+import io.dataline.config.Schema;
+import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.StandardSync;
+import io.dataline.config.StandardSyncSchedule;
+import io.dataline.config.Table;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.helpers.SourceImplementationHelpers;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ConnectionsHandlerTest {
 
-  private ConfigPersistenceImpl configPersistence;
+  private ConfigPersistence configPersistence;
+  private Supplier<UUID> uuidGenerator;
+
   private StandardSync standardSync;
   private StandardSyncSchedule standardSyncSchedule;
   private ConnectionsHandler connectionsHandler;
   private SourceConnectionImplementation sourceImplementation;
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
-    configPersistence = ConfigPersistenceImpl.getTest();
+    configPersistence = mock(ConfigPersistence.class);
+    uuidGenerator = mock(Supplier.class);
 
     sourceImplementation =
-        SourceImplementationHelpers.generateSourceImplementationMock(
-            configPersistence, UUID.randomUUID());
-    standardSync = createSyncMock(sourceImplementation.getSourceImplementationId());
-    standardSyncSchedule = creatScheduleMock(standardSync.getConnectionId());
+        SourceImplementationHelpers.generateSourceImplementationMock(UUID.randomUUID());
+    standardSync = generateSync(sourceImplementation.getSourceImplementationId());
+    standardSyncSchedule = generateSchedule(standardSync.getConnectionId());
 
-    connectionsHandler = new ConnectionsHandler(configPersistence);
+    connectionsHandler = new ConnectionsHandler(configPersistence, uuidGenerator);
   }
 
-  @AfterEach
-  void tearDown() {
-    configPersistence.deleteAll();
+  @Test
+  void testCreateConnection() throws JsonValidationException, ConfigNotFoundException {
+    when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
+
+    when(configPersistence.getConfig(
+            PersistenceConfigType.STANDARD_SYNC,
+            standardSync.getConnectionId().toString(),
+            StandardSync.class))
+        .thenReturn(standardSync);
+
+    when(configPersistence.getConfig(
+            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+            standardSyncSchedule.getConnectionId().toString(),
+            StandardSyncSchedule.class))
+        .thenReturn(standardSyncSchedule);
+
+    final ConnectionCreate connectionCreate = new ConnectionCreate();
+    connectionCreate.setSourceImplementationId(standardSync.getSourceImplementationId());
+    connectionCreate.setDestinationImplementationId(standardSync.getDestinationImplementationId());
+    connectionCreate.setName("presto to hudi");
+    connectionCreate.setStatus(ConnectionStatus.ACTIVE);
+    // todo (cgardens) - the codegen auto-nests enums as subclasses. this won't work. we expect
+    //   these enums to be reusable in create, update, read.
+    connectionCreate.setSyncMode(ConnectionCreate.SyncModeEnum.APPEND);
+    connectionCreate.setSchedule(generateBasicSchedule());
+    connectionCreate.setSyncSchema(generateBasicApiSchema());
+
+    final ConnectionRead actualConnectionRead =
+        connectionsHandler.createConnection(connectionCreate);
+
+    final ConnectionRead expectedConnectionRead =
+        generateExpectedConnectionRead(
+            standardSync.getConnectionId(),
+            standardSync.getSourceImplementationId(),
+            standardSync.getDestinationImplementationId());
+
+    assertEquals(expectedConnectionRead, actualConnectionRead);
+
+    verify(configPersistence)
+        .writeConfig(
+            PersistenceConfigType.STANDARD_SYNC,
+            standardSync.getConnectionId().toString(),
+            standardSync);
+
+    verify(configPersistence)
+        .writeConfig(
+            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+            standardSyncSchedule.getConnectionId().toString(),
+            standardSyncSchedule);
   }
 
-  private StandardSync createSyncMock(UUID sourceImplementationId) {
+  @Test
+  void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException {
+    final SourceSchema newApiSchema = generateBasicApiSchema();
+    newApiSchema.getTables().get(0).setName("azkaban_users");
+
+    final ConnectionUpdate connectionUpdate = new ConnectionUpdate();
+    connectionUpdate.setConnectionId(standardSync.getConnectionId());
+    connectionUpdate.setStatus(ConnectionStatus.INACTIVE);
+    connectionUpdate.setSchedule(null);
+    connectionUpdate.setSyncSchema(newApiSchema);
+
+    final Schema newPersistenceSchema = generateBasicPersistenceSchema();
+    newPersistenceSchema.getTables().get(0).setName("azkaban_users");
+
+    final StandardSync updatedStandardSync = new StandardSync();
+    updatedStandardSync.setConnectionId(standardSync.getConnectionId());
+    updatedStandardSync.setName("presto to hudi");
+    updatedStandardSync.setSourceImplementationId(standardSync.getSourceImplementationId());
+    updatedStandardSync.setDestinationImplementationId(
+        standardSync.getDestinationImplementationId());
+    updatedStandardSync.setSyncMode(standardSync.getSyncMode());
+    updatedStandardSync.setStatus(StandardSync.Status.INACTIVE);
+    updatedStandardSync.setSchema(newPersistenceSchema);
+
+    final StandardSyncSchedule updatedPersistenceSchedule = new StandardSyncSchedule();
+    updatedPersistenceSchedule.setConnectionId(standardSyncSchedule.getConnectionId());
+    updatedPersistenceSchedule.setManual(true);
+
+    when(configPersistence.getConfig(
+            PersistenceConfigType.STANDARD_SYNC,
+            standardSync.getConnectionId().toString(),
+            StandardSync.class))
+        .thenReturn(standardSync)
+        .thenReturn(updatedStandardSync);
+
+    when(configPersistence.getConfig(
+            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+            standardSyncSchedule.getConnectionId().toString(),
+            StandardSyncSchedule.class))
+        .thenReturn(standardSyncSchedule)
+        .thenReturn(updatedPersistenceSchedule);
+
+    final ConnectionRead actualConnectionRead =
+        connectionsHandler.updateConnection(connectionUpdate);
+
+    final ConnectionRead expectedConnectionRead =
+        generateExpectedConnectionRead(
+            standardSync.getConnectionId(),
+            standardSync.getSourceImplementationId(),
+            standardSync.getDestinationImplementationId());
+
+    expectedConnectionRead.setSchedule(null);
+    expectedConnectionRead.setSyncSchema(newApiSchema);
+    expectedConnectionRead.setStatus(ConnectionStatus.INACTIVE);
+
+    assertEquals(expectedConnectionRead, actualConnectionRead);
+
+    verify(configPersistence)
+        .writeConfig(
+            PersistenceConfigType.STANDARD_SYNC,
+            standardSync.getConnectionId().toString(),
+            updatedStandardSync);
+
+    verify(configPersistence)
+        .writeConfig(
+            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+            standardSyncSchedule.getConnectionId().toString(),
+            updatedPersistenceSchedule);
+  }
+
+  @Test
+  void testGetConnection() throws JsonValidationException, ConfigNotFoundException {
+    when(configPersistence.getConfig(
+            PersistenceConfigType.STANDARD_SYNC,
+            standardSync.getConnectionId().toString(),
+            StandardSync.class))
+        .thenReturn(standardSync);
+
+    when(configPersistence.getConfig(
+            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+            standardSync.getConnectionId().toString(),
+            StandardSyncSchedule.class))
+        .thenReturn(standardSyncSchedule);
+
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
+    connectionIdRequestBody.setConnectionId(standardSync.getConnectionId());
+    final ConnectionRead actualConnectionRead =
+        connectionsHandler.getConnection(connectionIdRequestBody);
+
+    assertEquals(generateExpectedConnectionRead(), actualConnectionRead);
+  }
+
+  @Test
+  void testListConnectionsForWorkspace() throws JsonValidationException, ConfigNotFoundException {
+    // mock list off all syncs
+    when(configPersistence.getConfigs(PersistenceConfigType.STANDARD_SYNC, StandardSync.class))
+        .thenReturn(Sets.newHashSet(standardSync));
+
+    // mock get source connection impl (used to check that connection is associated with given
+    // workspace)
+    when(configPersistence.getConfig(
+            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+            sourceImplementation.getSourceImplementationId().toString(),
+            SourceConnectionImplementation.class))
+        .thenReturn(sourceImplementation);
+
+    // mock get schedule for the now verified connection
+    when(configPersistence.getConfig(
+            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+            standardSync.getConnectionId().toString(),
+            StandardSyncSchedule.class))
+        .thenReturn(standardSyncSchedule);
+
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
+    workspaceIdRequestBody.setWorkspaceId(sourceImplementation.getWorkspaceId());
+    final ConnectionReadList actualConnectionReadList =
+        connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
+
+    assertEquals(
+        generateExpectedConnectionRead(), actualConnectionReadList.getConnections().get(0));
+  }
+
+  private StandardSync generateSync(UUID sourceImplementationId) {
     final UUID connectionId = UUID.randomUUID();
 
+    final StandardSync standardSync = new StandardSync();
+    standardSync.setConnectionId(connectionId);
+    standardSync.setName("presto to hudi");
+    standardSync.setStatus(StandardSync.Status.ACTIVE);
+    standardSync.setSchema(generateBasicPersistenceSchema());
+    standardSync.setSourceImplementationId(sourceImplementationId);
+    standardSync.setDestinationImplementationId(UUID.randomUUID());
+    standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
+
+    return standardSync;
+  }
+
+  private Schema generateBasicPersistenceSchema() {
     final Column column = new Column();
     column.setDataType(Column.DataType.STRING);
     column.setName("id");
@@ -53,22 +259,10 @@ class ConnectionsHandlerTest {
     final Schema schema = new Schema();
     schema.setTables(Lists.newArrayList(table));
 
-    final StandardSync standardSync = new StandardSync();
-    standardSync.setConnectionId(connectionId);
-    standardSync.setName("presto to hudi");
-    standardSync.setStatus(StandardSync.Status.ACTIVE);
-    standardSync.setSchema(schema);
-    standardSync.setSourceImplementationId(sourceImplementationId);
-    standardSync.setDestinationImplementationId(UUID.randomUUID());
-    standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
-
-    configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_SYNC, connectionId.toString(), standardSync);
-
-    return standardSync;
+    return schema;
   }
 
-  private SourceSchema getBasicSchema() {
+  private SourceSchema generateBasicApiSchema() {
     final SourceSchemaColumn column = new SourceSchemaColumn();
     column.setDataType(SourceSchemaColumn.DataTypeEnum.STRING);
     column.setName("id");
@@ -83,7 +277,7 @@ class ConnectionsHandlerTest {
     return schema;
   }
 
-  private ConnectionSchedule getBasicSchedule() {
+  private ConnectionSchedule generateBasicSchedule() {
     final ConnectionSchedule connectionSchedule = new ConnectionSchedule();
     connectionSchedule.setTimeUnit(ConnectionSchedule.TimeUnitEnum.DAYS);
     connectionSchedule.setUnits(1);
@@ -91,7 +285,7 @@ class ConnectionsHandlerTest {
     return connectionSchedule;
   }
 
-  private ConnectionRead getExpectedConnectionRead(
+  private ConnectionRead generateExpectedConnectionRead(
       UUID connectionId, UUID sourceImplementationId, UUID destinationImplementationId) {
     final ConnectionRead expectedConnectionRead = new ConnectionRead();
     expectedConnectionRead.setConnectionId(connectionId);
@@ -100,20 +294,20 @@ class ConnectionsHandlerTest {
     expectedConnectionRead.setName("presto to hudi");
     expectedConnectionRead.setStatus(ConnectionStatus.ACTIVE);
     expectedConnectionRead.setSyncMode(ConnectionRead.SyncModeEnum.APPEND);
-    expectedConnectionRead.setSchedule(getBasicSchedule());
-    expectedConnectionRead.setSyncSchema(getBasicSchema());
+    expectedConnectionRead.setSchedule(generateBasicSchedule());
+    expectedConnectionRead.setSyncSchema(generateBasicApiSchema());
 
     return expectedConnectionRead;
   }
 
-  private ConnectionRead getExpectedConnectionRead() {
-    return getExpectedConnectionRead(
+  private ConnectionRead generateExpectedConnectionRead() {
+    return generateExpectedConnectionRead(
         standardSync.getConnectionId(),
         standardSync.getSourceImplementationId(),
         standardSync.getDestinationImplementationId());
   }
 
-  private StandardSyncSchedule creatScheduleMock(UUID connectionId) {
+  private StandardSyncSchedule generateSchedule(UUID connectionId) {
     final Schedule schedule = new Schedule();
     schedule.setTimeUnit(Schedule.TimeUnit.DAYS);
     schedule.setUnits(1);
@@ -123,90 +317,6 @@ class ConnectionsHandlerTest {
     standardSchedule.setSchedule(schedule);
     standardSchedule.setManual(false);
 
-    configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_SYNC_SCHEDULE, connectionId.toString(), standardSchedule);
-
     return standardSchedule;
-  }
-
-  @Test
-  void createConnection() {
-    final ConnectionCreate connectionCreate = new ConnectionCreate();
-    connectionCreate.setSourceImplementationId(standardSync.getSourceImplementationId());
-    connectionCreate.setDestinationImplementationId(standardSync.getDestinationImplementationId());
-    connectionCreate.setName("presto to hudi");
-    connectionCreate.setStatus(ConnectionStatus.ACTIVE);
-    // todo (cgardens) - the codegen auto-nests enums as subclasses. this won't work. we expect
-    // these
-    //   enums to be reusable in create, update, read.
-    connectionCreate.setSyncMode(ConnectionCreate.SyncModeEnum.APPEND);
-    connectionCreate.setSchedule(getBasicSchedule());
-    connectionCreate.setSyncSchema(getBasicSchema());
-
-    final ConnectionRead connection = connectionsHandler.createConnection(connectionCreate);
-
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
-    connectionIdRequestBody.setConnectionId(connection.getConnectionId());
-    final ConnectionRead actualConnectionRead =
-        connectionsHandler.getConnection(connectionIdRequestBody);
-
-    final ConnectionRead expectedConnectionRead =
-        getExpectedConnectionRead(
-            connection.getConnectionId(),
-            standardSync.getSourceImplementationId(),
-            standardSync.getDestinationImplementationId());
-
-    assertEquals(expectedConnectionRead, actualConnectionRead);
-  }
-
-  @Test
-  void updateConnection() {
-    final SourceSchema newSchema = getBasicSchema();
-    newSchema.getTables().get(0).setName("azkaban_users");
-
-    final ConnectionUpdate connectionUpdate = new ConnectionUpdate();
-    connectionUpdate.setConnectionId(standardSync.getConnectionId());
-    connectionUpdate.setStatus(ConnectionStatus.INACTIVE);
-    connectionUpdate.setSchedule(null);
-    connectionUpdate.setSyncSchema(newSchema);
-
-    connectionsHandler.updateConnection(connectionUpdate);
-
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
-    connectionIdRequestBody.setConnectionId(standardSync.getConnectionId());
-    final ConnectionRead actualConnectionRead =
-        connectionsHandler.getConnection(connectionIdRequestBody);
-
-    final ConnectionRead expectedConnectionRead =
-        getExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceImplementationId(),
-            standardSync.getDestinationImplementationId());
-
-    expectedConnectionRead.setSchedule(null);
-    expectedConnectionRead.setSyncSchema(newSchema);
-    expectedConnectionRead.setStatus(ConnectionStatus.INACTIVE);
-
-    assertEquals(expectedConnectionRead, actualConnectionRead);
-  }
-
-  @Test
-  void getConnection() {
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
-    connectionIdRequestBody.setConnectionId(standardSync.getConnectionId());
-    final ConnectionRead actualConnectionRead =
-        connectionsHandler.getConnection(connectionIdRequestBody);
-
-    assertEquals(getExpectedConnectionRead(), actualConnectionRead);
-  }
-
-  @Test
-  void listConnectionsForWorkspace() {
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
-    workspaceIdRequestBody.setWorkspaceId(sourceImplementation.getWorkspaceId());
-    final ConnectionReadList actualConnectionReadList =
-        connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
-
-    assertEquals(getExpectedConnectionRead(), actualConnectionReadList.getConnections().get(0));
   }
 }
