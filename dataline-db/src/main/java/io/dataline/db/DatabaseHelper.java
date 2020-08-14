@@ -16,7 +16,7 @@ public class DatabaseHelper {
     return getConnectionPool(
         System.getenv("DATABASE_USER"),
         System.getenv("DATABASE_PASSWORD"),
-        System.getenv("DATABASE_CONNECT_STR"));
+        System.getenv("DATABASE_URL"));
   }
 
   public static BasicDataSource getConnectionPool(
