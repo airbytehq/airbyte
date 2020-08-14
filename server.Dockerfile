@@ -36,4 +36,5 @@ RUN mkdir data
 COPY --from=build /code/dataline-server/build/distributions/*.tar dataline-server.tar
 RUN tar xf dataline-server.tar --strip-components=1
 
-CMD bin/dataline-server
+# wait for postgres to become available before starting server
+CMD while !</dev/tcp/db/5432; do sleep 1; done; bin/dataline-server

@@ -13,8 +13,11 @@ public class DatabaseHelper {
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseHelper.class);
 
   public static BasicDataSource getConnectionPoolFromEnv() {
+    System.out.println("System.getenv(\"POSTGRES_USER\") = " + System.getenv("POSTGRES_USER"));
+    System.out.println("System.getenv(\"POSTGRES_PASSWORD\") = " + System.getenv("POSTGRES_PASSWORD"));
+    System.out.println("System.getenv(\"POSTGRES_CONNECT_STR\") = " + System.getenv("POSTGRES_CONNECT_STR"));
     return getConnectionPool(
-        System.getenv("POSTGRES_USERNAME"),
+        System.getenv("POSTGRES_USER"),
         System.getenv("POSTGRES_PASSWORD"),
         System.getenv("POSTGRES_CONNECT_STR"));
   }
