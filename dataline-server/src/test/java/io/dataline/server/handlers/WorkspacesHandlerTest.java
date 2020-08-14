@@ -41,7 +41,7 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void getWorkspace() throws JsonValidationException, ConfigNotFoundException {
+  void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException {
     when(configPersistence.getConfig(
             PersistenceConfigType.STANDARD_WORKSPACE,
             workspace.getWorkspaceId().toString(),
@@ -61,7 +61,7 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void getWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException {
+  void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException {
     when(configPersistence.getConfig(
             PersistenceConfigType.STANDARD_WORKSPACE,
             workspace.getWorkspaceId().toString(),
@@ -81,7 +81,7 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void updateWorkspace() throws JsonValidationException, ConfigNotFoundException {
+  void testUpdateWorkspace() throws JsonValidationException, ConfigNotFoundException {
 
     final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate();
     workspaceUpdate.setWorkspaceId(workspace.getWorkspaceId());

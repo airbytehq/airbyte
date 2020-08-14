@@ -28,7 +28,7 @@ class SourceSpecificationsHandlerTest {
   }
 
   @Test
-  void getSourceSpecification() throws JsonValidationException {
+  void testGetSourceSpecification() throws JsonValidationException {
     when(configPersistence.getConfigs(
             PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
             SourceConnectionSpecification.class))

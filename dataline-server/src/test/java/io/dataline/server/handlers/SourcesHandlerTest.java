@@ -42,7 +42,7 @@ class SourcesHandlerTest {
   }
 
   @Test
-  void listSources() throws JsonValidationException {
+  void testListSources() throws JsonValidationException {
     final StandardSource source2 = generateSource();
     configPersistence.writeConfig(
         PersistenceConfigType.STANDARD_SOURCE, source2.getSourceId().toString(), source2);
@@ -76,7 +76,7 @@ class SourcesHandlerTest {
   }
 
   @Test
-  void getSource() throws JsonValidationException, ConfigNotFoundException {
+  void testGetSource() throws JsonValidationException, ConfigNotFoundException {
     when(configPersistence.getConfig(
             PersistenceConfigType.STANDARD_SOURCE,
             source.getSourceId().toString(),

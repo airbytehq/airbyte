@@ -34,11 +34,11 @@ class SourceImplementationsHandlerTest {
   private IntegrationSchemaValidation validator;
   private Supplier<UUID> uuidGenerator;
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
     configPersistence = mock(ConfigPersistence.class);
     validator = mock(IntegrationSchemaValidation.class);
-    //noinspection unchecked
     uuidGenerator = mock(Supplier.class);
 
     sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
@@ -77,7 +77,7 @@ class SourceImplementationsHandlerTest {
   }
 
   @Test
-  void createSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
+  void testCreateSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
     when(uuidGenerator.get())
         .thenReturn(sourceConnectionImplementation.getSourceImplementationId());
 
@@ -121,7 +121,7 @@ class SourceImplementationsHandlerTest {
   }
 
   @Test
-  void updateSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
+  void testUpdateSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
     final Object configuration = sourceConnectionImplementation.getConfiguration();
     final JsonNode newConfiguration;
     try {
@@ -174,7 +174,7 @@ class SourceImplementationsHandlerTest {
   }
 
   @Test
-  void getSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
+  void testGetSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
     when(configPersistence.getConfig(
             PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
             sourceConnectionImplementation.getSourceImplementationId().toString(),
@@ -203,7 +203,7 @@ class SourceImplementationsHandlerTest {
   }
 
   @Test
-  void listSourceImplementationsForWorkspace() throws JsonValidationException {
+  void testListSourceImplementationsForWorkspace() throws JsonValidationException {
     when(configPersistence.getConfigs(
             PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
             SourceConnectionImplementation.class))

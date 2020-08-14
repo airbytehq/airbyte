@@ -82,14 +82,6 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     }
   }
 
-  public void deleteAll() {
-    try {
-      FileUtils.forceDelete(new File(storageRoot));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   private JsonNode getSchema(PersistenceConfigType persistenceConfigType) {
     String configSchemaFilename =
         standardConfigTypeToConfigSchema(persistenceConfigType).getSchemaFilename();
