@@ -36,7 +36,6 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
     try {
       return runInternal();
     } finally {
-      //      FileUtils.deleteQuietly(workspacePath.toFile());
     }
   }
 

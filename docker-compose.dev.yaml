@@ -4,7 +4,7 @@ services:
   server:
     build:
       context: .
-      dockerfile: server.Dockerfile
+      dockerfile: server_dist.Dockerfile
     image: server:dev
     container_name: dataline-server
     environment:
