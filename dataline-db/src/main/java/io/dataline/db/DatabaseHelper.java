@@ -14,9 +14,9 @@ public class DatabaseHelper {
 
   public static BasicDataSource getConnectionPoolFromEnv() {
     return getConnectionPool(
-        System.getenv("POSTGRES_USER"),
-        System.getenv("POSTGRES_PASSWORD"),
-        System.getenv("POSTGRES_CONNECT_STR"));
+        System.getenv("DATABASE_USER"),
+        System.getenv("DATABASE_PASSWORD"),
+        System.getenv("DATABASE_CONNECT_STR"));
   }
 
   public static BasicDataSource getConnectionPool(
