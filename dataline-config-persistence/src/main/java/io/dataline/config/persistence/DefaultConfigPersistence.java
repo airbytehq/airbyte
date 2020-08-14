@@ -25,7 +25,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
   public DefaultConfigPersistence(String storageRoot) {
     this.storageRoot = storageRoot;
-    jsonSchemaValidation = JsonSchemaValidation.getSingletonInstance();
+    jsonSchemaValidation = new JsonSchemaValidation();
     objectMapper = new ObjectMapper();
   }
 

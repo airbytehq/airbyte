@@ -16,7 +16,7 @@ public class IntegrationSchemaValidation {
     this.configPersistence = configPersistence;
 
     this.objectMapper = new ObjectMapper();
-    jsonSchemaValidation = JsonSchemaValidation.getSingletonInstance();
+    this.jsonSchemaValidation = new JsonSchemaValidation();
   }
 
   public void validateSourceConnectionConfiguration(
