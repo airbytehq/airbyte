@@ -1,37 +1,39 @@
 package io.dataline.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Sets;
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceSpecificationRead;
 import io.dataline.config.SourceConnectionSpecification;
-import io.dataline.config.persistence.DefaultConfigPersistence;
-import io.dataline.config.persistence.PersistenceConstants;
-import io.dataline.server.fixtures.SourceSpecificationFixtures;
-import org.junit.jupiter.api.AfterEach;
+import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.server.helpers.SourceSpecificationHelpers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SourceSpecificationsHandlerTest {
-  private DefaultConfigPersistence configPersistence;
+  private ConfigPersistence configPersistence;
   private SourceConnectionSpecification sourceConnectionSpecification;
   private SourceSpecificationsHandler sourceSpecificationHandler;
 
   @BeforeEach
   void setUp() {
-    configPersistence = new DefaultConfigPersistence(PersistenceConstants.DEFAULT_TEST_ROOT);
-    sourceConnectionSpecification =
-        SourceSpecificationFixtures.createSourceConnectionSpecification(configPersistence);
+    configPersistence = mock(ConfigPersistence.class);
+    sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
     sourceSpecificationHandler = new SourceSpecificationsHandler(configPersistence);
   }
 
-  @AfterEach
-  void tearDown() {
-    configPersistence.deleteAll();
-  }
-
   @Test
-  void getSourceSpecification() {
+  void getSourceSpecification() throws JsonValidationException {
+    when(configPersistence.getConfigs(
+            PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+            SourceConnectionSpecification.class))
+        .thenReturn(Sets.newHashSet(sourceConnectionSpecification));
+
     SourceSpecificationRead expectedSourceSpecificationRead = new SourceSpecificationRead();
     expectedSourceSpecificationRead.setSourceId(sourceConnectionSpecification.getSourceId());
     expectedSourceSpecificationRead.setSourceSpecificationId(
