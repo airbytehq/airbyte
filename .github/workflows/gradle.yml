@@ -11,30 +11,22 @@ jobs:
       - name: Checkout Dataline
         uses: actions/checkout@v2
 
-      # Impact is fairly limited, might actually need to cache node_modules
-      - name: Cache node modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            npm-
+      #      # Impact is fairly limited, might actually need to cache node_modules
+      #      - name: Cache node modules
+      #        uses: actions/cache@v2
+      #        with:
+      #          path: ~/.npm
+      #          key: npm-${{ hashFiles('**/package-lock.json') }}
+      #          restore-keys: |
+      #            npm-
+      #
+      #      - name: Cache java deps
+      #        uses: actions/cache@v2
+      #        with:
+      #          path: ~/.gradle/caches
+      #          key: gradle-${{ hashFiles('**/*.gradle') }}
+      #          restore-keys: |
+      #            gradle-
 
-      - name: Cache java deps
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: |
-            gradle-
-
-      - name: Set up JDK 14
-        uses: actions/setup-java@v1
-        with:
-          java-version: 14
-
-      - name: Build with Gradle
-        run: ./gradlew build --no-daemon
-
-      - name: Ensure no file change
-        run: git diff-index --quiet HEAD
+      - name: Build
+        run: ./test/app/build.sh
