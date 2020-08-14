@@ -12,7 +12,14 @@ import org.slf4j.LoggerFactory;
 public class DatabaseHelper {
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseHelper.class);
 
-  public static synchronized BasicDataSource getConnectionPool(
+  public static BasicDataSource getConnectionPoolFromEnv() {
+    return getConnectionPool(
+        System.getenv("POSTGRES_USERNAME"),
+        System.getenv("POSTGRES_PASSWORD"),
+        System.getenv("POSTGRES_CONNECT_STR"));
+  }
+
+  public static BasicDataSource getConnectionPool(
       String username, String password, String jdbcConnectionString) {
 
     BasicDataSource connectionPool = new BasicDataSource();
