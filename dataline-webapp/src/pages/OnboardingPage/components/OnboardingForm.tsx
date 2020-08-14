@@ -24,6 +24,16 @@ const SmallLabeledDropDown = styled(LabeledDropDown)`
   max-width: 202px;
 `;
 
+const LinkToInstruction = styled.a`
+  margin-left: 19px;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  text-decoration: underline;
+
+  color: ${({ theme }) => theme.primaryColor};
+`;
+
 const onboardingValidationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),
   serviceType: yup.string().required("form.empty.error")
@@ -34,6 +44,19 @@ const OnboardingForm: React.FC<IProps> = ({
   formType,
   dropDownData
 }) => {
+  const instructionLink = (serviceId: string) => {
+    const service = dropDownData.find(item => item.value === serviceId);
+
+    return service ? (
+      <LinkToInstruction href="https://dataline.io/" target="_blank">
+        <FormattedMessage
+          id="onboarding.instructionsLink"
+          values={{ name: service.text }}
+        />
+      </LinkToInstruction>
+    ) : null;
+  };
+
   const formatMessage = useIntl().formatMessage;
 
   return (
@@ -50,7 +73,7 @@ const OnboardingForm: React.FC<IProps> = ({
         onSubmit();
       }}
     >
-      {({ isSubmitting, setFieldValue, isValid, dirty }) => (
+      {({ isSubmitting, setFieldValue, isValid, dirty, values }) => (
         <Form>
           <FormItem>
             <Field name="name">
@@ -90,6 +113,7 @@ const OnboardingForm: React.FC<IProps> = ({
                 />
               )}
             </Field>
+            {values.serviceType && instructionLink(values.serviceType)}
           </FormItem>
 
           <ButtonContainer>

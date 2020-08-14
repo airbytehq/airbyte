@@ -12,8 +12,6 @@
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.27",
     "@fortawesome/free-solid-svg-icons": "^5.12.1",
-    "@fortawesome/pro-light-svg-icons": "^5.14.0",
-    "@fortawesome/pro-regular-svg-icons": "^5.12.1",
     "@fortawesome/react-fontawesome": "^0.1.8",
     "formik": "2.1.5",
     "query-string": "^6.13.1",

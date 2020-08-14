@@ -1,0 +1,46 @@
+[
+  {
+    "text": "manual",
+    "value": "manual"
+  },
+  {
+    "text": "Every 5 min",
+    "value": "5m"
+  },
+  {
+    "text": "Every 15 min",
+    "value": "15m"
+  },
+  {
+    "text": "Every 30 min",
+    "value": "30m"
+  },
+  {
+    "text": "Every hour",
+    "value": "1h"
+  },
+  {
+    "text": "Every 2 hours",
+    "value": "2h"
+  },
+  {
+    "text": "Every 3 hours",
+    "value": "3h"
+  },
+  {
+    "text": "Every 6 hours",
+    "value": "6h"
+  },
+  {
+    "text": "Every 8 hours",
+    "value": "8h"
+  },
+  {
+    "text": "Every 12 hours",
+    "value": "12h"
+  },
+  {
+    "text": "Every 24 hours",
+    "value": "24h"
+  }
+]

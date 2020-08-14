@@ -2,7 +2,7 @@ import styled from "styled-components";
 import React from "react";
 
 type IProps = {
-  img: string;
+  img?: string;
 };
 
 export const Content = styled.div`
@@ -17,7 +17,7 @@ export const Content = styled.div`
 
 const ImageBlock: React.FC<IProps> = ({ img }) => (
   <Content>
-    <img src={img} height={18} alt={"logo"} />
+    <img src={img || "/default-logo-catalog.svg"} height={18} alt={"logo"} />
   </Content>
 );
 

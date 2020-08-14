@@ -42,5 +42,6 @@
   "onboarding.destinationSetUp": "Set up the destination",
   "onboarding.destinationSetUp.buttonText": "Set up destination",
   "onboarding.setUpConnection": "Set up connection",
-  "onboarding.setConnection": "Set up the connection"
+  "onboarding.setConnection": "Set up the connection",
+  "onboarding.instructionsLink": "See instructions how to connect {name}"
 }

@@ -1,8 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBook } from "@fortawesome/pro-regular-svg-icons";
-import { faLifeRing } from "@fortawesome/pro-light-svg-icons";
+import { faLifeRing, faBook } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
@@ -10,7 +9,7 @@ import Link from "../Link";
 import Source from "./components/Source";
 import Destination from "./components/Destination";
 import { Routes } from "../../pages/routes";
-import { config } from "../../config/config";
+import config from "../../config";
 
 const Bar = styled.nav`
   width: 100px;
