@@ -3,6 +3,7 @@ package io.dataline.server.apis;
 import io.dataline.api.model.*;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.DefaultConfigPersistence;
+import io.dataline.server.errors.KnownException;
 import io.dataline.server.handlers.*;
 import io.dataline.server.handlers.SourceImplementationsHandler;
 import io.dataline.server.handlers.SourceSpecificationsHandler;
@@ -21,6 +22,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final DestinationsHandler destinationsHandler;
   private final DestinationSpecificationsHandler destinationSpecificationsHandler;
   private final DestinationImplementationsHandler destinationImplementationsHandler;
+  private final ConnectionsHandler connectionsHandler;
 
   public ConfigurationApi() {
     // todo: configure with env variable.
@@ -36,6 +38,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     destinationSpecificationsHandler = new DestinationSpecificationsHandler(configPersistence);
     destinationImplementationsHandler =
         new DestinationImplementationsHandler(configPersistence, integrationSchemaValidation);
+    connectionsHandler = new ConnectionsHandler(configPersistence);
   }
 
   // WORKSPACE
@@ -105,13 +108,13 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   @Override
   public SourceImplementationTestConnectionRead testConnectionToSourceImplementation(
       @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    return null;
+    throw new KnownException(404, "Not implemented");
   }
 
   @Override
   public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(
       @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    return null;
+    throw new KnownException(404, "Not implemented");
   }
 
   // DESTINATION
@@ -166,28 +169,28 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   // CONNECTION
 
   @Override
-  public ConnectionReadList listConnectionsForWorkspace(
-      @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return null;
-  }
-
-  @Override
-  public ConnectionRead getConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    return null;
-  }
-
-  @Override
   public ConnectionRead createConnection(@Valid ConnectionCreate connectionCreate) {
-    return null;
-  }
-
-  @Override
-  public ConnectionSyncRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    return null;
+    return connectionsHandler.createConnection(connectionCreate);
   }
 
   @Override
   public ConnectionRead updateConnection(@Valid ConnectionUpdate connectionUpdate) {
-    return null;
+    return connectionsHandler.updateConnection(connectionUpdate);
+  }
+
+  @Override
+  public ConnectionReadList listConnectionsForWorkspace(
+      @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
+  }
+
+  @Override
+  public ConnectionRead getConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+    return connectionsHandler.getConnection(connectionIdRequestBody);
+  }
+
+  @Override
+  public ConnectionSyncRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+    throw new KnownException(404, "Not implemented");
   }
 }

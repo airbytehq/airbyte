@@ -899,7 +899,7 @@ components:
         name:
           type: string
           description: Optional name of the connection
-        sourceImplementationIdId:
+        sourceImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
         destinationImplementationId:
           $ref: "#/components/schemas/DestinationImplementationId"
@@ -920,7 +920,6 @@ components:
       - sourceImplementationId
       - destinationImplementationId
       - syncSchema
-      - schedule
       - status
       properties:
         connectionId:
@@ -940,7 +939,6 @@ components:
       - destinationImplementationId
       - syncMode
       - schema
-      - schedule
       - status
       properties:
         connectionId:
@@ -979,22 +977,14 @@ components:
       - inactive
       - deprecated
     ConnectionSchedule:
-      type: object
-      oneOf:
-      - $ref: "#/components/schemas/ScheduleImplementation"
-      - $ref: "#/components/schemas/NoOpSchedule"
-    NoOpSchedule:
-      type: string
-      enum:
-      - noop
-    ScheduleImplementation:
+      description: if null, then no schedule is set.
       type: object
       required:
       - units
       - timeUnit
       properties:
         units:
-          type: number
+          type: integer
         timeUnit:
           type: string
           enum:
@@ -1021,30 +1011,33 @@ components:
         tables:
           type: array
           items:
-            type: object
-            required:
-            - name
-            - columns
-            properties:
-              name:
-                type: string
-              columns:
-                type: array
-                items:
-                  type: object
-                  required:
-                  - name
-                  - dataType
-                  properties:
-                    name:
-                      type: string
-                    dataType:
-                      type: string
-                      enum:
-                      - string
-                      - number
-                      - uuid
-                      - boolean
+            $ref: "#/components/schemas/SourceSchemaTable"
+    SourceSchemaColumn:
+      type: object
+      required:
+      - name
+      - dataType
+      properties:
+        name:
+          type: string
+        dataType:
+          type: string
+          enum:
+          - string
+          - number
+          - boolean
+    SourceSchemaTable:
+      type: object
+      required:
+      - name
+      - columns
+      properties:
+        name:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceSchemaColumn"
   responses:
     InvalidInput:
       description: Invalid Input

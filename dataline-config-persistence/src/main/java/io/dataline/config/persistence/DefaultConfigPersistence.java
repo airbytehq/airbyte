@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import me.andrz.jackson.JsonReferenceException;
+import me.andrz.jackson.JsonReferenceProcessor;
 import org.apache.commons.io.FileUtils;
 
 // we force all interaction with disk storage to be effectively single threaded.
@@ -87,8 +89,12 @@ public class DefaultConfigPersistence implements ConfigPersistence {
         standardConfigTypeToConfigSchema(persistenceConfigType).getSchemaFilename();
     File schemaFile = new File(String.format("%s/%s", CONFIG_SCHEMA_ROOT, configSchemaFilename));
     try {
-      return objectMapper.readTree(schemaFile);
-    } catch (IOException e) {
+      // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
+      // this.
+      final JsonReferenceProcessor jsonReferenceProcessor = new JsonReferenceProcessor();
+      jsonReferenceProcessor.setMaxDepth(-1); // no max.
+      return jsonReferenceProcessor.process(schemaFile);
+    } catch (IOException | JsonReferenceException e) {
       throw new RuntimeException(e);
     }
   }
