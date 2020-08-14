@@ -45,9 +45,7 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
     OutputAndStatus<DiscoveryOutput> run = worker.run();
     assertEquals(SUCCESSFUL, run.status);
 
-    String expectedCatalog =
-        Resources.toString(
-            Resources.getResource("simple_postgres_catalog.json"), Charset.defaultCharset());
+    String expectedCatalog = readResource("simple_postgres_catalog.json");
     assertTrue(run.output.isPresent());
     assertEquals(expectedCatalog, run.output.get().catalog);
   }
