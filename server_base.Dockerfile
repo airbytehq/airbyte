@@ -28,7 +28,8 @@ WORKDIR /code
 # Setup singer environment. Since this is an expensive operation, we run it as early as possible in the build stage.
 COPY ./.env ./
 COPY ./.root ./
-COPY ./tools ./tools/
+COPY ./tools/singer ./tools/singer
+COPY ./tools/lib ./tools/lib
 RUN mkdir -p /usr/local/lib/singer
 RUN ./tools/singer/setup_singer_env.buster.sh /usr/local/lib/singer
 
