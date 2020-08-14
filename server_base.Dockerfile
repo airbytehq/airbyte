@@ -21,17 +21,16 @@ COPY ./gradle ./gradle
 RUN ./gradlew --gradle-user-home=/tmp/gradle_cache clean dependencies --no-daemon
 
 # Build artifact
-FROM openjdk:14.0.2-slim AS build
+FROM openjdk:14.0.2-slim
 
 WORKDIR /code
 
-# Setup singer environment. Since this is an expensive operation, we run it as early as possible in the buld stage.
+# Setup singer environment. Since this is an expensive operation, we run it as early as possible in the build stage.
+COPY ./.env ./
+COPY ./.root ./
+COPY ./tools ./tools/
 RUN mkdir -p /usr/local/lib/singer
 RUN ./tools/singer/setup_singer_env.buster.sh /usr/local/lib/singer
-
-COPY --from=cache /tmp/gradle_cache /home/gradle/.gradle
-COPY . /code
-
 
 # Install Node. While the UI is not going to be served from this container, running UI tests is part of the build.
 RUN apt-get update \
@@ -39,25 +38,10 @@ RUN apt-get update \
     && curl -sL https://deb.nodesource.com/setup_14.x | bash - \
     && apt-get install -y nodejs
 
-# Run build
-RUN ./gradlew clean build distTar --no-daemon -console rich
-RUN ls /code/dataline-server/build/distributions/
+COPY --from=cache /tmp/gradle_cache /home/gradle/.gradle
+COPY . /code
 
-# Build final image
-FROM openjdk:14.0.2-slim
+# Create distributions, but don't run tests just yet
+RUN ./gradlew clean distTar --no-daemon --console rich
+ENTRYPOINT ["./gradlew", "build", "--no-daemon", "--console", "rich"]
 
-EXPOSE 8000
-
-WORKDIR /app/dataline-server
-
-# TODO: add data mount instead
-RUN mkdir data
-
-# Add singer deps
-RUN mkdir -p /lib/singer
-RUN ./tools/singer/setup_singer_env.buster.sh /lib/singer
-
-COPY --from=build /code/dataline-server/build/distributions/*.tar dataline-server.tar
-RUN tar xf dataline-server.tar --strip-components=1
-
-CMD bin/dataline-server
