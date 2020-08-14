@@ -1,6 +1,6 @@
 # Developing Locally
 
-## Getting Started
+## Develop with Docker
 
 ```text
 $ git clone git@github.com:datalineio/dataline.git
@@ -12,7 +12,7 @@ The first build will take a few minutes, next ones will go faster.
 
 Once it completes, Dataline will be running your environment.
 
-## Compile with Gradle
+## Develop with Gradle
 
 Dataline uses `java 14` and `node 14`
 
@@ -20,6 +20,14 @@ Dataline uses `java 14` and `node 14`
 $ cd dataline
 $ ./gradlew clean build
 ```
+
+> For this part we can be smart and leverage docker compose to start dependencies while the module we want to work on runs on the host system.
+
+### Run the frontend separately
+
+### Run the APIs separately
+
+### Run the scheduler separately
 
 ## Code Style
 
