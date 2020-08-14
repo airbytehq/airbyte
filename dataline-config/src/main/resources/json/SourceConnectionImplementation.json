@@ -3,10 +3,14 @@
   "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/SourceConnectionConfiguration.json",
   "title": "SourceConnectionConfiguration",
   "description": "information required for connection to a destination.",  "type": "object",
-  "required": ["sourceSpecificationId", "sourceImplementationId", "configuration"],
+  "required": ["sourceSpecificationId", "sourceImplementationId", "workspaceId","configuration"],
   "additionalProperties": false,
   "properties": {
     "sourceSpecificationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "workspaceId": {
       "type": "string",
       "format": "uuid"
     },

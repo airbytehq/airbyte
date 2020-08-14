@@ -2,11 +2,12 @@ package io.dataline.server.apis;
 
 import io.dataline.api.model.*;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.ConfigPersistenceImpl;
+import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.server.handlers.SourceImplementationsHandler;
 import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
 import io.dataline.server.handlers.WorkspacesHandler;
+import io.dataline.server.validation.IntegrationSchemaValidation;
 import javax.validation.Valid;
 import javax.ws.rs.Path;
 
@@ -18,11 +19,14 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final SourceImplementationsHandler sourceImplementationsHandler;
 
   public ConfigurationApi() {
-    ConfigPersistence configPersistence = new ConfigPersistenceImpl();
+    // todo: configure with env variable.
+    ConfigPersistence configPersistence = new DefaultConfigPersistence("../data/config/");
     workspacesHandler = new WorkspacesHandler(configPersistence);
     sourcesHandler = new SourcesHandler(configPersistence);
     sourceSpecificationsHandler = new SourceSpecificationsHandler(configPersistence);
-    sourceImplementationsHandler = new SourceImplementationsHandler(configPersistence);
+    sourceImplementationsHandler =
+        new SourceImplementationsHandler(
+            configPersistence, new IntegrationSchemaValidation(configPersistence));
   }
 
   // WORKSPACE
@@ -70,21 +74,16 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   @Override
-  public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(
-      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    return null;
-  }
-
-  @Override
   public SourceImplementationRead getSourceImplementation(
       @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    return null;
+    return sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
   }
 
   @Override
-  public SourceImplementationReadList getSourceImplementationsForWorkspace(
+  public SourceImplementationReadList listSourceImplementationsForWorkspace(
       @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return null;
+    return sourceImplementationsHandler.listSourceImplementationsForWorkspace(
+        workspaceIdRequestBody);
   }
 
   @Override
@@ -96,6 +95,12 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   @Override
   public SourceImplementationRead updateSourceImplementation(
       @Valid SourceImplementationUpdate sourceImplementationUpdate) {
+    return sourceImplementationsHandler.updateSourceImplementation(sourceImplementationUpdate);
+  }
+
+  @Override
+  public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(
+      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return null;
   }
 
