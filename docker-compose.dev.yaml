@@ -1,6 +1,14 @@
 version: '3'
 
 services:
+  db:
+    image: postgres:${POSTGRES_VERSION}
+    volumes:
+      - ./dataline-db/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=db-${POSTGRES_DB}
   server:
     build:
       context: .
@@ -9,9 +17,14 @@ services:
     container_name: dataline-server
     environment:
       - ENV=docker
-      - POSTGRES_VERSION=${POSTGRES_VERSION}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_CONNECT_STR=${POSTGRES_CONNECT_STR}
     ports:
       - 8001:8000
+    depends_on:
+      - db
   webapp:
     build:
       context: .
@@ -22,11 +35,3 @@ services:
       - 8000:80
     depends_on:
       - server
-  db:
-    image: postgres:${POSTGRES_VERSION}
-    volumes:
-      - ./dataline-db/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/init.sql
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=db-${POSTGRES_DB}
