@@ -27,10 +27,10 @@ package io.dataline.server;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.db.ServerUuid;
 import io.dataline.server.apis.ConfigurationApi;
-import io.dataline.server.errors.CatchAllExceptionMapper;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
 import io.dataline.server.errors.InvalidJsonExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
+import io.dataline.server.errors.UncaughtExceptionMapper;
 import java.util.logging.Level;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
@@ -45,6 +45,12 @@ import org.slf4j.LoggerFactory;
 
 public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
+  private final String dbRoot;
+
+  public ServerApp(String dbRoot) {
+
+    this.dbRoot = dbRoot;
+  }
 
   public void start() throws Exception {
     BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
@@ -57,12 +63,13 @@ public class ServerApp {
     ResourceConfig rc =
         new ResourceConfig()
             // api
-            .registerClasses(ConfigurationApi.class)
+            .register(ConfigurationApi.class)
+            .register(new ConfigurationApi(dbRoot))
             // exception handling
             .register(InvalidJsonExceptionMapper.class)
             .register(InvalidInputExceptionMapper.class)
             .register(KnownExceptionMapper.class)
-            .register(CatchAllExceptionMapper.class)
+            .register(UncaughtExceptionMapper.class)
             // needed so that the custom json exception mappers don't get overridden
             // https://stackoverflow.com/questions/35669774/jersey-custom-exception-mapper-for-invalid-json-string
             .register(JacksonJaxbJsonProvider.class)
@@ -88,6 +95,6 @@ public class ServerApp {
   public static void main(String[] args) throws Exception {
     LOGGER.info("Starting server...");
 
-    new ServerApp().start();
+    new ServerApp("/Users/charles/code/dataline/data/config").start();
   }
 }
