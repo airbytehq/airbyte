@@ -24,6 +24,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_CONNECT_STR=${POSTGRES_CONNECT_STR}
+      - WAIT_HOSTS=db:5432
     ports:
       - 8001:8000
     depends_on:
