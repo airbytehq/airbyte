@@ -23,7 +23,7 @@ public class DatabaseHelper {
       String username, String password, String jdbcConnectionString) {
 
     BasicDataSource connectionPool = new BasicDataSource();
-    connectionPool.setDriverClassName("org.sqlite.JDBC");
+    connectionPool.setDriverClassName("org.postgresql.Driver");
     connectionPool.setUsername(username);
     connectionPool.setPassword(password);
     connectionPool.setUrl(jdbcConnectionString);
