@@ -3,8 +3,12 @@ plugins {
 }
 
 dependencies {
-    implementation group:'org.xerial', name:'sqlite-jdbc', version:'3.8.11.2'
-    implementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
+    api 'org.apache.commons:commons-dbcp2:2.7.0'
+    api 'org.jooq:jooq-meta:3.13.4'
+    api 'org.jooq:jooq:3.13.4'
+    api 'org.postgresql:postgresql:42.1.4'
 
     implementation project(':dataline-commons')
+
+    testImplementation "org.testcontainers:postgresql:1.14.3"
 }
