@@ -24,12 +24,16 @@
 
 package io.dataline.server;
 
+import io.dataline.db.DatabaseHelper;
+import io.dataline.db.ServerUuid;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
 import io.dataline.server.errors.InvalidJsonExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
 import io.dataline.server.errors.UncaughtExceptionMapper;
 import java.util.logging.Level;
+
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -52,8 +56,8 @@ public class ServerApp {
   }
 
   public void start() throws Exception {
-    //    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
-    //    System.out.println("server-uuid = " + ServerUuid.get(connectionPool));
+    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+    System.out.println("server-uuid = " + ServerUuid.get(connectionPool));
 
     Server server = new Server(8000);
 
