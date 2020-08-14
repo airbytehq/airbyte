@@ -53,6 +53,9 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
               .redirectError(new File(errorLogPath))
               .redirectOutput(new File(catalogDotJsonPath))
               .start();
+
+      // TODO will need to wrap this synchronize in a while loop and timeout to prevent contention coming from
+      //  cancellations
       synchronized (workerProcess) {
         workerProcess.wait();
       }
