@@ -2,12 +2,14 @@ package io.dataline.server;
 
 import io.dataline.db.DatabaseHelper;
 import io.dataline.scheduler.Scheduler;
+import io.dataline.db.ServerUuid;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.CatchAllExceptionMapper;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
 import io.dataline.server.errors.InvalidJsonExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
 import java.util.logging.Level;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -22,6 +24,9 @@ public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
   public void startAndBlock() throws Exception {
+    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+    System.out.println("server-uuid = " + ServerUuid.get(connectionPool));
+
     Server server = new Server(8000);
 
     ServletContextHandler handler = new ServletContextHandler();
@@ -58,9 +63,6 @@ public class ServerApp {
   }
 
   public static void main(String[] args) throws Exception {
-    LOGGER.info("Establishing database schema...");
-    DatabaseHelper.initializeDatabase();
-
     LOGGER.info("Launching scheduler...");
     new Scheduler().start();
 

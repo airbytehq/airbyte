@@ -1,7 +1,11 @@
 package io.dataline.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.networknt.schema.*;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SchemaValidatorsConfig;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -9,13 +13,7 @@ public class JsonSchemaValidation {
   private final SchemaValidatorsConfig schemaValidatorsConfig;
   private final JsonSchemaFactory jsonSchemaFactory;
 
-  private static final JsonSchemaValidation INSTANCE = new JsonSchemaValidation();
-
-  public static JsonSchemaValidation getInstance() {
-    return INSTANCE;
-  }
-
-  private JsonSchemaValidation() {
+  public JsonSchemaValidation() {
     this.schemaValidatorsConfig = new SchemaValidatorsConfig();
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
   }

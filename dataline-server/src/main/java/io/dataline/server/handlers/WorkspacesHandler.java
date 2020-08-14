@@ -5,7 +5,11 @@ import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
 import io.dataline.config.StandardWorkspace;
-import io.dataline.config.persistence.*;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.server.errors.KnownException;
 import java.util.UUID;
 
@@ -23,7 +27,7 @@ public class WorkspacesHandler {
   @SuppressWarnings("unused")
   public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody) {
     // for now we assume there is one workspace and it has a default uuid.
-    return getWorkspaceFromId(WorkspaceConstants.DEFAULT_WORKSPACE_ID);
+    return getWorkspaceFromId(PersistenceConstants.DEFAULT_WORKSPACE_ID);
   }
 
   private WorkspaceRead getWorkspaceFromId(UUID workspaceIdUuid) {
@@ -69,6 +73,8 @@ public class WorkspacesHandler {
     persistedWorkspace.setAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection());
     persistedWorkspace.setNews(workspaceUpdate.getNews());
     persistedWorkspace.setSecurityUpdates(workspaceUpdate.getSecurityUpdates());
+    configPersistence.writeConfig(
+        PersistenceConfigType.STANDARD_WORKSPACE, workspaceId, persistedWorkspace);
 
     return getWorkspaceFromId(workspaceUpdate.getWorkspaceId());
   }

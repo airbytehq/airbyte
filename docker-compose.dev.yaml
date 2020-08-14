@@ -1,6 +1,15 @@
 version: '3'
 
 services:
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - ./dataline-db/pg_data:/var/lib/postgresql/data
+      - ./dataline-db/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=db-${DATABASE_DB}
   server:
     build:
       context: .
@@ -9,8 +18,14 @@ services:
     container_name: dataline-server
     environment:
       - ENV=${ENV}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - WAIT_HOSTS=db:5432
     ports:
       - 8001:8000
+    depends_on:
+      - db
   webapp:
     build:
       context: .
