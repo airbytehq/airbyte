@@ -33,10 +33,7 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
   @Override
   public OutputAndStatus<OutputType> run() {
     createWorkspace();
-    try {
-      return runInternal();
-    } finally {
-    }
+    return runInternal();
   }
 
   public abstract OutputAndStatus<OutputType> runInternal();
