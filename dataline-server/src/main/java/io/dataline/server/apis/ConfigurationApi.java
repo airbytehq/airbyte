@@ -7,6 +7,7 @@ import io.dataline.server.handlers.SourceImplementationsHandler;
 import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
 import io.dataline.server.handlers.WorkspacesHandler;
+import io.dataline.server.validation.IntegrationSchemaValidation;
 import javax.validation.Valid;
 import javax.ws.rs.Path;
 
@@ -23,7 +24,9 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     workspacesHandler = new WorkspacesHandler(configPersistence);
     sourcesHandler = new SourcesHandler(configPersistence);
     sourceSpecificationsHandler = new SourceSpecificationsHandler(configPersistence);
-    sourceImplementationsHandler = new SourceImplementationsHandler(configPersistence);
+    sourceImplementationsHandler =
+        new SourceImplementationsHandler(
+            configPersistence, new IntegrationSchemaValidation(configPersistence));
   }
 
   // WORKSPACE

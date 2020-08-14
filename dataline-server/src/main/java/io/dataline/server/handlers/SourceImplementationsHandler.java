@@ -10,15 +10,30 @@ import io.dataline.server.errors.KnownException;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class SourceImplementationsHandler {
+
+  private final Supplier<UUID> uuidGenerator;
   private final ConfigPersistence configPersistence;
   private final IntegrationSchemaValidation validator;
 
-  public SourceImplementationsHandler(ConfigPersistence configPersistence) {
+  public SourceImplementationsHandler(
+      ConfigPersistence configPersistence,
+      IntegrationSchemaValidation integrationSchemaValidation,
+      Supplier<UUID> uuidGenerator) {
     this.configPersistence = configPersistence;
-    this.validator = new IntegrationSchemaValidation(configPersistence);
+    this.validator = integrationSchemaValidation;
+    this.uuidGenerator = uuidGenerator;
+  }
+
+  public SourceImplementationsHandler(
+      ConfigPersistence configPersistence,
+      IntegrationSchemaValidation integrationSchemaValidation) {
+    this.configPersistence = configPersistence;
+    this.validator = integrationSchemaValidation;
+    this.uuidGenerator = UUID::randomUUID;
   }
 
   public SourceImplementationRead createSourceImplementation(
@@ -29,7 +44,7 @@ public class SourceImplementationsHandler {
         sourceImplementationCreate.getConnectionConfiguration());
 
     // persist
-    final UUID sourceImplementationId = UUID.randomUUID();
+    final UUID sourceImplementationId = uuidGenerator.get();
     persistSourceConnectionImplementation(
         sourceImplementationCreate.getSourceSpecificationId(),
         sourceImplementationCreate.getWorkspaceId(),

@@ -1,55 +1,54 @@
 package io.dataline.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Sets;
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceRead;
 import io.dataline.api.model.SourceReadList;
 import io.dataline.config.StandardSource;
-import io.dataline.config.persistence.DefaultConfigPersistence;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
-import io.dataline.config.persistence.PersistenceConstants;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SourcesHandlerTest {
-  private DefaultConfigPersistence configPersistence;
+  private ConfigPersistence configPersistence;
   private StandardSource source;
   private SourcesHandler sourceHandler;
 
   @BeforeEach
   void setUp() {
-    configPersistence = new DefaultConfigPersistence(PersistenceConstants.DEFAULT_TEST_ROOT);
-    source = creatSourceMock();
+    configPersistence = mock(ConfigPersistence.class);
+    source = generateSource();
     sourceHandler = new SourcesHandler(configPersistence);
   }
 
-  @AfterEach
-  void tearDown() {
-    configPersistence.deleteAll();
-  }
-
-  private StandardSource creatSourceMock() {
+  private StandardSource generateSource() {
     final UUID sourceId = UUID.randomUUID();
 
     final StandardSource standardSource = new StandardSource();
     standardSource.setSourceId(sourceId);
     standardSource.setName("presto");
 
-    configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_SOURCE, sourceId.toString(), standardSource);
-
     return standardSource;
   }
 
   @Test
-  void listSources() {
-    final StandardSource source2 = creatSourceMock();
+  void listSources() throws JsonValidationException {
+    final StandardSource source2 = generateSource();
     configPersistence.writeConfig(
         PersistenceConfigType.STANDARD_SOURCE, source2.getSourceId().toString(), source2);
+
+    when(configPersistence.getConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class))
+        .thenReturn(Sets.newHashSet(source, source2));
 
     SourceRead expectedSourceRead1 = new SourceRead();
     expectedSourceRead1.setSourceId(source.getSourceId());
@@ -77,7 +76,13 @@ class SourcesHandlerTest {
   }
 
   @Test
-  void getSource() {
+  void getSource() throws JsonValidationException, ConfigNotFoundException {
+    when(configPersistence.getConfig(
+            PersistenceConfigType.STANDARD_SOURCE,
+            source.getSourceId().toString(),
+            StandardSource.class))
+        .thenReturn(source);
+
     SourceRead expectedSourceRead = new SourceRead();
     expectedSourceRead.setSourceId(source.getSourceId());
     expectedSourceRead.setName(source.getName());
