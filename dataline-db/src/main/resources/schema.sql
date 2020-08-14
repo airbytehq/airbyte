@@ -1,16 +1,17 @@
+-- database
+CREATE DATABASE dataline;
+\connect dataline;
+
 -- extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- database
-CREATE DATABASE dataline;
-
 -- types
-CREATE TYPE public.JOB_STATUS AS ENUM ('pending', 'running', 'failed', 'completed', 'cancelled');
+CREATE TYPE JOB_STATUS AS ENUM ('pending', 'running', 'failed', 'completed', 'cancelled');
 
 -- tables
-CREATE TABLE public.DATALINE_METADATA (id VARCHAR (255) PRIMARY KEY, value VARCHAR (255));
+CREATE TABLE DATALINE_METADATA (id VARCHAR (255) PRIMARY KEY, value VARCHAR (255));
 
-CREATE TABLE public.JOBS (
+CREATE TABLE JOBS (
     id BIGSERIAL PRIMARY KEY,
     scope VARCHAR (255),
     created_at TIMESTAMPTZ,
@@ -24,7 +25,7 @@ CREATE TABLE public.JOBS (
 );
 
 -- entries
-INSERT INTO public.DATALINE_METADATA VALUES  ('server-uuid', uuid_generate_v4());
+INSERT INTO DATALINE_METADATA VALUES  ('server-uuid', uuid_generate_v4());
 
 -- grants
-GRANT ALL ON SCHEMA public TO docker;
+GRANT ALL ON DATABASE dataline TO docker;

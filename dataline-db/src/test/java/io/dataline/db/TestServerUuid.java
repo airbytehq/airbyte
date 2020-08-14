@@ -8,23 +8,36 @@ import java.sql.SQLException;
 import java.util.Optional;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 public class TestServerUuid {
-  private static final JdbcDatabaseContainer POSTGRES_CONTAINER;
+  private static final PostgreSQLContainer CONTAINER;
   private static final BasicDataSource CONNECTION_POOL;
 
   static {
-    // todo: load image from env and don't hardcode absolute path
-    POSTGRES_CONTAINER = new PostgreSQLContainer("postgres:13-alpine").withInitScript("schema.sql");
-    POSTGRES_CONTAINER.start();
+    CONTAINER =
+        new PostgreSQLContainer("postgres:13-alpine")
+            .withDatabaseName("dataline")
+            .withUsername("docker")
+            .withPassword("docker");
+    ;
+    CONTAINER.start();
+
+    try {
+      CONTAINER.copyFileToContainer(
+          MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
+      // execInContainer uses Docker's EXEC so it needs to be split up like this
+      CONTAINER.execInContainer(
+          "psql", "-d", "dataline", "-U", "docker", "-a", "-f", "/etc/init.sql");
+
+    } catch (InterruptedException | IOException e) {
+      throw new RuntimeException(e);
+    }
 
     CONNECTION_POOL =
         DatabaseHelper.getConnectionPool(
-            POSTGRES_CONTAINER.getUsername(),
-            POSTGRES_CONTAINER.getPassword(),
-            POSTGRES_CONTAINER.getJdbcUrl());
+            CONTAINER.getUsername(), CONTAINER.getPassword(), CONTAINER.getJdbcUrl());
   }
 
   @Test
