@@ -47,7 +47,7 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
 
     String expectedCatalog = readResource("simple_postgres_catalog.json");
     assertTrue(run.output.isPresent());
-    assertEquals(expectedCatalog, run.output.get().catalog);
+    assertJsonEquals(expectedCatalog, run.output.get().catalog);
   }
 
   private String readResource(String name) {
@@ -57,6 +57,11 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private void assertJsonEquals(String s1, String s2) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    assertTrue(mapper.readTree(s1).equals(mapper.readTree(s2)));
   }
 
   private String getPostgresConfigJson(PostgreSQLContainer psqlContainer)
