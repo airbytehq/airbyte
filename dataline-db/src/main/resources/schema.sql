@@ -1,3 +1,27 @@
-CREATE TABLE DATALINE_METADATA (id varchar(255), value varchar(255), PRIMARY KEY (id));
-INSERT INTO DATALINE_METADATA VALUES  ('server-uuid', ((lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))));
-CREATE TABLE JOBS (id INTEGER PRIMARY KEY AUTOINCREMENT, scope varchar(255), created_at INTEGER, started_at INTEGER, updated_at INTEGER, status INTEGER, config BLOB, output, BLOB, stdout_path varchar(255), stderr_path varchar(255));
+-- extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- database
+CREATE DATABASE dataline;
+
+-- types
+CREATE TYPE JOB_STATUS AS ENUM ('pending', 'running', 'failed', 'completed', 'cancelled');
+
+-- tables
+CREATE TABLE DATALINE_METADATA (id VARCHAR (255) PRIMARY KEY, value VARCHAR (255));
+
+CREATE TABLE JOBS (
+    id BIGSERIAL PRIMARY KEY,
+    scope VARCHAR (255),
+    created_at TIMESTAMPTZ,
+    started_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ,
+    status JOB_STATUS,
+    config JSONB,
+    output JSONB,
+    stdout_path VARCHAR (255),
+    stderr_path VARCHAR (255)
+);
+
+-- entries
+INSERT INTO DATALINE_METADATA VALUES  ('server-uuid', uuid_generate_v4());
