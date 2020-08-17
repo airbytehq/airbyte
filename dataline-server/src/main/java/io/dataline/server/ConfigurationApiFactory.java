@@ -22,27 +22,28 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.enums;
+package io.dataline.server;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import io.dataline.server.apis.ConfigurationApi;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import org.glassfish.hk2.api.Factory;
 
-public class Enums {
+public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
+  private static String dbRoot;
+  @Context private HttpHeaders headers;
 
-  public static <T1 extends Enum<T1>, T2 extends Enum<T2>> T2 convertTo(T1 ie, Class<T2> oe) {
-    return Enum.valueOf(oe, ie.name());
+  public static void setDbRoot(String dbRoot) {
+    ConfigurationApiFactory.dbRoot = dbRoot;
   }
 
-  public static <T1 extends Enum<T1>, T2 extends Enum<T2>> boolean isCompatible(
-      Class<T1> c1, Class<T2> c2) {
-    Preconditions.checkArgument(c1.isEnum());
-    Preconditions.checkArgument(c2.isEnum());
-    return c1.getEnumConstants().length == c2.getEnumConstants().length
-        && Sets.difference(
-                Arrays.stream(c1.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()),
-                Arrays.stream(c2.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()))
-            .isEmpty();
+  @Override
+  public ConfigurationApi provide() {
+    return new ConfigurationApi(ConfigurationApiFactory.dbRoot);
+  }
+
+  @Override
+  public void dispose(ConfigurationApi service) {
+    /* noop */
   }
 }
