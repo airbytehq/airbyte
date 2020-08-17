@@ -47,5 +47,7 @@
 
   "sources.newSource": "+ New source",
   "sources.newSourceTitle": "New Source",
-  "sources.selectSource": "Select a source"
+  "sources.selectSource": "Select a source",
+
+  "destination.destinationSettings": "Destination Settings"
 }
