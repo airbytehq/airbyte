@@ -50,7 +50,7 @@ subprojects {
             googleJavaFormat('1.8')
             trimTrailingWhitespace()
             removeUnusedImports()
-            licenseHeaderFile createLicenseWith(rootProject.file('LICENSE.md'))
+            licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
         }
         groovyGradle {
             target '**/*.gradle'
