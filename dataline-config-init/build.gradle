@@ -13,6 +13,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
+// seed local directory with initial configurations.
 copy {
     from 'src/main/resources'
     into '/Users/charles/code/dataline/data'
