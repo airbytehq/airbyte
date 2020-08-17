@@ -22,6 +22,8 @@
   "form.frequency": "Sync frequency",
   "form.frequency.placeholder": "Select a frequency",
   "form.frequency.message": "Set how often Dataline attempts to replicate data.",
+  "form.cancel": "Cancel",
+  "form.saveChanges": "Save changes",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",

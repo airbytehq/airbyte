@@ -28,7 +28,8 @@ const FormContent: React.FC<IProps> = ({
   dropDownData,
   formType,
   setFieldValue,
-  values
+  values,
+  isEditMode
 }) => {
   const formatMessage = useIntl().formatMessage;
 
@@ -57,6 +58,7 @@ const FormContent: React.FC<IProps> = ({
           {({ field }: FieldProps<string>) => (
             <SmallLabeledDropDown
               {...field}
+              disabled={isEditMode}
               label={formatMessage({
                 id: `form.${formType}Type`
               })}

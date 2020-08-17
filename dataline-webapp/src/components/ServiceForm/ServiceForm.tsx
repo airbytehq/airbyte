@@ -6,11 +6,13 @@ import styled from "styled-components";
 import { IDataItem } from "../DropDown/components/ListItem";
 import FormContent from "./components/FormContent";
 import BottomBlock from "./components/BottomBlock";
+import EditControls from "./components/EditControls";
 
 type IProps = {
   dropDownData: Array<IDataItem>;
   onSubmit: () => void;
   formType: "source" | "destination";
+  formValues?: { name: string; serviceType: string };
 };
 
 const FormContainer = styled(Form)`
@@ -22,16 +24,18 @@ const onboardingValidationSchema = yup.object().shape({
   serviceType: yup.string().required("form.empty.error")
 });
 
-const OnboardingForm: React.FC<IProps> = ({
+const ServiceForm: React.FC<IProps> = ({
   onSubmit,
   formType,
-  dropDownData
+  dropDownData,
+  formValues
 }) => {
+  const isEditMode = !!formValues;
   return (
     <Formik
       initialValues={{
-        name: "",
-        serviceType: ""
+        name: formValues?.name || "",
+        serviceType: formValues?.serviceType || ""
       }}
       validateOnBlur={true}
       validateOnChange={true}
@@ -41,25 +45,35 @@ const OnboardingForm: React.FC<IProps> = ({
         onSubmit();
       }}
     >
-      {({ isSubmitting, setFieldValue, isValid, dirty, values }) => (
+      {({ isSubmitting, setFieldValue, isValid, dirty, values, resetForm }) => (
         <FormContainer>
           <FormContent
             dropDownData={dropDownData}
             formType={formType}
             setFieldValue={setFieldValue}
             values={values}
+            isEditMode={isEditMode}
           />
 
-          <BottomBlock
-            isSubmitting={isSubmitting}
-            isValid={isValid}
-            dirty={dirty}
-            formType={formType}
-          />
+          {isEditMode ? (
+            <EditControls
+              isSubmitting={isSubmitting}
+              isValid={isValid}
+              dirty={dirty}
+              resetForm={resetForm}
+            />
+          ) : (
+            <BottomBlock
+              isSubmitting={isSubmitting}
+              isValid={isValid}
+              dirty={dirty}
+              formType={formType}
+            />
+          )}
         </FormContainer>
       )}
     </Formik>
   );
 };
 
-export default OnboardingForm;
+export default ServiceForm;

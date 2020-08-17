@@ -8,14 +8,29 @@ import ListItem, { IDataItem } from "./components/ListItem";
 import ValueInput from "./components/ValueInput";
 
 export type IProps = {
+  disabled?: boolean;
   hasFilter?: boolean;
   placeholder?: string;
   filterPlaceholder?: string;
+  value?: string;
   data: Array<IDataItem>;
   onSelect?: (item: IDataItem) => void;
 };
 
-const StyledDropdownList = styled(DropdownList)`
+const StyledDropdownList = styled(DropdownList)<{ disabled?: boolean }>`
+  &.rw-state-disabled {
+    pointer-events: none;
+    cursor: auto;
+
+    & .rw-btn {
+      opacity: 0;
+    }
+    & .rw-placeholder,
+    & .rw-input {
+      color: ${({ theme }) => theme.greyColor40};
+    }
+  }
+
   & > .rw-widget-container {
     height: 36px;
     box-shadow: none;
@@ -62,6 +77,10 @@ const StyledDropdownList = styled(DropdownList)`
     line-height: 19px;
   }
 
+  & .rw-input {
+    color: ${({ theme }) => theme.textColor};
+  }
+
   & .rw-list-option:hover {
     background: ${({ theme }) => theme.greyColor20};
   }
@@ -99,6 +118,9 @@ const DropDown: React.FC<IProps> = props => {
         })
       }}
       textField="text"
+      valueField="value"
+      value={props.value}
+      disabled={props.disabled}
       valueComponent={ValueInput}
       itemComponent={ListItem}
       onSelect={props.onSelect}

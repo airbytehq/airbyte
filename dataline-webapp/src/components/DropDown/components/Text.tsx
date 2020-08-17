@@ -4,7 +4,6 @@ const Text = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: ${({ theme }) => theme.textColor};
   font-size: 14px;
   line-height: 20px;
   font-family: ${({ theme }) => theme.regularFont};
