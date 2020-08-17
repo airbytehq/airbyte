@@ -15,6 +15,7 @@ services:
       context: .
       dockerfile: server_dist.Dockerfile
     image: server:dev
+    entrypoint: bin/dataline-server
     container_name: dataline-server
     environment:
       - ENV=docker
