@@ -14,6 +14,7 @@ COPY ./dataline-server/build.gradle dataline-server/
 COPY ./dataline-workers/build.gradle dataline-workers/
 COPY ./settings.gradle ./
 COPY ./.env ./
+COPY ./LICENSE.md ./
 # Since we're not inheriting the gradle image, easiest way to run gradle is via the wrapper.
 COPY ./gradlew ./
 COPY ./gradle ./gradle
