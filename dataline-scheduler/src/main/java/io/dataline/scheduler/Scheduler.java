@@ -184,6 +184,7 @@ public class Scheduler {
                 DatabaseHelper.query(
                     connectionPool,
                     ctx -> {
+                      ctx.resultQuery("", QueryPart)
                       Optional<Record> jobEntryOptional =
                           ctx
                               .select()
