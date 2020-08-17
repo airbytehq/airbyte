@@ -16,7 +16,7 @@ allprojects {
     version = env.VERSION
 }
 
-def createJavaLicense = { licence ->
+def createLicenseWith = { licence ->
     def tmp = File.createTempFile("tmp", ".tmp")
     tmp.withWriter {
         def w = it
@@ -26,6 +26,7 @@ def createJavaLicense = { licence ->
             w.writeLine(it)
         }
         w.writeLine(" */")
+        w.writeLine("")
     }
     return tmp
 }
@@ -49,7 +50,7 @@ subprojects {
             googleJavaFormat('1.8')
             trimTrailingWhitespace()
             removeUnusedImports()
-            licenseHeaderFile createJavaLicense(rootProject.file('LICENSE.md'))
+            licenseHeaderFile createLicenseWith(rootProject.file('LICENSE.md'))
         }
         groovyGradle {
             target '**/*.gradle'
