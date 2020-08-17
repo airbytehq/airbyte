@@ -32,7 +32,6 @@ import io.dataline.server.errors.InvalidJsonExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
 import io.dataline.server.errors.UncaughtExceptionMapper;
 import java.util.logging.Level;
-
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -48,22 +47,22 @@ import org.slf4j.LoggerFactory;
 
 public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
-  private final String dbRoot;
+  private final String configPersistenceRoot;
 
-  public ServerApp(String dbRoot) {
+  public ServerApp(String configPersistenceRoot) {
 
-    this.dbRoot = dbRoot;
+    this.configPersistenceRoot = configPersistenceRoot;
   }
 
   public void start() throws Exception {
     BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
-    System.out.println("server-uuid = " + ServerUuid.get(connectionPool));
+    LOGGER.info("server-uuid = " + ServerUuid.get(connectionPool));
 
     Server server = new Server(8000);
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    ConfigurationApiFactory.setDbRoot(dbRoot);
+    ConfigurationApiFactory.setDbRoot(configPersistenceRoot);
 
     ResourceConfig rc =
         new ResourceConfig()
@@ -108,6 +107,9 @@ public class ServerApp {
   public static void main(String[] args) throws Exception {
     LOGGER.info("Starting server...");
 
-    new ServerApp("/Users/charles/code/dataline/data/config").start();
+    final String configPersistenceRoot = System.getenv("CONFIG_PERSISTENCE_ROOT");
+    LOGGER.info("configPersistenceRoot = " + configPersistenceRoot);
+
+    new ServerApp(configPersistenceRoot).start();
   }
 }
