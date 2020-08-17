@@ -90,7 +90,15 @@ const SideBar: React.FC = () => {
         </Link>
         <Menu>
           <li>
-            <MenuItem to={Routes.Root} exact activeClassName="active">
+            <MenuItem
+              to={Routes.Root}
+              exact
+              activeClassName="active"
+              isActive={(_, location) =>
+                location.pathname === Routes.Root ||
+                location.pathname.startsWith(Routes.Source)
+              }
+            >
               <Source />
               <Text>
                 <FormattedMessage id="sidebar.sources" />

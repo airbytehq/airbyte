@@ -1,15 +1,15 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import ContentCard from "../../../components/ContentCard";
-import ConnectionBlock from "../../../components/ConnectionBlock";
-import FrequencyForm from "../../../components/FrequencyForm";
+import ConnectionBlock from "../../../../../components/ConnectionBlock";
+import ContentCard from "../../../../../components/ContentCard";
+import FrequencyForm from "../../../../../components/FrequencyForm";
 
 type IProps = {
   onSubmit: () => void;
 };
 
-const ConnectionStep: React.FC<IProps> = ({ onSubmit }) => {
+const CreateSourcePage: React.FC<IProps> = ({ onSubmit }) => {
   return (
     <>
       <ConnectionBlock
@@ -23,4 +23,4 @@ const ConnectionStep: React.FC<IProps> = ({ onSubmit }) => {
   );
 };
 
-export default ConnectionStep;
+export default CreateSourcePage;

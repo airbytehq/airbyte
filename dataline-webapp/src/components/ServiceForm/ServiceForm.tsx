@@ -2,13 +2,12 @@ import React from "react";
 import { Field, FieldProps, Formik, Form } from "formik";
 import * as yup from "yup";
 import styled from "styled-components";
-
-import LabeledInput from "../../../components/LabeledInput";
 import { FormattedMessage, useIntl } from "react-intl";
-import { ButtonContainer } from "./FormComponents";
-import Button from "../../../components/Button";
-import LabeledDropDown from "../../../components/LabeledDropDown";
-import { IDataItem } from "../../../components/DropDown/components/ListItem";
+
+import LabeledInput from "../LabeledInput";
+import Button from "../Button";
+import LabeledDropDown from "../LabeledDropDown";
+import { IDataItem } from "../DropDown/components/ListItem";
 
 type IProps = {
   dropDownData: Array<IDataItem>;
@@ -32,6 +31,15 @@ const LinkToInstruction = styled.a`
   text-decoration: underline;
 
   color: ${({ theme }) => theme.primaryColor};
+`;
+
+const FormContainer = styled(Form)`
+  padding: 22px 27px 23px 24px;
+`;
+
+const ButtonContainer = styled.div`
+  margin-top: 34px;
+  text-align: right;
 `;
 
 const onboardingValidationSchema = yup.object().shape({
@@ -74,7 +82,7 @@ const OnboardingForm: React.FC<IProps> = ({
       }}
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, values }) => (
-        <Form>
+        <FormContainer>
           <FormItem>
             <Field name="name">
               {({ field }: FieldProps<string>) => (
@@ -121,7 +129,7 @@ const OnboardingForm: React.FC<IProps> = ({
               <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
             </Button>
           </ButtonContainer>
-        </Form>
+        </FormContainer>
       )}
     </Formik>
   );

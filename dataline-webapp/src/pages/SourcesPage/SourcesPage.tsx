@@ -1,14 +1,24 @@
-import React from "react";
-import Link from "../../components/Link";
+import React, { Suspense } from "react";
+import { Redirect, Route, Switch } from "react-router-dom";
+
 import { Routes } from "../routes";
+import LoadingPage from "../../components/LoadingPage";
+import AllSourcesPage from "./pages/AllSourcesPage";
+import CreateSourcePage from "./pages/CreateSourcePage";
 
 const SourcesPage: React.FC = () => {
   return (
-    <>
-      <div>Main Sources Page</div>
-      <br />
-      <Link to={Routes.Preferences}>Go to Preferences Form</Link>
-    </>
+    <Suspense fallback={<LoadingPage />}>
+      <Switch>
+        <Route path={`${Routes.Source}${Routes.SourceNew}`}>
+          <CreateSourcePage />
+        </Route>
+        <Route path={Routes.Root} exact>
+          <AllSourcesPage />
+        </Route>
+        <Redirect to={Routes.Root} />
+      </Switch>
+    </Suspense>
   );
 };
 

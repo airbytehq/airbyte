@@ -43,5 +43,9 @@
   "onboarding.destinationSetUp.buttonText": "Set up destination",
   "onboarding.setUpConnection": "Set up connection",
   "onboarding.setConnection": "Set up the connection",
-  "onboarding.instructionsLink": "See instructions how to connect {name}"
+  "onboarding.instructionsLink": "See instructions how to connect {name}",
+
+  "sources.newSource": "+ New source",
+  "sources.newSourceTitle": "New Source",
+  "sources.selectSource": "Select a source"
 }

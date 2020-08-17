@@ -2,8 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import ContentCard from "../../../components/ContentCard";
-import { FormContainer } from "./FormComponents";
-import OnboardingForm from "./OnboardingForm";
+import ServiceForm from "../../../components/ServiceForm";
 
 type IProps = {
   onSubmit: () => void;
@@ -35,13 +34,7 @@ const SourceStep: React.FC<IProps> = ({ onSubmit }) => {
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
-      <FormContainer>
-        <OnboardingForm
-          onSubmit={onSubmit}
-          formType="source"
-          dropDownData={data}
-        />
-      </FormContainer>
+      <ServiceForm onSubmit={onSubmit} formType="source" dropDownData={data} />
     </ContentCard>
   );
 };

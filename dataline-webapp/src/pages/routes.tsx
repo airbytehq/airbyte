@@ -18,24 +18,29 @@ export enum Routes {
   Onboarding = "/onboarding",
 
   Destination = "/destination",
+  Source = "/source",
+  SourceNew = "/new-source",
   Root = "/"
 }
 
 const MainViewRoutes = () => {
   return (
-    <Switch>
-      <MainView>
-        <Suspense fallback={<LoadingPage />}>
+    <MainView>
+      <Suspense fallback={<LoadingPage />}>
+        <Switch>
           <Route exact path={Routes.Destination}>
             <DestinationPage />
+          </Route>
+          <Route path={Routes.Source}>
+            <SourcesPage />
           </Route>
           <Route exact path={Routes.Root}>
             <SourcesPage />
           </Route>
           <Redirect to={Routes.Root} />
-        </Suspense>
-      </MainView>
-    </Switch>
+        </Switch>
+      </Suspense>
+    </MainView>
   );
 };
 

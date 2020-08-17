@@ -2,8 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import ContentCard from "../../../components/ContentCard";
-import { FormContainer } from "./FormComponents";
-import OnboardingForm from "./OnboardingForm";
+import ServiceForm from "../../../components/ServiceForm";
 import ConnectionBlock from "../../../components/ConnectionBlock";
 
 type IProps = {
@@ -40,13 +39,11 @@ const Destination: React.FC<IProps> = ({ onSubmit }) => {
       <ContentCard
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >
-        <FormContainer>
-          <OnboardingForm
-            onSubmit={onSubmit}
-            formType="destination"
-            dropDownData={data}
-          />
-        </FormContainer>
+        <ServiceForm
+          onSubmit={onSubmit}
+          formType="destination"
+          dropDownData={data}
+        />
       </ContentCard>
     </>
   );
