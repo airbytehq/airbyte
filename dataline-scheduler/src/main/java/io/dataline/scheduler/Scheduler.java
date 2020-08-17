@@ -12,6 +12,8 @@ import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -150,12 +152,11 @@ public class Scheduler {
     try {
       DatabaseHelper.query(
           connectionPool,
-          ctx -> {
-            return ctx.update(table("jobs"))
-                .set(field("status"), status.toString().toLowerCase())
-                .where(field("id").eq(jobId))
-                .execute();
-          });
+          ctx ->
+              ctx.execute(
+                  "UPDATE jobs SET status = CAST(? as JOB_STATUS) WHERE id = ?",
+                  status.toString().toLowerCase(),
+                  jobId));
     } catch (SQLException e) {
       LOGGER.error("sql", e);
       throw new RuntimeException(e); // todo: actually handle this error
@@ -184,16 +185,12 @@ public class Scheduler {
                 DatabaseHelper.query(
                     connectionPool,
                     ctx -> {
-                      ctx.resultQuery("", QueryPart)
                       Optional<Record> jobEntryOptional =
                           ctx
-                              .select()
-                              .from("jobs")
-                              .where(field("scope").eq(connection.getConnectionId().toString()))
-                              .and(field("status").notEqual("cancelled"))
-                              .orderBy(field("created_at").desc())
-                              .limit(1)
-                              .fetch()
+                              .fetch(
+                                  "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
+                                  connection.getConnectionId().toString(),
+                                  Job.StatusEnum.CANCELLED.toString().toLowerCase())
                               .stream()
                               .findFirst();
 
@@ -215,7 +212,7 @@ public class Scheduler {
 
             if (lastJob.isEmpty()) {
               LOGGER.info("creating pending job for empty last job...");
-              createPendingJob(connectionPool, connection.getConnectionId());
+              createPendingJob(connectionPool, connection.getConnectionId(), "{}");
               LOGGER.info("created pending job for empty last job...");
             } else {
               Job job = lastJob.get();
@@ -225,7 +222,7 @@ public class Scheduler {
                   ConnectionSchedule schedule = connection.getSchedule();
                   long nextRunStart = job.getUpdatedAt() + getIntervalInSeconds(schedule);
                   if (nextRunStart < Instant.now().getEpochSecond()) {
-                    createPendingJob(connectionPool, job.getConnection().getConnectionId());
+                    createPendingJob(connectionPool, job.getConnection().getConnectionId(), "{}");
                   }
                   break; // executes on next iteration
                 case PENDING:
@@ -250,24 +247,25 @@ public class Scheduler {
       }
     }
 
-    private static void createPendingJob(BasicDataSource connectionPool, UUID connectionId) {
+    private static void createPendingJob(BasicDataSource connectionPool, UUID connectionId, String configJson) {
       LOGGER.info("creating pending job for connection: " + connectionId.toString());
-      long now = Instant.now().getEpochSecond();
+      LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
       try {
         DatabaseHelper.query(
             connectionPool,
             ctx ->
-                ctx.insertInto(table("jobs"))
-                    .values(
-                        null,
-                        connectionId.toString(),
-                        now,
-                        now,
-                        now,
-                        Job.StatusEnum.PENDING.toString(),
-                        "",
-                        "")
-                    .execute());
+                ctx.execute(
+                    "INSERT INTO jobs VALUES(DEFAULT, ?, ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?)",
+                    connectionId.toString(),
+                    now,
+                    now,
+                    now,
+                    Job.StatusEnum.PENDING.toString(),
+                    configJson,
+                    null, // todo: output
+                    "", // todo: assign stdout
+                    "") // todo: assign stderr
+            );
       } catch (SQLException e) {
         LOGGER.error("sql", e);
         e.printStackTrace();
