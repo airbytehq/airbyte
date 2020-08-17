@@ -1,6 +1,7 @@
 package io.dataline.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,7 @@ import io.dataline.api.model.SourceSchema;
 import io.dataline.api.model.SourceSchemaColumn;
 import io.dataline.api.model.SourceSchemaTable;
 import io.dataline.api.model.WorkspaceIdRequestBody;
+import io.dataline.commons.enums.Enums;
 import io.dataline.config.Column;
 import io.dataline.config.Schedule;
 import io.dataline.config.Schema;
@@ -230,6 +232,16 @@ class ConnectionsHandlerTest {
 
     assertEquals(
         generateExpectedConnectionRead(), actualConnectionReadList.getConnections().get(0));
+  }
+
+  @Test
+  void testEnumConversion() {
+    assertTrue(Enums.isCompatible(ConnectionStatus.class, StandardSync.Status.class));
+    assertTrue(Enums.isCompatible(StandardSync.SyncMode.class, ConnectionRead.SyncModeEnum.class));
+    assertTrue(Enums.isCompatible(StandardSync.Status.class, ConnectionStatus.class));
+    assertTrue(Enums.isCompatible(ConnectionSchedule.TimeUnitEnum.class, Schedule.TimeUnit.class));
+    assertTrue(Enums.isCompatible(SourceSchemaColumn.DataTypeEnum.class, Column.DataType.class));
+    assertTrue(Enums.isCompatible(Column.DataType.class, SourceSchemaColumn.DataTypeEnum.class));
   }
 
   private StandardSync generateSync(UUID sourceImplementationId) {

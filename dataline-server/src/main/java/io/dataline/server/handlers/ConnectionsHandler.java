@@ -11,6 +11,7 @@ import io.dataline.api.model.SourceSchema;
 import io.dataline.api.model.SourceSchemaColumn;
 import io.dataline.api.model.SourceSchemaTable;
 import io.dataline.api.model.WorkspaceIdRequestBody;
+import io.dataline.commons.enums.Enums;
 import io.dataline.config.Column;
 import io.dataline.config.Schedule;
 import io.dataline.config.Schema;
@@ -29,6 +30,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class ConnectionsHandler {
+
   private final ConfigPersistence configPersistence;
   private final Supplier<UUID> uuidGenerator;
 
@@ -183,91 +185,6 @@ public class ConnectionsHandler {
     return getConnectionInternal(connectionIdRequestBody.getConnectionId());
   }
 
-  private StandardSync.Status toPersistenceStatus(ConnectionStatus apiStatus) {
-    switch (apiStatus) {
-      case ACTIVE:
-        return StandardSync.Status.ACTIVE;
-      case INACTIVE:
-        return StandardSync.Status.INACTIVE;
-      case DEPRECATED:
-        return StandardSync.Status.DEPRECATED;
-      default:
-        throw new RuntimeException(
-            String.format(
-                "No conversion from StandardSync.Status to StandardSync.Status for %s.",
-                apiStatus));
-    }
-  }
-
-  private ConnectionRead.SyncModeEnum toApiSyncMode(StandardSync.SyncMode persistenceStatus) {
-    switch (persistenceStatus) {
-      case FULL_REFRESH:
-        return ConnectionRead.SyncModeEnum.FULL_REFRESH;
-      case APPEND:
-        return ConnectionRead.SyncModeEnum.APPEND;
-      default:
-        throw new RuntimeException(
-            String.format(
-                "No conversion from ConnectionRead.SyncModeEnum to StandardSync.SyncMode for %s.",
-                persistenceStatus));
-    }
-  }
-
-  private ConnectionStatus toApiStatus(StandardSync.Status status) {
-    switch (status) {
-      case ACTIVE:
-        return ConnectionStatus.ACTIVE;
-      case INACTIVE:
-        return ConnectionStatus.INACTIVE;
-      case DEPRECATED:
-        return ConnectionStatus.DEPRECATED;
-      default:
-        throw new RuntimeException(
-            String.format(
-                "No conversion from StandardSync.Status to StandardSync.Status for %s.", status));
-    }
-  }
-
-  private Schedule.TimeUnit toPersistenceTimeUnit(ConnectionSchedule.TimeUnitEnum apiTimeUnit) {
-    switch (apiTimeUnit) {
-      case MINUTES:
-        return Schedule.TimeUnit.MINUTES;
-      case HOURS:
-        return Schedule.TimeUnit.HOURS;
-      case DAYS:
-        return Schedule.TimeUnit.DAYS;
-      case WEEKS:
-        return Schedule.TimeUnit.WEEKS;
-      case MONTHS:
-        return Schedule.TimeUnit.MONTHS;
-      default:
-        throw new RuntimeException(
-            String.format(
-                "No conversion from ConnectionSchedule.TimeUnitEnum to StandardSyncSchedule.TimeUnit for %s.",
-                apiTimeUnit));
-    }
-  }
-
-  private ConnectionSchedule.TimeUnitEnum toApiTimeUnit(Schedule.TimeUnit apiTimeUnit) {
-    switch (apiTimeUnit) {
-      case MINUTES:
-        return ConnectionSchedule.TimeUnitEnum.MINUTES;
-      case HOURS:
-        return ConnectionSchedule.TimeUnitEnum.HOURS;
-      case DAYS:
-        return ConnectionSchedule.TimeUnitEnum.DAYS;
-      case WEEKS:
-        return ConnectionSchedule.TimeUnitEnum.WEEKS;
-      case MONTHS:
-        return ConnectionSchedule.TimeUnitEnum.MONTHS;
-      default:
-        throw new RuntimeException(
-            String.format(
-                "No conversion from StandardSyncSchedule.TimeUnit to ConnectionSchedule.TimeUnitEnum for %s.",
-                apiTimeUnit));
-    }
-  }
-
   private ConnectionRead getConnectionInternal(UUID connectionId) {
     // read sync from db
     final StandardSync standardSync = getStandardSync(connectionId);
@@ -338,39 +255,6 @@ public class ConnectionsHandler {
     return connectionRead;
   }
 
-  // todo: figure out why the generator is namespacing the DataType enum by Column.
-  private Column.DataType toPersistenceDataType(SourceSchemaColumn.DataTypeEnum apiDataType) {
-    switch (apiDataType) {
-      case STRING:
-        return Column.DataType.STRING;
-      case NUMBER:
-        return Column.DataType.NUMBER;
-      case BOOLEAN:
-        return Column.DataType.BOOLEAN;
-      default:
-        throw new RuntimeException(
-            String.format(
-                "No conversion from SourceSchemaColumn.DataTypeEnum to Column.DataType for %s.",
-                apiDataType));
-    }
-  }
-
-  private SourceSchemaColumn.DataTypeEnum toApiDataType(Column.DataType persistenceDataType) {
-    switch (persistenceDataType) {
-      case STRING:
-        return SourceSchemaColumn.DataTypeEnum.STRING;
-      case NUMBER:
-        return SourceSchemaColumn.DataTypeEnum.NUMBER;
-      case BOOLEAN:
-        return SourceSchemaColumn.DataTypeEnum.BOOLEAN;
-      default:
-        throw new RuntimeException(
-            String.format(
-                "No conversion from Column.DataType to SourceSchemaColumn.DataTypeEnum for %s.",
-                persistenceDataType));
-    }
-  }
-
   private Schema toPersistenceSchema(SourceSchema api) {
     final List<Table> persistenceTables =
         api.getTables().stream()
@@ -430,5 +314,34 @@ public class ConnectionsHandler {
     final SourceSchema apiSchema = new SourceSchema();
     apiSchema.setTables(persistenceTables);
     return apiSchema;
+  }
+
+  private StandardSync.Status toPersistenceStatus(ConnectionStatus apiStatus) {
+    return Enums.convertTo(apiStatus, StandardSync.Status.class);
+  }
+
+  private ConnectionRead.SyncModeEnum toApiSyncMode(StandardSync.SyncMode persistenceStatus) {
+    return Enums.convertTo(persistenceStatus, ConnectionRead.SyncModeEnum.class);
+  }
+
+  private ConnectionStatus toApiStatus(StandardSync.Status status) {
+    return Enums.convertTo(status, ConnectionStatus.class);
+  }
+
+  private Schedule.TimeUnit toPersistenceTimeUnit(ConnectionSchedule.TimeUnitEnum apiTimeUnit) {
+    return Enums.convertTo(apiTimeUnit, Schedule.TimeUnit.class);
+  }
+
+  private ConnectionSchedule.TimeUnitEnum toApiTimeUnit(Schedule.TimeUnit apiTimeUnit) {
+    return Enums.convertTo(apiTimeUnit, ConnectionSchedule.TimeUnitEnum.class);
+  }
+
+  // todo: figure out why the generator is namespacing the DataType enum by Column.
+  private Column.DataType toPersistenceDataType(SourceSchemaColumn.DataTypeEnum apiDataType) {
+    return Enums.convertTo(apiDataType, Column.DataType.class);
+  }
+
+  private SourceSchemaColumn.DataTypeEnum toApiDataType(Column.DataType persistenceDataType) {
+    return Enums.convertTo(persistenceDataType, SourceSchemaColumn.DataTypeEnum.class);
   }
 }
