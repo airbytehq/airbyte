@@ -15,7 +15,7 @@ services:
       context: .
       dockerfile: server_dist.Dockerfile
     image: server:dev
-    entrypoint: bin/dataline-server
+    entrypoint: /bin/sh -c './wait && bin/dataline-server'
     container_name: dataline-server
     environment:
       - ENV=docker
