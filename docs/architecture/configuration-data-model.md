@@ -1,4 +1,4 @@
-# Conduit Configuration Data Model
+# Configuration Data Model
 
 ## Requirements
 
