@@ -59,4 +59,8 @@ public enum ConfigSchema {
   public String getSchemaFilename() {
     return schemaFilename;
   }
+
+  public static String getSchemaDirectory() {
+    return "json/";
+  }
 }
