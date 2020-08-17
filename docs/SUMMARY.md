@@ -30,6 +30,7 @@
 ## Architecture
 
 * [High Level Overview](architecture/high-level-overview.md)
+* [API](architecture/api.md)
 * [Configuration Data Model](architecture/configuration-data-model.md)
 
 ## Community
@@ -44,5 +45,5 @@
 
 ---
 
-* [License](../LICENSE.md)
+* [License](license.md)
 
