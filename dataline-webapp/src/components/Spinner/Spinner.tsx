@@ -1,0 +1,43 @@
+import React from "react";
+import styled, { keyframes } from "styled-components";
+
+type IProps = {
+  backgroundColor?: string;
+};
+
+export const SpinAnimation = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
+
+const SpinnerWheel = styled.div`
+  display: inline-block;
+  height: 42px;
+  width: 42px;
+  border-radius: 50%;
+  border: 4px solid ${({ theme }) => theme.primaryColor12};
+  position: relative;
+  animation: ${SpinAnimation} 1.5s linear 0s infinite;
+`;
+
+const BreakRec = styled.div<IProps>`
+  width: 13px;
+  height: 7px;
+  background: ${({ theme, backgroundColor }) =>
+    backgroundColor ? backgroundColor : theme.whiteColor};
+  top: -4px;
+  position: relative;
+  margin: 0 auto;
+`;
+
+const Spinner: React.FC<IProps> = ({ backgroundColor }) => (
+  <SpinnerWheel>
+    <BreakRec backgroundColor={backgroundColor} />
+  </SpinnerWheel>
+);
+
+export default Spinner;
