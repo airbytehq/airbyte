@@ -80,9 +80,8 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final DestinationImplementationsHandler destinationImplementationsHandler;
   private final ConnectionsHandler connectionsHandler;
 
-  public ConfigurationApi() {
-    // todo: configure with env variable.
-    ConfigPersistence configPersistence = new DefaultConfigPersistence("../data/config/");
+  public ConfigurationApi(String dbRoot) {
+    ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot);
     final IntegrationSchemaValidation integrationSchemaValidation =
         new IntegrationSchemaValidation(configPersistence);
     workspacesHandler = new WorkspacesHandler(configPersistence);
