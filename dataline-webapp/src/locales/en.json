@@ -24,6 +24,7 @@
   "form.frequency.message": "Set how often Dataline attempts to replicate data.",
   "form.cancel": "Cancel",
   "form.saveChanges": "Save changes",
+  "form.every": "Every {value}",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
@@ -50,6 +51,12 @@
   "sources.newSource": "+ New source",
   "sources.newSourceTitle": "New Source",
   "sources.selectSource": "Select a source",
+  "sources.name": "Name",
+  "sources.connector": "Connector",
+  "sources.frequency": "Frequency",
+  "sources.lastSync": "Last Sync",
+  "sources.enabled": "Enabled",
+  "sources.launch": "Launch",
 
   "destination.destinationSettings": "Destination Settings"
 }
