@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Dataline",
+  "name": "Dataline",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,18 +8,23 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "logo112.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "112x112"
     },
     {
-      "src": "logo512.png",
+      "src": "logo224.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "224x224"
+    },
+    {
+      "src": "logo336.png",
+      "type": "image/png",
+      "sizes": "336x336"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#625EFF",
+  "background_color": "#F8F8FF"
 }
