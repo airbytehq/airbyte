@@ -22,7 +22,7 @@
       "$ref": "StandardDiscoveryOutput.json"
     },
     "sync": {
-      "type": "string"
+      "$ref": "JobSyncOutput.json"
     }
   }
 }
