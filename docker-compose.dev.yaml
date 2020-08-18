@@ -18,14 +18,14 @@ services:
     entrypoint: /bin/sh -c './wait && bin/dataline-server'
     container_name: dataline-server
     environment:
-      - ENV=docker
+      - ENV=${ENV}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_URL=${DATABASE_URL}
       - WAIT_HOSTS=db:5432
       - CONFIG_PERSISTENCE_ROOT=${CONFIG_PERSISTENCE_ROOT}
     ports:
-      - 8001:8000
+      - 8001:8001
     depends_on:
       - db
   webapp:

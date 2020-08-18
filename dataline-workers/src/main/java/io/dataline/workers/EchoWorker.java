@@ -22,32 +22,24 @@
  * SOFTWARE.
  */
 
-package io.dataline.server;
+package io.dataline.workers;
 
-import io.dataline.server.apis.ConfigurationApi;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.glassfish.hk2.api.Factory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
-  private static String dbRoot;
-  private static BasicDataSource connectionPool;
+public class EchoWorker implements Worker<String> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(EchoWorker.class);
 
-  public static void setConfigPersistenceRoot(String dbRoot) {
-    ConfigurationApiFactory.dbRoot = dbRoot;
-  }
+  public EchoWorker() {}
 
-  public static void setDbConnectionPool(BasicDataSource connectionPool) {
-    ConfigurationApiFactory.connectionPool = connectionPool;
+  @Override
+  public OutputAndStatus<String> run() {
+    LOGGER.info("Hello World");
+    return new OutputAndStatus<>(JobStatus.SUCCESSFUL, "echoed");
   }
 
   @Override
-  public ConfigurationApi provide() {
-    return new ConfigurationApi(
-        ConfigurationApiFactory.dbRoot, ConfigurationApiFactory.connectionPool);
-  }
-
-  @Override
-  public void dispose(ConfigurationApi service) {
-    /* noop */
+  public void cancel() {
+    // no-op
   }
 }
