@@ -12,6 +12,14 @@
             <AppenderRef ref="Console"/>
         </Root>
 
+        <Logger name="org.jooq.tools.LoggerListener" level="INFO">
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <Logger name="org.jooq" level="INFO">
+            <AppenderRef ref="Console"/>
+        </Logger>
+
         <Logger name="org.eclipse.jetty" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>

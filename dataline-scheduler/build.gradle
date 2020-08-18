@@ -1,0 +1,12 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+
+    implementation project(':dataline-commons')
+    implementation project(':dataline-db')
+    implementation project(':dataline-api')
+    implementation project(':dataline-workers')
+}
