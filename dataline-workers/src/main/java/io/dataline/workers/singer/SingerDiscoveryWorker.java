@@ -54,12 +54,8 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
               .redirectOutput(new File(catalogDotJsonPath))
               .start();
 
-      // TODO will need to wrap this synchronize in a while loop and timeout to prevent contention
-      // coming from
-      //  cancellations
-      synchronized (workerProcess) {
-        workerProcess.wait();
-      }
+      workerProcess.waitFor();
+
       int exitCode = workerProcess.exitValue();
       if (exitCode == 0) {
         String catalog = readFileFromWorkspace(CATALOG_JSON_FILENAME);
