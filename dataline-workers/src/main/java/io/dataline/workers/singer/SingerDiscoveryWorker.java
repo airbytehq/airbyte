@@ -35,8 +35,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
+
   // TODO log errors to specified file locations
-  private static Logger LOGGER = LoggerFactory.getLogger(SingerDiscoveryWorker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoveryWorker.class);
   private static String CONFIG_JSON_FILENAME = "config.json";
   private static String CATALOG_JSON_FILENAME = "catalog.json";
   private static String ERROR_LOG_FILENAME = "err.log";
@@ -56,7 +57,7 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   }
 
   @Override
-  public OutputAndStatus<DiscoveryOutput> runInternal() {
+  protected OutputAndStatus<DiscoveryOutput> runInternal() {
     // TODO use format converter here
     // write config.json to disk
     String configPath = writeFileToWorkspace(CONFIG_JSON_FILENAME, configDotJson);

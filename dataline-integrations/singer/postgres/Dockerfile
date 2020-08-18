@@ -17,4 +17,4 @@ RUN python -m pip install --upgrade pip && \
 
 RUN apt-get autoremove -y gcc
 
-CMD tap-postgres
+ENTRYPOINT ["tap-postgres"]

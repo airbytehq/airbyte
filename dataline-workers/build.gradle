@@ -7,10 +7,14 @@ configurations {
 }
 
 dependencies {
+    implementation project(':dataline-commons')
+
+    implementation group: 'com.github.docker-java', name: 'docker-java-core', version: '3.2.5'
+    implementation group: 'com.github.docker-java', name: 'docker-java-transport-zerodep', version: '3.2.5'
+
     testImplementation "com.fasterxml.jackson.core:jackson-databind:2.9.8"
 
     testImplementation "org.postgresql:postgresql:42.1.4"
     testImplementation "org.testcontainers:testcontainers:1.14.3"
     testImplementation "org.testcontainers:postgresql:1.14.3"
 }
-
