@@ -38,7 +38,9 @@ public class JobSubmitterThread implements Runnable {
   public void run() {
     try {
       while (true) {
-        LOGGER.info("running job-submitter...");
+        LOGGER.info("Running job-submitter...");
+
+        // todo: get all pending jobs before considering configured connection schedules
         Set<ConnectionRead> activeConnections = getAllActiveConnections();
         for (ConnectionRead connection : activeConnections) {
           Optional<Job> lastJob =
