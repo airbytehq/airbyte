@@ -18,11 +18,18 @@ cmd_build() {
   docker build -f "$path" -t "$(get_name $path)" "$(dirname "$path")" | grep "Successfully tagged"
 }
 
-cmd_publish() {
+cmd_push() {
   local name=$(get_name "$1")
 
   echo "Pushing $name"
   docker push "$name"
+}
+
+cmd_publish() {
+  local path=$1
+
+  cmd_build "$path"
+  cmd_push "$path"
 }
 
 main() {
