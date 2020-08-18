@@ -22,32 +22,18 @@
  * SOFTWARE.
  */
 
-package io.dataline.server;
+package io.dataline.scheduler.persistence;
 
-import io.dataline.server.apis.ConfigurationApi;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.glassfish.hk2.api.Factory;
+import io.dataline.config.SourceConnectionImplementation;
+import java.io.IOException;
+import java.util.UUID;
 
-public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
-  private static String dbRoot;
-  private static BasicDataSource connectionPool;
+public interface SchedulerPersistence {
 
-  public static void setConfigPersistenceRoot(String dbRoot) {
-    ConfigurationApiFactory.dbRoot = dbRoot;
-  }
+  // todo (cgardens) - add all other job types.
+  long createSourceCheckConnectionJob(
+      UUID sourceImplementation, SourceConnectionImplementation sourceImplementationJson)
+      throws IOException;
 
-  public static void setDbConnectionPool(BasicDataSource connectionPool) {
-    ConfigurationApiFactory.connectionPool = connectionPool;
-  }
-
-  @Override
-  public ConfigurationApi provide() {
-    return new ConfigurationApi(
-        ConfigurationApiFactory.dbRoot, ConfigurationApiFactory.connectionPool);
-  }
-
-  @Override
-  public void dispose(ConfigurationApi service) {
-    /* noop */
-  }
+  Job getJob(long jobId) throws IOException;
 }

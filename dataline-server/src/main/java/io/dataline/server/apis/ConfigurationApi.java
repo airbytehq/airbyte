@@ -24,6 +24,7 @@
 
 package io.dataline.server.apis;
 
+import io.dataline.api.model.CheckConnectionRead;
 import io.dataline.api.model.ConnectionCreate;
 import io.dataline.api.model.ConnectionIdRequestBody;
 import io.dataline.api.model.ConnectionRead;
@@ -46,7 +47,6 @@ import io.dataline.api.model.SourceImplementationDiscoverSchemaRead;
 import io.dataline.api.model.SourceImplementationIdRequestBody;
 import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.api.model.SourceImplementationReadList;
-import io.dataline.api.model.SourceImplementationTestConnectionRead;
 import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.SourceRead;
 import io.dataline.api.model.SourceReadList;
@@ -56,11 +56,13 @@ import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.DefaultConfigPersistence;
-import io.dataline.server.errors.KnownException;
+import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.server.handlers.ConnectionsHandler;
 import io.dataline.server.handlers.DestinationImplementationsHandler;
 import io.dataline.server.handlers.DestinationSpecificationsHandler;
 import io.dataline.server.handlers.DestinationsHandler;
+import io.dataline.server.handlers.SchedulerHandler;
 import io.dataline.server.handlers.SourceImplementationsHandler;
 import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
@@ -68,6 +70,7 @@ import io.dataline.server.handlers.WorkspacesHandler;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import javax.validation.Valid;
 import javax.ws.rs.Path;
+import org.apache.commons.dbcp2.BasicDataSource;
 
 @Path("/v1")
 public class ConfigurationApi implements io.dataline.api.V1Api {
@@ -79,8 +82,9 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final DestinationSpecificationsHandler destinationSpecificationsHandler;
   private final DestinationImplementationsHandler destinationImplementationsHandler;
   private final ConnectionsHandler connectionsHandler;
+  private final SchedulerHandler schedulerHandler;
 
-  public ConfigurationApi(String dbRoot) {
+  public ConfigurationApi(String dbRoot, BasicDataSource connectionPool) {
     ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot);
     final IntegrationSchemaValidation integrationSchemaValidation =
         new IntegrationSchemaValidation(configPersistence);
@@ -94,6 +98,9 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     destinationImplementationsHandler =
         new DestinationImplementationsHandler(configPersistence, integrationSchemaValidation);
     connectionsHandler = new ConnectionsHandler(configPersistence);
+    final SchedulerPersistence schedulerPersistence =
+        new DefaultSchedulerPersistence(connectionPool);
+    schedulerHandler = new SchedulerHandler(configPersistence, schedulerPersistence);
   }
 
   // WORKSPACE
@@ -161,15 +168,16 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   @Override
-  public SourceImplementationTestConnectionRead testConnectionToSourceImplementation(
+  public CheckConnectionRead checkConnectionToSourceImplementation(
       @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    throw new KnownException(404, "Not implemented");
+    return schedulerHandler.checkSourceImplementationConnection(sourceImplementationIdRequestBody);
   }
 
   @Override
   public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(
       @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    throw new KnownException(404, "Not implemented");
+    return schedulerHandler.discoverSchemaForSourceImplementation(
+        sourceImplementationIdRequestBody);
   }
 
   // DESTINATION
@@ -221,6 +229,13 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
         destinationImplementationIdRequestBody);
   }
 
+  @Override
+  public CheckConnectionRead checkConnectionToDestinationImplementation(
+      @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+    return schedulerHandler.checkDestinationImplementationConnection(
+        destinationImplementationIdRequestBody);
+  }
+
   // CONNECTION
 
   @Override
@@ -246,6 +261,6 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
 
   @Override
   public ConnectionSyncRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    throw new KnownException(404, "Not implemented");
+    return schedulerHandler.syncConnection(connectionIdRequestBody);
   }
 }
