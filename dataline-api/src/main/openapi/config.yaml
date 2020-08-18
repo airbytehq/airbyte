@@ -263,12 +263,12 @@ paths:
           description: Source Implementation not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-  /v1/source_implementations/test_connection:
+  /v1/source_implementations/check_connection:
     post:
       tags:
       - source_implementation
-      summary: Test connection to the source implementation
-      operationId: testConnectionToSourceImplementation
+      summary: Check connection to the source implementation
+      operationId: checkConnectionToSourceImplementation
       requestBody:
         content:
           application/json:
@@ -281,7 +281,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SourceImplementationTestConnectionRead"
+                $ref: "#/components/schemas/CheckConnectionRead"
         "404":
           description: Source Implementation not found
         "422":
@@ -452,6 +452,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationImplementationRead"
+        "404":
+          description: Destination Implementation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/destination_implementations/check_connection:
+    post:
+      tags:
+      - destination_implementation
+      summary: Check connection to the destination implementation
+      operationId: checkConnectionToDestinationImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationImplementationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckConnectionRead"
         "404":
           description: Destination Implementation not found
         "422":
@@ -747,18 +770,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SourceImplementationRead"
-    SourceImplementationTestConnectionRead:
-      type: object
-      required:
-      - status
-      properties:
-        status:
-          type: string
-          enum:
-          - success
-          - failure
-        message:
-          type: string
     SourceImplementationDiscoverSchemaRead:
       type: object
       required:
@@ -1080,6 +1091,19 @@ components:
             - failed
             - completed
             - cancelled
+    # General
+    CheckConnectionRead:
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum:
+          - success
+          - failure
+        message:
+          type: string
   responses:
     InvalidInput:
       description: Invalid Input

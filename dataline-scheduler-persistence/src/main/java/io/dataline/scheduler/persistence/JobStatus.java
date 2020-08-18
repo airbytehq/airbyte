@@ -22,32 +22,17 @@
  * SOFTWARE.
  */
 
-package io.dataline.server;
+package io.dataline.scheduler.persistence;
 
-import io.dataline.server.apis.ConfigurationApi;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.glassfish.hk2.api.Factory;
+import com.google.common.collect.Sets;
+import java.util.Set;
 
-public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
-  private static String dbRoot;
-  private static BasicDataSource connectionPool;
+public enum JobStatus {
+  PENDING,
+  RUNNING,
+  FAILED,
+  COMPLETED,
+  CANCELLED;
 
-  public static void setConfigPersistenceRoot(String dbRoot) {
-    ConfigurationApiFactory.dbRoot = dbRoot;
-  }
-
-  public static void setDbConnectionPool(BasicDataSource connectionPool) {
-    ConfigurationApiFactory.connectionPool = connectionPool;
-  }
-
-  @Override
-  public ConfigurationApi provide() {
-    return new ConfigurationApi(
-        ConfigurationApiFactory.dbRoot, ConfigurationApiFactory.connectionPool);
-  }
-
-  @Override
-  public void dispose(ConfigurationApi service) {
-    /* noop */
-  }
+  public static Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, COMPLETED, CANCELLED);
 }

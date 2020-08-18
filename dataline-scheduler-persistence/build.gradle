@@ -1,0 +1,7 @@
+dependencies {
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.8"
+
+    implementation project(':dataline-api')
+    implementation project(':dataline-config')
+    implementation project(':dataline-db')
+}
