@@ -22,10 +22,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-// todo: have discovery and oneoffs be blocking (how to handle logs)
-// todo: make endpoints in the API for reading job state
 public class JobSubmitterThread implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitterThread.class);
+  private static final long MILLIS_BETWEEN_JOB_THREAD_CREATION = 1000L;
 
   private final ExecutorService threadPool;
   private final BasicDataSource connectionPool;
@@ -60,20 +59,11 @@ public class JobSubmitterThread implements Runnable {
                       Job job = new Job();
                       job.setId(jobEntry.getValue("id", Long.class));
                       job.setConnection(connection);
-                      job.setCreatedAt(
-                          jobEntry
-                              .getValue("created_at", LocalDateTime.class)
-                              .toEpochSecond(ZoneOffset.UTC));
-                      job.setStartedAt(
-                          jobEntry
-                              .getValue("started_at", LocalDateTime.class)
-                              .toEpochSecond(ZoneOffset.UTC));
+                      job.setCreatedAt(getEpoch(jobEntry, "created_at"));
+                      job.setStartedAt(getEpoch(jobEntry, "started_at"));
                       job.setStatus(
                           Job.StatusEnum.fromValue(jobEntry.getValue("status", String.class)));
-                      job.setUpdatedAt(
-                          jobEntry
-                              .getValue("updated_at", LocalDateTime.class)
-                              .toEpochSecond(ZoneOffset.UTC));
+                      job.setUpdatedAt(getEpoch(jobEntry, "updated_at"));
                       return Optional.of(job);
                     } else {
                       return Optional.empty();
@@ -81,9 +71,7 @@ public class JobSubmitterThread implements Runnable {
                   });
 
           if (lastJob.isEmpty()) {
-            LOGGER.info("creating pending job for empty last job...");
             createPendingJob(connectionPool, connection.getConnectionId(), "{}");
-            LOGGER.info("created pending job for empty last job...");
           } else {
             Job job = lastJob.get();
 
@@ -94,13 +82,12 @@ public class JobSubmitterThread implements Runnable {
                 if (nextRunStart < Instant.now().getEpochSecond()) {
                   createPendingJob(connectionPool, job.getConnection().getConnectionId(), "{}");
                 }
-                break; // executes on next iteration
+                break;
               case PENDING:
-              case FAILED: // infinite retries for now
-                // todo: select kind of worker object to create
-                LOGGER.info("submitting job to thread pool...");
-                threadPool.submit(
-                    new WorkerWrapper<>(job.getId(), new EchoWorker(), connectionPool));
+              case FAILED:
+                // todo: Select kind of worker object to create based on the config
+                LOGGER.info("Submitting job to thread pool...");
+                threadPool.submit(new WorkerWrapper<>(job.getId(), new EchoWorker(), connectionPool));
               case RUNNING:
               case CANCELLED:
                 //  no-op
@@ -109,12 +96,18 @@ public class JobSubmitterThread implements Runnable {
           }
         }
 
-        Thread.sleep(1000);
+        Thread.sleep(MILLIS_BETWEEN_JOB_THREAD_CREATION);
       }
 
     } catch (Throwable e) {
-      LOGGER.error("sql", e);
+      LOGGER.error("SQL Error", e);
     }
+  }
+
+  private static long getEpoch(Record record, String fieldName) {
+    return record
+            .getValue(fieldName, LocalDateTime.class)
+            .toEpochSecond(ZoneOffset.UTC);
   }
 
   private static void createPendingJob(
@@ -133,16 +126,16 @@ public class JobSubmitterThread implements Runnable {
                   now,
                   Job.StatusEnum.PENDING.toString(),
                   configJson,
-                  null, // todo: output
-                  "", // todo: assign stdout
-                  "") // todo: assign stderr
-          );
+                  null,
+                  JobLogs.getLogDirectory(connectionId.toString()),
+                  JobLogs.getLogDirectory(connectionId.toString())));
     } catch (SQLException e) {
-      LOGGER.error("sql", e);
+      LOGGER.error("SQL Error", e);
       e.printStackTrace();
     }
   }
 
+  // todo: Assert in test to catch at build time
   private static Long getSecondsInUnit(ConnectionSchedule.TimeUnitEnum timeUnitEnum) {
     switch (timeUnitEnum) {
       case MINUTES:
@@ -156,7 +149,7 @@ public class JobSubmitterThread implements Runnable {
       case MONTHS:
         return TimeUnit.DAYS.toSeconds(1) * 30;
       default:
-        throw new RuntimeException("unhandled enum time unit: " + timeUnitEnum); // todo: assert in test to catch at build time
+        throw new RuntimeException("Unhandled TimeUnitEnum: " + timeUnitEnum);
     }
   }
 
@@ -167,7 +160,6 @@ public class JobSubmitterThread implements Runnable {
   private static UUID CONNECTION_ID = UUID.randomUUID();
 
   private static Set<ConnectionRead> getAllActiveConnections() {
-    // todo: get this from the api or a helper
     ConnectionSchedule testConnectionSchedule = new ConnectionSchedule();
     testConnectionSchedule.setUnits(1);
     testConnectionSchedule.setTimeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES);

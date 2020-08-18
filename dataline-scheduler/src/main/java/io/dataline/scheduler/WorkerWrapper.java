@@ -10,6 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 public class WorkerWrapper<T> implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerWrapper.class);
@@ -26,7 +29,7 @@ public class WorkerWrapper<T> implements Runnable {
 
   @Override
   public void run() {
-    LOGGER.info("executing worker wrapper...");
+    LOGGER.info("Executing worker wrapper...");
     try {
       setJobStatus(connectionPool, jobId, Job.StatusEnum.RUNNING);
 
@@ -57,13 +60,16 @@ public class WorkerWrapper<T> implements Runnable {
   private static void setJobStatus(
       BasicDataSource connectionPool, long jobId, Job.StatusEnum status) {
     LOGGER.info("Setting job status to " + status + " for job " + jobId);
+    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+
     try {
       DatabaseHelper.query(
           connectionPool,
           ctx ->
               ctx.execute(
-                  "UPDATE jobs SET status = CAST(? as JOB_STATUS) WHERE id = ?",
+                  "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
                   status.toString().toLowerCase(),
+                  now,
                   jobId));
     } catch (SQLException e) {
       LOGGER.error("SQL Error", e);
@@ -72,12 +78,17 @@ public class WorkerWrapper<T> implements Runnable {
   }
 
   private static void setJobOutput(BasicDataSource connectionPool, long jobId, String outputJson) {
+    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+
     try {
       DatabaseHelper.query(
           connectionPool,
           ctx ->
               ctx.execute(
-                  "UPDATE jobs SET output = CAST(? as JSONB) WHERE id = ?", outputJson, jobId));
+                  "UPDATE jobs SET output = CAST(? as JSONB), updated_at = ? WHERE id = ?",
+                  outputJson,
+                  now,
+                  jobId));
     } catch (SQLException e) {
       LOGGER.error("SQL Error", e);
       throw new RuntimeException(e);
