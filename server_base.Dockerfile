@@ -8,6 +8,7 @@ COPY ./build.gradle ./
 COPY ./dataline-api/build.gradle dataline-api/
 COPY ./dataline-commons/build.gradle dataline-commons/
 COPY ./dataline-config-persistence/build.gradle dataline-config-persistence/
+COPY ./dataline-config-init/build.gradle dataline-config-init/
 COPY ./dataline-config/build.gradle dataline-config/
 COPY ./dataline-db/build.gradle dataline-db/
 COPY ./dataline-server/build.gradle dataline-server/

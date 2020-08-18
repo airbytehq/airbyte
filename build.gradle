@@ -16,6 +16,21 @@ allprojects {
     version = env.VERSION
 }
 
+def createLicenseWith = { licence ->
+    def tmp = File.createTempFile("tmp", ".tmp")
+    tmp.withWriter {
+        def w = it
+        w.writeLine("/*")
+        licence.eachLine {
+            w << " * "
+            w.writeLine(it)
+        }
+        w.writeLine(" */")
+        w.writeLine("")
+    }
+    return tmp
+}
+
 // Java projects common configurations
 subprojects {
 
@@ -33,6 +48,12 @@ subprojects {
     spotless {
         java {
             googleJavaFormat('1.8')
+            trimTrailingWhitespace()
+            removeUnusedImports()
+            licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
+        }
+        groovyGradle {
+            target '**/*.gradle'
         }
     }
     compileJava.dependsOn 'spotlessApply'
