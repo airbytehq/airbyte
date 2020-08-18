@@ -21,6 +21,7 @@ dependencies {
     implementation project(':dataline-config-persistence')
     implementation project(':dataline-config-init')
     implementation project(':dataline-db')
+    implementation project(':dataline-scheduler')
     implementation project(':dataline-scheduler-persistence')
 }
 
