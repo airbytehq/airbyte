@@ -5,7 +5,9 @@ import org.apache.commons.dbcp2.BasicDataSource;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The Scheduler is responsible for finding new scheduled jobs that need to be run and to launch
@@ -15,8 +17,7 @@ import java.util.concurrent.ThreadFactory;
  */
 public class Scheduler {
   private static final int MAX_WORKERS = 4;
-  private static final int JOB_SUBMITTER_THREAD = 1;
-  private static final int MAX_THREADS = MAX_WORKERS + JOB_SUBMITTER_THREAD;
+  private static final long JOB_SUBMITTER_DELAY_MILLIS = 1000L;
   private static final ThreadFactory THREAD_FACTORY =
       new ThreadFactoryBuilder().setNameFormat("scheduler-%d").build();
 
@@ -27,8 +28,15 @@ public class Scheduler {
   }
 
   public void start() {
-    ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREADS, THREAD_FACTORY);
-    threadPool.submit(new JobSubmitter(threadPool, connectionPool));
-    Runtime.getRuntime().addShutdownHook(new SchedulerShutdownHandler(threadPool));
+    ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
+    ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
+    scheduledPool.scheduleWithFixedDelay(
+        new JobSubmitter(workerThreadPool, connectionPool),
+        0L,
+        JOB_SUBMITTER_DELAY_MILLIS,
+        TimeUnit.MILLISECONDS);
+
+    Runtime.getRuntime()
+        .addShutdownHook(new SchedulerShutdownHandler(workerThreadPool, scheduledPool));
   }
 }

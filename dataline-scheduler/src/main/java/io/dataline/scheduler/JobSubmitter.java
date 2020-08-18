@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 public class JobSubmitter implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitter.class);
-  private static final long MILLIS_BETWEEN_JOB_THREAD_CREATION = 1000L;
 
   private final ExecutorService threadPool;
   private final BasicDataSource connectionPool;
@@ -37,73 +36,67 @@ public class JobSubmitter implements Runnable {
   @Override
   public void run() {
     try {
-      while (true) {
-        LOGGER.info("Running job-submitter...");
+      LOGGER.info("Running job-submitter...");
 
-        // todo: get all pending jobs before considering configured connection schedules
-        Set<ConnectionRead> activeConnections = getAllActiveConnections();
-        for (ConnectionRead connection : activeConnections) {
-          Optional<Job> lastJob =
-              DatabaseHelper.query(
-                  connectionPool,
-                  ctx -> {
-                    Optional<Record> jobEntryOptional =
-                        ctx
-                            .fetch(
-                                "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
-                                connection.getConnectionId().toString(),
-                                Job.StatusEnum.CANCELLED.toString().toLowerCase())
-                            .stream()
-                            .findFirst();
+      // todo: get all pending jobs before considering configured connection schedules
+      Set<ConnectionRead> activeConnections = getAllActiveConnections();
+      for (ConnectionRead connection : activeConnections) {
+        Optional<Job> lastJob =
+            DatabaseHelper.query(
+                connectionPool,
+                ctx -> {
+                  Optional<Record> jobEntryOptional =
+                      ctx
+                          .fetch(
+                              "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
+                              connection.getConnectionId().toString(),
+                              Job.StatusEnum.CANCELLED.toString().toLowerCase())
+                          .stream()
+                          .findFirst();
 
-                    if (jobEntryOptional.isPresent()) {
-                      Record jobEntry = jobEntryOptional.get();
-                      Job job = new Job();
-                      job.setId(jobEntry.getValue("id", Long.class));
-                      job.setConnection(connection);
-                      job.setCreatedAt(getEpoch(jobEntry, "created_at"));
-                      job.setStartedAt(getEpoch(jobEntry, "started_at"));
-                      job.setStatus(
-                          Job.StatusEnum.fromValue(jobEntry.getValue("status", String.class)));
-                      job.setUpdatedAt(getEpoch(jobEntry, "updated_at"));
-                      return Optional.of(job);
-                    } else {
-                      return Optional.empty();
-                    }
-                  });
+                  if (jobEntryOptional.isPresent()) {
+                    Record jobEntry = jobEntryOptional.get();
+                    Job job = new Job();
+                    job.setId(jobEntry.getValue("id", Long.class));
+                    job.setConnection(connection);
+                    job.setCreatedAt(getEpoch(jobEntry, "created_at"));
+                    job.setStartedAt(getEpoch(jobEntry, "started_at"));
+                    job.setStatus(
+                        Job.StatusEnum.fromValue(jobEntry.getValue("status", String.class)));
+                    job.setUpdatedAt(getEpoch(jobEntry, "updated_at"));
+                    return Optional.of(job);
+                  } else {
+                    return Optional.empty();
+                  }
+                });
 
-          if (lastJob.isEmpty()) {
-            createPendingJob(connectionPool, connection.getConnectionId(), "{}");
-          } else {
-            Job job = lastJob.get();
+        if (lastJob.isEmpty()) {
+          createPendingJob(connectionPool, connection.getConnectionId(), "{}");
+        } else {
+          Job job = lastJob.get();
 
-            switch (job.getStatus()) {
-              case CANCELLED:
-              case COMPLETED:
-                ConnectionSchedule schedule = connection.getSchedule();
-                long nextRunStart = job.getUpdatedAt() + getIntervalInSeconds(schedule);
-                if (nextRunStart < Instant.now().getEpochSecond()) {
-                  createPendingJob(connectionPool, job.getConnection().getConnectionId(), "{}");
-                }
-                break;
-              case PENDING:
-              case FAILED:
-                // todo: Select kind of worker object to create based on the config
-                LOGGER.info("Submitting job to thread pool...");
-                threadPool.submit(
-                    new WorkerWrapper<>(job.getId(), new EchoWorker(), connectionPool));
-              case RUNNING:
-                //  no-op
-                break;
-            }
+          switch (job.getStatus()) {
+            case CANCELLED:
+            case COMPLETED:
+              ConnectionSchedule schedule = connection.getSchedule();
+              long nextRunStart = job.getUpdatedAt() + getIntervalInSeconds(schedule);
+              if (nextRunStart < Instant.now().getEpochSecond()) {
+                createPendingJob(connectionPool, job.getConnection().getConnectionId(), "{}");
+              }
+              break;
+            case PENDING:
+            case FAILED:
+              // todo: Select kind of worker object to create based on the config
+              LOGGER.info("Submitting job to thread pool...");
+              threadPool.submit(new WorkerWrapper<>(job.getId(), new EchoWorker(), connectionPool));
+            case RUNNING:
+              //  no-op
+              break;
           }
         }
-
-        Thread.sleep(MILLIS_BETWEEN_JOB_THREAD_CREATION);
       }
-
     } catch (Throwable e) {
-      LOGGER.error("SQL Error", e);
+      LOGGER.error("Job Submitter Error", e);
     }
   }
 
