@@ -5,7 +5,7 @@ plugins {
 
 Properties env = new Properties()
 File envFile = new File('.env')
-envFile.withInputStream {env.load(it) }
+envFile.withInputStream { env.load(it) }
 
 if (!env.containsKey("VERSION")) {
     throw new Exception("Version not specified in .env file...")
@@ -14,6 +14,21 @@ if (!env.containsKey("VERSION")) {
 allprojects {
     group = "io.dataline.${rootProject.name}"
     version = env.VERSION
+}
+
+def createLicenseWith = { licence ->
+    def tmp = File.createTempFile("tmp", ".tmp")
+    tmp.withWriter {
+        def w = it
+        w.writeLine("/*")
+        licence.eachLine {
+            w << " * "
+            w.writeLine(it)
+        }
+        w.writeLine(" */")
+        w.writeLine("")
+    }
+    return tmp
 }
 
 // Java projects common configurations
@@ -33,12 +48,22 @@ subprojects {
     spotless {
         java {
             googleJavaFormat('1.8')
+            trimTrailingWhitespace()
+            removeUnusedImports()
+            licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
+        }
+        groovyGradle {
+            target '**/*.gradle'
         }
     }
     compileJava.dependsOn 'spotlessApply'
 
     test {
         useJUnitPlatform()
+        testLogging() {
+            events "failed"
+            exceptionFormat "full"
+        }
     }
 
     dependencies {

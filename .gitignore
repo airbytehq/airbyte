@@ -3,3 +3,4 @@
 build
 .DS_Store
 dataline-db/pg_data/*
+data

@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ * 
+ * Copyright (c) 2020 Dataline
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.dataline.workers.singer;
 
 import static io.dataline.workers.JobStatus.FAILED;
@@ -19,7 +43,6 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
 
   private final String configDotJson;
   private final SingerTap tap;
-  private DiscoveryOutput output;
 
   public SingerDiscoveryWorker(
       String workerId,
@@ -33,7 +56,7 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   }
 
   @Override
-  public OutputAndStatus<DiscoveryOutput> run() {
+  public OutputAndStatus<DiscoveryOutput> runInternal() {
     // TODO use format converter here
     // write config.json to disk
     String configPath = writeFileToWorkspace(CONFIG_JSON_FILENAME, configDotJson);
@@ -46,16 +69,28 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
         getWorkspacePath().resolve(ERROR_LOG_FILENAME).toAbsolutePath().toString();
     // exec
     try {
+
+      String[] cmd = {tapPath, "--config", configPath, "--discover"};
+
       Process workerProcess =
-          new ProcessBuilder(tapPath, "--config " + configPath, "--discover")
+          new ProcessBuilder(cmd)
               .redirectError(new File(errorLogPath))
               .redirectOutput(new File(catalogDotJsonPath))
               .start();
-      workerProcess.wait();
-      if (workerProcess.exitValue() == 0) {
+
+      // TODO will need to wrap this synchronize in a while loop and timeout to prevent contention
+      // coming from
+      //  cancellations
+      synchronized (workerProcess) {
+        workerProcess.wait();
+      }
+      int exitCode = workerProcess.exitValue();
+      if (exitCode == 0) {
         String catalog = readFileFromWorkspace(CATALOG_JSON_FILENAME);
         return new OutputAndStatus<>(SUCCESSFUL, new DiscoveryOutput(catalog));
       } else {
+        LOGGER.debug(
+            "Discovery worker {} subprocess finished with exit code {}", workerId, exitCode);
         return new OutputAndStatus<>(FAILED);
       }
     } catch (IOException | InterruptedException e) {

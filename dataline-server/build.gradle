@@ -19,10 +19,16 @@ dependencies {
     implementation project(':dataline-commons')
     implementation project(':dataline-config')
     implementation project(':dataline-config-persistence')
+    implementation project(':dataline-config-init')
     implementation project(':dataline-db')
     implementation project(':dataline-scheduler')
 }
 
 application {
     mainClass = 'io.dataline.server.ServerApp'
+}
+
+run {
+    // default for running on local machine.
+    environment "CONFIG_PERSISTENCE_ROOT", new File(".").absolutePath + "data/config"
 }
