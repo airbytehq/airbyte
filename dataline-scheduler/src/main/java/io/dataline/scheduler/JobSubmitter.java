@@ -78,6 +78,7 @@ public class JobSubmitter implements Runnable {
             Job job = lastJob.get();
 
             switch (job.getStatus()) {
+              case CANCELLED:
               case COMPLETED:
                 ConnectionSchedule schedule = connection.getSchedule();
                 long nextRunStart = job.getUpdatedAt() + getIntervalInSeconds(schedule);
@@ -89,9 +90,9 @@ public class JobSubmitter implements Runnable {
               case FAILED:
                 // todo: Select kind of worker object to create based on the config
                 LOGGER.info("Submitting job to thread pool...");
-                threadPool.submit(new WorkerWrapper<>(job.getId(), new EchoWorker(), connectionPool));
+                threadPool.submit(
+                    new WorkerWrapper<>(job.getId(), new EchoWorker(), connectionPool));
               case RUNNING:
-              case CANCELLED:
                 //  no-op
                 break;
             }
@@ -107,9 +108,7 @@ public class JobSubmitter implements Runnable {
   }
 
   private static long getEpoch(Record record, String fieldName) {
-    return record
-            .getValue(fieldName, LocalDateTime.class)
-            .toEpochSecond(ZoneOffset.UTC);
+    return record.getValue(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
   }
 
   private static void createPendingJob(
