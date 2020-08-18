@@ -58,11 +58,12 @@ public class ServerApp {
     BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
     LOGGER.info("server-uuid = " + ServerUuid.get(connectionPool));
 
-    Server server = new Server(8000);
+    Server server = new Server(8001);
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    ConfigurationApiFactory.setDbRoot(configPersistenceRoot);
+    ConfigurationApiFactory.setConfigPersistenceRoot(configPersistenceRoot);
+    ConfigurationApiFactory.setDbConnectionPool(connectionPool);
 
     ResourceConfig rc =
         new ResourceConfig()
