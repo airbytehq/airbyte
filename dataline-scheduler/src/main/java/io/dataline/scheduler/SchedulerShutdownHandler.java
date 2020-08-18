@@ -6,11 +6,11 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class SchedulerShutdownThread extends Thread {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerShutdownThread.class);
+public class SchedulerShutdownHandler extends Thread {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerShutdownHandler.class);
   private ExecutorService threadPool;
 
-  public SchedulerShutdownThread(ExecutorService threadPool) {
+  public SchedulerShutdownHandler(ExecutorService threadPool) {
     this.threadPool = threadPool;
   }
 
