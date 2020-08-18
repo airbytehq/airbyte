@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation 'com.google.code.gson:gson:2.8.6'
     implementation project(':dataline-commons')
     implementation project(':dataline-db')
     implementation project(':dataline-api')
