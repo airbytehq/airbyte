@@ -24,7 +24,6 @@
 
 package io.dataline.server.handlers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.api.model.CheckConnectionRead;
 import io.dataline.api.model.ConnectionIdRequestBody;
 import io.dataline.api.model.ConnectionSyncRead;
@@ -61,7 +60,6 @@ public class SchedulerHandler {
 
   public CheckConnectionRead checkSourceImplementationConnection(
       SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    final ObjectMapper objectMapper = new ObjectMapper();
 
     final SourceConnectionImplementation connectionImplementation;
     try {
@@ -71,10 +69,8 @@ public class SchedulerHandler {
               sourceImplementationIdRequestBody.getSourceImplementationId().toString(),
               SourceConnectionImplementation.class);
     } catch (ConfigNotFoundException e) {
-      // todo: actually good errors.
-      throw new RuntimeException(e);
+      throw new KnownException(404, "Source Implementation not found");
     } catch (JsonValidationException e) {
-      // todo: actually good errors.
       throw new RuntimeException(e);
     }
 

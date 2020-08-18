@@ -31,12 +31,9 @@ application {
 run {
     // default for running on local machine.
     environment "CONFIG_PERSISTENCE_ROOT", new File(".").absolutePath + "data/config"
-
     environment "VERSION", "0.1.0"
-//    environment "ENV", "docker"
     environment "DATABASE_USER", "postgres"
     environment "DATABASE_PASSWORD", ""
     environment "DATABASE_DB", "dataline"
     environment "DATABASE_URL", "jdbc:postgresql://localhost:5432/dataline"
-
 }
