@@ -47,7 +47,7 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
 
     String expectedCatalog = readResource("simple_postgres_catalog.json");
     assertTrue(run.output.isPresent());
-    assertJsonEquals(expectedCatalog, run.output.get().catalog);
+    assertJsonEquals(expectedCatalog, run.output.get().getCatalog());
   }
 
   private String readResource(String name) {

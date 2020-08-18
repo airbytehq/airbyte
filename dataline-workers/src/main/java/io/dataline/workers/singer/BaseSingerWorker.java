@@ -37,7 +37,7 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
     return runInternal();
   }
 
-  public abstract OutputAndStatus<OutputType> runInternal();
+  abstract OutputAndStatus<OutputType> runInternal();
 
   private void createWorkspace() {
     try {

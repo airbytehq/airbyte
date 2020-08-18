@@ -18,12 +18,12 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   private static String ERROR_LOG_FILENAME = "err.log";
 
   private final String configDotJson;
-  private final SingerTap tap;
+  private final SingerConnector tap;
 
   public SingerDiscoveryWorker(
       String workerId,
       String configDotJson,
-      SingerTap tap,
+      SingerConnector tap,
       String workspaceRoot,
       String singerLibsRoot) {
     super(workerId, workspaceRoot, singerLibsRoot);
@@ -32,7 +32,7 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   }
 
   @Override
-  public OutputAndStatus<DiscoveryOutput> runInternal() {
+  OutputAndStatus<DiscoveryOutput> runInternal() {
     // TODO use format converter here
     // write config.json to disk
     String configPath = writeFileToWorkspace(CONFIG_JSON_FILENAME, configDotJson);
