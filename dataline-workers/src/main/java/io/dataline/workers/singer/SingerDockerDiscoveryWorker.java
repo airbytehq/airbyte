@@ -95,15 +95,21 @@ public class SingerDockerDiscoveryWorker implements Worker<DiscoveryOutput> {
                 .dockerHost(URI.create("unix:///var/run/docker.sock"))
                 .build());
 
-    CreateContainerResponse container = client.createContainerCmd(image).exec();
+    CreateContainerResponse container =
+        client
+            .createContainerCmd(image)
+            .withAttachStdout(true)
+            .withAttachStderr(true)
+            .withTty(true)
+            .exec();
     System.out.println(container);
-
     final CountDownLatch countDownLatch = new CountDownLatch(1);
-
     client
-        .execStartCmd(container.getId())
-        //        .withDetach(false)
-        //        .withTty(true)
+        .attachContainerCmd(container.getId())
+        .withStdErr(true)
+        .withStdOut(true)
+        .withFollowStream(true)
+        .withLogs(true)
         .exec(
             new ResultCallback<Frame>() {
               @Override
@@ -134,6 +140,8 @@ public class SingerDockerDiscoveryWorker implements Worker<DiscoveryOutput> {
                 countDownLatch.countDown();
               }
             });
+
+    client.startContainerCmd(container.getId()).exec();
 
     try {
       while (!countDownLatch.await(1, TimeUnit.SECONDS)) {
