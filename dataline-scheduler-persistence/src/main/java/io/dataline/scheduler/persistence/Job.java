@@ -38,8 +38,8 @@ public class Job {
   private final long updatedAt;
   private final JobConfig config;
   private final JobOutput output;
-  private final String stdout_path;
-  private final String stderr_path;
+  private final String stdoutPath;
+  private final String stderrPath;
 
   public Job(
       long id,
@@ -47,8 +47,8 @@ public class Job {
       JobStatus status,
       JobConfig config,
       @Nullable JobOutput output,
-      String stdout_path,
-      String stderr_path,
+      String stdoutPath,
+      String stderrPath,
       long createdAt,
       @Nullable Long startedAt,
       long updatedAt) {
@@ -57,8 +57,8 @@ public class Job {
     this.status = status;
     this.config = config;
     this.output = output;
-    this.stdout_path = stdout_path;
-    this.stderr_path = stderr_path;
+    this.stdoutPath = stdoutPath;
+    this.stderrPath = stderrPath;
     this.createdAt = createdAt;
     this.startedAt = startedAt;
     this.updatedAt = updatedAt;
@@ -96,12 +96,12 @@ public class Job {
     return Optional.ofNullable(output);
   }
 
-  public String getStdout_path() {
-    return stdout_path;
+  public String getStdoutPath() {
+    return stdoutPath;
   }
 
-  public String getStderr_path() {
-    return stderr_path;
+  public String getStderrPath() {
+    return stderrPath;
   }
 
   @Override
@@ -125,11 +125,11 @@ public class Job {
         + '\''
         + ", output="
         + output
-        + ", stdout_path='"
-        + stdout_path
+        + ", stdoutPath='"
+        + stdoutPath
         + '\''
-        + ", stderr_path='"
-        + stderr_path
+        + ", stderrPath='"
+        + stderrPath
         + '\''
         + '}';
   }

@@ -84,7 +84,7 @@ public class SchedulerHandler {
     }
 
     LOGGER.info("jobId = " + jobId);
-    final Job job = waitUntilJobIsTerminal(jobId);
+    final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
     final StandardConnectionStatus connectionStatus =
         job.getOutput()
@@ -100,7 +100,7 @@ public class SchedulerHandler {
     return checkConnectionRead;
   }
 
-  private Job waitUntilJobIsTerminal(long jobId) {
+  private Job waitUntilJobIsTerminalOrTimeout(long jobId) {
     int count = 0;
     while (true) {
       final Job job;
