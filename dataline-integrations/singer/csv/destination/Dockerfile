@@ -11,4 +11,6 @@ COPY requirements.txt .
 RUN python -m pip install --upgrade pip && \
   pip install -r requirements.txt
 
-ENTRYPOINT ["target-postgres"]
+WORKDIR /singer/data
+
+ENTRYPOINT ["target-csv"]
