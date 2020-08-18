@@ -18,7 +18,7 @@ services:
     entrypoint: /bin/sh -c './wait && bin/dataline-server'
     container_name: dataline-server
     environment:
-      - ENV=docker
+      - ENV=${ENV}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_URL=${DATABASE_URL}
