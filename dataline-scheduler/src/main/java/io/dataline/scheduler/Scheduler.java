@@ -199,11 +199,11 @@ public class Scheduler {
                         Job job = new Job();
                         job.setId(jobEntry.getValue("id", Long.class));
                         job.setConnection(connection);
-                        job.setCreatedAt(jobEntry.getValue("created_at", Long.class));
-                        job.setStartedAt(jobEntry.getValue("started_at", Long.class));
+                        job.setCreatedAt(jobEntry.getValue("created_at", LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
+                        job.setStartedAt(jobEntry.getValue("started_at", LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
                         job.setStatus(
                             Job.StatusEnum.fromValue(jobEntry.getValue("status", String.class)));
-                        job.setUpdatedAt(jobEntry.getValue("updated_at", Long.class));
+                        job.setUpdatedAt(jobEntry.getValue("updated_at", LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
                         return Optional.of(job);
                       } else {
                         return Optional.empty();
