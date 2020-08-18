@@ -1,6 +1,6 @@
 package io.dataline.scheduler;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.api.model.Job;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
@@ -45,7 +45,8 @@ public class WorkerWrapper<T> implements Runnable {
       }
 
       if (outputAndStatus.output.isPresent()) {
-        String json = new Gson().toJson(outputAndStatus.output.get());
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(outputAndStatus.output.get());
         setJobOutput(connectionPool, jobId, json);
         LOGGER.info("Set job output for job " + jobId);
       } else {
