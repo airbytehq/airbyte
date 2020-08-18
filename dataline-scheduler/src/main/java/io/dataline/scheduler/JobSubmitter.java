@@ -6,7 +6,7 @@ import io.dataline.api.model.ConnectionSchedule;
 import io.dataline.api.model.ConnectionStatus;
 import io.dataline.api.model.Job;
 import io.dataline.db.DatabaseHelper;
-import io.dataline.workers.testing.EchoWorker;
+import io.dataline.workers.EchoWorker;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.slf4j.Logger;
@@ -22,14 +22,14 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class JobSubmitterThread implements Runnable {
-  private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitterThread.class);
+public class JobSubmitter implements Runnable {
+  private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitter.class);
   private static final long MILLIS_BETWEEN_JOB_THREAD_CREATION = 1000L;
 
   private final ExecutorService threadPool;
   private final BasicDataSource connectionPool;
 
-  public JobSubmitterThread(ExecutorService threadPool, BasicDataSource connectionPool) {
+  public JobSubmitter(ExecutorService threadPool, BasicDataSource connectionPool) {
     this.threadPool = threadPool;
     this.connectionPool = connectionPool;
   }

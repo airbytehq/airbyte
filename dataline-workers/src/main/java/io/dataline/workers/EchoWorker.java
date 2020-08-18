@@ -1,8 +1,5 @@
-package io.dataline.workers.testing;
+package io.dataline.workers;
 
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

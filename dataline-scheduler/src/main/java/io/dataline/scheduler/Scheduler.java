@@ -28,7 +28,7 @@ public class Scheduler {
 
   public void start() {
     ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREADS, THREAD_FACTORY);
-    threadPool.submit(new JobSubmitterThread(threadPool, connectionPool));
+    threadPool.submit(new JobSubmitter(threadPool, connectionPool));
     Runtime.getRuntime().addShutdownHook(new SchedulerShutdownThread(threadPool));
   }
 }
