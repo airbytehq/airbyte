@@ -1,18 +1,18 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2020 Dataline
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -47,6 +47,7 @@ import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.server.converters.SchemaConverter;
 import io.dataline.server.errors.KnownException;
 import java.util.List;
 import java.util.UUID;
@@ -76,7 +77,7 @@ public class ConnectionsHandler {
     standardSync.setSourceImplementationId(connectionCreate.getSourceImplementationId());
     standardSync.setDestinationImplementationId(connectionCreate.getDestinationImplementationId());
     standardSync.setSyncMode(StandardSync.SyncMode.APPEND); // todo: for MVP we only support append.
-    standardSync.setSchema(toPersistenceSchema(connectionCreate.getSyncSchema()));
+    standardSync.setSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
     standardSync.setName(
         connectionCreate.getName() != null ? connectionCreate.getName() : "default");
     standardSync.setStatus(toPersistenceStatus(connectionCreate.getStatus()));
@@ -120,7 +121,7 @@ public class ConnectionsHandler {
 
     // get existing sync
     final StandardSync persistedSync = getStandardSync(connectionId);
-    persistedSync.setSchema(toPersistenceSchema(connectionUpdate.getSyncSchema()));
+    persistedSync.setSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()));
     persistedSync.setStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
     // get existing schedule
@@ -274,70 +275,9 @@ public class ConnectionsHandler {
     connectionRead.setSchedule(apiSchedule);
     connectionRead.setSyncMode(toApiSyncMode(standardSync.getSyncMode()));
     connectionRead.setName(standardSync.getName());
-    connectionRead.setSyncSchema(toApiSchema(standardSync.getSchema()));
+    connectionRead.setSyncSchema(SchemaConverter.toApiSchema(standardSync.getSchema()));
 
     return connectionRead;
-  }
-
-  private Schema toPersistenceSchema(SourceSchema api) {
-    final List<Table> persistenceTables =
-        api.getTables().stream()
-            .map(
-                apiTable -> {
-                  final List<Column> persistenceColumns =
-                      apiTable.getColumns().stream()
-                          .map(
-                              apiColumn -> {
-                                final Column persistenceColumn = new Column();
-                                persistenceColumn.setName(apiColumn.getName());
-                                persistenceColumn.setDataType(
-                                    toPersistenceDataType(apiColumn.getDataType()));
-                                return persistenceColumn;
-                              })
-                          .collect(Collectors.toList());
-
-                  final Table persistenceTable = new Table();
-                  persistenceTable.setName(apiTable.getName());
-                  persistenceTable.setColumns(persistenceColumns);
-
-                  return persistenceTable;
-                })
-            .collect(Collectors.toList());
-
-    final Schema persistenceSchema = new Schema();
-    persistenceSchema.setTables(persistenceTables);
-    return persistenceSchema;
-  }
-
-  private SourceSchema toApiSchema(Schema persistenceSchema) {
-
-    final List<SourceSchemaTable> persistenceTables =
-        persistenceSchema.getTables().stream()
-            .map(
-                persistenceTable -> {
-                  final List<SourceSchemaColumn> apiColumns =
-                      persistenceTable.getColumns().stream()
-                          .map(
-                              persistenceColumn -> {
-                                final SourceSchemaColumn apiColumn = new SourceSchemaColumn();
-                                apiColumn.setName(persistenceColumn.getName());
-                                apiColumn.setDataType(
-                                    toApiDataType(persistenceColumn.getDataType()));
-                                return apiColumn;
-                              })
-                          .collect(Collectors.toList());
-
-                  final SourceSchemaTable apiTable = new SourceSchemaTable();
-                  apiTable.setName(persistenceTable.getName());
-                  apiTable.setColumns(apiColumns);
-
-                  return apiTable;
-                })
-            .collect(Collectors.toList());
-
-    final SourceSchema apiSchema = new SourceSchema();
-    apiSchema.setTables(persistenceTables);
-    return apiSchema;
   }
 
   private StandardSync.Status toPersistenceStatus(ConnectionStatus apiStatus) {
@@ -358,14 +298,5 @@ public class ConnectionsHandler {
 
   private ConnectionSchedule.TimeUnitEnum toApiTimeUnit(Schedule.TimeUnit apiTimeUnit) {
     return Enums.convertTo(apiTimeUnit, ConnectionSchedule.TimeUnitEnum.class);
-  }
-
-  // todo: figure out why the generator is namespacing the DataType enum by Column.
-  private Column.DataType toPersistenceDataType(SourceSchemaColumn.DataTypeEnum apiDataType) {
-    return Enums.convertTo(apiDataType, Column.DataType.class);
-  }
-
-  private SourceSchemaColumn.DataTypeEnum toApiDataType(Column.DataType persistenceDataType) {
-    return Enums.convertTo(persistenceDataType, SourceSchemaColumn.DataTypeEnum.class);
   }
 }

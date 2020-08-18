@@ -19,7 +19,7 @@
       "$ref": "StandardConnectionStatus.json"
     },
     "discoverSchema": {
-      "type": "string"
+      "$ref": "StandardDiscoveryOutput.json"
     },
     "sync": {
       "type": "string"
