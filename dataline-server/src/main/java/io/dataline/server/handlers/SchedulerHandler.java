@@ -37,13 +37,14 @@ import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
-import io.dataline.scheduler.persistence.Job;
-import io.dataline.scheduler.persistence.JobStatus;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.dataline.scheduler.Job;
+import io.dataline.scheduler.JobStatus;
+import io.dataline.scheduler.SchedulerPersistence;
 import io.dataline.server.errors.KnownException;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 public class SchedulerHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);

@@ -1,18 +1,18 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2020 Dataline
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,13 +22,18 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler.persistence;
+package io.dataline.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.JobConfig;
 import io.dataline.config.JobOutput;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.db.DatabaseHelper;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.Record;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -36,10 +41,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSchedulerPersistence.class);
@@ -106,45 +107,52 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
                     .orElseThrow(
                         () -> new RuntimeException("Could not find job with id: " + jobId));
 
-            final ObjectMapper objectMapper = new ObjectMapper();
-
-            final JobConfig jobConfig;
-            try {
-              jobConfig =
-                  objectMapper.readValue(jobEntry.get("config", String.class), JobConfig.class);
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-
-            final JobOutput output;
-            try {
-              final String outputDb = jobEntry.get("output", String.class);
-              if (outputDb == null) {
-                output = null;
-              } else {
-                output = objectMapper.readValue(outputDb, JobOutput.class);
-              }
-
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-
-            return new Job(
-                jobEntry.get("id", Long.class),
-                jobEntry.get("scope", String.class),
-                JobStatus.valueOf(jobEntry.get("status", String.class).toUpperCase()), // hack
-                jobConfig,
-                output,
-                jobEntry.get("stdout_path", String.class),
-                jobEntry.get("stderr_path", String.class),
-                jobEntry.get("created_at", Long.class),
-                Optional.ofNullable(jobEntry.get("started_at"))
-                    .map(value -> Long.parseLong(value.toString()))
-                    .orElse(null),
-                jobEntry.get("updated_at", Long.class));
+            return getJobFromRecord(jobEntry);
           });
     } catch (SQLException e) {
       throw new IOException(e);
     }
+  }
+
+  public static Job getJobFromRecord(Record jobEntry) {
+    final ObjectMapper objectMapper = new ObjectMapper();
+
+    final JobConfig jobConfig;
+    try {
+      jobConfig = objectMapper.readValue(jobEntry.get("config", String.class), JobConfig.class);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    final JobOutput output;
+    try {
+      final String outputDb = jobEntry.get("output", String.class);
+      if (outputDb == null) {
+        output = null;
+      } else {
+        output = objectMapper.readValue(outputDb, JobOutput.class);
+      }
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    return new Job(
+        jobEntry.get("id", Long.class),
+        jobEntry.getValue("scope", String.class),
+        JobStatus.valueOf(jobEntry.getValue("status", String.class).toUpperCase()),
+        jobConfig,
+        output,
+        jobEntry.get("stdout_path", String.class),
+        jobEntry.get("stderr_path", String.class),
+        getEpoch(jobEntry, "created_at"),
+        Optional.ofNullable(jobEntry.get("started_at"))
+            .map(value -> getEpoch(jobEntry, "started_at"))
+            .orElse(null),
+        getEpoch(jobEntry, "updated_at"));
+  }
+
+  private static long getEpoch(Record record, String fieldName) {
+    return record.getValue(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
   }
 }

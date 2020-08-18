@@ -1,18 +1,18 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2020 Dataline
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,11 +24,11 @@
 
 package io.dataline.scheduler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Sets;
 import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionSchedule;
 import io.dataline.api.model.ConnectionStatus;
-import io.dataline.api.model.Job;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.EchoWorker;
 import java.sql.SQLException;
@@ -50,10 +50,15 @@ public class JobSubmitter implements Runnable {
 
   private final ExecutorService threadPool;
   private final BasicDataSource connectionPool;
+  private final SchedulerPersistence persistence;
 
-  public JobSubmitter(ExecutorService threadPool, BasicDataSource connectionPool) {
+  public JobSubmitter(
+      ExecutorService threadPool,
+      BasicDataSource connectionPool,
+      SchedulerPersistence persistence) {
     this.threadPool = threadPool;
     this.connectionPool = connectionPool;
+    this.persistence = persistence;
   }
 
   @Override
@@ -73,20 +78,13 @@ public class JobSubmitter implements Runnable {
                           .fetch(
                               "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
                               connection.getConnectionId().toString(),
-                              Job.StatusEnum.CANCELLED.toString().toLowerCase())
+                              JobStatus.CANCELLED.toString().toLowerCase())
                           .stream()
                           .findFirst();
 
                   if (jobEntryOptional.isPresent()) {
                     Record jobEntry = jobEntryOptional.get();
-                    Job job = new Job();
-                    job.setId(jobEntry.getValue("id", Long.class));
-                    job.setConnection(connection);
-                    job.setCreatedAt(getEpoch(jobEntry, "created_at"));
-                    job.setStartedAt(getEpoch(jobEntry, "started_at"));
-                    job.setStatus(
-                        Job.StatusEnum.fromValue(jobEntry.getValue("status", String.class)));
-                    job.setUpdatedAt(getEpoch(jobEntry, "updated_at"));
+                    Job job = DefaultSchedulerPersistence.getJobFromRecord(jobEntry);
                     return Optional.of(job);
                   } else {
                     return Optional.empty();
@@ -104,7 +102,7 @@ public class JobSubmitter implements Runnable {
               ConnectionSchedule schedule = connection.getSchedule();
               long nextRunStart = job.getUpdatedAt() + getIntervalInSeconds(schedule);
               if (nextRunStart < Instant.now().getEpochSecond()) {
-                createPendingJob(connectionPool, job.getConnection().getConnectionId(), "{}");
+                createPendingJob(connectionPool, job);
               }
               break;
             case PENDING:
@@ -123,31 +121,28 @@ public class JobSubmitter implements Runnable {
     }
   }
 
-  private static long getEpoch(Record record, String fieldName) {
-    return record.getValue(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
-  }
-
-  private static void createPendingJob(
-      BasicDataSource connectionPool, UUID connectionId, String configJson) {
-    LOGGER.info("Creating pending job for connection: " + connectionId.toString());
-    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+  private static void createPendingJob(BasicDataSource connectionPool, Job previousJob) {
     try {
+      LOGGER.info("Creating pending job for scope: " + previousJob.getScope());
+      LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+      String configJson = previousJob.getConfigAsJson();
+
       DatabaseHelper.query(
           connectionPool,
           ctx ->
               ctx.execute(
                   "INSERT INTO jobs VALUES(DEFAULT, ?, ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?)",
-                  connectionId.toString(),
+                  previousJob.getScope(),
                   now,
                   now,
                   now,
-                  Job.StatusEnum.PENDING.toString(),
+                  JobStatus.PENDING.toString().toLowerCase(),
                   configJson,
-                  null,
-                  JobLogs.getLogDirectory(connectionId.toString()),
-                  JobLogs.getLogDirectory(connectionId.toString())));
-    } catch (SQLException e) {
-      LOGGER.error("SQL Error", e);
+                  null, // no output when created
+                  JobLogs.getLogDirectory(previousJob.getScope()),
+                  JobLogs.getLogDirectory(previousJob.getScope())));
+    } catch (SQLException | JsonProcessingException e) {
+      LOGGER.error("Pending Job Creation Error", e);
       e.printStackTrace();
     }
   }

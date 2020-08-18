@@ -1,18 +1,18 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2020 Dataline
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,12 +22,15 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler.persistence;
+package io.dataline.scheduler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.JobConfig;
 import io.dataline.config.JobOutput;
-import java.util.Optional;
+
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class Job {
   private final long id;
@@ -90,6 +93,11 @@ public class Job {
 
   public JobConfig getConfig() {
     return config;
+  }
+
+  public String getConfigAsJson() throws JsonProcessingException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    return objectMapper.writeValueAsString(config);
   }
 
   public Optional<JobOutput> getOutput() {

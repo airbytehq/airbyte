@@ -56,8 +56,8 @@ import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.DefaultConfigPersistence;
-import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.dataline.scheduler.DefaultSchedulerPersistence;
+import io.dataline.scheduler.SchedulerPersistence;
 import io.dataline.server.handlers.ConnectionsHandler;
 import io.dataline.server.handlers.DestinationImplementationsHandler;
 import io.dataline.server.handlers.DestinationSpecificationsHandler;
@@ -68,9 +68,10 @@ import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
 import io.dataline.server.handlers.WorkspacesHandler;
 import io.dataline.server.validation.IntegrationSchemaValidation;
+import org.apache.commons.dbcp2.BasicDataSource;
+
 import javax.validation.Valid;
 import javax.ws.rs.Path;
-import org.apache.commons.dbcp2.BasicDataSource;
 
 @Path("/v1")
 public class ConfigurationApi implements io.dataline.api.V1Api {
