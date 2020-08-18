@@ -7,6 +7,9 @@ WORKDIR /app/dataline-server
 
 # TODO: add data mount instead
 RUN mkdir data
+# setup on-container persistence
+# todo (cgardens) - this should read from .env?
+RUN cp -r /code/dataline-config-init/build/resources/main/config data
 
 RUN cp /code/dataline-server/build/distributions/*.tar dataline-server.tar \
     && rm -rf /code
