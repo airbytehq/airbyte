@@ -1,9 +1,11 @@
 package io.dataline.scheduler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import java.util.concurrent.*;
-
 import org.apache.commons.dbcp2.BasicDataSource;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * The Scheduler is responsible for finding new scheduled jobs that need to be run and to launch
