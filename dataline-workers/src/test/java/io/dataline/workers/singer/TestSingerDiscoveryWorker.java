@@ -18,19 +18,40 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
+  PostgreSQLContainer db;
 
-  @Test
-  public void testPostgresDiscovery() throws SQLException, IOException {
-    PostgreSQLContainer db = new PostgreSQLContainer();
+  @BeforeAll
+  public void initDb() {
+    db = new PostgreSQLContainer();
     db.start();
+  }
+
+  @Before
+  public void initDbSchema() throws SQLException {
     Connection con =
         DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
     con.createStatement().execute("CREATE TABLE id_and_name (id integer, name VARCHAR(200));");
+  }
 
+  @After
+  public void dropDbSchema() throws SQLException {
+    Connection con =
+        DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
+    //noinspection SqlResolve
+    con.createStatement().execute("DROP SCHEMA public;");
+    con.createStatement().execute("CREATE SCHEMA public;");
+  }
+
+  @Test
+  public void testPostgresDiscovery() throws IOException {
     String postgresCreds = getPostgresConfigJson(db);
     SingerDiscoveryWorker worker =
         new SingerDiscoveryWorker(
