@@ -15,9 +15,12 @@
     <Logger name="org.eclipse.jetty" level="INFO" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-    <Logger name="com.github.dockerjava" level="INFO" additivity="false">
-      <AppenderRef ref="Console"/>
-    </Logger>
+<!--    <Logger name="com.github.dockerjava" level="INFO" additivity="false">-->
+<!--      <AppenderRef ref="Console"/>-->
+<!--    </Logger>-->
+<!--    <Logger name="org.apache.hc" level="INFO" additivity="false">-->
+<!--      <AppenderRef ref="Console"/>-->
+<!--    </Logger>-->
     <Logger name="org.jooq.tools.LoggerListener" level="INFO">
       <AppenderRef ref="Console"/>
     </Logger>

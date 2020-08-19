@@ -1,18 +1,18 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2020 Dataline
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,23 +24,12 @@
 
 package io.dataline.workers.singer;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientImpl;
-import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Path;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,66 +76,7 @@ public class SingerDockerDiscoveryWorker implements Worker<DiscoveryOutput> {
   public void cancel() {}
 
   protected OutputAndStatus<DiscoveryOutput> runInternal() {
-    final DockerClient client =
-        DockerClientImpl.getInstance(
-            DefaultDockerClientConfig.createDefaultConfigBuilder().build(),
-            new ZerodepDockerHttpClient.Builder()
-                .dockerHost(URI.create("unix:///var/run/docker.sock"))
-                .build());
 
-    CreateContainerResponse container =
-        client
-            .createContainerCmd(image)
-            .withAttachStdout(true)
-            .withAttachStderr(true)
-            .withTty(true)
-            .exec();
-    System.out.println(container);
-    final CountDownLatch countDownLatch = new CountDownLatch(1);
-    client
-        .attachContainerCmd(container.getId())
-        .withStdErr(true)
-        .withStdOut(true)
-        .withFollowStream(true)
-        .withLogs(true)
-        .exec(
-            new ResultCallback<Frame>() {
-              @Override
-              public void close() throws IOException {
-                System.out.println("close");
-                countDownLatch.countDown();
-              }
-
-              @Override
-              public void onStart(Closeable closeable) {
-                System.out.println("onStart" + closeable);
-              }
-
-              @Override
-              public void onNext(Frame object) {
-                System.out.println("onNext" + object);
-              }
-
-              @Override
-              public void onError(Throwable throwable) {
-                System.out.println("onError" + throwable.getMessage());
-                countDownLatch.countDown();
-              }
-
-              @Override
-              public void onComplete() {
-                System.out.println("onComplete");
-                countDownLatch.countDown();
-              }
-            });
-
-    client.startContainerCmd(container.getId()).exec();
-
-    try {
-      while (!countDownLatch.await(1, TimeUnit.SECONDS)) {}
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
     return null;
   }
 
