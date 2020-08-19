@@ -58,7 +58,7 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   }
 
   @Override
-  public OutputAndStatus<DiscoveryOutput> runInternal() {
+  OutputAndStatus<DiscoveryOutput> runInternal() {
     // TODO use format converter here
     // write config.json to disk
     String configPath = writeFileToWorkspace(CONFIG_JSON_FILENAME, configDotJson);
