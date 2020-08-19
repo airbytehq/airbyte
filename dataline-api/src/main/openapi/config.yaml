@@ -1032,11 +1032,13 @@ components:
         name:
           type: string
         dataType:
-          type: string
-          enum:
-          - string
-          - number
-          - boolean
+          $ref: "#/components/schemas/DataType"
+    DataType:
+      type: string
+      enum:
+      - string
+      - number
+      - boolean
     SourceSchemaTable:
       type: object
       required:

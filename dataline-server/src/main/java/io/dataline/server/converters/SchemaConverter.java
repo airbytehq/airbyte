@@ -29,6 +29,7 @@ import io.dataline.api.model.SourceSchemaColumn;
 import io.dataline.api.model.SourceSchemaTable;
 import io.dataline.commons.enums.Enums;
 import io.dataline.config.Column;
+import io.dataline.config.DataType;
 import io.dataline.config.Schema;
 import io.dataline.config.Table;
 import java.util.List;
@@ -96,12 +97,11 @@ public class SchemaConverter {
     return apiSchema;
   }
 
-  // todo: figure out why the generator is namespacing the DataType enum by Column.
-  public static Column.DataType toPersistenceDataType(SourceSchemaColumn.DataTypeEnum apiDataType) {
-    return Enums.convertTo(apiDataType, Column.DataType.class);
+  public static DataType toPersistenceDataType(io.dataline.api.model.DataType apiDataType) {
+    return Enums.convertTo(apiDataType, DataType.class);
   }
 
-  public static SourceSchemaColumn.DataTypeEnum toApiDataType(Column.DataType persistenceDataType) {
-    return Enums.convertTo(persistenceDataType, SourceSchemaColumn.DataTypeEnum.class);
+  public static io.dataline.api.model.DataType toApiDataType(DataType persistenceDataType) {
+    return Enums.convertTo(persistenceDataType, io.dataline.api.model.DataType.class);
   }
 }

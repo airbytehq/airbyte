@@ -1,18 +1,18 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2020 Dataline
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,6 +45,7 @@ import io.dataline.api.model.SourceSchemaTable;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.enums.Enums;
 import io.dataline.config.Column;
+import io.dataline.config.DataType;
 import io.dataline.config.Schedule;
 import io.dataline.config.Schema;
 import io.dataline.config.SourceConnectionImplementation;
@@ -264,8 +265,8 @@ class ConnectionsHandlerTest {
     assertTrue(Enums.isCompatible(StandardSync.SyncMode.class, ConnectionRead.SyncModeEnum.class));
     assertTrue(Enums.isCompatible(StandardSync.Status.class, ConnectionStatus.class));
     assertTrue(Enums.isCompatible(ConnectionSchedule.TimeUnitEnum.class, Schedule.TimeUnit.class));
-    assertTrue(Enums.isCompatible(SourceSchemaColumn.DataTypeEnum.class, Column.DataType.class));
-    assertTrue(Enums.isCompatible(Column.DataType.class, SourceSchemaColumn.DataTypeEnum.class));
+    assertTrue(Enums.isCompatible(io.dataline.api.model.DataType.class, DataType.class));
+    assertTrue(Enums.isCompatible(DataType.class, io.dataline.api.model.DataType.class));
   }
 
   private StandardSync generateSync(UUID sourceImplementationId) {
@@ -285,7 +286,7 @@ class ConnectionsHandlerTest {
 
   private Schema generateBasicPersistenceSchema() {
     final Column column = new Column();
-    column.setDataType(Column.DataType.STRING);
+    column.setDataType(DataType.STRING);
     column.setName("id");
 
     final Table table = new Table();
@@ -300,7 +301,7 @@ class ConnectionsHandlerTest {
 
   private SourceSchema generateBasicApiSchema() {
     final SourceSchemaColumn column = new SourceSchemaColumn();
-    column.setDataType(SourceSchemaColumn.DataTypeEnum.STRING);
+    column.setDataType(io.dataline.api.model.DataType.STRING);
     column.setName("id");
 
     final SourceSchemaTable table = new SourceSchemaTable();
