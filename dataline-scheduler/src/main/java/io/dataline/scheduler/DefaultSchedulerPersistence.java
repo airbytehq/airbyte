@@ -25,9 +25,12 @@
 package io.dataline.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.JobConfig;
 import io.dataline.config.JobOutput;
+import io.dataline.config.JobSyncConfig;
 import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.StandardSync;
 import io.dataline.db.DatabaseHelper;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -35,7 +38,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
-import java.util.UUID;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.slf4j.Logger;
@@ -49,14 +51,62 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     this.connectionPool = connectionPool;
   }
 
-  public long createSourceCheckConnectionJob(
-      UUID sourceImplementation, SourceConnectionImplementation sourceImplementationJson)
+  @Override
+  public long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation)
       throws IOException {
-    final String scope = "sourceImplementation:" + sourceImplementation.toString();
+    final String scope =
+        "checkConnection:source:" + sourceImplementation.getSourceImplementationId();
 
     final JobConfig jobConfig = new JobConfig();
-    jobConfig.setCheckConnection(sourceImplementationJson);
+    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE);
+    jobConfig.setCheckConnectionSource(sourceImplementation);
 
+    return createPendingJob(scope, jobConfig);
+  }
+
+  @Override
+  public long createDestinationCheckConnectionJob(
+      DestinationConnectionImplementation destinationImplementation) throws IOException {
+    final String scope =
+        "checkConnection:destination:" + destinationImplementation.getDestinationImplementationId();
+
+    final JobConfig jobConfig = new JobConfig();
+    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION);
+    jobConfig.setCheckConnectionDestination(destinationImplementation);
+
+    return createPendingJob(scope, jobConfig);
+  }
+
+  @Override
+  public long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation)
+      throws IOException {
+
+    final String scope = "discoverSchema:" + sourceImplementation.getSourceImplementationId();
+
+    final JobConfig jobConfig = new JobConfig();
+    jobConfig.setConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA);
+    jobConfig.setDiscoverSchema(sourceImplementation);
+
+    return createPendingJob(scope, jobConfig);
+  }
+
+  @Override
+  public long createSyncJob(
+      SourceConnectionImplementation sourceImplementation,
+      DestinationConnectionImplementation destinationImplementation,
+      StandardSync standardSync)
+      throws IOException {
+
+    final String scope = "sync:" + standardSync.getConnectionId();
+
+    final JobSyncConfig jobSyncConfig = new JobSyncConfig();
+    jobSyncConfig.setSourceConnectionImplementation(sourceImplementation);
+    jobSyncConfig.setDestinationConnectionImplementation(destinationImplementation);
+    jobSyncConfig.setStandardSync(standardSync);
+
+    final JobConfig jobConfig = new JobConfig();
+    jobConfig.setConfigType(JobConfig.ConfigType.SYNC);
+    jobConfig.setSync(jobSyncConfig);
     return createPendingJob(scope, jobConfig);
   }
 

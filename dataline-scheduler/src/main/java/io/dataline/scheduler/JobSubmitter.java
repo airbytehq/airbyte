@@ -25,6 +25,7 @@
 package io.dataline.scheduler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionSchedule;
 import io.dataline.db.DatabaseHelper;
@@ -156,12 +157,20 @@ public class JobSubmitter implements Runnable {
             // todo: get tap from job's config
             SingerTap tap = SingerTap.POSTGRES;
 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String configString = null;
+            try {
+              configString = objectMapper.writeValueAsString(job.getConfig().getDiscoverSchema());
+            } catch (JsonProcessingException e) {
+              throw new RuntimeException(e);
+            }
+
             threadPool.submit(
                 new WorkerWrapper<>(
                     job.getId(),
                     new SingerDiscoveryWorker(
                         "worker-1", // todo: assign worker ids
-                        job.getConfig().getDiscoverSchema(),
+                        configString,
                         tap,
                         "/usr/local/lib/singer/workspace1", // todo: better path and why are we
                         // scoping by workspace here
@@ -169,7 +178,8 @@ public class JobSubmitter implements Runnable {
                     connectionPool));
             LOGGER.info("Submitting job to thread pool...");
             break;
-          case CHECK_CONNECTION:
+          case CHECK_CONNECTION_SOURCE:
+          case CHECK_CONNECTION_DESTINATION:
           case SYNC:
             throw new RuntimeException("not implemented");
             // todo: handle threadPool.submit(new WorkerWrapper<>(job.getId(), new EchoWorker(),
