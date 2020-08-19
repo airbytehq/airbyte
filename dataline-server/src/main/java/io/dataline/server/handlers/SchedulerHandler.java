@@ -45,6 +45,8 @@ import io.dataline.scheduler.JobStatus;
 import io.dataline.scheduler.SchedulerPersistence;
 import io.dataline.server.converters.SchemaConverter;
 import io.dataline.server.errors.KnownException;
+import java.io.IOException;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

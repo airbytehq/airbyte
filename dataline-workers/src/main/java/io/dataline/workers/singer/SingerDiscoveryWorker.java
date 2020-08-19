@@ -26,6 +26,12 @@ package io.dataline.workers.singer;
 
 import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
+<<<<<<< HEAD
+=======
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+>>>>>>> master
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +50,7 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
 
   private final String configDotJson;
   private final SingerTap tap;
+  private volatile Process workerProcess;
 
   public SingerDiscoveryWorker(
       String workerId,
@@ -57,7 +64,7 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   }
 
   @Override
-  public OutputAndStatus<DiscoveryOutput> runInternal() {
+  OutputAndStatus<DiscoveryOutput> runInternal() {
     // TODO use format converter here
     // write config.json to disk
     String configPath = writeFileToWorkspace(CONFIG_JSON_FILENAME, configDotJson);
@@ -68,35 +75,47 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
         getWorkspacePath().resolve(CATALOG_JSON_FILENAME).toAbsolutePath().toString();
     String errorLogPath =
         getWorkspacePath().resolve(ERROR_LOG_FILENAME).toAbsolutePath().toString();
+
     // exec
     try {
-
       String[] cmd = {tapPath, "--config", configPath, "--discover"};
 
-      Process workerProcess =
+      workerProcess =
           new ProcessBuilder(cmd)
               .redirectError(new File(errorLogPath))
               .redirectOutput(new File(catalogDotJsonPath))
               .start();
 
-      // TODO will need to wrap this synchronize in a while loop and timeout to prevent contention
-      // coming from
-      //  cancellations
-      synchronized (workerProcess) {
-        workerProcess.wait();
+      while (!workerProcess.waitFor(1, TimeUnit.MINUTES)) {
+        LOGGER.info("Waiting for discovery worker {}", workerId);
       }
+
       int exitCode = workerProcess.exitValue();
       if (exitCode == 0) {
         String catalog = readFileFromWorkspace(CATALOG_JSON_FILENAME);
         return new OutputAndStatus<>(SUCCESSFUL, new DiscoveryOutput(catalog));
       } else {
+<<<<<<< HEAD
         LOGGER.error(
             "Discovery worker {} subprocess finished with exit code {}", workerId, exitCode);
+=======
+        String errLog = readFileFromWorkspace(ERROR_LOG_FILENAME);
+        LOGGER.debug(
+            "Discovery worker {} subprocess finished with exit code {}. Error log: {}",
+            workerId,
+            exitCode,
+            errLog);
+>>>>>>> master
         return new OutputAndStatus<>(FAILED);
       }
     } catch (IOException | InterruptedException e) {
       LOGGER.error("Exception running discovery: ", e);
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public void cancel() {
+    cancelHelper(workerProcess);
   }
 }

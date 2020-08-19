@@ -47,10 +47,10 @@ subprojects {
 
     spotless {
         java {
-            googleJavaFormat('1.8')
-            trimTrailingWhitespace()
-            removeUnusedImports()
             licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
+            googleJavaFormat('1.8')
+            removeUnusedImports()
+            trimTrailingWhitespace()
         }
         groovyGradle {
             target '**/*.gradle'
