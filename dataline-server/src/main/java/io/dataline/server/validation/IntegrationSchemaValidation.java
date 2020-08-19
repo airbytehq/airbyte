@@ -33,6 +33,8 @@ import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonSchemaValidation;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.server.helpers.ConfigFetchers;
+
 import java.util.UUID;
 
 public class IntegrationSchemaValidation {
@@ -52,10 +54,8 @@ public class IntegrationSchemaValidation {
       UUID sourceConnectionSpecificationId, Object configuration)
       throws JsonValidationException, ConfigNotFoundException {
     final SourceConnectionSpecification sourceConnectionSpecification =
-        configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
-            sourceConnectionSpecificationId.toString(),
-            SourceConnectionSpecification.class);
+        ConfigFetchers.getSourceConnectionSpecification(
+            configPersistence, sourceConnectionSpecificationId);
 
     final JsonNode schemaJson =
         objectMapper.valueToTree(sourceConnectionSpecification.getSpecification());
@@ -68,10 +68,8 @@ public class IntegrationSchemaValidation {
       UUID destinationConnectionSpecificationId, Object configuration)
       throws JsonValidationException, ConfigNotFoundException {
     final DestinationConnectionSpecification destinationConnectionSpecification =
-        configPersistence.getConfig(
-            PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
-            destinationConnectionSpecificationId.toString(),
-            DestinationConnectionSpecification.class);
+        ConfigFetchers.getDestinationConnectionSpecification(
+            configPersistence, destinationConnectionSpecificationId);
 
     final JsonNode schemaJson =
         objectMapper.valueToTree(destinationConnectionSpecification.getSpecification());

@@ -31,6 +31,7 @@ import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.errors.KnownException;
+import io.dataline.server.helpers.ConfigFetchers;
 
 public class SourceSpecificationsHandler {
   private final ConfigPersistence configPersistence;
@@ -41,30 +42,22 @@ public class SourceSpecificationsHandler {
 
   public SourceSpecificationRead getSourceSpecification(SourceIdRequestBody sourceIdRequestBody) {
     final SourceConnectionSpecification sourceConnection;
-    try {
-      // todo (cgardens) - this is a shortcoming of rolling our own disk storage. since we are not
-      //   querying on a the primary key, we have to list all of the specification objects and then
-      //   filter.
-      sourceConnection =
-          configPersistence
-              .getConfigs(
-                  PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
-                  SourceConnectionSpecification.class)
-              .stream()
-              .filter(
-                  sourceSpecification ->
-                      sourceSpecification.getSourceId().equals(sourceIdRequestBody.getSourceId()))
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new KnownException(
-                          404,
-                          String.format(
-                              "Could not find a source specification for source: %s",
-                              sourceIdRequestBody.getSourceId())));
-    } catch (JsonValidationException e) {
-      throw new KnownException(422, e.getMessage(), e);
-    }
+    // todo (cgardens) - this is a shortcoming of rolling our own disk storage. since we are not
+    //   querying on a the primary key, we have to list all of the specification objects and then
+    //   filter.
+    sourceConnection =
+        ConfigFetchers.getSourceConnectionSpecifications(configPersistence).stream()
+            .filter(
+                sourceSpecification ->
+                    sourceSpecification.getSourceId().equals(sourceIdRequestBody.getSourceId()))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new KnownException(
+                        404,
+                        String.format(
+                            "Could not find a source specification for source: %s",
+                            sourceIdRequestBody.getSourceId())));
 
     return toSourceSpecificationRead(sourceConnection);
   }

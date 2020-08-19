@@ -31,6 +31,7 @@ import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.errors.KnownException;
+import io.dataline.server.helpers.ConfigFetchers;
 
 public class DestinationSpecificationsHandler {
   private final ConfigPersistence configPersistence;
@@ -42,32 +43,24 @@ public class DestinationSpecificationsHandler {
   public DestinationSpecificationRead getDestinationSpecification(
       DestinationIdRequestBody destinationIdRequestBody) {
     final DestinationConnectionSpecification destinationConnection;
-    try {
-      // todo (cgardens) - this is a shortcoming of rolling our own disk storage. since we are not
-      //   querying on a the primary key, we have to list all of the specification objects and then
-      //   filter.
-      destinationConnection =
-          configPersistence
-              .getConfigs(
-                  PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
-                  DestinationConnectionSpecification.class)
-              .stream()
-              .filter(
-                  destinationSpecification ->
-                      destinationSpecification
-                          .getDestinationId()
-                          .equals(destinationIdRequestBody.getDestinationId()))
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new KnownException(
-                          404,
-                          String.format(
-                              "Could not find a destination specification for destination: %s",
-                              destinationIdRequestBody.getDestinationId())));
-    } catch (JsonValidationException e) {
-      throw new KnownException(422, e.getMessage(), e);
-    }
+    // todo (cgardens) - this is a shortcoming of rolling our own disk storage. since we are not
+    //   querying on a the primary key, we have to list all of the specification objects and then
+    //   filter.
+    destinationConnection =
+        ConfigFetchers.getDestinationConnectionSpecifications(configPersistence).stream()
+            .filter(
+                destinationSpecification ->
+                    destinationSpecification
+                        .getDestinationId()
+                        .equals(destinationIdRequestBody.getDestinationId()))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new KnownException(
+                        404,
+                        String.format(
+                            "Could not find a destination specification for destination: %s",
+                            destinationIdRequestBody.getDestinationId())));
 
     return toDestinationSpecificationRead(destinationConnection);
   }
