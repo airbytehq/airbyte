@@ -26,17 +26,12 @@ package io.dataline.workers.singer;
 
 import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
-<<<<<<< HEAD
-=======
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
->>>>>>> master
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
@@ -95,17 +90,12 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
         String catalog = readFileFromWorkspace(CATALOG_JSON_FILENAME);
         return new OutputAndStatus<>(SUCCESSFUL, new DiscoveryOutput(catalog));
       } else {
-<<<<<<< HEAD
-        LOGGER.error(
-            "Discovery worker {} subprocess finished with exit code {}", workerId, exitCode);
-=======
         String errLog = readFileFromWorkspace(ERROR_LOG_FILENAME);
         LOGGER.debug(
             "Discovery worker {} subprocess finished with exit code {}. Error log: {}",
             workerId,
             exitCode,
             errLog);
->>>>>>> master
         return new OutputAndStatus<>(FAILED);
       }
     } catch (IOException | InterruptedException e) {

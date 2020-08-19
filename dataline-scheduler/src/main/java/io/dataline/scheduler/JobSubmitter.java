@@ -31,11 +31,6 @@ import io.dataline.api.model.ConnectionSchedule;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.singer.SingerDiscoveryWorker;
 import io.dataline.workers.singer.SingerTap;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -47,6 +42,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.Record;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JobSubmitter implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitter.class);
@@ -161,8 +160,11 @@ public class JobSubmitter implements Runnable {
             ObjectMapper objectMapper = new ObjectMapper();
             String configString = null;
             try {
-              String rawConfigString = objectMapper.writeValueAsString(job.getConfig().getDiscoverSchema());
-              configString = objectMapper.writeValueAsString(objectMapper.readTree(rawConfigString).get("configuration"));
+              String rawConfigString =
+                  objectMapper.writeValueAsString(job.getConfig().getDiscoverSchema());
+              configString =
+                  objectMapper.writeValueAsString(
+                      objectMapper.readTree(rawConfigString).get("configuration"));
 
               LOGGER.info("config json: " + configString); // todo: remove
             } catch (IOException e) {
