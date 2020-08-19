@@ -31,18 +31,12 @@ import io.dataline.api.model.ConnectionReadList;
 import io.dataline.api.model.ConnectionSchedule;
 import io.dataline.api.model.ConnectionStatus;
 import io.dataline.api.model.ConnectionUpdate;
-import io.dataline.api.model.SourceSchema;
-import io.dataline.api.model.SourceSchemaColumn;
-import io.dataline.api.model.SourceSchemaTable;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.enums.Enums;
-import io.dataline.config.Column;
 import io.dataline.config.Schedule;
-import io.dataline.config.Schema;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.Table;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
@@ -76,7 +70,8 @@ public class ConnectionsHandler {
     standardSync.setConnectionId(connectionId);
     standardSync.setSourceImplementationId(connectionCreate.getSourceImplementationId());
     standardSync.setDestinationImplementationId(connectionCreate.getDestinationImplementationId());
-    standardSync.setSyncMode(StandardSync.SyncMode.APPEND); // todo: for MVP we only support append.
+    // todo (cgardens): for MVP we only support append.
+    standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
     standardSync.setSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
     standardSync.setName(
         connectionCreate.getName() != null ? connectionCreate.getName() : "default");
@@ -108,7 +103,7 @@ public class ConnectionsHandler {
         standardSync);
   }
 
-  // todo (cgardens) - stored on sync id (there is know schedule id concept). this is non-intuitive.
+  // todo (cgardens) - stored on sync id (there is no schedule id concept). this is non-intuitive.
   private void writeSchedule(StandardSyncSchedule schedule) {
     configPersistence.writeConfig(
         PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
