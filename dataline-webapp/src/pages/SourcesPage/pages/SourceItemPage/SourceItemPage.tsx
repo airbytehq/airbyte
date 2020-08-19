@@ -7,6 +7,7 @@ import useRouter from "../../../../components/hooks/useRouterHook";
 import { Routes } from "../../../routes";
 import StepsMenu from "../../../../components/StepsMenu";
 import StatusView from "./components/StatusView";
+import SettingsView from "./components/SettingsView";
 
 const SourceItemPage: React.FC = () => {
   const [isEnabledSource, setIsEnabledSource] = useState(true);
@@ -61,7 +62,7 @@ const SourceItemPage: React.FC = () => {
       return <div>schema</div>;
     }
 
-    return <div>settings</div>;
+    return <SettingsView sourceData={sourceData} />;
   };
 
   return (

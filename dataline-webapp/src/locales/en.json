@@ -14,15 +14,19 @@
   "form.noResult": "No result",
   "form.sourceName.placeholder": "Your source name",
   "form.destinationName.placeholder": "Your destination name",
+  "form.connectionName.placeholder": "Name",
   "form.name": "Name",
   "form.sourceName.message": "Pick a name to help you identify this source in Dataline",
   "form.destinationName.message": "Pick a name to help you identify this destination in Dataline",
+  "form.connectionName.message": "Pick a name to help you identify this source in Dataline",
   "form.sourceType": "Source type",
   "form.destinationType": "Destination type",
+  "form.connectionType": "Connector type",
   "form.frequency": "Sync frequency",
   "form.frequency.placeholder": "Select a frequency",
   "form.frequency.message": "Set how often Dataline attempts to replicate data.",
   "form.cancel": "Cancel",
+  "form.delete": "Delete",
   "form.saveChanges": "Save changes",
   "form.every": "Every {value}",
 
@@ -65,6 +69,11 @@
   "sources.source": "Source",
   "sources.disabled": "Disabled",
   "sources.noSync": "No sync yet",
+  "sources.sourceSettings": "Source Settings",
+  "sources.dataDelete": "No data will be deleted from your source.",
+  "sources.deleteSource": "Delete this source",
+  "sources.deleteConfirm": "Confirm source deletion",
+  "sources.deleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All past logs and configurations will be deleted\n  - Updates of new data will stop\n  - No existing data in the destination will be altered",
 
   "destination.destinationSettings": "Destination Settings"
 }
