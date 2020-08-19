@@ -58,7 +58,7 @@ public class WorkerWrapper<T> implements Runnable {
 
       OutputAndStatus<T> outputAndStatus = worker.run();
 
-      switch (outputAndStatus.status) {
+      switch (outputAndStatus.getStatus()) {
         case FAILED:
           setJobStatus(connectionPool, jobId, Job.StatusEnum.FAILED);
           break;
@@ -67,9 +67,9 @@ public class WorkerWrapper<T> implements Runnable {
           break;
       }
 
-      if (outputAndStatus.output.isPresent()) {
+      if (outputAndStatus.getOutput().isPresent()) {
         ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(outputAndStatus.output.get());
+        String json = objectMapper.writeValueAsString(outputAndStatus.getOutput().get());
         setJobOutput(connectionPool, jobId, json);
         LOGGER.info("Set job output for job " + jobId);
       } else {
