@@ -36,6 +36,7 @@ import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.errors.KnownException;
+import io.dataline.server.helpers.ConfigFetchers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.util.List;
 import java.util.UUID;
@@ -115,57 +116,29 @@ public class DestinationImplementationsHandler {
 
   public DestinationImplementationReadList listDestinationImplementationsForWorkspace(
       WorkspaceIdRequestBody workspaceIdRequestBody) {
-    try {
+    final List<DestinationImplementationRead> reads =
+        ConfigFetchers.getDestinationConnectionImplementations(configPersistence).stream()
+            .filter(
+                destinationConnectionImplementation ->
+                    destinationConnectionImplementation
+                        .getWorkspaceId()
+                        .equals(workspaceIdRequestBody.getWorkspaceId()))
+            .map(this::toDestinationImplementationRead)
+            .collect(Collectors.toList());
 
-      final List<DestinationImplementationRead> reads =
-          configPersistence
-              .getConfigs(
-                  PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
-                  DestinationConnectionImplementation.class)
-              .stream()
-              .filter(
-                  destinationConnectionImplementation ->
-                      destinationConnectionImplementation
-                          .getWorkspaceId()
-                          .equals(workspaceIdRequestBody.getWorkspaceId()))
-              .map(this::toDestinationImplementationRead)
-              .collect(Collectors.toList());
-
-      final DestinationImplementationReadList destinationImplementationReadList =
-          new DestinationImplementationReadList();
-      destinationImplementationReadList.setDestinations(reads);
-      return destinationImplementationReadList;
-    } catch (JsonValidationException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "Attempted to retrieve a configuration does not fulfill the specification. Errors: %s",
-              e.getMessage()));
-    }
+    final DestinationImplementationReadList destinationImplementationReadList =
+        new DestinationImplementationReadList();
+    destinationImplementationReadList.setDestinations(reads);
+    return destinationImplementationReadList;
   }
 
   private DestinationImplementationRead getDestinationImplementationInternal(
       UUID destinationImplementationId) {
     // read configuration from db
     final DestinationConnectionImplementation retrievedDestinationConnectionImplementation;
-    try {
-      retrievedDestinationConnectionImplementation =
-          configPersistence.getConfig(
-              PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
-              destinationImplementationId.toString(),
-              DestinationConnectionImplementation.class);
-    } catch (JsonValidationException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "The provided configuration does not fulfill the specification. Errors: %s",
-              e.getMessage()));
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "Could not find destination implementation: %s.", destinationImplementationId));
-    }
+    retrievedDestinationConnectionImplementation =
+        ConfigFetchers.getDestinationConnectionImplementation(
+            configPersistence, destinationImplementationId);
 
     return toDestinationImplementationRead(retrievedDestinationConnectionImplementation);
   }

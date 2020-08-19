@@ -36,17 +36,13 @@ import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardConnectionStatus;
 import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.config.StandardSync;
-import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.scheduler.persistence.Job;
 import io.dataline.scheduler.persistence.JobStatus;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.server.converters.SchemaConverter;
-import io.dataline.server.errors.KnownException;
+import io.dataline.server.helpers.ConfigFetchers;
 import java.io.IOException;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +63,8 @@ public class SchedulerHandler {
       SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
 
     final SourceConnectionImplementation connectionImplementation =
-        getSourceConnectionImplementation(
-            sourceImplementationIdRequestBody.getSourceImplementationId());
+        ConfigFetchers.getSourceConnectionImplementation(
+            configPersistence, sourceImplementationIdRequestBody.getSourceImplementationId());
 
     final long jobId;
     try {
@@ -86,7 +82,8 @@ public class SchedulerHandler {
       DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
 
     final DestinationConnectionImplementation connectionImplementation =
-        getDestinationConnectionImplementation(
+        ConfigFetchers.getDestinationConnectionImplementation(
+            configPersistence,
             destinationImplementationIdRequestBody.getDestinationImplementationId());
 
     final long jobId;
@@ -104,8 +101,8 @@ public class SchedulerHandler {
   public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(
       SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     final SourceConnectionImplementation connectionImplementation =
-        getSourceConnectionImplementation(
-            sourceImplementationIdRequestBody.getSourceImplementationId());
+        ConfigFetchers.getSourceConnectionImplementation(
+            configPersistence, sourceImplementationIdRequestBody.getSourceImplementationId());
 
     final long jobId;
     try {
@@ -131,22 +128,16 @@ public class SchedulerHandler {
 
   public ConnectionSyncRead syncConnection(ConnectionIdRequestBody connectionIdRequestBody) {
     final StandardSync standardSync;
-    try {
-      standardSync =
-          configPersistence.getConfig(
-              PersistenceConfigType.STANDARD_SYNC,
-              connectionIdRequestBody.getConnectionId().toString(),
-              StandardSync.class);
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(404, "Standard Sync not found");
-    } catch (JsonValidationException e) {
-      throw new RuntimeException(e);
-    }
+    standardSync =
+        ConfigFetchers.getStandardSync(
+            configPersistence, connectionIdRequestBody.getConnectionId());
 
     final SourceConnectionImplementation sourceConnectionImplementation =
-        getSourceConnectionImplementation(standardSync.getSourceImplementationId());
+        ConfigFetchers.getSourceConnectionImplementation(
+            configPersistence, standardSync.getSourceImplementationId());
     final DestinationConnectionImplementation destinationConnectionImplementation =
-        getDestinationConnectionImplementation(standardSync.getDestinationImplementationId());
+        ConfigFetchers.getDestinationConnectionImplementation(
+            configPersistence, standardSync.getDestinationImplementationId());
 
     // todo (cgardens) - should it be mandatory that the API insert state? or does the schedule do
     //   that?
@@ -168,34 +159,6 @@ public class SchedulerHandler {
             : ConnectionSyncRead.StatusEnum.FAIL);
 
     return read;
-  }
-
-  private SourceConnectionImplementation getSourceConnectionImplementation(
-      UUID sourceImplementationId) {
-    try {
-      return configPersistence.getConfig(
-          PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-          sourceImplementationId.toString(),
-          SourceConnectionImplementation.class);
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(404, "Source Implementation not found");
-    } catch (JsonValidationException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private DestinationConnectionImplementation getDestinationConnectionImplementation(
-      UUID destinationImplementationId) {
-    try {
-      return configPersistence.getConfig(
-          PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
-          destinationImplementationId.toString(),
-          DestinationConnectionImplementation.class);
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(404, "Destination Implementation not found");
-    } catch (JsonValidationException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private Job waitUntilJobIsTerminalOrTimeout(long jobId) {
