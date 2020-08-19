@@ -36,6 +36,7 @@ import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.errors.KnownException;
+import io.dataline.server.helpers.ConfigFetchers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.util.List;
 import java.util.UUID;
@@ -113,54 +114,28 @@ public class SourceImplementationsHandler {
 
   public SourceImplementationReadList listSourceImplementationsForWorkspace(
       WorkspaceIdRequestBody workspaceIdRequestBody) {
-    try {
 
-      final List<SourceImplementationRead> reads =
-          configPersistence
-              .getConfigs(
-                  PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-                  SourceConnectionImplementation.class)
-              .stream()
-              .filter(
-                  sourceConnectionImplementation ->
-                      sourceConnectionImplementation
-                          .getWorkspaceId()
-                          .equals(workspaceIdRequestBody.getWorkspaceId()))
-              .map(this::toSourceImplementationRead)
-              .collect(Collectors.toList());
+    final List<SourceImplementationRead> reads =
+        ConfigFetchers.getSourceConnectionImplementations(configPersistence).stream()
+            .filter(
+                sourceConnectionImplementation ->
+                    sourceConnectionImplementation
+                        .getWorkspaceId()
+                        .equals(workspaceIdRequestBody.getWorkspaceId()))
+            .map(this::toSourceImplementationRead)
+            .collect(Collectors.toList());
 
-      final SourceImplementationReadList sourceImplementationReadList =
-          new SourceImplementationReadList();
-      sourceImplementationReadList.setSources(reads);
-      return sourceImplementationReadList;
-    } catch (JsonValidationException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "Attempted to retrieve a configuration does not fulfill the specification. Errors: %s",
-              e.getMessage()));
-    }
+    final SourceImplementationReadList sourceImplementationReadList =
+        new SourceImplementationReadList();
+    sourceImplementationReadList.setSources(reads);
+    return sourceImplementationReadList;
   }
 
   private SourceImplementationRead getSourceImplementationInternal(UUID sourceImplementationId) {
     // read configuration from db
     final SourceConnectionImplementation retrievedSourceConnectionImplementation;
-    try {
-      retrievedSourceConnectionImplementation =
-          configPersistence.getConfig(
-              PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-              sourceImplementationId.toString(),
-              SourceConnectionImplementation.class);
-    } catch (JsonValidationException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "The provided configuration does not fulfill the specification. Errors: %s",
-              e.getMessage()));
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(
-          422, String.format("Could not find source implementation: %s.", sourceImplementationId));
-    }
+    retrievedSourceConnectionImplementation =
+        ConfigFetchers.getSourceConnectionImplementation(configPersistence, sourceImplementationId);
 
     return toSourceImplementationRead(retrievedSourceConnectionImplementation);
   }

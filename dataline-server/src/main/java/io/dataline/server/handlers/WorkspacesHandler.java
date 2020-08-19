@@ -29,12 +29,10 @@ import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
 import io.dataline.config.StandardWorkspace;
-import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.config.persistence.PersistenceConstants;
-import io.dataline.server.errors.KnownException;
+import io.dataline.server.helpers.ConfigFetchers;
 import java.util.UUID;
 
 public class WorkspacesHandler {
@@ -54,18 +52,9 @@ public class WorkspacesHandler {
     return getWorkspaceFromId(PersistenceConstants.DEFAULT_WORKSPACE_ID);
   }
 
-  private WorkspaceRead getWorkspaceFromId(UUID workspaceIdUuid) {
-    final String workspaceId = workspaceIdUuid.toString();
-    final StandardWorkspace workspace;
-    try {
-      workspace =
-          configPersistence.getConfig(
-              PersistenceConfigType.STANDARD_WORKSPACE, workspaceId, StandardWorkspace.class);
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(404, e.getMessage(), e);
-    } catch (JsonValidationException e) {
-      throw new KnownException(422, e.getMessage(), e);
-    }
+  private WorkspaceRead getWorkspaceFromId(UUID workspaceId) {
+    final StandardWorkspace workspace =
+        ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
 
     final WorkspaceRead workspaceRead = new WorkspaceRead();
     workspaceRead.setWorkspaceId(workspace.getWorkspaceId());
@@ -77,18 +66,10 @@ public class WorkspacesHandler {
   }
 
   public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate) {
-    final String workspaceId = workspaceUpdate.getWorkspaceId().toString();
+    final UUID workspaceId = workspaceUpdate.getWorkspaceId();
 
-    final StandardWorkspace persistedWorkspace;
-    try {
-      persistedWorkspace =
-          configPersistence.getConfig(
-              PersistenceConfigType.STANDARD_WORKSPACE, workspaceId, StandardWorkspace.class);
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(404, e.getMessage(), e);
-    } catch (JsonValidationException e) {
-      throw new KnownException(422, e.getMessage(), e);
-    }
+    final StandardWorkspace persistedWorkspace =
+        ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
 
     if (workspaceUpdate.getEmail() != null && !workspaceUpdate.getEmail().equals("")) {
       persistedWorkspace.setEmail(workspaceUpdate.getEmail());
@@ -98,7 +79,7 @@ public class WorkspacesHandler {
     persistedWorkspace.setNews(workspaceUpdate.getNews());
     persistedWorkspace.setSecurityUpdates(workspaceUpdate.getSecurityUpdates());
     configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_WORKSPACE, workspaceId, persistedWorkspace);
+        PersistenceConfigType.STANDARD_WORKSPACE, workspaceId.toString(), persistedWorkspace);
 
     return getWorkspaceFromId(workspaceUpdate.getWorkspaceId());
   }
