@@ -34,6 +34,4 @@ public interface ConfigPersistence {
       throws JsonValidationException;
 
   <T> void writeConfig(PersistenceConfigType persistenceConfigType, String configId, T config);
-
-  // todo (cgardens) - get configs by attribute?
 }
