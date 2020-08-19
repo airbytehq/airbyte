@@ -36,6 +36,7 @@ import org.jooq.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -160,8 +161,11 @@ public class JobSubmitter implements Runnable {
             ObjectMapper objectMapper = new ObjectMapper();
             String configString = null;
             try {
-              configString = objectMapper.writeValueAsString(job.getConfig().getDiscoverSchema());
-            } catch (JsonProcessingException e) {
+              String rawConfigString = objectMapper.writeValueAsString(job.getConfig().getDiscoverSchema());
+              configString = objectMapper.writeValueAsString(objectMapper.readTree(rawConfigString).get("configuration"));
+
+              LOGGER.info("config json: " + configString); // todo: remove
+            } catch (IOException e) {
               throw new RuntimeException(e);
             }
 

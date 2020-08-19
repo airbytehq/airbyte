@@ -71,9 +71,7 @@ public class WorkerWrapper<T> implements Runnable {
       if (outputAndStatus.output.isPresent()) {
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(outputAndStatus.output.get());
-        String configJson = objectMapper.writeValueAsString(objectMapper.readTree(json).get("configuration"));
-        LOGGER.info("config json: " + configJson); // todo: remove
-        setJobOutput(connectionPool, jobId, configJson);
+        setJobOutput(connectionPool, jobId, json);
         LOGGER.info("Set job output for job " + jobId);
       } else {
         LOGGER.info("No output present for job " + jobId);
