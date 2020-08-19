@@ -29,7 +29,6 @@ import io.dataline.workers.OutputAndStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 
 import static io.dataline.workers.JobStatus.FAILED;
@@ -75,8 +74,9 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
 
       Process workerProcess =
           new ProcessBuilder(cmd)
-              .redirectError(new File(errorLogPath))
-              .redirectOutput(new File(catalogDotJsonPath))
+//              .redirectError(new File(errorLogPath))
+//              .redirectOutput(new File(catalogDotJsonPath))
+                  .inheritIO()
               .start();
 
       // TODO will need to wrap this synchronize in a while loop and timeout to prevent contention

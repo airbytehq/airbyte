@@ -29,13 +29,14 @@ import io.dataline.api.model.Job;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class WorkerWrapper<T> implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerWrapper.class);
@@ -70,7 +71,9 @@ public class WorkerWrapper<T> implements Runnable {
       if (outputAndStatus.output.isPresent()) {
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(outputAndStatus.output.get());
-        setJobOutput(connectionPool, jobId, json);
+        String configJson = objectMapper.writeValueAsString(objectMapper.readTree(json).get("configuration"));
+        LOGGER.info("config json: " + configJson); // todo: remove
+        setJobOutput(connectionPool, jobId, configJson);
         LOGGER.info("Set job output for job " + jobId);
       } else {
         LOGGER.info("No output present for job " + jobId);
