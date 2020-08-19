@@ -22,15 +22,35 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers;
 
-public class SingerTestConnectionWorker {
-  private final SingerConnector tapOrTarget;
-  private final String configDotJson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
+import java.util.Map;
+import org.testcontainers.containers.PostgreSQLContainer;
 
-  public SingerTestConnectionWorker(SingerConnector tapOrTarget, String configDotJson) {
+public class PostgreSQLContainerHelper {
 
-    this.tapOrTarget = tapOrTarget;
-    this.configDotJson = configDotJson;
+  public static String getSingerConfigJson(PostgreSQLContainer db) throws JsonProcessingException {
+    return getSingerConfigJson(
+        db.getUsername(),
+        db.getPassword(),
+        db.getHost(),
+        db.getDatabaseName(),
+        String.valueOf(db.getFirstMappedPort()));
+  }
+
+  public static String getSingerConfigJson(
+      String user, String password, String host, String dbname, String port)
+      throws JsonProcessingException {
+    Map<String, String> creds = new HashMap<>();
+    creds.put("user", user);
+    creds.put("password", password);
+    creds.put("host", host);
+    creds.put("dbname", dbname);
+    creds.put("port", port);
+
+    return new ObjectMapper().writeValueAsString(creds);
   }
 }
