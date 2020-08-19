@@ -24,15 +24,16 @@
 
 package io.dataline.workers.singer;
 
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
-
 import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
-import java.io.File;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+
+import static io.dataline.workers.JobStatus.FAILED;
+import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
 public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   // TODO log errors to specified file locations
@@ -89,7 +90,7 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
         String catalog = readFileFromWorkspace(CATALOG_JSON_FILENAME);
         return new OutputAndStatus<>(SUCCESSFUL, new DiscoveryOutput(catalog));
       } else {
-        LOGGER.debug(
+        LOGGER.error(
             "Discovery worker {} subprocess finished with exit code {}", workerId, exitCode);
         return new OutputAndStatus<>(FAILED);
       }
