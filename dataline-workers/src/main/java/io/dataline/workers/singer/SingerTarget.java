@@ -26,9 +26,9 @@ package io.dataline.workers.singer;
 
 public enum SingerTarget implements SingerConnector {
   // TODO
-  LOCAL_FILE("", ""),
-  BIG_QUERY("", ""),
-  POSTGRES("", "");
+  //  LOCAL_FILE("", ""),
+  //  BIG_QUERY("", ""),
+  POSTGRES("tap-postgres", "tap-postgres");
 
   private final String pythonVirtualEnvName;
   private final String executableName;

@@ -26,9 +26,9 @@ package io.dataline.workers.singer;
 
 public enum SingerTap implements SingerConnector {
   // TODO
-  S3_CSV("", ""),
-  POSTGRES("tap-postgres", "tap-postgres"),
-  STRIPE("", "");
+  //  S3_CSV("", ""),
+  //  STRIPE("", "");
+  POSTGRES("tap-postgres", "tap-postgres");
 
   private final String getPythonVirtualEnvName;
   private final String executableName;

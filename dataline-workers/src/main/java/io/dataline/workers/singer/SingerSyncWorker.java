@@ -24,28 +24,61 @@
 
 package io.dataline.workers.singer;
 
-public class SingerSyncWorker {
+import io.dataline.config.JobSyncOutput;
+import io.dataline.workers.OutputAndStatus;
+
+public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
+  private static final String TAP_CONFIG_FILENAME = "tap_config.json";
+  private static final String CATALOG_FILENAME = "catalog.json";
+  private static final String STATE_FILENAME = "state.json";
+  private static final String TARGET_CONFIG_FILENAME = "target_config.json";
+
+  private static final String TAP_ERR_LOG = "tap_err.log";
+  private static final String TARGET_ERR_LOG = "target_err.log";
+  private static final String OUTPUT_STATE_FILENAME =
+
   private final SingerTap tap;
   private final String tapConfiguration;
   private final String tapCatalog;
-  private final String state;
+  private final String connectionState;
   private final SingerTarget target;
   private final String targetConfig;
 
-  // TODO
+  private Process workerProcess;
+
   public SingerSyncWorker(
+      String workerId,
+      String workspaceRoot,
+      String singerRoot,
       SingerTap tap,
       String tapConfiguration,
       String tapCatalog,
-      String state,
+      String connectionState,
       SingerTarget target,
       String targetConfig) {
-
+    super(workerId, workspaceRoot, singerRoot);
     this.tap = tap;
     this.tapConfiguration = tapConfiguration;
     this.tapCatalog = tapCatalog;
-    this.state = state;
+    this.connectionState = connectionState;
     this.target = target;
     this.targetConfig = targetConfig;
+  }
+
+  @Override
+  OutputAndStatus<JobSyncOutput> runInternal() {
+    String tapConfigPath = writeFileToWorkspace(TAP_CONFIG_FILENAME, tapConfiguration);
+    String catalogPath = writeFileToWorkspace(CATALOG_FILENAME, tapCatalog);
+    String connectionPath = writeFileToWorkspace(STATE_FILENAME, connectionState);
+    String targetConfigPath = writeFileToWorkspace(TARGET_CONFIG_FILENAME, targetConfig);
+
+    // tap | record counter | target
+    ProcessBuilder pb = new ProcessBuilder().command(getExecutableAbsolutePath(tap), "--config", tapConfigPath, "--catalog", catalogPath, "--state", connectionState).redirec;
+
+  }
+
+  @Override
+  public void cancel() {
+    cancelHelper(workerProcess);
   }
 }
