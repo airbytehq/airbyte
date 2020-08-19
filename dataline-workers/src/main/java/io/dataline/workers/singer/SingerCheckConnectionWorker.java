@@ -37,14 +37,14 @@ public class SingerCheckConnectionWorker extends BaseSingerWorker<CheckConnectio
 
   public SingerCheckConnectionWorker(
       String workerId,
-      SingerConnector tapOrTarget,
+      SingerTap singerTap,
       String configDotJson,
       String workspaceRoot,
       String singerLibsRoot) {
     super(workerId, workspaceRoot, singerLibsRoot);
     this.singerDiscoveryWorker =
         new SingerDiscoveryWorker(
-            workerId, configDotJson, tapOrTarget, workspaceRoot, singerLibsRoot);
+            workerId, configDotJson, singerTap, workspaceRoot, singerLibsRoot);
   }
 
   @Override

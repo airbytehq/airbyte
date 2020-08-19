@@ -42,12 +42,12 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   private static String ERROR_LOG_FILENAME = "err.log";
 
   private final String configDotJson;
-  private final SingerConnector tap;
+  private final SingerTap tap;
 
   public SingerDiscoveryWorker(
       String workerId,
       String configDotJson,
-      SingerConnector tap,
+      SingerTap tap,
       String workspaceRoot,
       String singerLibsRoot) {
     super(workerId, workspaceRoot, singerLibsRoot);
