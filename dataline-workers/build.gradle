@@ -8,6 +8,9 @@ configurations {
 
 dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
+    implementation 'me.andrz.jackson:jackson-json-reference-core:0.3.2'
+
     implementation project(":dataline-commons")
     implementation project(":dataline-config")
 

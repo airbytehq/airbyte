@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/SingerCatalog.json",
+  "title": "SingerCatalog",
+  "description": "the schema of the singer catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "streams"
+  ],
+  "properties": {
+    "streams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "tap_stream_id",
+          "stream",
+          "schema"
+        ],
+        "properties": {
+          "tap_stream_id": {
+            "type": "string"
+          },
+          "stream": {
+            "type": "string"
+          },
+          "schema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "properties": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "properties": {
+                    "type": {
+                      "$ref": "SingerCatalog.json#/definitions/SingerType"
+                    },
+                    "format": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "metadata"
+        ],
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "inclusion": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "?"
+                ]
+              },
+              "table-key-properties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "selected": {
+                "type": "boolean"
+              },
+              "validation-replication-keys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "schema-name": {
+                "type": "string"
+              }
+            }
+          },
+          "breadcrumbs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "SingerType": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["string", "integer", "null", "boolean"]
+      }
+    }
+  }
+}
