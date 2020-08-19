@@ -87,7 +87,7 @@ public class JobSubmitter implements Runnable {
           Optional<Record> jobEntryOptional =
               ctx
                   .fetch(
-                      "SELECT * FROM jobs WHERE status = CAST('pending' AS VARCHAR) ORDER BY created_at ASC LIMIT 1")
+                      "SELECT * FROM jobs WHERE CAST(status AS VARCHAR) = 'pending' ORDER BY created_at ASC LIMIT 1")
                   .stream()
                   .findFirst();
 
