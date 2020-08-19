@@ -1,18 +1,18 @@
 /*
  * MIT License
- *
+ * 
  * Copyright (c) 2020 Dataline
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,10 +33,10 @@ import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.server.helpers.ConfigFetchers;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.errors.KnownException;
+import io.dataline.server.helpers.ConfigFetchers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.util.List;
 import java.util.UUID;
@@ -136,22 +136,9 @@ public class DestinationImplementationsHandler {
       UUID destinationImplementationId) {
     // read configuration from db
     final DestinationConnectionImplementation retrievedDestinationConnectionImplementation;
-    try {
-      retrievedDestinationConnectionImplementation =
-          ConfigFetchers.getDestinationConnectionImplementation(
-              configPersistence, destinationImplementationId);
-    } catch (JsonValidationException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "The provided configuration does not fulfill the specification. Errors: %s",
-              e.getMessage()));
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "Could not find destination implementation: %s.", destinationImplementationId));
-    }
+    retrievedDestinationConnectionImplementation =
+        ConfigFetchers.getDestinationConnectionImplementation(
+            configPersistence, destinationImplementationId);
 
     return toDestinationImplementationRead(retrievedDestinationConnectionImplementation);
   }

@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ * 
+ * Copyright (c) 2020 Dataline
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.dataline.server.helpers;
 
 import io.dataline.config.DestinationConnectionImplementation;
@@ -14,7 +38,6 @@ import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.errors.KnownException;
-
 import java.util.Set;
 import java.util.UUID;
 
@@ -38,9 +61,7 @@ public class ConfigFetchers {
       ConfigPersistence configPersistence, UUID sourceId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-          sourceId.toString(),
-          StandardSource.class);
+          PersistenceConfigType.STANDARD_SOURCE, sourceId.toString(), StandardSource.class);
     } catch (ConfigNotFoundException e) {
       throw getConfigNotFoundException(e, "standardSource", sourceId);
     } catch (JsonValidationException e) {
@@ -51,7 +72,7 @@ public class ConfigFetchers {
   public static Set<StandardSource> getStandardSources(ConfigPersistence configPersistence) {
     try {
       return configPersistence.getConfigs(
-          PersistenceConfigType.STANDARD_DESTINATION, StandardSource.class);
+          PersistenceConfigType.STANDARD_SOURCE, StandardSource.class);
     } catch (JsonValidationException e) {
       throw getInvalidException(e);
     }
@@ -75,7 +96,7 @@ public class ConfigFetchers {
       ConfigPersistence configPersistence) {
     try {
       return configPersistence.getConfigs(
-          PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
+          PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
           SourceConnectionSpecification.class);
     } catch (JsonValidationException e) {
       throw getInvalidException(e);
