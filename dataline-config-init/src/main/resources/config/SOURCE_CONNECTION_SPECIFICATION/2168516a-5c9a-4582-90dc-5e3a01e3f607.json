@@ -9,7 +9,8 @@
       "host",
       "port",
       "user",
-      "dbname"
+      "dbname",
+      "filter_dbs"
     ],
     "additionalProperties": false,
     "properties": {
@@ -28,6 +29,9 @@
         "type": "string"
       },
       "dbname": {
+        "type": "string"
+      },
+      "filter_dbs": {
         "type": "string"
       }
     }

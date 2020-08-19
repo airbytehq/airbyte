@@ -85,6 +85,7 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
       throws JsonProcessingException {
     Map<String, String> props = Maps.newHashMap();
     props.put("dbname", psqlContainer.getDatabaseName());
+    props.put("filter_dbs", psqlContainer.getDatabaseName());
     props.put("user", psqlContainer.getUsername());
     props.put("password", psqlContainer.getPassword());
     props.put("host", psqlContainer.getHost());

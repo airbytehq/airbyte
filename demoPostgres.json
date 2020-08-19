@@ -6,6 +6,7 @@
     "port": 5432,
     "user": "tjuprwdczsoqoq",
     "password": "65501325a101f65b42da1afda8b7bd45290c9c4d0fe0e293d6c95145fddd31a5",
-    "dbname": "dfjp20tj65mtbm"
+    "dbname": "dfjp20tj65mtbm",
+    "filter_dbs": "dfjp20tj65mtbm"
   }
 }
