@@ -1,18 +1,18 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2020 Dataline
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,6 +43,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -83,7 +88,8 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testCancellation() throws JsonProcessingException {
+  public void testCancellation()
+      throws JsonProcessingException, InterruptedException, ExecutionException {
     String postgresCreds = getPostgresConfigJson(db);
     SingerDiscoveryWorker worker =
         new SingerDiscoveryWorker(
@@ -92,14 +98,17 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
             SingerTap.POSTGRES,
             getWorkspacePath().toAbsolutePath().toString(),
             SINGER_LIBS_ROOT);
-
-    new Thread(
+    ExecutorService threadPool = Executors.newFixedThreadPool(2);
+    Future<?> workerWasCancelled =
+        threadPool.submit(
             () -> {
               OutputAndStatus<DiscoveryOutput> output = worker.run();
-              assertEquals(output.getStatus(), FAILED);
-            })
-        .start();
-    new Thread(worker::cancel).start();
+              assertEquals(FAILED, output.getStatus());
+            });
+
+    TimeUnit.MILLISECONDS.sleep(100);
+    worker.cancel();
+    workerWasCancelled.get();
   }
 
   private String readResource(String name) {

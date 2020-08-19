@@ -69,9 +69,9 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
         getWorkspacePath().resolve(CATALOG_JSON_FILENAME).toAbsolutePath().toString();
     String errorLogPath =
         getWorkspacePath().resolve(ERROR_LOG_FILENAME).toAbsolutePath().toString();
+
     // exec
     try {
-
       String[] cmd = {tapPath, "--config", configPath, "--discover"};
 
       workerProcess =
@@ -89,8 +89,12 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
         String catalog = readFileFromWorkspace(CATALOG_JSON_FILENAME);
         return new OutputAndStatus<>(SUCCESSFUL, new DiscoveryOutput(catalog));
       } else {
+        String errLog = readFileFromWorkspace(ERROR_LOG_FILENAME);
         LOGGER.debug(
-            "Discovery worker {} subprocess finished with exit code {}", workerId, exitCode);
+            "Discovery worker {} subprocess finished with exit code {}. Error log: {}",
+            workerId,
+            exitCode,
+            errLog);
         return new OutputAndStatus<>(FAILED);
       }
     } catch (IOException | InterruptedException e) {

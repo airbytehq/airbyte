@@ -75,7 +75,7 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
     try {
       jobStatus = JobStatus.FAILED;
       workerProcess.destroy();
-      workerProcess.wait(TimeUnit.SECONDS.toMillis(10));
+      workerProcess.waitFor(10, TimeUnit.SECONDS);
       if (workerProcess.isAlive()) {
         workerProcess.destroyForcibly();
       }
