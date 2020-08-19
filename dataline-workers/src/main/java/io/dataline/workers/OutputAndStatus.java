@@ -28,8 +28,8 @@ import java.util.Optional;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class OutputAndStatus<OutputType> {
-  public final Optional<OutputType> output;
-  public final JobStatus status;
+  private final Optional<OutputType> output;
+  private final JobStatus status;
 
   public OutputAndStatus(JobStatus status, OutputType output) {
     this.output = Optional.of(output);
@@ -44,5 +44,13 @@ public class OutputAndStatus<OutputType> {
   @Override
   public String toString() {
     return new ToStringBuilder(this).append(status).append(output).build();
+  }
+
+  public Optional<OutputType> getOutput() {
+    return output;
+  }
+
+  public JobStatus getStatus() {
+    return status;
   }
 }

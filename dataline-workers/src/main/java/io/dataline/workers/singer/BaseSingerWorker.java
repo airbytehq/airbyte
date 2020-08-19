@@ -44,7 +44,6 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
 
   protected JobStatus jobStatus;
   protected String workerId;
-  protected Process workerProcess;
   protected final Path workspacePath;
 
   private final String singerRoot;
@@ -72,12 +71,11 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
     }
   }
 
-  @Override
-  public void cancel() {
+  protected void cancelHelper(Process workerProcess) {
     try {
       jobStatus = JobStatus.FAILED;
       workerProcess.destroy();
-      workerProcess.wait(TimeUnit.SECONDS.toMillis(10));
+      workerProcess.waitFor(10, TimeUnit.SECONDS);
       if (workerProcess.isAlive()) {
         workerProcess.destroyForcibly();
       }

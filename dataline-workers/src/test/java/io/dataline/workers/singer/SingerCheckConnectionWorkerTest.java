@@ -1,18 +1,18 @@
 /*
  * MIT License
- *
+ * 
  * Copyright (c) 2020 Dataline
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.CheckConnectionOutput;
-import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerHelper;
 import java.sql.Connection;
@@ -62,7 +61,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
         new SingerCheckConnectionWorker(
             "1", SingerTap.POSTGRES, fakeDbCreds, getWorkspacePath().toString(), SINGER_LIB_PATH);
     OutputAndStatus<CheckConnectionOutput> output = worker.run();
-    assertEquals(FAILED, output.status);
+    assertEquals(FAILED, output.getStatus());
     // TODO Once log file locations are accessible externally, also verify the correct error message
     // in the logs
   }
@@ -85,7 +84,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
             getWorkspacePath().toString(),
             SINGER_LIB_PATH);
     OutputAndStatus<CheckConnectionOutput> run = worker.run();
-    assertEquals(FAILED, run.status);
+    assertEquals(FAILED, run.getStatus());
     // TODO Once log file locations are accessible externally, also verify the correct error message
     // in the logs
   }
@@ -98,7 +97,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
         new SingerCheckConnectionWorker(
             "1", SingerTap.POSTGRES, creds, getWorkspacePath().toString(), SINGER_LIB_PATH);
     OutputAndStatus<CheckConnectionOutput> run = worker.run();
-    assertEquals(SUCCESSFUL, run.status);
+    assertEquals(SUCCESSFUL, run.getStatus());
     // TODO Once log file locations are accessible externally, also verify the correct error message
     // in the logs
   }
