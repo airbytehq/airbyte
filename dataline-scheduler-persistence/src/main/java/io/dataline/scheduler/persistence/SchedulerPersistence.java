@@ -1,18 +1,18 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2020 Dataline
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,15 +24,26 @@
 
 package io.dataline.scheduler.persistence;
 
+import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.StandardSync;
 import java.io.IOException;
-import java.util.UUID;
 
 public interface SchedulerPersistence {
 
-  // todo (cgardens) - add all other job types.
-  long createSourceCheckConnectionJob(
-      UUID sourceImplementation, SourceConnectionImplementation sourceImplementationJson)
+  long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation)
+      throws IOException;
+
+  long createDestinationCheckConnectionJob(
+      DestinationConnectionImplementation destinationImplementation) throws IOException;
+
+  long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation)
+      throws IOException;
+
+  long createSyncJob(
+      SourceConnectionImplementation sourceImplementation,
+      DestinationConnectionImplementation destinationImplementation,
+      StandardSync standardSync)
       throws IOException;
 
   Job getJob(long jobId) throws IOException;

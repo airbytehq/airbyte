@@ -1,18 +1,18 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2020 Dataline
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -58,7 +58,7 @@ public class WorkerWrapper<T> implements Runnable {
 
       OutputAndStatus<T> outputAndStatus = worker.run();
 
-      switch (outputAndStatus.status) {
+      switch (outputAndStatus.getStatus()) {
         case FAILED:
           setJobStatus(connectionPool, jobId, Job.StatusEnum.FAILED);
           break;
@@ -67,9 +67,9 @@ public class WorkerWrapper<T> implements Runnable {
           break;
       }
 
-      if (outputAndStatus.output.isPresent()) {
+      if (outputAndStatus.getOutput().isPresent()) {
         ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(outputAndStatus.output.get());
+        String json = objectMapper.writeValueAsString(outputAndStatus.getOutput().get());
         setJobOutput(connectionPool, jobId, json);
         LOGGER.info("Set job output for job " + jobId);
       } else {
