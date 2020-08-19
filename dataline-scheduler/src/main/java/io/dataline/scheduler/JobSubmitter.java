@@ -1,18 +1,18 @@
 /*
  * MIT License
- *
+ * 
  * Copyright (c) 2020 Dataline
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,10 +27,7 @@ package io.dataline.scheduler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionSchedule;
-import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.db.DatabaseHelper;
-import io.dataline.workers.DiscoveryOutput;
-import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoveryWorker;
 import io.dataline.workers.singer.SingerTap;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -73,7 +70,7 @@ public class JobSubmitter implements Runnable {
       Optional<Job> oldestPendingJob = getOldestPendingJob();
 
       if (oldestPendingJob.isPresent()) {
-        handleJob(oldestPendingJob);
+        handleJob(oldestPendingJob.get());
       } else {
         handleScheduledJobs();
       }
@@ -82,9 +79,29 @@ public class JobSubmitter implements Runnable {
     }
   }
 
-  private void getOldestPendingJob(Job oldestPendingJob) {}
+  // todo: DRY this up
+  private Optional<Job> getOldestPendingJob() throws SQLException {
+    return DatabaseHelper.query(
+        connectionPool,
+        ctx -> {
+          Optional<Record> jobEntryOptional =
+              ctx
+                  .fetch(
+                      "SELECT * FROM jobs WHERE status = CAST('pending' AS VARCHAR) ORDER BY created_at ASC LIMIT 1")
+                  .stream()
+                  .findFirst();
 
-  private void handleScheduledJobs() {
+          if (jobEntryOptional.isPresent()) {
+            Record jobEntry = jobEntryOptional.get();
+            Job job = DefaultSchedulerPersistence.getJobFromRecord(jobEntry);
+            return Optional.of(job);
+          } else {
+            return Optional.empty();
+          }
+        });
+  }
+
+  private void handleScheduledJobs() throws SQLException {
     Set<ConnectionRead> activeConnections = getAllActiveConnections();
     for (ConnectionRead connection : activeConnections) {
       Optional<Job> lastJob =
