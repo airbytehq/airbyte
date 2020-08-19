@@ -24,11 +24,11 @@
 
 package io.dataline.workers.singer;
 
-public class SingerTestConnectionWorker {
+public class SingerCheckConnectionWorker {
   private final SingerConnector tapOrTarget;
   private final String configDotJson;
 
-  public SingerTestConnectionWorker(SingerConnector tapOrTarget, String configDotJson) {
+  public SingerCheckConnectionWorker(SingerConnector tapOrTarget, String configDotJson) {
 
     this.tapOrTarget = tapOrTarget;
     this.configDotJson = configDotJson;

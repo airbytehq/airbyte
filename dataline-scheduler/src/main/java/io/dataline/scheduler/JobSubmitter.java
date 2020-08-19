@@ -25,25 +25,29 @@
 package io.dataline.scheduler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.Sets;
 import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionSchedule;
-import io.dataline.api.model.ConnectionStatus;
+import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.db.DatabaseHelper;
-import io.dataline.workers.EchoWorker;
+import io.dataline.workers.DiscoveryOutput;
+import io.dataline.workers.singer.SingerCheckConnectionWorker;
+import io.dataline.workers.singer.SingerDiscoveryWorker;
+import io.dataline.workers.singer.SingerTap;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.Record;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JobSubmitter implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitter.class);
@@ -66,84 +70,132 @@ public class JobSubmitter implements Runnable {
     try {
       LOGGER.info("Running job-submitter...");
 
-      // todo: get all pending jobs before considering configured connection schedules
-      Set<ConnectionRead> activeConnections = getAllActiveConnections();
-      for (ConnectionRead connection : activeConnections) {
-        Optional<Job> lastJob =
-            DatabaseHelper.query(
-                connectionPool,
-                ctx -> {
-                  Optional<Record> jobEntryOptional =
-                      ctx
-                          .fetch(
-                              "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
-                              connection.getConnectionId().toString(),
-                              JobStatus.CANCELLED.toString().toLowerCase())
-                          .stream()
-                          .findFirst();
+      Optional<Job> oldestPendingJob = getOldestPendingJob();
 
-                  if (jobEntryOptional.isPresent()) {
-                    Record jobEntry = jobEntryOptional.get();
-                    Job job = DefaultSchedulerPersistence.getJobFromRecord(jobEntry);
-                    return Optional.of(job);
-                  } else {
-                    return Optional.empty();
-                  }
-                });
-
-        if (lastJob.isEmpty()) {
-          createPendingJob(connectionPool, connection.getConnectionId(), "{}");
-        } else {
-          Job job = lastJob.get();
-
-          switch (job.getStatus()) {
-            case CANCELLED:
-            case COMPLETED:
-              ConnectionSchedule schedule = connection.getSchedule();
-              long nextRunStart = job.getUpdatedAt() + getIntervalInSeconds(schedule);
-              if (nextRunStart < Instant.now().getEpochSecond()) {
-                createPendingJob(connectionPool, job);
-              }
-              break;
-            case PENDING:
-            case FAILED:
-              // todo: Select kind of worker object to create based on the config
-              LOGGER.info("Submitting job to thread pool...");
-              threadPool.submit(new WorkerWrapper<>(job.getId(), new EchoWorker(), connectionPool));
-            case RUNNING:
-              //  no-op
-              break;
-          }
-        }
+      if (oldestPendingJob.isPresent()) {
+        handleJob(oldestPendingJob);
+      } else {
+        handleScheduledJobs();
       }
     } catch (Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
   }
 
-  private static void createPendingJob(BasicDataSource connectionPool, Job previousJob) {
+  private void getOldestPendingJob(Job oldestPendingJob) {}
+
+  private void handleScheduledJobs() {
+    Set<ConnectionRead> activeConnections = getAllActiveConnections();
+    for (ConnectionRead connection : activeConnections) {
+      Optional<Job> lastJob =
+          DatabaseHelper.query(
+              connectionPool,
+              ctx -> {
+                Optional<Record> jobEntryOptional =
+                    ctx
+                        .fetch(
+                            "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
+                            connection.getConnectionId().toString(),
+                            JobStatus.CANCELLED.toString().toLowerCase())
+                        .stream()
+                        .findFirst();
+
+                if (jobEntryOptional.isPresent()) {
+                  Record jobEntry = jobEntryOptional.get();
+                  Job job = DefaultSchedulerPersistence.getJobFromRecord(jobEntry);
+                  return Optional.of(job);
+                } else {
+                  return Optional.empty();
+                }
+              });
+
+      if (lastJob.isEmpty()) {
+        createPendingJob(connectionPool, connection.getConnectionId().toString(), "{}");
+      } else {
+        Job job = lastJob.get();
+        handleJob(job);
+      }
+    }
+  }
+
+  private void handleJob(Job job) {
+    switch (job.getStatus()) {
+      case CANCELLED:
+      case COMPLETED:
+        /*
+        TODO: Need to handle getting the connection schedule for a sync.
+        Maybe there's an easier way of adding a custom type like the EchoWorker
+        ConnectionSchedule schedule = job.getConfig().getSync();
+        long nextRunStart = job.getUpdatedAt() + getIntervalInSeconds(schedule);
+        if (nextRunStart < Instant.now().getEpochSecond()) {
+          createPendingJob(connectionPool, job);
+        }
+         */
+        throw new RuntimeException("not implemented");
+      case PENDING:
+      case FAILED:
+        switch (job.getConfig().getConfigType()) {
+          case DISCOVER_SCHEMA:
+            // todo: get tap from job's config
+            SingerTap tap = SingerTap.POSTGRES;
+
+            threadPool.submit(
+                new WorkerWrapper<>(
+                    job.getId(),
+                    new SingerDiscoveryWorker(
+                        "worker-1", // todo: assign worker ids
+                        job.getConfig().getDiscoverSchema(),
+                        tap,
+                        "/usr/local/lib/singer/workspace1", // todo: better path and why are we
+                        // scoping by workspace here
+                        "/usr/local/lib/singer/"),
+                    connectionPool));
+            LOGGER.info("Submitting job to thread pool...");
+            break;
+          case CHECK_CONNECTION:
+          case SYNC:
+            throw new RuntimeException("not implemented");
+            // todo: handle threadPool.submit(new WorkerWrapper<>(job.getId(), new EchoWorker(),
+            // connectionPool));
+        }
+        break;
+      case RUNNING:
+        //  no-op
+        break;
+    }
+  }
+
+  private static void createPendingJob(
+      BasicDataSource connectionPool, String scope, String jsonConfig) {
     try {
-      LOGGER.info("Creating pending job for scope: " + previousJob.getScope());
+      LOGGER.info("Creating pending job for scope: " + scope);
       LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
-      String configJson = previousJob.getConfigAsJson();
 
       DatabaseHelper.query(
           connectionPool,
           ctx ->
               ctx.execute(
                   "INSERT INTO jobs VALUES(DEFAULT, ?, ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?)",
-                  previousJob.getScope(),
+                  scope,
                   now,
                   now,
                   now,
                   JobStatus.PENDING.toString().toLowerCase(),
-                  configJson,
+                  jsonConfig,
                   null, // no output when created
-                  JobLogs.getLogDirectory(previousJob.getScope()),
-                  JobLogs.getLogDirectory(previousJob.getScope())));
-    } catch (SQLException | JsonProcessingException e) {
-      LOGGER.error("Pending Job Creation Error", e);
-      e.printStackTrace();
+                  JobLogs.getLogDirectory(scope),
+                  JobLogs.getLogDirectory(scope)));
+    } catch (SQLException e) {
+      LOGGER.error("SQL Error", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static void createPendingJob(BasicDataSource connectionPool, Job previousJob) {
+    try {
+      createPendingJob(connectionPool, previousJob.getScope(), previousJob.getConfigAsJson());
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("JSON Error", e);
     }
   }
 
@@ -172,18 +224,20 @@ public class JobSubmitter implements Runnable {
   private static UUID CONNECTION_ID = UUID.randomUUID();
 
   private static Set<ConnectionRead> getAllActiveConnections() {
-    ConnectionSchedule testConnectionSchedule = new ConnectionSchedule();
-    testConnectionSchedule.setUnits(1);
-    testConnectionSchedule.setTimeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES);
+    //    TODO: re-enable test schedule
+    //    ConnectionSchedule testConnectionSchedule = new ConnectionSchedule();
+    //    testConnectionSchedule.setUnits(1);
+    //    testConnectionSchedule.setTimeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES);
+    //    ConnectionRead testConnection = new ConnectionRead();
+    //    testConnection.setName("echo-connection");
+    //    testConnection.setConnectionId(CONNECTION_ID);
+    //    testConnection.setSourceImplementationId(UUID.randomUUID());
+    //    testConnection.setDestinationImplementationId(UUID.randomUUID());
+    //    testConnection.setSchedule(testConnectionSchedule);
+    //    testConnection.setStatus(ConnectionStatus.ACTIVE);
+    //
+    //    return Sets.newHashSet(testConnection);
 
-    ConnectionRead testConnection = new ConnectionRead();
-    testConnection.setName("echo-connection");
-    testConnection.setConnectionId(CONNECTION_ID);
-    testConnection.setSourceImplementationId(UUID.randomUUID());
-    testConnection.setDestinationImplementationId(UUID.randomUUID());
-    testConnection.setSchedule(testConnectionSchedule);
-    testConnection.setStatus(ConnectionStatus.ACTIVE);
-
-    return Sets.newHashSet(testConnection);
+    return new HashSet<>();
   }
 }
