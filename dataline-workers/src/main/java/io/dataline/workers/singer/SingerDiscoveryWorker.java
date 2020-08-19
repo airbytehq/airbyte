@@ -31,6 +31,7 @@ import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,7 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
 
   private final String configDotJson;
   private final SingerTap tap;
+  private volatile Process workerProcess;
 
   public SingerDiscoveryWorker(
       String workerId,
@@ -72,13 +74,15 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
 
       String[] cmd = {tapPath, "--config", configPath, "--discover"};
 
-      Process workerProcess =
+      workerProcess =
           new ProcessBuilder(cmd)
               .redirectError(new File(errorLogPath))
               .redirectOutput(new File(catalogDotJsonPath))
               .start();
 
-      workerProcess.waitFor();
+      while (!workerProcess.waitFor(1, TimeUnit.MINUTES)) {
+        LOGGER.info("Waiting for discovery worker {}", workerId);
+      }
 
       int exitCode = workerProcess.exitValue();
       if (exitCode == 0) {
@@ -93,5 +97,10 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
       LOGGER.error("Exception running discovery: ", e);
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public void cancel() {
+    cancelHelper(workerProcess);
   }
 }

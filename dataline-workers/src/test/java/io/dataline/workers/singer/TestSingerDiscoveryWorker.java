@@ -24,6 +24,7 @@
 
 package io.dataline.workers.singer;
 
+import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,36 +43,24 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
+  // TODO inject as env variable
+  private static final String SINGER_LIBS_ROOT = "/usr/local/lib/singer/";
+
   PostgreSQLContainer db;
 
   @BeforeAll
-  public void initDb() {
+  public void initDb() throws SQLException {
     db = new PostgreSQLContainer();
     db.start();
-  }
-
-  @Before
-  public void initDbSchema() throws SQLException {
+    // init db schema
     Connection con =
         DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
     con.createStatement().execute("CREATE TABLE id_and_name (id integer, name VARCHAR(200));");
-  }
-
-  @After
-  public void dropDbSchema() throws SQLException {
-    Connection con =
-        DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
-    //noinspection SqlResolve
-    con.createStatement().execute("DROP SCHEMA public;");
-    con.createStatement().execute("CREATE SCHEMA public;");
   }
 
   @Test
@@ -83,16 +72,34 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
             postgresCreds,
             SingerTap.POSTGRES,
             getWorkspacePath().toAbsolutePath().toString(),
-            "/usr/local/lib/singer/"); // TODO inject as env variable
+            SINGER_LIBS_ROOT);
 
-    System.out.println(getWorkspacePath().toAbsolutePath().toString());
-    System.out.println(postgresCreds);
     OutputAndStatus<DiscoveryOutput> run = worker.run();
-    assertEquals(SUCCESSFUL, run.status);
+    assertEquals(SUCCESSFUL, run.getStatus());
 
     String expectedCatalog = readResource("simple_postgres_catalog.json");
-    assertTrue(run.output.isPresent());
-    assertJsonEquals(expectedCatalog, run.output.get().catalog);
+    assertTrue(run.getOutput().isPresent());
+    assertJsonEquals(expectedCatalog, run.getOutput().get().getCatalog());
+  }
+
+  @Test
+  public void testCancellation() throws JsonProcessingException {
+    String postgresCreds = getPostgresConfigJson(db);
+    SingerDiscoveryWorker worker =
+        new SingerDiscoveryWorker(
+            "1",
+            postgresCreds,
+            SingerTap.POSTGRES,
+            getWorkspacePath().toAbsolutePath().toString(),
+            SINGER_LIBS_ROOT);
+
+    new Thread(
+            () -> {
+              OutputAndStatus<DiscoveryOutput> output = worker.run();
+              assertEquals(output.getStatus(), FAILED);
+            })
+        .start();
+    new Thread(worker::cancel).start();
   }
 
   private String readResource(String name) {
