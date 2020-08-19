@@ -32,8 +32,6 @@ import io.dataline.api.model.SourceImplementationDiscoverSchemaRead;
 import io.dataline.api.model.SourceImplementationIdRequestBody;
 import io.dataline.commons.enums.Enums;
 import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.JobOutput;
-import io.dataline.config.Schema;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardConnectionStatus;
 import io.dataline.config.StandardDiscoveryOutput;
@@ -47,11 +45,11 @@ import io.dataline.scheduler.JobStatus;
 import io.dataline.scheduler.SchedulerPersistence;
 import io.dataline.server.converters.SchemaConverter;
 import io.dataline.server.errors.KnownException;
-import java.io.IOException;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.UUID;
 
 public class SchedulerHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
@@ -120,17 +118,15 @@ public class SchedulerHandler {
     LOGGER.info("jobId = " + jobId);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
-    final String discoveryOutput = job.getOutput()
+    final StandardDiscoveryOutput discoveryOutput = job.getOutput()
             .orElseThrow(() -> new RuntimeException("Terminal job does not have an output"))
             .getDiscoverSchema();
 
     LOGGER.info("discoveryOutput = " + discoveryOutput);
 
-    final StandardDiscoveryOutput standardDiscoveryOutput = new StandardDiscoveryOutput();
-
     final SourceImplementationDiscoverSchemaRead read =
         new SourceImplementationDiscoverSchemaRead();
-    read.setSchema(SchemaConverter.toApiSchema(standardDiscoveryOutput.getSchema()));
+    read.setSchema(SchemaConverter.toApiSchema(discoveryOutput.getSchema()));
 
     return read;
   }
