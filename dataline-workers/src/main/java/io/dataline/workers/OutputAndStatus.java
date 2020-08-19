@@ -25,6 +25,7 @@
 package io.dataline.workers;
 
 import java.util.Optional;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class OutputAndStatus<OutputType> {
   public final Optional<OutputType> output;
@@ -38,5 +39,10 @@ public class OutputAndStatus<OutputType> {
   public OutputAndStatus(JobStatus status) {
     this.status = status;
     this.output = Optional.empty();
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this).append(status).append(output).build();
   }
 }

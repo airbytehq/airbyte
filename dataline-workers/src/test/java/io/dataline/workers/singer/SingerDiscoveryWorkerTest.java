@@ -28,24 +28,22 @@ import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.PostgreSQLContainerHelper;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
+public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testPostgresDiscovery() throws SQLException, IOException {
@@ -55,7 +53,7 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
         DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
     con.createStatement().execute("CREATE TABLE id_and_name (id integer, name VARCHAR(200));");
 
-    String postgresCreds = getPostgresConfigJson(db);
+    String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
     SingerDiscoveryWorker worker =
         new SingerDiscoveryWorker(
             "1",
@@ -86,17 +84,5 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
   private void assertJsonEquals(String s1, String s2) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     assertTrue(mapper.readTree(s1).equals(mapper.readTree(s2)));
-  }
-
-  private String getPostgresConfigJson(PostgreSQLContainer psqlContainer)
-      throws JsonProcessingException {
-    Map<String, String> props = Maps.newHashMap();
-    props.put("dbname", psqlContainer.getDatabaseName());
-    props.put("user", psqlContainer.getUsername());
-    props.put("password", psqlContainer.getPassword());
-    props.put("host", psqlContainer.getHost());
-    props.put("port", String.valueOf(psqlContainer.getFirstMappedPort()));
-
-    return new ObjectMapper().writeValueAsString(props);
   }
 }
