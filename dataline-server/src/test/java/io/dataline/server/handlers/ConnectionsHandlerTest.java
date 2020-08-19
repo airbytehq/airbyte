@@ -265,8 +265,8 @@ class ConnectionsHandlerTest {
     assertTrue(Enums.isCompatible(StandardSync.SyncMode.class, ConnectionRead.SyncModeEnum.class));
     assertTrue(Enums.isCompatible(StandardSync.Status.class, ConnectionStatus.class));
     assertTrue(Enums.isCompatible(ConnectionSchedule.TimeUnitEnum.class, Schedule.TimeUnit.class));
-    assertTrue(Enums.isCompatible(SourceSchemaColumn.DataTypeEnum.class, DataType.class));
-    assertTrue(Enums.isCompatible(DataType.class, SourceSchemaColumn.DataTypeEnum.class));
+    assertTrue(Enums.isCompatible(io.dataline.api.model.DataType.class, DataType.class));
+    assertTrue(Enums.isCompatible(DataType.class, io.dataline.api.model.DataType.class));
   }
 
   private StandardSync generateSync(UUID sourceImplementationId) {
@@ -301,7 +301,7 @@ class ConnectionsHandlerTest {
 
   private SourceSchema generateBasicApiSchema() {
     final SourceSchemaColumn column = new SourceSchemaColumn();
-    column.setDataType(SourceSchemaColumn.DataTypeEnum.STRING);
+    column.setDataType(io.dataline.api.model.DataType.STRING);
     column.setName("id");
 
     final SourceSchemaTable table = new SourceSchemaTable();
