@@ -65,6 +65,7 @@ const SuccessIcon = styled(FontAwesomeIcon)`
   position: absolute;
   top: 8px;
   left: 8px;
+  cursor: pointer;
 `;
 
 const Toggle: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = props => {

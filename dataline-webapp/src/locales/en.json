@@ -57,6 +57,14 @@
   "sources.lastSync": "Last Sync",
   "sources.enabled": "Enabled",
   "sources.launch": "Launch",
+  "sources.status": "Status",
+  "sources.schema": "Schema",
+  "sources.settings": "Settings",
+  "sources.syncHistory": "Sync history",
+  "sources.syncNow": "Sync now",
+  "sources.source": "Source",
+  "sources.disabled": "Disabled",
+  "sources.noSync": "No sync yet",
 
   "destination.destinationSettings": "Destination Settings"
 }

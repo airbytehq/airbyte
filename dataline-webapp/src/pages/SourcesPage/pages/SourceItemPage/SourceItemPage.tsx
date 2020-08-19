@@ -1,26 +1,40 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import PageTitle from "../../../../components/PageTitle";
 import Breadcrumbs from "../../../../components/Breadcrumbs";
 import useRouter from "../../../../components/hooks/useRouterHook";
 import { Routes } from "../../../routes";
-
-const Content = styled.div`
-  max-width: 816px;
-  margin: 18px auto;
-`;
+import StepsMenu from "../../../../components/StepsMenu";
+import StatusView from "./components/StatusView";
 
 const SourceItemPage: React.FC = () => {
+  const [isEnabledSource, setIsEnabledSource] = useState(true);
   // TODO: change to real data
   const sourceData = {
     name: "Source Name",
     source: "Source",
     destination: "Destination",
     frequency: "5m",
-    enabled: true
+    enabled: isEnabledSource
   };
+
+  const steps = [
+    {
+      id: "status",
+      name: <FormattedMessage id={"sources.status"} />
+    },
+    {
+      id: "schema",
+      name: <FormattedMessage id={"sources.schema"} />
+    },
+    {
+      id: "settings",
+      name: <FormattedMessage id={"sources.settings"} />
+    }
+  ];
+  const [currentStep, setCurrentStep] = useState("status");
+  const onSelectStep = (id: string) => setCurrentStep(id);
 
   const { push, history } = useRouter();
   const onClickBack = () =>
@@ -33,14 +47,38 @@ const SourceItemPage: React.FC = () => {
     },
     { name: sourceData.name }
   ];
+
+  const renderStep = () => {
+    if (currentStep === "status") {
+      return (
+        <StatusView
+          sourceData={sourceData}
+          onEnabledChange={() => setIsEnabledSource(!isEnabledSource)}
+        />
+      );
+    }
+    if (currentStep === "schema") {
+      return <div>schema</div>;
+    }
+
+    return <div>settings</div>;
+  };
+
   return (
     <>
       <PageTitle
         withLine
         title={<Breadcrumbs data={breadcrumbsData} />}
-        middleComponent={<div />}
+        middleComponent={
+          <StepsMenu
+            lightMode
+            data={steps}
+            onSelect={onSelectStep}
+            activeStep={currentStep}
+          />
+        }
       />
-      <Content>SOURCE PAGE</Content>
+      {renderStep()}
     </>
   );
 };
