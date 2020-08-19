@@ -4,10 +4,10 @@
   "title": "StandardSyncSummary",
   "description": "standard information output by ALL taps for a sync step (our version of state.json)",
   "type": "object",
-  "required": ["attemptId", "recordsSynced", "status", "startTime", "endTime"],
+  "required": ["jobId", "recordsSynced", "status", "startTime", "endTime"],
   "additionalProperties": false,
   "properties": {
-    "attemptId": {
+    "jobId": {
       "type": "string",
       "format": "uuid"
     },
