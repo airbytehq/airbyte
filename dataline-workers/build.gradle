@@ -9,6 +9,7 @@ configurations {
 dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
     implementation project(":dataline-commons")
+    implementation project(":dataline-config")
 
     testImplementation "com.fasterxml.jackson.core:jackson-databind:2.9.8"
     testImplementation "org.postgresql:postgresql:42.1.4"
