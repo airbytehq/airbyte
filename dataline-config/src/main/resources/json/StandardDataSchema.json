@@ -49,17 +49,9 @@
           "type": "string"
         },
         "dataType": {
-          "$ref": "StandardDataSchema.json#/definitions/dataType"
+          "$ref": "DataType.json"
         }
       }
-    },
-    "dataType": {
-      "type": "string",
-      "enum": [
-        "string",
-        "number",
-        "boolean"
-      ]
     }
   }
 }

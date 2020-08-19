@@ -70,7 +70,8 @@ public class ConnectionsHandler {
     standardSync.setConnectionId(connectionId);
     standardSync.setSourceImplementationId(connectionCreate.getSourceImplementationId());
     standardSync.setDestinationImplementationId(connectionCreate.getDestinationImplementationId());
-    standardSync.setSyncMode(StandardSync.SyncMode.APPEND); // todo: for MVP we only support append.
+    // todo (cgardens): for MVP we only support append.
+    standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
     standardSync.setSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
     standardSync.setName(
         connectionCreate.getName() != null ? connectionCreate.getName() : "default");
@@ -102,7 +103,7 @@ public class ConnectionsHandler {
         standardSync);
   }
 
-  // todo (cgardens) - stored on sync id (there is know schedule id concept). this is non-intuitive.
+  // todo (cgardens) - stored on sync id (there is no schedule id concept). this is non-intuitive.
   private void writeSchedule(StandardSyncSchedule schedule) {
     configPersistence.writeConfig(
         PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
