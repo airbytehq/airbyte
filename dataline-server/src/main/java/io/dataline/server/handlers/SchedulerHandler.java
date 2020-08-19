@@ -214,7 +214,7 @@ public class SchedulerHandler {
         return job;
       }
 
-      if (count > 10) {
+      if (count > 120) {
         throw new RuntimeException("Check connection job did not complete.");
       }
 
