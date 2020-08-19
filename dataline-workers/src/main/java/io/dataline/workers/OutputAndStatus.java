@@ -27,8 +27,8 @@ package io.dataline.workers;
 import java.util.Optional;
 
 public class OutputAndStatus<OutputType> {
-  public final Optional<OutputType> output;
-  public final JobStatus status;
+  private final Optional<OutputType> output;
+  private final JobStatus status;
 
   public OutputAndStatus(JobStatus status, OutputType output) {
     this.output = Optional.of(output);
@@ -38,5 +38,13 @@ public class OutputAndStatus<OutputType> {
   public OutputAndStatus(JobStatus status) {
     this.status = status;
     this.output = Optional.empty();
+  }
+
+  public Optional<OutputType> getOutput() {
+    return output;
+  }
+
+  public JobStatus getStatus() {
+    return status;
   }
 }
