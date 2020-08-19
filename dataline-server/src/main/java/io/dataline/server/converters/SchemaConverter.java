@@ -1,0 +1,84 @@
+package io.dataline.server.converters;
+
+import io.dataline.api.model.SourceSchema;
+import io.dataline.api.model.SourceSchemaColumn;
+import io.dataline.api.model.SourceSchemaTable;
+import io.dataline.commons.enums.Enums;
+import io.dataline.config.Column;
+import io.dataline.config.Schema;
+import io.dataline.config.Table;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class SchemaConverter {
+  public static Schema toPersistenceSchema(SourceSchema api) {
+    final List<Table> persistenceTables =
+        api.getTables().stream()
+            .map(
+                apiTable -> {
+                  final List<Column> persistenceColumns =
+                      apiTable.getColumns().stream()
+                          .map(
+                              apiColumn -> {
+                                final Column persistenceColumn = new Column();
+                                persistenceColumn.setName(apiColumn.getName());
+                                persistenceColumn.setDataType(
+                                    toPersistenceDataType(apiColumn.getDataType()));
+                                return persistenceColumn;
+                              })
+                          .collect(Collectors.toList());
+
+                  final Table persistenceTable = new Table();
+                  persistenceTable.setName(apiTable.getName());
+                  persistenceTable.setColumns(persistenceColumns);
+
+                  return persistenceTable;
+                })
+            .collect(Collectors.toList());
+
+    final Schema persistenceSchema = new Schema();
+    persistenceSchema.setTables(persistenceTables);
+    return persistenceSchema;
+  }
+
+  public static SourceSchema toApiSchema(Schema persistenceSchema) {
+
+    final List<SourceSchemaTable> persistenceTables =
+        persistenceSchema.getTables().stream()
+            .map(
+                persistenceTable -> {
+                  final List<SourceSchemaColumn> apiColumns =
+                      persistenceTable.getColumns().stream()
+                          .map(
+                              persistenceColumn -> {
+                                final SourceSchemaColumn apiColumn = new SourceSchemaColumn();
+                                apiColumn.setName(persistenceColumn.getName());
+                                apiColumn.setDataType(
+                                    toApiDataType(persistenceColumn.getDataType()));
+                                return apiColumn;
+                              })
+                          .collect(Collectors.toList());
+
+                  final SourceSchemaTable apiTable = new SourceSchemaTable();
+                  apiTable.setName(persistenceTable.getName());
+                  apiTable.setColumns(apiColumns);
+
+                  return apiTable;
+                })
+            .collect(Collectors.toList());
+
+    final SourceSchema apiSchema = new SourceSchema();
+    apiSchema.setTables(persistenceTables);
+    return apiSchema;
+  }
+
+  // todo: figure out why the generator is namespacing the DataType enum by Column.
+  public static Column.DataType toPersistenceDataType(SourceSchemaColumn.DataTypeEnum apiDataType) {
+    return Enums.convertTo(apiDataType, Column.DataType.class);
+  }
+
+  public static SourceSchemaColumn.DataTypeEnum toApiDataType(Column.DataType persistenceDataType) {
+    return Enums.convertTo(persistenceDataType, SourceSchemaColumn.DataTypeEnum.class);
+  }
+}

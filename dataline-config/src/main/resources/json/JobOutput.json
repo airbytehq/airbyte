@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/JobOutput.json",
+  "title": "JobOutput",
+  "description": "job output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outputType"],
+  "properties": {
+    "outputType": {
+      "type": "string",
+      "enum": [
+        "checkConnection",
+        "discoverSchema",
+        "sync"
+      ]
+    },
+    "checkConnection": {
+      "$ref": "StandardConnectionStatus.json"
+    },
+    "discoverSchema": {
+      "$ref": "StandardDiscoveryOutput.json"
+    },
+    "sync": {
+      "$ref": "JobSyncOutput.json"
+    }
+  }
+}
