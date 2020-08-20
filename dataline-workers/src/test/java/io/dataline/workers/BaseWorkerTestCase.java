@@ -32,11 +32,15 @@ import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseWorkerTestCase {
+  // TODO inject via env
+  protected String SINGER_LIB_PATH = "/usr/local/lib/singer";
+
   private Path workspaceDirectory;
 
   @BeforeAll
   public void init() throws IOException {
     workspaceDirectory = Files.createTempDirectory("dataline");
+    System.out.println("Workspace directory: " + workspaceDirectory.toString());
   }
 
   protected Path getWorkspacePath() {

@@ -40,8 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType> {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
 
   protected JobStatus jobStatus;
   protected String workerId;
@@ -61,7 +60,7 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
     return runInternal();
   }
 
-  protected abstract OutputAndStatus<OutputType> runInternal();
+  abstract OutputAndStatus<OutputType> runInternal();
 
   private void createWorkspace() {
     try {

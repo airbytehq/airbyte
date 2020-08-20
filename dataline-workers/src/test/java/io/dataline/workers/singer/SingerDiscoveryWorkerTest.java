@@ -28,21 +28,19 @@ import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
+import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.workers.BaseWorkerTestCase;
-import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.PostgreSQLContainerHelper;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,9 +50,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
-  // TODO inject as env variable
-  private static final String SINGER_LIBS_ROOT = "/usr/local/lib/singer/";
+public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
 
   PostgreSQLContainer db;
 
@@ -70,39 +66,42 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
 
   @Test
   public void testPostgresDiscovery() throws IOException {
-    String postgresCreds = getPostgresConfigJson(db);
+    String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
     SingerDiscoveryWorker worker =
         new SingerDiscoveryWorker(
             "1",
             postgresCreds,
             SingerTap.POSTGRES,
             getWorkspacePath().toAbsolutePath().toString(),
-            SINGER_LIBS_ROOT);
+            SINGER_LIB_PATH);
 
-    OutputAndStatus<DiscoveryOutput> run = worker.run();
+    OutputAndStatus<StandardDiscoveryOutput> run = worker.run();
     assertEquals(SUCCESSFUL, run.getStatus());
 
-    String expectedCatalog = readResource("simple_postgres_catalog.json");
+    String expectedSchema = readResource("simple_postgres_schema.json");
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final String actualSchema = objectMapper.writeValueAsString(run.getOutput().get());
+
     assertTrue(run.getOutput().isPresent());
-    assertJsonEquals(expectedCatalog, run.getOutput().get().getCatalog());
+    assertJsonEquals(expectedSchema, actualSchema);
   }
 
   @Test
   public void testCancellation()
       throws JsonProcessingException, InterruptedException, ExecutionException {
-    String postgresCreds = getPostgresConfigJson(db);
+    String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
     SingerDiscoveryWorker worker =
         new SingerDiscoveryWorker(
             "1",
             postgresCreds,
             SingerTap.POSTGRES,
             getWorkspacePath().toAbsolutePath().toString(),
-            SINGER_LIBS_ROOT);
+            SINGER_LIB_PATH);
     ExecutorService threadPool = Executors.newFixedThreadPool(2);
     Future<?> workerWasCancelled =
         threadPool.submit(
             () -> {
-              OutputAndStatus<DiscoveryOutput> output = worker.run();
+              OutputAndStatus<StandardDiscoveryOutput> output = worker.run();
               assertEquals(FAILED, output.getStatus());
             });
 
@@ -122,18 +121,6 @@ public class TestSingerDiscoveryWorker extends BaseWorkerTestCase {
 
   private void assertJsonEquals(String s1, String s2) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
-    assertTrue(mapper.readTree(s1).equals(mapper.readTree(s2)));
-  }
-
-  private String getPostgresConfigJson(PostgreSQLContainer psqlContainer)
-      throws JsonProcessingException {
-    Map<String, String> props = Maps.newHashMap();
-    props.put("dbname", psqlContainer.getDatabaseName());
-    props.put("user", psqlContainer.getUsername());
-    props.put("password", psqlContainer.getPassword());
-    props.put("host", psqlContainer.getHost());
-    props.put("port", String.valueOf(psqlContainer.getFirstMappedPort()));
-
-    return new ObjectMapper().writeValueAsString(props);
+    assertEquals(mapper.readTree(s1), mapper.readTree(s2));
   }
 }

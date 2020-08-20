@@ -34,15 +34,12 @@ import io.dataline.api.model.ConnectionUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.enums.Enums;
 import io.dataline.config.Schedule;
-import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.converters.SchemaConverter;
-import io.dataline.server.errors.KnownException;
+import io.dataline.server.helpers.ConfigFetchers;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -146,59 +143,32 @@ public class ConnectionsHandler {
   // todo (cgardens) - this is a disaster without a relational db.
   public ConnectionReadList listConnectionsForWorkspace(
       WorkspaceIdRequestBody workspaceIdRequestBody) {
-    try {
 
-      final List<ConnectionRead> reads =
-          configPersistence
-              // read all connections.
-              .getConfigs(PersistenceConfigType.STANDARD_SYNC, StandardSync.class)
-              .stream()
-              // filter out connections attached to source implementations NOT associated with the
-              // workspace
-              .filter(
-                  standardSync -> {
-                    try {
-                      return configPersistence
-                          .getConfig(
-                              PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-                              standardSync.getSourceImplementationId().toString(),
-                              SourceConnectionImplementation.class)
-                          .getWorkspaceId()
-                          .equals(workspaceIdRequestBody.getWorkspaceId());
-                    } catch (JsonValidationException e) {
-                      throw new KnownException(
-                          422,
-                          String.format(
-                              "The provided configuration does not fulfill the specification. Errors: %s",
-                              e.getMessage()));
-                    } catch (ConfigNotFoundException e) {
-                      throw new KnownException(
-                          422,
-                          String.format(
-                              "Could not find source connection implementation for source implementation: %s.",
-                              standardSync.getSourceImplementationId()));
-                    }
-                  })
-              // pull the sync schedule
-              // convert to api format
-              .map(
-                  standardSync -> {
-                    final StandardSyncSchedule syncSchedule =
-                        getSyncSchedule(standardSync.getConnectionId());
-                    return toConnectionRead(standardSync, syncSchedule);
-                  })
-              .collect(Collectors.toList());
+    final List<ConnectionRead> reads =
+        // read all connections.
+        ConfigFetchers.getStandardSyncs(configPersistence).stream()
+            // filter out connections attached to source implementations NOT associated with the
+            // workspace
+            .filter(
+                standardSync ->
+                    ConfigFetchers.getSourceConnectionImplementation(
+                            configPersistence, standardSync.getSourceImplementationId())
+                        .getWorkspaceId()
+                        .equals(workspaceIdRequestBody.getWorkspaceId()))
 
-      final ConnectionReadList connectionReadList = new ConnectionReadList();
-      connectionReadList.setConnections(reads);
-      return connectionReadList;
-    } catch (JsonValidationException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "Attempted to retrieve a configuration does not fulfill the specification. Errors: %s",
-              e.getMessage()));
-    }
+            // pull the sync schedule
+            // convert to api format
+            .map(
+                standardSync -> {
+                  final StandardSyncSchedule syncSchedule =
+                      getSyncSchedule(standardSync.getConnectionId());
+                  return toConnectionRead(standardSync, syncSchedule);
+                })
+            .collect(Collectors.toList());
+
+    final ConnectionReadList connectionReadList = new ConnectionReadList();
+    connectionReadList.setConnections(reads);
+    return connectionReadList;
   }
 
   public ConnectionRead getConnection(ConnectionIdRequestBody connectionIdRequestBody) {
@@ -215,38 +185,11 @@ public class ConnectionsHandler {
   }
 
   private StandardSync getStandardSync(UUID connectionId) {
-    try {
-      return configPersistence.getConfig(
-          PersistenceConfigType.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
-    } catch (JsonValidationException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "The provided configuration does not fulfill the specification. Errors: %s",
-              e.getMessage()));
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(
-          422,
-          String.format("Could not find sync configuration for connection: %s.", connectionId));
-    }
+    return ConfigFetchers.getStandardSync(configPersistence, connectionId);
   }
 
   private StandardSyncSchedule getSyncSchedule(UUID connectionId) {
-    try {
-      return configPersistence.getConfig(
-          PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
-          connectionId.toString(),
-          StandardSyncSchedule.class);
-    } catch (JsonValidationException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "The provided configuration does not fulfill the specification. Errors: %s",
-              e.getMessage()));
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(
-          422, String.format("Could not find sync schedule for connection: %s.", connectionId));
-    }
+    return ConfigFetchers.getStandardSyncSchedule(configPersistence, connectionId);
   }
 
   private ConnectionRead toConnectionRead(

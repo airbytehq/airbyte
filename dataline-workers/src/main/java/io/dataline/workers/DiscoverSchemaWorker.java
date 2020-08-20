@@ -22,15 +22,13 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers;
 
-public class SingerTestConnectionWorker {
-  private final SingerConnector tapOrTarget;
-  private final String configDotJson;
+import io.dataline.config.StandardDiscoveryOutput;
 
-  public SingerTestConnectionWorker(SingerConnector tapOrTarget, String configDotJson) {
+public interface DiscoverSchemaWorker extends Worker<StandardDiscoveryOutput> {
+  OutputAndStatus<StandardDiscoveryOutput> run()
+      throws InvalidCredentialsException, InvalidCatalogException;
 
-    this.tapOrTarget = tapOrTarget;
-    this.configDotJson = configDotJson;
-  }
+  void cancel();
 }

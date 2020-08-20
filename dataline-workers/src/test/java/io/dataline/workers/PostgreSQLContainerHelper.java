@@ -24,11 +24,35 @@
 
 package io.dataline.workers;
 
-/**
- * Indicates whether the worker's underlying process was succesful. E.g this should return
- * SUCCESSFUL if a connection check succeeds, FAILED otherwise.
- */
-public enum JobStatus {
-  FAILED,
-  SUCCESSFUL;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.testcontainers.containers.PostgreSQLContainer;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class PostgreSQLContainerHelper {
+
+  public static String getSingerConfigJson(PostgreSQLContainer db) throws JsonProcessingException {
+    return getSingerConfigJson(
+        db.getUsername(),
+        db.getPassword(),
+        db.getHost(),
+        db.getDatabaseName(),
+        String.valueOf(db.getFirstMappedPort()));
+  }
+
+  public static String getSingerConfigJson(
+      String user, String password, String host, String dbname, String port)
+      throws JsonProcessingException {
+    Map<String, String> creds = new HashMap<>();
+    creds.put("user", user);
+    creds.put("password", password);
+    creds.put("host", host);
+    creds.put("dbname", dbname);
+    creds.put("filter_dbs", dbname);
+    creds.put("port", port);
+
+    return new ObjectMapper().writeValueAsString(creds);
+  }
 }
