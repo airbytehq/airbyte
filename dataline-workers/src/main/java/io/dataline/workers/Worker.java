@@ -29,8 +29,8 @@ public interface Worker<InputType, OutputType> {
    * Blocking call to run the worker's workflow. Once this is complete, getStatus should return
    * either COMPLETE, FAILED, or CANCELLED.
    */
-  OutputAndStatus<OutputType> run(InputType inputType, String workspacePath, String jobId)
+  OutputAndStatus<OutputType> run(InputType inputType, String workspacePath)
       throws InvalidCredentialsException, InvalidCatalogException;
 
-  void cancel(String jobId);
+  void cancel();
 }

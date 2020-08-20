@@ -66,9 +66,9 @@ public class SingerDiscoveryWorker
 
   @Override
   OutputAndStatus<StandardDiscoveryOutput> runInternal(
-      ConnectionImplementation connectionImplementation, String workspaceRoot, String jobId) {
+      ConnectionImplementation connectionImplementation, String workspaceRoot) {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
-    // better.
+    //   reduced.
     final ObjectMapper objectMapper = new ObjectMapper();
     final String configDotJson;
     try {
@@ -99,7 +99,7 @@ public class SingerDiscoveryWorker
               .start();
 
       while (!workerProcess.waitFor(1, TimeUnit.MINUTES)) {
-        LOGGER.info("Waiting for discovery jobId {}", jobId);
+        LOGGER.info("Waiting for discovery job.");
       }
 
       int exitCode = workerProcess.exitValue();
@@ -111,10 +111,7 @@ public class SingerDiscoveryWorker
       } else {
         String errLog = readFileFromWorkspace(workspaceRoot, ERROR_LOG_FILENAME);
         LOGGER.debug(
-            "Discovery job {} subprocess finished with exit code {}. Error log: {}",
-            jobId,
-            exitCode,
-            errLog);
+            "Discovery job subprocess finished with exit code {}. Error log: {}", exitCode, errLog);
         return new OutputAndStatus<>(FAILED);
       }
     } catch (IOException | InterruptedException e) {
@@ -139,7 +136,8 @@ public class SingerDiscoveryWorker
             .map(
                 stream -> {
                   final Table table = new Table();
-                  table.setName(stream.getStream()); // ?
+                  table.setName(
+                      stream.getStream()); // todo (cgardens) - is stream the same as table name?
                   table.setColumns(
                       stream
                           .getSchema()
@@ -210,7 +208,7 @@ public class SingerDiscoveryWorker
   }
 
   @Override
-  public void cancel(String jobId) {
-    cancelHelper(workerProcess, jobId);
+  public void cancel() {
+    cancelHelper(workerProcess);
   }
 }

@@ -47,9 +47,9 @@ public class SingerCheckConnectionWorker
 
   @Override
   OutputAndStatus<StandardConnectionStatus> runInternal(
-      ConnectionImplementation connectionImplementation, String workspaceRoot, String jobId) {
+      ConnectionImplementation connectionImplementation, String workspaceRoot) {
     OutputAndStatus<StandardDiscoveryOutput> outputAndStatus =
-        singerDiscoveryWorker.runInternal(connectionImplementation, workspaceRoot, jobId);
+        singerDiscoveryWorker.runInternal(connectionImplementation, workspaceRoot);
     StandardConnectionStatus connectionStatus = new StandardConnectionStatus();
     JobStatus jobStatus;
     if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL
@@ -57,8 +57,7 @@ public class SingerCheckConnectionWorker
       connectionStatus.setStatus(StandardConnectionStatus.Status.SUCCESS);
       jobStatus = JobStatus.SUCCESSFUL;
     } else {
-      LOGGER.info(
-          "Connection check for job {} unsuccessful. Discovery output: {}", jobId, outputAndStatus);
+      LOGGER.info("Connection check unsuccessful. Discovery output: {}", outputAndStatus);
       jobStatus = JobStatus.FAILED;
       connectionStatus.setStatus(StandardConnectionStatus.Status.FAILURE);
       // TODO add better error log parsing to specify the exact reason for failure as the message
@@ -68,7 +67,7 @@ public class SingerCheckConnectionWorker
   }
 
   @Override
-  public void cancel(String jobId) {
-    singerDiscoveryWorker.cancel(jobId);
+  public void cancel() {
+    singerDiscoveryWorker.cancel();
   }
 }

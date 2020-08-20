@@ -103,8 +103,7 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
       final String workspacesRoot = "/tmp/dataline/workspaces/";
       FileUtils.forceMkdir(new File(workspacesRoot));
       final String workspaceRoot = workspacesRoot + jobId;
-      OutputAndStatus<OutputType> outputAndStatus =
-          worker.run(input, workspaceRoot, String.valueOf(jobId));
+      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, workspaceRoot);
 
       switch (outputAndStatus.getStatus()) {
         case FAILED:

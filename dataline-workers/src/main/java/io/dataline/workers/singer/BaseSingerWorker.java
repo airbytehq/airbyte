@@ -51,26 +51,25 @@ public abstract class BaseSingerWorker<InputType, OutputType>
   }
 
   @Override
-  public OutputAndStatus<OutputType> run(InputType inputType, String workspaceRoot, String jobId) {
-    createWorkspace(workspaceRoot, jobId);
-    return runInternal(inputType, workspaceRoot, jobId);
+  public OutputAndStatus<OutputType> run(InputType inputType, String workspaceRoot) {
+    createWorkspace(workspaceRoot);
+    return runInternal(inputType, workspaceRoot);
   }
 
-  abstract OutputAndStatus<OutputType> runInternal(
-      InputType inputType, String workspaceRoot, String jobId);
+  abstract OutputAndStatus<OutputType> runInternal(InputType inputType, String workspaceRoot);
 
   // todo (cgardens) - this is not singer specific. should be in BaseWorker (when we have a
-  // BaseWorker)
-  private void createWorkspace(String workspaceRoot, String jobId) {
+  //   BaseWorker) or the scheduler.
+  private void createWorkspace(String workspaceRoot) {
     try {
       FileUtils.forceMkdir(Path.of(workspaceRoot).toFile());
     } catch (IOException e) {
-      LOGGER.error("Unable to create workspace for job {} due to exception {} ", jobId, e);
+      LOGGER.error("Unable to create workspace due to exception.", e);
       throw new RuntimeException(e);
     }
   }
 
-  protected void cancelHelper(Process workerProcess, String jobId) {
+  protected void cancelHelper(Process workerProcess) {
     try {
       jobStatus = JobStatus.FAILED;
       workerProcess.destroy();
@@ -79,7 +78,7 @@ public abstract class BaseSingerWorker<InputType, OutputType>
         workerProcess.destroyForcibly();
       }
     } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling job " + jobId, e);
+      LOGGER.error("Exception when cancelling job.", e);
     }
   }
 

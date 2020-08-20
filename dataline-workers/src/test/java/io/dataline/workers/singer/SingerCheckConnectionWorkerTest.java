@@ -70,7 +70,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SINGER_POSTGRES_TAP_PATH);
     OutputAndStatus<StandardConnectionStatus> run =
-        worker.run(connectionImplementation, getWorkspacePath(jobId).toString(), jobId);
+        worker.run(connectionImplementation, getWorkspacePath(jobId).toString());
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.FAILURE, run.getOutput().get().getStatus());
@@ -98,7 +98,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     connectionImplementation.setConfiguration(o);
 
     OutputAndStatus<StandardConnectionStatus> run =
-        worker.run(connectionImplementation, getWorkspacePath(jobId).toString(), jobId);
+        worker.run(connectionImplementation, getWorkspacePath(jobId).toString());
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.FAILURE, run.getOutput().get().getStatus());
@@ -119,7 +119,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SINGER_POSTGRES_TAP_PATH);
     OutputAndStatus<StandardConnectionStatus> run =
-        worker.run(connectionImplementation, getWorkspacePath(jobId).toString(), jobId);
+        worker.run(connectionImplementation, getWorkspacePath(jobId).toString());
     assertEquals(SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.SUCCESS, run.getOutput().get().getStatus());

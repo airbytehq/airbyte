@@ -33,13 +33,13 @@ public class EchoWorker implements Worker<String, String> {
   public EchoWorker() {}
 
   @Override
-  public OutputAndStatus<String> run(String string, String workspaceRoot, String jobId) {
+  public OutputAndStatus<String> run(String string, String workspaceRoot) {
     LOGGER.info("Hello World. input: {}", string);
     return new OutputAndStatus<>(JobStatus.SUCCESSFUL, "echoed");
   }
 
   @Override
-  public void cancel(String jobId) {
+  public void cancel() {
     // no-op
   }
 }
