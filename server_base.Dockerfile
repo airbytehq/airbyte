@@ -17,7 +17,12 @@ RUN apt-get update \
     && curl -sL https://deb.nodesource.com/setup_14.x | bash - \
     && apt-get install -y nodejs
 
-COPY --from=cache /tmp/gradle_cache /home/gradle/.gradle
+# Cache installing the gradle wrapper
+COPY ./gradlew /code/gradlew
+COPY ./gradle /code/gradle
+RUN ./gradlew wrapper --no-daemon
+
+# Copy code, node_modules, etc.
 COPY . /code
 
 # Create distributions, but don't run tests just yet
