@@ -25,15 +25,18 @@
 package io.dataline.workers.singer;
 
 import io.dataline.config.StandardConnectionStatus;
-import io.dataline.workers.DiscoveryOutput;
+import io.dataline.config.StandardDiscoveryOutput;
+import io.dataline.workers.CheckConnectionWorker;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerCheckConnectionWorker extends BaseSingerWorker<StandardConnectionStatus> {
-  private final Logger LOGGER = LoggerFactory.getLogger(SingerCheckConnectionWorker.class);
-  private SingerDiscoveryWorker singerDiscoveryWorker;
+public class SingerCheckConnectionWorker extends BaseSingerWorker<StandardConnectionStatus>
+    implements CheckConnectionWorker {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerCheckConnectionWorker.class);
+
+  private final SingerDiscoveryWorker singerDiscoveryWorker;
 
   public SingerCheckConnectionWorker(
       String workerId,
@@ -49,7 +52,7 @@ public class SingerCheckConnectionWorker extends BaseSingerWorker<StandardConnec
 
   @Override
   OutputAndStatus<StandardConnectionStatus> runInternal() {
-    OutputAndStatus<DiscoveryOutput> outputAndStatus = singerDiscoveryWorker.runInternal();
+    OutputAndStatus<StandardDiscoveryOutput> outputAndStatus = singerDiscoveryWorker.runInternal();
     StandardConnectionStatus connectionStatus = new StandardConnectionStatus();
     JobStatus jobStatus;
     if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL
@@ -64,7 +67,7 @@ public class SingerCheckConnectionWorker extends BaseSingerWorker<StandardConnec
       jobStatus = JobStatus.FAILED;
       connectionStatus.setStatus(StandardConnectionStatus.Status.FAILURE);
       // TODO add better error log parsing to specify the exact reason for failure as the message
-      // fieldk
+      connectionStatus.setMessage("Failed to connect.");
     }
     return new OutputAndStatus<>(jobStatus, connectionStatus);
   }
