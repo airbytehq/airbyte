@@ -22,10 +22,14 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.workers.singer.postgres_tap;
 
-import io.dataline.config.ConnectionImplementation;
-import io.dataline.config.StandardConnectionStatus;
+import static io.dataline.workers.singer.postgres_tap.PostgresSingerTapConstants.POSTGRES_SINGER_TAP;
 
-public interface CheckConnectionWorker
-    extends Worker<ConnectionImplementation, StandardConnectionStatus> {}
+import io.dataline.workers.singer.SingerDiscoveryWorker;
+
+public class SingerPostgresTapDiscoverWorker extends SingerDiscoveryWorker {
+  public SingerPostgresTapDiscoverWorker() {
+    super(POSTGRES_SINGER_TAP);
+  }
+}

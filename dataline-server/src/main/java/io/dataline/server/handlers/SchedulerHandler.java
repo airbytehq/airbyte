@@ -114,7 +114,8 @@ public class SchedulerHandler {
     LOGGER.info("jobId = " + jobId);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
-    final StandardDiscoveryOutput discoveryOutput = job.getOutput()
+    final StandardDiscoveryOutput discoveryOutput =
+        job.getOutput()
             .orElseThrow(() -> new RuntimeException("Terminal job does not have an output"))
             .getDiscoverSchema();
 
