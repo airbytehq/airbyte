@@ -38,6 +38,9 @@ import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.config.Table;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.OutputAndStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -45,6 +48,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.dataline.workers.JobStatus.FAILED;
+import static io.dataline.workers.JobStatus.SUCCESSFUL;
+
 
 public class SingerDiscoveryWorker extends BaseSingerWorker<StandardDiscoveryOutput>
     implements DiscoverSchemaWorker {

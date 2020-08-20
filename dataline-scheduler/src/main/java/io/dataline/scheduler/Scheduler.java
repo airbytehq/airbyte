@@ -51,10 +51,11 @@ public class Scheduler {
   }
 
   public void start() {
+    SchedulerPersistence persistence = new DefaultSchedulerPersistence(connectionPool);
     ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
     scheduledPool.scheduleWithFixedDelay(
-        new JobSubmitter(workerThreadPool, connectionPool),
+        new JobSubmitter(workerThreadPool, connectionPool, persistence),
         0L,
         JOB_SUBMITTER_DELAY_MILLIS,
         TimeUnit.MILLISECONDS);

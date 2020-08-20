@@ -8,8 +8,9 @@
     "required": [
       "host",
       "port",
-      "username",
-      "database"
+      "user",
+      "dbname",
+      "filter_dbs"
     ],
     "additionalProperties": false,
     "properties": {
@@ -21,13 +22,16 @@
         "minimum": 0,
         "maximum": 65536
       },
-      "username": {
+      "user": {
         "type": "string"
       },
       "password": {
         "type": "string"
       },
-      "database": {
+      "dbname": {
+        "type": "string"
+      },
+      "filter_dbs": {
         "type": "string"
       }
     }
