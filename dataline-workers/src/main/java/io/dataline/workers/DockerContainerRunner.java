@@ -25,28 +25,27 @@
 package io.dataline.workers;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.async.ResultCallback.Adapter;
 import com.github.dockerjava.api.command.AttachContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.StreamType;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.google.common.collect.Lists;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,80 +57,76 @@ public class DockerContainerRunner {
   private final DockerClient dockerClient;
   private final String image;
 
-  public static class Builder {
+  public static class StdStreams {
 
-    private final DockerClient dockerClient;
+    private final InputStream stdin;
+    private final OutputStream stdout;
+    private final OutputStream stderr;
 
-    private final String image;
-
-    public Builder(DockerClient dockerClient, String image) {
-      this.dockerClient = dockerClient;
-      this.image = image;
+    public StdStreams(OutputStream stdout, OutputStream stderr) {
+      this(null, stdout, stderr);
     }
 
-    public DockerContainerRunner build() {
-      return new DockerContainerRunner(dockerClient, image);
+    public StdStreams(PipedInputStream stdin, OutputStream stdout, OutputStream stderr) {
+      this.stdin = stdin;
+      this.stdout = stdout;
+      this.stderr = stderr;
+    }
+
+    public Optional<InputStream> getStdin() {
+      return Optional.ofNullable(stdin);
+    }
+
+    public Optional<OutputStream> getStdout() {
+      return Optional.ofNullable(stdout);
+    }
+
+    public Optional<OutputStream> getStderr() {
+      return Optional.ofNullable(stderr);
     }
   }
 
-  protected DockerContainerRunner(DockerClient dockerClient, String image) {
+  public DockerContainerRunner(DockerClient dockerClient, String image) {
     this.dockerClient = dockerClient;
     this.image = image;
   }
 
-  public void run(final List<String> args, final OutputStream oss, final InputStream iss)
-      throws InterruptedException {
-    CreateContainerCmd createContainerCmd =
+  public DockerContainerHandle run(final List<String> args, final StdStreams streams) {
+    final CreateContainerCmd createContainerCmd =
         dockerClient
             .createContainerCmd(image)
             .withCmd(args)
             .withTty(false)
+            .withAttachStdout(true)
             .withHostConfig(
                 HostConfig.newHostConfig().withBinds(Bind.parse("/tmp/singer:/tmp/abc")));
-    if (iss != null) {
-      createContainerCmd.withStdinOpen(true).withStdInOnce(true).withAttachStdin(true);
-    }
-    final CreateContainerResponse container = createContainerCmd.exec();
-    LOGGER.debug("Container {} created ({})", container.getId(), image);
 
-    dockerClient.startContainerCmd(container.getId()).exec();
-
-    AttachContainerCmd attachContainerCmd =
-        dockerClient.attachContainerCmd(container.getId()).withStdErr(true).withStdOut(true);
-
-    if (iss != null) {
-      attachContainerCmd.withStdIn(iss).withFollowStream(true);
-    }
-    Adapter<Frame> res =
-        attachContainerCmd.exec(
-            new Adapter<>() {
-              @Override
-              public void onNext(Frame object) {
-                LOGGER.info("onNext {}: {}", container.getId(), object);
-              }
+    // If we have stdin configured, lets prepare the container to receive stdin
+    streams
+        .getStdin()
+        .ifPresent(
+            noop -> {
+              createContainerCmd.withStdinOpen(true).withStdInOnce(true).withAttachStdin(true);
             });
 
-    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(oss));
+    final String containerId = createContainerCmd.exec().getId();
+    LOGGER.debug("Container {} created (image: {})", containerId, image);
 
-    try {
-      for (long i = 0; i < 10; ++i) {
-        writer.write("toto" + i + "\n");
-        writer.flush();
-        System.out.println(i);
-      }
-      oss.close();
-      while (iss.available() > 0) {
-        Thread.sleep(1000);
-      }
-      res.close();
-      //      iss.close();
+    final AttachContainerCmd attachContainerCmd = dockerClient.attachContainerCmd(containerId);
+    // Attach streams if necessary
+    streams
+        .getStdout()
+        .ifPresent(noop -> attachContainerCmd.withStdOut(true) /*.withFollowStream(true)*/);
+    streams
+        .getStderr()
+        .ifPresent(noop -> attachContainerCmd.withStdErr(true) /*.withFollowStream(true)*/);
+    streams
+        .getStdin()
+        .ifPresent(iss -> attachContainerCmd.withStdIn(iss) /*.withFollowStream(true)*/);
 
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    //    TimeUnit.MINUTES.sleep(9999);
+    Adapter<Frame> res = attachContainerCmd.exec(new FrameAdapter(containerId, streams));
 
-    dockerClient.waitContainerCmd(container.getId()).start().awaitStatusCode();
+    return new DockerContainerHandle(res);
   }
 
   public boolean awaitTermination(long timeout, TimeUnit timeUnit) throws InterruptedException {
@@ -146,19 +141,51 @@ public class DockerContainerRunner {
                 .dockerHost(URI.create("unix:///var/run/docker.sock"))
                 .build());
 
-    PipedOutputStream pos = new PipedOutputStream();
-    PipedInputStream pis = new PipedInputStream(pos);
+    //
+    //    System.out.println("streams = " + streams.getStdin().get().available());
+    //
+    //    dockerClient.startContainerCmd(containerId).exec();
+    //    LOGGER.debug("Container {} started", containerId);
+    //
+    //    for (int i = 0; i < 1; i++) {
+    //      StringBuilder sb = new StringBuilder();
+    //      sb.append("toto").append(i).append("\n");
+    //      streams.getStdout().get().write(sb.toString().getBytes(StandardCharsets.UTF_8));
+    //    }
+    //
+    //    streams.getStdout().get().close();
+    //
+    //    res.awaitCompletion(10, TimeUnit.SECONDS);
+    //    dockerClient.waitContainerCmd(containerId).start().awaitStatusCode();
 
-    ByteArrayInputStream bais =
-        new ByteArrayInputStream("toto\ntata\n".getBytes(StandardCharsets.UTF_8));
+    final PipedOutputStream pos = new PipedOutputStream();
+    final PipedInputStream pis = new PipedInputStream(pos);
 
-    DockerContainerRunner runnerDestination =
-        //        new Builder(client, "dataline/integration-singer-csv-destination").build();
-        new Builder(client, "busybox").build();
-    runnerDestination.run(
-        Lists.newArrayList("sh", "-c", "echo test > /tmp/abc/output2; cat -e >> /tmp/abc/output2"),
-        pos,
-        pis);
+    final ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
+    final ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
+    final StdStreams top = new StdStreams(pis, baosOut, baosErr);
+
+    DockerContainerRunner runnerSource = new DockerContainerRunner(client, "busybox");
+    DockerContainerHandle handle = runnerSource.run(Lists.newArrayList("cat", "-e"), top);
+
+    System.out.println("baisInput.available() = " + pis.available());
+    System.out.println("baosOut.toString() = " + baosOut.toString());
+    System.out.println("baosErr.toString() = " + baosErr.toString());
+
+    //    PipedOutputStream pos = new PipedOutputStream();
+    //    PipedInputStream pis = new PipedInputStream(pos);
+    //
+    //    ByteArrayInputStream bais =
+    //        new ByteArrayInputStream("toto\ntata\n".getBytes(StandardCharsets.UTF_8));
+    //
+    //    DockerContainerRunner runnerDestination =
+    //        //        new Builder(client, "dataline/integration-singer-csv-destination").build();
+    //        new Builder(client, "busybox").build();
+    //    runnerDestination.run(
+    //        Lists.newArrayList("sh", "-c", "echo test > /tmp/abc/output2; cat -e >>
+    // /tmp/abc/output2"),
+    //        pos,
+    //        pis);
     //
     //    DockerContainerRunner runnerSource = new Builder(client, "busybox").build();
     //    runnerSource.run(
@@ -172,5 +199,67 @@ public class DockerContainerRunner {
 
     //    runnerSource.awaitTermination(1, TimeUnit.MINUTES);
     //    runnerDestination.awaitTermination(1, TimeUnit.MINUTES);
+
+    //
+    //    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(oss));
+    //
+    //    try {
+    //      for (long i = 0; i < 999; ++i) {
+    //        writer.write("toto" + i + "\n");
+    //        writer.flush();
+    //        System.out.println(i);
+    //      }
+    //      oss.close();
+    //      //      while (iss.available() > 0) {
+    //      //        Thread.sleep(1000);
+    //      //      }
+    //      res.awaitCompletion(10, TimeUnit.SECONDS);
+    //      res.close();
+    //      //      iss.close();
+    //
+    //    } catch (IOException e) {
+    //      e.printStackTrace();
+    //    }
+    //    //    TimeUnit.MINUTES.sleep(9999);
+    //
+    //    dockerClient.waitContainerCmd(containerId).start().awaitStatusCode();
+  }
+
+  public static class DockerContainerHandle {
+
+    private final Adapter<Frame> callback;
+
+    private DockerContainerHandle(ResultCallback.Adapter<Frame> callback) {
+      this.callback = callback;
+    }
+
+    public boolean awaitCompletion(long timeout, TimeUnit timeUnit) throws InterruptedException {
+      return callback.awaitCompletion(timeout, timeUnit);
+    }
+  }
+
+  private static class FrameAdapter extends Adapter<Frame> {
+
+    private final String containerId;
+    private final StdStreams streams;
+
+    public FrameAdapter(String containerId, StdStreams streams) {
+      this.containerId = containerId;
+      this.streams = streams;
+    }
+
+    @Override
+    public void onNext(Frame object) {
+      LOGGER.info("onNext {}: {}", containerId, object);
+      try {
+        if (object.getStreamType() == StreamType.STDOUT && streams.getStdout().isPresent()) {
+          streams.getStdout().get().write(object.getPayload());
+        } else if (object.getStreamType() == StreamType.STDERR && streams.getStderr().isPresent()) {
+          streams.getStderr().get().write(object.getPayload());
+        }
+      } catch (IOException e) {
+        LOGGER.error("Error while processing frame");
+      }
+    }
   }
 }
