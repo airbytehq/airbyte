@@ -32,6 +32,7 @@ import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.singer.SingerDiscoveryWorker;
 import io.dataline.workers.singer.SingerTap;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -48,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JobSubmitter implements Runnable {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitter.class);
 
   private final ExecutorService threadPool;
@@ -176,10 +178,12 @@ public class JobSubmitter implements Runnable {
                     job.getId(),
                     new SingerDiscoveryWorker(
                         "worker-1", // todo: assign worker ids
-                        "/usr/local/lib/singer/workspace1", tap, configString
+                        Paths.get("/tmp/workspace1"),
+                        tap,
+                        configString
                         // todo: better path and why are we
                         // scoping by workspace here
-                    ),
+                        ),
                     connectionPool));
             LOGGER.info("Submitting job to thread pool...");
             break;

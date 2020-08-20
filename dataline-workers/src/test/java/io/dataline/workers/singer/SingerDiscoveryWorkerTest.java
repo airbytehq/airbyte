@@ -95,10 +95,11 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
         threadPool.submit(
             () -> {
               OutputAndStatus<StandardDiscoveryOutput> output = worker.run();
+              System.out.println(output);
               assertEquals(FAILED, output.getStatus());
             });
 
-    TimeUnit.MILLISECONDS.sleep(100);
+    TimeUnit.MILLISECONDS.sleep(50);
     worker.cancel();
     workerWasCancelled.get();
   }
