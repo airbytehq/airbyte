@@ -24,18 +24,34 @@
 
 package io.dataline.workers.singer;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import io.dataline.config.JobSyncOutput;
+import io.dataline.config.StandardSyncSummary;
+import io.dataline.config.State;
+import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.UUID;
+
+import org.apache.commons.lang3.mutable.MutableInt;
 
 public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
   private static final String TAP_CONFIG_FILENAME = "tap_config.json";
   private static final String CATALOG_FILENAME = "catalog.json";
-  private static final String STATE_FILENAME = "state.json";
+  private static final String INPUT_STATE_FILENAME = "state.json";
   private static final String TARGET_CONFIG_FILENAME = "target_config.json";
 
+  private static final String OUTPUT_STATE_FILENAME = "outputState.json";
   private static final String TAP_ERR_LOG = "tap_err.log";
   private static final String TARGET_ERR_LOG = "target_err.log";
-  private static final String OUTPUT_STATE_FILENAME =
 
   private final SingerTap tap;
   private final String tapConfiguration;
@@ -53,14 +69,14 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
       SingerTap tap,
       String tapConfiguration,
       String tapCatalog,
-      String connectionState,
+      String currentConnectionState,
       SingerTarget target,
       String targetConfig) {
     super(workerId, workspaceRoot, singerRoot);
     this.tap = tap;
     this.tapConfiguration = tapConfiguration;
     this.tapCatalog = tapCatalog;
-    this.connectionState = connectionState;
+    this.connectionState = currentConnectionState;
     this.target = target;
     this.targetConfig = targetConfig;
   }
@@ -69,12 +85,72 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
   OutputAndStatus<JobSyncOutput> runInternal() {
     String tapConfigPath = writeFileToWorkspace(TAP_CONFIG_FILENAME, tapConfiguration);
     String catalogPath = writeFileToWorkspace(CATALOG_FILENAME, tapCatalog);
-    String connectionPath = writeFileToWorkspace(STATE_FILENAME, connectionState);
+    String inputStatePath = writeFileToWorkspace(INPUT_STATE_FILENAME, connectionState);
     String targetConfigPath = writeFileToWorkspace(TARGET_CONFIG_FILENAME, targetConfig);
 
-    // tap | record counter | target
-    ProcessBuilder pb = new ProcessBuilder().command(getExecutableAbsolutePath(tap), "--config", tapConfigPath, "--catalog", catalogPath, "--state", connectionState).redirec;
+    MutableInt numRecords = new MutableInt();
+    try {
+      Process tapProcess =
+          new ProcessBuilder()
+              .command(
+                  getExecutableAbsolutePath(tap),
+                  "--config",
+                  tapConfigPath,
+                  "--catalog",
+                  catalogPath,
+                  "--state",
+                  inputStatePath)
+              .start();
+      Process targetProcess =
+          new ProcessBuilder()
+              .command(getExecutableAbsolutePath(target), "--config", targetConfigPath)
+              .redirectOutput(getWorkspacePath().resolve(OUTPUT_STATE_FILENAME).toFile())
+              .start();
+      OutputStream targetStdin = targetProcess.getOutputStream();
 
+      InputStream stdout = tapProcess.getInputStream();
+      BufferedReader reader = new BufferedReader(new InputStreamReader(stdout, Charsets.UTF_8));
+      BufferedWriter writer =
+          new BufferedWriter(new OutputStreamWriter(targetStdin, Charsets.UTF_8));
+
+      ObjectMapper objectMapper = new ObjectMapper();
+
+      reader
+          .lines()
+          .forEach(
+              line -> {
+                try {
+                  writer.write(line);
+                  writer.newLine();
+                  JsonNode lineJson = objectMapper.readTree(line);
+                  System.out.println(lineJson);
+                  if (lineJson.get("type").asText().equals("RECORD")) {
+                    numRecords.increment();
+                  }
+                } catch (IOException e) {
+                  throw new RuntimeException(e);
+                }
+              });
+
+      JobSyncOutput jobSyncOutput = new JobSyncOutput();
+      State state = new State();
+      state.setState(readFileFromWorkspace(OUTPUT_STATE_FILENAME));
+      StandardSyncSummary summary = new StandardSyncSummary();
+      summary.setRecordsSynced(numRecords.getValue());
+      //      summary.set
+      // TODO
+      summary.setLogs("nothing");
+      summary.setAttemptId(UUID.randomUUID());
+      summary.setStartTime(1);
+      summary.setEndTime(1);
+
+      jobSyncOutput.setState(state);
+      jobSyncOutput.setStandardSyncSummary(summary);
+      return new OutputAndStatus<>(JobStatus.SUCCESSFUL, jobSyncOutput);
+    } catch (IOException e) {
+      // TODO return state
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

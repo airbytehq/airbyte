@@ -31,14 +31,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Resources;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerHelper;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -57,12 +54,15 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
 
   @BeforeAll
   public void initDb() throws SQLException {
-    db = new PostgreSQLContainer();
+    db =
+        (PostgreSQLContainer)
+            new PostgreSQLContainer()
+                .withInitScript(getClass().getResource("simple_postgres_init.sql").getPath());
     db.start();
     // init db schema
     Connection con =
         DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
-    con.createStatement().execute("CREATE TABLE id_and_name (id integer, name VARCHAR(200));");
+    con.createStatement().execute("");
   }
 
   @Test
@@ -107,15 +107,6 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
     TimeUnit.MILLISECONDS.sleep(100);
     worker.cancel();
     workerWasCancelled.get();
-  }
-
-  private String readResource(String name) {
-    URL resource = Resources.getResource(name);
-    try {
-      return Resources.toString(resource, Charset.defaultCharset());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private void assertJsonEquals(String s1, String s2) throws IOException {
