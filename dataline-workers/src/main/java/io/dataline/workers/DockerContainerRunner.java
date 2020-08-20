@@ -188,8 +188,9 @@ public class DockerContainerRunner {
 
     //    testSimpleOut(client);
     //    testSimpleErr(client);
-    testProvidedIn(client);
+    //    testFifoIn(client);
     //    testSimpleIn(client);
+    testProvidedIn(client);
 
     //    PipedOutputStream pos = new PipedOutputStream();
     //    PipedInputStream pis = new PipedInputStream(pos);
@@ -322,14 +323,51 @@ public class DockerContainerRunner {
           .withStdOut(true)
           .withFollowStream(true)
           .withStdIn(in)
+          .withLogs(false)
           .exec(callback);
 
       out.write((snippet + "\n").getBytes());
       out.flush();
-      //      streamRef.get().close();
-      callback.awaitCompletion(15, MINUTES);
+      out.close();
+
+      TimeUnit.SECONDS.sleep(10);
+      System.out.println("in.read() = " + in.read());
+      in.close();
       callback.close();
+      dockerClient.waitContainerCmd(container.getId());
+
+      callback.awaitCompletion(15, MINUTES);
     }
+    System.out.println("callback.toString() = " + callback.toString());
+  }
+
+  private static void testFifoIn(DockerClient dockerClient)
+      throws IOException, InterruptedException {
+
+    String snippet = "hello world";
+
+    CreateContainerResponse container =
+        dockerClient
+            .createContainerCmd("busybox")
+            .withCmd("/bin/sh", "-c", "cat -e < /tmp/abc/fifo")
+            .withTty(false)
+            .exec();
+
+    LOGGER.info("Created container: {}", container.toString());
+
+    AttachContainerTestCallback callback = new AttachContainerTestCallback();
+
+    dockerClient.startContainerCmd(container.getId()).exec();
+
+    dockerClient
+        .attachContainerCmd(container.getId())
+        .withStdErr(true)
+        .withStdOut(true)
+        .withFollowStream(true)
+        .exec(callback);
+
+    callback.awaitCompletion(15, MINUTES);
+    callback.close();
     System.out.println(callback.toString());
   }
 }
