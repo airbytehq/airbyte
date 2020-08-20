@@ -24,7 +24,7 @@
 
 package io.dataline.workers;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
@@ -41,6 +41,7 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.google.common.collect.Lists;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -51,6 +52,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,6 +145,12 @@ public class DockerContainerRunner {
     }
 
     @Override
+    public void onStart(Closeable stream) {
+      System.out.println(stream);
+      super.onStart(stream);
+    }
+
+    @Override
     public void onNext(Frame object) {
       LOGGER.info("onNext {}: {}", containerId, object);
       try {
@@ -178,8 +186,8 @@ public class DockerContainerRunner {
                 .dockerHost(URI.create("unix:///var/run/docker.sock"))
                 .build());
 
-    testSimpleOut(client);
-    testSimpleErr(client);
+    //    testSimpleOut(client);
+    //    testSimpleErr(client);
     testProvidedIn(client);
     //    testSimpleIn(client);
 
@@ -292,10 +300,21 @@ public class DockerContainerRunner {
 
     LOGGER.info("Created container: {}", container.toString());
 
-    AttachContainerTestCallback callback = new AttachContainerTestCallback();
+    final AtomicReference<Closeable> streamRef = new AtomicReference<>();
+    AttachContainerTestCallback callback =
+        new AttachContainerTestCallback() {
+          @Override
+          public void onStart(Closeable stream) {
+            System.out.println(stream);
+            streamRef.set(stream);
+            super.onStart(stream);
+          }
+        };
 
     try (PipedOutputStream out = new PipedOutputStream();
-        PipedInputStream in = new PipedInputStream(out); ) {
+        PipedInputStream in = new PipedInputStream(out)) {
+
+      dockerClient.startContainerCmd(container.getId()).exec();
 
       dockerClient
           .attachContainerCmd(container.getId())
@@ -305,12 +324,10 @@ public class DockerContainerRunner {
           .withStdIn(in)
           .exec(callback);
 
-      dockerClient.startContainerCmd(container.getId()).exec();
-
       out.write((snippet + "\n").getBytes());
       out.flush();
-
-      callback.awaitCompletion(15, SECONDS);
+      //      streamRef.get().close();
+      callback.awaitCompletion(15, MINUTES);
       callback.close();
     }
     System.out.println(callback.toString());
