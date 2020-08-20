@@ -22,10 +22,8 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.workers.singer.postgres_tap;
 
-import io.dataline.config.ConnectionImplementation;
-import io.dataline.config.StandardConnectionStatus;
-
-public interface CheckConnectionWorker
-    extends Worker<ConnectionImplementation, StandardConnectionStatus> {}
+public class PostgresSingerTapConstants {
+  static String POSTGRES_SINGER_TAP = "/usr/local/lib/singer/tap-postgres/bin/tap-postgres";
+}

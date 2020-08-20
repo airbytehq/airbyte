@@ -26,28 +26,68 @@ package io.dataline.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.api.model.Job;
+import io.dataline.config.ConnectionImplementation;
+import io.dataline.config.DestinationConnectionImplementation;
+import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WorkerWrapper<T> implements Runnable {
+public class WorkerWrapper<InputType, OutputType> implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerWrapper.class);
 
   private final long jobId;
-  private final Worker<T> worker;
+  private final Worker<InputType, OutputType> worker;
   private final BasicDataSource connectionPool;
+  private final SchedulerPersistence persistence;
 
-  public WorkerWrapper(long jobId, Worker<T> worker, BasicDataSource connectionPool) {
+  public WorkerWrapper(
+      long jobId,
+      Worker<InputType, OutputType> worker,
+      BasicDataSource connectionPool,
+      SchedulerPersistence persistence) {
     this.jobId = jobId;
     this.worker = worker;
     this.connectionPool = connectionPool;
+    this.persistence = persistence;
+  }
+
+  @SuppressWarnings("unchecked")
+  private InputType getInput(io.dataline.scheduler.Job job) {
+    switch (job.getConfig().getConfigType()) {
+      case CHECK_CONNECTION_SOURCE:
+        final DestinationConnectionImplementation checkConnectionSource =
+            job.getConfig().getCheckConnectionDestination();
+        return (InputType) buildConnectionImplementation(checkConnectionSource.getConfiguration());
+      case CHECK_CONNECTION_DESTINATION:
+        final SourceConnectionImplementation checkConnectionDestination =
+            job.getConfig().getCheckConnectionSource();
+
+        return (InputType)
+            buildConnectionImplementation(checkConnectionDestination.getConfiguration());
+      case DISCOVER_SCHEMA:
+        return (InputType) job.getConfig().getDiscoverSchema();
+      case SYNC:
+        return (InputType) job.getConfig().getSync();
+      default:
+        throw new RuntimeException("Unrecognized config type: " + job.getConfig().getConfigType());
+    }
+  }
+
+  private static ConnectionImplementation buildConnectionImplementation(Object configuration) {
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    connectionImplementation.setConfiguration(configuration);
+
+    return connectionImplementation;
   }
 
   @Override
@@ -56,7 +96,17 @@ public class WorkerWrapper<T> implements Runnable {
     try {
       setJobStatus(connectionPool, jobId, Job.StatusEnum.RUNNING);
 
-      OutputAndStatus<T> outputAndStatus = worker.run();
+      // fetch input.
+      final io.dataline.scheduler.Job job = persistence.getJob(jobId);
+      final InputType input = getInput(job);
+
+      // todo (cgardens) - replace this with whatever the correct path is. probably dependency
+      // inject it based via env.
+      final Path workspacesRoot = Path.of("/tmp/dataline/workspaces/");
+      FileUtils.forceMkdir(workspacesRoot.toFile());
+      final Path workspaceRoot = workspacesRoot.resolve(String.valueOf(jobId));
+      FileUtils.forceMkdir(workspaceRoot.toFile());
+      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, workspaceRoot.toString());
 
       switch (outputAndStatus.getStatus()) {
         case FAILED:
