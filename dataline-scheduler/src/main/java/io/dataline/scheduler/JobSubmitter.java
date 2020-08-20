@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionSchedule;
 import io.dataline.db.DatabaseHelper;
-import io.dataline.workers.singer.SingerDiscoveryWorker;
 import io.dataline.workers.singer.SingerTap;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -42,6 +41,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import io.dataline.workers.singer.postgres_tap.SingerPostgresTapDiscoverWorker;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.slf4j.Logger;
@@ -174,8 +175,7 @@ public class JobSubmitter implements Runnable {
             threadPool.submit(
                 new WorkerWrapper<>(
                     job.getId(),
-                    new SingerDiscoveryWorker(
-                        "/usr/local/lib/singer/tap-postgres/bin/tap-postgres"),
+                    new SingerPostgresTapDiscoverWorker(),
                     connectionPool,
                     persistence));
             LOGGER.info("Submitting job to thread pool...");
