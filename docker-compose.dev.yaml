@@ -11,10 +11,10 @@ services:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=db-${DATABASE_DB}
   server:
+    image: dataline/server:dev
     build:
       context: .
-      dockerfile: server_dist.Dockerfile
-    image: server:dev
+      dockerfile: server.Dockerfile
     entrypoint: /bin/sh -c './wait && bin/dataline-server'
     container_name: dataline-server
     environment:
@@ -29,10 +29,10 @@ services:
     depends_on:
       - db
   webapp:
+    image: dataline/webapp:dev
     build:
       context: .
       dockerfile: webapp.Dockerfile
-    image: webapp:dev
     container_name: dataline-webapp
     ports:
       - 8000:80
