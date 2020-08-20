@@ -26,9 +26,10 @@ package io.dataline.workers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.testcontainers.containers.PostgreSQLContainer;
+
 import java.util.HashMap;
 import java.util.Map;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgreSQLContainerHelper {
 
@@ -49,6 +50,7 @@ public class PostgreSQLContainerHelper {
     creds.put("password", password);
     creds.put("host", host);
     creds.put("dbname", dbname);
+    creds.put("filter_dbs", dbname);
     creds.put("port", port);
 
     return new ObjectMapper().writeValueAsString(creds);

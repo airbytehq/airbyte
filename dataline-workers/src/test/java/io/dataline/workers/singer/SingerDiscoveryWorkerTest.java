@@ -28,11 +28,11 @@ import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import io.dataline.workers.BaseWorkerTestCase;
+
 import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerHelper;

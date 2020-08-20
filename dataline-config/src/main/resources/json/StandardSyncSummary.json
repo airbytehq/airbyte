@@ -4,38 +4,20 @@
   "title": "StandardSyncSummary",
   "description": "standard information output by ALL taps for a sync step (our version of state.json)",
   "type": "object",
-  "required": ["attemptId", "tables", "recordsSynced", "version", "status", "startTime", "endTime"],
+  "required": ["jobId", "recordsSynced", "status", "startTime", "endTime"],
   "additionalProperties": false,
   "properties": {
-    "attemptId": {
+    "jobId": {
       "type": "string",
       "format": "uuid"
     },
     "status": {
       "type": "string",
-      "enum": ["pending", "in_progress","completed", "failed", "cancelled"]
+      "enum": ["completed", "failed", "cancelled"]
     },
     "recordsSynced": {
       "type": "integer",
       "minValue": 0
-    },
-    "version": {
-      "type": "integer"
-    },
-    "tables": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "lastRecord": {
-            "description": "blob of the last record",
-            "type": "object"
-          },
-          "version": {
-            "type": "integer"
-          }
-        }
-      }
     },
     "startTime": {
       "type": "integer"

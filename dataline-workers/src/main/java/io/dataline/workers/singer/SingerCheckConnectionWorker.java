@@ -63,7 +63,8 @@ public class SingerCheckConnectionWorker extends BaseSingerWorker<StandardConnec
           outputAndStatus);
       jobStatus = JobStatus.FAILED;
       connectionStatus.setStatus(StandardConnectionStatus.Status.FAILURE);
-      // TODO add better error log parsing to specify the exact reason for failure as the message fieldk
+      // TODO add better error log parsing to specify the exact reason for failure as the message
+      // fieldk
     }
     return new OutputAndStatus<>(jobStatus, connectionStatus);
   }
