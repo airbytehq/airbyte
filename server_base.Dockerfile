@@ -11,17 +11,6 @@ COPY ./tools/lib ./tools/lib
 RUN mkdir -p /usr/local/lib/singer
 RUN ./tools/singer/setup_singer_env.buster.sh /usr/local/lib/singer
 
-# Install Node. While the UI is not going to be served from this container, running UI tests is part of the build.
-RUN apt-get update \
-    && apt-get install -y curl \
-    && curl -sL https://deb.nodesource.com/setup_14.x | bash - \
-    && apt-get install -y nodejs
-
-# Cache NPM dependencies
-COPY ./dataline-webapp/package.json ./dataline-webapp/package.json
-WORKDIR /code/dataline-webapp
-RUN npm install
-
 # Cache Gradle executable
 WORKDIR /code
 COPY ./gradlew .
@@ -33,4 +22,3 @@ COPY . /code
 
 # Create distributions
 RUN ./gradlew clean distTar build -x test --no-daemon --console rich -g /home/gradle/.gradle
-ENTRYPOINT ["./gradlew", "test", "--no-daemon", "--console", "rich", "-g", "/home/gradle/.gradle"]

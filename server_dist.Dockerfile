@@ -1,5 +1,5 @@
 # Build final image
-FROM server-base:dev
+FROM dataline/server-base-local:latest
 
 EXPOSE 8000
 
