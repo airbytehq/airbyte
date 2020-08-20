@@ -32,4 +32,4 @@ RUN ./gradlew build --no-daemon
 COPY . /code
 
 # Create distributions
-RUN ./gradlew clean distTar build --no-daemon --console rich -g /home/gradle/.gradle
+RUN ./gradlew clean distTar build -x test --no-daemon --console rich -g /home/gradle/.gradle
