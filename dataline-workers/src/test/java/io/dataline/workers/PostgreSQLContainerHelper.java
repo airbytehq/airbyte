@@ -35,16 +35,16 @@ public class PostgreSQLContainerHelper {
 
   public static String getSingerConfigJson(PostgreSQLContainer db) throws JsonProcessingException {
     return getSingerConfigJson(
-            db.getUsername(),
-            db.getPassword(),
-            db.getHost(),
-            db.getDatabaseName(),
-            String.valueOf(db.getFirstMappedPort()));
+        db.getUsername(),
+        db.getPassword(),
+        db.getHost(),
+        db.getDatabaseName(),
+        String.valueOf(db.getFirstMappedPort()));
   }
 
   public static String getSingerConfigJson(
-          String user, String password, String host, String dbname, String port)
-          throws JsonProcessingException {
+      String user, String password, String host, String dbname, String port)
+      throws JsonProcessingException {
     Map<String, String> creds = new HashMap<>();
     creds.put("user", user);
     creds.put("password", password);
