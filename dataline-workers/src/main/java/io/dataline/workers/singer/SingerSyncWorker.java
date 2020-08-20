@@ -40,10 +40,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.UUID;
-
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerSyncWorker.class);
+
   private static final String TAP_CONFIG_FILENAME = "tap_config.json";
   private static final String CATALOG_FILENAME = "catalog.json";
   private static final String INPUT_STATE_FILENAME = "state.json";
@@ -90,47 +94,55 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
 
     MutableInt numRecords = new MutableInt();
     try {
-      Process tapProcess =
-          new ProcessBuilder()
-              .command(
-                  getExecutableAbsolutePath(tap),
-                  "--config",
-                  tapConfigPath,
-                  "--catalog",
-                  catalogPath,
-                  "--state",
-                  inputStatePath)
-              .start();
+      String[] tapCommand = {
+        getExecutableAbsolutePath(tap),
+        "--config",
+        tapConfigPath,
+        "--catalog",
+        catalogPath,
+        "--state",
+        inputStatePath
+      };
+
+      String[] targetCommand = {getExecutableAbsolutePath(target), "--config", targetConfigPath};
+      Process tapProcess = new ProcessBuilder().command(tapCommand).start();
       Process targetProcess =
           new ProcessBuilder()
-              .command(getExecutableAbsolutePath(target), "--config", targetConfigPath)
+              .command(targetCommand)
               .redirectOutput(getWorkspacePath().resolve(OUTPUT_STATE_FILENAME).toFile())
               .start();
-      OutputStream targetStdin = targetProcess.getOutputStream();
 
-      InputStream stdout = tapProcess.getInputStream();
-      BufferedReader reader = new BufferedReader(new InputStreamReader(stdout, Charsets.UTF_8));
-      BufferedWriter writer =
-          new BufferedWriter(new OutputStreamWriter(targetStdin, Charsets.UTF_8));
+      try (InputStream tapStdout = tapProcess.getInputStream();
+          OutputStream targetStdin = targetProcess.getOutputStream()) {
+        BufferedReader reader =
+            new BufferedReader(new InputStreamReader(tapStdout, Charsets.UTF_8));
+        BufferedWriter writer =
+            new BufferedWriter(new OutputStreamWriter(targetStdin, Charsets.UTF_8));
 
-      ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
 
-      reader
-          .lines()
-          .forEach(
-              line -> {
-                try {
-                  writer.write(line);
-                  writer.newLine();
-                  JsonNode lineJson = objectMapper.readTree(line);
-                  System.out.println(lineJson);
-                  if (lineJson.get("type").asText().equals("RECORD")) {
-                    numRecords.increment();
+        reader
+            .lines()
+            .forEach(
+                line -> {
+                  try {
+                    writer.write(line);
+                    writer.newLine();
+                    JsonNode lineJson = objectMapper.readTree(line);
+                    System.out.println(lineJson);
+                    if (lineJson.get("type").asText().equals("RECORD")) {
+                      numRecords.increment();
+                    }
+                  } catch (IOException e) {
+                    throw new RuntimeException(e);
                   }
-                } catch (IOException e) {
-                  throw new RuntimeException(e);
-                }
-              });
+                });
+      }
+
+      while (!tapProcess.waitFor(1, TimeUnit.SECONDS)
+          && targetProcess.waitFor(1, TimeUnit.SECONDS)) {
+        LOGGER.debug("Waiting for sync worker {}", workerId);
+      }
 
       JobSyncOutput jobSyncOutput = new JobSyncOutput();
       State state = new State();
@@ -143,11 +155,10 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
       summary.setAttemptId(UUID.randomUUID());
       summary.setStartTime(1);
       summary.setEndTime(1);
-
       jobSyncOutput.setState(state);
       jobSyncOutput.setStandardSyncSummary(summary);
       return new OutputAndStatus<>(JobStatus.SUCCESSFUL, jobSyncOutput);
-    } catch (IOException e) {
+    } catch (IOException | InterruptedException e) {
       // TODO return state
       throw new RuntimeException(e);
     }

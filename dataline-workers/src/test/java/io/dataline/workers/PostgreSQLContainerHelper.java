@@ -26,8 +26,13 @@ package io.dataline.workers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgreSQLContainerHelper {
@@ -52,5 +57,19 @@ public class PostgreSQLContainerHelper {
     creds.put("port", port);
 
     return new ObjectMapper().writeValueAsString(creds);
+  }
+
+  public static Set<String> getTables(PostgreSQLContainer db) throws SQLException {
+    ResultSet resultSet =
+        DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword())
+            .createStatement()
+            .executeQuery(
+                "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
+
+    Set<String> tableNames = Sets.newHashSet();
+    while (resultSet.next()) {
+      tableNames.add(resultSet.getString("tablename"));
+    }
+    return tableNames;
   }
 }

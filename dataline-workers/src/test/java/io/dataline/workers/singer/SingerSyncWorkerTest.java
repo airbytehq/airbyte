@@ -24,46 +24,55 @@
 
 package io.dataline.workers.singer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.io.Resources;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.PostgreSQLContainerHelper;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Set;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
-
-import java.lang.annotation.Target;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import org.testcontainers.utility.MountableFile;
 
 public class SingerSyncWorkerTest extends BaseWorkerTestCase {
 
   @Test
-  public void testIt() throws JsonProcessingException, SQLException {
-    PostgreSQLContainer sourceDb =
-        (PostgreSQLContainer)
-            new PostgreSQLContainer()
-                .withInitScript(Resources.getResource("simple_postgres_init.sql").getPath());
+  public void testIt() throws IOException, SQLException, InterruptedException {
+    PostgreSQLContainer sourceDb = new PostgreSQLContainer();
+
     sourceDb.start();
+    sourceDb.copyFileToContainer(
+        MountableFile.forClasspathResource("simple_postgres_init.sql"), "/etc/init.sql");
+    sourceDb.execInContainer(
+        "psql",
+        "-d",
+        sourceDb.getDatabaseName(),
+        "-U",
+        sourceDb.getUsername(),
+        "-a",
+        "-f",
+        "/etc/init.sql");
     PostgreSQLContainer targetDb = new PostgreSQLContainer();
     targetDb.start();
 
     String tapConfig = PostgreSQLContainerHelper.getSingerConfigJson(sourceDb);
     String targetConfig = PostgreSQLContainerHelper.getSingerConfigJson(targetDb);
 
+    Set<String> expectedTables = PostgreSQLContainerHelper.getTables(sourceDb);
+
     new SingerSyncWorker(
-        "1",
-        getWorkspacePath().toAbsolutePath().toString(),
-        SINGER_LIB_PATH,
-        SingerTap.POSTGRES,
-        tapConfig,
-        readResource("simple_postgres_catalog.json"),
-        "{}", // fresh sync, no state
-        SingerTarget.POSTGRES,
-        targetConfig);
+            "1",
+            getWorkspacePath().toAbsolutePath().toString(),
+            SINGER_LIB_PATH,
+            SingerTap.POSTGRES,
+            tapConfig,
+            readResource("simple_postgres_sync_catalog.json"),
+            "{}", // fresh sync, no state
+            SingerTarget.POSTGRES,
+            targetConfig)
+        .run();
 
-    ResultSet resultSet = DriverManager.getConnection(targetDb.getJdbcUrl()).createStatement().executeQuery("SELECT * FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
-
-//    resultSet.
+    Set<String> actualTables = PostgreSQLContainerHelper.getTables(targetDb);
+    Assertions.assertEquals(expectedTables, actualTables);
   }
 }
