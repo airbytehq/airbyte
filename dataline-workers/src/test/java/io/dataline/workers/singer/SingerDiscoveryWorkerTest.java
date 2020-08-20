@@ -31,9 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.workers.BaseWorkerTestCase;
-
-import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerHelper;
 import java.io.IOException;
@@ -76,13 +75,15 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
             getWorkspacePath().toAbsolutePath().toString(),
             SINGER_LIB_PATH);
 
-    OutputAndStatus<DiscoveryOutput> run = worker.run();
+    OutputAndStatus<StandardDiscoveryOutput> run = worker.run();
     assertEquals(SUCCESSFUL, run.getStatus());
 
-    String expectedCatalog = readResource("simple_postgres_catalog.json");
+    String expectedSchema = readResource("simple_postgres_schema.json");
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final String actualSchema = objectMapper.writeValueAsString(run.getOutput().get());
 
     assertTrue(run.getOutput().isPresent());
-    assertJsonEquals(expectedCatalog, run.getOutput().get().getCatalog());
+    assertJsonEquals(expectedSchema, actualSchema);
   }
 
   @Test
@@ -100,7 +101,7 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
     Future<?> workerWasCancelled =
         threadPool.submit(
             () -> {
-              OutputAndStatus<DiscoveryOutput> output = worker.run();
+              OutputAndStatus<StandardDiscoveryOutput> output = worker.run();
               assertEquals(FAILED, output.getStatus());
             });
 
@@ -120,6 +121,6 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
 
   private void assertJsonEquals(String s1, String s2) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
-    assertTrue(mapper.readTree(s1).equals(mapper.readTree(s2)));
+    assertEquals(mapper.readTree(s1), mapper.readTree(s2));
   }
 }
