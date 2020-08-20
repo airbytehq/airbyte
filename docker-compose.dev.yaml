@@ -22,7 +22,7 @@ services:
     image: dataline/server:dev
     build:
       context: .
-      dockerfile: server_dist.Dockerfile
+      dockerfile: server.Dockerfile
     entrypoint: /bin/sh -c './wait && bin/dataline-server'
     container_name: dataline-server
     environment:
@@ -37,6 +37,11 @@ services:
     depends_on:
       - db
       - server-base
+  webapp-base:
+    image: dataline/webapp-base
+    build:
+      context: .
+      dockerfile: webapp_base.Dockerfile
   webapp:
     image: dataline/webapp:dev
     build:
@@ -46,4 +51,5 @@ services:
     ports:
       - 8000:80
     depends_on:
+      - webapp-base
       - server
