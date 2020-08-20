@@ -13,6 +13,7 @@ Update public images:
 
 ```bash
 ./tools/app/build.sh
+./tools/app/test.sh
 docker-compose -f docker-compose.dev.yaml -f docker-compose.dist.yaml push
 ```
 
