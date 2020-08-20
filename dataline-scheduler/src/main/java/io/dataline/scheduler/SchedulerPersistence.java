@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler.persistence;
+package io.dataline.scheduler;
 
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
@@ -30,7 +30,6 @@ import io.dataline.config.StandardSync;
 import java.io.IOException;
 
 public interface SchedulerPersistence {
-
   long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation)
       throws IOException;
 

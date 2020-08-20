@@ -37,9 +37,9 @@ import io.dataline.config.StandardConnectionStatus;
 import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.scheduler.persistence.Job;
-import io.dataline.scheduler.persistence.JobStatus;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.dataline.scheduler.Job;
+import io.dataline.scheduler.JobStatus;
+import io.dataline.scheduler.SchedulerPersistence;
 import io.dataline.server.converters.SchemaConverter;
 import io.dataline.server.helpers.ConfigFetchers;
 import java.io.IOException;
@@ -114,10 +114,11 @@ public class SchedulerHandler {
     LOGGER.info("jobId = " + jobId);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
-    final StandardDiscoveryOutput discoveryOutput =
-        job.getOutput()
+    final StandardDiscoveryOutput discoveryOutput = job.getOutput()
             .orElseThrow(() -> new RuntimeException("Terminal job does not have an output"))
             .getDiscoverSchema();
+
+    LOGGER.info("discoveryOutput = " + discoveryOutput);
 
     final SourceImplementationDiscoverSchemaRead read =
         new SourceImplementationDiscoverSchemaRead();
@@ -175,7 +176,7 @@ public class SchedulerHandler {
         return job;
       }
 
-      if (count > 10) {
+      if (count > 120) {
         throw new RuntimeException("Check connection job did not complete.");
       }
 

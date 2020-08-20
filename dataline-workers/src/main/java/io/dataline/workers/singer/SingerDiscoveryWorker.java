@@ -24,16 +24,17 @@
 
 package io.dataline.workers.singer;
 
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
-
 import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static io.dataline.workers.JobStatus.FAILED;
+import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
 public class SingerDiscoveryWorker extends BaseSingerWorker<DiscoveryOutput> {
   // TODO log errors to specified file locations

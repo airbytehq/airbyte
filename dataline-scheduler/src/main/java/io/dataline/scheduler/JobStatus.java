@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler.persistence;
+package io.dataline.scheduler;
 
 import com.google.common.collect.Sets;
 import java.util.Set;
