@@ -12,6 +12,7 @@ dependencies {
     implementation group: 'com.github.docker-java', name: 'docker-java-core', version: '3.2.5'
 //    implementation group: 'com.github.docker-java', name: 'docker-java-transport-zerodep', version: '3.2.5'
     implementation group: 'com.github.docker-java', name: 'docker-java-transport-httpclient5', version: '3.2.5'
+    implementation group: 'com.github.docker-java', name: 'docker-java-transport-okhttp', version: '3.2.5'
 
     testImplementation "com.fasterxml.jackson.core:jackson-databind:2.9.8"
 

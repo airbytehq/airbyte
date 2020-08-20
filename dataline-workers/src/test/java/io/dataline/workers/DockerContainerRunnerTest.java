@@ -54,6 +54,13 @@ class DockerContainerRunnerTest {
 
   @Test
   void testWriteToStdOut() throws InterruptedException {
+    DockerClient client =
+        DockerClientImpl.getInstance(
+            DefaultDockerClientConfig.createDefaultConfigBuilder().build(),
+            new ApacheDockerHttpClient.Builder()
+                .dockerHost(URI.create("unix:///var/run/docker.sock"))
+                .build());
+
     final ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
     final ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
     final StdStreams streams = new StdStreams(baosOut, baosErr);
