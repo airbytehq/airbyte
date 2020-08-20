@@ -1,5 +1,5 @@
 # Cache build
-FROM dataline/webapp-base:latest AS build
+FROM dataline/webapp-base:dev AS build
 
 # Build final image
 FROM nginx:1.19-alpine
