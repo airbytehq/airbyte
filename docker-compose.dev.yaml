@@ -10,14 +10,6 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=db-${DATABASE_DB}
-  server-base:
-    image: dataline/server-base
-    build:
-      context: .
-      dockerfile: server_base.Dockerfile
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ~/.gradle:/home/gradle/.gradle
   server:
     image: dataline/server:dev
     build:
@@ -36,12 +28,6 @@ services:
       - 8001:8001
     depends_on:
       - db
-      - server-base
-  webapp-base:
-    image: dataline/webapp-base
-    build:
-      context: .
-      dockerfile: webapp_base.Dockerfile
   webapp:
     image: dataline/webapp:dev
     build:
@@ -51,5 +37,4 @@ services:
     ports:
       - 8000:80
     depends_on:
-      - webapp-base
       - server
