@@ -16,12 +16,8 @@ assemble.dependsOn npm_run_build
 task test(type: NpmTask) {
     dependsOn assemble
 
-    args = ['run', 'test', '--', '--watchAll=false', '--prefer-offline']
+    args = ['run', 'test', '--', '--watchAll=false']
     inputs.files fileTree('src')
     inputs.file 'package.json'
     inputs.file 'package-lock.json'
-}
-
-clean {
-    delete "${projectDir}/node_modules/"
 }

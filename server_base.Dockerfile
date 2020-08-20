@@ -17,14 +17,19 @@ RUN apt-get update \
     && curl -sL https://deb.nodesource.com/setup_14.x | bash - \
     && apt-get install -y nodejs
 
-# Cache installing the gradle wrapper
-COPY ./gradlew /code/gradlew
-COPY ./gradle /code/gradle
-RUN ./gradlew wrapper --no-daemon
+# Cache NPM dependencies
+COPY ./dataline-webapp/package.json ./dataline-webapp/package.json
+WORKDIR /code/dataline-webapp
+RUN npm install
+
+# Cache Gradle executable
+WORKDIR /code
+COPY ./gradlew .
+COPY ./gradle ./gradle
+RUN ./gradlew build --no-daemon
 
 # Copy code, node_modules, etc.
 COPY . /code
 
 # Create distributions, but don't run tests just yet
-RUN ./gradlew clean distTar --no-daemon --console rich
-ENTRYPOINT ["./gradlew", "build", "--no-daemon", "--console", "rich"]
+ENTRYPOINT ["./gradlew", "clean", "distTar", "build", "--no-daemon", "--console", "rich", "-g", "/home/gradle/.gradle"]
