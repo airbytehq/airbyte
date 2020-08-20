@@ -33,3 +33,4 @@ COPY . /code
 
 # Create distributions
 RUN ./gradlew clean distTar build -x test --no-daemon --console rich -g /home/gradle/.gradle
+ENTRYPOINT ["./gradlew", "test", "--no-daemon", "--console", "rich", "-g", "/home/gradle/.gradle"]
