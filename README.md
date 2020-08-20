@@ -3,7 +3,7 @@
 Simply run
 
 ```bash
-./tools/app/start.sh
+./tools/app/build.sh && ./tools/app/start.sh
 ```
 
 Go to [http://localhost:8000](http://localhost:8000)
