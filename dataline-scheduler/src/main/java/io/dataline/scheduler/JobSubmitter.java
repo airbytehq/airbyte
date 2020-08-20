@@ -175,17 +175,12 @@ public class JobSubmitter implements Runnable {
                 new WorkerWrapper<>(
                     job.getId(),
                     new SingerDiscoveryWorker(
-                        "worker-1", // todo: assign worker ids
-                        configString,
-                        tap,
-                        "/usr/local/lib/singer/workspace1", // todo: better path and why are we
-                        // scoping by workspace here
-                        "/usr/local/lib/singer/"),
-                    connectionPool));
+                        "/usr/local/lib/singer/tap-postgres/bin/tap-postgres"),
+                    connectionPool,
+                    persistence));
             LOGGER.info("Submitting job to thread pool...");
             break;
-          case CHECK_CONNECTION_SOURCE:
-          case CHECK_CONNECTION_DESTINATION:
+          case CHECK_CONNECTION:
           case SYNC:
             throw new RuntimeException("not implemented");
             // todo: handle threadPool.submit(new WorkerWrapper<>(job.getId(), new EchoWorker(),

@@ -34,6 +34,8 @@ import org.junit.jupiter.api.TestInstance;
 public abstract class BaseWorkerTestCase {
   // TODO inject via env
   protected String SINGER_LIB_PATH = "/usr/local/lib/singer";
+  protected String SINGER_POSTGRES_TAP_PATH =
+      Path.of(SINGER_LIB_PATH).resolve("tap-postgres/bin/tap-postgres").toString();
 
   private Path workspaceDirectory;
 
@@ -43,7 +45,7 @@ public abstract class BaseWorkerTestCase {
     System.out.println("Workspace directory: " + workspaceDirectory.toString());
   }
 
-  protected Path getWorkspacePath() {
-    return workspaceDirectory;
+  protected Path getWorkspacePath(String jobId) {
+    return workspaceDirectory.resolve(jobId);
   }
 }

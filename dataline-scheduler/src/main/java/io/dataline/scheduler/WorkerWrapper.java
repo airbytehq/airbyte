@@ -29,25 +29,47 @@ import io.dataline.api.model.Job;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
+import java.io.File;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WorkerWrapper<T> implements Runnable {
+public class WorkerWrapper<InputType, OutputType> implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerWrapper.class);
 
   private final long jobId;
-  private final Worker<T> worker;
+  private final Worker<InputType, OutputType> worker;
   private final BasicDataSource connectionPool;
+  private SchedulerPersistence persistence;
 
-  public WorkerWrapper(long jobId, Worker<T> worker, BasicDataSource connectionPool) {
+  public WorkerWrapper(
+      long jobId,
+      Worker<InputType, OutputType> worker,
+      BasicDataSource connectionPool,
+      SchedulerPersistence persistence) {
     this.jobId = jobId;
     this.worker = worker;
     this.connectionPool = connectionPool;
+    this.persistence = persistence;
+  }
+
+  @SuppressWarnings("unchecked")
+  private InputType getInput(io.dataline.scheduler.Job job) {
+    switch (job.getConfig().getConfigType()) {
+      case CHECK_CONNECTION:
+        return (InputType) job.getConfig().getCheckConnection();
+      case DISCOVER_SCHEMA:
+        return (InputType) job.getConfig().getDiscoverSchema();
+      case SYNC:
+        return (InputType) job.getConfig().getSync();
+      default:
+        throw new RuntimeException("Unrecognized config type: " + job.getConfig().getConfigType());
+    }
   }
 
   @Override
@@ -56,7 +78,15 @@ public class WorkerWrapper<T> implements Runnable {
     try {
       setJobStatus(connectionPool, jobId, Job.StatusEnum.RUNNING);
 
-      OutputAndStatus<T> outputAndStatus = worker.run();
+      // fetch input.
+      final io.dataline.scheduler.Job job = persistence.getJob(jobId);
+      final InputType input = getInput(job);
+
+      final String workspacesRoot = "/tmp/dataline/workspaces/";
+      FileUtils.forceMkdir(new File(workspacesRoot));
+      final String workspaceRoot = workspacesRoot + jobId;
+      OutputAndStatus<OutputType> outputAndStatus =
+          worker.run(input, workspaceRoot, String.valueOf(jobId));
 
       switch (outputAndStatus.getStatus()) {
         case FAILED:

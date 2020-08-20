@@ -32,46 +32,45 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType> {
-  private static Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
+public abstract class BaseSingerWorker<InputType, OutputType>
+    implements Worker<InputType, OutputType> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
 
   protected JobStatus jobStatus;
-  protected String workerId;
-  protected final Path workspacePath;
 
-  private final String singerRoot;
+  private final String singerExecutablePath;
 
-  protected BaseSingerWorker(String workerId, String workspaceRoot, String singerRoot) {
-    this.workerId = workerId;
-    this.workspacePath = Path.of(workspaceRoot, workerId);
-    this.singerRoot = singerRoot;
+  protected BaseSingerWorker(String singerExecutablePath) {
+    this.singerExecutablePath = singerExecutablePath;
   }
 
   @Override
-  public OutputAndStatus<OutputType> run() {
-    createWorkspace();
-    return runInternal();
+  public OutputAndStatus<OutputType> run(InputType inputType, String workspaceRoot, String jobId) {
+    createWorkspace(workspaceRoot, jobId);
+    return runInternal(inputType, workspaceRoot, jobId);
   }
 
-  abstract OutputAndStatus<OutputType> runInternal();
+  abstract OutputAndStatus<OutputType> runInternal(
+      InputType inputType, String workspaceRoot, String jobId);
 
-  private void createWorkspace() {
+  // todo (cgardens) - this is not singer specific. should be in BaseWorker (when we have a
+  // BaseWorker)
+  private void createWorkspace(String workspaceRoot, String jobId) {
     try {
-      FileUtils.forceMkdir(workspacePath.toFile());
+      FileUtils.forceMkdir(Path.of(workspaceRoot).toFile());
     } catch (IOException e) {
-      LOGGER.error("Unable to create workspace for worker {} due to exception {} ", workerId, e);
+      LOGGER.error("Unable to create workspace for job {} due to exception {} ", jobId, e);
       throw new RuntimeException(e);
     }
   }
 
-  protected void cancelHelper(Process workerProcess) {
+  protected void cancelHelper(Process workerProcess, String jobId) {
     try {
       jobStatus = JobStatus.FAILED;
       workerProcess.destroy();
@@ -80,16 +79,12 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
         workerProcess.destroyForcibly();
       }
     } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling worker " + workerId, e);
+      LOGGER.error("Exception when cancelling job " + jobId, e);
     }
   }
 
-  protected Path getWorkspacePath() {
-    return workspacePath;
-  }
-
-  protected String readFileFromWorkspace(String fileName) {
-    try (FileReader fileReader = new FileReader(getWorkspaceFilePath(fileName));
+  protected String readFileFromWorkspace(String workspaceRoot, String fileName) {
+    try (FileReader fileReader = new FileReader(getWorkspaceFilePath(workspaceRoot, fileName));
         BufferedReader br = new BufferedReader(fileReader)) {
       return br.lines().collect(Collectors.joining("\n"));
     } catch (IOException e) {
@@ -97,8 +92,8 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
     }
   }
 
-  protected String writeFileToWorkspace(String fileName, String contents) {
-    String filePath = getWorkspaceFilePath(fileName);
+  protected String writeFileToWorkspace(String workspaceRoot, String fileName, String contents) {
+    String filePath = getWorkspaceFilePath(workspaceRoot, fileName);
     try (FileWriter fileWriter = new FileWriter(filePath)) {
       fileWriter.write(contents);
       return filePath;
@@ -107,17 +102,11 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
     }
   }
 
-  protected String getExecutableAbsolutePath(SingerConnector tapOrTarget) {
-    return Paths.get(
-            singerRoot,
-            tapOrTarget.getPythonVirtualEnvName(),
-            "bin",
-            tapOrTarget.getExecutableName())
-        .toAbsolutePath()
-        .toString();
+  protected String getExecutableAbsolutePath() {
+    return singerExecutablePath;
   }
 
-  private String getWorkspaceFilePath(String fileName) {
-    return getWorkspacePath().resolve(fileName).toAbsolutePath().toString();
+  private String getWorkspaceFilePath(String workspaceRoot, String fileName) {
+    return Path.of(workspaceRoot).resolve(fileName).toAbsolutePath().toString();
   }
 }

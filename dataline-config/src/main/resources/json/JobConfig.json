@@ -10,17 +10,13 @@
     "configType": {
       "type": "string",
       "enum": [
-        "checkConnectionSource",
-        "checkConnectionDestination",
+        "checkConnection",
         "discoverSchema",
         "sync"
       ]
     },
-    "checkConnectionSource": {
-      "$ref": "SourceConnectionImplementation.json"
-    },
-    "checkConnectionDestination": {
-      "$ref": "DestinationConnectionImplementation.json"
+    "checkConnection": {
+      "$ref": "ConnectionImplementation.json"
     },
     "discoverSchema": {
       "$ref": "SourceConnectionImplementation.json"

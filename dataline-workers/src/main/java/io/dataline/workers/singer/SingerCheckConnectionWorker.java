@@ -24,6 +24,7 @@
 
 package io.dataline.workers.singer;
 
+import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.StandardConnectionStatus;
 import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.workers.CheckConnectionWorker;
@@ -32,27 +33,23 @@ import io.dataline.workers.OutputAndStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerCheckConnectionWorker extends BaseSingerWorker<StandardConnectionStatus>
+public class SingerCheckConnectionWorker
+    extends BaseSingerWorker<ConnectionImplementation, StandardConnectionStatus>
     implements CheckConnectionWorker {
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerCheckConnectionWorker.class);
 
   private final SingerDiscoveryWorker singerDiscoveryWorker;
 
-  public SingerCheckConnectionWorker(
-      String workerId,
-      SingerTap singerTap,
-      String configDotJson,
-      String workspaceRoot,
-      String singerLibsRoot) {
-    super(workerId, workspaceRoot, singerLibsRoot);
-    this.singerDiscoveryWorker =
-        new SingerDiscoveryWorker(
-            workerId, configDotJson, singerTap, workspaceRoot, singerLibsRoot);
+  public SingerCheckConnectionWorker(String singerExecutablePath) {
+    super(singerExecutablePath);
+    this.singerDiscoveryWorker = new SingerDiscoveryWorker(singerExecutablePath);
   }
 
   @Override
-  OutputAndStatus<StandardConnectionStatus> runInternal() {
-    OutputAndStatus<StandardDiscoveryOutput> outputAndStatus = singerDiscoveryWorker.runInternal();
+  OutputAndStatus<StandardConnectionStatus> runInternal(
+      ConnectionImplementation connectionImplementation, String workspaceRoot, String jobId) {
+    OutputAndStatus<StandardDiscoveryOutput> outputAndStatus =
+        singerDiscoveryWorker.runInternal(connectionImplementation, workspaceRoot, jobId);
     StandardConnectionStatus connectionStatus = new StandardConnectionStatus();
     JobStatus jobStatus;
     if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL
@@ -61,9 +58,7 @@ public class SingerCheckConnectionWorker extends BaseSingerWorker<StandardConnec
       jobStatus = JobStatus.SUCCESSFUL;
     } else {
       LOGGER.info(
-          "Connection check for worker {} unsuccessful. Discovery output: {}",
-          workerId,
-          outputAndStatus);
+          "Connection check for job {} unsuccessful. Discovery output: {}", jobId, outputAndStatus);
       jobStatus = JobStatus.FAILED;
       connectionStatus.setStatus(StandardConnectionStatus.Status.FAILURE);
       // TODO add better error log parsing to specify the exact reason for failure as the message
@@ -73,7 +68,7 @@ public class SingerCheckConnectionWorker extends BaseSingerWorker<StandardConnec
   }
 
   @Override
-  public void cancel() {
-    singerDiscoveryWorker.cancel();
+  public void cancel(String jobId) {
+    singerDiscoveryWorker.cancel(jobId);
   }
 }

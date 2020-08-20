@@ -28,9 +28,10 @@ import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.OutputAndStatus;
@@ -66,16 +67,18 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testPostgresDiscovery() throws IOException {
+    final String jobId = "1";
     String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
-    SingerDiscoveryWorker worker =
-        new SingerDiscoveryWorker(
-            "1",
-            postgresCreds,
-            SingerTap.POSTGRES,
-            getWorkspacePath().toAbsolutePath().toString(),
-            SINGER_LIB_PATH);
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    connectionImplementation.setDockerImage("whatever");
+    final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
+    connectionImplementation.setConfiguration(o);
 
-    OutputAndStatus<StandardDiscoveryOutput> run = worker.run();
+    SingerDiscoveryWorker worker = new SingerDiscoveryWorker(SINGER_POSTGRES_TAP_PATH);
+
+    // todo (cgardens) - got to convert this type
+    OutputAndStatus<StandardDiscoveryOutput> run =
+        worker.run(connectionImplementation, getWorkspacePath(jobId).toString(), jobId);
     assertEquals(SUCCESSFUL, run.getStatus());
 
     String expectedSchema = readResource("simple_postgres_schema.json");
@@ -87,26 +90,28 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testCancellation()
-      throws JsonProcessingException, InterruptedException, ExecutionException {
+  public void testCancellation() throws IOException, InterruptedException, ExecutionException {
+    final String jobId = "1";
     String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
-    SingerDiscoveryWorker worker =
-        new SingerDiscoveryWorker(
-            "1",
-            postgresCreds,
-            SingerTap.POSTGRES,
-            getWorkspacePath().toAbsolutePath().toString(),
-            SINGER_LIB_PATH);
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    connectionImplementation.setDockerImage("whatever");
+    final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
+    connectionImplementation.setConfiguration(o);
+
+    SingerDiscoveryWorker worker = new SingerDiscoveryWorker(SINGER_POSTGRES_TAP_PATH);
     ExecutorService threadPool = Executors.newFixedThreadPool(2);
     Future<?> workerWasCancelled =
         threadPool.submit(
             () -> {
-              OutputAndStatus<StandardDiscoveryOutput> output = worker.run();
+              OutputAndStatus<StandardDiscoveryOutput> output =
+                  worker.run(
+                      // todo (cgardens) - got to convert this type
+                      connectionImplementation, getWorkspacePath(jobId).toString(), jobId);
               assertEquals(FAILED, output.getStatus());
             });
 
     TimeUnit.MILLISECONDS.sleep(100);
-    worker.cancel();
+    worker.cancel(jobId);
     workerWasCancelled.get();
   }
 

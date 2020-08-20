@@ -24,11 +24,8 @@
 
 package io.dataline.workers;
 
+import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.StandardConnectionStatus;
 
-public interface CheckConnectionWorker extends Worker<StandardConnectionStatus> {
-  OutputAndStatus<StandardConnectionStatus> run()
-      throws InvalidCredentialsException, InvalidCatalogException;
-
-  void cancel();
-}
+public interface CheckConnectionWorker
+    extends Worker<ConnectionImplementation, StandardConnectionStatus> {}

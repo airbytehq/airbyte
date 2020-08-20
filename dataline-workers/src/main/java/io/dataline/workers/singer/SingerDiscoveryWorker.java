@@ -27,8 +27,10 @@ package io.dataline.workers.singer;
 import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.Column;
+import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.DataType;
 import io.dataline.config.PropertiesProperty;
 import io.dataline.config.Schema;
@@ -38,22 +40,17 @@ import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.config.Table;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.OutputAndStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
-
-
-public class SingerDiscoveryWorker extends BaseSingerWorker<StandardDiscoveryOutput>
+public class SingerDiscoveryWorker
+    extends BaseSingerWorker<ConnectionImplementation, StandardDiscoveryOutput>
     implements DiscoverSchemaWorker {
   // TODO log errors to specified file locations
   private static Logger LOGGER = LoggerFactory.getLogger(SingerDiscoveryWorker.class);
@@ -61,33 +58,35 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<StandardDiscoveryOut
   private static String CATALOG_JSON_FILENAME = "catalog.json";
   private static String ERROR_LOG_FILENAME = "err.log";
 
-  private final String configDotJson;
-  private final SingerTap tap;
   private volatile Process workerProcess;
 
-  public SingerDiscoveryWorker(
-      String workerId,
-      String configDotJson,
-      SingerTap tap,
-      String workspaceRoot,
-      String singerLibsRoot) {
-    super(workerId, workspaceRoot, singerLibsRoot);
-    this.configDotJson = configDotJson;
-    this.tap = tap;
+  public SingerDiscoveryWorker(String singerExecutablePath) {
+    super(singerExecutablePath);
   }
 
   @Override
-  OutputAndStatus<StandardDiscoveryOutput> runInternal() {
+  OutputAndStatus<StandardDiscoveryOutput> runInternal(
+      ConnectionImplementation connectionImplementation, String workspaceRoot, String jobId) {
+    // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
+    // better.
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final String configDotJson;
+    try {
+      configDotJson = objectMapper.writeValueAsString(connectionImplementation.getConfiguration());
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+
     // TODO use format converter here
     // write config.json to disk
-    String configPath = writeFileToWorkspace(CONFIG_JSON_FILENAME, configDotJson);
+    String configPath = writeFileToWorkspace(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson);
 
-    String tapPath = getExecutableAbsolutePath(tap);
+    String tapPath = getExecutableAbsolutePath();
 
     String catalogDotJsonPath =
-        getWorkspacePath().resolve(CATALOG_JSON_FILENAME).toAbsolutePath().toString();
+        Path.of(workspaceRoot).resolve(CATALOG_JSON_FILENAME).toAbsolutePath().toString();
     String errorLogPath =
-        getWorkspacePath().resolve(ERROR_LOG_FILENAME).toAbsolutePath().toString();
+        Path.of(workspaceRoot).resolve(ERROR_LOG_FILENAME).toAbsolutePath().toString();
 
     // exec
     try {
@@ -100,20 +99,20 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<StandardDiscoveryOut
               .start();
 
       while (!workerProcess.waitFor(1, TimeUnit.MINUTES)) {
-        LOGGER.info("Waiting for discovery worker {}", workerId);
+        LOGGER.info("Waiting for discovery jobId {}", jobId);
       }
 
       int exitCode = workerProcess.exitValue();
       if (exitCode == 0) {
-        String catalog = readFileFromWorkspace(CATALOG_JSON_FILENAME);
+        String catalog = readFileFromWorkspace(workspaceRoot, CATALOG_JSON_FILENAME);
         final SingerCatalog singerCatalog = jsonCatalogToTyped(catalog);
         final StandardDiscoveryOutput discoveryOutput = toDiscoveryOutput(singerCatalog);
         return new OutputAndStatus<>(SUCCESSFUL, discoveryOutput);
       } else {
-        String errLog = readFileFromWorkspace(ERROR_LOG_FILENAME);
+        String errLog = readFileFromWorkspace(workspaceRoot, ERROR_LOG_FILENAME);
         LOGGER.debug(
-            "Discovery worker {} subprocess finished with exit code {}. Error log: {}",
-            workerId,
+            "Discovery job {} subprocess finished with exit code {}. Error log: {}",
+            jobId,
             exitCode,
             errLog);
         return new OutputAndStatus<>(FAILED);
@@ -211,7 +210,7 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<StandardDiscoveryOut
   }
 
   @Override
-  public void cancel() {
-    cancelHelper(workerProcess);
+  public void cancel(String jobId) {
+    cancelHelper(workerProcess, jobId);
   }
 }
