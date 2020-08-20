@@ -32,7 +32,7 @@ import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
-import java.io.File;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -100,10 +100,13 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
       final io.dataline.scheduler.Job job = persistence.getJob(jobId);
       final InputType input = getInput(job);
 
-      final String workspacesRoot = "/tmp/dataline/workspaces/";
-      FileUtils.forceMkdir(new File(workspacesRoot));
-      final String workspaceRoot = workspacesRoot + jobId;
-      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, workspaceRoot);
+      // todo (cgardens) - replace this with whatever the correct path is. probably dependency
+      // inject it based via env.
+      final Path workspacesRoot = Path.of("/tmp/dataline/workspaces/");
+      FileUtils.forceMkdir(workspacesRoot.toFile());
+      final Path workspaceRoot = workspacesRoot.resolve(String.valueOf(jobId));
+      FileUtils.forceMkdir(workspaceRoot.toFile());
+      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, workspaceRoot.toString());
 
       switch (outputAndStatus.getStatus()) {
         case FAILED:

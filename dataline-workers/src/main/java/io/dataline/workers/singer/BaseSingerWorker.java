@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,22 +51,10 @@ public abstract class BaseSingerWorker<InputType, OutputType>
 
   @Override
   public OutputAndStatus<OutputType> run(InputType inputType, String workspaceRoot) {
-    createWorkspace(workspaceRoot);
     return runInternal(inputType, workspaceRoot);
   }
 
   abstract OutputAndStatus<OutputType> runInternal(InputType inputType, String workspaceRoot);
-
-  // todo (cgardens) - this is not singer specific. should be in BaseWorker (when we have a
-  //   BaseWorker) or the scheduler.
-  private void createWorkspace(String workspaceRoot) {
-    try {
-      FileUtils.forceMkdir(Path.of(workspaceRoot).toFile());
-    } catch (IOException e) {
-      LOGGER.error("Unable to create workspace due to exception.", e);
-      throw new RuntimeException(e);
-    }
-  }
 
   protected void cancelHelper(Process workerProcess) {
     try {
