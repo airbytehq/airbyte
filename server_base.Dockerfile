@@ -15,10 +15,10 @@ RUN ./tools/singer/setup_singer_env.buster.sh /usr/local/lib/singer
 WORKDIR /code
 COPY ./gradlew .
 COPY ./gradle ./gradle
-RUN ./gradlew build --no-daemon
+RUN ./gradlew build --console=plain --no-daemon
 
 # Copy code, node_modules, etc.
 COPY . /code
 
 # Create distributions
-RUN ./gradlew clean distTar build -x test --no-daemon --console rich -g /home/gradle/.gradle
+RUN ./gradlew clean distTar build -x test --console=plain --no-daemon --console rich -g /home/gradle/.gradle
