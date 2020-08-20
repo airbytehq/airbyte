@@ -8,6 +8,7 @@ import { Routes } from "../../../routes";
 import StepsMenu from "../../../../components/StepsMenu";
 import StatusView from "./components/StatusView";
 import SettingsView from "./components/SettingsView";
+import SchemaView from "./components/SchemaView";
 
 const SourceItemPage: React.FC = () => {
   const [isEnabledSource, setIsEnabledSource] = useState(true);
@@ -59,7 +60,7 @@ const SourceItemPage: React.FC = () => {
       );
     }
     if (currentStep === "schema") {
-      return <div>schema</div>;
+      return <SchemaView />;
     }
 
     return <SettingsView sourceData={sourceData} />;

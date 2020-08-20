@@ -28,6 +28,7 @@
   "form.cancel": "Cancel",
   "form.delete": "Delete",
   "form.saveChanges": "Save changes",
+  "form.discardChanges": "Discard changes",
   "form.every": "Every {value}",
 
   "preferences.title": "Specify your preferences",
