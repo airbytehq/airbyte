@@ -31,5 +31,5 @@ RUN ./gradlew build --no-daemon
 # Copy code, node_modules, etc.
 COPY . /code
 
-# Create distributions, but don't run tests just yet
-ENTRYPOINT ["./gradlew", "clean", "distTar", "build", "--no-daemon", "--console", "rich", "-g", "/home/gradle/.gradle"]
+# Create distributions
+RUN ./gradlew clean distTar build --no-daemon --console rich -g /home/gradle/.gradle

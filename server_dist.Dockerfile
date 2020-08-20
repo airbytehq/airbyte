@@ -1,5 +1,5 @@
 # Build final image
-FROM dataline/server/base:latest
+FROM server-base:dev
 
 EXPOSE 8000
 
@@ -9,7 +9,7 @@ WORKDIR /app/dataline-server
 RUN mkdir data
 # setup on-container persistence
 # todo (cgardens) - this should read from .env?
-RUN cp -r /code/dataline-config-init/build/resources/main/config data
+RUN cp -r /code/dataline-config-init/src/main/resources/config data
 
 RUN cp /code/dataline-server/build/distributions/*.tar dataline-server.tar \
     && rm -rf /code
