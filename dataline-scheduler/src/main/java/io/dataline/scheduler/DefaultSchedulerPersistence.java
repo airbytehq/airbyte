@@ -25,7 +25,6 @@
 package io.dataline.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.JobConfig;
 import io.dataline.config.JobOutput;
@@ -58,15 +57,9 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final String scope =
         "checkConnection:source:" + sourceImplementation.getSourceImplementationId();
 
-    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
-    // todo (cgardens) - tbd based on jrhizor what is doing.
-    connectionImplementation.setDockerImage(
-        sourceImplementation.getSourceImplementationId().toString());
-    connectionImplementation.setConfiguration(sourceImplementation.getConfiguration());
-
     final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION);
-    jobConfig.setCheckConnection(connectionImplementation);
+    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE);
+    jobConfig.setCheckConnectionSource(sourceImplementation);
 
     return createPendingJob(scope, jobConfig);
   }
@@ -77,15 +70,9 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final String scope =
         "checkConnection:destination:" + destinationImplementation.getDestinationImplementationId();
 
-    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
-    // todo (cgardens) - tbd based on jrhizor what is doing.
-    connectionImplementation.setDockerImage(
-        destinationImplementation.getDestinationImplementationId().toString());
-    connectionImplementation.setConfiguration(destinationImplementation.getConfiguration());
-
     final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION);
-    jobConfig.setCheckConnection(connectionImplementation);
+    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION);
+    jobConfig.setCheckConnectionDestination(destinationImplementation);
 
     return createPendingJob(scope, jobConfig);
   }

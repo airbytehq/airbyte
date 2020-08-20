@@ -26,6 +26,9 @@ package io.dataline.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.api.model.Job;
+import io.dataline.config.ConnectionImplementation;
+import io.dataline.config.DestinationConnectionImplementation;
+import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
@@ -45,7 +48,7 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
   private final long jobId;
   private final Worker<InputType, OutputType> worker;
   private final BasicDataSource connectionPool;
-  private SchedulerPersistence persistence;
+  private final SchedulerPersistence persistence;
 
   public WorkerWrapper(
       long jobId,
@@ -61,8 +64,16 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
   @SuppressWarnings("unchecked")
   private InputType getInput(io.dataline.scheduler.Job job) {
     switch (job.getConfig().getConfigType()) {
-      case CHECK_CONNECTION:
-        return (InputType) job.getConfig().getCheckConnection();
+      case CHECK_CONNECTION_SOURCE:
+        final DestinationConnectionImplementation checkConnectionSource =
+            job.getConfig().getCheckConnectionDestination();
+        return (InputType) buildConnectionImplementation(checkConnectionSource.getConfiguration());
+      case CHECK_CONNECTION_DESTINATION:
+        final SourceConnectionImplementation checkConnectionDestination =
+            job.getConfig().getCheckConnectionSource();
+
+        return (InputType)
+            buildConnectionImplementation(checkConnectionDestination.getConfiguration());
       case DISCOVER_SCHEMA:
         return (InputType) job.getConfig().getDiscoverSchema();
       case SYNC:
@@ -70,6 +81,13 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
       default:
         throw new RuntimeException("Unrecognized config type: " + job.getConfig().getConfigType());
     }
+  }
+
+  private static ConnectionImplementation buildConnectionImplementation(Object configuration) {
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    connectionImplementation.setConfiguration(configuration);
+
+    return connectionImplementation;
   }
 
   @Override

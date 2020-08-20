@@ -180,7 +180,8 @@ public class JobSubmitter implements Runnable {
                     persistence));
             LOGGER.info("Submitting job to thread pool...");
             break;
-          case CHECK_CONNECTION:
+          case CHECK_CONNECTION_SOURCE:
+          case CHECK_CONNECTION_DESTINATION:
           case SYNC:
             throw new RuntimeException("not implemented");
             // todo: handle threadPool.submit(new WorkerWrapper<>(job.getId(), new EchoWorker(),

@@ -65,7 +65,6 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
             "user", "pass", "localhost", "postgres", "111111");
 
     final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
-    connectionImplementation.setDockerImage("whatever");
     final Object o = new ObjectMapper().readValue(fakeDbCreds, Object.class);
     connectionImplementation.setConfiguration(o);
 
@@ -95,7 +94,6 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SINGER_POSTGRES_TAP_PATH);
 
     final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
-    connectionImplementation.setDockerImage("whatever");
     final Object o = new ObjectMapper().readValue(incorrectCreds, Object.class);
     connectionImplementation.setConfiguration(o);
 
@@ -116,7 +114,6 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     String creds = PostgreSQLContainerHelper.getSingerConfigJson(db);
     final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
-    connectionImplementation.setDockerImage("whatever");
     final Object o = new ObjectMapper().readValue(creds, Object.class);
     connectionImplementation.setConfiguration(o);
 

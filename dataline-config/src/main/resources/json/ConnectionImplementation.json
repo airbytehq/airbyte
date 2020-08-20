@@ -10,10 +10,6 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "dockerImage": {
-      "type": "string",
-      "description": "or whatever"
-    },
     "configuration": {
       "description": "type any. information here varies by integration. this data is validated against a specification"
     }

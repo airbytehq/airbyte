@@ -70,7 +70,6 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
     final String jobId = "1";
     String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
     final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
-    connectionImplementation.setDockerImage("whatever");
     final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
     connectionImplementation.setConfiguration(o);
 
@@ -94,7 +93,6 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
     final String jobId = "1";
     String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
     final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
-    connectionImplementation.setDockerImage("whatever");
     final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
     connectionImplementation.setConfiguration(o);
 
