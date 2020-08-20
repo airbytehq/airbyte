@@ -36,7 +36,7 @@ public class PostgreSQLContainerHelper {
     return getSingerConfigJson(
         db.getUsername(),
         db.getPassword(),
-        db.getHost(),
+        "host.docker.internal",
         db.getDatabaseName(),
         String.valueOf(db.getFirstMappedPort()));
   }
