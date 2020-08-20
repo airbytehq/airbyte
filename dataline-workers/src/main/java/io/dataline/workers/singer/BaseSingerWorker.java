@@ -27,31 +27,26 @@ package io.dataline.workers.singer;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType> {
-  private static Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
 
-  protected JobStatus jobStatus;
-  protected String workerId;
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
+
+  protected final String workerId;
   protected final Path workspacePath;
 
-  private final String singerRoot;
+  private JobStatus jobStatus;
 
-  protected BaseSingerWorker(String workerId, String workspaceRoot, String singerRoot) {
+  protected BaseSingerWorker(String workerId, Path workspaceRoot) {
     this.workerId = workerId;
-    this.workspacePath = Path.of(workspaceRoot, workerId);
-    this.singerRoot = singerRoot;
+    this.workspacePath = workspaceRoot.resolve(workerId);
   }
 
   @Override
@@ -73,7 +68,7 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
 
   protected void cancelHelper(Process workerProcess) {
     try {
-      jobStatus = JobStatus.FAILED;
+      updateJobStatus(JobStatus.FAILED);
       workerProcess.destroy();
       workerProcess.waitFor(10, TimeUnit.SECONDS);
       if (workerProcess.isAlive()) {
@@ -88,36 +83,30 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
     return workspacePath;
   }
 
-  protected String readFileFromWorkspace(String fileName) {
-    try (FileReader fileReader = new FileReader(getWorkspaceFilePath(fileName));
-        BufferedReader br = new BufferedReader(fileReader)) {
-      return br.lines().collect(Collectors.joining("\n"));
+  protected String readFile(String fileName) {
+    try {
+      Path filePath = getFullPath(fileName);
+      return FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  protected String writeFileToWorkspace(String fileName, String contents) {
-    String filePath = getWorkspaceFilePath(fileName);
-    try (FileWriter fileWriter = new FileWriter(filePath)) {
-      fileWriter.write(contents);
+  protected Path writeFile(String fileName, String contents) {
+    try {
+      Path filePath = getFullPath(fileName);
+      FileUtils.writeStringToFile(filePath.toFile(), contents, StandardCharsets.UTF_8);
       return filePath;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  protected String getExecutableAbsolutePath(SingerConnector tapOrTarget) {
-    return Paths.get(
-            singerRoot,
-            tapOrTarget.getPythonVirtualEnvName(),
-            "bin",
-            tapOrTarget.getExecutableName())
-        .toAbsolutePath()
-        .toString();
+  protected Path getFullPath(String fileName) {
+    return getWorkspacePath().resolve(fileName).toAbsolutePath();
   }
 
-  private String getWorkspaceFilePath(String fileName) {
-    return getWorkspacePath().resolve(fileName).toAbsolutePath().toString();
+  protected void updateJobStatus(JobStatus jobStatus) {
+    this.jobStatus = jobStatus;
   }
 }

@@ -176,11 +176,10 @@ public class JobSubmitter implements Runnable {
                     job.getId(),
                     new SingerDiscoveryWorker(
                         "worker-1", // todo: assign worker ids
-                        configString,
-                        tap,
-                        "/usr/local/lib/singer/workspace1", // todo: better path and why are we
+                        "/usr/local/lib/singer/workspace1", tap, configString
+                        // todo: better path and why are we
                         // scoping by workspace here
-                        "/usr/local/lib/singer/"),
+                    ),
                     connectionPool));
             LOGGER.info("Submitting job to thread pool...");
             break;

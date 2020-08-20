@@ -29,25 +29,22 @@ import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.workers.CheckConnectionWorker;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SingerCheckConnectionWorker extends BaseSingerWorker<StandardConnectionStatus>
     implements CheckConnectionWorker {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerCheckConnectionWorker.class);
 
   private final SingerDiscoveryWorker singerDiscoveryWorker;
 
   public SingerCheckConnectionWorker(
-      String workerId,
-      SingerTap singerTap,
-      String configDotJson,
-      String workspaceRoot,
-      String singerLibsRoot) {
-    super(workerId, workspaceRoot, singerLibsRoot);
+      String workerId, Path workspaceRoot, SingerTap singerTap, String configContent) {
+    super(workerId, workspaceRoot);
     this.singerDiscoveryWorker =
-        new SingerDiscoveryWorker(
-            workerId, configDotJson, singerTap, workspaceRoot, singerLibsRoot);
+        new SingerDiscoveryWorker(workerId, workspaceRoot, singerTap, configContent);
   }
 
   @Override

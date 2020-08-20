@@ -28,6 +28,7 @@ import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -69,11 +70,7 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
     String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
     SingerDiscoveryWorker worker =
         new SingerDiscoveryWorker(
-            "1",
-            postgresCreds,
-            SingerTap.POSTGRES,
-            getWorkspacePath().toAbsolutePath().toString(),
-            SINGER_LIB_PATH);
+            "1", getWorkspacePath().toAbsolutePath(), SingerTap.POSTGRES, postgresCreds);
 
     OutputAndStatus<StandardDiscoveryOutput> run = worker.run();
     assertEquals(SUCCESSFUL, run.getStatus());
@@ -92,11 +89,7 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
     String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
     SingerDiscoveryWorker worker =
         new SingerDiscoveryWorker(
-            "1",
-            postgresCreds,
-            SingerTap.POSTGRES,
-            getWorkspacePath().toAbsolutePath().toString(),
-            SINGER_LIB_PATH);
+            "1", getWorkspacePath().toAbsolutePath(), SingerTap.POSTGRES, postgresCreds);
     ExecutorService threadPool = Executors.newFixedThreadPool(2);
     Future<?> workerWasCancelled =
         threadPool.submit(

@@ -59,8 +59,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
         PostgreSQLContainerHelper.getSingerConfigJson(
             "user", "pass", "localhost", "postgres", "111111");
     SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(
-            "1", SingerTap.POSTGRES, fakeDbCreds, getWorkspacePath().toString(), SINGER_LIB_PATH);
+        new SingerCheckConnectionWorker("1", getWorkspacePath(), SingerTap.POSTGRES, fakeDbCreds);
     OutputAndStatus<StandardConnectionStatus> run = worker.run();
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
@@ -81,11 +80,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     SingerCheckConnectionWorker worker =
         new SingerCheckConnectionWorker(
-            "1",
-            SingerTap.POSTGRES,
-            incorrectCreds,
-            getWorkspacePath().toString(),
-            SINGER_LIB_PATH);
+            "1", getWorkspacePath(), SingerTap.POSTGRES, incorrectCreds);
     OutputAndStatus<StandardConnectionStatus> run = worker.run();
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
@@ -99,8 +94,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     String creds = PostgreSQLContainerHelper.getSingerConfigJson(db);
 
     SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(
-            "1", SingerTap.POSTGRES, creds, getWorkspacePath().toString(), SINGER_LIB_PATH);
+        new SingerCheckConnectionWorker("1", getWorkspacePath(), SingerTap.POSTGRES, creds);
     OutputAndStatus<StandardConnectionStatus> run = worker.run();
     assertEquals(SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());

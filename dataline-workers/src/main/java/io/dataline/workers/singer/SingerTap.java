@@ -26,23 +26,18 @@ package io.dataline.workers.singer;
 
 public enum SingerTap implements SingerConnector {
   // TODO
-  S3_CSV("", ""),
-  POSTGRES("tap-postgres", "tap-postgres"),
-  STRIPE("", "");
+  S3_CSV(""),
+  EXCHANGERATEAPI_IO("dataline/integration-singer-exchangerateapi_io-source"),
+  POSTGRES("dataline/integration-singer-postgres-source"),
+  STRIPE("");
 
-  private final String getPythonVirtualEnvName;
-  private final String executableName;
+  private final String imageName;
 
-  SingerTap(String getPythonVirtualEnvName, String executableName) {
-    this.getPythonVirtualEnvName = getPythonVirtualEnvName;
-    this.executableName = executableName;
+  SingerTap(String imageName) {
+    this.imageName = imageName;
   }
 
-  public String getPythonVirtualEnvName() {
-    return getPythonVirtualEnvName;
-  }
-
-  public String getExecutableName() {
-    return executableName;
+  public String getImageName() {
+    return imageName;
   }
 }
