@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
+import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseWorkerTestCase {
@@ -45,7 +46,13 @@ public abstract class BaseWorkerTestCase {
     System.out.println("Workspace directory: " + workspaceDirectory.toString());
   }
 
-  protected Path getWorkspacePath(String jobId) {
-    return workspaceDirectory.resolve(jobId);
+  protected Path createWorkspacePath(String jobId) {
+    final Path workspacePath = workspaceDirectory.resolve(jobId);
+    try {
+      FileUtils.forceMkdir(workspacePath.toFile());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return workspacePath;
   }
 }

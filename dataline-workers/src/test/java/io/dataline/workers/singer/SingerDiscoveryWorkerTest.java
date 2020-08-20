@@ -76,7 +76,7 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
     SingerDiscoveryWorker worker = new SingerDiscoveryWorker(SINGER_POSTGRES_TAP_PATH);
 
     OutputAndStatus<StandardDiscoveryOutput> run =
-        worker.run(connectionImplementation, getWorkspacePath(jobId).toString());
+        worker.run(connectionImplementation, createWorkspacePath(jobId).toString());
     assertEquals(SUCCESSFUL, run.getStatus());
 
     String expectedSchema = readResource("simple_postgres_schema.json");
@@ -101,7 +101,7 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
         threadPool.submit(
             () -> {
               OutputAndStatus<StandardDiscoveryOutput> output =
-                  worker.run(connectionImplementation, getWorkspacePath(jobId).toString());
+                  worker.run(connectionImplementation, createWorkspacePath(jobId).toString());
               assertEquals(FAILED, output.getStatus());
             });
 
