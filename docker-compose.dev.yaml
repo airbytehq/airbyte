@@ -11,7 +11,7 @@ services:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=db-${DATABASE_DB}
   server-base:
-    image: server-base:dev
+    image: localhost:5000/server-base:dev
     build:
       context: .
       dockerfile: server_base.Dockerfile
@@ -19,7 +19,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.gradle:/home/gradle/.gradle
   server:
-    image: server:dev
+    image: localhost:5000/server:dev
     build:
       context: .
       dockerfile: server_dist.Dockerfile
@@ -38,7 +38,7 @@ services:
       - db
       - server-base
   webapp:
-    image: webapp:dev
+    image: localhost:5000/webapp:dev
     build:
       context: .
       dockerfile: webapp.Dockerfile

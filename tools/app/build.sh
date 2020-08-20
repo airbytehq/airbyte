@@ -8,6 +8,7 @@ main() {
   assert_root
   echo "Running docker-compose..."
   docker-compose -f docker-compose.dev.yaml build --parallel
+  docker-compose -f docker-compose.dev.yaml push
 }
 
 main "$@"
