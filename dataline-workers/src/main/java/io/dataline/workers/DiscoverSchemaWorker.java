@@ -24,11 +24,8 @@
 
 package io.dataline.workers;
 
+import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.StandardDiscoveryOutput;
 
-public interface DiscoverSchemaWorker extends Worker<StandardDiscoveryOutput> {
-  OutputAndStatus<StandardDiscoveryOutput> run()
-      throws InvalidCredentialsException, InvalidCatalogException;
-
-  void cancel();
-}
+public interface DiscoverSchemaWorker
+    extends Worker<ConnectionImplementation, StandardDiscoveryOutput> {}
