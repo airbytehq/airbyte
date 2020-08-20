@@ -1,26 +1,3 @@
-# Prepare gradle dependency cache
-FROM openjdk:14.0.2-slim AS cache
-
-WORKDIR /code
-
-# for i in **/*.gradle; do echo COPY ./$i $(dirname $i)/; done
-COPY ./build.gradle ./
-COPY ./dataline-api/build.gradle dataline-api/
-COPY ./dataline-commons/build.gradle dataline-commons/
-COPY ./dataline-config-persistence/build.gradle dataline-config-persistence/
-COPY ./dataline-config-init/build.gradle dataline-config-init/
-COPY ./dataline-config/build.gradle dataline-config/
-COPY ./dataline-db/build.gradle dataline-db/
-COPY ./dataline-server/build.gradle dataline-server/
-COPY ./dataline-workers/build.gradle dataline-workers/
-COPY ./settings.gradle ./
-COPY ./.env ./
-# Since we're not inheriting the gradle image, easiest way to run gradle is via the wrapper.
-COPY ./gradlew ./
-COPY ./gradle ./gradle
-
-RUN ./gradlew --gradle-user-home=/tmp/gradle_cache clean dependencies --no-daemon
-
 # Build artifact
 FROM openjdk:14.0.2-slim
 
@@ -46,4 +23,3 @@ COPY . /code
 # Create distributions, but don't run tests just yet
 RUN ./gradlew clean distTar --no-daemon --console rich
 ENTRYPOINT ["./gradlew", "build", "--no-daemon", "--console", "rich"]
-
