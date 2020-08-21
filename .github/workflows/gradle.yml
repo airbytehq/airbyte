@@ -10,8 +10,8 @@ jobs:
     steps:
       - name: Checkout Dataline
         uses: actions/checkout@v2
+      - name Install Docker client
+        run: sudo apt-get docker
       - name: Build
         run: ./tools/app/build.sh
-
-          
 
