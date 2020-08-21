@@ -7,23 +7,32 @@ services:
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
-      - POSTGRES_DB=${DATABASE_DB}
-    ports:
-      - 5432:5432
+      - POSTGRES_DB=db-${DATABASE_DB}
+  scheduler:
+    image: dataline/scheduler:dev
+    container_name: dataline-scheduler
+    environment:
+      - ENV=${ENV}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - WAIT_BEFORE_HOSTS=5
+      - WAIT_HOSTS=db:5432
+      - CONFIG_PERSISTENCE_ROOT=${CONFIG_PERSISTENCE_ROOT}
+    depends_on:
+      - db
   server:
     image: dataline/server:dev
     container_name: dataline-server
     environment:
       - ENV=${ENV}
-      - DATABASE_USER=${DATABASE_USER}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_URL=jdbc:postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@db:5432/${DATABASE_DB}
+      - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS=db:5432
       - CONFIG_PERSISTENCE_ROOT=${CONFIG_PERSISTENCE_ROOT}
     ports:
       - 8001:8001
     depends_on:
-      - db
+      - scheduler
   webapp:
     image: dataline/webapp:dev
     container_name: dataline-webapp
