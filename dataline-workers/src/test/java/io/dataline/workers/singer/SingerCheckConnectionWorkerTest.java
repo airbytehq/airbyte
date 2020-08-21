@@ -68,9 +68,10 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     final Object o = new ObjectMapper().readValue(fakeDbCreds, Object.class);
     connectionImplementation.setConfiguration(o);
 
-    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SINGER_POSTGRES_TAP_PATH);
+    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
     OutputAndStatus<StandardConnectionStatus> run =
-        worker.run(connectionImplementation, createWorkspacePath(jobId).toString());
+        worker.run(connectionImplementation, createWorkspacePath(jobId));
+
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.FAILURE, run.getOutput().get().getStatus());
@@ -91,14 +92,15 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
             db.getDatabaseName(),
             db.getFirstMappedPort() + "");
 
-    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SINGER_POSTGRES_TAP_PATH);
+    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
 
     final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
     final Object o = new ObjectMapper().readValue(incorrectCreds, Object.class);
     connectionImplementation.setConfiguration(o);
 
     OutputAndStatus<StandardConnectionStatus> run =
-        worker.run(connectionImplementation, createWorkspacePath(jobId).toString());
+        worker.run(connectionImplementation, createWorkspacePath(jobId));
+
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.FAILURE, run.getOutput().get().getStatus());
@@ -117,9 +119,10 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     final Object o = new ObjectMapper().readValue(creds, Object.class);
     connectionImplementation.setConfiguration(o);
 
-    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SINGER_POSTGRES_TAP_PATH);
+    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
     OutputAndStatus<StandardConnectionStatus> run =
-        worker.run(connectionImplementation, createWorkspacePath(jobId).toString());
+        worker.run(connectionImplementation, createWorkspacePath(jobId));
+
     assertEquals(SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.SUCCESS, run.getOutput().get().getStatus());
