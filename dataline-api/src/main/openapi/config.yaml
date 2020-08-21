@@ -590,6 +590,52 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/jobs/list:
+    post:
+      tags:
+        - jobs
+      summary: Returns recent jobs for a connection.
+      operationId: listJobsFor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobReadList"
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/jobs/get:
+    post:
+      tags:
+        - jobs
+      summary: Get information about a job
+      operationId: getJobInfo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobInfoRead"
+        "404":
+          description: Job not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
 externalDocs:
   description: Find out more about Dataline
   url: "http://dataline.io"
@@ -1062,11 +1108,11 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/JobId"
-    Job:
+    JobRead:
       type: object
       required:
         - id
-        - connection
+        - connection_id
         - created_at
         - started_at
         - updated_at
@@ -1074,8 +1120,8 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/JobId"
-        connection:
-          $ref: "#/components/schemas/ConnectionRead"
+        connection_id:
+          $ref: "#/components/schemas/ConnectionId"
         created_at:
           type: integer
           format: int64
@@ -1093,6 +1139,39 @@ components:
             - failed
             - completed
             - cancelled
+    JobReadList:
+      type: object
+      required:
+        - jobs
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobRead"
+    JobInfoRead:
+      type: object
+      required:
+        - job
+        - logs
+      properties:
+        job:
+          $ref: "#/components/schemas/JobRead"
+        logs:
+          $ref: "#/components/schemas/LogRead"
+    LogRead:
+      type: object
+      required:
+        - stdout
+        - stderr
+      properties:
+        stdout:
+          type: array
+          items:
+            type: string
+        stderr:
+          type: array
+          items:
+            type: string
     # General
     CheckConnectionRead:
       type: object

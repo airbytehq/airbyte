@@ -25,7 +25,7 @@
 package io.dataline.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dataline.api.model.Job;
+import io.dataline.api.model.JobRead;
 import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
@@ -95,7 +95,7 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
   public void run() {
     LOGGER.info("Executing worker wrapper...");
     try {
-      setJobStatus(connectionPool, jobId, Job.StatusEnum.RUNNING);
+      setJobStatus(connectionPool, jobId, JobRead.StatusEnum.RUNNING);
 
       // fetch input.
       final io.dataline.scheduler.Job job = persistence.getJob(jobId);
@@ -111,10 +111,10 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
 
       switch (outputAndStatus.getStatus()) {
         case FAILED:
-          setJobStatus(connectionPool, jobId, Job.StatusEnum.FAILED);
+          setJobStatus(connectionPool, jobId, JobRead.StatusEnum.FAILED);
           break;
         case SUCCESSFUL:
-          setJobStatus(connectionPool, jobId, Job.StatusEnum.COMPLETED);
+          setJobStatus(connectionPool, jobId, JobRead.StatusEnum.COMPLETED);
           break;
       }
 
@@ -128,12 +128,12 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
       }
     } catch (Exception e) {
       LOGGER.error("Worker Error", e);
-      setJobStatus(connectionPool, jobId, Job.StatusEnum.FAILED);
+      setJobStatus(connectionPool, jobId, JobRead.StatusEnum.FAILED);
     }
   }
 
   private static void setJobStatus(
-      BasicDataSource connectionPool, long jobId, Job.StatusEnum status) {
+      BasicDataSource connectionPool, long jobId, JobRead.StatusEnum status) {
     LOGGER.info("Setting job status to " + status + " for job " + jobId);
     LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
 
