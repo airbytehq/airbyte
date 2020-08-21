@@ -1,18 +1,24 @@
-version: '3'
+version: '3.4'
 
 services:
   db:
     image: dataline/db:dev
     build:
-      context: .
       dockerfile: database.Dockerfile
+      context: .
+  scheduler:
+    image: dataline/scheduler:dev
+    build:
+      dockerfile: scheduler.Dockerfile
+      context: .
   server:
     image: dataline/server:dev
     build:
-      context: .
       dockerfile: server.Dockerfile
+      context: .
   webapp:
     image: dataline/webapp:dev
     build:
-      context: .
       dockerfile: webapp.Dockerfile
+      target: webapp
+      context: .
