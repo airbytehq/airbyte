@@ -22,9 +22,6 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.workers.singer;
 
-import io.dataline.config.JobSyncConfig;
-import io.dataline.config.JobSyncOutput;
-
-public interface SyncWorker extends Worker<JobSyncConfig, JobSyncOutput> {}
+public class SingerProtocol {}

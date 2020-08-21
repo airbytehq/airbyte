@@ -27,29 +27,7 @@
             "type": "string"
           },
           "schema": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "type": "string"
-              },
-              "properties": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "object",
-                  "required": [
-                    "type"
-                  ],
-                  "properties": {
-                    "type": {
-                      "$ref": "SingerCatalog.json#/definitions/SingerType"
-                    },
-                    "format": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "SingerSchema.json"
           }
         }
       }
@@ -99,15 +77,6 @@
             }
           }
         }
-      }
-    }
-  },
-  "definitions": {
-    "SingerType": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": ["string", "integer", "null", "boolean"]
       }
     }
   }

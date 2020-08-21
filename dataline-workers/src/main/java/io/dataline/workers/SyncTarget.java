@@ -24,7 +24,10 @@
 
 package io.dataline.workers;
 
-import io.dataline.config.JobSyncConfig;
 import io.dataline.config.JobSyncOutput;
+import io.dataline.config.JobSyncTargetConfig;
+import java.util.stream.Stream;
 
-public interface SyncWorker extends Worker<JobSyncConfig, JobSyncOutput> {}
+public interface SyncTarget<T> {
+  JobSyncOutput run(Stream<T> data, JobSyncTargetConfig jobSyncTargetConfig, String workspacePath);
+}

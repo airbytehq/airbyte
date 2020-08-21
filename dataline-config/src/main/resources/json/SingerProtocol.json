@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/JobConfig.json",
+  "title": "JobConfig",
+  "description": "job config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["configType"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "RECORD",
+        "SCHEMA",
+        "STATE"
+      ]
+    },
+    "record": {
+      "$ref": "SingerRecordMessage.json"
+    },
+    "schema": {
+      "$ref": "SingerSchemaMessage.json"
+    },
+    "state": {
+      "$ref": "SingerStateMessage.json"
+    }
+  }
+}
