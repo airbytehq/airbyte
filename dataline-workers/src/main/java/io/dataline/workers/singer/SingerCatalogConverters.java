@@ -200,6 +200,7 @@ public class SingerCatalogConverters {
   }
 
   private static SingerMetadata cloneSingerMetadata(SingerMetadata toClone) {
+    // bad variable name. tradeoff to keep stuff on one line.
     SingerMetadataChild toClone2 = toClone.getMetadata();
     final SingerMetadataChild singerMetadataChild = new SingerMetadataChild();
     singerMetadataChild.setSelected(toClone2.getSelected());
