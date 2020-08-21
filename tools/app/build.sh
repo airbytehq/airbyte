@@ -7,8 +7,8 @@ set -e
 main() {
   assert_root
 
-  echo "Building server-base..."
-  docker build -f server_base.Dockerfile . -t dataline/server-base:dev
+  echo "Building java-base..."
+  docker build -f java_base.Dockerfile . -t dataline/java-base:dev
 
   echo "Building webapp-base..."
   docker build -f webapp_base.Dockerfile . -t dataline/webapp-base:dev

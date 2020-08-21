@@ -25,14 +25,11 @@
 package io.dataline.server;
 
 import io.dataline.db.DatabaseHelper;
-import io.dataline.db.ServerUuid;
-import io.dataline.scheduler.Scheduler;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
 import io.dataline.server.errors.InvalidJsonExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
 import io.dataline.server.errors.UncaughtExceptionMapper;
-import java.util.logging.Level;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -46,6 +43,8 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.logging.Level;
+
 public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private final String configPersistenceRoot;
@@ -55,7 +54,7 @@ public class ServerApp {
     this.configPersistenceRoot = configPersistenceRoot;
   }
 
-  public void startAndBlock() throws Exception {
+  public void start() throws Exception {
     BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
 
     Server server = new Server(8001);
@@ -110,15 +109,10 @@ public class ServerApp {
   }
 
   public static void main(String[] args) throws Exception {
-    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
-
-    LOGGER.info("Launching scheduler...");
-    new Scheduler(connectionPool).start();
-
     final String configPersistenceRoot = System.getenv("CONFIG_PERSISTENCE_ROOT");
     LOGGER.info("configPersistenceRoot = " + configPersistenceRoot);
 
-    LOGGER.info("Starting server " + ServerUuid.get(connectionPool) + "...");
-    new ServerApp(configPersistenceRoot).startAndBlock();
+    LOGGER.info("Starting server...");
+    new ServerApp(configPersistenceRoot).start();
   }
 }
