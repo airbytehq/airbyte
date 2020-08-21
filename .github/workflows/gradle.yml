@@ -10,12 +10,6 @@ jobs:
     steps:
       - name: Checkout Dataline
         uses: actions/checkout@v2
-      - name: Install Docker client
-        run: sudo apt-get docker || true
-      - name: Install Docker client
-        run: sudo apt-get docker-ce-cli || true
-      - name: Install Docker client
-        run: sudo apt-get docker-cli || true
       - name: Build
         run: ./tools/app/build.sh
       - name: Test
