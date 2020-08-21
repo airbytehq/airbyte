@@ -29,6 +29,9 @@
         "name": {
           "type": "string"
         },
+        "selected": {
+          "type": "boolean"
+        },
         "columns": {
           "type": "array",
           "items": {

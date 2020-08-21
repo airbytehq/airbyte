@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Dataline
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.dataline.workers.singer;
 
 import io.dataline.config.Column;
@@ -10,7 +34,6 @@ import io.dataline.config.SingerMetadataChild;
 import io.dataline.config.SingerStream;
 import io.dataline.config.SingerType;
 import io.dataline.config.Table;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +44,6 @@ public class SingerCatalogConverters {
   public static SingerCatalog applySchemaToDiscoveredCatalog(SingerCatalog catalog, Schema schema) {
     Map<String, Table> tableNameToTable =
         schema.getTables().stream().collect(Collectors.toMap(Table::getName, table -> table));
-    Map<String, List<SingerMetadata>> tableNameToMetadata =
-        getTableNameToMetadataList(catalog.getStreams());
 
     final List<SingerStream> updatedStreams =
         catalog.getStreams().stream()
@@ -45,6 +66,7 @@ public class SingerCatalogConverters {
                                 final SingerMetadata newSingerMetadata =
                                     cloneSingerMetadata(metadata);
                                 if (isColumnMetadata(metadata)) {
+                                  // column metadata
                                   final String columnName = getColumnName(metadata);
                                   if (!columnNameToColumn.containsKey(columnName)) {
                                     throw new RuntimeException(
@@ -53,6 +75,9 @@ public class SingerCatalogConverters {
                                   final Column column = columnNameToColumn.get(columnName);
 
                                   newSingerMetadata.getMetadata().setSelected(column.getSelected());
+                                } else {
+                                  // table metadata
+                                  newSingerMetadata.getMetadata().setSelected(table.getSelected());
                                 }
                                 return newSingerMetadata;
                               })
@@ -139,16 +164,16 @@ public class SingerCatalogConverters {
         .filter(SingerCatalogConverters::isColumnMetadata)
         .collect(
             Collectors.toMap(
-                metadata -> metadata.getBreadcrumbs().get(1), SingerMetadata::getMetadata));
+                metadata -> metadata.getBreadcrumb().get(1), SingerMetadata::getMetadata));
   }
 
   private static boolean isColumnMetadata(SingerMetadata metadata) {
     // column metadata must have 2 breadcrumb entries
-    if (metadata.getBreadcrumbs().size() != 2) {
+    if (metadata.getBreadcrumb().size() != 2) {
       return false;
     }
     // column metadata must have first breadcrumb be property
-    return !metadata.getBreadcrumbs().get(0).equals("property");
+    return !metadata.getBreadcrumb().get(0).equals("property");
   }
 
   private static String getColumnName(SingerMetadata metadata) {
@@ -156,7 +181,7 @@ public class SingerCatalogConverters {
       throw new RuntimeException("Cannot get column name for non-column metadata");
     }
 
-    return metadata.getBreadcrumbs().get(1);
+    return metadata.getBreadcrumb().get(1);
   }
 
   /**
@@ -219,7 +244,7 @@ public class SingerCatalogConverters {
     singerMetadataChild.setSqlDatatype(toClone2.getSqlDatatype());
 
     final SingerMetadata singerMetadata = new SingerMetadata();
-    singerMetadata.setBreadcrumbs(new ArrayList<>(toClone.getBreadcrumbs()));
+    singerMetadata.setBreadcrumb(new ArrayList<>(toClone.getBreadcrumb()));
     singerMetadata.setMetadata(singerMetadataChild);
 
     return singerMetadata;

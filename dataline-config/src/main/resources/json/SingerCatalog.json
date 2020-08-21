@@ -52,7 +52,9 @@
     "SingerTableSchema": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["properties"],
+      "required": [
+        "properties"
+      ],
       "description": "The JSON schema for the stream. This struct is weird because it's essentially modeling the properties field of a jsonschema object.",
       "properties": {
         "type": {
@@ -60,6 +62,9 @@
         },
         "properties": {
           "$ref": "SingerCatalog.json#/definitions/SingerColumnMap"
+        },
+        "definitions": {
+          "description": "placeholder for definitions that are included since it is all jsonchema."
         }
       }
     },
@@ -85,6 +90,15 @@
         "selected": {
           "description": "Deprecated: Some legacy Taps handle stream and field selection by looking for \"selected\": true directly in the stream's schema in the catalog.json file (called properties.json in legacy taps).",
           "type": "boolean"
+        },
+        "minimum": {
+          "type": "integer"
+        },
+        "maximum": {
+          "type": "integer"
+        },
+        "maxLength": {
+          "type": "integer"
         }
       }
     },
@@ -93,13 +107,13 @@
       "additionalProperties": false,
       "required": [
         "metadata",
-        "breadcrumbs"
+        "breadcrumb"
       ],
       "properties": {
         "metadata": {
           "$ref": "SingerCatalog.json#/definitions/SingerMetadataChild"
         },
-        "breadcrumbs": {
+        "breadcrumb": {
           "type": "array",
           "items": {
             "type": "string"
