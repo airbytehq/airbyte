@@ -25,26 +25,17 @@
 package io.dataline.workers.singer;
 
 public enum SingerTarget implements SingerConnector {
-  // TODO
-  //  LOCAL_FILE("", ""),
-  //  BIG_QUERY("", ""),
-  POSTGRES("target-postgres", "target-postgres");
+  POSTGRES("dataline/integration-singer-postgres-destination"),
+  LOCAL_FILE("dataline/integration-singer-csv-destination");
 
-  private final String pythonVirtualEnvName;
-  private final String executableName;
+  private final String imageName;
 
-  SingerTarget(String pythonVirtualEnvName, String executableName) {
-    this.pythonVirtualEnvName = pythonVirtualEnvName;
-    this.executableName = executableName;
+  SingerTarget(String imageName) {
+    this.imageName = imageName;
   }
 
   @Override
-  public String getPythonVirtualEnvName() {
-    return pythonVirtualEnvName;
-  }
-
-  @Override
-  public String getExecutableName() {
-    return executableName;
+  public String getImageName() {
+    return imageName;
   }
 }

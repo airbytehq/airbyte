@@ -22,17 +22,14 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler.persistence;
+package io.dataline.workers.singer.postgres_tap;
 
-import com.google.common.collect.Sets;
-import java.util.Set;
+import io.dataline.workers.singer.SingerDiscoveryWorker;
+import io.dataline.workers.singer.SingerTap;
 
-public enum JobStatus {
-  PENDING,
-  RUNNING,
-  FAILED,
-  COMPLETED,
-  CANCELLED;
+public class SingerPostgresTapDiscoverWorker extends SingerDiscoveryWorker {
 
-  public static Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, COMPLETED, CANCELLED);
+  public SingerPostgresTapDiscoverWorker() {
+    super(SingerTap.POSTGRES);
+  }
 }

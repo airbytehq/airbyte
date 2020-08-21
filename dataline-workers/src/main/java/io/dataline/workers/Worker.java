@@ -24,12 +24,15 @@
 
 package io.dataline.workers;
 
-public interface Worker<OutputType> {
+import java.nio.file.Path;
+
+public interface Worker<InputType, OutputType> {
   /**
    * Blocking call to run the worker's workflow. Once this is complete, getStatus should return
    * either COMPLETE, FAILED, or CANCELLED.
    */
-  OutputAndStatus<OutputType> run() throws InvalidCredentialsException, InvalidCatalogException;
+  OutputAndStatus<OutputType> run(InputType inputType, Path workspacePath)
+      throws InvalidCredentialsException, InvalidCatalogException;
 
   void cancel();
 }

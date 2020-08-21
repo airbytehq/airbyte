@@ -24,32 +24,33 @@
 
 package io.dataline.workers.singer;
 
+import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.StandardConnectionStatus;
-import io.dataline.workers.DiscoveryOutput;
+import io.dataline.config.StandardDiscoveryOutput;
+import io.dataline.workers.CheckConnectionWorker;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerCheckConnectionWorker extends BaseSingerWorker<StandardConnectionStatus> {
-  private final Logger LOGGER = LoggerFactory.getLogger(SingerCheckConnectionWorker.class);
-  private SingerDiscoveryWorker singerDiscoveryWorker;
+public class SingerCheckConnectionWorker
+    extends BaseSingerWorker<ConnectionImplementation, StandardConnectionStatus>
+    implements CheckConnectionWorker {
 
-  public SingerCheckConnectionWorker(
-      String workerId,
-      SingerTap singerTap,
-      String configDotJson,
-      String workspaceRoot,
-      String singerLibsRoot) {
-    super(workerId, workspaceRoot, singerLibsRoot);
-    this.singerDiscoveryWorker =
-        new SingerDiscoveryWorker(
-            workerId, configDotJson, singerTap, workspaceRoot, singerLibsRoot);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerCheckConnectionWorker.class);
+
+  private final SingerDiscoveryWorker singerDiscoveryWorker;
+
+  public SingerCheckConnectionWorker(SingerConnector connector) {
+    this.singerDiscoveryWorker = new SingerDiscoveryWorker(connector);
   }
 
   @Override
-  OutputAndStatus<StandardConnectionStatus> runInternal() {
-    OutputAndStatus<DiscoveryOutput> outputAndStatus = singerDiscoveryWorker.runInternal();
+  public OutputAndStatus<StandardConnectionStatus> run(
+      ConnectionImplementation connectionImplementation, Path workspaceRoot) {
+    OutputAndStatus<StandardDiscoveryOutput> outputAndStatus =
+        singerDiscoveryWorker.runInternal(connectionImplementation, workspaceRoot);
     StandardConnectionStatus connectionStatus = new StandardConnectionStatus();
     JobStatus jobStatus;
     if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL
@@ -57,14 +58,11 @@ public class SingerCheckConnectionWorker extends BaseSingerWorker<StandardConnec
       connectionStatus.setStatus(StandardConnectionStatus.Status.SUCCESS);
       jobStatus = JobStatus.SUCCESSFUL;
     } else {
-      LOGGER.info(
-          "Connection check for worker {} unsuccessful. Discovery output: {}",
-          workerId,
-          outputAndStatus);
+      LOGGER.info("Connection check unsuccessful. Discovery output: {}", outputAndStatus);
       jobStatus = JobStatus.FAILED;
       connectionStatus.setStatus(StandardConnectionStatus.Status.FAILURE);
       // TODO add better error log parsing to specify the exact reason for failure as the message
-      // field
+      connectionStatus.setMessage("Failed to connect.");
     }
     return new OutputAndStatus<>(jobStatus, connectionStatus);
   }

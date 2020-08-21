@@ -24,16 +24,17 @@
 
 package io.dataline.workers.singer;
 
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.config.ConnectionImplementation;
+import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.workers.BaseWorkerTestCase;
-import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerTestHelper;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
@@ -41,10 +42,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
+
+import static io.dataline.workers.JobStatus.FAILED;
+import static io.dataline.workers.JobStatus.SUCCESSFUL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
 
@@ -60,44 +62,48 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testPostgresDiscovery() throws IOException {
+    final String jobId = "1";
     String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
-    SingerDiscoveryWorker worker =
-        new SingerDiscoveryWorker(
-            "1",
-            postgresCreds,
-            SingerTap.POSTGRES,
-            getWorkspacePath().toAbsolutePath().toString(),
-            SINGER_LIB_PATH);
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
+    connectionImplementation.setConfiguration(o);
 
-    OutputAndStatus<DiscoveryOutput> run = worker.run();
+    SingerDiscoveryWorker worker = new SingerDiscoveryWorker(SingerTap.POSTGRES);
+
+    OutputAndStatus<StandardDiscoveryOutput> run =
+        worker.run(connectionImplementation, createWorkspacePath(jobId));
+
     assertEquals(SUCCESSFUL, run.getStatus());
 
-    String expectedCatalog = readResource("simple_postgres_catalog.json");
+    String expectedSchema = readResource("simple_postgres_schema.json");
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final String actualSchema = objectMapper.writeValueAsString(run.getOutput().get());
 
     assertTrue(run.getOutput().isPresent());
-    assertJsonEquals(expectedCatalog, run.getOutput().get().getCatalog());
+    assertJsonEquals(expectedSchema, actualSchema);
   }
 
   @Test
-  public void testCancellation()
-      throws JsonProcessingException, InterruptedException, ExecutionException {
+  public void testCancellation() throws IOException, InterruptedException, ExecutionException {
+    final String jobId = "1";
     String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
-    SingerDiscoveryWorker worker =
-        new SingerDiscoveryWorker(
-            "1",
-            postgresCreds,
-            SingerTap.POSTGRES,
-            getWorkspacePath().toAbsolutePath().toString(),
-            SINGER_LIB_PATH);
+
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
+    connectionImplementation.setConfiguration(o);
+
+    SingerDiscoveryWorker worker = new SingerDiscoveryWorker(SingerTap.POSTGRES);
+
     ExecutorService threadPool = Executors.newFixedThreadPool(2);
     Future<?> workerWasCancelled =
         threadPool.submit(
             () -> {
-              OutputAndStatus<DiscoveryOutput> output = worker.run();
+              OutputAndStatus<StandardDiscoveryOutput> output =
+                  worker.run(connectionImplementation, createWorkspacePath(jobId));
               assertEquals(FAILED, output.getStatus());
             });
 
-    TimeUnit.MILLISECONDS.sleep(100);
+    TimeUnit.MILLISECONDS.sleep(50);
     worker.cancel();
     workerWasCancelled.get();
   }

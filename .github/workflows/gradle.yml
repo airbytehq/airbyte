@@ -12,6 +12,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Build
         run: ./tools/app/build.sh
-
-          
+      - name: Test
+        run: ./tools/app/test.sh
 

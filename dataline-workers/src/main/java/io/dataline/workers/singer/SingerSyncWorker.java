@@ -27,6 +27,7 @@ package io.dataline.workers.singer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
+import io.dataline.config.JobSyncConfig;
 import io.dataline.config.JobSyncOutput;
 import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.State;
@@ -39,13 +40,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.file.Path;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
+public class SingerSyncWorker extends BaseSingerWorker<Void, JobSyncOutput> {
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerSyncWorker.class);
 
   private static final String TAP_CONFIG_FILENAME = "tap_config.json";
@@ -64,19 +68,19 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
   private final SingerTarget target;
   private final String targetConfig;
 
-  private Process workerProcess;
+  private Process tapReadProcess;
+  private Process tapWriteProcess;
 
+  // TODO this needs to all be passed in as part of the input format once we have conversions from
+  //  input format to singer format
   public SingerSyncWorker(
-      String workerId,
-      String workspaceRoot,
-      String singerRoot,
       SingerTap tap,
       String tapConfiguration,
       String tapCatalog,
       String currentConnectionState,
       SingerTarget target,
       String targetConfig) {
-    super(workerId, workspaceRoot, singerRoot);
+
     this.tap = tap;
     this.tapConfiguration = tapConfiguration;
     this.tapCatalog = tapCatalog;
@@ -86,33 +90,52 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
   }
 
   @Override
-  OutputAndStatus<JobSyncOutput> runInternal() {
-    String tapConfigPath = writeFileToWorkspace(TAP_CONFIG_FILENAME, tapConfiguration);
-    String catalogPath = writeFileToWorkspace(CATALOG_FILENAME, tapCatalog);
-    String inputStatePath = writeFileToWorkspace(INPUT_STATE_FILENAME, connectionState);
-    String targetConfigPath = writeFileToWorkspace(TARGET_CONFIG_FILENAME, targetConfig);
+  public void cancel() {
+    cancelHelper(tapReadProcess);
+    cancelHelper(tapWriteProcess);
+  }
+
+  @Override
+  // TODO fix input format when type conversions exist
+  public OutputAndStatus<JobSyncOutput> run(Void nothing, Path workspaceRoot) {
+    String tapConfigPath =
+        writeFile(workspaceRoot, TAP_CONFIG_FILENAME, tapConfiguration).toAbsolutePath().toString();
+    String catalogPath =
+        writeFile(workspaceRoot, CATALOG_FILENAME, tapCatalog).toAbsolutePath().toString();
+    String inputStatePath =
+        writeFile(workspaceRoot, INPUT_STATE_FILENAME, connectionState).toAbsolutePath().toString();
+    String targetConfigPath =
+        writeFile(workspaceRoot, TARGET_CONFIG_FILENAME, targetConfig).toAbsolutePath().toString();
 
     MutableInt numRecords = new MutableInt();
+
     try {
-      String[] tapCommand = {
-        getExecutableAbsolutePath(tap),
-        "--config",
-        tapConfigPath,
-        "--properties", // TODO support both --properties and --catalog depending on integration
-        catalogPath,
-        "--state",
-        inputStatePath
+      String[] dockerCmd = {
+        "docker", "run", "-v", String.format("%s:/singer/data", workspaceRoot.toString())
       };
-      String[] targetCommand = {getExecutableAbsolutePath(target), "--config", targetConfigPath};
-      LOGGER.debug("Tap command: {}", String.join(" ", tapCommand));
-      LOGGER.debug("target command: {}", String.join(" ", targetCommand));
+      String[] tapCmd =
+          ArrayUtils.addAll(
+              dockerCmd,
+              tap.getImageName(),
+              "--config",
+              tapConfigPath,
+              // TODO support both --properties and --catalog depending on integration
+              "--properties",
+              catalogPath,
+              "--state",
+              inputStatePath);
+
+      String[] targetCmd =
+          ArrayUtils.addAll(dockerCmd, target.getImageName(), "--config", targetConfigPath);
+      LOGGER.debug("Tap command: {}", String.join(" ", tapCmd));
+      LOGGER.debug("target command: {}", String.join(" ", targetCmd));
 
       long startTime = System.currentTimeMillis();
-      Process tapProcess = new ProcessBuilder().command(tapCommand).start();
+      Process tapProcess = new ProcessBuilder().command(tapCmd).start();
       Process targetProcess =
           new ProcessBuilder()
-              .command(targetCommand)
-              .redirectOutput(getWorkspacePath().resolve(OUTPUT_STATE_FILENAME).toFile())
+              .command(targetCmd)
+              .redirectOutput(workspaceRoot.resolve(OUTPUT_STATE_FILENAME).toFile())
               .start();
 
       InputStream tapStdout = tapProcess.getInputStream();
@@ -139,7 +162,8 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
               });
 
       while (!tapProcess.waitFor(1, TimeUnit.MINUTES)) {
-        LOGGER.debug("Waiting for sync worker {} tap.", workerId);
+        LOGGER.debug(
+            "Waiting for sync worker (attemptId:{}) tap.", ""); // TODO when attempt ID is passed in
       }
 
       // target process stays alive as long as its stdin has not been closed. So we wait for the tap
@@ -149,7 +173,9 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
       writer.close();
       reader.close();
       while (!targetProcess.waitFor(1, TimeUnit.MINUTES)) {
-        LOGGER.debug("Waiting for sync worker {} target", workerId);
+        LOGGER.debug(
+            "Waiting for sync worker (attemptId:{}) target",
+            ""); // TODO when attempt ID is passed in
       }
 
       JobSyncOutput jobSyncOutput = new JobSyncOutput();
@@ -157,12 +183,12 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
       summary.setRecordsSynced(numRecords.getValue().longValue());
       summary.setStartTime(startTime);
       summary.setEndTime(System.currentTimeMillis());
-      summary.setAttemptId(UUID.fromString(workerId));
+      summary.setJobId(UUID.randomUUID()); // TODO this is not input anywhere
       // TODO set logs
       jobSyncOutput.setStandardSyncSummary(summary);
 
       State state = new State();
-      state.setState(readFileFromWorkspace(OUTPUT_STATE_FILENAME));
+      state.setState(readFile(workspaceRoot, OUTPUT_STATE_FILENAME));
       jobSyncOutput.setState(state);
 
       return new OutputAndStatus<>(JobStatus.SUCCESSFUL, jobSyncOutput);
@@ -170,10 +196,5 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
       // TODO return state
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public void cancel() {
-    cancelHelper(workerProcess);
   }
 }

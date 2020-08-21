@@ -1,29 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO">
 
-    <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
-        </Console>
-    </Appenders>
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+    </Console>
+  </Appenders>
 
-    <Loggers>
-        <Root level="TRACE">
-            <AppenderRef ref="Console"/>
-        </Root>
+  <Loggers>
+    <Root level="TRACE">
+      <AppenderRef ref="Console"/>
+    </Root>
 
-        <Logger name="org.jooq.tools.LoggerListener" level="INFO">
-            <AppenderRef ref="Console"/>
-        </Logger>
+    <Logger name="org.eclipse.jetty" level="INFO" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Logger name="com.github.dockerjava" level="INFO" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Logger name="org.apache.hc" level="INFO" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Logger name="org.jooq.tools.LoggerListener" level="INFO">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Logger name="org.jooq" level="INFO">
+      <AppenderRef ref="Console"/>
+    </Logger>
 
-        <Logger name="org.jooq" level="INFO">
-            <AppenderRef ref="Console"/>
-        </Logger>
-
-        <Logger name="org.eclipse.jetty" level="INFO" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
-
-    </Loggers>
+  </Loggers>
 
 </Configuration>

@@ -26,6 +26,7 @@ package io.dataline.workers.singer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.dataline.config.JobSyncConfig;
 import io.dataline.config.JobSyncOutput;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.BaseWorkerTestCase;
@@ -81,16 +82,13 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
 
     OutputAndStatus<JobSyncOutput> syncOutputAndStatus =
         new SingerSyncWorker(
-                UUID.randomUUID().toString(),
-                getWorkspacePath().toAbsolutePath().toString(),
-                SINGER_LIB_PATH,
                 SingerTap.POSTGRES,
                 tapConfig,
                 readResource("simple_postgres_full_table_sync_catalog.json"),
                 "{}", // full table sync, no state needed
                 SingerTarget.POSTGRES,
                 targetConfig)
-            .run();
+            .run(null, workspaceDirectory);
 
     assertEquals(JobStatus.SUCCESSFUL, syncOutputAndStatus.getStatus());
     JobSyncOutput jobSyncOutput = syncOutputAndStatus.getOutput().get();

@@ -30,10 +30,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.StandardConnectionStatus;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerTestHelper;
+
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -54,14 +58,20 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testNonexistentDb() throws JsonProcessingException {
+  public void testNonexistentDb() throws IOException {
+    final String jobId = "1";
     String fakeDbCreds =
         PostgreSQLContainerTestHelper.getSingerTapConfig(
             "user", "pass", "localhost", "postgres", "111111");
-    SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(
-            "1", SingerTap.POSTGRES, fakeDbCreds, getWorkspacePath().toString(), SINGER_LIB_PATH);
-    OutputAndStatus<StandardConnectionStatus> run = worker.run();
+
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    final Object o = new ObjectMapper().readValue(fakeDbCreds, Object.class);
+    connectionImplementation.setConfiguration(o);
+
+    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
+    OutputAndStatus<StandardConnectionStatus> run =
+        worker.run(connectionImplementation, createWorkspacePath(jobId));
+
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.FAILURE, run.getOutput().get().getStatus());
@@ -70,7 +80,8 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testIncorrectAuthCredentials() throws JsonProcessingException {
+  public void testIncorrectAuthCredentials() throws IOException {
+    final String jobId = "1";
     String incorrectCreds =
         PostgreSQLContainerTestHelper.getSingerTapConfig(
             db.getUsername(),
@@ -79,14 +90,15 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
             db.getDatabaseName(),
             db.getFirstMappedPort() + "");
 
-    SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(
-            "1",
-            SingerTap.POSTGRES,
-            incorrectCreds,
-            getWorkspacePath().toString(),
-            SINGER_LIB_PATH);
-    OutputAndStatus<StandardConnectionStatus> run = worker.run();
+    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
+
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    final Object o = new ObjectMapper().readValue(incorrectCreds, Object.class);
+    connectionImplementation.setConfiguration(o);
+
+    OutputAndStatus<StandardConnectionStatus> run =
+        worker.run(connectionImplementation, createWorkspacePath(jobId));
+
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.FAILURE, run.getOutput().get().getStatus());
@@ -95,13 +107,18 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testSuccessfulConnection() throws JsonProcessingException {
-    String creds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
+  public void testSuccessfulConnection() throws IOException {
+    final String jobId = "1";
 
-    SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(
-            "1", SingerTap.POSTGRES, creds, getWorkspacePath().toString(), SINGER_LIB_PATH);
-    OutputAndStatus<StandardConnectionStatus> run = worker.run();
+    String creds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    final Object o = new ObjectMapper().readValue(creds, Object.class);
+    connectionImplementation.setConfiguration(o);
+
+    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
+    OutputAndStatus<StandardConnectionStatus> run =
+        worker.run(connectionImplementation, createWorkspacePath(jobId));
+
     assertEquals(SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.SUCCESS, run.getOutput().get().getStatus());

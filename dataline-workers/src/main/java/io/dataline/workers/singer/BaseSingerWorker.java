@@ -27,97 +27,51 @@ package io.dataline.workers.singer;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType> {
-  private static Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
+public abstract class BaseSingerWorker<InputType, OutputType>
+    implements Worker<InputType, OutputType> {
 
-  protected JobStatus jobStatus;
-  protected String workerId;
-  protected final Path workspacePath;
-
-  private final String singerRoot;
-
-  protected BaseSingerWorker(String workerId, String workspaceRoot, String singerRoot) {
-    this.workerId = workerId;
-    this.workspacePath = Path.of(workspaceRoot, workerId);
-    this.singerRoot = singerRoot;
-  }
-
-  @Override
-  public OutputAndStatus<OutputType> run() {
-    createWorkspace();
-    return runInternal();
-  }
-
-  abstract OutputAndStatus<OutputType> runInternal();
-
-  private void createWorkspace() {
-    try {
-      FileUtils.forceMkdir(workspacePath.toFile());
-    } catch (IOException e) {
-      LOGGER.error("Unable to create workspace for worker {} due to exception {} ", workerId, e);
-      throw new RuntimeException(e);
-    }
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
 
   protected void cancelHelper(Process workerProcess) {
     try {
-      jobStatus = JobStatus.FAILED;
       workerProcess.destroy();
       workerProcess.waitFor(10, TimeUnit.SECONDS);
       if (workerProcess.isAlive()) {
         workerProcess.destroyForcibly();
       }
     } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling worker " + workerId, e);
+      LOGGER.error("Exception when cancelling job.", e);
     }
   }
 
-  protected Path getWorkspacePath() {
-    return workspacePath;
-  }
-
-  protected String readFileFromWorkspace(String fileName) {
-    try (FileReader fileReader = new FileReader(getWorkspaceFilePath(fileName));
-        BufferedReader br = new BufferedReader(fileReader)) {
-      return br.lines().collect(Collectors.joining("\n"));
+  protected static String readFile(Path workspaceRoot, String fileName) {
+    try {
+      Path filePath = workspaceRoot.resolve(fileName);
+      return FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  protected String writeFileToWorkspace(String fileName, String contents) {
-    String filePath = getWorkspaceFilePath(fileName);
-    try (FileWriter fileWriter = new FileWriter(filePath)) {
-      fileWriter.write(contents);
+  protected static Path writeFile(Path workspaceRoot, String fileName, String contents) {
+    try {
+      Path filePath = workspaceRoot.resolve(fileName);
+      FileUtils.writeStringToFile(filePath.toFile(), contents, StandardCharsets.UTF_8);
       return filePath;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  protected String getExecutableAbsolutePath(SingerConnector tapOrTarget) {
-    return Paths.get(
-            singerRoot,
-            tapOrTarget.getPythonVirtualEnvName(),
-            "bin",
-            tapOrTarget.getExecutableName())
-        .toAbsolutePath()
-        .toString();
-  }
-
-  private String getWorkspaceFilePath(String fileName) {
-    return getWorkspacePath().resolve(fileName).toAbsolutePath().toString();
+  protected static Path getFullPath(Path workspaceRoot, String fileName) {
+    return workspaceRoot.resolve(fileName);
   }
 }

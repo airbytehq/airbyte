@@ -1,0 +1,2 @@
+psycopg2 == 2.7.4
+tap-postgres == 0.1.0

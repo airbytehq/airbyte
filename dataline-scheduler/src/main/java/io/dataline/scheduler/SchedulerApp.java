@@ -25,20 +25,26 @@
 package io.dataline.scheduler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.dataline.db.DatabaseHelper;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.dbcp2.BasicDataSource;
 
 /**
- * The Scheduler is responsible for finding new scheduled jobs that need to be run and to launch
+ * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
  * them. The current implementation uses a thread pool on the scheduler's machine to launch the
  * jobs. One thread is reserved for the job submitter, which is responsible for finding and
  * launching new jobs.
  */
-public class Scheduler {
+public class SchedulerApp {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
+
   private static final int MAX_WORKERS = 4;
   private static final long JOB_SUBMITTER_DELAY_MILLIS = 1000L;
   private static final ThreadFactory THREAD_FACTORY =
@@ -46,20 +52,29 @@ public class Scheduler {
 
   private final BasicDataSource connectionPool;
 
-  public Scheduler(BasicDataSource connectionPool) {
+  public SchedulerApp(BasicDataSource connectionPool) {
     this.connectionPool = connectionPool;
   }
 
   public void start() {
+    SchedulerPersistence persistence = new DefaultSchedulerPersistence(connectionPool);
     ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
     scheduledPool.scheduleWithFixedDelay(
-        new JobSubmitter(workerThreadPool, connectionPool),
+        new JobSubmitter(workerThreadPool, connectionPool, persistence),
         0L,
         JOB_SUBMITTER_DELAY_MILLIS,
         TimeUnit.MILLISECONDS);
 
     Runtime.getRuntime()
         .addShutdownHook(new SchedulerShutdownHandler(workerThreadPool, scheduledPool));
+  }
+
+  public static void main(String[] args) {
+    LOGGER.info("Creating DB connection pool...");
+    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+
+    LOGGER.info("Launching scheduler...");
+    new SchedulerApp(connectionPool).start();
   }
 }

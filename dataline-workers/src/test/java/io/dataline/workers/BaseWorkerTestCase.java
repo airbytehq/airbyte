@@ -24,6 +24,7 @@
 
 package io.dataline.workers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,13 +36,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
+import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseWorkerTestCase {
   // TODO inject via env
-  protected String SINGER_LIB_PATH = "/usr/local/lib/singer";
-
-  private Path workspaceDirectory;
+  protected Path workspaceDirectory;
 
   @BeforeAll
   public void init() throws IOException {
@@ -49,8 +49,14 @@ public abstract class BaseWorkerTestCase {
     System.out.println("Workspace directory: " + workspaceDirectory.toString());
   }
 
-  protected Path getWorkspacePath() {
-    return workspaceDirectory;
+  protected Path createWorkspacePath(String jobId) {
+    final Path workspacePath = workspaceDirectory.resolve(jobId);
+    try {
+      FileUtils.forceMkdir(workspacePath.toFile());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return workspacePath;
   }
 
   protected String readResource(String name) {
@@ -64,6 +70,6 @@ public abstract class BaseWorkerTestCase {
 
   protected void assertJsonEquals(String s1, String s2) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
-    assertTrue(mapper.readTree(s1).equals(mapper.readTree(s2)));
+    assertEquals(mapper.readTree(s1), mapper.readTree(s2));
   }
 }
