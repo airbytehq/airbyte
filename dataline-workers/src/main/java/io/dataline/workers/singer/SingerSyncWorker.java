@@ -98,13 +98,15 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
         getExecutableAbsolutePath(tap),
         "--config",
         tapConfigPath,
-        "--catalog",
+        "--properties",
         catalogPath,
         "--state",
         inputStatePath
       };
-
       String[] targetCommand = {getExecutableAbsolutePath(target), "--config", targetConfigPath};
+      LOGGER.debug("Tap command: {}", String.join(" ", tapCommand));
+      LOGGER.debug("target command: {}", String.join(" ", targetCommand));
+
       Process tapProcess = new ProcessBuilder().command(tapCommand).start();
       Process targetProcess =
           new ProcessBuilder()
@@ -112,36 +114,38 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
               .redirectOutput(getWorkspacePath().resolve(OUTPUT_STATE_FILENAME).toFile())
               .start();
 
-      try (InputStream tapStdout = tapProcess.getInputStream();
-          OutputStream targetStdin = targetProcess.getOutputStream()) {
-        BufferedReader reader =
-            new BufferedReader(new InputStreamReader(tapStdout, Charsets.UTF_8));
-        BufferedWriter writer =
-            new BufferedWriter(new OutputStreamWriter(targetStdin, Charsets.UTF_8));
+      InputStream tapStdout = tapProcess.getInputStream();
+      OutputStream targetStdin = targetProcess.getOutputStream();
+      BufferedReader reader = new BufferedReader(new InputStreamReader(tapStdout, Charsets.UTF_8));
+      BufferedWriter writer =
+          new BufferedWriter(new OutputStreamWriter(targetStdin, Charsets.UTF_8));
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        reader
-            .lines()
-            .forEach(
-                line -> {
-                  try {
-                    writer.write(line);
-                    writer.newLine();
-                    JsonNode lineJson = objectMapper.readTree(line);
-                    System.out.println(lineJson);
-                    if (lineJson.get("type").asText().equals("RECORD")) {
-                      numRecords.increment();
-                    }
-                  } catch (IOException e) {
-                    throw new RuntimeException(e);
+      ObjectMapper objectMapper = new ObjectMapper();
+      reader
+          .lines()
+          .forEach(
+              line -> {
+                try {
+                  writer.write(line);
+                  writer.newLine();
+                  JsonNode lineJson = objectMapper.readTree(line);
+                  if (lineJson.get("type").asText().equals("RECORD")) {
+                    numRecords.increment();
                   }
-                });
+                } catch (IOException e) {
+                  throw new RuntimeException(e);
+                }
+              });
+
+      while (!tapProcess.waitFor(1, TimeUnit.MINUTES)) {
+        LOGGER.debug("Waiting for sync worker {} tap.", workerId);
       }
 
-      while (!tapProcess.waitFor(1, TimeUnit.SECONDS)
-          && targetProcess.waitFor(1, TimeUnit.SECONDS)) {
-        LOGGER.debug("Waiting for sync worker {}", workerId);
+      writer.flush();
+      writer.close();
+      reader.close();
+      while (!targetProcess.waitFor(1, TimeUnit.MINUTES)) {
+        LOGGER.debug("Waiting for sync worker {} target", workerId);
       }
 
       JobSyncOutput jobSyncOutput = new JobSyncOutput();

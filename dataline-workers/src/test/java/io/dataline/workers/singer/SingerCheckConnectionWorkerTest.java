@@ -33,7 +33,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.dataline.config.StandardConnectionStatus;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.PostgreSQLContainerHelper;
+import io.dataline.workers.PostgreSQLContainerTestHelper;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -56,7 +56,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   @Test
   public void testNonexistentDb() throws JsonProcessingException {
     String fakeDbCreds =
-        PostgreSQLContainerHelper.getSingerConfigJson(
+        PostgreSQLContainerTestHelper.getSingerTapConfig(
             "user", "pass", "localhost", "postgres", "111111");
     SingerCheckConnectionWorker worker =
         new SingerCheckConnectionWorker(
@@ -72,7 +72,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   @Test
   public void testIncorrectAuthCredentials() throws JsonProcessingException {
     String incorrectCreds =
-        PostgreSQLContainerHelper.getSingerConfigJson(
+        PostgreSQLContainerTestHelper.getSingerTapConfig(
             db.getUsername(),
             "wrongpassword",
             db.getHost(),
@@ -96,7 +96,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testSuccessfulConnection() throws JsonProcessingException {
-    String creds = PostgreSQLContainerHelper.getSingerConfigJson(db);
+    String creds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
     SingerCheckConnectionWorker worker =
         new SingerCheckConnectionWorker(

@@ -10,8 +10,10 @@
             "table-key-properties": [],
             "schema-name": "public",
             "database-name": "test",
-            "row-count": 0,
-            "is-view": false
+            "row-count": 5,
+            "is-view": false,
+            "selected": true,
+            "replication-method": "FULL_TABLE"
           }
         },
         {

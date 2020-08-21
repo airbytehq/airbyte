@@ -34,10 +34,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.PostgreSQLContainerHelper;
+import io.dataline.workers.PostgreSQLContainerTestHelper;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -47,27 +45,23 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
 
   PostgreSQLContainer db;
 
   @BeforeAll
-  public void initDb() throws SQLException {
-    db =
-        (PostgreSQLContainer)
-            new PostgreSQLContainer()
-                .withInitScript(getClass().getResource("simple_postgres_init.sql").getPath());
+  public void initDb() throws SQLException, IOException, InterruptedException {
+    db = new PostgreSQLContainer();
     db.start();
-    // init db schema
-    Connection con =
-        DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
-    con.createStatement().execute("");
+    PostgreSQLContainerTestHelper.runSqlScript(
+        MountableFile.forClasspathResource("simple_postgres_init.sql"), db);
   }
 
   @Test
   public void testPostgresDiscovery() throws IOException {
-    String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
+    String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
     SingerDiscoveryWorker worker =
         new SingerDiscoveryWorker(
             "1",
@@ -88,7 +82,7 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
   @Test
   public void testCancellation()
       throws JsonProcessingException, InterruptedException, ExecutionException {
-    String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
+    String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
     SingerDiscoveryWorker worker =
         new SingerDiscoveryWorker(
             "1",

@@ -24,55 +24,152 @@
 
 package io.dataline.workers.singer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import io.dataline.config.JobSyncOutput;
+import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.BaseWorkerTestCase;
-import io.dataline.workers.PostgreSQLContainerHelper;
+import io.dataline.workers.JobStatus;
+import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.PostgreSQLContainerTestHelper;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Set;
-import org.junit.jupiter.api.Assertions;
+import java.util.stream.Collectors;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.Condition;
+import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-public class SingerSyncWorkerTest extends BaseWorkerTestCase {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
+
+  PostgreSQLContainer sourceDb;
+  PostgreSQLContainer targetDb;
+
+  @BeforeAll
+  public void initDb() {
+    sourceDb = new PostgreSQLContainer();
+    sourceDb.start();
+    targetDb = new PostgreSQLContainer();
+    targetDb.start();
+  }
+
+  @Before
+  public void wipeDb() throws SQLException {
+    PostgreSQLContainerTestHelper.wipePublicSchema(sourceDb);
+    PostgreSQLContainerTestHelper.wipePublicSchema(targetDb);
+  }
 
   @Test
-  public void testIt() throws IOException, SQLException, InterruptedException {
-    PostgreSQLContainer sourceDb = new PostgreSQLContainer();
+  public void testFirstTimeFullTableSync() throws IOException, SQLException, InterruptedException {
+    PostgreSQLContainerTestHelper.runSqlScript(
+        MountableFile.forClasspathResource("simple_postgres_init.sql"), sourceDb);
+    String tapConfig = PostgreSQLContainerTestHelper.getSingerTapConfig(sourceDb);
+    String targetConfig = PostgreSQLContainerTestHelper.getSingerTargetConfig(targetDb);
 
-    sourceDb.start();
-    sourceDb.copyFileToContainer(
-        MountableFile.forClasspathResource("simple_postgres_init.sql"), "/etc/init.sql");
-    sourceDb.execInContainer(
-        "psql",
-        "-d",
-        sourceDb.getDatabaseName(),
-        "-U",
-        sourceDb.getUsername(),
-        "-a",
-        "-f",
-        "/etc/init.sql");
-    PostgreSQLContainer targetDb = new PostgreSQLContainer();
-    targetDb.start();
+    OutputAndStatus<JobSyncOutput> syncOutputAndStatus =
+        new SingerSyncWorker(
+                "1",
+                getWorkspacePath().toAbsolutePath().toString(),
+                SINGER_LIB_PATH,
+                SingerTap.POSTGRES,
+                tapConfig,
+                readResource("simple_postgres_sync_catalog.json"),
+                "{}", // fresh sync, no state
+                SingerTarget.POSTGRES,
+                targetConfig)
+            .run();
 
-    String tapConfig = PostgreSQLContainerHelper.getSingerConfigJson(sourceDb);
-    String targetConfig = PostgreSQLContainerHelper.getSingerConfigJson(targetDb);
+    assertEquals(JobStatus.SUCCESSFUL, syncOutputAndStatus.getStatus());
 
-    Set<String> expectedTables = PostgreSQLContainerHelper.getTables(sourceDb);
+    BasicDataSource sourceDbPool =
+        DatabaseHelper.getConnectionPool(
+            sourceDb.getUsername(), sourceDb.getPassword(), sourceDb.getJdbcUrl());
+    BasicDataSource targetDbPool =
+        DatabaseHelper.getConnectionPool(
+            targetDb.getUsername(), targetDb.getPassword(), targetDb.getJdbcUrl());
 
-    new SingerSyncWorker(
-            "1",
-            getWorkspacePath().toAbsolutePath().toString(),
-            SINGER_LIB_PATH,
-            SingerTap.POSTGRES,
-            tapConfig,
-            readResource("simple_postgres_sync_catalog.json"),
-            "{}", // fresh sync, no state
-            SingerTarget.POSTGRES,
-            targetConfig)
-        .run();
+    Set<String> sourceTables = listTables(sourceDbPool);
+    Set<String> targetTables = listTables(targetDbPool);
+    assertEquals(sourceTables, targetTables);
 
-    Set<String> actualTables = PostgreSQLContainerHelper.getTables(targetDb);
-    Assertions.assertEquals(expectedTables, actualTables);
+    // TODO validate that indices are synced? what defines
+    for (String table : sourceTables) {
+      assertTablesEquivalent(sourceDbPool, targetDbPool, table);
+    }
+  }
+
+  @Test
+  public void testMultipleIncrementalSyncs(){
+
+  }
+
+  private void assertTablesEquivalent(
+      BasicDataSource sourceDbPool, BasicDataSource targetDbPool, String table)
+      throws SQLException {
+    long sourceTableCount = getTableCount(sourceDbPool, table);
+    long targetTableCount = getTableCount(targetDbPool, table);
+    assertEquals(sourceTableCount, targetTableCount);
+    Result<Record> allRecords =
+        DatabaseHelper.query(
+            sourceDbPool, context -> context.fetch(String.format("SELECT * FROM %s;", table)));
+    for (Record sourceTableRecord : allRecords) {
+      assertRecordInTable(sourceTableRecord, targetDbPool, table);
+    }
+  }
+
+  /**
+   * Verifies that a record in the target table and database exists with the same (and potentially
+   * more) fields.
+   */
+  private void assertRecordInTable(Record record, BasicDataSource connectionPool, String tableName)
+      throws SQLException {
+
+    Set<Condition> conditions = new HashSet<>();
+    for (Field<?> field : record.fields()) {
+      Object fieldValue = record.get(field);
+      Condition eq = ((Field) field).equal(fieldValue);
+      conditions.add(eq);
+    }
+
+    Result<Record> presentRecords =
+        DatabaseHelper.query(
+            connectionPool, context -> context.select().from(tableName).where(conditions).fetch());
+
+    // TODO validate that the correct number of records exists? currently if the same record exists
+    //  multiple times in the source but once in destination, this returns true.
+    assertEquals(1, presentRecords.size());
+  }
+
+  private Set<String> listTables(BasicDataSource connectionPool) throws SQLException {
+    return DatabaseHelper.query(
+        connectionPool,
+        context -> {
+          Result<Record> fetch =
+              context.fetch(
+                  "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
+          return fetch.stream()
+              .map(record -> (String) record.get("tablename"))
+              .collect(Collectors.toSet());
+        });
+  }
+
+  private long getTableCount(BasicDataSource connectionPool, String tableName) throws SQLException {
+    return DatabaseHelper.query(
+        connectionPool,
+        context -> {
+          Result<Record> record =
+              context.fetch(String.format("SELECT COUNT(*) FROM %s;", tableName));
+          return (long) record.stream().findFirst().get().get(0);
+        });
   }
 }

@@ -9,4 +9,4 @@ VALUES (1, 'sherif'),
        (2, 'charles'),
        (3, 'jared'),
        (4, 'michel'),
-       (5, 'john')
+       (5, 'john');
