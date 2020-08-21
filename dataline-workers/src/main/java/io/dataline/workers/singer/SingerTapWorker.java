@@ -69,9 +69,7 @@ public class SingerTapWorker implements SyncTap<SingerProtocol> {
               jobSyncTapConfig
                   .getStandardSync()
                   .getName()); // todo (cgardens) - convert to singer catalog.
-      stateDotJson =
-          objectMapper.writeValueAsString(jobSyncTapConfig.getStandardSync()); // placeholder.
-      //              jobSyncTapConfig.getState()); // todo (cgardens) - add this to the config!!!
+      stateDotJson = jobSyncTapConfig.getState()); // todo (cgardens) - add this to the config!!!
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
