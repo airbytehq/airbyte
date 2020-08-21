@@ -20,4 +20,4 @@ ADD https://github.com/ufoscout/docker-compose-wait/releases/download/$WAIT_VERS
 RUN chmod +x wait
 
 # wait for postgres to become available before starting server
-CMD ./wait && bin/dataline-server
+ENTRYPOINT ["/bin/bash", "-c", "./wait && bin/dataline-server"]
