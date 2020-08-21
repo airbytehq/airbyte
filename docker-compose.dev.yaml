@@ -10,6 +10,23 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=db-${DATABASE_DB}
+  scheduler:
+    image: dataline/scheduler:dev
+    build:
+      context: .
+      dockerfile: scheduler.Dockerfile
+    entrypoint: /bin/sh -c './wait && bin/dataline-server' # todo: specify entrypoints in dockerfiles only
+    container_name: dataline-scheduler
+    environment:
+      - ENV=${ENV}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - WAIT_BEFORE_HOSTS=5
+      - WAIT_HOSTS=db:5432
+      - CONFIG_PERSISTENCE_ROOT=${CONFIG_PERSISTENCE_ROOT}
+    depends_on:
+      - db
   server:
     image: dataline/server:dev
     build:
@@ -19,16 +36,13 @@ services:
     container_name: dataline-server
     environment:
       - ENV=${ENV}
-      - DATABASE_USER=${DATABASE_USER}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_URL=${DATABASE_URL}
       - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS=db:5432
       - CONFIG_PERSISTENCE_ROOT=${CONFIG_PERSISTENCE_ROOT}
     ports:
       - 8001:8001
     depends_on:
-      - db
+      - scheduler
   webapp:
     image: dataline/webapp:dev
     build:

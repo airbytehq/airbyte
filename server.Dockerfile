@@ -1,4 +1,4 @@
-FROM dataline/server-base:dev
+FROM dataline/java-base:dev
 
 EXPOSE 8000
 
