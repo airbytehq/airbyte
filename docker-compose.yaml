@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  db:
+    image: dataline/db:dev
+    container_name: dataline-db
+    environment:
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_DB}
+    ports:
+      - 5432:5432
+  server:
+    image: dataline/server:dev
+    entrypoint: /bin/sh -c './wait && bin/dataline-server'
+    container_name: dataline-server
+    environment:
+      - ENV=${ENV}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=jdbc:postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@db:5432/${DATABASE_DB}
+      - WAIT_HOSTS=db:5432
+      - CONFIG_PERSISTENCE_ROOT=${CONFIG_PERSISTENCE_ROOT}
+    ports:
+      - 8001:8001
+    depends_on:
+      - db
+  webapp:
+    image: dataline/webapp:dev
+    container_name: dataline-webapp
+    ports:
+      - 8000:80
+    depends_on:
+      - server
+  

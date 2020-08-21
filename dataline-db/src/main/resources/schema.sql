@@ -1,7 +1,3 @@
--- database
-CREATE DATABASE dataline;
-\connect dataline;
-
 -- extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
