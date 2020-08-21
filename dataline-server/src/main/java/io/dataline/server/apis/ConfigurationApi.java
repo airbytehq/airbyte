@@ -40,6 +40,9 @@ import io.dataline.api.model.DestinationImplementationUpdate;
 import io.dataline.api.model.DestinationRead;
 import io.dataline.api.model.DestinationReadList;
 import io.dataline.api.model.DestinationSpecificationRead;
+import io.dataline.api.model.JobIdRequestBody;
+import io.dataline.api.model.JobInfoRead;
+import io.dataline.api.model.JobReadList;
 import io.dataline.api.model.SlugRequestBody;
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceImplementationCreate;
@@ -71,6 +74,7 @@ import io.dataline.server.validation.IntegrationSchemaValidation;
 import javax.validation.Valid;
 import javax.ws.rs.Path;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.lang3.NotImplementedException;
 
 @Path("/v1")
 public class ConfigurationApi implements io.dataline.api.V1Api {
@@ -198,6 +202,16 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   public DestinationSpecificationRead getDestinationSpecification(
       @Valid DestinationIdRequestBody destinationIdRequestBody) {
     return destinationSpecificationsHandler.getDestinationSpecification(destinationIdRequestBody);
+  }
+
+  @Override
+  public JobReadList listJobsFor(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+    throw new NotImplementedException("listJobsFor not supported yet");
+  }
+
+  @Override
+  public JobInfoRead getJobInfo(@Valid JobIdRequestBody jobIdRequestBody) {
+    throw new NotImplementedException("getJobInfo not supported yet");
   }
 
   // DESTINATION IMPLEMENTATION
