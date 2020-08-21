@@ -40,7 +40,6 @@ import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.config.Table;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.OutputAndStatus;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -52,21 +51,23 @@ import org.slf4j.LoggerFactory;
 public class SingerDiscoveryWorker
     extends BaseSingerWorker<ConnectionImplementation, StandardDiscoveryOutput>
     implements DiscoverSchemaWorker {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoveryWorker.class);
+
   // TODO log errors to specified file locations
-  private static Logger LOGGER = LoggerFactory.getLogger(SingerDiscoveryWorker.class);
   private static String CONFIG_JSON_FILENAME = "config.json";
   private static String CATALOG_JSON_FILENAME = "catalog.json";
   private static String ERROR_LOG_FILENAME = "err.log";
 
   private volatile Process workerProcess;
 
-  public SingerDiscoveryWorker(String singerExecutablePath) {
-    super(singerExecutablePath);
+  public SingerDiscoveryWorker(SingerConnector connector) {
+    super(connector);
   }
 
   @Override
   OutputAndStatus<StandardDiscoveryOutput> runInternal(
-      ConnectionImplementation connectionImplementation, String workspaceRoot) {
+      ConnectionImplementation connectionImplementation, Path workspaceRoot) {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
     //   reduced.
     final ObjectMapper objectMapper = new ObjectMapper();
@@ -79,23 +80,25 @@ public class SingerDiscoveryWorker
 
     // TODO use format converter here
     // write config.json to disk
-    String configPath = writeFileToWorkspace(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson);
-
-    String tapPath = getExecutableAbsolutePath();
-
-    String catalogDotJsonPath =
-        Path.of(workspaceRoot).resolve(CATALOG_JSON_FILENAME).toAbsolutePath().toString();
-    String errorLogPath =
-        Path.of(workspaceRoot).resolve(ERROR_LOG_FILENAME).toAbsolutePath().toString();
+    writeFile(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson);
 
     // exec
     try {
-      String[] cmd = {tapPath, "--config", configPath, "--discover"};
+      String[] cmd = {
+        "docker",
+        "run",
+        "-v",
+        String.format("%s:/singer/data", workspaceRoot.toString()),
+        connector.getImageName(),
+        "--config",
+        CONFIG_JSON_FILENAME,
+        "--discover"
+      };
 
       workerProcess =
           new ProcessBuilder(cmd)
-              .redirectError(new File(errorLogPath))
-              .redirectOutput(new File(catalogDotJsonPath))
+              .redirectError(getFullPath(workspaceRoot, ERROR_LOG_FILENAME).toFile())
+              .redirectOutput(getFullPath(workspaceRoot, CATALOG_JSON_FILENAME).toFile())
               .start();
 
       while (!workerProcess.waitFor(1, TimeUnit.MINUTES)) {
@@ -104,12 +107,12 @@ public class SingerDiscoveryWorker
 
       int exitCode = workerProcess.exitValue();
       if (exitCode == 0) {
-        String catalog = readFileFromWorkspace(workspaceRoot, CATALOG_JSON_FILENAME);
+        String catalog = readFile(workspaceRoot, CATALOG_JSON_FILENAME);
         final SingerCatalog singerCatalog = jsonCatalogToTyped(catalog);
         final StandardDiscoveryOutput discoveryOutput = toDiscoveryOutput(singerCatalog);
         return new OutputAndStatus<>(SUCCESSFUL, discoveryOutput);
       } else {
-        String errLog = readFileFromWorkspace(workspaceRoot, ERROR_LOG_FILENAME);
+        String errLog = readFile(workspaceRoot, ERROR_LOG_FILENAME);
         LOGGER.debug(
             "Discovery job subprocess finished with exit code {}. Error log: {}", exitCode, errLog);
         return new OutputAndStatus<>(FAILED);

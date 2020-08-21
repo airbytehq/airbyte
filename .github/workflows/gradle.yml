@@ -15,5 +15,3 @@ jobs:
       - name: Test
         run: ./tools/app/test.sh
 
-          
-

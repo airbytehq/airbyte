@@ -73,10 +73,11 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
     final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
     connectionImplementation.setConfiguration(o);
 
-    SingerDiscoveryWorker worker = new SingerDiscoveryWorker(SINGER_POSTGRES_TAP_PATH);
+    SingerDiscoveryWorker worker = new SingerDiscoveryWorker(SingerTap.POSTGRES);
 
     OutputAndStatus<StandardDiscoveryOutput> run =
-        worker.run(connectionImplementation, createWorkspacePath(jobId).toString());
+        worker.run(connectionImplementation, createWorkspacePath(jobId));
+
     assertEquals(SUCCESSFUL, run.getStatus());
 
     String expectedSchema = readResource("simple_postgres_schema.json");
@@ -91,21 +92,23 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
   public void testCancellation() throws IOException, InterruptedException, ExecutionException {
     final String jobId = "1";
     String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
+
     final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
     final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
     connectionImplementation.setConfiguration(o);
 
-    SingerDiscoveryWorker worker = new SingerDiscoveryWorker(SINGER_POSTGRES_TAP_PATH);
+    SingerDiscoveryWorker worker = new SingerDiscoveryWorker(SingerTap.POSTGRES);
+
     ExecutorService threadPool = Executors.newFixedThreadPool(2);
     Future<?> workerWasCancelled =
         threadPool.submit(
             () -> {
               OutputAndStatus<StandardDiscoveryOutput> output =
-                  worker.run(connectionImplementation, createWorkspacePath(jobId).toString());
+                  worker.run(connectionImplementation, createWorkspacePath(jobId));
               assertEquals(FAILED, output.getStatus());
             });
 
-    TimeUnit.MILLISECONDS.sleep(100);
+    TimeUnit.MILLISECONDS.sleep(50);
     worker.cancel();
     workerWasCancelled.get();
   }

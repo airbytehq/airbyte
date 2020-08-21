@@ -27,38 +27,37 @@ package io.dataline.workers.singer;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class BaseSingerWorker<InputType, OutputType>
     implements Worker<InputType, OutputType> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
 
-  protected JobStatus jobStatus;
+  protected final SingerConnector connector;
 
-  private final String singerExecutablePath;
+  private JobStatus jobStatus;
 
-  protected BaseSingerWorker(String singerExecutablePath) {
-    this.singerExecutablePath = singerExecutablePath;
+  protected BaseSingerWorker(SingerConnector connector) {
+    this.connector = connector;
   }
 
   @Override
-  public OutputAndStatus<OutputType> run(InputType inputType, String workspaceRoot) {
+  public OutputAndStatus<OutputType> run(InputType inputType, Path workspaceRoot) {
     return runInternal(inputType, workspaceRoot);
   }
 
-  abstract OutputAndStatus<OutputType> runInternal(InputType inputType, String workspaceRoot);
+  abstract OutputAndStatus<OutputType> runInternal(InputType inputType, Path workspaceRoot);
 
   protected void cancelHelper(Process workerProcess) {
     try {
-      jobStatus = JobStatus.FAILED;
+      updateJobStatus(JobStatus.FAILED);
       workerProcess.destroy();
       workerProcess.waitFor(10, TimeUnit.SECONDS);
       if (workerProcess.isAlive()) {
@@ -69,30 +68,30 @@ public abstract class BaseSingerWorker<InputType, OutputType>
     }
   }
 
-  protected String readFileFromWorkspace(String workspaceRoot, String fileName) {
-    try (FileReader fileReader = new FileReader(getWorkspaceFilePath(workspaceRoot, fileName));
-        BufferedReader br = new BufferedReader(fileReader)) {
-      return br.lines().collect(Collectors.joining("\n"));
+  protected static String readFile(Path workspaceRoot, String fileName) {
+    try {
+      Path filePath = workspaceRoot.resolve(fileName);
+      return FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  protected String writeFileToWorkspace(String workspaceRoot, String fileName, String contents) {
-    String filePath = getWorkspaceFilePath(workspaceRoot, fileName);
-    try (FileWriter fileWriter = new FileWriter(filePath)) {
-      fileWriter.write(contents);
+  protected static Path writeFile(Path workspaceRoot, String fileName, String contents) {
+    try {
+      Path filePath = workspaceRoot.resolve(fileName);
+      FileUtils.writeStringToFile(filePath.toFile(), contents, StandardCharsets.UTF_8);
       return filePath;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  protected String getExecutableAbsolutePath() {
-    return singerExecutablePath;
+  protected static Path getFullPath(Path workspaceRoot, String fileName) {
+    return workspaceRoot.resolve(fileName);
   }
 
-  private String getWorkspaceFilePath(String workspaceRoot, String fileName) {
-    return Path.of(workspaceRoot).resolve(fileName).toAbsolutePath().toString();
+  protected void updateJobStatus(JobStatus jobStatus) {
+    this.jobStatus = jobStatus;
   }
 }

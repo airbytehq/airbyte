@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WorkerWrapper<InputType, OutputType> implements Runnable {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerWrapper.class);
 
   private final long jobId;
@@ -106,7 +107,7 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
       FileUtils.forceMkdir(workspacesRoot.toFile());
       final Path workspaceRoot = workspacesRoot.resolve(String.valueOf(jobId));
       FileUtils.forceMkdir(workspaceRoot.toFile());
-      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, workspaceRoot.toString());
+      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, workspaceRoot);
 
       switch (outputAndStatus.getStatus()) {
         case FAILED:
