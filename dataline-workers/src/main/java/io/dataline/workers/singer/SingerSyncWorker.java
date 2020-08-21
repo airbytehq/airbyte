@@ -98,7 +98,7 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
         getExecutableAbsolutePath(tap),
         "--config",
         tapConfigPath,
-        "--properties",
+        "--properties", // TODO support both --properties and --catalog depending on integration
         catalogPath,
         "--state",
         inputStatePath
@@ -107,6 +107,7 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
       LOGGER.debug("Tap command: {}", String.join(" ", tapCommand));
       LOGGER.debug("target command: {}", String.join(" ", targetCommand));
 
+      long startTime = System.currentTimeMillis();
       Process tapProcess = new ProcessBuilder().command(tapCommand).start();
       Process targetProcess =
           new ProcessBuilder()
@@ -141,6 +142,9 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
         LOGGER.debug("Waiting for sync worker {} tap.", workerId);
       }
 
+      // target process stays alive as long as its stdin has not been closed. So we wait for the tap
+      // process to end,
+      // flush the writer to stdin and close
       writer.flush();
       writer.close();
       reader.close();
@@ -149,18 +153,18 @@ public class SingerSyncWorker extends BaseSingerWorker<JobSyncOutput> {
       }
 
       JobSyncOutput jobSyncOutput = new JobSyncOutput();
+      StandardSyncSummary summary = new StandardSyncSummary();
+      summary.setRecordsSynced(numRecords.getValue().longValue());
+      summary.setStartTime(startTime);
+      summary.setEndTime(System.currentTimeMillis());
+      summary.setAttemptId(UUID.fromString(workerId));
+      // TODO set logs
+      jobSyncOutput.setStandardSyncSummary(summary);
+
       State state = new State();
       state.setState(readFileFromWorkspace(OUTPUT_STATE_FILENAME));
-      StandardSyncSummary summary = new StandardSyncSummary();
-      summary.setRecordsSynced(numRecords.getValue());
-      //      summary.set
-      // TODO
-      summary.setLogs("nothing");
-      summary.setAttemptId(UUID.randomUUID());
-      summary.setStartTime(1);
-      summary.setEndTime(1);
       jobSyncOutput.setState(state);
-      jobSyncOutput.setStandardSyncSummary(summary);
+
       return new OutputAndStatus<>(JobStatus.SUCCESSFUL, jobSyncOutput);
     } catch (IOException | InterruptedException e) {
       // TODO return state

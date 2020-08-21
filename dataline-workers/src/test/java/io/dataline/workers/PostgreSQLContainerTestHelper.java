@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
@@ -39,9 +40,10 @@ public class PostgreSQLContainerTestHelper {
 
   public static void runSqlScript(MountableFile file, PostgreSQLContainer db)
       throws IOException, InterruptedException {
-    db.copyFileToContainer(file, "/etc/init.sql");
+    String scriptPath = "/etc/" + UUID.randomUUID().toString() + ".sql";
+    db.copyFileToContainer(file, scriptPath);
     db.execInContainer(
-        "psql", "-d", db.getDatabaseName(), "-U", db.getUsername(), "-a", "-f", "/etc/init.sql");
+        "psql", "-d", db.getDatabaseName(), "-U", db.getUsername(), "-a", "-f", scriptPath);
   }
 
   public static void wipePublicSchema(PostgreSQLContainer db) throws SQLException {

@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.DiscoveryOutput;
 import io.dataline.workers.OutputAndStatus;
@@ -101,10 +100,5 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
     TimeUnit.MILLISECONDS.sleep(100);
     worker.cancel();
     workerWasCancelled.get();
-  }
-
-  private void assertJsonEquals(String s1, String s2) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    assertTrue(mapper.readTree(s1).equals(mapper.readTree(s2)));
   }
 }

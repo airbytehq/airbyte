@@ -24,6 +24,9 @@
 
 package io.dataline.workers;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import java.io.IOException;
 import java.net.URL;
@@ -57,5 +60,10 @@ public abstract class BaseWorkerTestCase {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  protected void assertJsonEquals(String s1, String s2) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    assertTrue(mapper.readTree(s1).equals(mapper.readTree(s2)));
   }
 }

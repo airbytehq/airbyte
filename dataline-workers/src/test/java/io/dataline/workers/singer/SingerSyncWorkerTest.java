@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Condition;
@@ -49,6 +50,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+// TODO this test currently only tests PSQL. Will be refactored with the addition of new
+// integrations.
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
 
@@ -78,18 +81,20 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
 
     OutputAndStatus<JobSyncOutput> syncOutputAndStatus =
         new SingerSyncWorker(
-                "1",
+                UUID.randomUUID().toString(),
                 getWorkspacePath().toAbsolutePath().toString(),
                 SINGER_LIB_PATH,
                 SingerTap.POSTGRES,
                 tapConfig,
-                readResource("simple_postgres_sync_catalog.json"),
-                "{}", // fresh sync, no state
+                readResource("simple_postgres_full_table_sync_catalog.json"),
+                "{}", // full table sync, no state needed
                 SingerTarget.POSTGRES,
                 targetConfig)
             .run();
 
     assertEquals(JobStatus.SUCCESSFUL, syncOutputAndStatus.getStatus());
+    JobSyncOutput jobSyncOutput = syncOutputAndStatus.getOutput().get();
+    assertEquals(5, jobSyncOutput.getStandardSyncSummary().getRecordsSynced());
 
     BasicDataSource sourceDbPool =
         DatabaseHelper.getConnectionPool(
@@ -109,8 +114,8 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testMultipleIncrementalSyncs(){
-
+  public void testIncrementalSyncs() {
+    // TODO
   }
 
   private void assertTablesEquivalent(

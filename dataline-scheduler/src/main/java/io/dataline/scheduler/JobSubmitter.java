@@ -178,7 +178,7 @@ public class JobSubmitter implements Runnable {
 
   private static Set<ConnectionRead> getAllActiveConnections() {
     ConnectionSchedule testConnectionSchedule = new ConnectionSchedule();
-    testConnectionSchedule.setUnits(1);
+    testConnectionSchedule.setUnits(1l);
     testConnectionSchedule.setTimeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES);
 
     ConnectionRead testConnection = new ConnectionRead();
