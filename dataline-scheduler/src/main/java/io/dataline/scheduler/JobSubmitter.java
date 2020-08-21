@@ -29,10 +29,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionSchedule;
 import io.dataline.db.DatabaseHelper;
-import io.dataline.workers.singer.SingerDiscoveryWorker;
 import io.dataline.workers.singer.SingerTap;
+import io.dataline.workers.singer.postgres_tap.SingerPostgresTapDiscoverWorker;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -176,15 +175,9 @@ public class JobSubmitter implements Runnable {
             threadPool.submit(
                 new WorkerWrapper<>(
                     job.getId(),
-                    new SingerDiscoveryWorker(
-                        "worker-1", // todo: assign worker ids
-                        Paths.get("/tmp/workspace1"),
-                        tap,
-                        configString
-                        // todo: better path and why are we
-                        // scoping by workspace here
-                        ),
-                    connectionPool));
+                    new SingerPostgresTapDiscoverWorker(),
+                    connectionPool,
+                    persistence));
             LOGGER.info("Submitting job to thread pool...");
             break;
           case CHECK_CONNECTION_SOURCE:

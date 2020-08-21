@@ -35,36 +35,25 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType> {
+public abstract class BaseSingerWorker<InputType, OutputType>
+    implements Worker<InputType, OutputType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
 
-  protected final String workerId;
-  protected final Path workspacePath;
+  protected final SingerConnector connector;
 
   private JobStatus jobStatus;
 
-  protected BaseSingerWorker(String workerId, Path workspaceRoot) {
-    this.workerId = workerId;
-    this.workspacePath = workspaceRoot.resolve(workerId);
+  protected BaseSingerWorker(SingerConnector connector) {
+    this.connector = connector;
   }
 
   @Override
-  public OutputAndStatus<OutputType> run() {
-    createWorkspace();
-    return runInternal();
+  public OutputAndStatus<OutputType> run(InputType inputType, Path workspaceRoot) {
+    return runInternal(inputType, workspaceRoot);
   }
 
-  abstract OutputAndStatus<OutputType> runInternal();
-
-  private void createWorkspace() {
-    try {
-      FileUtils.forceMkdir(workspacePath.toFile());
-    } catch (IOException e) {
-      LOGGER.error("Unable to create workspace for worker {} due to exception {} ", workerId, e);
-      throw new RuntimeException(e);
-    }
-  }
+  abstract OutputAndStatus<OutputType> runInternal(InputType inputType, Path workspaceRoot);
 
   protected void cancelHelper(Process workerProcess) {
     try {
@@ -75,26 +64,22 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
         workerProcess.destroyForcibly();
       }
     } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling worker " + workerId, e);
+      LOGGER.error("Exception when cancelling job.", e);
     }
   }
 
-  protected Path getWorkspacePath() {
-    return workspacePath;
-  }
-
-  protected String readFile(String fileName) {
+  protected static String readFile(Path workspaceRoot, String fileName) {
     try {
-      Path filePath = getFullPath(fileName);
+      Path filePath = workspaceRoot.resolve(fileName);
       return FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  protected Path writeFile(String fileName, String contents) {
+  protected static Path writeFile(Path workspaceRoot, String fileName, String contents) {
     try {
-      Path filePath = getFullPath(fileName);
+      Path filePath = workspaceRoot.resolve(fileName);
       FileUtils.writeStringToFile(filePath.toFile(), contents, StandardCharsets.UTF_8);
       return filePath;
     } catch (IOException e) {
@@ -102,8 +87,8 @@ public abstract class BaseSingerWorker<OutputType> implements Worker<OutputType>
     }
   }
 
-  protected Path getFullPath(String fileName) {
-    return getWorkspacePath().resolve(fileName).toAbsolutePath();
+  protected static Path getFullPath(Path workspaceRoot, String fileName) {
+    return workspaceRoot.resolve(fileName);
   }
 
   protected void updateJobStatus(JobStatus jobStatus) {

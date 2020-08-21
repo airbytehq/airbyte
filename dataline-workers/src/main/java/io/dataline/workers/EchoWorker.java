@@ -24,17 +24,18 @@
 
 package io.dataline.workers;
 
+import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EchoWorker implements Worker<String> {
+public class EchoWorker implements Worker<String, String> {
   private static final Logger LOGGER = LoggerFactory.getLogger(EchoWorker.class);
 
   public EchoWorker() {}
 
   @Override
-  public OutputAndStatus<String> run() {
-    LOGGER.info("Hello World");
+  public OutputAndStatus<String> run(String string, Path workspaceRoot) {
+    LOGGER.info("Hello World. input: {}, workspace root: {}", string, workspaceRoot);
     return new OutputAndStatus<>(JobStatus.SUCCESSFUL, "echoed");
   }
 

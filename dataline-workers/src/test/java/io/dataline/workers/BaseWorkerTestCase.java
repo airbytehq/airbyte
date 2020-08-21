@@ -29,11 +29,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
+import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseWorkerTestCase {
   // TODO inject via env
   protected String SINGER_LIB_PATH = "/usr/local/lib/singer";
+  protected String SINGER_POSTGRES_TAP_PATH =
+      Path.of(SINGER_LIB_PATH).resolve("tap-postgres/bin/tap-postgres").toString();
 
   private Path workspaceDirectory;
 
@@ -43,7 +46,13 @@ public abstract class BaseWorkerTestCase {
     System.out.println("Workspace directory: " + workspaceDirectory.toString());
   }
 
-  protected Path getWorkspacePath() {
-    return workspaceDirectory;
+  protected Path createWorkspacePath(String jobId) {
+    final Path workspacePath = workspaceDirectory.resolve(jobId);
+    try {
+      FileUtils.forceMkdir(workspacePath.toFile());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return workspacePath;
   }
 }

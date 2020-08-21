@@ -27,8 +27,10 @@ package io.dataline.workers.singer;
 import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.Column;
+import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.DataType;
 import io.dataline.config.PropertiesProperty;
 import io.dataline.config.Schema;
@@ -46,7 +48,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerDiscoveryWorker extends BaseSingerWorker<StandardDiscoveryOutput>
+public class SingerDiscoveryWorker
+    extends BaseSingerWorker<ConnectionImplementation, StandardDiscoveryOutput>
     implements DiscoverSchemaWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoveryWorker.class);
@@ -56,22 +59,28 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<StandardDiscoveryOut
   private static String CATALOG_JSON_FILENAME = "catalog.json";
   private static String ERROR_LOG_FILENAME = "err.log";
 
-  private final String configConfig;
-  private final SingerTap tap;
   private volatile Process workerProcess;
 
-  public SingerDiscoveryWorker(
-      String workerId, Path workspaceRoot, SingerTap tap, String configContent) {
-    super(workerId, workspaceRoot);
-    this.configConfig = configContent;
-    this.tap = tap;
+  public SingerDiscoveryWorker(SingerConnector connector) {
+    super(connector);
   }
 
   @Override
-  OutputAndStatus<StandardDiscoveryOutput> runInternal() {
+  OutputAndStatus<StandardDiscoveryOutput> runInternal(
+      ConnectionImplementation connectionImplementation, Path workspaceRoot) {
+    // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
+    //   reduced.
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final String configDotJson;
+    try {
+      configDotJson = objectMapper.writeValueAsString(connectionImplementation.getConfiguration());
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+
     // TODO use format converter here
     // write config.json to disk
-    writeFile(CONFIG_JSON_FILENAME, configConfig);
+    writeFile(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson);
 
     // exec
     try {
@@ -79,8 +88,8 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<StandardDiscoveryOut
         "docker",
         "run",
         "-v",
-        String.format("%s:/singer/data", getWorkspacePath().toString()),
-        tap.getImageName(),
+        String.format("%s:/singer/data", workspaceRoot.toString()),
+        connector.getImageName(),
         "--config",
         CONFIG_JSON_FILENAME,
         "--discover"
@@ -88,27 +97,24 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<StandardDiscoveryOut
 
       workerProcess =
           new ProcessBuilder(cmd)
-              .redirectError(getFullPath(ERROR_LOG_FILENAME).toFile())
-              .redirectOutput(getFullPath(CATALOG_JSON_FILENAME).toFile())
+              .redirectError(getFullPath(workspaceRoot, ERROR_LOG_FILENAME).toFile())
+              .redirectOutput(getFullPath(workspaceRoot, CATALOG_JSON_FILENAME).toFile())
               .start();
 
       while (!workerProcess.waitFor(1, TimeUnit.MINUTES)) {
-        LOGGER.info("Waiting for discovery worker {}", workerId);
+        LOGGER.info("Waiting for discovery job.");
       }
 
       int exitCode = workerProcess.exitValue();
       if (exitCode == 0) {
-        String catalog = readFile(CATALOG_JSON_FILENAME);
+        String catalog = readFile(workspaceRoot, CATALOG_JSON_FILENAME);
         final SingerCatalog singerCatalog = jsonCatalogToTyped(catalog);
         final StandardDiscoveryOutput discoveryOutput = toDiscoveryOutput(singerCatalog);
         return new OutputAndStatus<>(SUCCESSFUL, discoveryOutput);
       } else {
-        String errLog = readFile(ERROR_LOG_FILENAME);
+        String errLog = readFile(workspaceRoot, ERROR_LOG_FILENAME);
         LOGGER.debug(
-            "Discovery worker {} subprocess finished with exit code {}. Error log: {}",
-            workerId,
-            exitCode,
-            errLog);
+            "Discovery job subprocess finished with exit code {}. Error log: {}", exitCode, errLog);
         return new OutputAndStatus<>(FAILED);
       }
     } catch (IOException | InterruptedException e) {
@@ -133,7 +139,8 @@ public class SingerDiscoveryWorker extends BaseSingerWorker<StandardDiscoveryOut
             .map(
                 stream -> {
                   final Table table = new Table();
-                  table.setName(stream.getStream()); // ?
+                  table.setName(
+                      stream.getStream()); // todo (cgardens) - is stream the same as table name?
                   table.setColumns(
                       stream
                           .getSchema()

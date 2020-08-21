@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.StandardConnectionStatus;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.OutputAndStatus;
@@ -40,6 +41,7 @@ import java.sql.SQLException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   private PostgreSQLContainer db;
@@ -54,13 +56,22 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testNonexistentDb() throws JsonProcessingException {
+  public void testNonexistentDb()
+      throws JsonProcessingException,
+          org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException {
+    final String jobId = "1";
     String fakeDbCreds =
         PostgreSQLContainerHelper.getSingerConfigJson(
             "user", "pass", "localhost", "postgres", "111111");
-    SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker("1", getWorkspacePath(), SingerTap.POSTGRES, fakeDbCreds);
-    OutputAndStatus<StandardConnectionStatus> run = worker.run();
+
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    final Object o = new ObjectMapper().readValue(fakeDbCreds, Object.class);
+    connectionImplementation.setConfiguration(o);
+
+    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
+    OutputAndStatus<StandardConnectionStatus> run =
+        worker.run(connectionImplementation, createWorkspacePath(jobId));
+
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.FAILURE, run.getOutput().get().getStatus());
@@ -69,7 +80,10 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testIncorrectAuthCredentials() throws JsonProcessingException {
+  public void testIncorrectAuthCredentials()
+      throws JsonProcessingException,
+          org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException {
+    final String jobId = "1";
     String incorrectCreds =
         PostgreSQLContainerHelper.getSingerConfigJson(
             db.getUsername(),
@@ -78,10 +92,15 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
             db.getDatabaseName(),
             db.getFirstMappedPort() + "");
 
-    SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(
-            "1", getWorkspacePath(), SingerTap.POSTGRES, incorrectCreds);
-    OutputAndStatus<StandardConnectionStatus> run = worker.run();
+    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
+
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    final Object o = new ObjectMapper().readValue(incorrectCreds, Object.class);
+    connectionImplementation.setConfiguration(o);
+
+    OutputAndStatus<StandardConnectionStatus> run =
+        worker.run(connectionImplementation, createWorkspacePath(jobId));
+
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.FAILURE, run.getOutput().get().getStatus());
@@ -90,12 +109,20 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testSuccessfulConnection() throws JsonProcessingException {
-    String creds = PostgreSQLContainerHelper.getSingerConfigJson(db);
+  public void testSuccessfulConnection()
+      throws JsonProcessingException,
+          org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException {
+    final String jobId = "1";
 
-    SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker("1", getWorkspacePath(), SingerTap.POSTGRES, creds);
-    OutputAndStatus<StandardConnectionStatus> run = worker.run();
+    String creds = PostgreSQLContainerHelper.getSingerConfigJson(db);
+    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+    final Object o = new ObjectMapper().readValue(creds, Object.class);
+    connectionImplementation.setConfiguration(o);
+
+    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
+    OutputAndStatus<StandardConnectionStatus> run =
+        worker.run(connectionImplementation, createWorkspacePath(jobId));
+
     assertEquals(SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardConnectionStatus.Status.SUCCESS, run.getOutput().get().getStatus());
