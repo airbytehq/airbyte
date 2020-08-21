@@ -30,24 +30,26 @@ import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.workers.CheckConnectionWorker;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SingerCheckConnectionWorker
     extends BaseSingerWorker<ConnectionImplementation, StandardConnectionStatus>
     implements CheckConnectionWorker {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerCheckConnectionWorker.class);
 
   private final SingerDiscoveryWorker singerDiscoveryWorker;
 
-  public SingerCheckConnectionWorker(String singerExecutablePath) {
-    super(singerExecutablePath);
-    this.singerDiscoveryWorker = new SingerDiscoveryWorker(singerExecutablePath);
+  public SingerCheckConnectionWorker(SingerConnector connector) {
+    super(connector);
+    this.singerDiscoveryWorker = new SingerDiscoveryWorker(connector);
   }
 
   @Override
   OutputAndStatus<StandardConnectionStatus> runInternal(
-      ConnectionImplementation connectionImplementation, String workspaceRoot) {
+      ConnectionImplementation connectionImplementation, Path workspaceRoot) {
     OutputAndStatus<StandardDiscoveryOutput> outputAndStatus =
         singerDiscoveryWorker.runInternal(connectionImplementation, workspaceRoot);
     StandardConnectionStatus connectionStatus = new StandardConnectionStatus();

@@ -1,0 +1,2 @@
+psycopg2-binary == 2.8.5
+target-postgres == 1.1.3

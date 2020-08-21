@@ -24,34 +24,38 @@
 
 package io.dataline.workers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashMap;
-import java.util.Map;
-import org.testcontainers.containers.PostgreSQLContainer;
+import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class PostgreSQLContainerHelper {
+public class DockerProcessRunner {
 
-  public static String getSingerConfigJson(PostgreSQLContainer db) throws JsonProcessingException {
-    return getSingerConfigJson(
-        db.getUsername(),
-        db.getPassword(),
-        "host.docker.internal",
-        db.getDatabaseName(),
-        String.valueOf(db.getFirstMappedPort()));
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(DockerProcessRunner.class);
 
-  public static String getSingerConfigJson(
-      String user, String password, String host, String dbname, String port)
-      throws JsonProcessingException {
-    Map<String, String> creds = new HashMap<>();
-    creds.put("user", user);
-    creds.put("password", password);
-    creds.put("host", host);
-    creds.put("dbname", dbname);
-    creds.put("filter_dbs", dbname);
-    creds.put("port", port);
+  public static void main(String[] args) throws IOException, InterruptedException {
+    ProcessBuilder processBuilderTap =
+        new ProcessBuilder("docker", "run", "dataline/integration-singer-exchangerateapi_io-source")
+            .redirectError(Redirect.INHERIT);
 
-    return new ObjectMapper().writeValueAsString(creds);
+    ProcessBuilder processBuilderTarget =
+        new ProcessBuilder(
+                "docker",
+                "run",
+                "-i",
+                "-v",
+                "/tmp/singer:/singer/data",
+                "dataline/integration-singer-csv-destination")
+            .redirectError(Redirect.INHERIT)
+            .redirectOutput(Redirect.INHERIT);
+
+    List<Process> processes =
+        ProcessBuilder.startPipeline(Lists.newArrayList(processBuilderTap, processBuilderTarget));
+
+    for (Process process : processes) {
+      process.waitFor();
+    }
   }
 }
