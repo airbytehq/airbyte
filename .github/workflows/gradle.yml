@@ -18,4 +18,6 @@ jobs:
         run: sudo apt-get docker-cli || true
       - name: Build
         run: ./tools/app/build.sh
+      - name: Test
+        run: ./tools/app/test.sh
 
