@@ -11,7 +11,7 @@ jobs:
       - name: Checkout Dataline
         uses: actions/checkout@v2
       - name: List
-        run: sudo apt-cache docker
+        run: apt-cache docker
       - name: Install Docker client
         run: sudo apt-get docker
       - name: Build
