@@ -31,7 +31,6 @@ import javax.ws.rs.container.ContainerResponseFilter;
 // https://medium.com/@Leejjon_net/how-to-allow-cross-origin-requests-in-a-jax-rs-microservice-d2a6aa2df484
 public class CorsFilter implements ContainerResponseFilter {
 
-  private static final String HEADERS = "Origin, Content-Type, Accept";
   private static final String ALLOW_ORIGIN = "Access-Control-Allow-Origin";
   private static final String ALLOW_HEADERS = "Access-Control-Allow-Headers";
   private static final String ALLOW_METHODS = "Access-Control-Allow-Methods";
@@ -40,7 +39,7 @@ public class CorsFilter implements ContainerResponseFilter {
   public void filter(
       ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
     responseContext.getHeaders().add(ALLOW_ORIGIN, "*");
-    responseContext.getHeaders().add(ALLOW_HEADERS, HEADERS);
+    responseContext.getHeaders().add(ALLOW_HEADERS, "Origin, Content-Type, Accept");
     responseContext.getHeaders().add(ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS, HEAD");
   }
 }
