@@ -46,9 +46,9 @@ class SingerCatalogConvertersTest extends BaseWorkerTestCase {
     final SingerCatalog actualCatalog =
         SingerCatalogConverters.applySchemaToDiscoveredCatalog(catalog, datalineSchema);
 
-    expectedCatalog.getStreams().get(0).getMetadata().get(0).getMetadata().setSelected(true);
+    expectedCatalog.getStreams().get(0).getMetadata().get(0).getMetadata().setSelected(false);
     expectedCatalog.getStreams().get(0).getMetadata().get(1).getMetadata().setSelected(true);
-    expectedCatalog.getStreams().get(0).getMetadata().get(2).getMetadata().setSelected(false);
+    expectedCatalog.getStreams().get(0).getMetadata().get(2).getMetadata().setSelected(true);
 
     assertEquals(expectedCatalog, actualCatalog);
   }
@@ -59,7 +59,7 @@ class SingerCatalogConvertersTest extends BaseWorkerTestCase {
         getJsonAsTyped("simple_postgres_singer_catalog.json", SingerCatalog.class);
     final Schema expectedSchema =
         getJsonAsTyped("simple_postgres_schema.json", StandardDiscoveryOutput.class).getSchema();
-    expectedSchema.getTables().get(0).setSelected(null);
+    expectedSchema.getTables().get(0).setSelected(false);
     expectedSchema.getTables().get(0).getColumns().get(0).setSelected(true);
     expectedSchema.getTables().get(0).getColumns().get(1).setSelected(true);
 

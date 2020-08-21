@@ -3,12 +3,12 @@
     "tables": [
       {
         "name": "id_and_name",
-        "selected": true,
+        "selected": false,
         "columns": [
           {
             "name": "name",
             "dataType": "string",
-            "selected": false
+            "selected": true
           },
           {
             "name": "id",

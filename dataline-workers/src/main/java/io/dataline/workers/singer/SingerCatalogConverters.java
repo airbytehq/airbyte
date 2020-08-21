@@ -41,6 +41,16 @@ import java.util.stream.Collectors;
 
 public class SingerCatalogConverters {
 
+  /**
+   * Takes in a singer catalog and a dataline schema. It then applies the dataline configuration to
+   * that catalog. e.g. If dataline says that a certain column should or should not be included in
+   * the sync, this method applies that to the catalog. Thus we produce a valid singer catalog that
+   * contains configurations stored in dataline.
+   *
+   * @param catalog - singer catalog
+   * @param schema - dataline schema
+   * @return singer catalog with dataline schema applied to it.
+   */
   public static SingerCatalog applySchemaToDiscoveredCatalog(SingerCatalog catalog, Schema schema) {
     Map<String, Table> tableNameToTable =
         schema.getTables().stream().collect(Collectors.toMap(Table::getName, table -> table));
@@ -49,10 +59,10 @@ public class SingerCatalogConverters {
         catalog.getStreams().stream()
             .map(
                 stream -> {
+                  // recourse here is probably to run discovery again and update sync
+                  // configuration. this method just outputs the original metadata.
                   if (!tableNameToTable.containsKey(stream.getStream())) {
-                    // recourse here is probably to run discovery again and update sync
-                    // configuration.
-                    throw new RuntimeException("could not find table in singer catalog.");
+                    return stream;
                   }
                   final Table table = tableNameToTable.get(stream.getStream());
                   final Map<String, Column> columnNameToColumn =
@@ -68,9 +78,11 @@ public class SingerCatalogConverters {
                                 if (isColumnMetadata(metadata)) {
                                   // column metadata
                                   final String columnName = getColumnName(metadata);
+                                  // recourse here is probably to run discovery again and update
+                                  // sync configuration. this method just outputs the original
+                                  // metadata.
                                   if (!columnNameToColumn.containsKey(columnName)) {
-                                    throw new RuntimeException(
-                                        "Found column in discovery that is not in schema.");
+                                    return metadata;
                                   }
                                   final Column column = columnNameToColumn.get(columnName);
 
@@ -88,7 +100,9 @@ public class SingerCatalogConverters {
                   newSingerStream.setTableName(stream.getTableName());
                   newSingerStream.setTapStreamId(stream.getTapStreamId());
                   newSingerStream.setMetadata(newMetadata);
-                  // todo (cgardens) - this will not work for legacy catalogs.
+                  // todo (cgardens) - this will not work for legacy catalogs. want to handle this
+                  //   in a subsequent PR, because handling this is going to require doing another
+                  //   one of these monster map tasks.
                   newSingerStream.setSchema(stream.getSchema());
 
                   return newSingerStream;
@@ -106,15 +120,23 @@ public class SingerCatalogConverters {
     Map<String, List<SingerMetadata>> tableNameToMetadata =
         getTableNameToMetadataList(catalog.getStreams());
 
-    List<Table> tableStream =
+    List<Table> tables =
         catalog.getStreams().stream()
             .map(
                 stream -> {
                   final Map<String, SingerMetadataChild> columnNameToMetadata =
                       getColumnMetadataForTable(tableNameToMetadata, stream.getStream());
+                  final SingerMetadata tableMetadata =
+                      tableNameToMetadata.get(stream.getStream()).stream()
+                          .filter(metadata -> metadata.getBreadcrumb().equals(new ArrayList<>()))
+                          .findFirst()
+                          .orElseThrow(() -> new RuntimeException("Could not find table metadata"));
                   final Table table = new Table();
-                  // todo (cgardens) - is stream the same as table name?
                   table.setName(stream.getStream());
+                  table.setSelected(
+                      tableMetadata.getMetadata().getSelectedByDefault() == null
+                          ? false
+                          : tableMetadata.getMetadata().getSelectedByDefault());
                   table.setColumns(
                       stream
                           .getSchema()
@@ -143,7 +165,7 @@ public class SingerCatalogConverters {
             .collect(Collectors.toList());
 
     final Schema schema = new Schema();
-    schema.setTables(tableStream);
+    schema.setTables(tables);
     return schema;
   }
 
@@ -156,7 +178,9 @@ public class SingerCatalogConverters {
 
   private static Map<String, SingerMetadataChild> getColumnMetadataForTable(
       Map<String, List<SingerMetadata>> tableNameToMetadata, String tableName) {
-    // todo (cgardens) - if null explode.
+    if (!tableNameToMetadata.containsKey(tableName)) {
+      throw new RuntimeException("could not find metadata for table: " + tableName);
+    }
     return tableNameToMetadata.get(tableName).stream()
         // singer breadcrumb is empty if it is table metadata and it it has two
         // items if it is column metadata. the first item is "properties" and
