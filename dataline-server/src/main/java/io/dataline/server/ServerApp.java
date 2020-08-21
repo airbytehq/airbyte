@@ -26,7 +26,6 @@ package io.dataline.server;
 
 import io.dataline.db.DatabaseHelper;
 import io.dataline.db.ServerUuid;
-import io.dataline.scheduler.Scheduler;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
 import io.dataline.server.errors.InvalidJsonExceptionMapper;
@@ -67,6 +66,9 @@ public class ServerApp {
 
     ResourceConfig rc =
         new ResourceConfig()
+            // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add auth.
+            // cors
+            .register(new CorsFilter())
             // api
             .register(ConfigurationApi.class)
             .register(
@@ -108,8 +110,8 @@ public class ServerApp {
   public static void main(String[] args) throws Exception {
     BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
 
-    LOGGER.info("Launching scheduler...");
-    new Scheduler(connectionPool).start();
+    //    LOGGER.info("Launching scheduler...");
+    //    new Scheduler(connectionPool).start();
 
     final String configPersistenceRoot = System.getenv("CONFIG_PERSISTENCE_ROOT");
     LOGGER.info("configPersistenceRoot = " + configPersistenceRoot);
