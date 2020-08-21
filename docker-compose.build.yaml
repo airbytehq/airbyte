@@ -9,16 +9,18 @@ services:
   scheduler:
     image: dataline/scheduler:dev
     build:
-      dockerfile: scheduler.Dockerfile
+      dockerfile: build.Dockerfile
+      target: scheduler
       context: .
   server:
     image: dataline/server:dev
     build:
-      dockerfile: server.Dockerfile
+      dockerfile: build.Dockerfile
+      target: server
       context: .
   webapp:
     image: dataline/webapp:dev
     build:
-      dockerfile: webapp.Dockerfile
+      dockerfile: build.Dockerfile
       target: webapp
       context: .

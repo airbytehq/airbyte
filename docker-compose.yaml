@@ -38,5 +38,5 @@ services:
     container_name: dataline-webapp
     ports:
       - 8000:80
-#    depends_on:
-#      - server
+    depends_on:
+      - server
