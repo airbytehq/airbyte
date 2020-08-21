@@ -12,7 +12,6 @@ services:
       - 5432:5432
   server:
     image: dataline/server:dev
-    entrypoint: /bin/sh -c './wait && bin/dataline-server'
     container_name: dataline-server
     environment:
       - ENV=${ENV}
