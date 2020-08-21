@@ -1112,16 +1112,15 @@ components:
       type: object
       required:
         - id
-        - connection_id
+        - scope
         - created_at
-        - started_at
         - updated_at
         - status
       properties:
         id:
           $ref: "#/components/schemas/JobId"
-        connection_id:
-          $ref: "#/components/schemas/ConnectionId"
+        scope:
+          type: string
         created_at:
           type: integer
           format: int64
