@@ -1,7 +1,7 @@
 import React from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
-// import { CacheProvider } from "rest-hooks";
+import { CacheProvider } from "rest-hooks";
 import { hot } from "react-hot-loader/root";
 
 import en from "./locales/en.json";
@@ -16,7 +16,9 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <IntlProvider locale={"en"} messages={en}>
-          <Routing />
+          <CacheProvider>
+            <Routing />
+          </CacheProvider>
         </IntlProvider>
       </ThemeProvider>
     </>

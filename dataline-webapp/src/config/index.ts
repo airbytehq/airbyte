@@ -3,7 +3,7 @@ const config = {
     helpLink: "https://dataline.io/",
     docsLink: "https://dataline.io/"
   },
-  apiUrl: process.env.REACT_APP_API_URL
+  apiUrl: "http://localhost:8001/v1/"
 };
 
 export default config;
