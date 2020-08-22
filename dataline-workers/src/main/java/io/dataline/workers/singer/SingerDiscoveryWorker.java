@@ -67,7 +67,7 @@ public class SingerDiscoveryWorker
   }
 
   @Override
-  OutputAndStatus<StandardDiscoveryOutput> runInternal(
+  public OutputAndStatus<StandardDiscoveryOutput> run(
       ConnectionImplementation connectionImplementation, Path workspaceRoot) {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
     //   reduced.

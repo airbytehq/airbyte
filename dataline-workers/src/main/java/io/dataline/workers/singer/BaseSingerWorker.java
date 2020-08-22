@@ -24,8 +24,6 @@
 
 package io.dataline.workers.singer;
 
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

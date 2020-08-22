@@ -50,7 +50,7 @@ public class SingerCheckConnectionWorker
   public OutputAndStatus<StandardConnectionStatus> run(
       ConnectionImplementation connectionImplementation, Path workspaceRoot) {
     OutputAndStatus<StandardDiscoveryOutput> outputAndStatus =
-        singerDiscoveryWorker.runInternal(connectionImplementation, workspaceRoot);
+        singerDiscoveryWorker.run(connectionImplementation, workspaceRoot);
     StandardConnectionStatus connectionStatus = new StandardConnectionStatus();
     JobStatus jobStatus;
     if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL

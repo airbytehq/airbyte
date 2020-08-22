@@ -26,7 +26,6 @@ package io.dataline.workers.singer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.dataline.config.JobSyncConfig;
 import io.dataline.config.JobSyncOutput;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.BaseWorkerTestCase;
@@ -37,7 +36,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Condition;

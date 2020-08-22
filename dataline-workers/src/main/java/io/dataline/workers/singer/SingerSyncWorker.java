@@ -27,7 +27,6 @@ package io.dataline.workers.singer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import io.dataline.config.JobSyncConfig;
 import io.dataline.config.JobSyncOutput;
 import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.State;
@@ -43,7 +42,6 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.slf4j.Logger;
@@ -68,8 +66,8 @@ public class SingerSyncWorker extends BaseSingerWorker<Void, JobSyncOutput> {
   private final SingerTarget target;
   private final String targetConfig;
 
-  private Process tapReadProcess;
-  private Process tapWriteProcess;
+  private Process tapProcess;
+  private Process targetProcess;
 
   // TODO this needs to all be passed in as part of the input format once we have conversions from
   //  input format to singer format
@@ -91,21 +89,17 @@ public class SingerSyncWorker extends BaseSingerWorker<Void, JobSyncOutput> {
 
   @Override
   public void cancel() {
-    cancelHelper(tapReadProcess);
-    cancelHelper(tapWriteProcess);
+    cancelHelper(tapProcess);
+    cancelHelper(targetProcess);
   }
 
   @Override
   // TODO fix input format when type conversions exist
   public OutputAndStatus<JobSyncOutput> run(Void nothing, Path workspaceRoot) {
-    String tapConfigPath =
-        writeFile(workspaceRoot, TAP_CONFIG_FILENAME, tapConfiguration).toAbsolutePath().toString();
-    String catalogPath =
-        writeFile(workspaceRoot, CATALOG_FILENAME, tapCatalog).toAbsolutePath().toString();
-    String inputStatePath =
-        writeFile(workspaceRoot, INPUT_STATE_FILENAME, connectionState).toAbsolutePath().toString();
-    String targetConfigPath =
-        writeFile(workspaceRoot, TARGET_CONFIG_FILENAME, targetConfig).toAbsolutePath().toString();
+    writeFile(workspaceRoot, TAP_CONFIG_FILENAME, tapConfiguration).toAbsolutePath().toString();
+    writeFile(workspaceRoot, CATALOG_FILENAME, tapCatalog).toAbsolutePath().toString();
+    writeFile(workspaceRoot, INPUT_STATE_FILENAME, connectionState).toAbsolutePath().toString();
+    writeFile(workspaceRoot, TARGET_CONFIG_FILENAME, targetConfig).toAbsolutePath().toString();
 
     MutableInt numRecords = new MutableInt();
 
@@ -118,21 +112,21 @@ public class SingerSyncWorker extends BaseSingerWorker<Void, JobSyncOutput> {
               dockerCmd,
               tap.getImageName(),
               "--config",
-              tapConfigPath,
+              TAP_CONFIG_FILENAME,
               // TODO support both --properties and --catalog depending on integration
               "--properties",
-              catalogPath,
+              CATALOG_FILENAME,
               "--state",
-              inputStatePath);
+              INPUT_STATE_FILENAME);
 
       String[] targetCmd =
-          ArrayUtils.addAll(dockerCmd, target.getImageName(), "--config", targetConfigPath);
+          ArrayUtils.addAll(dockerCmd, target.getImageName(), "--config", TARGET_CONFIG_FILENAME);
       LOGGER.debug("Tap command: {}", String.join(" ", tapCmd));
       LOGGER.debug("target command: {}", String.join(" ", targetCmd));
 
       long startTime = System.currentTimeMillis();
-      Process tapProcess = new ProcessBuilder().command(tapCmd).start();
-      Process targetProcess =
+      tapProcess = new ProcessBuilder().command(tapCmd).start();
+      targetProcess =
           new ProcessBuilder()
               .command(targetCmd)
               .redirectOutput(workspaceRoot.resolve(OUTPUT_STATE_FILENAME).toFile())

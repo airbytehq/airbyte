@@ -25,7 +25,6 @@
 package io.dataline.workers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -45,7 +44,7 @@ public abstract class BaseWorkerTestCase {
 
   @BeforeAll
   public void init() throws IOException {
-    workspaceDirectory = Files.createTempDirectory("dataline");
+    workspaceDirectory = Files.createTempDirectory(Path.of("/tmp"), "dataline");
     System.out.println("Workspace directory: " + workspaceDirectory.toString());
   }
 

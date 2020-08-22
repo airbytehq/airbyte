@@ -24,17 +24,17 @@
 
 package io.dataline.workers.singer;
 
+import static io.dataline.workers.JobStatus.FAILED;
+import static io.dataline.workers.JobStatus.SUCCESSFUL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerTestHelper;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
@@ -42,11 +42,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
 

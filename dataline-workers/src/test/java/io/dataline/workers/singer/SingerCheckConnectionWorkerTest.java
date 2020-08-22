@@ -29,14 +29,12 @@ import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.StandardConnectionStatus;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerTestHelper;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;

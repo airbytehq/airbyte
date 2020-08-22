@@ -30,6 +30,7 @@ import io.dataline.server.errors.InvalidInputExceptionMapper;
 import io.dataline.server.errors.InvalidJsonExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
 import io.dataline.server.errors.UncaughtExceptionMapper;
+import java.util.logging.Level;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -42,8 +43,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.logging.Level;
 
 public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
