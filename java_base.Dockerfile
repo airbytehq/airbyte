@@ -1,6 +1,7 @@
 # Build artifact
 FROM openjdk:14.0.2-slim
-# Install curl
+
+# Install curl then docker
 RUN apt-get update; apt-get install -y curl
 RUN curl -fsSL https://get.docker.com | sh -
 
