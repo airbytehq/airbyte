@@ -48,11 +48,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerDiscoveryWorker
+public class SingerDiscoverSchemaWorker
     extends BaseSingerWorker<StandardDiscoverSchemaInput, StandardDiscoverSchemaOutput>
     implements DiscoverSchemaWorker {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoveryWorker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoverSchemaWorker.class);
 
   // TODO log errors to specified file locations
   private static String CONFIG_JSON_FILENAME = "config.json";
@@ -61,7 +61,7 @@ public class SingerDiscoveryWorker
 
   private volatile Process workerProcess;
 
-  public SingerDiscoveryWorker(SingerConnector connector) {
+  public SingerDiscoverSchemaWorker(SingerConnector connector) {
     super(connector);
   }
 
