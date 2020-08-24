@@ -47,6 +47,7 @@ public abstract class BaseWorkerTestCase {
 
   @BeforeAll
   public void init() throws IOException {
+    FileUtils.forceMkdir(new File("/tmp/tests"));
     workspaceDirectory = Files.createTempDirectory(Path.of("/tmp/tests"), "dataline");
     System.out.println("Workspace directory: " + workspaceDirectory.toString());
   }
