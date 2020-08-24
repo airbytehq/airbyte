@@ -24,8 +24,8 @@
 
 package io.dataline.workers;
 
-import io.dataline.config.ConnectionImplementation;
-import io.dataline.config.StandardDiscoveryOutput;
+import io.dataline.config.StandardDiscoverSchemaInput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
 
 public interface DiscoverSchemaWorker
-    extends Worker<ConnectionImplementation, StandardDiscoveryOutput> {}
+    extends Worker<StandardDiscoverSchemaInput, StandardDiscoverSchemaOutput> {}

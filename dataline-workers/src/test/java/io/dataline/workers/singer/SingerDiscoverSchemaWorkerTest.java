@@ -30,8 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dataline.config.ConnectionImplementation;
-import io.dataline.config.StandardDiscoveryOutput;
+import io.dataline.config.StandardDiscoverSchemaInput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerHelper;
@@ -48,7 +48,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
+public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
 
   PostgreSQLContainer db;
 
@@ -66,14 +66,14 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
   public void testPostgresDiscovery() throws IOException {
     final String jobId = "1";
     String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
-    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
     final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
-    connectionImplementation.setConfiguration(o);
+    final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
+    input.setConnectionConfiguration(o);
 
-    SingerDiscoveryWorker worker = new SingerDiscoveryWorker(SingerTap.POSTGRES);
+    SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(SingerTap.POSTGRES);
 
-    OutputAndStatus<StandardDiscoveryOutput> run =
-        worker.run(connectionImplementation, createWorkspacePath(jobId));
+    OutputAndStatus<StandardDiscoverSchemaOutput> run =
+        worker.run(input, createWorkspacePath(jobId));
 
     assertEquals(SUCCESSFUL, run.getStatus());
 
@@ -90,18 +90,19 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
     final String jobId = "1";
     String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
 
-    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
     final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
-    connectionImplementation.setConfiguration(o);
 
-    SingerDiscoveryWorker worker = new SingerDiscoveryWorker(SingerTap.POSTGRES);
+    final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
+    input.setConnectionConfiguration(o);
+
+    SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(SingerTap.POSTGRES);
 
     ExecutorService threadPool = Executors.newFixedThreadPool(2);
     Future<?> workerWasCancelled =
         threadPool.submit(
             () -> {
-              OutputAndStatus<StandardDiscoveryOutput> output =
-                  worker.run(connectionImplementation, createWorkspacePath(jobId));
+              OutputAndStatus<StandardDiscoverSchemaOutput> output =
+                  worker.run(input, createWorkspacePath(jobId));
               assertEquals(FAILED, output.getStatus());
             });
 

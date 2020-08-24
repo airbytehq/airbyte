@@ -26,15 +26,14 @@ package io.dataline.scheduler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.dataline.db.DatabaseHelper;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
