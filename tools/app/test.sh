@@ -6,7 +6,7 @@ set -e
 
 main() {
   assert_root
-  docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v ~/.gradle:/home/gradle/.gradle -t dataline/java-base:dev /bin/sh -c './gradlew test --no-daemon -g /home/gradle/.gradle'
+  docker run -t --rm -v /var/run/docker.sock:/var/run/docker.sock -v ~/.gradle:/home/gradle/.gradle dataline/java-base:dev ./gradlew test --no-daemon -g /home/gradle/.gradle
   docker run --rm -t dataline/webapp-base:dev /bin/sh -c 'CI=true npm run test'
 }
 
