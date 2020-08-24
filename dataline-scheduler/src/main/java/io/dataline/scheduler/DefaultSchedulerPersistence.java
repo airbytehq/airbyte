@@ -26,7 +26,9 @@ package io.dataline.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.DestinationConnectionImplementation;
+import io.dataline.config.JobCheckConnectionConfig;
 import io.dataline.config.JobConfig;
+import io.dataline.config.JobDiscoverSchemaConfig;
 import io.dataline.config.JobOutput;
 import io.dataline.config.JobSyncConfig;
 import io.dataline.config.SourceConnectionImplementation;
@@ -57,9 +59,16 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final String scope =
         "checkConnection:source:" + sourceImplementation.getSourceImplementationId();
 
+    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
+    jobCheckConnectionConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
+    jobCheckConnectionConfig.setDockerImage(
+        IntegrationConstants.SPEC_ID_TO_IMPL
+            .get(sourceImplementation.getSourceSpecificationId())
+            .getCheckConnection());
+
     final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE);
-    jobConfig.setCheckConnectionSource(sourceImplementation);
+    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION);
+    jobConfig.setCheckConnection(jobCheckConnectionConfig);
 
     return createPendingJob(scope, jobConfig);
   }
@@ -70,9 +79,17 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final String scope =
         "checkConnection:destination:" + destinationImplementation.getDestinationImplementationId();
 
+    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
+    jobCheckConnectionConfig.setConnectionConfiguration(
+        destinationImplementation.getConfiguration());
+    jobCheckConnectionConfig.setDockerImage(
+        IntegrationConstants.SPEC_ID_TO_IMPL
+            .get(destinationImplementation.getDestinationSpecificationId())
+            .getCheckConnection());
+
     final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION);
-    jobConfig.setCheckConnectionDestination(destinationImplementation);
+    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION);
+    jobConfig.setCheckConnection(jobCheckConnectionConfig);
 
     return createPendingJob(scope, jobConfig);
   }
@@ -83,9 +100,16 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
     final String scope = "discoverSchema:" + sourceImplementation.getSourceImplementationId();
 
+    final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig();
+    jobDiscoverSchemaConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
+    jobDiscoverSchemaConfig.setDockerImage(
+        IntegrationConstants.SPEC_ID_TO_IMPL
+            .get(sourceImplementation.getSourceSpecificationId())
+            .getDiscoverSchema());
+
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA);
-    jobConfig.setDiscoverSchema(sourceImplementation);
+    jobConfig.setDiscoverSchema(jobDiscoverSchemaConfig);
 
     return createPendingJob(scope, jobConfig);
   }
@@ -101,7 +125,15 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig();
     jobSyncConfig.setSourceConnectionImplementation(sourceImplementation);
+    jobSyncConfig.setSourceDockerImage(
+        IntegrationConstants.SPEC_ID_TO_IMPL
+            .get(sourceImplementation.getSourceSpecificationId())
+            .getSync());
     jobSyncConfig.setDestinationConnectionImplementation(destinationImplementation);
+    jobSyncConfig.setDestinationDockerImage(
+        IntegrationConstants.SPEC_ID_TO_IMPL
+            .get(destinationImplementation.getDestinationSpecificationId())
+            .getSync());
     jobSyncConfig.setStandardSync(standardSync);
 
     final JobConfig jobConfig = new JobConfig();

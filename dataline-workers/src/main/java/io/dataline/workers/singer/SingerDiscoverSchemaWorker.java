@@ -29,10 +29,10 @@ import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.Schema;
 import io.dataline.config.SingerCatalog;
-import io.dataline.config.StandardDiscoveryOutput;
+import io.dataline.config.StandardDiscoverSchemaInput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.OutputAndStatus;
 import java.io.IOException;
@@ -41,11 +41,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerDiscoveryWorker
-    extends BaseSingerWorker<ConnectionImplementation, StandardDiscoveryOutput>
+public class SingerDiscoverSchemaWorker
+    extends BaseSingerWorker<StandardDiscoverSchemaInput, StandardDiscoverSchemaOutput>
     implements DiscoverSchemaWorker {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoveryWorker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoverSchemaWorker.class);
 
   // TODO log errors to specified file locations
   private static String CONFIG_JSON_FILENAME = "config.json";
@@ -54,19 +54,20 @@ public class SingerDiscoveryWorker
 
   private volatile Process workerProcess;
 
-  public SingerDiscoveryWorker(SingerConnector connector) {
+  public SingerDiscoverSchemaWorker(SingerConnector connector) {
     super(connector);
   }
 
   @Override
-  OutputAndStatus<StandardDiscoveryOutput> runInternal(
-      ConnectionImplementation connectionImplementation, Path workspaceRoot) {
+  OutputAndStatus<StandardDiscoverSchemaOutput> runInternal(
+      StandardDiscoverSchemaInput discoverSchemaInput, Path workspaceRoot) {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
     //   reduced.
     final ObjectMapper objectMapper = new ObjectMapper();
     final String configDotJson;
     try {
-      configDotJson = objectMapper.writeValueAsString(connectionImplementation.getConfiguration());
+      configDotJson =
+          objectMapper.writeValueAsString(discoverSchemaInput.getConnectionConfiguration());
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
@@ -102,7 +103,7 @@ public class SingerDiscoveryWorker
       if (exitCode == 0) {
         String catalog = readFile(workspaceRoot, CATALOG_JSON_FILENAME);
         final SingerCatalog singerCatalog = jsonCatalogToTyped(catalog);
-        final StandardDiscoveryOutput discoveryOutput = toDiscoveryOutput(singerCatalog);
+        final StandardDiscoverSchemaOutput discoveryOutput = toDiscoveryOutput(singerCatalog);
         return new OutputAndStatus<>(SUCCESSFUL, discoveryOutput);
       } else {
         String errLog = readFile(workspaceRoot, ERROR_LOG_FILENAME);
@@ -126,12 +127,12 @@ public class SingerDiscoveryWorker
     }
   }
 
-  private static StandardDiscoveryOutput toDiscoveryOutput(SingerCatalog catalog) {
+  private static StandardDiscoverSchemaOutput toDiscoveryOutput(SingerCatalog catalog) {
     final Schema schema = SingerCatalogConverters.toDatalineSchema(catalog);
-    final StandardDiscoveryOutput discoveryOutput = new StandardDiscoveryOutput();
-    discoveryOutput.setSchema(schema);
+    final StandardDiscoverSchemaOutput output = new StandardDiscoverSchemaOutput();
+    output.setSchema(schema);
 
-    return discoveryOutput;
+    return output;
   }
 
   @Override

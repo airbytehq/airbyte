@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.dataline.config.Schema;
 import io.dataline.config.SingerCatalog;
-import io.dataline.config.StandardDiscoveryOutput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.BaseWorkerTestCase;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +41,8 @@ class SingerCatalogConvertersTest extends BaseWorkerTestCase {
     final SingerCatalog expectedCatalog =
         getJsonAsTyped("simple_postgres_singer_catalog.json", SingerCatalog.class);
     final Schema datalineSchema =
-        getJsonAsTyped("simple_postgres_schema.json", StandardDiscoveryOutput.class).getSchema();
+        getJsonAsTyped("simple_postgres_schema.json", StandardDiscoverSchemaOutput.class)
+            .getSchema();
 
     final SingerCatalog actualCatalog =
         SingerCatalogConverters.applySchemaToDiscoveredCatalog(catalog, datalineSchema);
@@ -58,7 +59,8 @@ class SingerCatalogConvertersTest extends BaseWorkerTestCase {
     final SingerCatalog catalog =
         getJsonAsTyped("simple_postgres_singer_catalog.json", SingerCatalog.class);
     final Schema expectedSchema =
-        getJsonAsTyped("simple_postgres_schema.json", StandardDiscoveryOutput.class).getSchema();
+        getJsonAsTyped("simple_postgres_schema.json", StandardDiscoverSchemaOutput.class)
+            .getSchema();
     expectedSchema.getTables().get(0).setSelected(false);
     expectedSchema.getTables().get(0).getColumns().get(0).setSelected(true);
     expectedSchema.getTables().get(0).getColumns().get(1).setSelected(true);
