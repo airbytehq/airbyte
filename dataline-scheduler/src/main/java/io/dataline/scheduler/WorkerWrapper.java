@@ -64,6 +64,47 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
     this.persistence = persistence;
   }
 
+  @Override
+  public void run() {
+    LOGGER.info("Executing worker wrapper...");
+    try {
+      setJobStatus(connectionPool, jobId, JobRead.StatusEnum.RUNNING);
+
+      // fetch input.
+      final io.dataline.scheduler.Job job = persistence.getJob(jobId);
+      final InputType input = getInput(job);
+
+      // todo (cgardens) - replace this with whatever the correct path is. probably dependency
+      //   inject it based via env.
+      final Path workspacesRoot = Path.of("/tmp/dataline/workspaces/");
+      FileUtils.forceMkdir(workspacesRoot.toFile());
+      final Path workspaceRoot = workspacesRoot.resolve(String.valueOf(jobId));
+      FileUtils.forceMkdir(workspaceRoot.toFile());
+      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, workspaceRoot);
+
+      switch (outputAndStatus.getStatus()) {
+        case FAILED:
+          setJobStatus(connectionPool, jobId, JobRead.StatusEnum.FAILED);
+          break;
+        case SUCCESSFUL:
+          setJobStatus(connectionPool, jobId, JobRead.StatusEnum.COMPLETED);
+          break;
+      }
+
+      if (outputAndStatus.getOutput().isPresent()) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(outputAndStatus.getOutput().get());
+        setJobOutput(connectionPool, jobId, json);
+        LOGGER.info("Set job output for job " + jobId);
+      } else {
+        LOGGER.info("No output present for job " + jobId);
+      }
+    } catch (Exception e) {
+      LOGGER.error("Worker Error", e);
+      setJobStatus(connectionPool, jobId, JobRead.StatusEnum.FAILED);
+    }
+  }
+
   @SuppressWarnings("unchecked")
   private InputType getInput(io.dataline.scheduler.Job job) {
     switch (job.getConfig().getConfigType()) {
@@ -92,47 +133,6 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
         return (InputType) syncInput;
       default:
         throw new RuntimeException("Unrecognized config type: " + job.getConfig().getConfigType());
-    }
-  }
-
-  @Override
-  public void run() {
-    LOGGER.info("Executing worker wrapper...");
-    try {
-      setJobStatus(connectionPool, jobId, JobRead.StatusEnum.RUNNING);
-
-      // fetch input.
-      final io.dataline.scheduler.Job job = persistence.getJob(jobId);
-      final InputType input = getInput(job);
-
-      // todo (cgardens) - replace this with whatever the correct path is. probably dependency
-      // inject it based via env.
-      final Path workspacesRoot = Path.of("/tmp/dataline/workspaces/");
-      FileUtils.forceMkdir(workspacesRoot.toFile());
-      final Path workspaceRoot = workspacesRoot.resolve(String.valueOf(jobId));
-      FileUtils.forceMkdir(workspaceRoot.toFile());
-      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, workspaceRoot);
-
-      switch (outputAndStatus.getStatus()) {
-        case FAILED:
-          setJobStatus(connectionPool, jobId, JobRead.StatusEnum.FAILED);
-          break;
-        case SUCCESSFUL:
-          setJobStatus(connectionPool, jobId, JobRead.StatusEnum.COMPLETED);
-          break;
-      }
-
-      if (outputAndStatus.getOutput().isPresent()) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(outputAndStatus.getOutput().get());
-        setJobOutput(connectionPool, jobId, json);
-        LOGGER.info("Set job output for job " + jobId);
-      } else {
-        LOGGER.info("No output present for job " + jobId);
-      }
-    } catch (Exception e) {
-      LOGGER.error("Worker Error", e);
-      setJobStatus(connectionPool, jobId, JobRead.StatusEnum.FAILED);
     }
   }
 
