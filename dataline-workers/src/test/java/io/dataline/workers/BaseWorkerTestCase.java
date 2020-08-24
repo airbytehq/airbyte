@@ -47,7 +47,7 @@ public abstract class BaseWorkerTestCase {
 
   @BeforeAll
   public void init() throws IOException {
-    workspaceDirectory = Files.createTempDirectory("dataline");
+    workspaceDirectory = Files.createTempDirectory(Path.of("/tmp/tests"), "dataline");
     System.out.println("Workspace directory: " + workspaceDirectory.toString());
   }
 
