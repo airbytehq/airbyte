@@ -33,8 +33,8 @@ import io.dataline.api.model.SourceImplementationIdRequestBody;
 import io.dataline.commons.enums.Enums;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.StandardConnectionStatus;
-import io.dataline.config.StandardDiscoveryOutput;
+import io.dataline.config.StandardCheckConnectionOutput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.scheduler.Job;
@@ -114,16 +114,16 @@ public class SchedulerHandler {
     LOGGER.info("jobId = " + jobId);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
-    final StandardDiscoveryOutput discoveryOutput =
+    final StandardDiscoverSchemaOutput output =
         job.getOutput()
             .orElseThrow(() -> new RuntimeException("Terminal job does not have an output"))
             .getDiscoverSchema();
 
-    LOGGER.info("discoveryOutput = " + discoveryOutput);
+    LOGGER.info("output = " + output);
 
     final SourceImplementationDiscoverSchemaRead read =
         new SourceImplementationDiscoverSchemaRead();
-    read.setSchema(SchemaConverter.toApiSchema(discoveryOutput.getSchema()));
+    read.setSchema(SchemaConverter.toApiSchema(output.getSchema()));
 
     return read;
   }
@@ -192,7 +192,7 @@ public class SchedulerHandler {
   }
 
   private CheckConnectionRead reportConnectionStatus(Job job) {
-    final StandardConnectionStatus connectionStatus =
+    final StandardCheckConnectionOutput output =
         job.getOutput()
             .orElseThrow(() -> new RuntimeException("Terminal job does not have an output"))
             .getCheckConnection();
@@ -200,8 +200,8 @@ public class SchedulerHandler {
     final CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
 
     checkConnectionRead.setStatus(
-        Enums.convertTo(connectionStatus.getStatus(), CheckConnectionRead.StatusEnum.class));
-    checkConnectionRead.setMessage(connectionStatus.getMessage());
+        Enums.convertTo(output.getStatus(), CheckConnectionRead.StatusEnum.class));
+    checkConnectionRead.setMessage(output.getMessage());
 
     return checkConnectionRead;
   }

@@ -24,9 +24,10 @@
 
 package io.dataline.workers.singer;
 
-import io.dataline.config.ConnectionImplementation;
-import io.dataline.config.StandardConnectionStatus;
-import io.dataline.config.StandardDiscoveryOutput;
+import io.dataline.config.StandardCheckConnectionInput;
+import io.dataline.config.StandardCheckConnectionOutput;
+import io.dataline.config.StandardDiscoverSchemaInput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.CheckConnectionWorker;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
@@ -35,41 +36,46 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SingerCheckConnectionWorker
-    extends BaseSingerWorker<ConnectionImplementation, StandardConnectionStatus>
+    extends BaseSingerWorker<StandardCheckConnectionInput, StandardCheckConnectionOutput>
     implements CheckConnectionWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerCheckConnectionWorker.class);
 
-  private final SingerDiscoveryWorker singerDiscoveryWorker;
+  private final SingerDiscoverSchemaWorker singerDiscoverSchemaWorker;
 
   public SingerCheckConnectionWorker(SingerConnector connector) {
     super(connector);
-    this.singerDiscoveryWorker = new SingerDiscoveryWorker(connector);
+    this.singerDiscoverSchemaWorker = new SingerDiscoverSchemaWorker(connector);
   }
 
   @Override
-  OutputAndStatus<StandardConnectionStatus> runInternal(
-      ConnectionImplementation connectionImplementation, Path workspaceRoot) {
-    OutputAndStatus<StandardDiscoveryOutput> outputAndStatus =
-        singerDiscoveryWorker.runInternal(connectionImplementation, workspaceRoot);
-    StandardConnectionStatus connectionStatus = new StandardConnectionStatus();
+  OutputAndStatus<StandardCheckConnectionOutput> runInternal(
+      StandardCheckConnectionInput input, Path workspaceRoot) {
+
+    final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
+    discoverSchemaInput.setConnectionConfiguration(input.getConnectionConfiguration());
+
+    OutputAndStatus<StandardDiscoverSchemaOutput> outputAndStatus =
+        singerDiscoverSchemaWorker.runInternal(discoverSchemaInput, workspaceRoot);
+    StandardCheckConnectionOutput output = new StandardCheckConnectionOutput();
     JobStatus jobStatus;
     if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL
         && outputAndStatus.getOutput().isPresent()) {
-      connectionStatus.setStatus(StandardConnectionStatus.Status.SUCCESS);
+      output.setStatus(StandardCheckConnectionOutput.Status.SUCCESS);
       jobStatus = JobStatus.SUCCESSFUL;
     } else {
       LOGGER.info("Connection check unsuccessful. Discovery output: {}", outputAndStatus);
       jobStatus = JobStatus.FAILED;
-      connectionStatus.setStatus(StandardConnectionStatus.Status.FAILURE);
+      output.setStatus(StandardCheckConnectionOutput.Status.FAILURE);
       // TODO add better error log parsing to specify the exact reason for failure as the message
-      connectionStatus.setMessage("Failed to connect.");
+      output.setMessage("Failed to connect.");
     }
-    return new OutputAndStatus<>(jobStatus, connectionStatus);
+
+    return new OutputAndStatus<>(jobStatus, output);
   }
 
   @Override
   public void cancel() {
-    singerDiscoveryWorker.cancel();
+    singerDiscoverSchemaWorker.cancel();
   }
 }
