@@ -69,6 +69,19 @@ public class ConfigFetchers {
     }
   }
 
+  // wrap json validation errors for usages in API handlers.
+  public static <T> void writeConfig(
+      ConfigPersistence configPersistence,
+      PersistenceConfigType persistenceConfigType,
+      String configId,
+      T config) {
+    try {
+      configPersistence.writeConfig(persistenceConfigType, configId, config);
+    } catch (JsonValidationException e) {
+      throw getInvalidException(e);
+    }
+  }
+
   public static Set<StandardSource> getStandardSources(ConfigPersistence configPersistence) {
     try {
       return configPersistence.getConfigs(

@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.server.helpers.ConfigFetchers;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
@@ -55,7 +56,8 @@ public class DestinationSpecificationFixtures {
     destinationConnectionSpecification.setDestinationSpecificationId(destinationSpecificationId);
     destinationConnectionSpecification.setSpecification(specificationJson.toString());
 
-    configPersistence.writeConfig(
+    ConfigFetchers.writeConfig(
+        configPersistence,
         PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
         destinationSpecificationId.toString(),
         destinationConnectionSpecification);
