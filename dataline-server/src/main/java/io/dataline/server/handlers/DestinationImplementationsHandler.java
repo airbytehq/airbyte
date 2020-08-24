@@ -175,7 +175,8 @@ public class DestinationImplementationsHandler {
     destinationConnectionImplementation.setDestinationImplementationId(destinationImplementationId);
     destinationConnectionImplementation.setConfiguration(configuration);
 
-    configPersistence.writeConfig(
+    ConfigFetchers.writeConfig(
+        configPersistence,
         PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
         destinationImplementationId.toString(),
         destinationConnectionImplementation);

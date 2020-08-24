@@ -94,7 +94,8 @@ public class ConnectionsHandler {
   }
 
   private void writeStandardSync(StandardSync standardSync) {
-    configPersistence.writeConfig(
+    ConfigFetchers.writeConfig(
+        configPersistence,
         PersistenceConfigType.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         standardSync);
@@ -102,7 +103,8 @@ public class ConnectionsHandler {
 
   // todo (cgardens) - stored on sync id (there is no schedule id concept). this is non-intuitive.
   private void writeSchedule(StandardSyncSchedule schedule) {
-    configPersistence.writeConfig(
+    ConfigFetchers.writeConfig(
+        configPersistence,
         PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
         schedule.getConnectionId().toString(),
         schedule);
