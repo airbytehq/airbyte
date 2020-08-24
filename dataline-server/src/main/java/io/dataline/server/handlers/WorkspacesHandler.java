@@ -78,8 +78,11 @@ public class WorkspacesHandler {
     persistedWorkspace.setAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection());
     persistedWorkspace.setNews(workspaceUpdate.getNews());
     persistedWorkspace.setSecurityUpdates(workspaceUpdate.getSecurityUpdates());
-    configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_WORKSPACE, workspaceId.toString(), persistedWorkspace);
+    ConfigFetchers.writeConfig(
+        configPersistence,
+        PersistenceConfigType.STANDARD_WORKSPACE,
+        workspaceId.toString(),
+        persistedWorkspace);
 
     return getWorkspaceFromId(workspaceUpdate.getWorkspaceId());
   }
