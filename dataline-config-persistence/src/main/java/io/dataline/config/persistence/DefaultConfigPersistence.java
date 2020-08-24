@@ -99,7 +99,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
       PersistenceConfigType persistenceConfigType, String configId, T config)
       throws JsonValidationException {
     synchronized (lock) {
-      // validate file with schema
+      // validate config with schema
       validateJson(objectMapper.valueToTree(config), persistenceConfigType);
 
       final Path configPath = getConfigPath(persistenceConfigType, configId);
