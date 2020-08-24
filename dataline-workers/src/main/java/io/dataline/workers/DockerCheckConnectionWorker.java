@@ -50,7 +50,7 @@ public class DockerCheckConnectionWorker implements CheckConnectionWorker {
 
   @Override
   public OutputAndStatus<StandardCheckConnectionOutput> run(
-    StandardCheckConnectionInput standardCheckConnectionInput, Path workspacePath) {
+      StandardCheckConnectionInput standardCheckConnectionInput, Path workspacePath) {
     final ObjectMapper objectMapper = new ObjectMapper();
 
     // write input struct to docker image
@@ -61,7 +61,7 @@ public class DockerCheckConnectionWorker implements CheckConnectionWorker {
       throw new RuntimeException(e);
     }
     final Path configPath =
-      WorkerUtils.writeFileToWorkspace(workspacePath, INPUT, inputString); // wrong type
+        WorkerUtils.writeFileToWorkspace(workspacePath, INPUT, inputString); // wrong type
 
     // run it. patiently.
     try {
@@ -80,7 +80,7 @@ public class DockerCheckConnectionWorker implements CheckConnectionWorker {
       // read output struct. assume it is written to correct place.
       final String outputString = WorkerUtils.readFileFromWorkspace(workspacePath, OUTPUT);
       final StandardCheckConnectionOutput standardCheckConnectionOutput =
-        objectMapper.readValue(outputString, StandardCheckConnectionOutput.class);
+          objectMapper.readValue(outputString, StandardCheckConnectionOutput.class);
 
       return new OutputAndStatus<>(JobStatus.SUCCESSFUL, standardCheckConnectionOutput);
     } catch (IOException | InterruptedException e) {
