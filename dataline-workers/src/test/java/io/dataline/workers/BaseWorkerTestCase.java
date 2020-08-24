@@ -24,7 +24,12 @@
 
 package io.dataline.workers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
@@ -54,5 +59,24 @@ public abstract class BaseWorkerTestCase {
       throw new RuntimeException(e);
     }
     return workspacePath;
+  }
+
+  protected String readResource(String name) {
+    URL resource = Resources.getResource(name);
+    try {
+      return Resources.toString(resource, Charset.defaultCharset());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected <T> T getJsonAsTyped(String file, Class<T> clazz) {
+    final URL resource = Resources.getResource(file);
+    final ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      return objectMapper.readValue(new File(resource.getFile()), clazz);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

@@ -30,15 +30,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Resources;
 import io.dataline.config.ConnectionImplementation;
 import io.dataline.config.StandardDiscoveryOutput;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerHelper;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -80,7 +77,7 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
 
     assertEquals(SUCCESSFUL, run.getStatus());
 
-    String expectedSchema = readResource("simple_postgres_schema.json");
+    String expectedSchema = readResource("simple_discovered_postgres_schema.json");
     final ObjectMapper objectMapper = new ObjectMapper();
     final String actualSchema = objectMapper.writeValueAsString(run.getOutput().get());
 
@@ -111,15 +108,6 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
     TimeUnit.MILLISECONDS.sleep(50);
     worker.cancel();
     workerWasCancelled.get();
-  }
-
-  private String readResource(String name) {
-    URL resource = Resources.getResource(name);
-    try {
-      return Resources.toString(resource, Charset.defaultCharset());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private void assertJsonEquals(String s1, String s2) throws IOException {
