@@ -128,12 +128,12 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     jobSyncConfig.setSourceDockerImage(
         IntegrationConstants.SPEC_ID_TO_IMPL
             .get(sourceImplementation.getSourceSpecificationId())
-            .getDiscoverSchema());
+            .getSync());
     jobSyncConfig.setDestinationConnectionImplementation(destinationImplementation);
     jobSyncConfig.setDestinationDockerImage(
         IntegrationConstants.SPEC_ID_TO_IMPL
             .get(destinationImplementation.getDestinationSpecificationId())
-            .getDiscoverSchema());
+            .getSync());
     jobSyncConfig.setStandardSync(standardSync);
 
     final JobConfig jobConfig = new JobConfig();
