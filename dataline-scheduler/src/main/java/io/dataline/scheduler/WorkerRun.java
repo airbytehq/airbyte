@@ -39,7 +39,20 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WorkerRun<InputType, OutputType> {
+/**
+ * This class represents a single run of a worker. It handles making sure the correct inputs and
+ * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
+ * persisted to the db.
+ *
+ * <p>todo (cgardens) - this line between this abstraction and WorkerRunner is a little blurry. we
+ * can clarify it later. the main benefit is of this class is that it gives us some type safety when
+ * working with workers. you can probably make an argument that this class should not have access to
+ * the db.
+ *
+ * @param <InputType> - the type that the worker consumes.
+ * @param <OutputType> - the type that the worker outputs.
+ */
+public class WorkerRun<InputType, OutputType> implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
 
@@ -59,6 +72,7 @@ public class WorkerRun<InputType, OutputType> {
     this.connectionPool = connectionPool;
   }
 
+  @Override
   public void run() {
     LOGGER.info("Executing worker wrapper...");
     try {
