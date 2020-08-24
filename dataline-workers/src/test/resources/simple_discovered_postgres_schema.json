@@ -1,0 +1,22 @@
+{
+  "schema": {
+    "tables": [
+      {
+        "name": "id_and_name",
+        "selected": false,
+        "columns": [
+          {
+            "name": "name",
+            "dataType": "string",
+            "selected": true
+          },
+          {
+            "name": "id",
+            "dataType": "number",
+            "selected": true
+          }
+        ]
+      }
+    ]
+  }
+}

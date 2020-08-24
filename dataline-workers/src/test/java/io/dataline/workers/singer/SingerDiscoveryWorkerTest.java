@@ -77,7 +77,7 @@ public class SingerDiscoveryWorkerTest extends BaseWorkerTestCase {
 
     assertEquals(SUCCESSFUL, run.getStatus());
 
-    String expectedSchema = readResource("simple_postgres_schema.json");
+    String expectedSchema = readResource("simple_discovered_postgres_schema.json");
     final ObjectMapper objectMapper = new ObjectMapper();
     final String actualSchema = objectMapper.writeValueAsString(run.getOutput().get());
 
