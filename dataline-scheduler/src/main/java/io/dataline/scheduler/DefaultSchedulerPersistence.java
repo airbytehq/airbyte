@@ -32,16 +32,19 @@ import io.dataline.config.JobSyncConfig;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.db.DatabaseHelper;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.Record;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.stream.Collectors;
 
 public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSchedulerPersistence.class);
@@ -145,6 +148,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     return record.getValue("id", Long.class);
   }
 
+  @Override
   public Job getJob(long jobId) throws IOException {
     try {
       return DatabaseHelper.query(
@@ -158,6 +162,20 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
             return getJobFromRecord(jobEntry);
           });
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public List<Job> listJobs(String scope) throws IOException {
+    try {
+      return DatabaseHelper.query(
+          connectionPool,
+          ctx ->
+              ctx.fetch("SELECT * FROM jobs WHERE scope = ?", scope).stream()
+                  .map(DefaultSchedulerPersistence::getJobFromRecord)
+                  .collect(Collectors.toList()));
     } catch (SQLException e) {
       throw new IOException(e);
     }

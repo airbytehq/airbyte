@@ -1,5 +1,6 @@
 package io.dataline.server.handlers;
 
+import com.google.common.base.Charsets;
 import io.dataline.api.model.ConnectionIdRequestBody;
 import io.dataline.api.model.JobIdRequestBody;
 import io.dataline.api.model.JobInfoRead;
@@ -9,12 +10,17 @@ import io.dataline.api.model.LogRead;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.JobStatus;
 import io.dataline.scheduler.SchedulerPersistence;
+import org.apache.commons.io.input.ReversedLinesFileReader;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class JobHistoryHandler {
+  private static final int LOG_TAIL_SIZE = 10;
   private final SchedulerPersistence schedulerPersistence;
 
   public JobHistoryHandler(SchedulerPersistence schedulerPersistence) {
@@ -22,12 +28,22 @@ public class JobHistoryHandler {
   }
 
   public JobReadList listJobsFor(ConnectionIdRequestBody connectionIdRequestBody) {
-    String connectionId = connectionIdRequestBody.getConnectionId().toString();
+    try {
+      String connectionId = connectionIdRequestBody.getConnectionId().toString();
 
-    JobReadList jobReadList = new JobReadList();
-    jobReadList.setJobs(new ArrayList<>());
+      // todo: use functions for scope scoping
+      List<JobRead> jobReads =
+          schedulerPersistence.listJobs("connection:" + connectionId).stream()
+              .map(JobHistoryHandler::getJobRead)
+              .collect(Collectors.toList());
 
-    return jobReadList;
+      JobReadList jobReadList = new JobReadList();
+      jobReadList.setJobs(jobReads);
+
+      return jobReadList;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) {
@@ -35,8 +51,8 @@ public class JobHistoryHandler {
       Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
 
       LogRead logRead = new LogRead();
-      logRead.setStdout(getTail(job.getStdoutPath()));
-      logRead.setStderr(getTail(job.getStderrPath()));
+      logRead.setStdout(getTail(LOG_TAIL_SIZE, job.getStdoutPath()));
+      logRead.setStderr(getTail(LOG_TAIL_SIZE, job.getStderrPath()));
 
       JobInfoRead jobInfo = new JobInfoRead();
       jobInfo.setJob(getJobRead(job));
@@ -48,9 +64,23 @@ public class JobHistoryHandler {
     }
   }
 
-  private static List<String> getTail(String path) {
-    // todo
-    return new ArrayList<>();
+  private static List<String> getTail(int numLines, String path) {
+    try {
+      File file = new File(path);
+      ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8);
+      List<String> lines = new ArrayList<>();
+
+      String line;
+      while ((line = fileReader.readLine()) != null && lines.size() < numLines) {
+        lines.add(line);
+      }
+
+      Collections.reverse(lines);
+
+      return lines;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   // todo: add test assertion for completeness
