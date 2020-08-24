@@ -25,6 +25,7 @@
 package io.dataline.scheduler;
 
 import io.dataline.config.JobCheckConnectionConfig;
+import io.dataline.config.JobDiscoverSchemaConfig;
 import io.dataline.config.JobSyncConfig;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
@@ -65,7 +66,8 @@ public class WorkerRunner implements Runnable {
 
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION:
-        final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(job);
+        final StandardCheckConnectionInput checkConnectionInput =
+            getCheckConnectionInput(job.getConfig().getCheckConnection());
         new WorkerRun<>(
                 jobId,
                 checkConnectionInput,
@@ -81,28 +83,28 @@ public class WorkerRunner implements Runnable {
     }
   }
 
-  private static StandardCheckConnectionInput getCheckConnectionInput(Job job) {
-    final JobCheckConnectionConfig checkConnection = job.getConfig().getCheckConnection();
+  private static StandardCheckConnectionInput getCheckConnectionInput(
+      JobCheckConnectionConfig config) {
     final StandardCheckConnectionInput checkConnectionInput = new StandardCheckConnectionInput();
-    checkConnectionInput.setConnectionConfiguration(checkConnection.getConnectionConfiguration());
+    checkConnectionInput.setConnectionConfiguration(config.getConnectionConfiguration());
 
     return checkConnectionInput;
   }
 
-  private static StandardDiscoverSchemaInput getDiscoverSchemaInput(Job job) {
-    final JobCheckConnectionConfig discoverSchema = job.getConfig().getCheckConnection();
+  private static StandardDiscoverSchemaInput getDiscoverSchemaInput(
+      JobDiscoverSchemaConfig config) {
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfiguration(discoverSchema.getConnectionConfiguration());
+    discoverSchemaInput.setConnectionConfiguration(config.getConnectionConfiguration());
 
     return discoverSchemaInput;
   }
 
-  private static StandardSyncInput getSyncInput(Job job) {
-    final JobSyncConfig sync = job.getConfig().getSync();
+  private static StandardSyncInput getSyncInput(JobSyncConfig config) {
     final StandardSyncInput syncInput = new StandardSyncInput();
-    syncInput.setSourceConnectionImplementation(sync.getSourceConnectionImplementation());
-    syncInput.setDestinationConnectionImplementation(sync.getDestinationConnectionImplementation());
-    syncInput.setStandardSync(sync.getStandardSync());
+    syncInput.setSourceConnectionImplementation(config.getSourceConnectionImplementation());
+    syncInput.setDestinationConnectionImplementation(
+        config.getDestinationConnectionImplementation());
+    syncInput.setStandardSync(config.getStandardSync());
 
     return syncInput;
   }
