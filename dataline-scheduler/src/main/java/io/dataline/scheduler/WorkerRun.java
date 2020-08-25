@@ -26,11 +26,6 @@ package io.dataline.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.api.model.JobRead;
-import io.dataline.config.JobCheckConnectionConfig;
-import io.dataline.config.JobSyncConfig;
-import io.dataline.config.StandardCheckConnectionInput;
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardSyncInput;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
@@ -44,24 +39,37 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WorkerWrapper<InputType, OutputType> implements Runnable {
+/**
+ * This class represents a single run of a worker. It handles making sure the correct inputs and
+ * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
+ * persisted to the db.
+ *
+ * <p>todo (cgardens) - this line between this abstraction and WorkerRunner is a little blurry. we
+ * can clarify it later. the main benefit is of this class is that it gives us some type safety when
+ * working with workers. you can probably make an argument that this class should not have access to
+ * the db.
+ *
+ * @param <InputType> - the type that the worker consumes.
+ * @param <OutputType> - the type that the worker outputs.
+ */
+public class WorkerRun<InputType, OutputType> implements Runnable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerWrapper.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
 
   private final long jobId;
+  private InputType input;
   private final Worker<InputType, OutputType> worker;
   private final BasicDataSource connectionPool;
-  private final SchedulerPersistence persistence;
 
-  public WorkerWrapper(
+  public WorkerRun(
       long jobId,
+      InputType input,
       Worker<InputType, OutputType> worker,
-      BasicDataSource connectionPool,
-      SchedulerPersistence persistence) {
+      BasicDataSource connectionPool) {
     this.jobId = jobId;
+    this.input = input;
     this.worker = worker;
     this.connectionPool = connectionPool;
-    this.persistence = persistence;
   }
 
   @Override
@@ -69,10 +77,6 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
     LOGGER.info("Executing worker wrapper...");
     try {
       setJobStatus(connectionPool, jobId, JobRead.StatusEnum.RUNNING);
-
-      // fetch input.
-      final io.dataline.scheduler.Job job = persistence.getJob(jobId);
-      final InputType input = getInput(job);
 
       // todo (cgardens) - replace this with whatever the correct path is. probably dependency
       //   inject it based via env.
@@ -102,37 +106,6 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
     } catch (Exception e) {
       LOGGER.error("Worker Error", e);
       setJobStatus(connectionPool, jobId, JobRead.StatusEnum.FAILED);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private InputType getInput(io.dataline.scheduler.Job job) {
-    switch (job.getConfig().getConfigType()) {
-      case CHECK_CONNECTION:
-        final JobCheckConnectionConfig checkConnection = job.getConfig().getCheckConnection();
-        final StandardCheckConnectionInput checkConnectionInput =
-            new StandardCheckConnectionInput();
-        checkConnectionInput.setConnectionConfiguration(
-            checkConnection.getConnectionConfiguration());
-
-        return (InputType) checkConnectionInput;
-      case DISCOVER_SCHEMA:
-        final JobCheckConnectionConfig discoverSchema = job.getConfig().getCheckConnection();
-        final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-        discoverSchemaInput.setConnectionConfiguration(discoverSchema.getConnectionConfiguration());
-
-        return (InputType) discoverSchemaInput;
-      case SYNC:
-        final JobSyncConfig sync = job.getConfig().getSync();
-        final StandardSyncInput syncInput = new StandardSyncInput();
-        syncInput.setSourceConnectionImplementation(sync.getSourceConnectionImplementation());
-        syncInput.setDestinationConnectionImplementation(
-            sync.getDestinationConnectionImplementation());
-        syncInput.setStandardSync(sync.getStandardSync());
-
-        return (InputType) syncInput;
-      default:
-        throw new RuntimeException("Unrecognized config type: " + job.getConfig().getConfigType());
     }
   }
 
