@@ -24,20 +24,10 @@
 
 package io.dataline.scheduler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import io.dataline.api.model.ConnectionRead;
-import io.dataline.api.model.ConnectionSchedule;
 import io.dataline.db.DatabaseHelper;
 import java.sql.SQLException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.slf4j.Logger;
@@ -67,11 +57,7 @@ public class JobSubmitter implements Runnable {
 
       Optional<Job> oldestPendingJob = getOldestPendingJob();
 
-      if (oldestPendingJob.isPresent()) {
-        handleJob(oldestPendingJob.get());
-      } else {
-        handleScheduledJobs();
-      }
+      oldestPendingJob.ifPresent(this::submitJob);
     } catch (Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
@@ -99,137 +85,7 @@ public class JobSubmitter implements Runnable {
         });
   }
 
-  private void handleScheduledJobs() throws SQLException {
-    Set<ConnectionRead> activeConnections = getAllActiveConnections();
-    for (ConnectionRead connection : activeConnections) {
-      Optional<Job> lastJob =
-          DatabaseHelper.query(
-              connectionPool,
-              ctx -> {
-                Optional<Record> jobEntryOptional =
-                    ctx
-                        .fetch(
-                            "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
-                            connection.getConnectionId().toString(),
-                            JobStatus.CANCELLED.toString().toLowerCase())
-                        .stream()
-                        .findFirst();
-
-                if (jobEntryOptional.isPresent()) {
-                  Record jobEntry = jobEntryOptional.get();
-                  Job job = DefaultSchedulerPersistence.getJobFromRecord(jobEntry);
-                  return Optional.of(job);
-                } else {
-                  return Optional.empty();
-                }
-              });
-
-      if (lastJob.isEmpty()) {
-        createPendingJob(connectionPool, connection.getConnectionId().toString(), "{}");
-      } else {
-        Job job = lastJob.get();
-        handleJob(job);
-      }
-    }
-  }
-
-  private void handleJob(Job job) {
-    switch (job.getStatus()) {
-      case CANCELLED:
-      case COMPLETED:
-        /*
-        TODO: Need to handle getting the connection schedule for a sync.
-        Maybe there's an easier way of adding a custom type like the EchoWorker
-        ConnectionSchedule schedule = job.getConfig().getSync();
-        long nextRunStart = job.getUpdatedAt() + getIntervalInSeconds(schedule);
-        if (nextRunStart < Instant.now().getEpochSecond()) {
-          createPendingJob(connectionPool, job);
-        }
-         */
-        throw new RuntimeException("not implemented");
-      case PENDING:
-      case FAILED:
-        threadPool.submit(new WorkerRunner(job.getId(), connectionPool, persistence));
-        break;
-      case RUNNING:
-        //  no-op
-        break;
-    }
-  }
-
-  private static void createPendingJob(
-      BasicDataSource connectionPool, String scope, String jsonConfig) {
-    try {
-      LOGGER.info("Creating pending job for scope: " + scope);
-      LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
-
-      DatabaseHelper.query(
-          connectionPool,
-          ctx ->
-              ctx.execute(
-                  "INSERT INTO jobs VALUES(DEFAULT, ?, ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?)",
-                  scope,
-                  now,
-                  now,
-                  now,
-                  JobStatus.PENDING.toString().toLowerCase(),
-                  jsonConfig,
-                  null, // no output when created
-                  JobLogs.getLogDirectory(scope),
-                  JobLogs.getLogDirectory(scope)));
-    } catch (SQLException e) {
-      LOGGER.error("SQL Error", e);
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static void createPendingJob(BasicDataSource connectionPool, Job previousJob) {
-    try {
-      createPendingJob(connectionPool, previousJob.getScope(), previousJob.getConfigAsJson());
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException("JSON Error", e);
-    }
-  }
-
-  // todo: Assert in test to catch at build time
-  private static Long getSecondsInUnit(ConnectionSchedule.TimeUnitEnum timeUnitEnum) {
-    switch (timeUnitEnum) {
-      case MINUTES:
-        return TimeUnit.MINUTES.toSeconds(1);
-      case HOURS:
-        return TimeUnit.HOURS.toSeconds(1);
-      case DAYS:
-        return TimeUnit.DAYS.toSeconds(1);
-      case WEEKS:
-        return TimeUnit.DAYS.toSeconds(1) * 7;
-      case MONTHS:
-        return TimeUnit.DAYS.toSeconds(1) * 30;
-      default:
-        throw new RuntimeException("Unhandled TimeUnitEnum: " + timeUnitEnum);
-    }
-  }
-
-  private static Long getIntervalInSeconds(ConnectionSchedule schedule) {
-    return getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits().longValue();
-  }
-
-  private static UUID CONNECTION_ID = UUID.randomUUID();
-
-  private static Set<ConnectionRead> getAllActiveConnections() {
-    //    TODO: re-enable test schedule
-    //    ConnectionSchedule testConnectionSchedule = new ConnectionSchedule();
-    //    testConnectionSchedule.setUnits(1l);
-    //    testConnectionSchedule.setTimeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES);
-    //    ConnectionRead testConnection = new ConnectionRead();
-    //    testConnection.setName("echo-connection");
-    //    testConnection.setConnectionId(CONNECTION_ID);
-    //    testConnection.setSourceImplementationId(UUID.randomUUID());
-    //    testConnection.setDestinationImplementationId(UUID.randomUUID());
-    //    testConnection.setSchedule(testConnectionSchedule);
-    //    testConnection.setStatus(ConnectionStatus.ACTIVE);
-    //
-    //    return Sets.newHashSet(testConnection);
-
-    return new HashSet<>();
+  private void submitJob(Job job) {
+    threadPool.submit(new WorkerRunner(job.getId(), connectionPool, persistence));
   }
 }
