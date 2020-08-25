@@ -74,7 +74,10 @@ public class SchedulerApp {
         () -> {
           jobSubmitter.run();
           jobScheduler.run();
-        }, 0L, JOB_SUBMITTER_DELAY_MILLIS, TimeUnit.MILLISECONDS);
+        },
+        0L,
+        JOB_SUBMITTER_DELAY_MILLIS,
+        TimeUnit.MILLISECONDS);
 
     Runtime.getRuntime()
         .addShutdownHook(new SchedulerShutdownHandler(workerThreadPool, scheduledPool));
