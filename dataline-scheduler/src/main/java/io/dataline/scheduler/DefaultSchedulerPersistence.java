@@ -34,11 +34,6 @@ import io.dataline.config.JobSyncConfig;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.db.DatabaseHelper;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -47,6 +42,10 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.Record;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSchedulerPersistence.class);

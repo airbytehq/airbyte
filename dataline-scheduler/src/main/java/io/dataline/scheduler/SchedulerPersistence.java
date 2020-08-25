@@ -27,7 +27,6 @@ package io.dataline.scheduler;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
-
 import java.io.IOException;
 import java.util.List;
 

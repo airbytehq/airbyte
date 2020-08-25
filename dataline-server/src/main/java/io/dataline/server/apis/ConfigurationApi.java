@@ -72,10 +72,9 @@ import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
 import io.dataline.server.handlers.WorkspacesHandler;
 import io.dataline.server.validation.IntegrationSchemaValidation;
-import org.apache.commons.dbcp2.BasicDataSource;
-
 import javax.validation.Valid;
 import javax.ws.rs.Path;
+import org.apache.commons.dbcp2.BasicDataSource;
 
 @Path("/v1")
 public class ConfigurationApi implements io.dataline.api.V1Api {
