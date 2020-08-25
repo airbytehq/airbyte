@@ -1,7 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import Link from "../../../../components/Link";
 import Button from "../../../../components/Button";
 import { Routes } from "../../../routes";
 import PageTitle from "../../../../components/PageTitle";
@@ -23,7 +22,6 @@ const AllSourcesPage: React.FC = () => {
         }
       />
       <SourcesTable />
-      <Link to={Routes.Preferences}>Go to Preferences Form</Link>
     </>
   );
 };

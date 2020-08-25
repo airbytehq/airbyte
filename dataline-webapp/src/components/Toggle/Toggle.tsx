@@ -74,7 +74,8 @@ const Toggle: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = props => {
       <SwitchInput
         type="checkbox"
         {...props}
-        checked={!!props.value || props.checked}
+        value={props.value}
+        checked={props.checked || !!props.value}
       />
       <Slider />
       <SuccessIcon icon={faCheck} />

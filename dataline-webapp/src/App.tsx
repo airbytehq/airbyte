@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
@@ -9,6 +9,7 @@ import GlobalStyle from "./global-styles";
 import { theme } from "./theme";
 
 import { Routing } from "./pages/routes";
+import LoadingPage from "./components/LoadingPage";
 
 const App = () => {
   return (
@@ -17,7 +18,9 @@ const App = () => {
         <GlobalStyle />
         <IntlProvider locale={"en"} messages={en}>
           <CacheProvider>
-            <Routing />
+            <Suspense fallback={<LoadingPage />}>
+              <Routing />
+            </Suspense>
           </CacheProvider>
         </IntlProvider>
       </ThemeProvider>

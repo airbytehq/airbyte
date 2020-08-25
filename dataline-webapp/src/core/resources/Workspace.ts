@@ -35,17 +35,6 @@ export default class WorkspaceResource extends BaseResource
     };
   }
 
-  static detailBySlugShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.detailShape(),
-      fetch: async (
-        params: Readonly<Record<string, string | number>>
-      ): Promise<any> =>
-        this.fetch("post", `${this.url(params)}/get_by_slug`, params),
-      schema: this.asSchema()
-    };
-  }
-
   static updateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.partialUpdateShape(),

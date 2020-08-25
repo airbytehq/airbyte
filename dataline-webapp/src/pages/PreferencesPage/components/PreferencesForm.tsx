@@ -10,7 +10,12 @@ import Label from "../../../components/Label";
 import LabeledToggle from "../../../components/LabeledToggle";
 
 export type IProps = {
-  onSubmit: () => void;
+  onSubmit: (data: {
+    email: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  }) => void;
 };
 
 const ButtonContainer = styled.div`
@@ -55,16 +60,16 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
     <Formik
       initialValues={{
         email: "",
-        anonymizeData: false,
+        anonymousDataCollection: false,
         news: false,
-        security: true
+        securityUpdates: true
       }}
       validateOnBlur={true}
       validateOnChange={false}
       validationSchema={preferencesValidationSchema}
-      onSubmit={async (_, { setSubmitting }) => {
+      onSubmit={async (values, { setSubmitting }) => {
         setSubmitting(false);
-        onSubmit();
+        onSubmit(values);
       }}
     >
       {({ isSubmitting, values }) => (
@@ -105,7 +110,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
             />
           </Text>
           <FormItem>
-            <Field name="anonymizeData">
+            <Field name="anonymousDataCollection">
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
@@ -136,7 +141,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
             <FormattedMessage id="preferences.security" />
           </Subtitle>
           <FormItem>
-            <Field name="security">
+            <Field name="securityUpdates">
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
