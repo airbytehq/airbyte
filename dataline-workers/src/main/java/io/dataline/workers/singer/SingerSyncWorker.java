@@ -24,6 +24,9 @@
 
 package io.dataline.workers.singer;
 
+import static io.dataline.workers.JobStatus.FAILED;
+import static io.dataline.workers.JobStatus.SUCCESSFUL;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -84,11 +87,10 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
       throws InvalidCredentialsException {
 
     OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, workspaceRoot);
-    if (discoveryOutput.getStatus() != JobStatus.SUCCESSFUL
-        || discoveryOutput.getOutput().isEmpty()) {
+    if (discoveryOutput.getStatus() != SUCCESSFUL || discoveryOutput.getOutput().isEmpty()) {
       LOGGER.debug(
           "Sync worker failed due to failed discovery. Discovery output: {}", discoveryOutput);
-      return new OutputAndStatus<>(JobStatus.FAILED);
+      return new OutputAndStatus<>(FAILED);
     }
 
     try {
@@ -189,9 +191,14 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
       jobSyncOutput.setState(state);
 
       JobStatus status =
-          tapProcess.exitValue() == 0 && targetProcess.exitValue() == 0
-              ? JobStatus.SUCCESSFUL
-              : JobStatus.FAILED;
+          tapProcess.exitValue() == 0 && targetProcess.exitValue() == 0 ? SUCCESSFUL : FAILED;
+
+      if (status == FAILED) {
+        LOGGER.debug(
+            "Sync worker failed. Tap error log: {}.\n Target error log: {}",
+            readFile(workspaceRoot, TAP_ERR_LOG),
+            readFile(workspaceRoot, TARGET_ERR_LOG));
+      }
       return new OutputAndStatus<>(status, jobSyncOutput);
     } catch (IOException | InterruptedException e) {
       // TODO return state

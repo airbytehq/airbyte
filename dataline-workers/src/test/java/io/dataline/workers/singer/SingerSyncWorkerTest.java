@@ -110,7 +110,7 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
     syncInput.setSourceConnectionImplementation(sourceConnection);
 
     State state = new State();
-    state.setState("");
+    state.setState("{}");
     syncInput.setState(state);
 
     OutputAndStatus<StandardSyncOutput> syncResult =
