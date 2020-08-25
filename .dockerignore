@@ -1,5 +1,7 @@
+.dockerignore
 .git
 .idea
-**/build
-**/node_modules
-*.Dockerfile
+/**/build
+/**/node_modules
+/**/*Dockerfile
+

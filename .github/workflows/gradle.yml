@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Test
+        run: docker network ls
       - name: Checkout Dataline
         uses: actions/checkout@v2
 
