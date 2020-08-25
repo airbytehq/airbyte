@@ -26,6 +26,7 @@
 * [Contributing to Dataline](contributing/contributing-to-dataline.md)
 * [Developing Locally](contributing/developing-locally.md)
 * [Updating Documentation](contributing/updating-documentation.md)
+* [Code of Conduct](contributing/code-of-conduct.md)
 
 ## Architecture
 
