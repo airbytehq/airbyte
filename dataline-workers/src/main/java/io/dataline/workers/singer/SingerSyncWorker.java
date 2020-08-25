@@ -69,7 +69,7 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
 
   private Process tapProcess;
   private Process targetProcess;
-  
+
   public SingerSyncWorker(SingerTap tap, SingerTarget target) {
     this.tap = tap;
     this.target = target;
@@ -135,40 +135,37 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
               .redirectOutput(workspaceRoot.resolve(OUTPUT_STATE_FILENAME).toFile())
               .start();
 
-      InputStream tapStdout = tapProcess.getInputStream();
-      OutputStream targetStdin = targetProcess.getOutputStream();
-      BufferedReader reader = new BufferedReader(new InputStreamReader(tapStdout, Charsets.UTF_8));
-      BufferedWriter writer =
-          new BufferedWriter(new OutputStreamWriter(targetStdin, Charsets.UTF_8));
-
-      ObjectMapper objectMapper = new ObjectMapper();
-      reader
-          .lines()
-          .forEach(
-              line -> {
-                try {
-                  writer.write(line);
-                  writer.newLine();
-                  JsonNode lineJson = objectMapper.readTree(line);
-                  if (lineJson.get("type").asText().equals("RECORD")) {
-                    numRecords.increment();
+      try (BufferedReader reader =
+              new BufferedReader(
+                  new InputStreamReader(tapProcess.getInputStream(), Charsets.UTF_8));
+          BufferedWriter writer =
+              new BufferedWriter(
+                  new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8)); ) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        reader
+            .lines()
+            .forEach(
+                line -> {
+                  try {
+                    writer.write(line);
+                    writer.newLine();
+                    JsonNode lineJson = objectMapper.readTree(line);
+                    if (lineJson.get("type").asText().equals("RECORD")) {
+                      numRecords.increment();
+                    }
+                  } catch (IOException e) {
+                    throw new RuntimeException(e);
                   }
-                } catch (IOException e) {
-                  throw new RuntimeException(e);
-                }
-              });
+                });
 
-      while (!tapProcess.waitFor(1, TimeUnit.MINUTES)) {
-        LOGGER.debug(
-            "Waiting for sync worker (attemptId:{}) tap.", ""); // TODO when attempt ID is passed in
+        while (!tapProcess.waitFor(1, TimeUnit.MINUTES)) {
+          LOGGER.debug(
+              "Waiting for sync worker (attemptId:{}) tap.",
+              ""); // TODO when attempt ID is passed in
+        }
       }
 
-      // target process stays alive as long as its stdin has not been closed. So we wait for the tap
-      // process to end,
-      // flush the writer to stdin and close
-      writer.flush();
-      writer.close();
-      reader.close();
+      // target process stays alive as long as its stdin has not been closed
       while (!targetProcess.waitFor(1, TimeUnit.MINUTES)) {
         LOGGER.debug(
             "Waiting for sync worker (attemptId:{}) target",

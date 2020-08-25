@@ -118,8 +118,8 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
             .run(syncInput, workspaceDirectory);
 
     assertEquals(JobStatus.SUCCESSFUL, syncResult.getStatus());
-    StandardSyncOutput jobSyncOutput = syncResult.getOutput().get();
-    assertEquals(5, jobSyncOutput.getStandardSyncSummary().getRecordsSynced());
+    StandardSyncOutput syncOutput = syncResult.getOutput().get();
+    assertEquals(5, syncOutput.getStandardSyncSummary().getRecordsSynced());
 
     BasicDataSource sourceDbPool =
         DatabaseHelper.getConnectionPool(
