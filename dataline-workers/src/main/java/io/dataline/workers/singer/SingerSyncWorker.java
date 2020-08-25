@@ -40,9 +40,7 @@ import io.dataline.workers.OutputAndStatus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -128,11 +126,16 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
       LOGGER.debug("target command: {}", String.join(" ", targetCmd));
 
       long startTime = System.currentTimeMillis();
-      tapProcess = new ProcessBuilder().command(tapCmd).start();
+      tapProcess =
+          new ProcessBuilder()
+              .command(tapCmd)
+              .redirectError(workspaceRoot.resolve(TAP_ERR_LOG).toFile())
+              .start();
       targetProcess =
           new ProcessBuilder()
               .command(targetCmd)
               .redirectOutput(workspaceRoot.resolve(OUTPUT_STATE_FILENAME).toFile())
+              .redirectError(workspaceRoot.resolve(TARGET_ERR_LOG).toFile())
               .start();
 
       try (BufferedReader reader =
@@ -185,7 +188,11 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
       state.setState(readFile(workspaceRoot, OUTPUT_STATE_FILENAME));
       jobSyncOutput.setState(state);
 
-      return new OutputAndStatus<>(JobStatus.SUCCESSFUL, jobSyncOutput);
+      JobStatus status =
+          tapProcess.exitValue() == 0 && targetProcess.exitValue() == 0
+              ? JobStatus.SUCCESSFUL
+              : JobStatus.FAILED;
+      return new OutputAndStatus<>(status, jobSyncOutput);
     } catch (IOException | InterruptedException e) {
       // TODO return state
       throw new RuntimeException(e);
@@ -218,10 +225,9 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
             input.getDestinationConnectionImplementation().getConfiguration());
     String stateString = objectMapper.writeValueAsString(input.getState().getState());
 
-    Path scopedWorkspaceRoot = workspaceRoot.resolve("discovery");
-    writeFile(scopedWorkspaceRoot, TAP_CONFIG_FILENAME, tapConfiguration);
-    writeFile(scopedWorkspaceRoot, CATALOG_FILENAME, objectMapper.writeValueAsString(tapCatalog));
-    writeFile(scopedWorkspaceRoot, INPUT_STATE_FILENAME, stateString);
-    writeFile(scopedWorkspaceRoot, TARGET_CONFIG_FILENAME, targetConfiguration);
+    writeFile(workspaceRoot, TAP_CONFIG_FILENAME, tapConfiguration);
+    writeFile(workspaceRoot, CATALOG_FILENAME, objectMapper.writeValueAsString(tapCatalog));
+    writeFile(workspaceRoot, INPUT_STATE_FILENAME, stateString);
+    writeFile(workspaceRoot, TARGET_CONFIG_FILENAME, targetConfiguration);
   }
 }
