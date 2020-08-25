@@ -24,38 +24,24 @@
 
 package io.dataline.server.errors;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-// https://www.baeldung.com/jersey-bean-validation#custom-exception-handler
-public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
-
+@Provider
+public class InvalidJsonInputExceptionMapper implements ExceptionMapper<JsonMappingException> {
   @Override
-  public Response toResponse(ConstraintViolationException exception) {
-    return Response.status(Response.Status.BAD_REQUEST)
+  public Response toResponse(JsonMappingException e) {
+    return Response.status(422)
         .entity(
             new ObjectMapper()
                 .createObjectNode()
-                .put("message", "Invalid JSON")
-                .put("details", prepareMessage(exception)))
+                .put("message", "The received object did not pass validation")
+                .put("details", e.getOriginalMessage())
+                .toString())
         .type("application/json")
         .build();
-  }
-
-  private String prepareMessage(ConstraintViolationException exception) {
-    StringBuilder message = new StringBuilder();
-    for (ConstraintViolation<?> cv : exception.getConstraintViolations()) {
-      message.append(
-          "property: "
-              + cv.getPropertyPath()
-              + " message: "
-              + cv.getMessage()
-              + " invalid value: "
-              + cv.getInvalidValue());
-    }
-    return message.toString();
   }
 }

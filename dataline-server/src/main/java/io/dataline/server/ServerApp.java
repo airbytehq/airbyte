@@ -28,6 +28,7 @@ import io.dataline.db.DatabaseHelper;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
 import io.dataline.server.errors.InvalidJsonExceptionMapper;
+import io.dataline.server.errors.InvalidJsonInputExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
 import io.dataline.server.errors.UncaughtExceptionMapper;
 import java.util.logging.Level;
@@ -40,6 +41,7 @@ import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonP
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +67,7 @@ public class ServerApp {
 
     ResourceConfig rc =
         new ResourceConfig()
+            .property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true)
             // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add
             //   auth.
             // cors
@@ -81,8 +84,9 @@ public class ServerApp {
                   }
                 })
             // exception handling
-            .register(InvalidJsonExceptionMapper.class)
             .register(InvalidInputExceptionMapper.class)
+            .register(InvalidJsonExceptionMapper.class)
+            .register(InvalidJsonInputExceptionMapper.class)
             .register(KnownExceptionMapper.class)
             .register(UncaughtExceptionMapper.class)
             // needed so that the custom json exception mappers don't get overridden
