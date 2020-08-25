@@ -317,7 +317,7 @@ class ConnectionsHandlerTest {
   private ConnectionSchedule generateBasicSchedule() {
     final ConnectionSchedule connectionSchedule = new ConnectionSchedule();
     connectionSchedule.setTimeUnit(ConnectionSchedule.TimeUnitEnum.DAYS);
-    connectionSchedule.setUnits(1);
+    connectionSchedule.setUnits(1l);
 
     return connectionSchedule;
   }
@@ -347,7 +347,7 @@ class ConnectionsHandlerTest {
   private StandardSyncSchedule generateSchedule(UUID connectionId) {
     final Schedule schedule = new Schedule();
     schedule.setTimeUnit(Schedule.TimeUnit.DAYS);
-    schedule.setUnits(1);
+    schedule.setUnits(1l);
 
     final StandardSyncSchedule standardSchedule = new StandardSyncSchedule();
     standardSchedule.setConnectionId(connectionId);

@@ -29,19 +29,21 @@ import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.workers.BaseWorkerTestCase;
+import io.dataline.workers.InvalidCatalogException;
+import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.PostgreSQLContainerHelper;
+import io.dataline.workers.PostgreSQLContainerTestHelper;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   private PostgreSQLContainer db;
@@ -57,11 +59,10 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testNonexistentDb()
-      throws JsonProcessingException,
-          org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException {
+      throws IOException, InvalidCredentialsException, InvalidCatalogException {
     final String jobId = "1";
     String fakeDbCreds =
-        PostgreSQLContainerHelper.getSingerConfigJson(
+        PostgreSQLContainerTestHelper.getSingerTapConfig(
             "user", "pass", "localhost", "postgres", "111111");
 
     final Object o = new ObjectMapper().readValue(fakeDbCreds, Object.class);
@@ -82,11 +83,10 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testIncorrectAuthCredentials()
-      throws JsonProcessingException,
-          org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException {
+      throws IOException, InvalidCredentialsException, InvalidCatalogException {
     final String jobId = "1";
     String incorrectCreds =
-        PostgreSQLContainerHelper.getSingerConfigJson(
+        PostgreSQLContainerTestHelper.getSingerTapConfig(
             db.getUsername(),
             "wrongpassword",
             db.getHost(),
@@ -112,11 +112,11 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testSuccessfulConnection()
-      throws JsonProcessingException,
-          org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException {
+      throws IOException, InvalidCredentialsException, InvalidCatalogException {
     final String jobId = "1";
 
-    String creds = PostgreSQLContainerHelper.getSingerConfigJson(db);
+    String creds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
+
     final Object o = new ObjectMapper().readValue(creds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();

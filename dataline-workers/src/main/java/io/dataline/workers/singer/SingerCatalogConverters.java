@@ -59,6 +59,7 @@ public class SingerCatalogConverters {
         catalog.getStreams().stream()
             .map(
                 stream -> {
+
                   // recourse here is probably to run discovery again and update sync
                   // configuration. this method just outputs the original metadata.
                   if (!tableNameToTable.containsKey(stream.getStream())) {
@@ -89,6 +90,8 @@ public class SingerCatalogConverters {
                                   newSingerMetadata.getMetadata().setSelected(column.getSelected());
                                 } else {
                                   // table metadata
+                                    // TODO HACK set replication mode to full_refresh on every stream to unblock some other dev work. Needs to be fixed ASAP. Sherif is working on this.
+                                    newSingerMetadata.getMetadata().setReplicationMethod(SingerMetadataChild.ReplicationMethod.FULL_TABLE);
                                   newSingerMetadata.getMetadata().setSelected(table.getSelected());
                                 }
                                 return newSingerMetadata;
@@ -99,6 +102,7 @@ public class SingerCatalogConverters {
                   newSingerStream.setStream(stream.getStream());
                   newSingerStream.setTableName(stream.getTableName());
                   newSingerStream.setTapStreamId(stream.getTapStreamId());
+                  // TODO
                   newSingerStream.setMetadata(newMetadata);
                   // todo (cgardens) - this will not work for legacy catalogs. want to handle this
                   //   in a subsequent PR, because handling this is going to require doing another

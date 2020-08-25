@@ -24,8 +24,6 @@
 
 package io.dataline.workers.singer;
 
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -40,24 +38,8 @@ public abstract class BaseSingerWorker<InputType, OutputType>
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
 
-  protected final SingerConnector connector;
-
-  private JobStatus jobStatus;
-
-  protected BaseSingerWorker(SingerConnector connector) {
-    this.connector = connector;
-  }
-
-  @Override
-  public OutputAndStatus<OutputType> run(InputType inputType, Path workspaceRoot) {
-    return runInternal(inputType, workspaceRoot);
-  }
-
-  abstract OutputAndStatus<OutputType> runInternal(InputType inputType, Path workspaceRoot);
-
   protected void cancelHelper(Process workerProcess) {
     try {
-      updateJobStatus(JobStatus.FAILED);
       workerProcess.destroy();
       workerProcess.waitFor(10, TimeUnit.SECONDS);
       if (workerProcess.isAlive()) {
@@ -89,9 +71,5 @@ public abstract class BaseSingerWorker<InputType, OutputType>
 
   protected static Path getFullPath(Path workspaceRoot, String fileName) {
     return workspaceRoot.resolve(fileName);
-  }
-
-  protected void updateJobStatus(JobStatus jobStatus) {
-    this.jobStatus = jobStatus;
   }
 }
