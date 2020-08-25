@@ -24,10 +24,10 @@
 
 package io.dataline.workers.singer.postgres_tap;
 
-import io.dataline.workers.singer.SingerDiscoveryWorker;
+import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerTap;
 
-public class SingerPostgresTapDiscoverWorker extends SingerDiscoveryWorker {
+public class SingerPostgresTapDiscoverWorker extends SingerDiscoverSchemaWorker {
 
   public SingerPostgresTapDiscoverWorker() {
     super(SingerTap.POSTGRES);

@@ -96,8 +96,12 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(
-      PersistenceConfigType persistenceConfigType, String configId, T config) {
+      PersistenceConfigType persistenceConfigType, String configId, T config)
+      throws JsonValidationException {
     synchronized (lock) {
+      // validate config with schema
+      validateJson(objectMapper.valueToTree(config), persistenceConfigType);
+
       final Path configPath = getConfigPath(persistenceConfigType, configId);
       ensureDirectory(getConfigDirectory(persistenceConfigType));
       try {
@@ -132,6 +136,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
   private Set<Path> getFiles(PersistenceConfigType persistenceConfigType) {
     Path configDirPath = getConfigDirectory(persistenceConfigType);
+    ensureDirectory(configDirPath);
     try {
       return Files.list(configDirPath).collect(Collectors.toSet());
     } catch (IOException e) {
@@ -212,6 +217,12 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+
+    validateJson(configJson, persistenceConfigType);
+  }
+
+  private void validateJson(JsonNode configJson, PersistenceConfigType persistenceConfigType)
+      throws JsonValidationException {
 
     JsonNode schema = getSchema(persistenceConfigType);
     jsonSchemaValidation.validateThrow(schema, configJson);

@@ -29,6 +29,9 @@
         "name": {
           "type": "string"
         },
+        "selected": {
+          "type": "boolean"
+        },
         "columns": {
           "type": "array",
           "items": {
@@ -41,7 +44,8 @@
       "type": "object",
       "required": [
         "name",
-        "dataType"
+        "dataType",
+        "selected"
       ],
       "additionalProperties": false,
       "properties": {
@@ -50,6 +54,10 @@
         },
         "dataType": {
           "$ref": "DataType.json"
+        },
+        "selected": {
+          "description": "whether or not the column will be replicated.",
+          "type": "boolean"
         }
       }
     }
