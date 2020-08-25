@@ -26,10 +26,10 @@ package io.dataline.workers.singer;
 
 public enum SingerTap implements SingerConnector {
   // TODO
-  S3_CSV(""),
+  //  S3_CSV(""),
+  //  STRIPE("");
   EXCHANGERATEAPI_IO("dataline/integration-singer-exchangerateapi_io-source"),
-  POSTGRES("dataline/integration-singer-postgres-source"),
-  STRIPE("");
+  POSTGRES("dataline/integration-singer-postgres-source");
 
   private final String imageName;
 

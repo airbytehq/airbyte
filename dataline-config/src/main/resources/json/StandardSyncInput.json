@@ -8,7 +8,8 @@
   "required": [
     "sourceConnectionImplementation",
     "destinationConnectionImplementation",
-    "standardSync"
+    "standardSync",
+    "state"
   ],
   "properties": {
     "sourceConnectionImplementation": {
@@ -19,6 +20,9 @@
     },
     "standardSync": {
       "$ref": "StandardSync.json"
+    },
+    "state": {
+      "$ref": "State.json"
     }
   }
 }

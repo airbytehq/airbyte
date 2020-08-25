@@ -32,6 +32,13 @@
         "selected": {
           "type": "boolean"
         },
+        "replication-method": {
+          "type": "string",
+          "enum": [""]
+        },
+        "replication-key": {
+
+        },
         "columns": {
           "type": "array",
           "items": {
