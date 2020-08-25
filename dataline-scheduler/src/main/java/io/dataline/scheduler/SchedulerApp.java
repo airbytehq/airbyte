@@ -25,6 +25,8 @@
 package io.dataline.scheduler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.db.DatabaseHelper;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,17 +52,26 @@ public class SchedulerApp {
       new ThreadFactoryBuilder().setNameFormat("scheduler-%d").build();
 
   private final BasicDataSource connectionPool;
+  private final String configPersistenceRoot;
 
-  public SchedulerApp(BasicDataSource connectionPool) {
+  public SchedulerApp(BasicDataSource connectionPool, String configPersistenceRoot) {
     this.connectionPool = connectionPool;
+    this.configPersistenceRoot = configPersistenceRoot;
   }
 
   public void start() {
-    SchedulerPersistence persistence = new DefaultSchedulerPersistence(connectionPool);
+    SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
+    ConfigPersistence configPersistence = new DefaultConfigPersistence(configPersistenceRoot);
     ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
+
+    final JobSubmitter jobSubmitter =
+        new JobSubmitter(workerThreadPool, connectionPool, schedulerPersistence);
+    final JobScheduler jobScheduler =
+        new JobScheduler(connectionPool, schedulerPersistence, configPersistence);
+
     scheduledPool.scheduleWithFixedDelay(
-        new JobSubmitter(workerThreadPool, connectionPool, persistence),
+        new SchedulerAppInternal(jobScheduler, jobSubmitter),
         0L,
         JOB_SUBMITTER_DELAY_MILLIS,
         TimeUnit.MILLISECONDS);
@@ -70,10 +81,13 @@ public class SchedulerApp {
   }
 
   public static void main(String[] args) {
+    final String configPersistenceRoot = System.getenv("CONFIG_PERSISTENCE_ROOT");
+    LOGGER.info("configPersistenceRoot = " + configPersistenceRoot);
+
     LOGGER.info("Creating DB connection pool...");
     BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(connectionPool).start();
+    new SchedulerApp(connectionPool, configPersistenceRoot).start();
   }
 }
