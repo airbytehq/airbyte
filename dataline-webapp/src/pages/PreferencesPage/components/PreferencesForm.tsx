@@ -8,6 +8,7 @@ import { BigButton } from "../../../components/CenteredPageComponents";
 import LabeledInput from "../../../components/LabeledInput";
 import Label from "../../../components/Label";
 import LabeledToggle from "../../../components/LabeledToggle";
+import config from "../../../config";
 
 export type IProps = {
   onSubmit: (data: {
@@ -62,7 +63,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
         email: "",
         anonymousDataCollection: false,
         news: false,
-        securityUpdates: true
+        securityUpdates: false
       }}
       validateOnBlur={true}
       validateOnChange={false}
@@ -72,7 +73,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
         onSubmit(values);
       }}
     >
-      {({ isSubmitting, values }) => (
+      {({ isSubmitting, values, handleChange, setFieldValue, resetForm }) => (
         <MainForm>
           <FormItem>
             <Field name="email">
@@ -90,6 +91,20 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
                     meta.error &&
                     formatMessage({ id: meta.error })
                   }
+                  onChange={event => {
+                    handleChange(event);
+                    if (
+                      field.value.length === 0 &&
+                      event.target.value.length > 0
+                    ) {
+                      setFieldValue("securityUpdates", true);
+                    } else if (
+                      field.value.length > 0 &&
+                      event.target.value.length === 0
+                    ) {
+                      resetForm();
+                    }
+                  }}
                 />
               )}
             </Field>
@@ -102,7 +117,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
               id={"preferences.collectData"}
               values={{
                 docs: (...docs: React.ReactNode[]) => (
-                  <DocsLink target="_blank" href="https://dataline.io">
+                  <DocsLink target="_blank" href={config.ui.docsLink}>
                     {docs}
                   </DocsLink>
                 )
