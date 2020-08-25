@@ -20,6 +20,14 @@ jobs:
           restore-keys: |
             gradle-
 
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-
+
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
