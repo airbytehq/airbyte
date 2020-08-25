@@ -45,6 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -62,6 +63,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     con.createStatement().execute("CREATE TABLE id_and_name (id integer, name VARCHAR(200));");
   }
 
+  @Disabled
   @Test
   public void testPostgresDiscovery() throws IOException {
     final String jobId = "1";

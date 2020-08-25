@@ -39,6 +39,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -110,6 +111,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     // in the logs
   }
 
+  @Disabled
   @Test
   public void testSuccessfulConnection()
       throws JsonProcessingException,
