@@ -10,8 +10,11 @@ jobs:
     steps:
       - name: Checkout Dataline
         uses: actions/checkout@v2
+
       - name: Build
-        run: ./tools/app/build.sh
-      - name: Test
-        run: ./tools/app/test.sh
+        run: ./gradlew build
+#      - name: Build
+#        run: ./tools/app/build.sh
+#      - name: Test
+#        run: ./tools/app/test.sh
 
