@@ -24,10 +24,10 @@
 
 ## Contributing
 
-* [Contributing to Dataline](contributing/contributing-to-dataline.md)
-* [Developing Locally](contributing/developing-locally.md)
-* [Updating Documentation](contributing/updating-documentation.md)
-* [Code of Conduct](contributing/code-of-conduct.md)
+* [Contributing to Dataline](contributing/contributing-to-dataline/README.md)
+  * [Developing Locally](contributing/contributing-to-dataline/developing-locally.md)
+  * [Updating Documentation](contributing/contributing-to-dataline/updating-documentation.md)
+  * [Code of Conduct](contributing/contributing-to-dataline/code-of-conduct.md)
 
 ## Architecture
 
@@ -35,20 +35,15 @@
 * [Configuration Data Model](architecture/configuration-data-model.md)
 * [API](architecture/api.md)
 
-## Community
+## Handbook <a id="company-handbook"></a>
 
-* [Contribute](community/support.md)
-* [Code of Conduct](community/code-of-conduct.md)
-
-## Company Handbook
-
-* [Introduction](company-handbook/company-handbook.md)
-* [Story](company-handbook/future-milestones.md)
-* [Culture and Values](company-handbook/culture-and-values.md)
-* [Team](company-handbook/team.md)
-* [Strategy](company-handbook/strategy.md)
-* [Business Model](company-handbook/business-model.md)
-* [Roadmap](company-handbook/roadmap.md)
+* [Company Handbook](company-handbook/company-handbook/README.md)
+  * [Story](company-handbook/company-handbook/future-milestones.md)
+  * [Culture and Values](company-handbook/company-handbook/culture-and-values.md)
+  * [Team](company-handbook/company-handbook/team.md)
+  * [Strategy](company-handbook/company-handbook/strategy.md)
+  * [Business Model](company-handbook/company-handbook/business-model.md)
+  * [Roadmap](company-handbook/company-handbook/roadmap.md)
 
 ---
 
