@@ -1,6 +1,8 @@
-# Contributing to Dataline
+---
+description: 'We love contributions to Dataline, big or small.'
+---
 
-We love contributions to Dataline, big or small.
+# Contributing to Dataline
 
 ## Reporting Bugs or Issues
 
@@ -22,7 +24,7 @@ When we review we look at:
 * Is it introducing security risks?
 * Does it pass QA?
 
-Once you PR passes we will merge it.
+Once your PR passes, we will merge it.
 
 ## 
 
