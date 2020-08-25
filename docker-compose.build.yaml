@@ -4,23 +4,23 @@ services:
   db:
     image: dataline/db:dev
     build:
-      dockerfile: database.Dockerfile
+      dockerfile: Dockerfile.database
       context: .
   scheduler:
     image: dataline/scheduler:dev
     build:
-      dockerfile: build.Dockerfile
+      dockerfile: Dockerfile.build
       target: scheduler
       context: .
   server:
     image: dataline/server:dev
     build:
-      dockerfile: build.Dockerfile
+      dockerfile: Dockerfile.build
       target: server
       context: .
   webapp:
     image: dataline/webapp:dev
     build:
-      dockerfile: build.Dockerfile
+      dockerfile: Dockerfile.build
       target: webapp
       context: .

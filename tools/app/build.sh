@@ -7,7 +7,7 @@ set -e
 main() {
   assert_root
 
-  echo "Building java-base..."
+  echo "Building images..."
   docker build -f java_base.Dockerfile . -t dataline/java-base:dev
 
   echo "Building webapp-base..."
