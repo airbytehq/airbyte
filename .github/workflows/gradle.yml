@@ -32,8 +32,12 @@ jobs:
         with:
           java-version: '14'
 
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.7'
+
       - name: Build
-        run: ./gradlew build -g ${{ env.GRADLE_PATH }}
+        run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
 
 #      - name: Build
 #        run: ./tools/app/build.sh
