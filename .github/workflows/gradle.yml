@@ -11,12 +11,21 @@ jobs:
       - name: Checkout Dataline
         uses: actions/checkout@v2
 
+      - name: Cache java deps
+        uses: actions/cache@v2
+        with:
+          path: /tmp/gradle
+          key: gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            gradle-
+
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
 
       - name: Build
-        run: ./gradlew build
+        run: ./gradlew build -g /tmp/gradle
+
 #      - name: Build
 #        run: ./tools/app/build.sh
 #      - name: Test
