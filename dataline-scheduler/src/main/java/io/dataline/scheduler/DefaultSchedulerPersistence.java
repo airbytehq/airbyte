@@ -161,12 +161,11 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
                           scope,
                           now,
                           now,
-                          "pending",
+                          JobStatus.PENDING.toString().toLowerCase(),
                           configJson,
                           null,
-                          "", // todo: assign stdout
-                          "") // todo: assign stderr
-                  )
+                          JobLogs.getLogDirectory(scope),
+                          JobLogs.getLogDirectory(scope)))
               .stream()
               .findFirst()
               .orElseThrow(() -> new RuntimeException("This should not happen"));

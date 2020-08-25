@@ -25,7 +25,6 @@
 package io.dataline.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dataline.api.model.JobRead;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
@@ -76,7 +75,7 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
   public void run() {
     LOGGER.info("Executing worker wrapper...");
     try {
-      setJobStatus(connectionPool, jobId, JobRead.StatusEnum.RUNNING);
+      setJobStatus(connectionPool, jobId, JobStatus.RUNNING);
 
       // todo (cgardens) - replace this with whatever the correct path is. probably dependency
       //   inject it based via env.
@@ -88,10 +87,10 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
 
       switch (outputAndStatus.getStatus()) {
         case FAILED:
-          setJobStatus(connectionPool, jobId, JobRead.StatusEnum.FAILED);
+          setJobStatus(connectionPool, jobId, JobStatus.FAILED);
           break;
         case SUCCESSFUL:
-          setJobStatus(connectionPool, jobId, JobRead.StatusEnum.COMPLETED);
+          setJobStatus(connectionPool, jobId, JobStatus.COMPLETED);
           break;
       }
 
@@ -105,12 +104,11 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
       }
     } catch (Exception e) {
       LOGGER.error("Worker Error", e);
-      setJobStatus(connectionPool, jobId, JobRead.StatusEnum.FAILED);
+      setJobStatus(connectionPool, jobId, JobStatus.FAILED);
     }
   }
 
-  private static void setJobStatus(
-      BasicDataSource connectionPool, long jobId, JobRead.StatusEnum status) {
+  private static void setJobStatus(BasicDataSource connectionPool, long jobId, JobStatus status) {
     LOGGER.info("Setting job status to " + status + " for job " + jobId);
     LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
 
