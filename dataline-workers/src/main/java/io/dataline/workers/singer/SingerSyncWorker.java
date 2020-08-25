@@ -69,9 +69,7 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
 
   private Process tapProcess;
   private Process targetProcess;
-
-  // TODO this needs to all be passed in as part of the input format once we have conversions from
-  //  input format to singer format
+  
   public SingerSyncWorker(SingerTap tap, SingerTarget target) {
     this.tap = tap;
     this.target = target;
