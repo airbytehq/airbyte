@@ -60,10 +60,10 @@ public class SchedulerApp {
   }
 
   public void start() {
-    SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
-    ConfigPersistence configPersistence = new DefaultConfigPersistence(configPersistenceRoot);
-    ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
-    ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
+    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configPersistenceRoot);
+    final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
+    final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
 
     final JobSubmitter jobSubmitter =
         new JobSubmitter(workerThreadPool, connectionPool, schedulerPersistence);
