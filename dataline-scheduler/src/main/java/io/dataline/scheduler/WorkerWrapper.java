@@ -26,9 +26,11 @@ package io.dataline.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.api.model.JobRead;
-import io.dataline.config.ConnectionImplementation;
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.JobCheckConnectionConfig;
+import io.dataline.config.JobSyncConfig;
+import io.dataline.config.StandardCheckConnectionInput;
+import io.dataline.config.StandardDiscoverSchemaInput;
+import io.dataline.config.StandardSyncInput;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
@@ -62,35 +64,6 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
     this.persistence = persistence;
   }
 
-  @SuppressWarnings("unchecked")
-  private InputType getInput(io.dataline.scheduler.Job job) {
-    switch (job.getConfig().getConfigType()) {
-      case CHECK_CONNECTION_SOURCE:
-        final DestinationConnectionImplementation checkConnectionSource =
-            job.getConfig().getCheckConnectionDestination();
-        return (InputType) buildConnectionImplementation(checkConnectionSource.getConfiguration());
-      case CHECK_CONNECTION_DESTINATION:
-        final SourceConnectionImplementation checkConnectionDestination =
-            job.getConfig().getCheckConnectionSource();
-
-        return (InputType)
-            buildConnectionImplementation(checkConnectionDestination.getConfiguration());
-      case DISCOVER_SCHEMA:
-        return (InputType) job.getConfig().getDiscoverSchema();
-      case SYNC:
-        return (InputType) job.getConfig().getSync();
-      default:
-        throw new RuntimeException("Unrecognized config type: " + job.getConfig().getConfigType());
-    }
-  }
-
-  private static ConnectionImplementation buildConnectionImplementation(Object configuration) {
-    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
-    connectionImplementation.setConfiguration(configuration);
-
-    return connectionImplementation;
-  }
-
   @Override
   public void run() {
     LOGGER.info("Executing worker wrapper...");
@@ -102,7 +75,7 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
       final InputType input = getInput(job);
 
       // todo (cgardens) - replace this with whatever the correct path is. probably dependency
-      // inject it based via env.
+      //   inject it based via env.
       final Path workspacesRoot = Path.of("/tmp/dataline/workspaces/");
       FileUtils.forceMkdir(workspacesRoot.toFile());
       final Path workspaceRoot = workspacesRoot.resolve(String.valueOf(jobId));
@@ -129,6 +102,37 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
     } catch (Exception e) {
       LOGGER.error("Worker Error", e);
       setJobStatus(connectionPool, jobId, JobRead.StatusEnum.FAILED);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private InputType getInput(io.dataline.scheduler.Job job) {
+    switch (job.getConfig().getConfigType()) {
+      case CHECK_CONNECTION:
+        final JobCheckConnectionConfig checkConnection = job.getConfig().getCheckConnection();
+        final StandardCheckConnectionInput checkConnectionInput =
+            new StandardCheckConnectionInput();
+        checkConnectionInput.setConnectionConfiguration(
+            checkConnection.getConnectionConfiguration());
+
+        return (InputType) checkConnectionInput;
+      case DISCOVER_SCHEMA:
+        final JobCheckConnectionConfig discoverSchema = job.getConfig().getCheckConnection();
+        final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
+        discoverSchemaInput.setConnectionConfiguration(discoverSchema.getConnectionConfiguration());
+
+        return (InputType) discoverSchemaInput;
+      case SYNC:
+        final JobSyncConfig sync = job.getConfig().getSync();
+        final StandardSyncInput syncInput = new StandardSyncInput();
+        syncInput.setSourceConnectionImplementation(sync.getSourceConnectionImplementation());
+        syncInput.setDestinationConnectionImplementation(
+            sync.getDestinationConnectionImplementation());
+        syncInput.setStandardSync(sync.getStandardSync());
+
+        return (InputType) syncInput;
+      default:
+        throw new RuntimeException("Unrecognized config type: " + job.getConfig().getConfigType());
     }
   }
 

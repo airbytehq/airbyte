@@ -26,9 +26,19 @@ package io.dataline.workers.singer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.dataline.config.JobSyncOutput;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import io.dataline.config.DestinationConnectionImplementation;
+import io.dataline.config.Schema;
+import io.dataline.config.SingerCatalog;
+import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.StandardSync;
+import io.dataline.config.StandardSyncInput;
+import io.dataline.config.StandardSyncOutput;
+import io.dataline.config.State;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.BaseWorkerTestCase;
+import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerTestHelper;
@@ -72,24 +82,43 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testFirstTimeFullTableSync() throws IOException, SQLException, InterruptedException {
+  public void testFirstTimeFullTableSync()
+      throws IOException, SQLException, InterruptedException, InvalidCredentialsException {
     PostgreSQLContainerTestHelper.runSqlScript(
         MountableFile.forClasspathResource("simple_postgres_init.sql"), sourceDb);
-    String tapConfig = PostgreSQLContainerTestHelper.getSingerTapConfig(sourceDb);
-    String targetConfig = PostgreSQLContainerTestHelper.getSingerTargetConfig(targetDb);
 
-    OutputAndStatus<JobSyncOutput> syncOutputAndStatus =
-        new SingerSyncWorker(
-                SingerTap.POSTGRES,
-                tapConfig,
-                readResource("simple_postgres_full_table_sync_catalog.json"),
-                "{}", // full table sync, no state needed
-                SingerTarget.POSTGRES,
-                targetConfig)
-            .run(null, workspaceDirectory);
+    ObjectMapper objectMapper = new ObjectMapper();
+    StandardSyncInput syncInput = new StandardSyncInput();
+    DestinationConnectionImplementation destinationConnection =
+        new DestinationConnectionImplementation();
+    destinationConnection.setConfiguration(
+        objectMapper.readTree(PostgreSQLContainerTestHelper.getSingerTargetConfig(targetDb)));
+    syncInput.setDestinationConnectionImplementation(destinationConnection);
 
-    assertEquals(JobStatus.SUCCESSFUL, syncOutputAndStatus.getStatus());
-    JobSyncOutput jobSyncOutput = syncOutputAndStatus.getOutput().get();
+    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+    SingerCatalog singerCatalog =
+        objectMapper.readValue(
+            readResource("simple_postgres_full_table_sync_catalog.json"), SingerCatalog.class);
+    Schema schema = SingerCatalogConverters.toDatalineSchema(singerCatalog);
+    StandardSync standardSync = new StandardSync();
+    standardSync.setSchema(schema);
+    syncInput.setStandardSync(standardSync);
+
+    SourceConnectionImplementation sourceConnection = new SourceConnectionImplementation();
+    sourceConnection.setConfiguration(
+        objectMapper.readTree(PostgreSQLContainerTestHelper.getSingerTapConfig(sourceDb)));
+    syncInput.setSourceConnectionImplementation(sourceConnection);
+
+    State state = new State();
+    state.setState("");
+    syncInput.setState(state);
+
+    OutputAndStatus<StandardSyncOutput> syncResult =
+        new SingerSyncWorker(SingerTap.POSTGRES, SingerTarget.POSTGRES)
+            .run(syncInput, workspaceDirectory);
+
+    assertEquals(JobStatus.SUCCESSFUL, syncResult.getStatus());
+    StandardSyncOutput jobSyncOutput = syncResult.getOutput().get();
     assertEquals(5, jobSyncOutput.getStandardSyncSummary().getRecordsSynced());
 
     BasicDataSource sourceDbPool =
@@ -103,7 +132,7 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
     Set<String> targetTables = listTables(targetDbPool);
     assertEquals(sourceTables, targetTables);
 
-    // TODO validate that indices are synced? what defines
+    // TODO validate that indices are synced?
     for (String table : sourceTables) {
       assertTablesEquivalent(sourceDbPool, targetDbPool, table);
     }

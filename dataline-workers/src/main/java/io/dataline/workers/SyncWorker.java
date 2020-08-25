@@ -24,38 +24,7 @@
 
 package io.dataline.workers;
 
-import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.lang.ProcessBuilder.Redirect;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.dataline.config.StandardSyncInput;
+import io.dataline.config.StandardSyncOutput;
 
-public class DockerProcessRunner {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DockerProcessRunner.class);
-
-  public static void main(String[] args) throws IOException, InterruptedException {
-    ProcessBuilder processBuilderTap =
-        new ProcessBuilder("docker", "run", "dataline/integration-singer-exchangerateapi_io-source")
-            .redirectError(Redirect.INHERIT);
-
-    ProcessBuilder processBuilderTarget =
-        new ProcessBuilder(
-                "docker",
-                "run",
-                "-i",
-                "-v",
-                "/tmp/singer:/singer/data",
-                "dataline/integration-singer-csv-destination")
-            .redirectError(Redirect.INHERIT)
-            .redirectOutput(Redirect.INHERIT);
-
-    List<Process> processes =
-        ProcessBuilder.startPipeline(Lists.newArrayList(processBuilderTap, processBuilderTarget));
-
-    for (Process process : processes) {
-      process.waitFor();
-    }
-  }
-}
+public interface SyncWorker extends Worker<StandardSyncInput, StandardSyncOutput> {}

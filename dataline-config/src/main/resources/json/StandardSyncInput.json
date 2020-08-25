@@ -9,8 +9,7 @@
     "sourceConnectionImplementation",
     "destinationConnectionImplementation",
     "standardSync",
-    "sourceDockerImage",
-    "destinationDockerImage"
+    "state"
   ],
   "properties": {
     "sourceConnectionImplementation": {
@@ -22,11 +21,8 @@
     "standardSync": {
       "$ref": "StandardSync.json"
     },
-    "sourceDockerImage": {
-      "type": "string"
-    },
-    "destinationDockerImage": {
-      "type": "string"
+    "state": {
+      "$ref": "State.json"
     }
   }
 }

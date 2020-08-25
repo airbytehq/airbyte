@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -44,7 +45,8 @@ public abstract class BaseWorkerTestCase {
 
   @BeforeAll
   public void init() throws IOException {
-    workspaceDirectory = Files.createTempDirectory(Path.of("/tmp"), "dataline");
+    FileUtils.forceMkdir(new File("/tmp/tests"));
+    workspaceDirectory = Files.createTempDirectory(Path.of("/tmp/tests"), "dataline");
     System.out.println("Workspace directory: " + workspaceDirectory.toString());
   }
 
@@ -70,5 +72,15 @@ public abstract class BaseWorkerTestCase {
   protected void assertJsonEquals(String s1, String s2) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     assertEquals(mapper.readTree(s1), mapper.readTree(s2));
+  }
+
+  protected <T> T getJsonAsTyped(String file, Class<T> clazz) {
+    final URL resource = Resources.getResource(file);
+    final ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      return objectMapper.readValue(new File(resource.getFile()), clazz);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

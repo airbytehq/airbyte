@@ -30,9 +30,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dataline.config.ConnectionImplementation;
-import io.dataline.config.StandardConnectionStatus;
+import io.dataline.config.StandardCheckConnectionInput;
+import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.workers.BaseWorkerTestCase;
+import io.dataline.workers.InvalidCatalogException;
+import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerTestHelper;
 import java.io.IOException;
@@ -56,29 +58,32 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testNonexistentDb() throws IOException {
+  public void testNonexistentDb()
+      throws IOException, InvalidCredentialsException, InvalidCatalogException {
     final String jobId = "1";
     String fakeDbCreds =
         PostgreSQLContainerTestHelper.getSingerTapConfig(
             "user", "pass", "localhost", "postgres", "111111");
 
-    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
     final Object o = new ObjectMapper().readValue(fakeDbCreds, Object.class);
-    connectionImplementation.setConfiguration(o);
+    final StandardCheckConnectionInput standardCheckConnectionInput =
+        new StandardCheckConnectionInput();
+    standardCheckConnectionInput.setConnectionConfiguration(o);
 
     SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
-    OutputAndStatus<StandardConnectionStatus> run =
-        worker.run(connectionImplementation, createWorkspacePath(jobId));
+    OutputAndStatus<StandardCheckConnectionOutput> run =
+        worker.run(standardCheckConnectionInput, createWorkspacePath(jobId));
 
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardConnectionStatus.Status.FAILURE, run.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
     // TODO Once log file locations are accessible externally, also verify the correct error message
     // in the logs
   }
 
   @Test
-  public void testIncorrectAuthCredentials() throws IOException {
+  public void testIncorrectAuthCredentials()
+      throws IOException, InvalidCredentialsException, InvalidCatalogException {
     final String jobId = "1";
     String incorrectCreds =
         PostgreSQLContainerTestHelper.getSingerTapConfig(
@@ -90,36 +95,40 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
 
-    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
     final Object o = new ObjectMapper().readValue(incorrectCreds, Object.class);
-    connectionImplementation.setConfiguration(o);
+    final StandardCheckConnectionInput standardCheckConnectionInput =
+        new StandardCheckConnectionInput();
+    standardCheckConnectionInput.setConnectionConfiguration(o);
 
-    OutputAndStatus<StandardConnectionStatus> run =
-        worker.run(connectionImplementation, createWorkspacePath(jobId));
+    OutputAndStatus<StandardCheckConnectionOutput> run =
+        worker.run(standardCheckConnectionInput, createWorkspacePath(jobId));
 
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardConnectionStatus.Status.FAILURE, run.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
     // TODO Once log file locations are accessible externally, also verify the correct error message
     // in the logs
   }
 
   @Test
-  public void testSuccessfulConnection() throws IOException {
+  public void testSuccessfulConnection()
+      throws IOException, InvalidCredentialsException, InvalidCatalogException {
     final String jobId = "1";
 
     String creds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
-    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
+
     final Object o = new ObjectMapper().readValue(creds, Object.class);
-    connectionImplementation.setConfiguration(o);
+    final StandardCheckConnectionInput standardCheckConnectionInput =
+        new StandardCheckConnectionInput();
+    standardCheckConnectionInput.setConnectionConfiguration(o);
 
     SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
-    OutputAndStatus<StandardConnectionStatus> run =
-        worker.run(connectionImplementation, createWorkspacePath(jobId));
+    OutputAndStatus<StandardCheckConnectionOutput> run =
+        worker.run(standardCheckConnectionInput, createWorkspacePath(jobId));
 
     assertEquals(SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardConnectionStatus.Status.SUCCESS, run.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, run.getOutput().get().getStatus());
     // TODO Once log file locations are accessible externally, also verify the correct error message
     // in the logs
   }

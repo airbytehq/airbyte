@@ -25,6 +25,7 @@
 package io.dataline.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -109,7 +110,7 @@ class DefaultConfigPersistenceTest {
   }
 
   @Test
-  void writeConfig() throws IOException {
+  void writeConfig() throws IOException, JsonValidationException {
     final ObjectMapper objectMapper = new ObjectMapper();
 
     StandardSource standardSource = generateStandardSource();
@@ -133,5 +134,21 @@ class DefaultConfigPersistenceTest {
     // check reading to json
     final JsonNode actualJson = objectMapper.readTree(expectedPath.toFile());
     assertEquals(expectedJson, actualJson);
+  }
+
+  @Test
+  void writeConfigInvalidConfig() {
+    StandardSource standardSource = generateStandardSource();
+    standardSource.setName(null);
+
+    try {
+      configPersistence.writeConfig(
+          PersistenceConfigType.STANDARD_SOURCE,
+          standardSource.getSourceId().toString(),
+          standardSource);
+    } catch (JsonValidationException e) {
+      return;
+    }
+    fail("expected to throw invalid json exception.");
   }
 }

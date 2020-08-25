@@ -16,13 +16,13 @@
       ]
     },
     "checkConnection": {
-      "$ref": "StandardConnectionStatus.json"
+      "$ref": "StandardCheckConnectionOutput.json"
     },
     "discoverSchema": {
-      "$ref": "StandardDiscoveryOutput.json"
+      "$ref": "StandardDiscoverSchemaOutput.json"
     },
     "sync": {
-      "$ref": "JobSyncOutput.json"
+      "$ref": "StandardSyncOutput.json"
     }
   }
 }

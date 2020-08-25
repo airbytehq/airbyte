@@ -24,12 +24,17 @@
 
 package io.dataline.workers.singer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import io.dataline.config.JobSyncOutput;
+import io.dataline.config.SingerCatalog;
+import io.dataline.config.StandardDiscoverSchemaInput;
+import io.dataline.config.StandardSyncInput;
+import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.State;
+import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import java.io.BufferedReader;
@@ -47,7 +52,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerSyncWorker extends BaseSingerWorker<Void, JobSyncOutput> {
+public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, StandardSyncOutput> {
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerSyncWorker.class);
 
   private static final String TAP_CONFIG_FILENAME = "tap_config.json";
@@ -60,31 +65,16 @@ public class SingerSyncWorker extends BaseSingerWorker<Void, JobSyncOutput> {
   private static final String TARGET_ERR_LOG = "target_err.log";
 
   private final SingerTap tap;
-  private final String tapConfiguration;
-  private final String tapCatalog;
-  private final String connectionState;
   private final SingerTarget target;
-  private final String targetConfig;
 
   private Process tapProcess;
   private Process targetProcess;
 
   // TODO this needs to all be passed in as part of the input format once we have conversions from
   //  input format to singer format
-  public SingerSyncWorker(
-      SingerTap tap,
-      String tapConfiguration,
-      String tapCatalog,
-      String currentConnectionState,
-      SingerTarget target,
-      String targetConfig) {
-
+  public SingerSyncWorker(SingerTap tap, SingerTarget target) {
     this.tap = tap;
-    this.tapConfiguration = tapConfiguration;
-    this.tapCatalog = tapCatalog;
-    this.connectionState = currentConnectionState;
     this.target = target;
-    this.targetConfig = targetConfig;
   }
 
   @Override
@@ -94,19 +84,34 @@ public class SingerSyncWorker extends BaseSingerWorker<Void, JobSyncOutput> {
   }
 
   @Override
-  // TODO fix input format when type conversions exist
-  public OutputAndStatus<JobSyncOutput> run(Void nothing, Path workspaceRoot) {
-    writeFile(workspaceRoot, TAP_CONFIG_FILENAME, tapConfiguration).toAbsolutePath().toString();
-    writeFile(workspaceRoot, CATALOG_FILENAME, tapCatalog).toAbsolutePath().toString();
-    writeFile(workspaceRoot, INPUT_STATE_FILENAME, connectionState).toAbsolutePath().toString();
-    writeFile(workspaceRoot, TARGET_CONFIG_FILENAME, targetConfig).toAbsolutePath().toString();
+  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput input, Path workspaceRoot)
+      throws InvalidCredentialsException {
 
-    MutableInt numRecords = new MutableInt();
+    OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, workspaceRoot);
+    if (discoveryOutput.getStatus() != JobStatus.SUCCESSFUL
+        || discoveryOutput.getOutput().isEmpty()) {
+      LOGGER.debug(
+          "Sync worker failed due to failed discovery. Discovery output: {}", discoveryOutput);
+      return new OutputAndStatus<>(JobStatus.FAILED);
+    }
 
     try {
+      SingerCatalog selectedCatalog =
+          SingerCatalogConverters.applySchemaToDiscoveredCatalog(
+              discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
+      writeSingerInputsToDisk(input, workspaceRoot, selectedCatalog);
+      MutableInt numRecords = new MutableInt();
+
       String[] dockerCmd = {
-        "docker", "run", "-v", String.format("%s:/singer/data", workspaceRoot.toString())
+        "docker",
+        "run",
+        "-v",
+        String.format("%s:/singer/data", workspaceRoot.toString()),
+        // TODO network=host is a not recommended for production settings, create a bridge network
+        //  and use it to connect the two docker containers
+        "--network=host"
       };
+
       String[] tapCmd =
           ArrayUtils.addAll(
               dockerCmd,
@@ -172,7 +177,7 @@ public class SingerSyncWorker extends BaseSingerWorker<Void, JobSyncOutput> {
             ""); // TODO when attempt ID is passed in
       }
 
-      JobSyncOutput jobSyncOutput = new JobSyncOutput();
+      StandardSyncOutput jobSyncOutput = new StandardSyncOutput();
       StandardSyncSummary summary = new StandardSyncSummary();
       summary.setRecordsSynced(numRecords.getValue().longValue());
       summary.setStartTime(startTime);
@@ -190,5 +195,38 @@ public class SingerSyncWorker extends BaseSingerWorker<Void, JobSyncOutput> {
       // TODO return state
       throw new RuntimeException(e);
     }
+  }
+
+  private OutputAndStatus<SingerCatalog> runDiscovery(StandardSyncInput input, Path workspaceRoot)
+      throws InvalidCredentialsException {
+    StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput();
+    discoveryInput.setConnectionConfiguration(
+        input.getSourceConnectionImplementation().getConfiguration());
+    Path scopedWorkspace = workspaceRoot.resolve("discovery");
+    OutputAndStatus<SingerCatalog> discoveryOutput =
+        new SingerDiscoverSchemaWorker(tap).runInternal(discoveryInput, scopedWorkspace);
+    return discoveryOutput;
+  }
+
+  private void writeSingerInputsToDisk(
+      StandardSyncInput input, Path workspaceRoot, SingerCatalog tapCatalog)
+      throws JsonProcessingException {
+    // TODO configuration should be validated against the connector's spec then converted to the
+    //  connector-appropriate format. right now this assumes the object is a valid JSON for this
+    //  connector.
+    ObjectMapper objectMapper = new ObjectMapper();
+    String tapConfiguration =
+        objectMapper.writeValueAsString(
+            input.getSourceConnectionImplementation().getConfiguration());
+    String targetConfiguration =
+        objectMapper.writeValueAsString(
+            input.getDestinationConnectionImplementation().getConfiguration());
+    String stateString = objectMapper.writeValueAsString(input.getState().getState());
+
+    Path scopedWorkspaceRoot = workspaceRoot.resolve("discovery");
+    writeFile(scopedWorkspaceRoot, TAP_CONFIG_FILENAME, tapConfiguration);
+    writeFile(scopedWorkspaceRoot, CATALOG_FILENAME, objectMapper.writeValueAsString(tapCatalog));
+    writeFile(scopedWorkspaceRoot, INPUT_STATE_FILENAME, stateString);
+    writeFile(scopedWorkspaceRoot, TARGET_CONFIG_FILENAME, targetConfiguration);
   }
 }
