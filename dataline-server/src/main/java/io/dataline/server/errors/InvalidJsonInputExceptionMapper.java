@@ -38,7 +38,7 @@ public class InvalidJsonInputExceptionMapper implements ExceptionMapper<JsonMapp
         .entity(
             new ObjectMapper()
                 .createObjectNode()
-                .put("message", "The received object did not pass validation")
+                .put("message", "Invalid JSON")
                 .put("details", e.getOriginalMessage())
                 .toString())
         .type("application/json")

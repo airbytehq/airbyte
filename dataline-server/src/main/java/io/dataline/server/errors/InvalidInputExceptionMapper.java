@@ -42,7 +42,7 @@ public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintVi
         .entity(
             new ObjectMapper()
                 .createObjectNode()
-                .put("message", "Invalid JSON")
+                .put("message", "The received object did not pass validation")
                 .put("details", prepareMessage(exception)))
         .type("application/json")
         .build();
