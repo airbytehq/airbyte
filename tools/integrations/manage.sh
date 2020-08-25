@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -e
 
@@ -40,7 +40,7 @@ main() {
   local path=$1
   shift || error "Missing target (root path of integration or 'all')"
 
-  if [[ $path == "all" ]]; then
+  if [ "$path" == "all" ]; then
     for path in $(find dataline-integrations -iname "Dockerfile" -type f); do
       cmd_$cmd $path
     done

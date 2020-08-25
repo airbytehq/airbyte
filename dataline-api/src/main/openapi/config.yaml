@@ -1042,6 +1042,7 @@ components:
       properties:
         units:
           type: integer
+          format: int64
         timeUnit:
           type: string
           enum:
