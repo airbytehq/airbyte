@@ -35,13 +35,18 @@
 
 ## Community
 
-* [Support](community/support.md)
+* [Contribute](community/support.md)
 * [Code of Conduct](community/code-of-conduct.md)
 
 ## Company Handbook
 
-* [Company Handbook](company-handbook/company-handbook.md)
-* [Future Milestones](company-handbook/future-milestones.md)
+* [Introduction](company-handbook/company-handbook.md)
+* [Story](company-handbook/future-milestones.md)
+* [Culture and Values](company-handbook/culture-and-values.md)
+* [Team](company-handbook/team.md)
+* [Strategy](company-handbook/strategy.md)
+* [Business Model](company-handbook/business-model.md)
+* [Roadmap](company-handbook/roadmap.md)
 
 ---
 
