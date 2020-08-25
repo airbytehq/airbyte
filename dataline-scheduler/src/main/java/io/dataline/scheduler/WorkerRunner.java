@@ -68,7 +68,7 @@ public class WorkerRunner implements Runnable {
       case CHECK_CONNECTION:
         final StandardCheckConnectionInput checkConnectionInput =
             getCheckConnectionInput(job.getConfig().getCheckConnection());
-        new WorkerRun<>(
+        new WorkerWrapper<>(
                 jobId,
                 checkConnectionInput,
                 new DockerCheckConnectionWorker(

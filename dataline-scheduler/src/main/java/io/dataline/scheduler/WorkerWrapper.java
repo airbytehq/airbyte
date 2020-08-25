@@ -52,16 +52,16 @@ import org.slf4j.LoggerFactory;
  * @param <InputType> - the type that the worker consumes.
  * @param <OutputType> - the type that the worker outputs.
  */
-public class WorkerRun<InputType, OutputType> implements Runnable {
+public class WorkerWrapper<InputType, OutputType> implements Runnable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerWrapper.class);
 
   private final long jobId;
   private InputType input;
   private final Worker<InputType, OutputType> worker;
   private final BasicDataSource connectionPool;
 
-  public WorkerRun(
+  public WorkerWrapper(
       long jobId,
       InputType input,
       Worker<InputType, OutputType> worker,
