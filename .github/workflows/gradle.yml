@@ -38,9 +38,3 @@ jobs:
 
       - name: Build
         run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
-
-#      - name: Build
-#        run: ./tools/app/build.sh
-#      - name: Test
-#        run: ./tools/app/test.sh
-
