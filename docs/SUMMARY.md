@@ -1,6 +1,7 @@
 # Table of contents
 
 * [Getting Started](../README.md)
+* [Changelog](changelog.md)
 
 ## Deployment
 
