@@ -171,7 +171,8 @@ public class SourceImplementationsHandler {
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
     sourceConnectionImplementation.setConfiguration(configuration);
 
-    configPersistence.writeConfig(
+    ConfigFetchers.writeConfig(
+        configPersistence,
         PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceImplementationId.toString(),
         sourceConnectionImplementation);

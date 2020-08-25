@@ -25,13 +25,9 @@
 package io.dataline.scheduler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionSchedule;
 import io.dataline.db.DatabaseHelper;
-import io.dataline.workers.singer.SingerTap;
-import io.dataline.workers.singer.postgres_tap.SingerPostgresTapDiscoverWorker;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -153,40 +149,7 @@ public class JobSubmitter implements Runnable {
         throw new RuntimeException("not implemented");
       case PENDING:
       case FAILED:
-        switch (job.getConfig().getConfigType()) {
-          case DISCOVER_SCHEMA:
-            // todo: get tap from job's config
-            SingerTap tap = SingerTap.POSTGRES;
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            String configString = null;
-            try {
-              String rawConfigString =
-                  objectMapper.writeValueAsString(job.getConfig().getDiscoverSchema());
-              configString =
-                  objectMapper.writeValueAsString(
-                      objectMapper.readTree(rawConfigString).get("configuration"));
-
-              LOGGER.info("config json: " + configString); // todo: remove
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-
-            threadPool.submit(
-                new WorkerWrapper<>(
-                    job.getId(),
-                    new SingerPostgresTapDiscoverWorker(),
-                    connectionPool,
-                    persistence));
-            LOGGER.info("Submitting job to thread pool...");
-            break;
-          case CHECK_CONNECTION_SOURCE:
-          case CHECK_CONNECTION_DESTINATION:
-          case SYNC:
-            throw new RuntimeException("not implemented");
-            // todo: handle threadPool.submit(new WorkerWrapper<>(job.getId(), new EchoWorker(),
-            // connectionPool));
-        }
+        threadPool.submit(new WorkerRunner(job.getId(), connectionPool, persistence));
         break;
       case RUNNING:
         //  no-op

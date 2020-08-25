@@ -8,9 +8,7 @@
   "required": [
     "sourceConnectionImplementation",
     "destinationConnectionImplementation",
-    "standardSync",
-    "sourceDockerImage",
-    "destinationDockerImage"
+    "standardSync"
   ],
   "properties": {
     "sourceConnectionImplementation": {
@@ -21,12 +19,6 @@
     },
     "standardSync": {
       "$ref": "StandardSync.json"
-    },
-    "sourceDockerImage": {
-      "type": "string"
-    },
-    "destinationDockerImage": {
-      "type": "string"
     }
   }
 }

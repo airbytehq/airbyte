@@ -26,9 +26,6 @@ package io.dataline.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.api.model.JobRead;
-import io.dataline.config.ConnectionImplementation;
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
@@ -42,53 +39,37 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WorkerWrapper<InputType, OutputType> implements Runnable {
+/**
+ * This class represents a single run of a worker. It handles making sure the correct inputs and
+ * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
+ * persisted to the db.
+ *
+ * <p>todo (cgardens) - this line between this abstraction and WorkerRunner is a little blurry. we
+ * can clarify it later. the main benefit is of this class is that it gives us some type safety when
+ * working with workers. you can probably make an argument that this class should not have access to
+ * the db.
+ *
+ * @param <InputType> - the type that the worker consumes.
+ * @param <OutputType> - the type that the worker outputs.
+ */
+public class WorkerRun<InputType, OutputType> implements Runnable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerWrapper.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
 
   private final long jobId;
+  private InputType input;
   private final Worker<InputType, OutputType> worker;
   private final BasicDataSource connectionPool;
-  private final SchedulerPersistence persistence;
 
-  public WorkerWrapper(
+  public WorkerRun(
       long jobId,
+      InputType input,
       Worker<InputType, OutputType> worker,
-      BasicDataSource connectionPool,
-      SchedulerPersistence persistence) {
+      BasicDataSource connectionPool) {
     this.jobId = jobId;
+    this.input = input;
     this.worker = worker;
     this.connectionPool = connectionPool;
-    this.persistence = persistence;
-  }
-
-  @SuppressWarnings("unchecked")
-  private InputType getInput(io.dataline.scheduler.Job job) {
-    switch (job.getConfig().getConfigType()) {
-      case CHECK_CONNECTION_SOURCE:
-        final DestinationConnectionImplementation checkConnectionSource =
-            job.getConfig().getCheckConnectionDestination();
-        return (InputType) buildConnectionImplementation(checkConnectionSource.getConfiguration());
-      case CHECK_CONNECTION_DESTINATION:
-        final SourceConnectionImplementation checkConnectionDestination =
-            job.getConfig().getCheckConnectionSource();
-
-        return (InputType)
-            buildConnectionImplementation(checkConnectionDestination.getConfiguration());
-      case DISCOVER_SCHEMA:
-        return (InputType) job.getConfig().getDiscoverSchema();
-      case SYNC:
-        return (InputType) job.getConfig().getSync();
-      default:
-        throw new RuntimeException("Unrecognized config type: " + job.getConfig().getConfigType());
-    }
-  }
-
-  private static ConnectionImplementation buildConnectionImplementation(Object configuration) {
-    final ConnectionImplementation connectionImplementation = new ConnectionImplementation();
-    connectionImplementation.setConfiguration(configuration);
-
-    return connectionImplementation;
   }
 
   @Override
@@ -97,12 +78,8 @@ public class WorkerWrapper<InputType, OutputType> implements Runnable {
     try {
       setJobStatus(connectionPool, jobId, JobRead.StatusEnum.RUNNING);
 
-      // fetch input.
-      final io.dataline.scheduler.Job job = persistence.getJob(jobId);
-      final InputType input = getInput(job);
-
       // todo (cgardens) - replace this with whatever the correct path is. probably dependency
-      // inject it based via env.
+      //   inject it based via env.
       final Path workspacesRoot = Path.of("/tmp/dataline/workspaces/");
       FileUtils.forceMkdir(workspacesRoot.toFile());
       final Path workspaceRoot = workspacesRoot.resolve(String.valueOf(jobId));

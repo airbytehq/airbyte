@@ -33,5 +33,6 @@ public interface ConfigPersistence {
   <T> Set<T> getConfigs(PersistenceConfigType persistenceConfigType, Class<T> clazz)
       throws JsonValidationException;
 
-  <T> void writeConfig(PersistenceConfigType persistenceConfigType, String configId, T config);
+  <T> void writeConfig(PersistenceConfigType persistenceConfigType, String configId, T config)
+      throws JsonValidationException;
 }

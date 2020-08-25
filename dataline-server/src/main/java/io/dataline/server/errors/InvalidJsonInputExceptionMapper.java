@@ -22,10 +22,26 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.server.errors;
 
-import io.dataline.config.StandardCheckConnectionInput;
-import io.dataline.config.StandardCheckConnectionOutput;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-public interface CheckConnectionWorker
-    extends Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput> {}
+@Provider
+public class InvalidJsonInputExceptionMapper implements ExceptionMapper<JsonMappingException> {
+  @Override
+  public Response toResponse(JsonMappingException e) {
+    return Response.status(422)
+        .entity(
+            new ObjectMapper()
+                .createObjectNode()
+                .put("message", "Invalid JSON")
+                .put("details", e.getOriginalMessage())
+                .toString())
+        .type("application/json")
+        .build();
+  }
+}
