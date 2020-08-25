@@ -57,7 +57,7 @@ public class JobSubmitter implements Runnable {
 
       Optional<Job> oldestPendingJob = getOldestPendingJob();
 
-      oldestPendingJob.ifPresent(this::handleJob);
+      oldestPendingJob.ifPresent(this::submitJob);
     } catch (Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
@@ -85,7 +85,7 @@ public class JobSubmitter implements Runnable {
         });
   }
 
-  private void handleJob(Job job) {
+  private void submitJob(Job job) {
     threadPool.submit(new WorkerRunner(job.getId(), connectionPool, persistence));
   }
 }

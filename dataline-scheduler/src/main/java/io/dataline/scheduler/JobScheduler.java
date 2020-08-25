@@ -121,7 +121,7 @@ public class JobScheduler implements Runnable {
         if (nextRunStart < Instant.now().getEpochSecond()) {
           JobUtils.createJobFromConnectionId(schedulerPersistence, configPersistence, connectionId);
         }
-
+        break;
         // todo (cgardens) - add max retry concept
       case FAILED:
         JobUtils.createJobFromConnectionId(schedulerPersistence, configPersistence, connectionId);

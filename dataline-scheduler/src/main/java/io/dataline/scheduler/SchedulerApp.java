@@ -71,10 +71,10 @@ public class SchedulerApp {
         new JobScheduler(connectionPool, schedulerPersistence, configPersistence);
 
     scheduledPool.scheduleWithFixedDelay(
-        new SchedulerAppInternal(jobScheduler, jobSubmitter),
-        0L,
-        JOB_SUBMITTER_DELAY_MILLIS,
-        TimeUnit.MILLISECONDS);
+        () -> {
+          jobSubmitter.run();
+          jobScheduler.run();
+        }, 0L, JOB_SUBMITTER_DELAY_MILLIS, TimeUnit.MILLISECONDS);
 
     Runtime.getRuntime()
         .addShutdownHook(new SchedulerShutdownHandler(workerThreadPool, scheduledPool));
