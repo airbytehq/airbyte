@@ -3,7 +3,7 @@
   "sourceSpecificationId": "2168516a-5c9a-4582-90dc-5e3a01e3f607",
   "specification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Postgres",
+    "title": "Postgres Source Spec",
     "type": "object",
     "required": [
       "host",

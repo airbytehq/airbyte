@@ -136,6 +136,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
   private Set<Path> getFiles(PersistenceConfigType persistenceConfigType) {
     Path configDirPath = getConfigDirectory(persistenceConfigType);
+    ensureDirectory(configDirPath);
     try {
       return Files.list(configDirPath).collect(Collectors.toSet());
     } catch (IOException e) {
