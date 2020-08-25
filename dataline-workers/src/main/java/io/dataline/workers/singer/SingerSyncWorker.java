@@ -105,8 +105,8 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
         "run",
         "-v",
         String.format("%s:/singer/data", workspaceRoot.toString()),
-        // TODO network=host is a not recommended for production settings, create a bridge network
-        //  and use it to connect the two docker containers
+        // TODO network=host is not recommended for production settings, create a bridge network
+        //  and use it to connect all containers
         "--network=host"
       };
 
