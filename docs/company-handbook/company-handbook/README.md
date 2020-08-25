@@ -1,4 +1,4 @@
-# Introduction
+# Company Handbook
 
 Welcome to our company handbook. 
 
