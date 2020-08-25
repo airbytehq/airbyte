@@ -13,7 +13,7 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: 'openjdk@1.14'
+          java-version: '14'
 
       - name: Build
         run: ./gradlew build
