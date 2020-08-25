@@ -4,7 +4,8 @@ on: push
 
 jobs:
   build:
-
+    env:
+      GRADLE_PATH: /tmp/gradle
     runs-on: ubuntu-latest
 
     steps:
@@ -14,7 +15,7 @@ jobs:
       - name: Cache java deps
         uses: actions/cache@v2
         with:
-          path: /tmp/gradle
+          path: ${{ env.GRADLE_PATH }}
           key: gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             gradle-
@@ -24,8 +25,10 @@ jobs:
           java-version: '14'
 
       - name: Build
-        run: ./gradlew build -g /tmp/gradle
+        run: ./gradlew build -g ${{ env.GRADLE_PATH }}
 
+      - name: Docker
+        run: find /var/lib/docker
 #      - name: Build
 #        run: ./tools/app/build.sh
 #      - name: Test
