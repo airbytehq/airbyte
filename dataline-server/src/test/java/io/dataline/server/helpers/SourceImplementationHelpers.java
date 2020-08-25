@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 public class SourceImplementationHelpers {
-  public static SourceConnectionImplementation generateSourceImplementationMock(
+  public static SourceConnectionImplementation generateSourceImplementation(
       UUID sourceSpecificationId) {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
@@ -45,6 +45,7 @@ public class SourceImplementationHelpers {
     sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
     sourceConnectionImplementation.setConfiguration(implementationJson.toString());
+    sourceConnectionImplementation.setTombstone(false);
 
     return sourceConnectionImplementation;
   }
