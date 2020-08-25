@@ -24,6 +24,8 @@
 
 package io.dataline.workers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import java.io.File;
@@ -39,11 +41,7 @@ import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseWorkerTestCase {
   // TODO inject via env
-  protected String SINGER_LIB_PATH = "/usr/local/lib/singer";
-  protected String SINGER_POSTGRES_TAP_PATH =
-      Path.of(SINGER_LIB_PATH).resolve("tap-postgres/bin/tap-postgres").toString();
-
-  private Path workspaceDirectory;
+  protected Path workspaceDirectory;
 
   @BeforeAll
   public void init() throws IOException {
@@ -69,6 +67,11 @@ public abstract class BaseWorkerTestCase {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  protected void assertJsonEquals(String s1, String s2) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    assertEquals(mapper.readTree(s1), mapper.readTree(s2));
   }
 
   protected <T> T getJsonAsTyped(String file, Class<T> clazz) {

@@ -25,10 +25,8 @@
 package io.dataline.workers.singer;
 
 public enum SingerTarget implements SingerConnector {
-  // TODO
-  LOCAL_FILE("dataline/integration-singer-csv-destination"),
-  BIGQUERY(""),
-  POSTGRES("");
+  POSTGRES("dataline/integration-singer-postgres-destination"),
+  LOCAL_FILE("dataline/integration-singer-csv-destination");
 
   private final String imageName;
 
