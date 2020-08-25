@@ -35,8 +35,6 @@ jobs:
       - name: Build
         run: ./gradlew build -g ${{ env.GRADLE_PATH }}
 
-      - name: Docker
-        run: find /var/lib/docker
 #      - name: Build
 #        run: ./tools/app/build.sh
 #      - name: Test
