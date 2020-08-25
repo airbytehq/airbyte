@@ -29,8 +29,11 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
 // https://www.baeldung.com/jersey-bean-validation#custom-exception-handler
+// handles exceptions related to the request body not matching the openapi config.
+@Provider
 public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
   @Override

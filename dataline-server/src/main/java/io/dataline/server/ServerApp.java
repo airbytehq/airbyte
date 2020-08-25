@@ -41,7 +41,6 @@ import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonP
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +66,6 @@ public class ServerApp {
 
     ResourceConfig rc =
         new ResourceConfig()
-            .property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true)
             // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add
             //   auth.
             // cors
