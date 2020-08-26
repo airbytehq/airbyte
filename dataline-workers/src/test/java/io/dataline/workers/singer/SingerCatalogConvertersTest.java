@@ -48,7 +48,7 @@ class SingerCatalogConvertersTest extends BaseWorkerTestCase {
 
     final SingerCatalog expectedCatalog =
         getJsonAsTyped("simple_postgres_singer_catalog.json", SingerCatalog.class);
-    expectedCatalog.getStreams().get(0).getMetadata().get(0).getMetadata().setSelected(false);
+    expectedCatalog.getStreams().get(0).getMetadata().get(0).getMetadata().setSelected(true);
     expectedCatalog.getStreams().get(0).getMetadata().get(1).getMetadata().setSelected(true);
     expectedCatalog.getStreams().get(0).getMetadata().get(2).getMetadata().setSelected(true);
     expectedCatalog
@@ -63,13 +63,31 @@ class SingerCatalogConvertersTest extends BaseWorkerTestCase {
   }
 
   @Test
-  void toDatalineSchema() {
+  void toDatalineSchemaWithUnselectedTable() {
     final SingerCatalog catalog =
         getJsonAsTyped("simple_postgres_singer_catalog.json", SingerCatalog.class);
     final Schema expectedSchema =
         getJsonAsTyped("simple_postgres_schema.json", StandardDiscoverSchemaOutput.class)
             .getSchema();
     expectedSchema.getTables().get(0).setSelected(false);
+    expectedSchema.getTables().get(0).getColumns().get(0).setSelected(true);
+    expectedSchema.getTables().get(0).getColumns().get(1).setSelected(true);
+
+    final Schema actualSchema = SingerCatalogConverters.toDatalineSchema(catalog);
+
+    assertEquals(expectedSchema, actualSchema);
+  }
+
+  @Test
+  void toDatalineSchemaWithSelectedTable() {
+    final SingerCatalog catalog =
+        getJsonAsTyped("simple_postgres_singer_catalog.json", SingerCatalog.class);
+    catalog.getStreams().get(0).getMetadata().get(0).getMetadata().setSelected(true);
+
+    final Schema expectedSchema =
+        getJsonAsTyped("simple_postgres_schema.json", StandardDiscoverSchemaOutput.class)
+            .getSchema();
+    expectedSchema.getTables().get(0).setSelected(true);
     expectedSchema.getTables().get(0).getColumns().get(0).setSelected(true);
     expectedSchema.getTables().get(0).getColumns().get(1).setSelected(true);
 

@@ -3,7 +3,7 @@
     "tables": [
       {
         "name": "id_and_name",
-        "selected": false,
+        "selected": true,
         "columns": [
           {
             "name": "name",
