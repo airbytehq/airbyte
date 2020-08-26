@@ -40,6 +40,8 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +57,7 @@ public class SingerTap implements SyncTap<SingerProtocol> {
   private final String dockerImageName;
 
   private Process tapProcess;
+  private InputStream stdout;
 
   public SingerTap(String dockerImageName) {
     this.dockerImageName = dockerImageName;
@@ -119,20 +122,35 @@ public class SingerTap implements SyncTap<SingerProtocol> {
       throw new RuntimeException(e);
     }
 
-    try {
-      try (final InputStream stdout = tapProcess.getInputStream()) {
-        return new SingerJsonIterator(stdout);
-      }
-    } catch (IOException e) {
-      // todo (cgardens) - figure out exception handling here. likely should use SyncException
-      //   instead.
-      throw new RuntimeException(e);
-    }
+    final InputStream stdout = tapProcess.getInputStream();
+    return new SingerJsonIterator(stdout);
   }
 
   @Override
   public void cancel() {
     WorkerUtils.cancelHelper(tapProcess);
+  }
+
+  @Override
+  public void close() {
+    if (stdout != null) {
+      try {
+        stdout.close();
+      } catch (IOException e) {
+        throw new RuntimeException();
+      }
+    }
+
+    if (tapProcess != null) {
+      try {
+        while (!tapProcess.waitFor(1, TimeUnit.MINUTES)) {
+          LOGGER.debug(
+              "Waiting for sync worker (job:{}) target", ""); // TODO when job id is passed in
+        }
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path workspaceRoot)

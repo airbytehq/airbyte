@@ -29,7 +29,7 @@ import io.dataline.config.State;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-public interface SyncTarget<T> {
+public interface SyncTarget<T> extends AutoCloseable {
   State run(Iterator<T> data, StandardTargetConfig targetConfig, Path workspacePath)
       throws SyncException;
 

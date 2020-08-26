@@ -67,34 +67,24 @@ public class DefaultSyncWorker implements SyncWorker {
         syncInput.getDestinationConnectionImplementation());
     targetConfig.setStandardSync(syncInput.getStandardSync());
 
-    try {
+    final MutableLong recordCount = new MutableLong();
+    Consumer<SingerProtocol> counter =
+        record -> {
+          if (record.getType().equals(SingerProtocol.Type.RECORD)) {
+            recordCount.increment();
+          }
+        };
 
+    final State state;
+    try (tap) {
       final Iterator<SingerProtocol> iterator = tap.run(tapConfig, workspacePath);
 
-      final MutableLong recordCount = new MutableLong();
-      Consumer<SingerProtocol> counter =
-          record -> {
-            if (record.getType().equals(SingerProtocol.Type.RECORD)) {
-              recordCount.increment();
-            }
-          };
       Iterator<SingerProtocol> countingIterator = new ConsumerIterator<>(iterator, counter);
+      try (target) {
+        state = target.run(countingIterator, targetConfig, workspacePath);
+      }
 
-      final State state = target.run(countingIterator, targetConfig, workspacePath);
-
-      StandardSyncSummary summary = new StandardSyncSummary();
-      summary.setRecordsSynced(recordCount.getValue());
-      summary.setStartTime(startTime);
-      summary.setEndTime(System.currentTimeMillis());
-      summary.setJobId(UUID.randomUUID()); // TODO this is not input anywhere
-      // TODO set logs
-
-      final StandardSyncOutput output = new StandardSyncOutput();
-      output.setStandardSyncSummary(summary);
-      output.setState(state);
-
-      return new OutputAndStatus<>(JobStatus.SUCCESSFUL, output);
-    } catch (SyncException e) {
+    } catch (Exception e) {
       LOGGER.debug(
           "Sync worker failed. Tap error log: {}.\n Target error log: {}",
           WorkerUtils.readFileFromWorkspace(workspacePath, TAP_ERR_LOG),
@@ -102,8 +92,28 @@ public class DefaultSyncWorker implements SyncWorker {
 
       return new OutputAndStatus<>(JobStatus.FAILED, null);
     }
+
+    StandardSyncSummary summary = new StandardSyncSummary();
+    summary.setRecordsSynced(recordCount.getValue());
+    summary.setStartTime(startTime);
+    summary.setEndTime(System.currentTimeMillis());
+    summary.setJobId(UUID.randomUUID()); // TODO this is not input anywhere
+    // TODO set logs
+
+    final StandardSyncOutput output = new StandardSyncOutput();
+    output.setStandardSyncSummary(summary);
+    output.setState(state);
+
+    return new OutputAndStatus<>(JobStatus.SUCCESSFUL, output);
   }
 
   @Override
-  public void cancel() {}
+  public void cancel() {
+    try {
+      tap.close();
+      target.close();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

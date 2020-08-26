@@ -109,8 +109,7 @@ public class SingerTarget implements SyncTarget<SingerProtocol> {
     try {
       while (!targetProcess.waitFor(1, TimeUnit.MINUTES)) {
         LOGGER.debug(
-            "Waiting for sync worker (attemptId:{}) target",
-            ""); // TODO when attempt ID is passed in
+            "Waiting for sync worker (job:{}) target", ""); // TODO when job id is passed in
       }
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
@@ -125,5 +124,10 @@ public class SingerTarget implements SyncTarget<SingerProtocol> {
   @Override
   public void cancel() {
     WorkerUtils.cancelHelper(targetProcess);
+  }
+
+  @Override
+  public void close() {
+    // no op.
   }
 }
