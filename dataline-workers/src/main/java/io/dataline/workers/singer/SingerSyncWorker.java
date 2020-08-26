@@ -119,8 +119,8 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
               // TODO support both --properties and --catalog depending on integration
               "--properties",
               CATALOG_FILENAME,
-                    "--state",
-                    INPUT_STATE_FILENAME);
+              "--state",
+              INPUT_STATE_FILENAME);
 
       String[] targetCmd =
           ArrayUtils.addAll(dockerCmd, targetImageNae, "--config", TARGET_CONFIG_FILENAME);
