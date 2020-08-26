@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.config.SingerProtocol;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -36,7 +37,7 @@ import java.util.Iterator;
 // the stream. Probably need to flatten.
 class SingerJsonIterator implements Iterator<SingerProtocol> {
   private final ObjectMapper objectMapper;
-  private JsonParser jsonParser;
+  private final JsonParser jsonParser;
 
   // https://cassiomolin.com/2019/08/19/combining-jackson-streaming-api-with-objectmapper-for-parsing-json/
   public SingerJsonIterator(InputStream is) {

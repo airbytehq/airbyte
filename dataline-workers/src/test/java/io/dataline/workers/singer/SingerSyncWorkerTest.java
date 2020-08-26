@@ -86,22 +86,22 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
   @Disabled
   @Test
   public void testFirstTimeFullTableSync()
-    throws IOException, SQLException, InterruptedException, InvalidCredentialsException {
+      throws IOException, SQLException, InterruptedException, InvalidCredentialsException {
     PostgreSQLContainerTestHelper.runSqlScript(
-      MountableFile.forClasspathResource("simple_postgres_init.sql"), sourceDb);
+        MountableFile.forClasspathResource("simple_postgres_init.sql"), sourceDb);
 
     ObjectMapper objectMapper = new ObjectMapper();
     StandardSyncInput syncInput = new StandardSyncInput();
     DestinationConnectionImplementation destinationConnection =
-      new DestinationConnectionImplementation();
+        new DestinationConnectionImplementation();
     destinationConnection.setConfiguration(
-      objectMapper.readTree(PostgreSQLContainerTestHelper.getSingerTargetConfig(targetDb)));
+        objectMapper.readTree(PostgreSQLContainerTestHelper.getSingerTargetConfig(targetDb)));
     syncInput.setDestinationConnectionImplementation(destinationConnection);
 
     objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     SingerCatalog singerCatalog =
-      objectMapper.readValue(
-        readResource("simple_postgres_full_table_sync_catalog.json"), SingerCatalog.class);
+        objectMapper.readValue(
+            readResource("simple_postgres_full_table_sync_catalog.json"), SingerCatalog.class);
     Schema schema = SingerCatalogConverters.toDatalineSchema(singerCatalog);
     StandardSync standardSync = new StandardSync();
     standardSync.setSchema(schema);
@@ -109,7 +109,7 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
 
     SourceConnectionImplementation sourceConnection = new SourceConnectionImplementation();
     sourceConnection.setConfiguration(
-      objectMapper.readTree(PostgreSQLContainerTestHelper.getSingerTapConfig(sourceDb)));
+        objectMapper.readTree(PostgreSQLContainerTestHelper.getSingerTapConfig(sourceDb)));
     syncInput.setSourceConnectionImplementation(sourceConnection);
 
     State state = new State();
@@ -127,11 +127,11 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
     assertEquals(5, syncOutput.getStandardSyncSummary().getRecordsSynced());
 
     BasicDataSource sourceDbPool =
-      DatabaseHelper.getConnectionPool(
-        sourceDb.getUsername(), sourceDb.getPassword(), sourceDb.getJdbcUrl());
+        DatabaseHelper.getConnectionPool(
+            sourceDb.getUsername(), sourceDb.getPassword(), sourceDb.getJdbcUrl());
     BasicDataSource targetDbPool =
-      DatabaseHelper.getConnectionPool(
-        targetDb.getUsername(), targetDb.getPassword(), targetDb.getJdbcUrl());
+        DatabaseHelper.getConnectionPool(
+            targetDb.getUsername(), targetDb.getPassword(), targetDb.getJdbcUrl());
 
     Set<String> sourceTables = listTables(sourceDbPool);
     Set<String> targetTables = listTables(targetDbPool);
@@ -149,14 +149,14 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
   }
 
   private void assertTablesEquivalent(
-    BasicDataSource sourceDbPool, BasicDataSource targetDbPool, String table)
-    throws SQLException {
+      BasicDataSource sourceDbPool, BasicDataSource targetDbPool, String table)
+      throws SQLException {
     long sourceTableCount = getTableCount(sourceDbPool, table);
     long targetTableCount = getTableCount(targetDbPool, table);
     assertEquals(sourceTableCount, targetTableCount);
     Result<Record> allRecords =
-      DatabaseHelper.query(
-        sourceDbPool, context -> context.fetch(String.format("SELECT * FROM %s;", table)));
+        DatabaseHelper.query(
+            sourceDbPool, context -> context.fetch(String.format("SELECT * FROM %s;", table)));
     for (Record sourceTableRecord : allRecords) {
       assertRecordInTable(sourceTableRecord, targetDbPool, table);
     }
@@ -167,7 +167,7 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
    * more) fields.
    */
   private void assertRecordInTable(Record record, BasicDataSource connectionPool, String tableName)
-    throws SQLException {
+      throws SQLException {
 
     Set<Condition> conditions = new HashSet<>();
     for (Field<?> field : record.fields()) {
@@ -177,8 +177,8 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
     }
 
     Result<Record> presentRecords =
-      DatabaseHelper.query(
-        connectionPool, context -> context.select().from(tableName).where(conditions).fetch());
+        DatabaseHelper.query(
+            connectionPool, context -> context.select().from(tableName).where(conditions).fetch());
 
     // TODO validate that the correct number of records exists? currently if the same record exists
     //  multiple times in the source but once in destination, this returns true.
@@ -187,24 +187,24 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
 
   private Set<String> listTables(BasicDataSource connectionPool) throws SQLException {
     return DatabaseHelper.query(
-      connectionPool,
-      context -> {
-        Result<Record> fetch =
-          context.fetch(
-            "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
-        return fetch.stream()
-          .map(record -> (String) record.get("tablename"))
-          .collect(Collectors.toSet());
-      });
+        connectionPool,
+        context -> {
+          Result<Record> fetch =
+              context.fetch(
+                  "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
+          return fetch.stream()
+              .map(record -> (String) record.get("tablename"))
+              .collect(Collectors.toSet());
+        });
   }
 
   private long getTableCount(BasicDataSource connectionPool, String tableName) throws SQLException {
     return DatabaseHelper.query(
-      connectionPool,
-      context -> {
-        Result<Record> record =
-          context.fetch(String.format("SELECT COUNT(*) FROM %s;", tableName));
-        return (long) record.stream().findFirst().get().get(0);
-      });
+        connectionPool,
+        context -> {
+          Result<Record> record =
+              context.fetch(String.format("SELECT COUNT(*) FROM %s;", tableName));
+          return (long) record.stream().findFirst().get().get(0);
+        });
   }
 }

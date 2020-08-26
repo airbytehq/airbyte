@@ -30,9 +30,11 @@ import io.dataline.config.JobSyncConfig;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardSyncInput;
+import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
-import io.dataline.workers.singer.SingerSyncWorker;
+import io.dataline.workers.singer.SingerTap;
+import io.dataline.workers.singer.SingerTarget;
 import java.io.IOException;
 import org.apache.commons.dbcp2.BasicDataSource;
 
@@ -89,9 +91,9 @@ public class WorkerRunner implements Runnable {
         new WorkerRun<>(
                 jobId,
                 syncInput,
-                new SingerSyncWorker(
-                    job.getConfig().getSync().getSourceDockerImage(),
-                    job.getConfig().getSync().getDestinationDockerImage()),
+                new DefaultSyncWorker(
+                    new SingerTap(job.getConfig().getSync().getSourceDockerImage()),
+                    new SingerTarget(job.getConfig().getSync().getDestinationDockerImage())),
                 connectionPool)
             .run();
     }

@@ -24,52 +24,61 @@
 
 package io.dataline.workers;
 
-import io.dataline.config.JobSyncOutput;
-import io.dataline.config.JobSyncTapConfig;
-import io.dataline.config.JobSyncTargetConfig;
+import io.dataline.config.SingerProtocol;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.StandardSyncSummary;
+import io.dataline.config.StandardTapConfig;
+import io.dataline.config.StandardTargetConfig;
 import io.dataline.config.State;
-
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.function.Consumer;
+import org.apache.commons.lang3.mutable.MutableLong;
 
 // T in this case is our protocol for communicating between tap and target. Likely we'll need to
 // open this up and have the protocol of the tap and that of the target and then dynamically we swap
 // in any protocol converter that we might need. Keeping it simple for now and assuming one
 // protocol--just using the singer protocol for point of example right now. #ijusttriggeredmichel.
-public class DefaultSyncWorker<T> implements SyncWorker {
-  private final SyncTap<T> tap;
-  private final SyncTarget<T> target;
+public class DefaultSyncWorker implements SyncWorker {
+  private final SyncTap<SingerProtocol> tap;
+  private final SyncTarget<SingerProtocol> target;
 
-  public DefaultSyncWorker(SyncTap<T> tap, SyncTarget<T> target) {
+  public DefaultSyncWorker(SyncTap<SingerProtocol> tap, SyncTarget<SingerProtocol> target) {
     this.tap = tap;
     this.target = target;
   }
 
   @Override
-  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path workspacePath) {
+  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path workspacePath)
+      throws InvalidCredentialsException, InvalidCatalogException {
     long startTime = System.currentTimeMillis();
 
-    final JobSyncTapConfig tapConfig = new JobSyncTapConfig();
+    final StandardTapConfig tapConfig = new StandardTapConfig();
     tapConfig.setSourceConnectionImplementation(syncInput.getSourceConnectionImplementation());
     tapConfig.setStandardSync(syncInput.getStandardSync());
 
-    final JobSyncTargetConfig targetConfig = new JobSyncTargetConfig();
+    final StandardTargetConfig targetConfig = new StandardTargetConfig();
     targetConfig.setDestinationConnectionImplementation(
         syncInput.getDestinationConnectionImplementation());
     targetConfig.setStandardSync(syncInput.getStandardSync());
 
-    final Iterator<T> iterator = tap.run(tapConfig, workspacePath);
-    final ItrSpy itrSpy = new ItrSpy();
-    Iterator<T> countingIterator = new BlahIterator(iterator, itrSpy);
+    final Iterator<SingerProtocol> iterator = tap.run(tapConfig, workspacePath);
+
+    final MutableLong recordCount = new MutableLong();
+    Consumer<SingerProtocol> counter =
+        record -> {
+          if (record.getType().equals(SingerProtocol.Type.RECORD)) {
+            recordCount.increment();
+          }
+        };
+    Iterator<SingerProtocol> countingIterator = new ConsumerIterator<>(iterator, counter);
 
     final State state = target.run(countingIterator, targetConfig, workspacePath);
 
     StandardSyncSummary summary = new StandardSyncSummary();
-    summary.setRecordsSynced(itrSpy.getCount());
+    summary.setRecordsSynced(recordCount.getValue());
     summary.setStartTime(startTime);
     summary.setEndTime(System.currentTimeMillis());
     summary.setJobId(UUID.randomUUID()); // TODO this is not input anywhere
@@ -84,44 +93,4 @@ public class DefaultSyncWorker<T> implements SyncWorker {
 
   @Override
   public void cancel() {}
-
-  public class BlahIterator implements Iterator<T> {
-
-    private final Iterator<T> iterator;
-    private final ItrSpy spy;
-
-    public BlahIterator(Iterator<T> iterator, ItrSpy spy) {
-      this.iterator = iterator;
-      this.spy = spy;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return iterator.hasNext();
-    }
-
-    @Override
-    public T next() {
-      final T next = iterator.next();
-      spy.incrementNumRecords();
-
-      return next;
-    }
-  }
-
-  public static class ItrSpy {
-    private long count;
-
-    public ItrSpy() {
-      count = 0;
-    }
-
-    public void incrementNumRecords() {
-      count++;
-    }
-
-    public long getCount() {
-      return count;
-    }
-  }
 }

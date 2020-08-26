@@ -24,13 +24,11 @@
 
 package io.dataline.workers;
 
-import io.dataline.config.JobSyncTapConfig;
 import io.dataline.config.StandardTapConfig;
-
 import java.nio.file.Path;
 import java.util.Iterator;
-import java.util.stream.Stream;
 
 public interface SyncTap<T> {
-  Iterator<T> run(StandardTapConfig jobSyncTapConfig, Path workspacePath);
+  Iterator<T> run(StandardTapConfig tapConfig, Path workspacePath)
+      throws InvalidCredentialsException, InvalidCatalogException;
 }

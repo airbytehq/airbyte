@@ -22,6 +22,30 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers;
 
-public class SingerProtocol {}
+import java.util.Iterator;
+import java.util.function.Consumer;
+
+public class ConsumerIterator<T> implements Iterator<T> {
+  private final Iterator<T> iterator;
+  private final Consumer<T> consumer;
+
+  public ConsumerIterator(Iterator<T> iterator, Consumer<T> consumer) {
+    this.iterator = iterator;
+    this.consumer = consumer;
+  }
+
+  @Override
+  public boolean hasNext() {
+    return iterator.hasNext();
+  }
+
+  @Override
+  public T next() {
+    final T next = iterator.next();
+    consumer.accept(next);
+
+    return next;
+  }
+}

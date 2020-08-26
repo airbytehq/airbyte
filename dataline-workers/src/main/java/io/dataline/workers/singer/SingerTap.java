@@ -27,106 +27,101 @@ package io.dataline.workers.singer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.SingerCatalog;
+import io.dataline.config.SingerProtocol;
 import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.SyncTap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.FileWriter;
+import io.dataline.workers.WorkerUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Iterator;
+import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SingerTap implements SyncTap<SingerProtocol> {
-  private static Logger LOGGER = LoggerFactory.getLogger(SingerProtocol.class);
-  private static String CONFIG_JSON_FILENAME = "config.json";
-  private static String CATALOG_JSON_FILENAME = "catalog.json";
-  private static String STATE_JSON_FILENAME = "input_state.json";
-  private static String ERROR_LOG_FILENAME = "err.log";
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerTap.class);
 
-  private final SingerConnector singerConnector;
+  private static final String CONFIG_JSON_FILENAME = "tap_config.json";
+  private static final String CATALOG_JSON_FILENAME = "catalog.json";
 
-  public SingerTap(SingerConnector singerConnector) {
-    this.singerConnector = singerConnector;
+  private static final String STATE_JSON_FILENAME = "input_state.json";
+  private static final String TAP_ERR_LOG = "tap_err.log";
+
+  private final String dockerImageName;
+
+  public SingerTap(String dockerImageName) {
+    this.dockerImageName = dockerImageName;
   }
 
-  SingerCatalog selectedCatalog =
-    SingerCatalogConverters.applySchemaToDiscoveredCatalog(
-      discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
-  writeSingerInputsToDisk(input, workspaceRoot, selectedCatalog);
-  MutableInt numRecords = new MutableInt();
-
-  String[] dockerCmd = {
-    "docker",
-    "run",
-    "-v",
-    String.format("%s:/singer/data", workspaceRoot.toString()),
-    // TODO network=host is not recommended for production settings, create a bridge network
-    //  and use it to connect all containers
-    "--network=host"
-  };
-
-  String[] tapCmd =
-    ArrayUtils.addAll(
-      dockerCmd,
-      tap.getImageName(),
-      "--config",
-      TAP_CONFIG_FILENAME,
-      // TODO support both --properties and --catalog depending on integration
-      "--properties",
-      CATALOG_FILENAME,
-      "--state",
-      INPUT_STATE_FILENAME);
-
-
-  @SuppressWarnings("UnstableApiUsage")
   @Override
-  public Iterator<SingerProtocol> run(StandardTapConfig tapConfig, Path workspaceRoot) {
-
+  public Iterator<SingerProtocol> run(StandardTapConfig input, Path workspaceRoot)
+      throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, workspaceRoot);
-    // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
-    //   reduced.
+
     final ObjectMapper objectMapper = new ObjectMapper();
     final String configDotJson;
     final String catalogDotJson;
     final String stateDotJson;
+
     try {
       configDotJson =
           objectMapper.writeValueAsString(
-              tapConfig.getSourceConnectionImplementation().getConfiguration());
+              input.getSourceConnectionImplementation().getConfiguration());
       SingerCatalog selectedCatalog =
-        SingerCatalogConverters.applySchemaToDiscoveredCatalog(
-          discoveryOutput.getOutput().get(), tapConfig.getStandardSync().getSchema());
-      catalogDotJson =
-          objectMapper.writeValueAsString(selectedCatalog);
-      stateDotJson = objectMapper.writeValueAsString(tapConfig.getState());
+          SingerCatalogConverters.applySchemaToDiscoveredCatalog(
+              discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
+      catalogDotJson = objectMapper.writeValueAsString(selectedCatalog);
+      stateDotJson = objectMapper.writeValueAsString(input.getState());
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
 
     // write config.json to disk
-    String configPath = writeFileToWorkspace(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson);
-    String catalogPath = writeFileToWorkspace(workspaceRoot, CATALOG_JSON_FILENAME, catalogDotJson);
-    String statePath = writeFileToWorkspace(workspaceRoot, STATE_JSON_FILENAME, stateDotJson);
+    Path configPath =
+        WorkerUtils.writeFileToWorkspace(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson);
+    Path catalogPath =
+        WorkerUtils.writeFileToWorkspace(workspaceRoot, CATALOG_JSON_FILENAME, catalogDotJson);
+    Path statePath =
+        WorkerUtils.writeFileToWorkspace(workspaceRoot, STATE_JSON_FILENAME, stateDotJson);
 
     Process tapProcess = null;
     try {
+
+      String[] dockerCmd = {
+        "docker",
+        "run",
+        "-v",
+        String.format("%s:/singer/data", workspaceRoot.toString()),
+        // TODO network=host is not recommended for production settings, create a bridge network
+        //  and use it to connect all containers
+        "--network=host"
+      };
+
+      String[] tapCmd =
+          ArrayUtils.addAll(
+              dockerCmd,
+              dockerImageName,
+              "--config",
+              configPath.toString(),
+              // TODO support both --properties and --catalog depending on integration
+              "--properties",
+              catalogPath.toString(),
+              "--state",
+              statePath.toString());
+
+      LOGGER.info("running command: {}", Arrays.toString(tapCmd));
+
       tapProcess =
           new ProcessBuilder()
-              .command(
-                  singerExecutablePath,
-                  "--config",
-                  configPath,
-                  "--catalog",
-                  catalogPath,
-                  "--state",
-                  statePath)
+              .command(tapCmd)
+              .redirectError(workspaceRoot.resolve(TAP_ERR_LOG).toFile())
               .start();
+
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -136,30 +131,13 @@ public class SingerTap implements SyncTap<SingerProtocol> {
     return new SingerJsonIterator(stdout);
   }
 
-  // todo (cgardens) - copy pasta for now. if we go this round move this out of BaseSingerWorker
-  // into a helper.
-  protected String writeFileToWorkspace(Path workspaceRoot, String fileName, String contents) {
-    String filePath = getWorkspaceFilePath(workspaceRoot, fileName);
-    try (FileWriter fileWriter = new FileWriter(filePath)) {
-      fileWriter.write(contents);
-      return filePath;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private String getWorkspaceFilePath(Path workspaceRoot, String fileName) {
-    return workspaceRoot.resolve(fileName).toAbsolutePath().toString();
-  }
-
-  private OutputAndStatus<SingerCatalog> runDiscovery(StandardSyncInput input, Path workspaceRoot)
-    throws InvalidCredentialsException {
+  private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path workspaceRoot)
+      throws InvalidCredentialsException {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput();
     discoveryInput.setConnectionConfiguration(
-      input.getSourceConnectionImplementation().getConfiguration());
+        input.getSourceConnectionImplementation().getConfiguration());
     Path scopedWorkspace = workspaceRoot.resolve("discovery");
-    OutputAndStatus<SingerCatalog> discoveryOutput =
-      new SingerDiscoverSchemaWorker(singerConnector).runInternal(discoveryInput, scopedWorkspace);
-    return discoveryOutput;
+    return new SingerDiscoverSchemaWorker(dockerImageName)
+        .runInternal(discoveryInput, scopedWorkspace);
   }
 }
