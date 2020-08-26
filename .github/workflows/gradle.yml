@@ -20,7 +20,7 @@ jobs:
           restore-keys: |
             gradle-
 
-      - name: Cache node_modules
+      - name: Cache node deps
         uses: actions/cache@v2
         with:
           path: ~/.npm
