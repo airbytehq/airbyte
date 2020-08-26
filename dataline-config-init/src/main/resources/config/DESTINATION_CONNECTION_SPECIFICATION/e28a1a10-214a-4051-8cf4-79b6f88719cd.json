@@ -10,9 +10,26 @@
     ],
     "additionalProperties": false,
     "properties": {
-      "serviceAccount": {
+      "project_id": {
+
+      },
+      "dataset_id": {
+
+      },
+      "validate_records": {
+
+      },
+      "clientSecretsFile": { // todo: how to structure this -- should we just have a file upload in the UI?
         "type": "string"
+      },
+      "disable_collection": {
+
+      },
+      "replication_method": {
+
       }
+      // todo: table_id says its required but it isn't read or used?
+
     }
   }
 }
