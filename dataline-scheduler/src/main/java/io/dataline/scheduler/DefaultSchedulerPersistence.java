@@ -33,6 +33,9 @@ import io.dataline.config.JobOutput;
 import io.dataline.config.JobSyncConfig;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
+import io.dataline.config.StandardSyncOutput;
+import io.dataline.config.StandardSyncSummary;
+import io.dataline.config.State;
 import io.dataline.db.DatabaseHelper;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -40,6 +43,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
+import java.util.UUID;
+
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.slf4j.Logger;
@@ -120,8 +125,9 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       DestinationConnectionImplementation destinationImplementation,
       StandardSync standardSync)
       throws IOException {
+    final UUID connectionId = standardSync.getConnectionId();
 
-    final String scope = "sync:" + standardSync.getConnectionId();
+    final String scope = "sync:" + connectionId;
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig();
     jobSyncConfig.setSourceConnectionImplementation(sourceImplementation);
@@ -135,6 +141,15 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             .get(destinationImplementation.getDestinationSpecificationId())
             .getSync());
     jobSyncConfig.setStandardSync(standardSync);
+
+    final Optional<Job> previousJobOptional = JobUtils.getLastSyncJobForConnectionId(connectionPool, connectionId);
+    final Optional<StandardSyncOutput> standardSyncOutput =
+        previousJobOptional.flatMap(Job::getOutput).map(JobOutput::getSync);
+
+    standardSyncOutput
+        .map(StandardSyncOutput::getStandardSyncSummary)
+        .ifPresent(jobSyncConfig::setStandardSyncSummary);
+    standardSyncOutput.map(StandardSyncOutput::getState).ifPresent(jobSyncConfig::setState);
 
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.SYNC);
@@ -176,6 +191,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     return record.getValue("id", Long.class);
   }
 
+  @Override
   public Job getJob(long jobId) throws IOException {
     try {
       return DatabaseHelper.query(
