@@ -24,12 +24,15 @@
 
 package io.dataline.workers.singer.postgres_tap;
 
+import io.dataline.integrations.IntegrationConstants;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
-import io.dataline.workers.singer.SingerTap;
 
 public class SingerPostgresTapCheckConnectionWorker extends SingerCheckConnectionWorker {
 
   public SingerPostgresTapCheckConnectionWorker() {
-    super(SingerTap.POSTGRES);
+    super(
+        IntegrationConstants.Integrations.POSTGRES_TAP
+            .getIntegrationMapping()
+            .getCheckConnection());
   }
 }

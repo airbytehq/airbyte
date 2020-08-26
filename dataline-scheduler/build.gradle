@@ -9,6 +9,7 @@ dependencies {
     implementation project(':dataline-config')
     implementation project(':dataline-config-persistence')
     implementation project(':dataline-db')
+    implementation project(':dataline-integrations')
     implementation project(':dataline-workers')
 }
 

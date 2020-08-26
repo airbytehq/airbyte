@@ -44,8 +44,8 @@ public class SingerCheckConnectionWorker
 
   private final SingerDiscoverSchemaWorker singerDiscoverSchemaWorker;
 
-  public SingerCheckConnectionWorker(SingerConnector connector) {
-    this.singerDiscoverSchemaWorker = new SingerDiscoverSchemaWorker(connector);
+  public SingerCheckConnectionWorker(String imageName) {
+    this.singerDiscoverSchemaWorker = new SingerDiscoverSchemaWorker(imageName);
   }
 
   @Override

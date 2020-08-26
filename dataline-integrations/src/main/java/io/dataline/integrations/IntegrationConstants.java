@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.integrations;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
@@ -34,10 +34,22 @@ public class IntegrationConstants {
           UUID.fromString("2168516a-5c9a-4582-90dc-5e3a01e3f607"),
           new IntegrationMapping("dataline/integration-singer-postgres-source"),
           UUID.fromString("71cb2b91-1b2f-4c42-8f4d-f1ab2bd72080"),
-          new IntegrationMapping(
-              "dataline/integration-singer-postgres-destination",
-              "dataline/integration-singer-postgres-destination",
-              "dataline/integration-singer-postgres-destination"));
+          new IntegrationMapping("dataline/integration-singer-postgres-destination"));
+
+  public enum Integrations {
+    POSTGRES_TAP(UUID.fromString("2168516a-5c9a-4582-90dc-5e3a01e3f607")),
+    POSTGRES_TARGET(UUID.fromString("71cb2b91-1b2f-4c42-8f4d-f1ab2bd72080"));
+
+    private final UUID id;
+
+    Integrations(UUID id) {
+      this.id = id;
+    }
+
+    public IntegrationMapping getIntegrationMapping() {
+      return SPEC_ID_TO_IMPL.get(id);
+    }
+  }
 
   public static class IntegrationMapping {
     private final String checkConnection;

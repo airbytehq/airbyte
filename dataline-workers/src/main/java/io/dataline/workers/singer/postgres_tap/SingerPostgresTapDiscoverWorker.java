@@ -24,12 +24,13 @@
 
 package io.dataline.workers.singer.postgres_tap;
 
+import io.dataline.integrations.IntegrationConstants;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
-import io.dataline.workers.singer.SingerTap;
 
 public class SingerPostgresTapDiscoverWorker extends SingerDiscoverSchemaWorker {
 
   public SingerPostgresTapDiscoverWorker() {
-    super(SingerTap.POSTGRES);
+    super(
+        IntegrationConstants.Integrations.POSTGRES_TAP.getIntegrationMapping().getDiscoverSchema());
   }
 }

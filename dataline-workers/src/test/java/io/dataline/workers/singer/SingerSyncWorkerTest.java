@@ -37,6 +37,7 @@ import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.State;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.integrations.IntegrationConstants;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
@@ -114,7 +115,9 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
     syncInput.setState(state);
 
     OutputAndStatus<StandardSyncOutput> syncResult =
-        new SingerSyncWorker(SingerTap.POSTGRES, SingerTarget.POSTGRES)
+        new SingerSyncWorker(
+                IntegrationConstants.Integrations.POSTGRES_TAP.getIntegrationMapping().getSync(),
+                IntegrationConstants.Integrations.POSTGRES_TARGET.getIntegrationMapping().getSync())
             .run(syncInput, workspaceDirectory);
 
     assertEquals(JobStatus.SUCCESSFUL, syncResult.getStatus());

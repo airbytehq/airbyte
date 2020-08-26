@@ -34,6 +34,7 @@ import io.dataline.config.JobSyncConfig;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.integrations.IntegrationConstants;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
