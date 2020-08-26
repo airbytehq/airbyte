@@ -3,6 +3,10 @@
 #####################
 FROM ubuntu:20.04 AS build-base
 
+WORKDIR /code
+
+ENV DEBIAN_FRONTEND noninteractive
+
 # Install tools
 RUN apt-get update && apt-get -y install curl
 
@@ -10,14 +14,13 @@ RUN apt-get update && apt-get -y install curl
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get update && apt-get -y install \
   nodejs \
-  openjdk-14-jdk
+  openjdk-14-jdk \
+  docker.io
 
 #######################
 # Prepare project env #
 #######################
 FROM build-base AS build-project
-
-WORKDIR /code
 
 # Cache Gradle executable
 COPY ./gradlew .

@@ -72,7 +72,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
     final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
     input.setConnectionConfiguration(o);
-
+    System.out.println(input);
     SingerDiscoverSchemaWorker worker =
         new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage());
 

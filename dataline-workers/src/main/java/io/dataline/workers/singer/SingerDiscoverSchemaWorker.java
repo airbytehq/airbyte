@@ -78,21 +78,31 @@ public class SingerDiscoverSchemaWorker
     }
 
     writeFile(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson);
-
+    System.out.println("configDotJson = " + configDotJson);
+    System.out.println("workspaceRoot = " + workspaceRoot);
+    System.out.println(
+        "writeFile(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson) = "
+            + writeFile(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson));
+    ;
     // exec
     try {
       String[] cmd = {
-        "docker",
-        "run",
-        "-v",
-        String.format("%s:/singer/data", workspaceRoot.toString()),
-        // TODO network=host is a not recommended for production settings, create a bridge network
-        //  and use it to connect the two docker containers
-        "--network=host",
-        imageName,
-        "--config",
-        CONFIG_JSON_FILENAME,
-        "--discover"
+          "docker",
+          "run",
+          "--entrypoint",
+          "/bin/sh",
+          "-v",
+          String.format("%s:/singer/data", workspaceRoot.toString()),
+          // TODO network=host is a not recommended for production settings, create a bridge network
+          //  and use it to connect the two docker containers
+          "--network=bridge",
+          imageName,
+          "-c",
+          "sleep 10000"
+          //          ,
+          //          "--config",
+          //          CONFIG_JSON_FILENAME,
+          //          "--discover"
       };
 
       workerProcess =
@@ -101,6 +111,7 @@ public class SingerDiscoverSchemaWorker
               .redirectOutput(getFullPath(workspaceRoot, CATALOG_JSON_FILENAME).toFile())
               .start();
 
+      TimeUnit.MINUTES.sleep(1);
       while (!workerProcess.waitFor(1, TimeUnit.MINUTES)) {
         LOGGER.info("Waiting for discovery job.");
       }

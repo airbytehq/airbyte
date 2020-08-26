@@ -52,9 +52,9 @@ subprojects {
             removeUnusedImports()
             trimTrailingWhitespace()
         }
-        groovyGradle {
-            target '**/*.gradle'
-        }
+//        groovyGradle {
+//            target '**/*.gradle'
+//        }
     }
     compileJava.dependsOn 'spotlessApply'
 
@@ -63,6 +63,7 @@ subprojects {
         testLogging() {
             events "failed"
             exceptionFormat "full"
+            showStandardStreams true
         }
     }
 
