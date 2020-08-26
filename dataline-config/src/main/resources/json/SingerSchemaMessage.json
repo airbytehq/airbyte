@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/SingerRecordMessage.json",
+  "title": "SingerRecordMessage",
+  "description": "singer protocol: schema. https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#schema-message",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "stream",
+    "schema",
+    "key_properties",
+    "bookmark_properties"
+  ],
+  "properties": {
+    "type": {
+      "const": "SCHEMA"
+    },
+    "stream": {
+      "type": "string"
+    },
+    "schema": {
+      "$ref": "SingerSchema.json"
+    },
+    "key_properties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "bookmark_properties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

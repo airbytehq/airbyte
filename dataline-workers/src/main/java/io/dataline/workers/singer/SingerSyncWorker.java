@@ -84,19 +84,19 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
 
   @Override
   public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput input, Path workspaceRoot)
-      throws InvalidCredentialsException {
+    throws InvalidCredentialsException {
 
     OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, workspaceRoot);
     if (discoveryOutput.getStatus() != SUCCESSFUL || discoveryOutput.getOutput().isEmpty()) {
       LOGGER.debug(
-          "Sync worker failed due to failed discovery. Discovery output: {}", discoveryOutput);
+        "Sync worker failed due to failed discovery. Discovery output: {}", discoveryOutput);
       return new OutputAndStatus<>(FAILED);
     }
 
     try {
       SingerCatalog selectedCatalog =
-          SingerCatalogConverters.applySchemaToDiscoveredCatalog(
-              discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
+        SingerCatalogConverters.applySchemaToDiscoveredCatalog(
+          discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
       writeSingerInputsToDisk(input, workspaceRoot, selectedCatalog);
       MutableInt numRecords = new MutableInt();
 
@@ -124,21 +124,22 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
 
       String[] targetCmd =
           ArrayUtils.addAll(dockerCmd, targetImageNae, "--config", TARGET_CONFIG_FILENAME);
+
       LOGGER.debug("Tap command: {}", String.join(" ", tapCmd));
       LOGGER.debug("target command: {}", String.join(" ", targetCmd));
 
       long startTime = System.currentTimeMillis();
       tapProcess =
-          new ProcessBuilder()
-              .command(tapCmd)
-              .redirectError(workspaceRoot.resolve(TAP_ERR_LOG).toFile())
-              .start();
+        new ProcessBuilder()
+          .command(tapCmd)
+          .redirectError(workspaceRoot.resolve(TAP_ERR_LOG).toFile())
+          .start();
       targetProcess =
-          new ProcessBuilder()
-              .command(targetCmd)
-              .redirectOutput(workspaceRoot.resolve(OUTPUT_STATE_FILENAME).toFile())
-              .redirectError(workspaceRoot.resolve(TARGET_ERR_LOG).toFile())
-              .start();
+        new ProcessBuilder()
+          .command(targetCmd)
+          .redirectOutput(workspaceRoot.resolve(OUTPUT_STATE_FILENAME).toFile())
+          .redirectError(workspaceRoot.resolve(TARGET_ERR_LOG).toFile())
+          .start();
 
       try (BufferedReader reader =
               new BufferedReader(
@@ -148,33 +149,33 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
                   new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8))) {
         ObjectMapper objectMapper = new ObjectMapper();
         reader
-            .lines()
-            .forEach(
-                line -> {
-                  try {
-                    writer.write(line);
-                    writer.newLine();
-                    JsonNode lineJson = objectMapper.readTree(line);
-                    if (lineJson.get("type").asText().equals("RECORD")) {
-                      numRecords.increment();
-                    }
-                  } catch (IOException e) {
-                    throw new RuntimeException(e);
-                  }
-                });
+          .lines()
+          .forEach(
+            line -> {
+              try {
+                writer.write(line);
+                writer.newLine();
+                JsonNode lineJson = objectMapper.readTree(line);
+                if (lineJson.get("type").asText().equals("RECORD")) {
+                  numRecords.increment();
+                }
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            });
 
         while (!tapProcess.waitFor(1, TimeUnit.MINUTES)) {
           LOGGER.debug(
-              "Waiting for sync worker (attemptId:{}) tap.",
-              ""); // TODO when attempt ID is passed in
+            "Waiting for sync worker (attemptId:{}) tap.",
+            ""); // TODO when attempt ID is passed in
         }
       }
 
       // target process stays alive as long as its stdin has not been closed
       while (!targetProcess.waitFor(1, TimeUnit.MINUTES)) {
         LOGGER.debug(
-            "Waiting for sync worker (attemptId:{}) target",
-            ""); // TODO when attempt ID is passed in
+          "Waiting for sync worker (attemptId:{}) target",
+          ""); // TODO when attempt ID is passed in
       }
 
       StandardSyncOutput jobSyncOutput = new StandardSyncOutput();
@@ -191,13 +192,13 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
       jobSyncOutput.setState(state);
 
       JobStatus status =
-          tapProcess.exitValue() == 0 && targetProcess.exitValue() == 0 ? SUCCESSFUL : FAILED;
+        tapProcess.exitValue() == 0 && targetProcess.exitValue() == 0 ? SUCCESSFUL : FAILED;
 
       if (status == FAILED) {
         LOGGER.debug(
-            "Sync worker failed. Tap error log: {}.\n Target error log: {}",
-            readFile(workspaceRoot, TAP_ERR_LOG),
-            readFile(workspaceRoot, TARGET_ERR_LOG));
+          "Sync worker failed. Tap error log: {}.\n Target error log: {}",
+          readFile(workspaceRoot, TAP_ERR_LOG),
+          readFile(workspaceRoot, TARGET_ERR_LOG));
       }
       return new OutputAndStatus<>(status, jobSyncOutput);
     } catch (IOException | InterruptedException e) {
@@ -207,28 +208,28 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
   }
 
   private OutputAndStatus<SingerCatalog> runDiscovery(StandardSyncInput input, Path workspaceRoot)
-      throws InvalidCredentialsException {
+    throws InvalidCredentialsException {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput();
     discoveryInput.setConnectionConfiguration(
-        input.getSourceConnectionImplementation().getConfiguration());
+      input.getSourceConnectionImplementation().getConfiguration());
     Path scopedWorkspace = workspaceRoot.resolve("discovery");
     return new SingerDiscoverSchemaWorker(tapImageName)
         .runInternal(discoveryInput, scopedWorkspace);
   }
 
   private void writeSingerInputsToDisk(
-      StandardSyncInput input, Path workspaceRoot, SingerCatalog tapCatalog)
-      throws JsonProcessingException {
+    StandardSyncInput input, Path workspaceRoot, SingerCatalog tapCatalog)
+    throws JsonProcessingException {
     // TODO configuration should be validated against the connector's spec then converted to the
     //  connector-appropriate format. right now this assumes the object is a valid JSON for this
     //  connector.
     ObjectMapper objectMapper = new ObjectMapper();
     String tapConfiguration =
-        objectMapper.writeValueAsString(
-            input.getSourceConnectionImplementation().getConfiguration());
+      objectMapper.writeValueAsString(
+        input.getSourceConnectionImplementation().getConfiguration());
     String targetConfiguration =
-        objectMapper.writeValueAsString(
-            input.getDestinationConnectionImplementation().getConfiguration());
+      objectMapper.writeValueAsString(
+        input.getDestinationConnectionImplementation().getConfiguration());
     String stateString = objectMapper.writeValueAsString(input.getState().getState());
 
     writeFile(workspaceRoot, TAP_CONFIG_FILENAME, tapConfiguration);

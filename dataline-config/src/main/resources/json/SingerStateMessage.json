@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/SingerStateMessage.json",
+  "title": "SingerStateMessage",
+  "description": "singer protocol: record https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#record-message",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "value"
+  ],
+  "properties": {
+    "type": {
+      "const": "STATE"
+    },
+    "value": {
+      "description": "no schema, just a map of string to object!"
+    }
+  }
+}
