@@ -4,43 +4,43 @@
     "value": "manual"
   },
   {
-    "text": "Every 5 min",
+    "text": "5 min",
     "value": "5m"
   },
   {
-    "text": "Every 15 min",
+    "text": "15 min",
     "value": "15m"
   },
   {
-    "text": "Every 30 min",
+    "text": "30 min",
     "value": "30m"
   },
   {
-    "text": "Every hour",
+    "text": "hour",
     "value": "1h"
   },
   {
-    "text": "Every 2 hours",
+    "text": "2 hours",
     "value": "2h"
   },
   {
-    "text": "Every 3 hours",
+    "text": "3 hours",
     "value": "3h"
   },
   {
-    "text": "Every 6 hours",
+    "text": "6 hours",
     "value": "6h"
   },
   {
-    "text": "Every 8 hours",
+    "text": "8 hours",
     "value": "8h"
   },
   {
-    "text": "Every 12 hours",
+    "text": "12 hours",
     "value": "12h"
   },
   {
-    "text": "Every 24 hours",
+    "text": "24 hours",
     "value": "24h"
   }
 ]

@@ -7,13 +7,14 @@ import LabeledInput from "../../LabeledInput";
 import LabeledDropDown from "../../LabeledDropDown";
 import { IDataItem } from "../../DropDown/components/ListItem";
 import Instruction from "./Instruction";
+import FrequencyConfig from "../../../data/FrequencyConfig.json";
 
 type IProps = {
   isEditMode?: boolean;
   dropDownData: Array<IDataItem>;
   setFieldValue: (item: any, value: any) => void;
-  formType: "source" | "destination";
-  values: { name: string; serviceType: string };
+  formType: "source" | "destination" | "connection";
+  values: { name: string; serviceType: string; frequency?: string };
 };
 
 const FormItem = styled.div`
@@ -32,6 +33,24 @@ const FormContent: React.FC<IProps> = ({
   isEditMode
 }) => {
   const formatMessage = useIntl().formatMessage;
+  const dropdownData = React.useMemo(
+    () =>
+      FrequencyConfig.map(item => ({
+        ...item,
+        text:
+          item.value === "manual"
+            ? item.text
+            : formatMessage(
+                {
+                  id: "form.every"
+                },
+                {
+                  value: item.text
+                }
+              )
+      })),
+    [formatMessage]
+  );
 
   return (
     <>
@@ -74,13 +93,36 @@ const FormContent: React.FC<IProps> = ({
             />
           )}
         </Field>
-        {values.serviceType && (
+        {values.serviceType && formType !== "connection" && (
           <Instruction
             serviceId={values.serviceType}
             dropDownData={dropDownData}
           />
         )}
       </FormItem>
+      {formType === "connection" && (
+        <FormItem>
+          <Field name="frequency">
+            {({ field }: FieldProps<string>) => (
+              <SmallLabeledDropDown
+                {...field}
+                labelAdditionLength={300}
+                label={formatMessage({
+                  id: "form.frequency"
+                })}
+                message={formatMessage({
+                  id: "form.frequency.message"
+                })}
+                placeholder={formatMessage({
+                  id: "form.frequency.placeholder"
+                })}
+                data={dropdownData}
+                onSelect={item => setFieldValue("frequency", item.value)}
+              />
+            )}
+          </Field>
+        </FormItem>
+      )}
     </>
   );
 };
