@@ -24,24 +24,17 @@
 
 package io.dataline.scheduler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.JobConfig;
-import io.dataline.config.JobOutput;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
-import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.db.DatabaseHelper;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
-
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.Record;
 
 public class JobUtils {
   public static long createSyncJobFromConnectionId(
