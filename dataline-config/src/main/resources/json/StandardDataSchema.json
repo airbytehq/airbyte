@@ -7,7 +7,9 @@
     "schema": {
       "description": "describes the available schema.",
       "type": "object",
-      "required": ["tables"],
+      "required": [
+        "tables"
+      ],
       "additionalProperties": false,
       "properties": {
         "tables": {
@@ -31,13 +33,6 @@
         },
         "selected": {
           "type": "boolean"
-        },
-        "replication-method": {
-          "type": "string",
-          "enum": [""]
-        },
-        "replication-key": {
-
         },
         "columns": {
           "type": "array",
