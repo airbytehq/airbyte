@@ -29,6 +29,8 @@ import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.db.DatabaseHelper;
+
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Optional;
@@ -62,41 +64,22 @@ public class JobScheduler implements Runnable {
     try {
       LOGGER.info("Running job-scheduler...");
 
-      scheduleJobs();
+      scheduleSyncJobs();
 
     } catch (Throwable e) {
       LOGGER.error("Job Scheduler Error", e);
     }
   }
 
-  private void scheduleJobs() throws SQLException {
+  private void scheduleSyncJobs() throws IOException {
     Set<StandardSync> activeConnections = getAllActiveConnections();
     for (StandardSync connection : activeConnections) {
       Optional<Job> lastJob =
-          DatabaseHelper.query(
-              connectionPool,
-              ctx -> {
-                Optional<Record> jobEntryOptional =
-                    ctx
-                        .fetch(
-                            "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
-                            connection.getConnectionId().toString(),
-                            JobStatus.CANCELLED.toString().toLowerCase())
-                        .stream()
-                        .findFirst();
-
-                if (jobEntryOptional.isPresent()) {
-                  Record jobEntry = jobEntryOptional.get();
-                  Job job = DefaultSchedulerPersistence.getJobFromRecord(jobEntry);
-                  return Optional.of(job);
-                } else {
-                  return Optional.empty();
-                }
-              });
+          JobUtils.getLastSyncJobForConnectionId(connectionPool, connection.getConnectionId());
 
       if (lastJob.isEmpty()) {
         // pull configuration from connection.
-        JobUtils.createJobFromConnectionId(
+        JobUtils.createSyncJobFromConnectionId(
             schedulerPersistence, configPersistence, connection.getConnectionId());
       } else {
         final Job job = lastJob.get();
@@ -105,8 +88,8 @@ public class JobScheduler implements Runnable {
     }
   }
 
-  private void handleJob(UUID connectionId, Job job) {
-    switch (job.getStatus()) {
+  private void handleJob(UUID connectionId, Job previousJob) {
+    switch (previousJob.getStatus()) {
       case CANCELLED:
       case COMPLETED:
         final StandardSyncSchedule standardSyncSchedule =
@@ -117,14 +100,16 @@ public class JobScheduler implements Runnable {
         }
 
         long nextRunStart =
-            job.getUpdatedAt() + getIntervalInSeconds(standardSyncSchedule.getSchedule());
+            previousJob.getUpdatedAt() + getIntervalInSeconds(standardSyncSchedule.getSchedule());
         if (nextRunStart < Instant.now().getEpochSecond()) {
-          JobUtils.createJobFromConnectionId(schedulerPersistence, configPersistence, connectionId);
+          JobUtils.createSyncJobFromConnectionId(
+              schedulerPersistence, configPersistence, connectionId);
         }
         break;
         // todo (cgardens) - add max retry concept
       case FAILED:
-        JobUtils.createJobFromConnectionId(schedulerPersistence, configPersistence, connectionId);
+        JobUtils.createSyncJobFromConnectionId(
+            schedulerPersistence, configPersistence, connectionId);
         break;
       case PENDING:
       case RUNNING:

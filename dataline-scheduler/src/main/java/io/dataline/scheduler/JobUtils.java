@@ -24,15 +24,27 @@
 
 package io.dataline.scheduler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.DestinationConnectionImplementation;
+import io.dataline.config.JobConfig;
+import io.dataline.config.JobOutput;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
+import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.db.DatabaseHelper;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.Record;
+
 import java.io.IOException;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JobUtils {
-  public static long createJobFromConnectionId(
+  public static long createSyncJobFromConnectionId(
       SchedulerPersistence schedulerPersistence,
       ConfigPersistence configPersistence,
       UUID connectionId) {
@@ -46,12 +58,39 @@ public class JobUtils {
         ConfigFetchers.getDestinationConnectionImplementation(
             configPersistence, standardSync.getDestinationImplementationId());
 
-    // todo (cgardens) - add state.
     try {
       return schedulerPersistence.createSyncJob(
           sourceConnectionImplementation, destinationConnectionImplementation, standardSync);
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public static Optional<Job> getLastSyncJobForConnectionId(
+      BasicDataSource connectionPool, UUID connectionId) throws IOException {
+    try {
+      return DatabaseHelper.query(
+          connectionPool,
+          ctx -> {
+            Optional<Record> jobEntryOptional =
+                ctx
+                    .fetch(
+                        "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
+                        connectionId.toString(),
+                        JobStatus.CANCELLED.toString().toLowerCase())
+                    .stream()
+                    .findFirst();
+
+            if (jobEntryOptional.isPresent()) {
+              Record jobEntry = jobEntryOptional.get();
+              Job job = DefaultSchedulerPersistence.getJobFromRecord(jobEntry);
+              return Optional.of(job);
+            } else {
+              return Optional.empty();
+            }
+          });
+    } catch (SQLException throwables) {
+      throw new IOException(throwables);
     }
   }
 }

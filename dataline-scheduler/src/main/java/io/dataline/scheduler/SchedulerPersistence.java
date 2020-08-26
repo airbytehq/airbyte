@@ -27,7 +27,13 @@ package io.dataline.scheduler;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
+import io.dataline.config.StandardSyncSummary;
+import io.dataline.config.State;
+import org.apache.commons.dbcp2.BasicDataSource;
+
 import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface SchedulerPersistence {
   long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation)
