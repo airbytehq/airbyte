@@ -91,6 +91,10 @@ public class WorkerRunner implements Runnable {
         new WorkerRun<>(
                 jobId,
                 syncInput,
+                // todo (cgardens) - still locked into only using SingerTaps and Targets. Next step
+                //   here is to create DefaultTap and DefaultTarget which will be able to
+                //   interoperate with SingerTap and SingerTarget now that they are split and
+                //   mediated in DefaultSyncWorker.
                 new DefaultSyncWorker(
                     new SingerTap(job.getConfig().getSync().getSourceDockerImage()),
                     new SingerTarget(job.getConfig().getSync().getDestinationDockerImage())),
