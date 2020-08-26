@@ -121,7 +121,7 @@ public class DefaultSyncWorker implements SyncWorker {
       if (tapCloser != null) {
         tapCloser.close();
       }
-      if (tapCloser != null) {
+      if (targetCloser != null) {
         targetCloser.close();
       }
     } catch (Exception e) {
