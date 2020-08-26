@@ -113,7 +113,7 @@ public class JobHistoryHandler {
 
   // todo: add test assertion for completeness
   private static JobRead.StatusEnum convertStatus(JobStatus jobStatus) {
-    return Enums.convertTo(jobStatus, JobRead.StatusEnum.class);
+    return ;
   }
 
   private static JobRead getJobRead(Job job) {
@@ -133,7 +133,7 @@ public class JobHistoryHandler {
     }
 
     jobRead.setUpdatedAt(job.getUpdatedAt());
-    jobRead.setStatus(convertStatus(job.getStatus()));
+    jobRead.setStatus(Enums.convertTo(job.getStatus(), JobRead.StatusEnum.class));
 
     return jobRead;
   }

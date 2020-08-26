@@ -33,9 +33,8 @@ import io.dataline.config.StandardSyncInput;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerSyncWorker;
-import org.apache.commons.dbcp2.BasicDataSource;
-
 import java.io.IOException;
+import org.apache.commons.dbcp2.BasicDataSource;
 
 /**
  * This class is a runnable that give a job id and db connection figures out how to run the
