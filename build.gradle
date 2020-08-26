@@ -52,9 +52,9 @@ subprojects {
             removeUnusedImports()
             trimTrailingWhitespace()
         }
-//        groovyGradle {
-//            target '**/*.gradle'
-//        }
+        groovyGradle {
+            target '**/*.gradle'
+        }
     }
     compileJava.dependsOn 'spotlessApply'
 
