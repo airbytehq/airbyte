@@ -37,6 +37,7 @@ import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.State;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.integrations.Integrations;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -67,9 +68,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
     jobCheckConnectionConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
     jobCheckConnectionConfig.setDockerImage(
-        IntegrationConstants.SPEC_ID_TO_IMPL
-            .get(sourceImplementation.getSourceSpecificationId())
-            .getCheckConnection());
+        Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
+            .getCheckConnectionImage());
 
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION);
@@ -88,9 +88,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     jobCheckConnectionConfig.setConnectionConfiguration(
         destinationImplementation.getConfiguration());
     jobCheckConnectionConfig.setDockerImage(
-        IntegrationConstants.SPEC_ID_TO_IMPL
-            .get(destinationImplementation.getDestinationSpecificationId())
-            .getCheckConnection());
+        Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId())
+            .getCheckConnectionImage());
 
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION);
@@ -108,9 +107,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig();
     jobDiscoverSchemaConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
     jobDiscoverSchemaConfig.setDockerImage(
-        IntegrationConstants.SPEC_ID_TO_IMPL
-            .get(sourceImplementation.getSourceSpecificationId())
-            .getDiscoverSchema());
+        Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
+            .getDiscoverSchemaImage());
 
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA);
@@ -132,14 +130,11 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig();
     jobSyncConfig.setSourceConnectionImplementation(sourceImplementation);
     jobSyncConfig.setSourceDockerImage(
-        IntegrationConstants.SPEC_ID_TO_IMPL
-            .get(sourceImplementation.getSourceSpecificationId())
-            .getSync());
+        Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId()).getSyncImage());
     jobSyncConfig.setDestinationConnectionImplementation(destinationImplementation);
     jobSyncConfig.setDestinationDockerImage(
-        IntegrationConstants.SPEC_ID_TO_IMPL
-            .get(destinationImplementation.getDestinationSpecificationId())
-            .getSync());
+        Integrations.findBySpecId(destinationImplementation.getDestinationImplementationId())
+            .getSyncImage());
     jobSyncConfig.setStandardSync(standardSync);
 
     final Optional<Job> previousJobOptional = JobUtils.getLastSyncJobForConnectionId(connectionPool, connectionId);
