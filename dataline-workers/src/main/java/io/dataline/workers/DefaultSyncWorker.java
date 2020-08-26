@@ -31,6 +31,8 @@ import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.config.State;
+import io.dataline.workers.singer.SingerTap;
+import io.dataline.workers.singer.SingerTarget;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.UUID;
@@ -45,12 +47,15 @@ public class DefaultSyncWorker implements SyncWorker {
   public static final String TAP_ERR_LOG = "tap_err.log";
   public static final String TARGET_ERR_LOG = "target_err.log";
 
-  private final SyncTap<SingerProtocol> tap;
-  private final SyncTarget<SingerProtocol> target;
+  private final String tapDockerImage;
+  private final String targetDockerImage;
 
-  public DefaultSyncWorker(SyncTap<SingerProtocol> tap, SyncTarget<SingerProtocol> target) {
-    this.tap = tap;
-    this.target = target;
+  AutoCloseable tapCloser = null;
+  AutoCloseable targetCloser = null;
+
+  public DefaultSyncWorker(String tapDockerImage, String targetDockerImage) {
+    this.tapDockerImage = tapDockerImage;
+    this.targetDockerImage = targetDockerImage;
   }
 
   @Override
@@ -76,11 +81,14 @@ public class DefaultSyncWorker implements SyncWorker {
         };
 
     final State state;
-    try (tap) {
+    try (SyncTap<SingerProtocol> tap = new SingerTap(tapDockerImage)) {
       final Iterator<SingerProtocol> iterator = tap.run(tapConfig, workspacePath);
+      tapCloser = tap::close;
 
-      Iterator<SingerProtocol> countingIterator = new ConsumerIterator<>(iterator, counter);
-      try (target) {
+      final Iterator<SingerProtocol> countingIterator = new ConsumerIterator<>(iterator, counter);
+      try (SyncTarget<SingerProtocol> target = new SingerTarget(targetDockerImage)) {
+        targetCloser = target::close;
+
         state = target.run(countingIterator, targetConfig, workspacePath);
       }
 
@@ -110,8 +118,12 @@ public class DefaultSyncWorker implements SyncWorker {
   @Override
   public void cancel() {
     try {
-      tap.close();
-      target.close();
+      if (tapCloser != null) {
+        tapCloser.close();
+      }
+      if (tapCloser != null) {
+        targetCloser.close();
+      }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

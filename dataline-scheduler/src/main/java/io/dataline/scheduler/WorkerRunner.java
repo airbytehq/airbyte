@@ -33,8 +33,6 @@ import io.dataline.config.StandardSyncInput;
 import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
-import io.dataline.workers.singer.SingerTap;
-import io.dataline.workers.singer.SingerTarget;
 import java.io.IOException;
 import org.apache.commons.dbcp2.BasicDataSource;
 
@@ -96,8 +94,8 @@ public class WorkerRunner implements Runnable {
                 //   interoperate with SingerTap and SingerTarget now that they are split and
                 //   mediated in DefaultSyncWorker.
                 new DefaultSyncWorker(
-                    new SingerTap(job.getConfig().getSync().getSourceDockerImage()),
-                    new SingerTarget(job.getConfig().getSync().getDestinationDockerImage())),
+                    job.getConfig().getSync().getSourceDockerImage(),
+                    job.getConfig().getSync().getDestinationDockerImage()),
                 connectionPool)
             .run();
     }
