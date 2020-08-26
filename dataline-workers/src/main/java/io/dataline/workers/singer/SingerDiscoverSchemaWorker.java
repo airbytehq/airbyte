@@ -34,6 +34,8 @@ import io.dataline.config.SingerCatalog;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.DiscoverSchemaWorker;
+import io.dataline.workers.InvalidCredentialsException;
+import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -53,14 +55,17 @@ public class SingerDiscoverSchemaWorker
   private static String ERROR_LOG_FILENAME = "err.log";
 
   private volatile Process workerProcess;
+  private final String imageName;
 
-  public SingerDiscoverSchemaWorker(SingerConnector connector) {
-    super(connector);
+  public SingerDiscoverSchemaWorker(String imageName) {
+    this.imageName = imageName;
   }
 
-  @Override
-  OutputAndStatus<StandardDiscoverSchemaOutput> runInternal(
-      StandardDiscoverSchemaInput discoverSchemaInput, Path workspaceRoot) {
+  // package private since package-local classes need direct access to singer catalog, and the
+  // conversion from SingerSchema to Dataline schema is lossy
+  OutputAndStatus<SingerCatalog> runInternal(
+      StandardDiscoverSchemaInput discoverSchemaInput, Path workspaceRoot)
+      throws InvalidCredentialsException {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
     //   reduced.
     final ObjectMapper objectMapper = new ObjectMapper();
@@ -72,8 +77,6 @@ public class SingerDiscoverSchemaWorker
       throw new RuntimeException(e);
     }
 
-    // TODO use format converter here
-    // write config.json to disk
     writeFile(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson);
 
     // exec
@@ -83,7 +86,10 @@ public class SingerDiscoverSchemaWorker
         "run",
         "-v",
         String.format("%s:/singer/data", workspaceRoot.toString()),
-        connector.getImageName(),
+        // TODO network=host is a not recommended for production settings, create a bridge network
+        //  and use it to connect the two docker containers
+        "--network=host",
+        imageName,
         "--config",
         CONFIG_JSON_FILENAME,
         "--discover"
@@ -103,9 +109,9 @@ public class SingerDiscoverSchemaWorker
       if (exitCode == 0) {
         String catalog = readFile(workspaceRoot, CATALOG_JSON_FILENAME);
         final SingerCatalog singerCatalog = jsonCatalogToTyped(catalog);
-        final StandardDiscoverSchemaOutput discoveryOutput = toDiscoveryOutput(singerCatalog);
-        return new OutputAndStatus<>(SUCCESSFUL, discoveryOutput);
+        return new OutputAndStatus<>(SUCCESSFUL, singerCatalog);
       } else {
+        // TODO throw invalid credentials exception where appropriate based on error log
         String errLog = readFile(workspaceRoot, ERROR_LOG_FILENAME);
         LOGGER.debug(
             "Discovery job subprocess finished with exit code {}. Error log: {}", exitCode, errLog);
@@ -114,6 +120,21 @@ public class SingerDiscoverSchemaWorker
     } catch (IOException | InterruptedException e) {
       LOGGER.error("Exception running discovery: ", e);
       throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public OutputAndStatus<StandardDiscoverSchemaOutput> run(
+      StandardDiscoverSchemaInput discoverSchemaInput, Path workspaceRoot)
+      throws InvalidCredentialsException {
+    OutputAndStatus<SingerCatalog> output = runInternal(discoverSchemaInput, workspaceRoot);
+    JobStatus status = output.getStatus();
+
+    OutputAndStatus<StandardDiscoverSchemaOutput> finalOutput;
+    if (output.getOutput().isPresent()) {
+      return new OutputAndStatus<>(status, toDiscoveryOutput(output.getOutput().get()));
+    } else {
+      return new OutputAndStatus<>(status);
     }
   }
 

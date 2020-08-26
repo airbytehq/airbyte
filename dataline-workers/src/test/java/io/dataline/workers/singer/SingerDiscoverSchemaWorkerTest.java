@@ -32,12 +32,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
+import io.dataline.integrations.Integrations;
 import io.dataline.workers.BaseWorkerTestCase;
+import io.dataline.workers.InvalidCatalogException;
+import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.PostgreSQLContainerHelper;
+import io.dataline.workers.PostgreSQLContainerTestHelper;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -47,30 +48,31 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
 
   PostgreSQLContainer db;
 
   @BeforeAll
-  public void initDb() throws SQLException {
+  public void initDb() throws SQLException, IOException, InterruptedException {
     db = new PostgreSQLContainer();
     db.start();
-    // init db schema
-    Connection con =
-        DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
-    con.createStatement().execute("CREATE TABLE id_and_name (id integer, name VARCHAR(200));");
+    PostgreSQLContainerTestHelper.runSqlScript(
+        MountableFile.forClasspathResource("simple_postgres_init.sql"), db);
   }
 
   @Test
-  public void testPostgresDiscovery() throws IOException {
+  public void testPostgresDiscovery()
+      throws IOException, InvalidCredentialsException, InvalidCatalogException {
     final String jobId = "1";
-    String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
+    String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
     final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
     final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
     input.setConnectionConfiguration(o);
 
-    SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(SingerTap.POSTGRES);
+    SingerDiscoverSchemaWorker worker =
+        new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage());
 
     OutputAndStatus<StandardDiscoverSchemaOutput> run =
         worker.run(input, createWorkspacePath(jobId));
@@ -88,31 +90,31 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
   @Test
   public void testCancellation() throws IOException, InterruptedException, ExecutionException {
     final String jobId = "1";
-    String postgresCreds = PostgreSQLContainerHelper.getSingerConfigJson(db);
+    String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
     final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
 
     final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
     input.setConnectionConfiguration(o);
 
-    SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(SingerTap.POSTGRES);
+    SingerDiscoverSchemaWorker worker =
+        new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage());
 
     ExecutorService threadPool = Executors.newFixedThreadPool(2);
     Future<?> workerWasCancelled =
         threadPool.submit(
             () -> {
-              OutputAndStatus<StandardDiscoverSchemaOutput> output =
-                  worker.run(input, createWorkspacePath(jobId));
-              assertEquals(FAILED, output.getStatus());
+              OutputAndStatus<StandardDiscoverSchemaOutput> output = null;
+              try {
+                output = worker.run(input, createWorkspacePath(jobId));
+                assertEquals(FAILED, output.getStatus());
+              } catch (InvalidCredentialsException e) {
+                throw new RuntimeException(e);
+              }
             });
 
     TimeUnit.MILLISECONDS.sleep(50);
     worker.cancel();
     workerWasCancelled.get();
-  }
-
-  private void assertJsonEquals(String s1, String s2) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    assertEquals(mapper.readTree(s1), mapper.readTree(s2));
   }
 }

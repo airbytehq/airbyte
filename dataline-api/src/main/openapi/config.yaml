@@ -263,6 +263,25 @@ paths:
           description: Source Implementation not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/source_implementations/delete:
+    post:
+      tags:
+      - source_implementation
+      summary: Delete a source implementation
+      operationId: deleteSourceImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceImplementationIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          description: Source Implementation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/source_implementations/check_connection:
     post:
       tags:
@@ -1042,6 +1061,7 @@ components:
       properties:
         units:
           type: integer
+          format: int64
         timeUnit:
           type: string
           enum:

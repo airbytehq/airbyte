@@ -41,6 +41,11 @@ import io.dataline.server.errors.KnownException;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * These helpers catch exceptions thrown in the config persistence and throws them as
+ * KnownExceptions that can be processed by the server and returned to the user in human-readable
+ * form.
+ */
 public class ConfigFetchers {
 
   public static StandardWorkspace getStandardWorkspace(
