@@ -39,6 +39,8 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+
+import io.dataline.workers.utils.DockerUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,15 +76,14 @@ public class SingerTarget implements SyncTarget<SingerProtocol> {
     Path configPath =
         WorkerUtils.writeFileToWorkspace(workspacePath, CONFIG_JSON_FILENAME, configDotJson);
 
-    String[] dockerCmd = SingerDockerUtils.getDockerCommand(workspacePath);
-
-    String[] targetCmd =
-        ArrayUtils.addAll(dockerCmd, dockerImageName, "--config", configPath.toString());
+    String[] dockerCmd =
+        DockerUtils.getDockerCommand(
+            workspacePath, dockerImageName, "--config", configPath.toString());
 
     try {
       targetProcess =
           new ProcessBuilder()
-              .command(targetCmd)
+              .command(dockerCmd)
               .redirectOutput(workspacePath.resolve(OUTPUT_STATE_FILENAME).toFile())
               .redirectError(workspacePath.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile())
               .start();

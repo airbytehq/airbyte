@@ -22,21 +22,23 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.utils;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.nio.file.Path;
 
-public class SingerDockerUtils {
-  public static String[] getDockerCommand(Path workspaceRoot) {
-
-    return new String[] {
+public class DockerUtils {
+  public static String[] getDockerCommand(Path workspaceRoot, String imageName, String... args) {
+    final String[] dockerCommander = {
       "docker",
       "run",
       "-v",
-      String.format("%s:/singer/data", workspaceRoot.toString()),
-      // TODO network=host is not recommended for production settings, create a bridge network
-      //  and use it to connect all containers
-      "--network=host"
+      String.format("%s:/dataline/data", workspaceRoot.toString()),
+      "--network=host",
+      imageName
     };
+
+    return ArrayUtils.addAll(dockerCommander, args);
   }
 }

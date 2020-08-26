@@ -40,6 +40,8 @@ import io.dataline.workers.OutputAndStatus;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
+
+import io.dataline.workers.utils.DockerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,19 +83,16 @@ public class SingerDiscoverSchemaWorker
 
     // exec
     try {
-      String[] cmd = {
-        "docker",
-        "run",
-        "-v",
-        String.format("%s:/singer/data", workspaceRoot.toString()),
-        // TODO network=host is a not recommended for production settings, create a bridge network
-        //  and use it to connect the two docker containers
-        "--network=host",
-        imageName,
-        "--config",
-        CONFIG_JSON_FILENAME,
-        "--discover"
-      };
+      String[] cmd =
+          DockerUtils.getDockerCommand(
+              workspaceRoot,
+              imageName,
+              "--config",
+              CONFIG_JSON_FILENAME,
+              imageName,
+              "--config",
+              CONFIG_JSON_FILENAME,
+              "--discover");
 
       workerProcess =
           new ProcessBuilder(cmd)

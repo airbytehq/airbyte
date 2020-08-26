@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocol;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
-class SingerJsonIterator implements Iterator<SingerProtocol> {
+public class SingerJsonIterator implements Iterator<SingerProtocol> {
   private final ObjectMapper objectMapper;
   private final JsonParser jsonParser;
 

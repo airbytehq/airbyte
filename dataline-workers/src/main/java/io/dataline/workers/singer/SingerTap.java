@@ -41,7 +41,9 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang3.ArrayUtils;
+
+import io.dataline.workers.protocol.SingerJsonIterator;
+import io.dataline.workers.utils.DockerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,11 +97,9 @@ public class SingerTap implements SyncTap<SingerProtocol> {
 
     try {
 
-      String[] dockerCmd = SingerDockerUtils.getDockerCommand(workspaceRoot);
-
       String[] tapCmd =
-          ArrayUtils.addAll(
-              dockerCmd,
+          DockerUtils.getDockerCommand(
+              workspaceRoot,
               dockerImageName,
               "--config",
               configPath.toString(),
