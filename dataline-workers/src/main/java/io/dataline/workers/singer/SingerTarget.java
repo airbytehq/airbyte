@@ -47,7 +47,7 @@ public class SingerTarget implements SyncTarget<SingerProtocol> {
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerTarget.class);
 
   private static final String CONFIG_JSON_FILENAME = "target_config.json";
-  private static final String OUTPUT_STATE_FILENAME = "outputState.json";
+  private static final String OUTPUT_STATE_FILENAME = "output_state.json";
 
   private final String dockerImageName;
   private Process targetProcess;
@@ -94,7 +94,7 @@ public class SingerTarget implements SyncTarget<SingerProtocol> {
         data.forEachRemaining(
             record -> {
               try {
-                writer.write(record.toString()); // todo ?
+                writer.write(objectMapper.writeValueAsString(record));
                 writer.newLine();
               } catch (IOException e) {
                 throw new RuntimeException(e);
