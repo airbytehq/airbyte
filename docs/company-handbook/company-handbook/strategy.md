@@ -2,16 +2,13 @@
 
 ## **Our focus**
 
-We want to become the self-hosted data integration and transformation engine that most companies use in the future. This implies that our open-source technology will support:
-
-* both batch-based and streaming-based data integrations
-* both ingestion to warehouses from any tool, database or SaaS, and distribution of data to any SaaS tools.
+We want to become the self-hosted data integration and transformation engine that most companies use in the future. This implies that our open-source technology will support both ingestion to warehouses from any tool, database or SaaS, and distribution of data to any SaaS tools.
 
 On top of that, we will build data quality monitoring, privacy compliance \(GDPR, CCPA, HIPAA, etc\), and enterprise features \(role access / management, SSO, etc.\).
 
-Eventually, you should be able to build your own Segment and Fivetran platform internally, while having complete control over your data and costs \(not indexed on MTUs\). 
+Eventually, you should be able to build your own Fivetran platform internally, while having complete control over your data and costs \(not indexed on MTUs\). If any integration that you need is missing, we will make it super easy for you to build it and to use our orchestration and scheduling features for it. 
 
-We will stay at parity with the incumbent’s features \(Segment, Fivetran\) at first, as our differentiation is on:
+We will stay at parity with the incumbent’s features \(Fivetran, StitchData\) at first, as our differentiation is on:
 
 * open source
 * data privacy and control

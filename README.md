@@ -5,6 +5,7 @@
 ```bash
 docker-compose up
 ```
+
 Now go to [http://localhost:8000](http://localhost:8000)
 
 ## Update images

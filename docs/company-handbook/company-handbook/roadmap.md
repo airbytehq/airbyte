@@ -8,19 +8,11 @@ Our first focus is to support batch-type ingestion integrations. We feel that we
 
 Before we move on to the next phase, we want to make sure we are supporting all the major integrations and that we are in a state where we can address the long tail, with the help of the community.
 
-## **1bis. Data distribution from warehouses**
+## **2. Data distribution from warehouses**
 
 Some integrations we have in mind are batch distribution integrations, from warehouses to third-party tools. For instance, a use case could be if your marketing team wants to send back the data to your ad platforms, so it can better optimize the campaigns. Another use case could be syncing the consolidated data back to your CRM. 
 
 It’s not yet clear in our minds when to prioritize those additional integrations. We will have a better idea once we see the feedback we get from the community we build with data consolidation. 
-
-## **2. Parity on customer data platform integrations**
-
-This part stands for streaming-type integrations. This is useful if we cover all the integrations you need, otherwise you would just keep using one of the many cloud-based solutions. That’s why we’re not starting with it. 
-
-The good thing is that the expertise we built with batch-type integrations will help us move fast on other integrations. 
-
-We will move on to the next phase once we feel we have covered all the major integrations, and will start addressing the long tail with the help of the community.
 
 ## **3. Parity with privacy compliance and customer data consolidation features** 
 
@@ -28,6 +20,8 @@ Hopefully, we will have raised a Series-A by then, so we can start focusing on t
 
 ## **4. Expand on all data engineering features**
 
-This is when we will start differentiating ourselves in terms of feature coverage with current cloud-based incumbents. Being open-sourced enables us to go faster, but also deeper.   
+This is when we will start differentiating ourselves in terms of feature coverage with current cloud-based incumbents. Being open-sourced enables us to go faster, but also deeper. 
+
+We are also thinking about supporting streaming-type integrations, a la Segment.  
 
 

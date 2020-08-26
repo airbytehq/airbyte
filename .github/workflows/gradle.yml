@@ -38,3 +38,6 @@ jobs:
 
       - name: Build
         run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
+
+      - name: Ensure no file change
+        run: git diff-index --quiet HEAD
