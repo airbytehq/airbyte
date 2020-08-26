@@ -33,8 +33,9 @@ import io.dataline.config.StandardSyncInput;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerSyncWorker;
-import java.io.IOException;
 import org.apache.commons.dbcp2.BasicDataSource;
+
+import java.io.IOException;
 
 /**
  * This class is a runnable that give a job id and db connection figures out how to run the
@@ -62,7 +63,8 @@ public class WorkerRunner implements Runnable {
     }
 
     switch (job.getConfig().getConfigType()) {
-      case CHECK_CONNECTION:
+      case CHECK_CONNECTION_SOURCE:
+      case CHECK_CONNECTION_DESTINATION:
         final StandardCheckConnectionInput checkConnectionInput =
             getCheckConnectionInput(job.getConfig().getCheckConnection());
         new WorkerRun<>(
