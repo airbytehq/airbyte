@@ -35,7 +35,6 @@ import io.dataline.api.model.LogRead;
 import io.dataline.commons.enums.Enums;
 import io.dataline.config.JobConfig;
 import io.dataline.scheduler.Job;
-import io.dataline.scheduler.JobStatus;
 import io.dataline.scheduler.SchedulerPersistence;
 import org.apache.commons.io.input.ReversedLinesFileReader;
 
@@ -109,11 +108,6 @@ public class JobHistoryHandler {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  // todo: add test assertion for completeness
-  private static JobRead.StatusEnum convertStatus(JobStatus jobStatus) {
-    return ;
   }
 
   private static JobRead getJobRead(Job job) {
