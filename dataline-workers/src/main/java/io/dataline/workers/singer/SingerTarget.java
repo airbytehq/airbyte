@@ -33,15 +33,13 @@ import io.dataline.config.State;
 import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.SyncTarget;
 import io.dataline.workers.WorkerUtils;
+import io.dataline.workers.utils.DockerUtils;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
-
-import io.dataline.workers.utils.DockerUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

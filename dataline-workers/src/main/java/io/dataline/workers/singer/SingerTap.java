@@ -35,15 +35,14 @@ import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.SyncTap;
 import io.dataline.workers.WorkerUtils;
+import io.dataline.workers.protocol.SingerJsonIterator;
+import io.dataline.workers.utils.DockerUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
-
-import io.dataline.workers.protocol.SingerJsonIterator;
-import io.dataline.workers.utils.DockerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

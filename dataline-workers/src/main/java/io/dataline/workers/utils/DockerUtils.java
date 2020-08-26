@@ -24,9 +24,8 @@
 
 package io.dataline.workers.utils;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.nio.file.Path;
+import org.apache.commons.lang3.ArrayUtils;
 
 public class DockerUtils {
   public static String[] getDockerCommand(Path workspaceRoot, String imageName, String... args) {

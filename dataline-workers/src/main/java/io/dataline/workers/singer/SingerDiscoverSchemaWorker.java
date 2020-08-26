@@ -37,11 +37,10 @@ import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.utils.DockerUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
-
-import io.dataline.workers.utils.DockerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
