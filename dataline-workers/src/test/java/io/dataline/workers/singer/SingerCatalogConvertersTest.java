@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.dataline.config.Schema;
 import io.dataline.config.SingerCatalog;
+import io.dataline.config.SingerMetadataChild;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.BaseWorkerTestCase;
 import org.junit.jupiter.api.Test;
@@ -38,8 +39,6 @@ class SingerCatalogConvertersTest extends BaseWorkerTestCase {
   void applySchemaToDiscoveredCatalog() {
     final SingerCatalog catalog =
         getJsonAsTyped("simple_postgres_singer_catalog.json", SingerCatalog.class);
-    final SingerCatalog expectedCatalog =
-        getJsonAsTyped("simple_postgres_singer_catalog.json", SingerCatalog.class);
     final Schema datalineSchema =
         getJsonAsTyped("simple_postgres_schema.json", StandardDiscoverSchemaOutput.class)
             .getSchema();
@@ -47,9 +46,18 @@ class SingerCatalogConvertersTest extends BaseWorkerTestCase {
     final SingerCatalog actualCatalog =
         SingerCatalogConverters.applySchemaToDiscoveredCatalog(catalog, datalineSchema);
 
+    final SingerCatalog expectedCatalog =
+        getJsonAsTyped("simple_postgres_singer_catalog.json", SingerCatalog.class);
     expectedCatalog.getStreams().get(0).getMetadata().get(0).getMetadata().setSelected(false);
     expectedCatalog.getStreams().get(0).getMetadata().get(1).getMetadata().setSelected(true);
     expectedCatalog.getStreams().get(0).getMetadata().get(2).getMetadata().setSelected(true);
+    expectedCatalog
+        .getStreams()
+        .get(0)
+        .getMetadata()
+        .get(0)
+        .getMetadata()
+        .setReplicationMethod(SingerMetadataChild.ReplicationMethod.FULL_TABLE);
 
     assertEquals(expectedCatalog, actualCatalog);
   }
