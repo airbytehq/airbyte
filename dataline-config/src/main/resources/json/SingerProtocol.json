@@ -29,7 +29,7 @@
     },
     "schema": {
       "description": "schema message: the schema",
-      "$ref": "SingerSchema.json"
+      "$ref": "SingerCatalog.json#/definitions/SingerColumnMap"
     },
     "key_properties": {
       "description": "schema message: names of keys",
