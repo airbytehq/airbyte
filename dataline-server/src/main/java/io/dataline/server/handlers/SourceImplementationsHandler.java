@@ -77,17 +77,19 @@ public class SourceImplementationsHandler {
         sourceImplementationCreate.getSourceSpecificationId(),
         sourceImplementationCreate.getWorkspaceId(),
         sourceImplementationId,
+        false,
         sourceImplementationCreate.getConnectionConfiguration());
 
     // read configuration from db
-    return getSourceImplementationInternal(sourceImplementationId);
+    return getSourceImplementationReadInternal(sourceImplementationId);
   }
 
   public SourceImplementationRead updateSourceImplementation(
       SourceImplementationUpdate sourceImplementationUpdate) {
     // get existing implementation
-    final SourceImplementationRead persistedSourceImplementation =
-        getSourceImplementationInternal(sourceImplementationUpdate.getSourceImplementationId());
+    final SourceConnectionImplementation persistedSourceImplementation =
+        getSourceConnectionImplementationInternal(
+            sourceImplementationUpdate.getSourceImplementationId());
 
     // validate configuration
     validateSourceImplementation(
@@ -99,16 +101,18 @@ public class SourceImplementationsHandler {
         persistedSourceImplementation.getSourceSpecificationId(),
         persistedSourceImplementation.getWorkspaceId(),
         sourceImplementationUpdate.getSourceImplementationId(),
+        persistedSourceImplementation.getTombstone(),
         sourceImplementationUpdate.getConnectionConfiguration());
 
     // read configuration from db
-    return getSourceImplementationInternal(sourceImplementationUpdate.getSourceImplementationId());
+    return getSourceImplementationReadInternal(
+        sourceImplementationUpdate.getSourceImplementationId());
   }
 
   public SourceImplementationRead getSourceImplementation(
       SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
 
-    return getSourceImplementationInternal(
+    return getSourceImplementationReadInternal(
         sourceImplementationIdRequestBody.getSourceImplementationId());
   }
 
@@ -131,11 +135,33 @@ public class SourceImplementationsHandler {
     return sourceImplementationReadList;
   }
 
-  private SourceImplementationRead getSourceImplementationInternal(UUID sourceImplementationId) {
+  public void deleteSourceImplementation(
+      SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+    // get existing implementation
+    final SourceImplementationRead persistedSourceImplementation =
+        getSourceImplementationReadInternal(
+            sourceImplementationIdRequestBody.getSourceImplementationId());
+
+    // persist
+    persistSourceConnectionImplementation(
+        persistedSourceImplementation.getSourceSpecificationId(),
+        persistedSourceImplementation.getWorkspaceId(),
+        persistedSourceImplementation.getSourceImplementationId(),
+        true,
+        persistedSourceImplementation.getConnectionConfiguration());
+  }
+
+  private SourceConnectionImplementation getSourceConnectionImplementationInternal(
+      UUID sourceImplementationId) {
+    return ConfigFetchers.getSourceConnectionImplementation(
+        configPersistence, sourceImplementationId);
+  }
+
+  private SourceImplementationRead getSourceImplementationReadInternal(
+      UUID sourceImplementationId) {
     // read configuration from db
-    final SourceConnectionImplementation retrievedSourceConnectionImplementation;
-    retrievedSourceConnectionImplementation =
-        ConfigFetchers.getSourceConnectionImplementation(configPersistence, sourceImplementationId);
+    final SourceConnectionImplementation retrievedSourceConnectionImplementation =
+        getSourceConnectionImplementationInternal(sourceImplementationId);
 
     return toSourceImplementationRead(retrievedSourceConnectionImplementation);
   }
@@ -163,12 +189,14 @@ public class SourceImplementationsHandler {
       UUID sourceSpecificationId,
       UUID workspaceId,
       UUID sourceImplementationId,
+      boolean tombstone,
       Object configuration) {
     final SourceConnectionImplementation sourceConnectionImplementation =
         new SourceConnectionImplementation();
     sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionImplementation.setWorkspaceId(workspaceId);
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
+    sourceConnectionImplementation.setTombstone(tombstone);
     sourceConnectionImplementation.setConfiguration(configuration);
 
     ConfigFetchers.writeConfig(

@@ -172,6 +172,12 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   @Override
+  public void deleteSourceImplementation(
+      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+    sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
+  }
+
+  @Override
   public CheckConnectionRead checkConnectionToSourceImplementation(
       @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return schedulerHandler.checkSourceImplementationConnection(sourceImplementationIdRequestBody);
