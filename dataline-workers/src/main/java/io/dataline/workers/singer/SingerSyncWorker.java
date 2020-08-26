@@ -58,10 +58,10 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
 
   private static final String TAP_CONFIG_FILENAME = "tap_config.json";
   private static final String CATALOG_FILENAME = "catalog.json";
-  private static final String INPUT_STATE_FILENAME = "state.json";
+  private static final String INPUT_STATE_FILENAME = "input_state.json";
   private static final String TARGET_CONFIG_FILENAME = "target_config.json";
 
-  private static final String OUTPUT_STATE_FILENAME = "outputState.json";
+  private static final String OUTPUT_STATE_FILENAME = "output_state.json";
   private static final String TAP_ERR_LOG = "tap_err.log";
   private static final String TARGET_ERR_LOG = "target_err.log";
 
@@ -118,9 +118,9 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
               TAP_CONFIG_FILENAME,
               // TODO support both --properties and --catalog depending on integration
               "--properties",
-              CATALOG_FILENAME,
-              "--state",
-              INPUT_STATE_FILENAME);
+              CATALOG_FILENAME);
+      //              "--state",
+      //              INPUT_STATE_FILENAME);
 
       String[] targetCmd =
           ArrayUtils.addAll(dockerCmd, target.getImageName(), "--config", TARGET_CONFIG_FILENAME);
