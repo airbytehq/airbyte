@@ -3,5 +3,5 @@
 .idea
 /**/build
 /**/node_modules
-/**/Dockerfile*
+Dockerfile.*
 docker-compose*.yaml
