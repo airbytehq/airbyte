@@ -29,14 +29,10 @@
       "type": "string"
     },
     "syncMode": {
-      "type": "object",
-      "oneOf": [
-        {
-          "$ref": "StandardSync.json#/definitions/append"
-        },
-        {
-          "$ref": "StandardSync.json#/definitions/fullRefresh"
-        }
+      "type": "string",
+      "enum": [
+        "full_refresh",
+        "append"
       ]
     },
     "schema": {
@@ -49,45 +45,6 @@
         "inactive",
         "deprecated"
       ]
-    }
-  },
-  "definitions": {
-    "fullRefresh": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "mode": {
-          "type": "string",
-          "enum": [
-            "fullRefresh"
-          ],
-          "description": "The refresh mode."
-        }
-      }
-    },
-    "append": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "replication_key"
-      ],
-      "properties": {
-        "mode": {
-          "type": "string",
-          "enum": [
-            "append"
-          ],
-          "description": "The refresh mode."
-        },
-        "replication_key": {
-          "type": "string",
-          "description": "The key used to incrementally replicate data e.g: timestamp"
-        }
-      }
     }
   }
 }

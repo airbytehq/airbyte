@@ -90,8 +90,13 @@ public class SingerCatalogConverters {
                                   newSingerMetadata.getMetadata().setSelected(column.getSelected());
                                 } else {
                                   // table metadata
-                                    // TODO HACK set replication mode to full_refresh on every stream to unblock some other dev work. Needs to be fixed ASAP. Sherif is working on this.
-                                    newSingerMetadata.getMetadata().setReplicationMethod(SingerMetadataChild.ReplicationMethod.FULL_TABLE);
+                                  // TODO HACK set replication mode to full_refresh on every stream
+                                  // to unblock some other dev work. Needs to be fixed ASAP. Sherif
+                                  // is working on this.
+                                  newSingerMetadata
+                                      .getMetadata()
+                                      .setReplicationMethod(
+                                          SingerMetadataChild.ReplicationMethod.FULL_TABLE);
                                   newSingerMetadata.getMetadata().setSelected(table.getSelected());
                                 }
                                 return newSingerMetadata;
