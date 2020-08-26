@@ -79,7 +79,7 @@ class ConnectionsHandlerTest {
     uuidGenerator = mock(Supplier.class);
 
     sourceImplementation =
-        SourceImplementationHelpers.generateSourceImplementationMock(UUID.randomUUID());
+        SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID());
     standardSync = generateSync(sourceImplementation.getSourceImplementationId());
     standardSyncSchedule = generateSchedule(standardSync.getConnectionId());
 
