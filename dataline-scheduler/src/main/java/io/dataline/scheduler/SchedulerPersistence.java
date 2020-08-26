@@ -25,6 +25,7 @@
 package io.dataline.scheduler;
 
 import io.dataline.config.DestinationConnectionImplementation;
+import io.dataline.config.JobConfig;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import java.io.IOException;
@@ -48,5 +49,5 @@ public interface SchedulerPersistence {
 
   Job getJob(long jobId) throws IOException;
 
-  List<Job> listJobs(String scope) throws IOException;
+  List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException;
 }

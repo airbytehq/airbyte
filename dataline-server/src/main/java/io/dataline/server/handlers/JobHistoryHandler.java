@@ -25,12 +25,14 @@
 package io.dataline.server.handlers;
 
 import com.google.common.base.Charsets;
-import io.dataline.api.model.ConnectionIdRequestBody;
+import io.dataline.api.model.JobConfigType;
 import io.dataline.api.model.JobIdRequestBody;
 import io.dataline.api.model.JobInfoRead;
+import io.dataline.api.model.JobListRequestBody;
 import io.dataline.api.model.JobRead;
 import io.dataline.api.model.JobReadList;
 import io.dataline.api.model.LogRead;
+import io.dataline.config.JobConfig;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.JobStatus;
 import io.dataline.scheduler.SchedulerPersistence;
@@ -51,13 +53,15 @@ public class JobHistoryHandler {
     this.schedulerPersistence = schedulerPersistence;
   }
 
-  public JobReadList listJobsFor(ConnectionIdRequestBody connectionIdRequestBody) {
+  public JobReadList listJobsFor(JobListRequestBody request) {
     try {
-      String connectionId = connectionIdRequestBody.getConnectionId().toString();
+      JobConfig.ConfigType configType =
+          JobConfig.ConfigType.fromValue(request.getConfigType().toString());
+      String configId = request.getConfigId();
 
       // todo: use functions for scope scoping
       List<JobRead> jobReads =
-          schedulerPersistence.listJobs("connection:" + connectionId).stream()
+          schedulerPersistence.listJobs(configType, configId).stream()
               .map(JobHistoryHandler::getJobRead)
               .collect(Collectors.toList());
 
@@ -127,8 +131,7 @@ public class JobHistoryHandler {
 
   private static JobRead getJobRead(Job job) {
     String configId = job.getScope().split(":")[1];
-    JobRead.ConfigTypeEnum configType =
-        JobRead.ConfigTypeEnum.fromValue(job.getConfig().getConfigType().toString().toLowerCase());
+    JobConfigType configType = JobConfigType.fromValue(job.getConfig().getConfigType().toString());
 
     JobRead jobRead = new JobRead();
 

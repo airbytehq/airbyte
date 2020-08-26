@@ -42,6 +42,7 @@ import io.dataline.api.model.DestinationReadList;
 import io.dataline.api.model.DestinationSpecificationRead;
 import io.dataline.api.model.JobIdRequestBody;
 import io.dataline.api.model.JobInfoRead;
+import io.dataline.api.model.JobListRequestBody;
 import io.dataline.api.model.JobReadList;
 import io.dataline.api.model.SlugRequestBody;
 import io.dataline.api.model.SourceIdRequestBody;
@@ -279,8 +280,8 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   // JOB HISTORY
 
   @Override
-  public JobReadList listJobsFor(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    return jobHistoryHandler.listJobsFor(connectionIdRequestBody);
+  public JobReadList listJobsFor(@Valid JobListRequestBody jobListRequestBody) {
+    return jobHistoryHandler.listJobsFor(jobListRequestBody);
   }
 
   @Override

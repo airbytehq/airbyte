@@ -619,7 +619,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ConnectionIdRequestBody"
+              $ref: "#/components/schemas/JobListRequestBody"
         required: true
       responses:
         "200":
@@ -1121,6 +1121,23 @@ components:
     JobId:
       type: integer
       format: int64
+    JobConfigType:
+      type: string
+      enum:
+        - checkConnectionSource
+        - checkConnectionDestination
+        - discoverSchema
+        - sync
+    JobListRequestBody:
+      type: object
+      required:
+        - config_type
+        - config_id
+      properties:
+        config_type:
+          $ref: "#/components/schemas/JobConfigType"
+        config_id:
+          type: string
     JobIdRequestBody:
       type: object
       required:
@@ -1141,11 +1158,7 @@ components:
         id:
           $ref: "#/components/schemas/JobId"
         config_type:
-          type: string
-          enum:
-            - check_connection
-            - discover_schema
-            - sync
+          $ref: "#/components/schemas/JobConfigType"
         config_id:
           type: string
         created_at:
