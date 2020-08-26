@@ -59,7 +59,7 @@ WORKDIR /app
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/${WAIT_VERSION}/wait wait
 RUN chmod +x wait
 
-COPY --from=build /code/dataline-config-init/src/main/resources/config data
+COPY --from=build /code/dataline-config-init/src/main/resources/config data/config
 COPY --from=build /code/${APPLICATION}/build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
@@ -81,7 +81,7 @@ WORKDIR /app
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/${WAIT_VERSION}/wait wait
 RUN chmod +x wait
 
-COPY --from=build /code/dataline-config-init/src/main/resources/config data
+COPY --from=build /code/dataline-config-init/src/main/resources/config data/config
 COPY --from=build /code/${APPLICATION}/build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1

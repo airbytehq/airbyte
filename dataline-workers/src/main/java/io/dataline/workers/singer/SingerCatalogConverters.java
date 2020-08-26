@@ -142,10 +142,7 @@ public class SingerCatalogConverters {
                           .orElseThrow(() -> new RuntimeException("Could not find table metadata"));
                   final Table table = new Table();
                   table.setName(stream.getStream());
-                  table.setSelected(
-                      tableMetadata.getMetadata().getSelectedByDefault() == null
-                          ? false
-                          : tableMetadata.getMetadata().getSelectedByDefault());
+                  table.setSelected(isSelected(tableMetadata.getMetadata()));
                   table.setColumns(
                       stream
                           .getSchema()
@@ -165,7 +162,7 @@ public class SingerCatalogConverters {
                                 column.setDataType(singerTypesToDataType(singerColumn.getType()));
                                 // in discovery, you can find columns that are replicated by
                                 // default. we set those to selected. the rest are not.
-                                column.setSelected(singerColumnMetadata.getSelectedByDefault());
+                                column.setSelected(isSelected(singerColumnMetadata));
                                 return column;
                               })
                           .collect(Collectors.toList()));
@@ -176,6 +173,20 @@ public class SingerCatalogConverters {
     final Schema schema = new Schema();
     schema.setTables(tables);
     return schema;
+  }
+
+  private static boolean isSelected(SingerMetadataChild metadataChild) {
+    Boolean selected = metadataChild.getSelected();
+    if (selected != null) {
+      return metadataChild.getSelected();
+    }
+    Boolean selectedByDefault = metadataChild.getSelectedByDefault();
+    if (selectedByDefault != null) {
+      return selectedByDefault;
+    }
+
+    // absent of a default, don't replicate by default.
+    return false;
   }
 
   private static Map<String, List<SingerMetadata>> getTableNameToMetadataList(
