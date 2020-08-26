@@ -3,6 +3,10 @@ plugins {
     id "com.diffplug.spotless" version "5.1.1" apply false
 }
 
+clean {
+    delete "${rootProject}/.gradle/"
+}
+
 Properties env = new Properties()
 File envFile = new File('.env')
 envFile.withInputStream { env.load(it) }
@@ -52,9 +56,9 @@ subprojects {
             removeUnusedImports()
             trimTrailingWhitespace()
         }
-//        groovyGradle {
-//            target '**/*.gradle'
-//        }
+        groovyGradle {
+            target '**/*.gradle'
+        }
     }
     compileJava.dependsOn 'spotlessApply'
 
@@ -68,6 +72,10 @@ subprojects {
     }
 
     dependencies {
+        if (project.name != "dataline-commons") {
+            implementation project(':dataline-commons')
+        }
+
         implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
         implementation group: 'commons-io', name: 'commons-io', version: '2.7'

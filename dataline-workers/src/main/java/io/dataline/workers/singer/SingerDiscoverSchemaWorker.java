@@ -87,22 +87,21 @@ public class SingerDiscoverSchemaWorker
     // exec
     try {
       String[] cmd = {
-          "docker",
-          "run",
-          "--entrypoint",
-          "/bin/sh",
-          "-v",
-          String.format("%s:/singer/data", workspaceRoot.toString()),
-          // TODO network=host is a not recommended for production settings, create a bridge network
-          //  and use it to connect the two docker containers
-          "--network=bridge",
-          imageName,
-          "-c",
-          "sleep 10000"
-          //          ,
-          //          "--config",
-          //          CONFIG_JSON_FILENAME,
-          //          "--discover"
+        "docker",
+        "run",
+        //        "--entrypoint",
+        //        "/bin/sh",
+        "-v",
+        String.format("%s:/singer/data", workspaceRoot.toString()),
+        // TODO network=host is a not recommended for production settings, create a bridge network
+        //  and use it to connect the two docker containers
+        "--network=bridge",
+        imageName,
+        //        "-c",
+        //        ,"sleep 10000"
+        "--config",
+        CONFIG_JSON_FILENAME,
+        "--discover"
       };
 
       workerProcess =

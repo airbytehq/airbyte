@@ -20,10 +20,13 @@ main() {
 
   docker build -q -f Dockerfile.build . -t $IMG_NAME --target build-project
 
+  ./gradlew clean
   docker run $OPTS --rm \
     -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /tmp:/tmp \
     -v ~/.gradle:/root/.gradle \
     -v $(pwd):/code \
+    -e GRADLE_OPTS="-Dorg.gradle.daemon=false" \
     $IMG_NAME $CMD
 }
 
