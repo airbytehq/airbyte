@@ -49,8 +49,6 @@ import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.helpers.SourceImplementationHelpers;
 import io.dataline.server.helpers.SourceSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
-import java.io.File;
-import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,44 +68,14 @@ class SourceImplementationsHandlerTest {
     configPersistence = mock(ConfigPersistence.class);
     validator = mock(IntegrationSchemaValidation.class);
     uuidGenerator = mock(Supplier.class);
-    sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
-    sourceConnectionImplementation =
-        SourceImplementationHelpers.generateSourceImplementationMock(
-            sourceConnectionSpecification.getSourceSpecificationId());
 
     sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
     sourceConnectionImplementation =
-        generateSourceImplementation(sourceConnectionSpecification.getSourceSpecificationId());
+        SourceImplementationHelpers.generateSourceImplementation(
+            sourceConnectionSpecification.getSourceSpecificationId());
 
     sourceImplementationsHandler =
         new SourceImplementationsHandler(configPersistence, validator, uuidGenerator);
-  }
-
-  private JsonNode getTestImplementationJson() {
-    final File implementationFile =
-        new File("../dataline-server/src/test/resources/json/TestImplementation.json");
-
-    try {
-      return new ObjectMapper().readTree(implementationFile);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private SourceConnectionImplementation generateSourceImplementation(UUID sourceSpecificationId) {
-    final UUID workspaceId = UUID.randomUUID();
-    final UUID sourceImplementationId = UUID.randomUUID();
-
-    JsonNode implementationJson = getTestImplementationJson();
-
-    final SourceConnectionImplementation sourceConnectionImplementation =
-        new SourceConnectionImplementation();
-    sourceConnectionImplementation.setWorkspaceId(workspaceId);
-    sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setConfiguration(implementationJson.toString());
-
-    return sourceConnectionImplementation;
   }
 
   @Test
@@ -175,6 +143,7 @@ class SourceImplementationsHandlerTest {
     expectedSourceConnectionImplementation.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
     expectedSourceConnectionImplementation.setConfiguration(newConfiguration.toString());
+    expectedSourceConnectionImplementation.setTombstone(false);
 
     when(configPersistence.getConfig(
             PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
@@ -262,5 +231,58 @@ class SourceImplementationsHandlerTest {
 
     assertEquals(
         expectedSourceImplementationRead, actualSourceImplementationRead.getSources().get(0));
+  }
+
+  @Test
+  void testDeleteSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
+    final Object configuration = sourceConnectionImplementation.getConfiguration();
+    final JsonNode newConfiguration;
+    try {
+      newConfiguration = new ObjectMapper().readTree(configuration.toString());
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+    ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
+
+    final SourceConnectionImplementation expectedSourceConnectionImplementation =
+        new SourceConnectionImplementation();
+    expectedSourceConnectionImplementation.setWorkspaceId(
+        sourceConnectionImplementation.getWorkspaceId());
+    expectedSourceConnectionImplementation.setSourceSpecificationId(
+        sourceConnectionImplementation.getSourceSpecificationId());
+    expectedSourceConnectionImplementation.setSourceImplementationId(
+        sourceConnectionImplementation.getSourceImplementationId());
+    expectedSourceConnectionImplementation.setConfiguration(
+        sourceConnectionImplementation.getConfiguration());
+    expectedSourceConnectionImplementation.setTombstone(true);
+
+    when(configPersistence.getConfig(
+            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+            sourceConnectionImplementation.getSourceImplementationId().toString(),
+            SourceConnectionImplementation.class))
+        .thenReturn(sourceConnectionImplementation)
+        .thenReturn(expectedSourceConnectionImplementation);
+
+    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody =
+        new SourceImplementationIdRequestBody();
+    sourceImplementationIdRequestBody.setSourceImplementationId(
+        sourceConnectionImplementation.getSourceImplementationId());
+
+    sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
+
+    SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
+    expectedSourceImplementationRead.setSourceSpecificationId(
+        sourceConnectionSpecification.getSourceSpecificationId());
+    expectedSourceImplementationRead.setWorkspaceId(
+        sourceConnectionImplementation.getWorkspaceId());
+    expectedSourceImplementationRead.setSourceImplementationId(
+        sourceConnectionImplementation.getSourceImplementationId());
+    expectedSourceImplementationRead.setConnectionConfiguration(newConfiguration.toString());
+
+    verify(configPersistence)
+        .writeConfig(
+            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+            sourceConnectionImplementation.getSourceImplementationId().toString(),
+            expectedSourceConnectionImplementation);
   }
 }
