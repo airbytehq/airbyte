@@ -28,17 +28,13 @@ import io.dataline.config.Schedule;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.db.DatabaseHelper;
-
 import java.io.IOException;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -32,27 +32,21 @@ import io.dataline.api.model.SourceImplementationDiscoverSchemaRead;
 import io.dataline.api.model.SourceImplementationIdRequestBody;
 import io.dataline.commons.enums.Enums;
 import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.JobOutput;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.config.StandardSync;
-import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.JobStatus;
-import io.dataline.scheduler.JobUtils;
 import io.dataline.scheduler.SchedulerPersistence;
 import io.dataline.server.converters.SchemaConverter;
 import io.dataline.server.helpers.ConfigFetchers;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
-
+import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.constraints.NotNull;
 
 public class SchedulerHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
