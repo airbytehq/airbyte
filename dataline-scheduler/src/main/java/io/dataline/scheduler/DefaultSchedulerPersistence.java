@@ -34,8 +34,6 @@ import io.dataline.config.JobSyncConfig;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncOutput;
-import io.dataline.config.StandardSyncSummary;
-import io.dataline.config.State;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.integrations.Integrations;
 import java.io.IOException;
@@ -45,7 +43,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.slf4j.Logger;
@@ -137,7 +134,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             .getSyncImage());
     jobSyncConfig.setStandardSync(standardSync);
 
-    final Optional<Job> previousJobOptional = JobUtils.getLastSyncJobForConnectionId(connectionPool, connectionId);
+    final Optional<Job> previousJobOptional =
+        JobUtils.getLastSyncJobForConnectionId(connectionPool, connectionId);
     final Optional<StandardSyncOutput> standardSyncOutput =
         previousJobOptional.flatMap(Job::getOutput).map(JobOutput::getSync);
 
