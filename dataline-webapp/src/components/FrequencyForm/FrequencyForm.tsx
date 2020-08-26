@@ -32,6 +32,24 @@ const connectionValidationSchema = yup.object().shape({
 
 const FrequencyForm: React.FC<IProps> = ({ onSubmit, className }) => {
   const formatMessage = useIntl().formatMessage;
+  const dropdownData = React.useMemo(
+    () =>
+      FrequencyConfig.map(item => ({
+        ...item,
+        text:
+          item.value === "manual"
+            ? item.text
+            : formatMessage(
+                {
+                  id: "form.every"
+                },
+                {
+                  value: item.text
+                }
+              )
+      })),
+    [formatMessage]
+  );
 
   return (
     <Formik
@@ -62,7 +80,7 @@ const FrequencyForm: React.FC<IProps> = ({ onSubmit, className }) => {
                 placeholder={formatMessage({
                   id: "form.frequency.placeholder"
                 })}
-                data={FrequencyConfig}
+                data={dropdownData}
                 onSelect={item => setFieldValue("frequency", item.value)}
               />
             )}

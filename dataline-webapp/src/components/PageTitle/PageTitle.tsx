@@ -11,7 +11,7 @@ type IProps = {
 };
 
 export const MainContainer = styled.div<{ withLine?: boolean }>`
-  padding: 20px 25px 18px;
+  padding: 20px 32px 18px;
   border-bottom: ${({ theme, withLine }) =>
     withLine ? `1px solid ${theme.greyColor20}` : "none"};
   margin-bottom: ${({ withLine }) => (withLine ? "17px" : 0)};

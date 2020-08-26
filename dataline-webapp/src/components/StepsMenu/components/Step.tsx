@@ -3,14 +3,16 @@ import styled from "styled-components";
 
 type IProps = {
   id: string;
+  lightMode?: boolean;
   name: string | React.ReactNode;
   onClick: (id: string) => void;
   isActive?: boolean;
   num: number;
 };
 
-const StepView = styled.div<{ isActive?: boolean }>`
-  width: 212px;
+const StepView = styled.div<{ isActive?: boolean; lightMode?: boolean }>`
+  width: ${({ lightMode }) => (lightMode ? "auto" : "212px")};
+  min-width: ${({ lightMode }) => (lightMode ? "70px" : "auto")};
   min-height: 28px;
   padding: 6px;
   border-radius: 4px;
@@ -43,12 +45,23 @@ const Num = styled.div<{ isActive?: boolean }>`
   box-shadow: 0 1px 2px 0 ${({ theme }) => theme.shadowColor};
 `;
 
-const Step: React.FC<IProps> = ({ name, id, isActive, onClick, num }) => {
+const Step: React.FC<IProps> = ({
+  name,
+  id,
+  isActive,
+  onClick,
+  num,
+  lightMode
+}) => {
   const onItemClickItem = () => onClick(id);
 
   return (
-    <StepView onClick={onItemClickItem} isActive={isActive}>
-      <Num isActive={isActive}>{num}</Num>
+    <StepView
+      onClick={onItemClickItem}
+      isActive={isActive}
+      lightMode={lightMode}
+    >
+      {lightMode ? null : <Num isActive={isActive}>{num}</Num>}
       {name}
     </StepView>
   );
