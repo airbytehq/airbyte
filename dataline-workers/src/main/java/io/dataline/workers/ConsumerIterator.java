@@ -27,6 +27,11 @@ package io.dataline.workers;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
+/**
+ * Iterator that runs a provided consumer on each call of next.
+ *
+ * @param <T>
+ */
 public class ConsumerIterator<T> implements Iterator<T> {
   private final Iterator<T> iterator;
   private final Consumer<T> consumer;

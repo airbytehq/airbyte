@@ -30,6 +30,7 @@ import com.google.common.base.Charsets;
 import io.dataline.config.SingerProtocol;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.config.State;
+import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.SyncTarget;
 import io.dataline.workers.WorkerUtils;
 import java.io.BufferedWriter;
@@ -37,12 +38,16 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SingerTarget implements SyncTarget<SingerProtocol> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerTarget.class);
+
   private static final String CONFIG_JSON_FILENAME = "target_config.json";
   private static final String OUTPUT_STATE_FILENAME = "outputState.json";
-  private static final String TARGET_ERR_LOG = "target_err.log";
 
   private final String dockerImageName;
   private Process targetProcess;
@@ -69,16 +74,7 @@ public class SingerTarget implements SyncTarget<SingerProtocol> {
     Path configPath =
         WorkerUtils.writeFileToWorkspace(workspacePath, CONFIG_JSON_FILENAME, configDotJson);
 
-    // todo - dry me
-    String[] dockerCmd = {
-      "docker",
-      "run",
-      "-v",
-      String.format("%s:/singer/data", workspacePath.toString()),
-      // TODO network=host is not recommended for production settings, create a bridge network
-      //  and use it to connect all containers
-      "--network=host"
-    };
+    String[] dockerCmd = SingerDockerUtils.getDockerCommand(workspacePath);
 
     String[] targetCmd =
         ArrayUtils.addAll(dockerCmd, dockerImageName, "--config", configPath.toString());
@@ -88,7 +84,7 @@ public class SingerTarget implements SyncTarget<SingerProtocol> {
           new ProcessBuilder()
               .command(targetCmd)
               .redirectOutput(workspacePath.resolve(OUTPUT_STATE_FILENAME).toFile())
-              .redirectError(workspacePath.resolve(TARGET_ERR_LOG).toFile())
+              .redirectError(workspacePath.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile())
               .start();
 
       try (BufferedWriter writer =
@@ -105,7 +101,18 @@ public class SingerTarget implements SyncTarget<SingerProtocol> {
               }
             });
       }
+
     } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    try {
+      while (!targetProcess.waitFor(1, TimeUnit.MINUTES)) {
+        LOGGER.debug(
+            "Waiting for sync worker (attemptId:{}) target",
+            ""); // TODO when attempt ID is passed in
+      }
+    } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
 
@@ -113,5 +120,10 @@ public class SingerTarget implements SyncTarget<SingerProtocol> {
     state.setState(WorkerUtils.readFileFromWorkspace(workspacePath, OUTPUT_STATE_FILENAME));
 
     return state;
+  }
+
+  @Override
+  public void cancel() {
+    WorkerUtils.cancelHelper(targetProcess);
   }
 }

@@ -36,12 +36,15 @@ import java.util.Iterator;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.mutable.MutableLong;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-// T in this case is our protocol for communicating between tap and target. Likely we'll need to
-// open this up and have the protocol of the tap and that of the target and then dynamically we swap
-// in any protocol converter that we might need. Keeping it simple for now and assuming one
-// protocol--just using the singer protocol for point of example right now. #ijusttriggeredmichel.
 public class DefaultSyncWorker implements SyncWorker {
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSyncWorker.class);
+
+  public static final String TAP_ERR_LOG = "tap_err.log";
+  public static final String TARGET_ERR_LOG = "target_err.log";
+
   private final SyncTap<SingerProtocol> tap;
   private final SyncTarget<SingerProtocol> target;
 
@@ -64,31 +67,41 @@ public class DefaultSyncWorker implements SyncWorker {
         syncInput.getDestinationConnectionImplementation());
     targetConfig.setStandardSync(syncInput.getStandardSync());
 
-    final Iterator<SingerProtocol> iterator = tap.run(tapConfig, workspacePath);
+    try {
 
-    final MutableLong recordCount = new MutableLong();
-    Consumer<SingerProtocol> counter =
-        record -> {
-          if (record.getType().equals(SingerProtocol.Type.RECORD)) {
-            recordCount.increment();
-          }
-        };
-    Iterator<SingerProtocol> countingIterator = new ConsumerIterator<>(iterator, counter);
+      final Iterator<SingerProtocol> iterator = tap.run(tapConfig, workspacePath);
 
-    final State state = target.run(countingIterator, targetConfig, workspacePath);
+      final MutableLong recordCount = new MutableLong();
+      Consumer<SingerProtocol> counter =
+          record -> {
+            if (record.getType().equals(SingerProtocol.Type.RECORD)) {
+              recordCount.increment();
+            }
+          };
+      Iterator<SingerProtocol> countingIterator = new ConsumerIterator<>(iterator, counter);
 
-    StandardSyncSummary summary = new StandardSyncSummary();
-    summary.setRecordsSynced(recordCount.getValue());
-    summary.setStartTime(startTime);
-    summary.setEndTime(System.currentTimeMillis());
-    summary.setJobId(UUID.randomUUID()); // TODO this is not input anywhere
-    // TODO set logs
+      final State state = target.run(countingIterator, targetConfig, workspacePath);
 
-    final StandardSyncOutput output = new StandardSyncOutput();
-    output.setStandardSyncSummary(summary);
-    output.setState(state);
+      StandardSyncSummary summary = new StandardSyncSummary();
+      summary.setRecordsSynced(recordCount.getValue());
+      summary.setStartTime(startTime);
+      summary.setEndTime(System.currentTimeMillis());
+      summary.setJobId(UUID.randomUUID()); // TODO this is not input anywhere
+      // TODO set logs
 
-    return new OutputAndStatus<>(JobStatus.SUCCESSFUL, output);
+      final StandardSyncOutput output = new StandardSyncOutput();
+      output.setStandardSyncSummary(summary);
+      output.setState(state);
+
+      return new OutputAndStatus<>(JobStatus.SUCCESSFUL, output);
+    } catch (SyncException e) {
+      LOGGER.debug(
+          "Sync worker failed. Tap error log: {}.\n Target error log: {}",
+          WorkerUtils.readFileFromWorkspace(workspacePath, TAP_ERR_LOG),
+          WorkerUtils.readFileFromWorkspace(workspacePath, TARGET_ERR_LOG));
+
+      return new OutputAndStatus<>(JobStatus.FAILED, null);
+    }
   }
 
   @Override

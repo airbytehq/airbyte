@@ -22,16 +22,21 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.workers.singer;
 
-import io.dataline.config.StandardTargetConfig;
-import io.dataline.config.State;
 import java.nio.file.Path;
-import java.util.Iterator;
 
-public interface SyncTarget<T> {
-  State run(Iterator<T> data, StandardTargetConfig targetConfig, Path workspacePath)
-      throws SyncException;
+public class SingerDockerUtils {
+  public static String[] getDockerCommand(Path workspaceRoot) {
 
-  void cancel();
+    return new String[] {
+      "docker",
+      "run",
+      "-v",
+      String.format("%s:/singer/data", workspaceRoot.toString()),
+      // TODO network=host is not recommended for production settings, create a bridge network
+      //  and use it to connect all containers
+      "--network=host"
+    };
+  }
 }

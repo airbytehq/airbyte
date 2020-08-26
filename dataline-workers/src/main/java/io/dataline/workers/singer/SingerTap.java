@@ -30,6 +30,7 @@ import io.dataline.config.SingerCatalog;
 import io.dataline.config.SingerProtocol;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardTapConfig;
+import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.SyncTap;
@@ -50,9 +51,10 @@ public class SingerTap implements SyncTap<SingerProtocol> {
   private static final String CATALOG_JSON_FILENAME = "catalog.json";
 
   private static final String STATE_JSON_FILENAME = "input_state.json";
-  private static final String TAP_ERR_LOG = "tap_err.log";
 
   private final String dockerImageName;
+
+  private Process tapProcess;
 
   public SingerTap(String dockerImageName) {
     this.dockerImageName = dockerImageName;
@@ -89,18 +91,9 @@ public class SingerTap implements SyncTap<SingerProtocol> {
     Path statePath =
         WorkerUtils.writeFileToWorkspace(workspaceRoot, STATE_JSON_FILENAME, stateDotJson);
 
-    Process tapProcess = null;
     try {
 
-      String[] dockerCmd = {
-        "docker",
-        "run",
-        "-v",
-        String.format("%s:/singer/data", workspaceRoot.toString()),
-        // TODO network=host is not recommended for production settings, create a bridge network
-        //  and use it to connect all containers
-        "--network=host"
-      };
+      String[] dockerCmd = SingerDockerUtils.getDockerCommand(workspaceRoot);
 
       String[] tapCmd =
           ArrayUtils.addAll(
@@ -119,16 +112,27 @@ public class SingerTap implements SyncTap<SingerProtocol> {
       tapProcess =
           new ProcessBuilder()
               .command(tapCmd)
-              .redirectError(workspaceRoot.resolve(TAP_ERR_LOG).toFile())
+              .redirectError(workspaceRoot.resolve(DefaultSyncWorker.TAP_ERR_LOG).toFile())
               .start();
 
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
-    final InputStream stdout = tapProcess.getInputStream();
+    try {
+      try (final InputStream stdout = tapProcess.getInputStream()) {
+        return new SingerJsonIterator(stdout);
+      }
+    } catch (IOException e) {
+      // todo (cgardens) - figure out exception handling here. likely should use SyncException
+      //   instead.
+      throw new RuntimeException(e);
+    }
+  }
 
-    return new SingerJsonIterator(stdout);
+  @Override
+  public void cancel() {
+    WorkerUtils.cancelHelper(tapProcess);
   }
 
   private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path workspaceRoot)

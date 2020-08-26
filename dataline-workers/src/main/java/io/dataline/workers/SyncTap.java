@@ -30,5 +30,7 @@ import java.util.Iterator;
 
 public interface SyncTap<T> {
   Iterator<T> run(StandardTapConfig tapConfig, Path workspacePath)
-      throws InvalidCredentialsException, InvalidCatalogException;
+      throws InvalidCredentialsException, InvalidCatalogException, SyncException;
+
+  void cancel();
 }

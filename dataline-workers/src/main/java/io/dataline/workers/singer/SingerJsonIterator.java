@@ -33,8 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
-// todo (cgardens) - parsing on this isn't quite right yet. SingerProtocol has a hierarchy not in
-// the stream. Probably need to flatten.
 class SingerJsonIterator implements Iterator<SingerProtocol> {
   private final ObjectMapper objectMapper;
   private final JsonParser jsonParser;
@@ -46,7 +44,7 @@ class SingerJsonIterator implements Iterator<SingerProtocol> {
     objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
     try {
-      this.jsonParser = objectMapper.getFactory().createParser(is);
+      jsonParser = objectMapper.getFactory().createParser(is);
 
       // Check the first token
       if (jsonParser.nextToken() != JsonToken.START_ARRAY) {

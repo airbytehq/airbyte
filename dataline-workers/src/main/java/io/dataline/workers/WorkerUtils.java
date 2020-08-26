@@ -56,6 +56,9 @@ public class WorkerUtils {
   }
 
   public static void cancelHelper(Process workerProcess) {
+    if (workerProcess == null) {
+      return;
+    }
     try {
       workerProcess.destroy();
       workerProcess.waitFor(10, TimeUnit.SECONDS);
