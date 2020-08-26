@@ -263,6 +263,25 @@ paths:
           description: Source Implementation not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/source_implementations/delete:
+    post:
+      tags:
+      - source_implementation
+      summary: Delete a source implementation
+      operationId: deleteSourceImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceImplementationIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          description: Source Implementation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/source_implementations/check_connection:
     post:
       tags:
@@ -600,7 +619,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ConnectionIdRequestBody"
+              $ref: "#/components/schemas/JobListRequestBody"
         required: true
       responses:
         "200":
@@ -1102,6 +1121,23 @@ components:
     JobId:
       type: integer
       format: int64
+    JobConfigType:
+      type: string
+      enum:
+        - checkConnectionSource
+        - checkConnectionDestination
+        - discoverSchema
+        - sync
+    JobListRequestBody:
+      type: object
+      required:
+        - config_type
+        - config_id
+      properties:
+        config_type:
+          $ref: "#/components/schemas/JobConfigType"
+        config_id:
+          type: string
     JobIdRequestBody:
       type: object
       required:
@@ -1113,16 +1149,18 @@ components:
       type: object
       required:
         - id
-        - connection_id
+        - config_type
+        - config_id
         - created_at
-        - started_at
         - updated_at
         - status
       properties:
         id:
           $ref: "#/components/schemas/JobId"
-        connection_id:
-          $ref: "#/components/schemas/ConnectionId"
+        config_type:
+          $ref: "#/components/schemas/JobConfigType"
+        config_id:
+          type: string
         created_at:
           type: integer
           format: int64

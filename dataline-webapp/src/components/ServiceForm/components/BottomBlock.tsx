@@ -5,7 +5,7 @@ import { FormattedMessage } from "react-intl";
 import Button from "../../Button";
 
 type IProps = {
-  formType: "source" | "destination";
+  formType: "source" | "destination" | "connection";
   isSubmitting: boolean;
   isValid: boolean;
   dirty: boolean;

@@ -55,10 +55,10 @@ public class SingerDiscoverSchemaWorker
   private static String ERROR_LOG_FILENAME = "err.log";
 
   private volatile Process workerProcess;
-  private SingerConnector connector;
+  private final String imageName;
 
-  public SingerDiscoverSchemaWorker(SingerConnector connector) {
-    this.connector = connector;
+  public SingerDiscoverSchemaWorker(String imageName) {
+    this.imageName = imageName;
   }
 
   // package private since package-local classes need direct access to singer catalog, and the
@@ -89,7 +89,7 @@ public class SingerDiscoverSchemaWorker
         // TODO network=host is a not recommended for production settings, create a bridge network
         //  and use it to connect the two docker containers
         "--network=host",
-        connector.getImageName(),
+        imageName,
         "--config",
         CONFIG_JSON_FILENAME,
         "--discover"

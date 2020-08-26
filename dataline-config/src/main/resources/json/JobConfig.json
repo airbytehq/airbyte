@@ -10,7 +10,8 @@
     "configType": {
       "type": "string",
       "enum": [
-        "checkConnection",
+        "checkConnectionSource",
+        "checkConnectionDestination",
         "discoverSchema",
         "sync"
       ]

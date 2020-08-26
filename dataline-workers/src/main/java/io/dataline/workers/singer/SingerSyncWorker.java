@@ -65,15 +65,15 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
   private static final String TAP_ERR_LOG = "tap_err.log";
   private static final String TARGET_ERR_LOG = "target_err.log";
 
-  private final SingerTap tap;
-  private final SingerTarget target;
+  private final String tapImageName;
+  private final String targetImageNae;
 
   private Process tapProcess;
   private Process targetProcess;
 
-  public SingerSyncWorker(SingerTap tap, SingerTarget target) {
-    this.tap = tap;
-    this.target = target;
+  public SingerSyncWorker(String tapImageName, String targetImageName) {
+    this.tapImageName = tapImageName;
+    this.targetImageNae = targetImageName;
   }
 
   @Override
@@ -113,7 +113,7 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
       String[] tapCmd =
           ArrayUtils.addAll(
               dockerCmd,
-              tap.getImageName(),
+              tapImageName,
               "--config",
               TAP_CONFIG_FILENAME,
               // TODO support both --properties and --catalog depending on integration
@@ -123,7 +123,7 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
       //              INPUT_STATE_FILENAME);
 
       String[] targetCmd =
-          ArrayUtils.addAll(dockerCmd, target.getImageName(), "--config", TARGET_CONFIG_FILENAME);
+          ArrayUtils.addAll(dockerCmd, targetImageNae, "--config", TARGET_CONFIG_FILENAME);
       LOGGER.debug("Tap command: {}", String.join(" ", tapCmd));
       LOGGER.debug("target command: {}", String.join(" ", targetCmd));
 
@@ -145,7 +145,7 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
                   new InputStreamReader(tapProcess.getInputStream(), Charsets.UTF_8));
           BufferedWriter writer =
               new BufferedWriter(
-                  new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8)); ) {
+                  new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8))) {
         ObjectMapper objectMapper = new ObjectMapper();
         reader
             .lines()
@@ -212,9 +212,8 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
     discoveryInput.setConnectionConfiguration(
         input.getSourceConnectionImplementation().getConfiguration());
     Path scopedWorkspace = workspaceRoot.resolve("discovery");
-    OutputAndStatus<SingerCatalog> discoveryOutput =
-        new SingerDiscoverSchemaWorker(tap).runInternal(discoveryInput, scopedWorkspace);
-    return discoveryOutput;
+    return new SingerDiscoverSchemaWorker(tapImageName)
+        .runInternal(discoveryInput, scopedWorkspace);
   }
 
   private void writeSingerInputsToDisk(

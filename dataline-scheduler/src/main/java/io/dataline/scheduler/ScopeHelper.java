@@ -22,20 +22,16 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.scheduler;
 
-public enum SingerTarget implements SingerConnector {
-  POSTGRES("dataline/integration-singer-postgres-destination"),
-  LOCAL_FILE("dataline/integration-singer-csv-destination");
+import io.dataline.config.JobConfig;
 
-  private final String imageName;
-
-  SingerTarget(String imageName) {
-    this.imageName = imageName;
+public class ScopeHelper {
+  public static String createScope(JobConfig.ConfigType configType, String configId) {
+    return configType.value() + ":" + configId;
   }
 
-  @Override
-  public String getImageName() {
-    return imageName;
+  public static String getConfigId(String scope) {
+    return scope.split(":")[1];
   }
 }

@@ -37,6 +37,7 @@ import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.State;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.integrations.Integrations;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
@@ -54,6 +55,7 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -81,6 +83,7 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
     PostgreSQLContainerTestHelper.wipePublicSchema(targetDb);
   }
 
+  @Disabled
   @Test
   public void testFirstTimeFullTableSync()
       throws IOException, SQLException, InterruptedException, InvalidCredentialsException {
@@ -114,7 +117,9 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
     syncInput.setState(state);
 
     OutputAndStatus<StandardSyncOutput> syncResult =
-        new SingerSyncWorker(SingerTap.POSTGRES, SingerTarget.POSTGRES)
+        new SingerSyncWorker(
+                Integrations.POSTGRES_TAP.getSyncImage(),
+                Integrations.POSTGRES_TARGET.getSyncImage())
             .run(syncInput, workspaceDirectory);
 
     assertEquals(JobStatus.SUCCESSFUL, syncResult.getStatus());
