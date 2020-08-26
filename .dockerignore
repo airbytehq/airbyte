@@ -1,7 +1,7 @@
 .dockerignore
 .git
 .idea
-/**/build
-/**/node_modules
+**/build
+**/node_modules
 Dockerfile.*
 docker-compose*.yaml
