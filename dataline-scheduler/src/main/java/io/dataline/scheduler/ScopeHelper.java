@@ -24,30 +24,14 @@
 
 package io.dataline.scheduler;
 
-import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.JobConfig;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.StandardSync;
-import java.io.IOException;
-import java.util.List;
 
-public interface SchedulerPersistence {
-  long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation)
-      throws IOException;
+public class ScopeHelper {
+  public static String createScope(JobConfig.ConfigType configType, String configId) {
+    return configType.value() + ":" + configId;
+  }
 
-  long createDestinationCheckConnectionJob(
-      DestinationConnectionImplementation destinationImplementation) throws IOException;
-
-  long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation)
-      throws IOException;
-
-  long createSyncJob(
-      SourceConnectionImplementation sourceImplementation,
-      DestinationConnectionImplementation destinationImplementation,
-      StandardSync standardSync)
-      throws IOException;
-
-  Job getJob(long jobId) throws IOException;
-
-  List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException;
+  public static String getConfigId(String scope) {
+    return scope.split(":")[1];
+  }
 }

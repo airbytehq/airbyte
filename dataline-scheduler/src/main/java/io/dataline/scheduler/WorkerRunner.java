@@ -62,7 +62,8 @@ public class WorkerRunner implements Runnable {
     }
 
     switch (job.getConfig().getConfigType()) {
-      case CHECK_CONNECTION:
+      case CHECK_CONNECTION_SOURCE:
+      case CHECK_CONNECTION_DESTINATION:
         final StandardCheckConnectionInput checkConnectionInput =
             getCheckConnectionInput(job.getConfig().getCheckConnection());
         new WorkerRun<>(
