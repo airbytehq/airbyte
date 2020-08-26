@@ -30,20 +30,17 @@ import io.dataline.config.JobSyncConfig;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardSyncInput;
-import io.dataline.workers.DockerCheckConnectionWorker;
+import io.dataline.workers.singer.SingerCheckConnectionWorker;
+import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
+import io.dataline.workers.singer.SingerSyncWorker;
 import java.io.IOException;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is a runnable that give a job id and db connection figures out how to run the
  * appropriate worker for a given job.
  */
 public class WorkerRunner implements Runnable {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunner.class);
-
   private final long jobId;
   private final BasicDataSource connectionPool;
   private final SchedulerPersistence persistence;
@@ -71,15 +68,31 @@ public class WorkerRunner implements Runnable {
         new WorkerRun<>(
                 jobId,
                 checkConnectionInput,
-                new DockerCheckConnectionWorker(
+                new SingerCheckConnectionWorker(
                     job.getConfig().getCheckConnection().getDockerImage()),
                 connectionPool)
             .run();
         break;
       case DISCOVER_SCHEMA:
-        throw new RuntimeException("not implemented");
+        final StandardDiscoverSchemaInput discoverSchemaInput =
+            getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
+        new WorkerRun<>(
+                jobId,
+                discoverSchemaInput,
+                new SingerDiscoverSchemaWorker(
+                    job.getConfig().getDiscoverSchema().getDockerImage()),
+                connectionPool)
+            .run();
       case SYNC:
-        throw new RuntimeException("not implemented");
+        final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
+        new WorkerRun<>(
+                jobId,
+                syncInput,
+                new SingerSyncWorker(
+                    job.getConfig().getSync().getSourceDockerImage(),
+                    job.getConfig().getSync().getDestinationDockerImage()),
+                connectionPool)
+            .run();
     }
   }
 

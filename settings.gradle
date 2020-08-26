@@ -9,4 +9,5 @@ include 'dataline-db'
 include 'dataline-scheduler'
 include 'dataline-server'
 include 'dataline-workers'
+include 'dataline-integrations'
 
