@@ -13,9 +13,10 @@ main() {
 
   docker run -t --rm \
     -v /var/run/docker.sock:/var/run/docker.sock \
+    -v $(pwd):/code \
     -v ~/.gradle:/home/gradle/.gradle \
     -v $(which docker):/bin/docker \
-    $IMG_NAME ./gradlew test --no-daemon -g /home/gradle/.gradle
+    $IMG_NAME ./gradlew --no-daemon -g /home/gradle/.gradle "$@"
 }
 
 main "$@"
