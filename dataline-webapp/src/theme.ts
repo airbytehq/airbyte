@@ -12,6 +12,7 @@ export const theme = {
   brightColor: "#F7F6FF",
 
   dangerColor: "#F74D58",
+  dangerTransparentColor: "rgba(247, 77, 88, 0.1)",
   successColor: "#45E698",
   successColor10: "rgba(69, 230, 152, .1)",
   successColor20: "rgba(69, 230, 152, .2)",

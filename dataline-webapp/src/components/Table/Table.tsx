@@ -8,6 +8,7 @@ type IHeaderProps = {
 
 type IProps = {
   columns: Array<IHeaderProps | Column>;
+  erroredRows?: boolean;
   data: Array<object>;
   onClickRow?: (data: object) => void;
 };
@@ -17,58 +18,59 @@ type IThProps = {
 } & React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
 
 const TableView = styled.table`
-  border: none;
   border-spacing: 0;
   width: 100%;
+  overflow: hidden;
+  background: ${({ theme }) => theme.whiteColor};
+  border: 1px solid ${({ theme }) => theme.greyColor20};
+  box-shadow: 0 1px 2px 0 ${({ theme }) => theme.shadowColor};
+  border-radius: 8px;
+  max-width: 100%;
 `;
 
-const Tr = styled.tr<{ hasClick?: boolean }>`
-  background: ${({ theme }) => theme.whiteColor};
-  box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
-  margin-bottom: 5px;
-  border-radius: 8px;
+const Tr = styled.tr<{
+  hasClick?: boolean;
+  erroredRows?: boolean;
+}>`
+  background: ${({ theme, erroredRows }) =>
+    erroredRows ? theme.dangerTransparentColor : theme.whiteColor};
   cursor: ${({ hasClick }) => (hasClick ? "pointer" : "auto")};
-
-  &:hover {
-    box-shadow: 0 1px 2px
-      ${({ theme, hasClick }) =>
-        hasClick ? theme.primaryColor25 : theme.shadowColor};
-  }
 `;
 
 const Td = styled.td`
-  padding: 21px 17px;
+  padding: 19px 13px;
   font-size: 14px;
-  line-height: 19px;
-  font-weight: 500;
+  line-height: 17px;
+  font-weight: normal;
   color: ${({ theme }) => theme.darkPrimaryColor};
-
-  &:first-child {
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
-  }
-
-  &:last-child {
-    border-bottom-right-radius: 8px;
-    border-top-right-radius: 8px;
-  }
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
 `;
 
 const Th = styled.th<IThProps>`
-  padding: 0 17px 11px;
+  background: ${({ theme }) => theme.greyColor0};
+  padding: 7px 13px 8px;
   text-align: left;
   font-size: 14px;
   line-height: 17px;
-  font-weight: ${props => (props.highlighted ? "500" : "normal")};
-  color: ${({ theme, highlighted }) =>
-    highlighted ? theme.darkPrimaryColor : theme.darkPrimaryColor60};
+  font-weight: normal;
+  opacity: ${({ highlighted }) => (highlighted ? 1 : 0.6)};
+  color: ${({ theme }) => theme.darkPrimaryColor};
+  border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
+
+  &:first-child {
+    padding-left: 45px;
+  }
 `;
 
-const Space = styled.tr`
-  height: 5px;
-`;
-
-const Table: React.FC<IProps> = ({ columns, data, onClickRow }) => {
+const Table: React.FC<IProps> = ({
+  columns,
+  data,
+  onClickRow,
+  erroredRows
+}) => {
   const {
     getTableProps,
     getTableBodyProps,
@@ -110,6 +112,8 @@ const Table: React.FC<IProps> = ({ columns, data, onClickRow }) => {
                 key={`table-row-${row.id}`}
                 hasClick={!!onClickRow}
                 onClick={() => onClickRow && onClickRow(row.original)}
+                // @ts-ignore
+                erroredRows={erroredRows && row.original.error}
               >
                 {row.cells.map((cell, key) => {
                   return (
@@ -122,7 +126,6 @@ const Table: React.FC<IProps> = ({ columns, data, onClickRow }) => {
                   );
                 })}
               </Tr>
-              <Space key={`table-space-${row.id}`} />
             </>
           );
         })}

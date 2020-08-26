@@ -65,12 +65,18 @@ const SuccessIcon = styled(FontAwesomeIcon)`
   position: absolute;
   top: 8px;
   left: 8px;
+  cursor: pointer;
 `;
 
 const Toggle: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = props => {
   return (
-    <Switch>
-      <SwitchInput type="checkbox" {...props} checked={!!props.value} />
+    <Switch onClick={(event: React.SyntheticEvent) => event.stopPropagation()}>
+      <SwitchInput
+        type="checkbox"
+        {...props}
+        value={props.value}
+        checked={props.checked || !!props.value}
+      />
       <Slider />
       <SuccessIcon icon={faCheck} />
     </Switch>

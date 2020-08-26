@@ -5,6 +5,7 @@ import {
   Route,
   Switch
 } from "react-router-dom";
+import { useResource } from "rest-hooks";
 
 import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
@@ -12,6 +13,8 @@ import PreferencesPage from "./PreferencesPage";
 import OnboardingPage from "./OnboardingPage";
 import LoadingPage from "../components/LoadingPage";
 import MainView from "../components/MainView";
+import config from "../config";
+import WorkspaceResource from "../core/resources/Workspace";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -44,21 +47,37 @@ const MainViewRoutes = () => {
   );
 };
 
+const PreferencesRoutes = () => {
+  return (
+    <Switch>
+      <Route path={Routes.Preferences}>
+        <PreferencesPage />
+      </Route>
+      <Redirect to={Routes.Preferences} />
+    </Switch>
+  );
+};
+
 export const Routing = () => {
+  const workspace = useResource(WorkspaceResource.detailShape(), {
+    workspaceId: config.ui.workspaceId
+  });
+
   return (
     <Router>
       <Suspense fallback={<LoadingPage />}>
-        <Switch>
-          <Route path={Routes.Preferences}>
-            <PreferencesPage />
-          </Route>
-          <Route path={Routes.Onboarding}>
-            <OnboardingPage />
-          </Route>
-          <MainViewRoutes />
+        {!workspace.initialSetupComplete ? (
+          <PreferencesRoutes />
+        ) : (
+          <Switch>
+            <Route path={Routes.Onboarding}>
+              <OnboardingPage />
+            </Route>
+            <MainViewRoutes />
 
-          <Redirect to={Routes.Root} />
-        </Switch>
+            <Redirect to={Routes.Root} />
+          </Switch>
+        )}
       </Suspense>
     </Router>
   );
