@@ -8,7 +8,8 @@
     "sourceSpecificationId",
     "sourceImplementationId",
     "workspaceId",
-    "configuration"
+    "configuration",
+    "tombstone"
   ],
   "additionalProperties": false,
   "properties": {

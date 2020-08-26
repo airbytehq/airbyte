@@ -189,14 +189,14 @@ public class SourceImplementationsHandler {
       UUID sourceSpecificationId,
       UUID workspaceId,
       UUID sourceImplementationId,
-      Boolean tombstone,
+      boolean tombstone,
       Object configuration) {
     final SourceConnectionImplementation sourceConnectionImplementation =
         new SourceConnectionImplementation();
     sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionImplementation.setWorkspaceId(workspaceId);
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setTombstone(tombstone == null ? false : tombstone);
+    sourceConnectionImplementation.setTombstone(tombstone);
     sourceConnectionImplementation.setConfiguration(configuration);
 
     ConfigFetchers.writeConfig(
