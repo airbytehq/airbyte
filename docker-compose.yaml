@@ -2,14 +2,14 @@ version: '3.7'
 
 services:
   db:
-    image: dataline/db:dev
+    image: dataline/db:${VERSION}
     container_name: dataline-db
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=db-${DATABASE_DB}
   scheduler:
-    image: dataline/scheduler:dev
+    image: dataline/scheduler:${VERSION}
     container_name: dataline-scheduler
     environment:
       - ENV=${ENV}
@@ -22,7 +22,7 @@ services:
     depends_on:
       - db
   server:
-    image: dataline/server:dev
+    image: dataline/server:${VERSION}
     container_name: dataline-server
     environment:
       - ENV=${ENV}
@@ -37,7 +37,7 @@ services:
     depends_on:
       - db
   webapp:
-    image: dataline/webapp:dev
+    image: dataline/webapp:${VERSION}
     container_name: dataline-webapp
     ports:
       - 8000:80

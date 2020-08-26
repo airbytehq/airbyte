@@ -3,8 +3,7 @@
 Run
 
 ```bash
-./tools/app/build.sh
-./tools/app/start.sh
+docker-compose up
 ```
 
 Go to [http://localhost:8000](http://localhost:8000)

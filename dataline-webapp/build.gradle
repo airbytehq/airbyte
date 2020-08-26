@@ -9,7 +9,7 @@ npm_run_build {
     inputs.file 'package.json'
     inputs.file 'package-lock.json'
 
-    outputs.dir 'build'
+    outputs.dir project.buildDir
 }
 assemble.dependsOn npm_run_build
 

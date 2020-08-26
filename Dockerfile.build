@@ -12,10 +12,10 @@ RUN apt-get update && apt-get -y install \
   nodejs \
   openjdk-14-jdk
 
-###################
-# Build artifacts #
-###################
-FROM build-base AS build
+#######################
+# Prepare project env #
+#######################
+FROM build-base AS build-project
 
 WORKDIR /code
 
@@ -26,6 +26,11 @@ RUN ./gradlew build --no-daemon -g /home/gradle/.gradle
 
 # Copy code, etc.
 COPY . /code
+
+###################
+# Build artifacts #
+###################
+FROM build-project AS build
 
 RUN ./gradlew clean distTar build -x test --no-daemon -g /home/gradle/.gradle
 
