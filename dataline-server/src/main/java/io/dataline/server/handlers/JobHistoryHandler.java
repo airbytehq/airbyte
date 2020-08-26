@@ -34,13 +34,14 @@ import io.dataline.api.model.LogRead;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.JobStatus;
 import io.dataline.scheduler.SchedulerPersistence;
+import org.apache.commons.io.input.ReversedLinesFileReader;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.io.input.ReversedLinesFileReader;
 
 public class JobHistoryHandler {
   private static final int LOG_TAIL_SIZE = 10;
@@ -125,10 +126,15 @@ public class JobHistoryHandler {
   }
 
   private static JobRead getJobRead(Job job) {
+    String configId = job.getScope().split(":")[1];
+    JobRead.ConfigTypeEnum configType =
+        JobRead.ConfigTypeEnum.fromValue(job.getConfig().getConfigType().toString().toLowerCase());
+
     JobRead jobRead = new JobRead();
 
     jobRead.setId(job.getId());
-    jobRead.setScope(job.getScope());
+    jobRead.setConfigId(configId);
+    jobRead.setConfigType(configType);
     jobRead.setCreatedAt(job.getCreatedAt());
 
     if (job.getStartedAt().isPresent()) {

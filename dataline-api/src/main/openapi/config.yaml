@@ -1132,14 +1132,21 @@ components:
       type: object
       required:
         - id
-        - scope
+        - config_type
+        - config_id
         - created_at
         - updated_at
         - status
       properties:
         id:
           $ref: "#/components/schemas/JobId"
-        scope:
+        config_type:
+          type: string
+          enum:
+            - check_connection
+            - discover_schema
+            - sync
+        config_id:
           type: string
         created_at:
           type: integer
