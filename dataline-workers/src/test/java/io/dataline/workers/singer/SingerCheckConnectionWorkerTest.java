@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
+import io.dataline.integrations.Integrations;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
@@ -71,7 +72,8 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
         new StandardCheckConnectionInput();
     standardCheckConnectionInput.setConnectionConfiguration(o);
 
-    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
+    SingerCheckConnectionWorker worker =
+        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage());
     OutputAndStatus<StandardCheckConnectionOutput> run =
         worker.run(standardCheckConnectionInput, createWorkspacePath(jobId));
 
@@ -94,7 +96,8 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
             db.getDatabaseName(),
             db.getFirstMappedPort() + "");
 
-    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
+    SingerCheckConnectionWorker worker =
+        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage());
 
     final Object o = new ObjectMapper().readValue(incorrectCreds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
@@ -124,7 +127,8 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
         new StandardCheckConnectionInput();
     standardCheckConnectionInput.setConnectionConfiguration(o);
 
-    SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(SingerTap.POSTGRES);
+    SingerCheckConnectionWorker worker =
+        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage());
     OutputAndStatus<StandardCheckConnectionOutput> run =
         worker.run(standardCheckConnectionInput, createWorkspacePath(jobId));
 
