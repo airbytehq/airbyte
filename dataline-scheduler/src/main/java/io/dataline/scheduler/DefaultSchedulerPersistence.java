@@ -62,7 +62,9 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   public long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation)
       throws IOException {
     final String scope =
-        "checkConnectionSource:" + sourceImplementation.getSourceImplementationId();
+        ScopeHelper.createScope(
+            JobConfig.ConfigType.CHECK_CONNECTION_SOURCE,
+            sourceImplementation.getSourceImplementationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
     jobCheckConnectionConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
@@ -81,7 +83,9 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   public long createDestinationCheckConnectionJob(
       DestinationConnectionImplementation destinationImplementation) throws IOException {
     final String scope =
-        "checkConnectionDestination:" + destinationImplementation.getDestinationImplementationId();
+        ScopeHelper.createScope(
+            JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION,
+            destinationImplementation.getDestinationImplementationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
     jobCheckConnectionConfig.setConnectionConfiguration(
@@ -101,7 +105,10 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   public long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation)
       throws IOException {
 
-    final String scope = "discoverSchema:" + sourceImplementation.getSourceImplementationId();
+    final String scope =
+        ScopeHelper.createScope(
+            JobConfig.ConfigType.DISCOVER_SCHEMA,
+            sourceImplementation.getSourceImplementationId().toString());
 
     final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig();
     jobDiscoverSchemaConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
@@ -124,7 +131,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       throws IOException {
     final UUID connectionId = standardSync.getConnectionId();
 
-    final String scope = "sync:" + connectionId;
+    final String scope =
+        ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig();
     jobSyncConfig.setSourceConnectionImplementation(sourceImplementation);
@@ -208,7 +216,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   @Override
   public List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException {
     try {
-      String scope = configType.value() + ":" + configId;
+      String scope = ScopeHelper.createScope(configType, configId);
       return DatabaseHelper.query(
           connectionPool,
           ctx ->

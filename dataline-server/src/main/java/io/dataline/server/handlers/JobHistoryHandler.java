@@ -36,14 +36,14 @@ import io.dataline.commons.enums.Enums;
 import io.dataline.config.JobConfig;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.SchedulerPersistence;
-import org.apache.commons.io.input.ReversedLinesFileReader;
-
+import io.dataline.scheduler.ScopeHelper;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.io.input.ReversedLinesFileReader;
 
 public class JobHistoryHandler {
   private static final int LOG_TAIL_SIZE = 10;
@@ -111,7 +111,7 @@ public class JobHistoryHandler {
   }
 
   private static JobRead getJobRead(Job job) {
-    String configId = job.getScope().split(":")[1];
+    String configId = ScopeHelper.getConfigId(job.getScope());
     JobConfigType configType =
         Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
 
