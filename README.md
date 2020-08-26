@@ -1,19 +1,16 @@
 # Getting Started
 
-Run
+## Quick start
 
 ```bash
-./tools/app/build.sh
-./tools/app/start.sh
+docker-compose up
 ```
+Now go to [http://localhost:8000](http://localhost:8000)
 
-Go to [http://localhost:8000](http://localhost:8000)
-
-Update public images:
+## Update images
 
 ```bash
-./tools/app/build.sh
-./tools/app/test.sh
-docker-compose -f docker-compose.dev.yaml -f docker-compose.dist.yaml push
+docker-compose -f docker-compose.build.yaml build
+docker-compose -f docker-compose.build.yaml push
 ```
 
