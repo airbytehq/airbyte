@@ -32,6 +32,7 @@ import io.dataline.api.model.JobListRequestBody;
 import io.dataline.api.model.JobRead;
 import io.dataline.api.model.JobReadList;
 import io.dataline.api.model.LogRead;
+import io.dataline.commons.enums.Enums;
 import io.dataline.config.JobConfig;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.JobStatus;
@@ -56,7 +57,7 @@ public class JobHistoryHandler {
   public JobReadList listJobsFor(JobListRequestBody request) {
     try {
       JobConfig.ConfigType configType =
-          JobConfig.ConfigType.fromValue(request.getConfigType().toString());
+          Enums.convertTo(request.getConfigType(), JobConfig.ConfigType.class);
       String configId = request.getConfigId();
 
       // todo: use functions for scope scoping
@@ -93,9 +94,8 @@ public class JobHistoryHandler {
   }
 
   private static List<String> getTail(int numLines, String path) {
-    try {
-      File file = new File(path);
-      ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8);
+    File file = new File(path);
+    try (ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
       List<String> lines = new ArrayList<>();
 
       String line;
@@ -113,25 +113,13 @@ public class JobHistoryHandler {
 
   // todo: add test assertion for completeness
   private static JobRead.StatusEnum convertStatus(JobStatus jobStatus) {
-    switch (jobStatus) {
-      case PENDING:
-        return JobRead.StatusEnum.PENDING;
-      case RUNNING:
-        return JobRead.StatusEnum.RUNNING;
-      case FAILED:
-        return JobRead.StatusEnum.FAILED;
-      case COMPLETED:
-        return JobRead.StatusEnum.COMPLETED;
-      case CANCELLED:
-        return JobRead.StatusEnum.CANCELLED;
-      default:
-        throw new IllegalStateException("Unexpected value: " + jobStatus);
-    }
+    return Enums.convertTo(jobStatus, JobRead.StatusEnum.class);
   }
 
   private static JobRead getJobRead(Job job) {
     String configId = job.getScope().split(":")[1];
-    JobConfigType configType = JobConfigType.fromValue(job.getConfig().getConfigType().toString());
+    JobConfigType configType =
+        Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
 
     JobRead jobRead = new JobRead();
 
