@@ -1,20 +1,15 @@
-version: '3'
+version: '3.7'
 
 services:
   db:
-    image: postgres:13-alpine
-    volumes:
-      - ./dataline-db/pg_data:/var/lib/postgresql/data
-      - ./dataline-db/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    image: dataline/db:${VERSION}
+    container_name: dataline-db
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=db-${DATABASE_DB}
   scheduler:
-    image: dataline/scheduler:dev
-    build:
-      context: .
-      dockerfile: scheduler.Dockerfile
+    image: dataline/scheduler:${VERSION}
     container_name: dataline-scheduler
     environment:
       - ENV=${ENV}
@@ -27,10 +22,7 @@ services:
     depends_on:
       - db
   server:
-    image: dataline/server:dev
-    build:
-      context: .
-      dockerfile: server.Dockerfile
+    image: dataline/server:${VERSION}
     container_name: dataline-server
     environment:
       - ENV=${ENV}
@@ -45,10 +37,7 @@ services:
     depends_on:
       - db
   webapp:
-    image: dataline/webapp:dev
-    build:
-      context: .
-      dockerfile: webapp.Dockerfile
+    image: dataline/webapp:${VERSION}
     container_name: dataline-webapp
     ports:
       - 8000:80
