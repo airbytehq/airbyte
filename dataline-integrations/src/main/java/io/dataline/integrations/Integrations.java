@@ -24,31 +24,49 @@
 
 package io.dataline.integrations;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.Map;
 import java.util.UUID;
 
-public class IntegrationConstants {
-  public static Map<UUID, IntegrationMapping> SPEC_ID_TO_IMPL =
-      ImmutableMap.of(
-          UUID.fromString("2168516a-5c9a-4582-90dc-5e3a01e3f607"),
-          new IntegrationMapping("dataline/integration-singer-postgres-source"),
-          UUID.fromString("71cb2b91-1b2f-4c42-8f4d-f1ab2bd72080"),
-          new IntegrationMapping("dataline/integration-singer-postgres-destination"));
+public enum Integrations {
+  POSTGRES_TAP(
+      UUID.fromString("2168516a-5c9a-4582-90dc-5e3a01e3f607"),
+      new IntegrationMapping("dataline/integration-singer-postgres-source")),
+  POSTGRES_TARGET(
+      UUID.fromString("71cb2b91-1b2f-4c42-8f4d-f1ab2bd72080"),
+      new IntegrationMapping("dataline/integration-singer-postgres-destination"));
 
-  public enum Integrations {
-    POSTGRES_TAP(UUID.fromString("2168516a-5c9a-4582-90dc-5e3a01e3f607")),
-    POSTGRES_TARGET(UUID.fromString("71cb2b91-1b2f-4c42-8f4d-f1ab2bd72080"));
+  private final UUID specId;
+  private final IntegrationMapping integrationMapping;
 
-    private final UUID id;
-
-    Integrations(UUID id) {
-      this.id = id;
+  // todo (cgardens) - turn this into a map if we have enough integrations that iterating through
+  //   the enum becomes expensive.
+  public static Integrations findBySpecId(UUID specId) {
+    for (Integrations value : values()) {
+      if (value.getSpecId().equals(specId)) {
+        return value;
+      }
     }
+    throw new RuntimeException("No integrations found with spec id: " + specId);
+  }
 
-    public IntegrationMapping getIntegrationMapping() {
-      return SPEC_ID_TO_IMPL.get(id);
-    }
+  Integrations(UUID specId, IntegrationMapping integrationMapping) {
+    this.specId = specId;
+    this.integrationMapping = integrationMapping;
+  }
+
+  public UUID getSpecId() {
+    return specId;
+  }
+
+  public String getCheckConnectionImage() {
+    return integrationMapping.getCheckConnection();
+  }
+
+  public String getDiscoverSchemaImage() {
+    return integrationMapping.getDiscoverSchema();
+  }
+
+  public String getSyncImage() {
+    return integrationMapping.getSync();
   }
 
   public static class IntegrationMapping {

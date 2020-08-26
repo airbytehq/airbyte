@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.integrations.IntegrationConstants;
+import io.dataline.integrations.Integrations;
 import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
@@ -72,10 +72,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     input.setConnectionConfiguration(o);
 
     SingerDiscoverSchemaWorker worker =
-        new SingerDiscoverSchemaWorker(
-            IntegrationConstants.Integrations.POSTGRES_TAP
-                .getIntegrationMapping()
-                .getDiscoverSchema());
+        new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage());
 
     OutputAndStatus<StandardDiscoverSchemaOutput> run =
         worker.run(input, createWorkspacePath(jobId));
@@ -101,10 +98,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     input.setConnectionConfiguration(o);
 
     SingerDiscoverSchemaWorker worker =
-        new SingerDiscoverSchemaWorker(
-            IntegrationConstants.Integrations.POSTGRES_TAP
-                .getIntegrationMapping()
-                .getDiscoverSchema());
+        new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage());
 
     ExecutorService threadPool = Executors.newFixedThreadPool(2);
     Future<?> workerWasCancelled =
