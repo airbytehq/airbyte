@@ -4,14 +4,37 @@ on: push
 
 jobs:
   build:
-
+    env:
+      GRADLE_PATH: /tmp/gradle
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Dataline
         uses: actions/checkout@v2
-      - name: Build
-        run: ./tools/app/build.sh
-      - name: Test
-        run: ./tools/app/test.sh
 
+      - name: Cache java deps
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.GRADLE_PATH }}
+          key: gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            gradle-
+
+      - name: Cache node deps
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14'
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.7'
+
+      - name: Build
+        run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}

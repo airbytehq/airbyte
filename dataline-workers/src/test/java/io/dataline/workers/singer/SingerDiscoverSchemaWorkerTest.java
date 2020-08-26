@@ -46,6 +46,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
@@ -62,6 +63,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
         MountableFile.forClasspathResource("simple_postgres_init.sql"), db);
   }
 
+  @Disabled
   @Test
   public void testPostgresDiscovery()
       throws IOException, InvalidCredentialsException, InvalidCatalogException {

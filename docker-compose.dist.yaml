@@ -1,7 +1,0 @@
-version: '3'
-
-services:
-  server:
-    image: dataline/dataline-server:${VERSION}
-  webapp:
-    image: dataline/dataline-webapp:${VERSION}
