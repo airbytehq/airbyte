@@ -68,9 +68,7 @@ const LoadingContainer = styled(ButtonContainer)`
   font-size: 14px;
   line-height: 17px;
   color: ${({ theme }) => theme.darkPrimaryColor};
-  display: flex;
   justify-content: center;
-  align-items: center;
 `;
 
 const Loader = styled.div`
@@ -79,9 +77,31 @@ const Loader = styled.div`
 
 const Success = styled(StatusIcon)`
   width: 26px;
+  min-width: 26px;
   height: 26px;
   padding-top: 5px;
   font-size: 17px;
+`;
+
+const Error = styled(Success)`
+  padding-top: 4px;
+  padding-left: 1px;
+`;
+
+const ErrorBlock = styled.div`
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 18px;
+  color: ${({ theme }) => theme.darkPrimaryColor};
+`;
+
+const ErrorText = styled.div`
+  font-weight: normal;
+  color: ${({ theme }) => theme.dangerColor};
+  max-width: 400px;
 `;
 
 const BottomBlock: React.FC<IProps> = ({
