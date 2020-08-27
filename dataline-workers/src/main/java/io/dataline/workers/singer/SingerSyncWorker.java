@@ -123,8 +123,7 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
 
       // jsonschema2pojo does not use optional types, so we have to verify if state is provided
       // manually
-      if (inputConfig.getState().getState() != null
-          && !inputConfig.getState().getState().equals("")) {
+      if (inputConfig.getState().getState() != null) {
         tapCmd = ArrayUtils.addAll(tapCmd, "--state", INPUT_STATE_FILENAME);
       }
 
