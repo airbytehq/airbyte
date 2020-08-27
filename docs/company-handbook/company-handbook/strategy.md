@@ -8,21 +8,21 @@ On top of that, we will build data quality monitoring, privacy compliance \(GDPR
 
 Eventually, you should be able to build your own Fivetran platform internally, while having complete control over your data and costs \(not indexed on MTUs\). If any integration that you need is missing, we will make it super easy for you to build it and to use our orchestration and scheduling features for it. 
 
-We will stay at parity with the incumbent’s features \(Fivetran, StitchData\) at first, as our differentiation is on:
+We will stay at parity with the incumbent’s features \(Fivetran, StitchData\) at first - see our [high-level roadmap](https://docs.dataline.io/company-handbook/company-handbook/roadmap) -, as our differentiation is on:
 
-* open source
+* open source, enabling you to add your own integration very easily
 * data privacy and control
-* fixed pricing \(not indexed on data volume or monthly active users\). 
+* fixed pricing \(not indexed on data volume or monthly active users\).
 
 ## **Our differentiation**
 
 There are a few key differentiating aspects to our strategy:
 
 * Our core product is free to use, open source, and extensible by anybody who can code. 
-* We have a zero-friction adoption in small, midsize and big companies, as you don’t need to go through security compliance to start implementing our solution.
-* We will be able to offer a wide array of data integration products, as GitLab did for CI/CD, letting the community fill in the gaps. If an integration is missing, it is dead simple to add it, and you don’t need to wait for someone else's engineering team to prioritize it.
-* Your data stays in your cloud, which means it is more secure.
-* Our pricing will not be indexed on data volume and can better fit with enterprises’ context. And our open-source codebase will never contain arbitrary limits \(e.g., event volumes, user numbers\).
+* We will be able to offer a **wider array of data integration connectors**. If an integration is missing, it is simpler to add it for an engineer, in comparison to building it on the side. Plus, you don’t need to wait for someone else's engineering team to prioritize it.
+* **Your data stays in your cloud**, which means it is more secure, and you have full control over your data transfer costs.
+* We have a **zero-friction adoption** in small, midsize and big companies, as you don’t need to go through security compliance to start implementing our solution.
+* **Our pricing** will not be indexed on data volume and can better fit with enterprises’ context. And our open-source codebase will never contain arbitrary limits \(e.g., event volumes, user numbers\).
 
 ## **Our financing strategy**
 

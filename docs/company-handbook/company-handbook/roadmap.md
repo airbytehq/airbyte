@@ -1,6 +1,10 @@
 # Roadmap
 
-We foresee several high-level phases in our roadmap that we will try to share here. 
+You can access our short-term roadmap here on our [Github project](https://github.com/datalineio/dataline/projects/1). 
+
+You can also see our last release in our [changelog](https://docs.dataline.io/changelog). We try to have a weekly release cadence. 
+
+We also wanted to share with you how we think about the high-level roadmap over the next few months and years. We foresee several high-level phases that we will try to share here.
 
 ## **1. Parity on data consolidation in warehouses**
 
