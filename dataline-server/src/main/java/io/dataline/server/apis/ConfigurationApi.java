@@ -42,6 +42,7 @@ import io.dataline.api.model.DestinationReadList;
 import io.dataline.api.model.DestinationSpecificationRead;
 import io.dataline.api.model.JobIdRequestBody;
 import io.dataline.api.model.JobInfoRead;
+import io.dataline.api.model.JobListRequestBody;
 import io.dataline.api.model.JobReadList;
 import io.dataline.api.model.SlugRequestBody;
 import io.dataline.api.model.SourceIdRequestBody;
@@ -65,6 +66,7 @@ import io.dataline.server.handlers.ConnectionsHandler;
 import io.dataline.server.handlers.DestinationImplementationsHandler;
 import io.dataline.server.handlers.DestinationSpecificationsHandler;
 import io.dataline.server.handlers.DestinationsHandler;
+import io.dataline.server.handlers.JobHistoryHandler;
 import io.dataline.server.handlers.SchedulerHandler;
 import io.dataline.server.handlers.SourceImplementationsHandler;
 import io.dataline.server.handlers.SourceSpecificationsHandler;
@@ -74,7 +76,6 @@ import io.dataline.server.validation.IntegrationSchemaValidation;
 import javax.validation.Valid;
 import javax.ws.rs.Path;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.commons.lang3.NotImplementedException;
 
 @Path("/v1")
 public class ConfigurationApi implements io.dataline.api.V1Api {
@@ -87,6 +88,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final DestinationImplementationsHandler destinationImplementationsHandler;
   private final ConnectionsHandler connectionsHandler;
   private final SchedulerHandler schedulerHandler;
+  private final JobHistoryHandler jobHistoryHandler;
 
   public ConfigurationApi(String dbRoot, BasicDataSource connectionPool) {
     ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot);
@@ -105,6 +107,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     final SchedulerPersistence schedulerPersistence =
         new DefaultSchedulerPersistence(connectionPool);
     schedulerHandler = new SchedulerHandler(configPersistence, schedulerPersistence);
+    jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
   }
 
   // WORKSPACE
@@ -172,6 +175,12 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   @Override
+  public void deleteSourceImplementation(
+      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+    sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
+  }
+
+  @Override
   public CheckConnectionRead checkConnectionToSourceImplementation(
       @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return schedulerHandler.checkSourceImplementationConnection(sourceImplementationIdRequestBody);
@@ -202,16 +211,6 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   public DestinationSpecificationRead getDestinationSpecification(
       @Valid DestinationIdRequestBody destinationIdRequestBody) {
     return destinationSpecificationsHandler.getDestinationSpecification(destinationIdRequestBody);
-  }
-
-  @Override
-  public JobReadList listJobsFor(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    throw new NotImplementedException("listJobsFor not supported yet");
-  }
-
-  @Override
-  public JobInfoRead getJobInfo(@Valid JobIdRequestBody jobIdRequestBody) {
-    throw new NotImplementedException("getJobInfo not supported yet");
   }
 
   // DESTINATION IMPLEMENTATION
@@ -276,5 +275,17 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   @Override
   public ConnectionSyncRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return schedulerHandler.syncConnection(connectionIdRequestBody);
+  }
+
+  // JOB HISTORY
+
+  @Override
+  public JobReadList listJobsFor(@Valid JobListRequestBody jobListRequestBody) {
+    return jobHistoryHandler.listJobsFor(jobListRequestBody);
+  }
+
+  @Override
+  public JobInfoRead getJobInfo(@Valid JobIdRequestBody jobIdRequestBody) {
+    return jobHistoryHandler.getJobInfo(jobIdRequestBody);
   }
 }

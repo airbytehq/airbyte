@@ -43,6 +43,8 @@ import io.dataline.scheduler.SchedulerPersistence;
 import io.dataline.server.converters.SchemaConverter;
 import io.dataline.server.helpers.ConfigFetchers;
 import java.io.IOException;
+import java.util.UUID;
+import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,10 +131,9 @@ public class SchedulerHandler {
   }
 
   public ConnectionSyncRead syncConnection(ConnectionIdRequestBody connectionIdRequestBody) {
+    @NotNull final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync;
-    standardSync =
-        ConfigFetchers.getStandardSync(
-            configPersistence, connectionIdRequestBody.getConnectionId());
+    standardSync = ConfigFetchers.getStandardSync(configPersistence, connectionId);
 
     final SourceConnectionImplementation sourceConnectionImplementation =
         ConfigFetchers.getSourceConnectionImplementation(
@@ -141,8 +142,6 @@ public class SchedulerHandler {
         ConfigFetchers.getDestinationConnectionImplementation(
             configPersistence, standardSync.getDestinationImplementationId());
 
-    // todo (cgardens) - should it be mandatory that the API insert state? or does the schedule do
-    //   that?
     final long jobId;
     try {
       jobId =

@@ -15,10 +15,10 @@ const Badge = styled.div<IProps>`
     props.success ? props.theme.successColor : props.theme.dangerColor};
   box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
   border-radius: 50%;
-  margin-right: 6px;
-  padding-top: 2px;
+  margin-right: 10px;
+  padding-top: 1px;
   color: ${({ theme }) => theme.whiteColor};
-  font-size: 14px;
+  font-size: 12px;
   text-align: center;
   display: inline-block;
 `;

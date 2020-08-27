@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  db:
+    image: dataline/db:dev
+    build:
+      dockerfile: Dockerfile.database
+      context: .
+  scheduler:
+    image: dataline/scheduler:dev
+    build:
+      dockerfile: Dockerfile.build
+      target: scheduler
+      context: .
+  server:
+    image: dataline/server:dev
+    build:
+      dockerfile: Dockerfile.build
+      target: server
+      context: .
+  webapp:
+    image: dataline/webapp:dev
+    build:
+      dockerfile: Dockerfile.build
+      target: webapp
+      context: .

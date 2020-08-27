@@ -11,8 +11,8 @@ import EditControls from "./components/EditControls";
 type IProps = {
   dropDownData: Array<IDataItem>;
   onSubmit: () => void;
-  formType: "source" | "destination";
-  formValues?: { name: string; serviceType: string };
+  formType: "source" | "destination" | "connection";
+  formValues?: { name: string; serviceType: string; frequency?: string };
 };
 
 const FormContainer = styled(Form)`
@@ -35,7 +35,8 @@ const ServiceForm: React.FC<IProps> = ({
     <Formik
       initialValues={{
         name: formValues?.name || "",
-        serviceType: formValues?.serviceType || ""
+        serviceType: formValues?.serviceType || "",
+        frequency: formValues?.frequency || ""
       }}
       validateOnBlur={true}
       validateOnChange={true}

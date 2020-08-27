@@ -59,6 +59,7 @@ public class SingerCatalogConverters {
         catalog.getStreams().stream()
             .map(
                 stream -> {
+
                   // recourse here is probably to run discovery again and update sync
                   // configuration. this method just outputs the original metadata.
                   if (!tableNameToTable.containsKey(stream.getStream())) {
@@ -89,6 +90,13 @@ public class SingerCatalogConverters {
                                   newSingerMetadata.getMetadata().setSelected(column.getSelected());
                                 } else {
                                   // table metadata
+                                  // TODO HACK set replication mode to full_refresh on every stream
+                                  // to unblock some other dev work. Needs to be fixed ASAP. Sherif
+                                  // is working on this.
+                                  newSingerMetadata
+                                      .getMetadata()
+                                      .setReplicationMethod(
+                                          SingerMetadataChild.ReplicationMethod.FULL_TABLE);
                                   newSingerMetadata.getMetadata().setSelected(table.getSelected());
                                 }
                                 return newSingerMetadata;
@@ -99,6 +107,7 @@ public class SingerCatalogConverters {
                   newSingerStream.setStream(stream.getStream());
                   newSingerStream.setTableName(stream.getTableName());
                   newSingerStream.setTapStreamId(stream.getTapStreamId());
+                  // TODO
                   newSingerStream.setMetadata(newMetadata);
                   // todo (cgardens) - this will not work for legacy catalogs. want to handle this
                   //   in a subsequent PR, because handling this is going to require doing another
@@ -133,10 +142,7 @@ public class SingerCatalogConverters {
                           .orElseThrow(() -> new RuntimeException("Could not find table metadata"));
                   final Table table = new Table();
                   table.setName(stream.getStream());
-                  table.setSelected(
-                      tableMetadata.getMetadata().getSelectedByDefault() == null
-                          ? false
-                          : tableMetadata.getMetadata().getSelectedByDefault());
+                  table.setSelected(isSelected(tableMetadata.getMetadata()));
                   table.setColumns(
                       stream
                           .getSchema()
@@ -156,7 +162,7 @@ public class SingerCatalogConverters {
                                 column.setDataType(singerTypesToDataType(singerColumn.getType()));
                                 // in discovery, you can find columns that are replicated by
                                 // default. we set those to selected. the rest are not.
-                                column.setSelected(singerColumnMetadata.getSelectedByDefault());
+                                column.setSelected(isSelected(singerColumnMetadata));
                                 return column;
                               })
                           .collect(Collectors.toList()));
@@ -167,6 +173,20 @@ public class SingerCatalogConverters {
     final Schema schema = new Schema();
     schema.setTables(tables);
     return schema;
+  }
+
+  private static boolean isSelected(SingerMetadataChild metadataChild) {
+    Boolean selected = metadataChild.getSelected();
+    if (selected != null) {
+      return metadataChild.getSelected();
+    }
+    Boolean selectedByDefault = metadataChild.getSelectedByDefault();
+    if (selectedByDefault != null) {
+      return selectedByDefault;
+    }
+
+    // absent of a default, don't replicate by default.
+    return false;
   }
 
   private static Map<String, List<SingerMetadata>> getTableNameToMetadataList(

@@ -33,13 +33,18 @@ import io.dataline.config.JobOutput;
 import io.dataline.config.JobSyncConfig;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
+import io.dataline.config.StandardSyncOutput;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.integrations.Integrations;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.slf4j.Logger;
@@ -57,17 +62,18 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   public long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation)
       throws IOException {
     final String scope =
-        "checkConnection:source:" + sourceImplementation.getSourceImplementationId();
+        ScopeHelper.createScope(
+            JobConfig.ConfigType.CHECK_CONNECTION_SOURCE,
+            sourceImplementation.getSourceImplementationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
     jobCheckConnectionConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
     jobCheckConnectionConfig.setDockerImage(
-        IntegrationConstants.SPEC_ID_TO_IMPL
-            .get(sourceImplementation.getSourceSpecificationId())
-            .getCheckConnection());
+        Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
+            .getCheckConnectionImage());
 
     final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION);
+    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE);
     jobConfig.setCheckConnection(jobCheckConnectionConfig);
 
     return createPendingJob(scope, jobConfig);
@@ -77,18 +83,19 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   public long createDestinationCheckConnectionJob(
       DestinationConnectionImplementation destinationImplementation) throws IOException {
     final String scope =
-        "checkConnection:destination:" + destinationImplementation.getDestinationImplementationId();
+        ScopeHelper.createScope(
+            JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION,
+            destinationImplementation.getDestinationImplementationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
     jobCheckConnectionConfig.setConnectionConfiguration(
         destinationImplementation.getConfiguration());
     jobCheckConnectionConfig.setDockerImage(
-        IntegrationConstants.SPEC_ID_TO_IMPL
-            .get(destinationImplementation.getDestinationSpecificationId())
-            .getCheckConnection());
+        Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId())
+            .getCheckConnectionImage());
 
     final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION);
+    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION);
     jobConfig.setCheckConnection(jobCheckConnectionConfig);
 
     return createPendingJob(scope, jobConfig);
@@ -98,14 +105,16 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   public long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation)
       throws IOException {
 
-    final String scope = "discoverSchema:" + sourceImplementation.getSourceImplementationId();
+    final String scope =
+        ScopeHelper.createScope(
+            JobConfig.ConfigType.DISCOVER_SCHEMA,
+            sourceImplementation.getSourceImplementationId().toString());
 
     final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig();
     jobDiscoverSchemaConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
     jobDiscoverSchemaConfig.setDockerImage(
-        IntegrationConstants.SPEC_ID_TO_IMPL
-            .get(sourceImplementation.getSourceSpecificationId())
-            .getDiscoverSchema());
+        Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
+            .getDiscoverSchemaImage());
 
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA);
@@ -120,21 +129,30 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       DestinationConnectionImplementation destinationImplementation,
       StandardSync standardSync)
       throws IOException {
+    final UUID connectionId = standardSync.getConnectionId();
 
-    final String scope = "sync:" + standardSync.getConnectionId();
+    final String scope =
+        ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig();
     jobSyncConfig.setSourceConnectionImplementation(sourceImplementation);
     jobSyncConfig.setSourceDockerImage(
-        IntegrationConstants.SPEC_ID_TO_IMPL
-            .get(sourceImplementation.getSourceSpecificationId())
-            .getSync());
+        Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId()).getSyncImage());
     jobSyncConfig.setDestinationConnectionImplementation(destinationImplementation);
     jobSyncConfig.setDestinationDockerImage(
-        IntegrationConstants.SPEC_ID_TO_IMPL
-            .get(destinationImplementation.getDestinationSpecificationId())
-            .getSync());
+        Integrations.findBySpecId(destinationImplementation.getDestinationImplementationId())
+            .getSyncImage());
     jobSyncConfig.setStandardSync(standardSync);
+
+    final Optional<Job> previousJobOptional =
+        JobUtils.getLastSyncJobForConnectionId(connectionPool, connectionId);
+    final Optional<StandardSyncOutput> standardSyncOutput =
+        previousJobOptional.flatMap(Job::getOutput).map(JobOutput::getSync);
+
+    standardSyncOutput
+        .map(StandardSyncOutput::getStandardSyncSummary)
+        .ifPresent(jobSyncConfig::setStandardSyncSummary);
+    standardSyncOutput.map(StandardSyncOutput::getState).ifPresent(jobSyncConfig::setState);
 
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.SYNC);
@@ -161,12 +179,11 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
                           scope,
                           now,
                           now,
-                          "pending",
+                          JobStatus.PENDING.toString().toLowerCase(),
                           configJson,
                           null,
-                          "", // todo: assign stdout
-                          "") // todo: assign stderr
-                  )
+                          JobLogs.getLogDirectory(scope),
+                          JobLogs.getLogDirectory(scope)))
               .stream()
               .findFirst()
               .orElseThrow(() -> new RuntimeException("This should not happen"));
@@ -177,6 +194,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     return record.getValue("id", Long.class);
   }
 
+  @Override
   public Job getJob(long jobId) throws IOException {
     try {
       return DatabaseHelper.query(
@@ -190,6 +208,21 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
             return getJobFromRecord(jobEntry);
           });
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException {
+    try {
+      String scope = ScopeHelper.createScope(configType, configId);
+      return DatabaseHelper.query(
+          connectionPool,
+          ctx ->
+              ctx.fetch("SELECT * FROM jobs WHERE scope = ?", scope).stream()
+                  .map(DefaultSchedulerPersistence::getJobFromRecord)
+                  .collect(Collectors.toList()));
     } catch (SQLException e) {
       throw new IOException(e);
     }

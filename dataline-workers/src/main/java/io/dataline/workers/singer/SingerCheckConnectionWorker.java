@@ -29,6 +29,7 @@ import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.CheckConnectionWorker;
+import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import java.nio.file.Path;
@@ -43,20 +44,19 @@ public class SingerCheckConnectionWorker
 
   private final SingerDiscoverSchemaWorker singerDiscoverSchemaWorker;
 
-  public SingerCheckConnectionWorker(SingerConnector connector) {
-    super(connector);
-    this.singerDiscoverSchemaWorker = new SingerDiscoverSchemaWorker(connector);
+  public SingerCheckConnectionWorker(String imageName) {
+    this.singerDiscoverSchemaWorker = new SingerDiscoverSchemaWorker(imageName);
   }
 
   @Override
-  OutputAndStatus<StandardCheckConnectionOutput> runInternal(
-      StandardCheckConnectionInput input, Path workspaceRoot) {
+  public OutputAndStatus<StandardCheckConnectionOutput> run(
+      StandardCheckConnectionInput input, Path workspaceRoot) throws InvalidCredentialsException {
 
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
     discoverSchemaInput.setConnectionConfiguration(input.getConnectionConfiguration());
 
     OutputAndStatus<StandardDiscoverSchemaOutput> outputAndStatus =
-        singerDiscoverSchemaWorker.runInternal(discoverSchemaInput, workspaceRoot);
+        singerDiscoverSchemaWorker.run(discoverSchemaInput, workspaceRoot);
     StandardCheckConnectionOutput output = new StandardCheckConnectionOutput();
     JobStatus jobStatus;
     if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL

@@ -66,4 +66,15 @@ public class DatabaseHelper {
       return transform.apply(context);
     }
   }
+
+  public static void execute(
+      BasicDataSource connectionPool, ContextExecutionFunction executionFunction)
+      throws SQLException {
+    query(
+        connectionPool,
+        ctx -> {
+          executionFunction.execute(ctx);
+          return 1;
+        });
+  }
 }

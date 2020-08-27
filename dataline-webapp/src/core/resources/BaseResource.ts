@@ -1,7 +1,7 @@
-// import { Method, Resource } from "rest-hooks";
-//
+import { Method, Resource } from "rest-hooks";
+
 // import { authService } from "../auth/authService";
-// import { config } from "../../config/config";
+import config from "../../config";
 
 export class NetworkError extends Error {
   status: number;
@@ -14,149 +14,148 @@ export class NetworkError extends Error {
   }
 }
 
-// export default abstract class BaseResource extends Resource {
-//   /!** Perform network request and resolve with HTTP Response *!/
-//   static async fetchResponse(
-//     _: Method,
-//     url: string,
-//     body?: Readonly<object | string>
-//   ) {
-//     const session = (await authService.getCurrentSession())
-//       .getAccessToken()
-//       .getJwtToken();
-//
-//     let options: RequestInit = {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${session}`
-//       }
-//     } as any;
-//     if (this.fetchOptionsPlugin) options = this.fetchOptionsPlugin(options);
-//     if (body) options.body = JSON.stringify(body);
-//
-//     return fetch(url, options);
-//   }
-//
-//   /!** Perform network request and resolve with json body *!/
-//   static async fetch(
-//     method: Method,
-//     url: string,
-//     body?: Readonly<object | string>
-//   ) {
-//     const response = await this.fetchResponse(method, url, body);
-//
-//     if (response.status >= 200 && response.status < 300) {
-//       const result = await response.json();
-//       return result;
-//     } else {
-//       const e = new NetworkError(response);
-//       e.status = response.status;
-//       throw e;
-//     }
-//   }
-//
-//   static listUrl<T extends typeof Resource>(this: T): string {
-//     return `${config.apiUrl}${this.urlRoot}`;
-//   }
-//
-//   static url<T extends typeof Resource>(this: T): string {
-//     return `${config.apiUrl}${this.urlRoot}`;
-//   }
-//
-//   static rootUrl(): string {
-//     return config.apiUrl;
-//   }
-//
-//   static listShape<T extends typeof Resource>(this: T) {
-//     return {
-//       ...super.listShape(),
-//       getFetchKey: params =>
-//         "POST " + this.url(params) + "/list" + JSON.stringify(params),
-//       fetch: async (
-//         params: Readonly<Record<string, string | number>>
-//       ): Promise<any> => {
-//         const response = await this.fetch(
-//           "post",
-//           `${this.listUrl(params)}/list`,
-//           { ...params }
-//         );
-//         return response;
-//       }
-//     };
-//   }
-//
-//   static detailShape<T extends typeof Resource>(this: T) {
-//     return {
-//       ...super.detailShape(),
-//       getFetchKey: params =>
-//         "POST " + this.url(params) + "/get" + JSON.stringify(params),
-//       fetch: async (
-//         params: Readonly<Record<string, string | number>>
-//       ): Promise<any> => {
-//         const response = await this.fetch(
-//           "post",
-//           `${this.url(params)}/get`,
-//           params
-//         );
-//         return response;
-//       }
-//     };
-//   }
-//
-//   static createShape<T extends typeof Resource>(this: T) {
-//     return {
-//       ...super.createShape(),
-//       getFetchKey: params =>
-//         "POST " + this.url(params) + "/create" + JSON.stringify(params),
-//       fetch: async (
-//         params: Readonly<Record<string, string | number>>,
-//         body: Readonly<object>
-//       ): Promise<any> => {
-//         const response = await this.fetch(
-//           "post",
-//           `${this.listUrl(params)}/create`,
-//           body
-//         );
-//         return response;
-//       }
-//     };
-//   }
-//
-//   static deleteShape<T extends typeof Resource>(this: T) {
-//     return {
-//       ...super.deleteShape(),
-//       getFetchKey: params =>
-//         "POST " + this.url(params) + "/delete" + JSON.stringify(params),
-//       fetch: async (
-//         params: Readonly<Record<string, string | number>>
-//       ): Promise<any> => {
-//         const response = await this.fetch(
-//           "post",
-//           `${this.url(params)}/delete`,
-//           params
-//         );
-//         return response;
-//       }
-//     };
-//   }
-//
-//   static partialUpdateShape<T extends typeof Resource>(this: T) {
-//     return {
-//       ...super.partialUpdateShape(),
-//       getFetchKey: params =>
-//         "POST " + this.url(params) + "/partial-update" + JSON.stringify(params),
-//       fetch: async (
-//         params: Readonly<Record<string, string | number>>,
-//         body: Readonly<object>
-//       ): Promise<any> => {
-//         const response = await this.fetch(
-//           "post",
-//           `${this.url(params)}/update`,
-//           body
-//         );
-//         return response;
-//       }
-//     };
-//   }
-// }
+export default abstract class BaseResource extends Resource {
+  /** Perform network request and resolve with HTTP Response */
+  static async fetchResponse(
+    _: Method,
+    url: string,
+    body?: Readonly<object | string>
+  ) {
+    // const session = (await authService.getCurrentSession())
+    //   .getAccessToken()
+    //   .getJwtToken();
+
+    let options: RequestInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+        // Authorization: `Bearer ${session}`
+      }
+    } as any;
+    if (this.fetchOptionsPlugin) options = this.fetchOptionsPlugin(options);
+    if (body) options.body = JSON.stringify(body);
+
+    return fetch(url, options);
+  }
+
+  /** Perform network request and resolve with json body */
+  static async fetch(
+    method: Method,
+    url: string,
+    body?: Readonly<object | string>
+  ) {
+    const response = await this.fetchResponse(method, url, body);
+
+    if (response.status >= 200 && response.status < 300) {
+      return await response.json();
+    } else {
+      const e = new NetworkError(response);
+      e.status = response.status;
+      throw e;
+    }
+  }
+
+  static listUrl<T extends typeof Resource>(this: T): string {
+    return `${config.apiUrl}${this.urlRoot}`;
+  }
+
+  static url<T extends typeof Resource>(this: T): string {
+    return `${config.apiUrl}${this.urlRoot}`;
+  }
+
+  static rootUrl(): string {
+    return config.apiUrl;
+  }
+
+  static listShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.listShape(),
+      getFetchKey: (params: any) =>
+        "POST " + this.url(params) + "/list" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<any> => {
+        const response = await this.fetch(
+          "post",
+          `${this.listUrl(params)}/list`,
+          { ...params }
+        );
+        return response;
+      }
+    };
+  }
+
+  static detailShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      getFetchKey: (params: any) =>
+        "POST " + this.url(params) + "/get" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<any> => {
+        const response = await this.fetch(
+          "post",
+          `${this.url(params)}/get`,
+          params
+        );
+        return response;
+      }
+    };
+  }
+
+  static createShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.createShape(),
+      getFetchKey: (params: any) =>
+        "POST " + this.url(params) + "/create" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>,
+        body: Readonly<object>
+      ): Promise<any> => {
+        const response = await this.fetch(
+          "post",
+          `${this.listUrl(params)}/create`,
+          body
+        );
+        return response;
+      }
+    };
+  }
+
+  static deleteShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.deleteShape(),
+      getFetchKey: (params: any) =>
+        "POST " + this.url(params) + "/delete" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<any> => {
+        const response = await this.fetch(
+          "post",
+          `${this.url(params)}/delete`,
+          params
+        );
+        return response;
+      }
+    };
+  }
+
+  static partialUpdateShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.partialUpdateShape(),
+      getFetchKey: (params: any) =>
+        "POST " + this.url(params) + "/partial-update" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>,
+        body: Readonly<object>
+      ): Promise<any> => {
+        const response = await this.fetch(
+          "post",
+          `${this.url(params)}/update`,
+          body
+        );
+        return response;
+      }
+    };
+  }
+}
