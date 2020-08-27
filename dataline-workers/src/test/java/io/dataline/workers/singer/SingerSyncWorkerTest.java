@@ -55,7 +55,6 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -83,7 +82,7 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
     PostgreSQLContainerTestHelper.wipePublicSchema(targetDb);
   }
 
-  @Disabled
+  //  @Disabled
   @Test
   public void testFirstTimeFullTableSync()
       throws IOException, SQLException, InterruptedException, InvalidCredentialsException {
@@ -113,7 +112,7 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
     syncInput.setSourceConnectionImplementation(sourceConnection);
 
     State state = new State();
-    state.setState("{}");
+    state.setState("");
     syncInput.setState(state);
 
     OutputAndStatus<StandardSyncOutput> syncResult =
