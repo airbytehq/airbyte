@@ -24,20 +24,19 @@
 
 package io.dataline.workers;
 
-import io.dataline.config.SingerProtocol;
+import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
-import io.dataline.config.State;
-import io.dataline.workers.singer.SingerTap;
+import io.dataline.workers.protocol.SingerMessageTracker;
+import io.dataline.workers.singer.SingerTapFactory;
 import io.dataline.workers.singer.SingerTarget;
 import java.nio.file.Path;
-import java.util.Iterator;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
-import org.apache.commons.lang3.mutable.MutableLong;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +49,8 @@ public class DefaultSyncWorker implements SyncWorker {
   private final String tapDockerImage;
   private final String targetDockerImage;
 
-  AutoCloseable tapCloser = null;
-  AutoCloseable targetCloser = null;
+  Runnable tapCloser = null;
+  Runnable targetCloser = null;
 
   public DefaultSyncWorker(String tapDockerImage, String targetDockerImage) {
     this.tapDockerImage = tapDockerImage;
@@ -59,8 +58,7 @@ public class DefaultSyncWorker implements SyncWorker {
   }
 
   @Override
-  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path workspacePath)
-      throws InvalidCredentialsException, InvalidCatalogException {
+  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path workspacePath) {
     long startTime = System.currentTimeMillis();
 
     final StandardTapConfig tapConfig = new StandardTapConfig();
@@ -72,24 +70,17 @@ public class DefaultSyncWorker implements SyncWorker {
         syncInput.getDestinationConnectionImplementation());
     targetConfig.setStandardSync(syncInput.getStandardSync());
 
-    final MutableLong recordCount = new MutableLong();
-    Consumer<SingerProtocol> counter =
-        record -> {
-          if (record.getType().equals(SingerProtocol.Type.RECORD)) {
-            recordCount.increment();
-          }
-        };
-
-    final State state;
-    try (SyncTap<SingerProtocol> tap = new SingerTap(tapDockerImage)) {
-      final Iterator<SingerProtocol> iterator = tap.run(tapConfig, workspacePath);
+    final SingerMessageTracker singerMessageTracker =
+        new SingerMessageTracker(syncInput.getStandardSync().getConnectionId());
+    try (Stream<SingerMessage> tap =
+        new SingerTapFactory(tapDockerImage).create(tapConfig, workspacePath)) {
       tapCloser = tap::close;
 
-      final Iterator<SingerProtocol> countingIterator = new ConsumerIterator<>(iterator, counter);
-      try (SyncTarget<SingerProtocol> target = new SingerTarget(targetDockerImage)) {
-        targetCloser = target::close;
+      final Stream<SingerMessage> peakedTapStream = tap.peek(singerMessageTracker);
+      try (Target<SingerMessage> target = new SingerTarget(targetDockerImage)) {
+        targetCloser = getTargetCloser(target);
 
-        state = target.run(countingIterator, targetConfig, workspacePath);
+        target.consume(peakedTapStream, targetConfig, workspacePath);
       }
 
     } catch (Exception e) {
@@ -102,7 +93,7 @@ public class DefaultSyncWorker implements SyncWorker {
     }
 
     StandardSyncSummary summary = new StandardSyncSummary();
-    summary.setRecordsSynced(recordCount.getValue());
+    summary.setRecordsSynced(singerMessageTracker.getRecordCount());
     summary.setStartTime(startTime);
     summary.setEndTime(System.currentTimeMillis());
     summary.setJobId(UUID.randomUUID()); // TODO this is not input anywhere
@@ -110,22 +101,24 @@ public class DefaultSyncWorker implements SyncWorker {
 
     final StandardSyncOutput output = new StandardSyncOutput();
     output.setStandardSyncSummary(summary);
-    output.setState(state);
+    singerMessageTracker.getOutputState().ifPresent(output::setState);
 
     return new OutputAndStatus<>(JobStatus.SUCCESSFUL, output);
   }
 
+  private Runnable getTargetCloser(Target<SingerMessage> target) {
+    return () -> {
+      try {
+        target.close();
+      } catch (Exception e) {
+        LOGGER.error("Failed to close target", e);
+      }
+    };
+  }
+
   @Override
   public void cancel() {
-    try {
-      if (tapCloser != null) {
-        tapCloser.close();
-      }
-      if (targetCloser != null) {
-        targetCloser.close();
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    Optional.ofNullable(tapCloser).ifPresent(Runnable::run);
+    Optional.ofNullable(targetCloser).ifPresent(Runnable::run);
   }
 }

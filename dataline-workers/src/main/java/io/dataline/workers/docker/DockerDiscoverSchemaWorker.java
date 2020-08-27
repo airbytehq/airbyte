@@ -22,19 +22,22 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.workers.docker;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dataline.config.StandardCheckConnectionInput;
-import io.dataline.config.StandardCheckConnectionOutput;
+import io.dataline.config.StandardDiscoverSchemaInput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
+import io.dataline.workers.DiscoverSchemaWorker;
+import io.dataline.workers.JobStatus;
+import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.WorkerUtils;
+import io.dataline.workers.utils.DockerUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DockerCheckConnectionWorker implements CheckConnectionWorker {
+public class DockerDiscoverSchemaWorker implements DiscoverSchemaWorker {
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerCheckConnectionWorker.class);
 
   private static final String INPUT = "input.json";
@@ -44,47 +47,38 @@ public class DockerCheckConnectionWorker implements CheckConnectionWorker {
 
   Process tapProcess;
 
-  public DockerCheckConnectionWorker(String imageName) {
+  public DockerDiscoverSchemaWorker(String imageName) {
     this.imageName = imageName;
   }
 
   @Override
-  public OutputAndStatus<StandardCheckConnectionOutput> run(
-      StandardCheckConnectionInput standardCheckConnectionInput, Path workspacePath) {
-    final ObjectMapper objectMapper = new ObjectMapper();
+  public OutputAndStatus<StandardDiscoverSchemaOutput> run(
+      StandardDiscoverSchemaInput input, Path workspacePath) {
 
-    // write input struct to docker image
-    final String inputString;
+    // mount input struct to known location on docker container.
+    final Path configPath = WorkerUtils.writeObjectToJsonFileWorkspace(workspacePath, INPUT, input);
+
+    // run it.
     try {
-      inputString = objectMapper.writeValueAsString(standardCheckConnectionInput);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-    final Path configPath =
-        WorkerUtils.writeFileToWorkspace(workspacePath, INPUT, inputString); // wrong type
+      final String[] cmd =
+          DockerUtils.getDockerCommand(workspacePath, imageName, "--config", configPath.toString());
 
-    // run it. patiently.
-    try {
-      String[] tapCmd = {
-        "docker", "run", workspacePath.toString(), imageName, "--config", configPath.toString()
-      };
+      LOGGER.debug("Command: {}", String.join(" ", cmd));
 
-      LOGGER.debug("Tap command: {}", String.join(" ", tapCmd));
-
-      tapProcess = new ProcessBuilder().command(tapCmd).start();
+      tapProcess = new ProcessBuilder().command(cmd).start();
 
       while (!tapProcess.waitFor(1, TimeUnit.MINUTES)) {
         LOGGER.debug("Waiting for worker");
       }
 
-      // read output struct. assume it is written to correct place.
-      final String outputString = WorkerUtils.readFileFromWorkspace(workspacePath, OUTPUT);
-      final StandardCheckConnectionOutput standardCheckConnectionOutput =
-          objectMapper.readValue(outputString, StandardCheckConnectionOutput.class);
+      // read output struct from known location on docker container.
+      final StandardDiscoverSchemaOutput standardCheckConnectionOutput =
+          WorkerUtils.readObjectFromJsonFileWorkspace(
+              workspacePath, OUTPUT, StandardDiscoverSchemaOutput.class);
 
       return new OutputAndStatus<>(JobStatus.SUCCESSFUL, standardCheckConnectionOutput);
     } catch (IOException | InterruptedException e) {
-      LOGGER.error("DockerCheckConnectionWorker failed", e);
+      LOGGER.error("DockerDiscoverSchemaWorker failed", e);
       return new OutputAndStatus<>(JobStatus.FAILED, null);
     }
   }

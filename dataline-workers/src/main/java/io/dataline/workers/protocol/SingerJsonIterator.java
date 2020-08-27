@@ -28,23 +28,23 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dataline.config.SingerProtocol;
+import io.dataline.config.SingerMessage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
-public class SingerJsonIterator implements Iterator<SingerProtocol> {
+public class SingerJsonIterator implements Iterator<SingerMessage> {
   private final ObjectMapper objectMapper;
   private final JsonParser jsonParser;
 
   // https://cassiomolin.com/2019/08/19/combining-jackson-streaming-api-with-objectmapper-for-parsing-json/
-  public SingerJsonIterator(InputStream is) {
+  public SingerJsonIterator(InputStream inputStream) {
     this.objectMapper = new ObjectMapper();
     //      mapper.registerModule(new JavaTimeModule());
     objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
     try {
-      jsonParser = objectMapper.getFactory().createParser(is);
+      jsonParser = objectMapper.getFactory().createParser(inputStream);
 
       // Check the first token
       if (jsonParser.nextToken() != JsonToken.START_ARRAY) {
@@ -65,9 +65,9 @@ public class SingerJsonIterator implements Iterator<SingerProtocol> {
   }
 
   @Override
-  public SingerProtocol next() {
+  public SingerMessage next() {
     try {
-      return objectMapper.readValue(jsonParser, SingerProtocol.class);
+      return objectMapper.readValue(jsonParser, SingerMessage.class);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

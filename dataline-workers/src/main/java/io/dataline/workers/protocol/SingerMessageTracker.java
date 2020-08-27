@@ -22,35 +22,45 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.workers.protocol;
 
-import java.util.Iterator;
+import io.dataline.config.SingerMessage;
+import io.dataline.config.State;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-/**
- * Iterator that runs a provided consumer on each call of next.
- *
- * @param <T>
- */
-public class ConsumerIterator<T> implements Iterator<T> {
-  private final Iterator<T> iterator;
-  private final Consumer<T> consumer;
+public class SingerMessageTracker implements Consumer<SingerMessage> {
+  private final AtomicLong recordCount;
+  private final AtomicReference<State> outputState;
+  private final UUID connectionId;
 
-  public ConsumerIterator(Iterator<T> iterator, Consumer<T> consumer) {
-    this.iterator = iterator;
-    this.consumer = consumer;
+  public SingerMessageTracker(UUID connectionId) {
+    this.connectionId = connectionId;
+    this.recordCount = new AtomicLong();
+    this.outputState = new AtomicReference<>();
   }
 
   @Override
-  public boolean hasNext() {
-    return iterator.hasNext();
+  public void accept(SingerMessage record) {
+    if (record.getType().equals(SingerMessage.Type.RECORD)) {
+      recordCount.incrementAndGet();
+    }
+    if (record.getType().equals(SingerMessage.Type.STATE)) {
+      final State state = new State();
+      state.setConnectionId(connectionId);
+      state.setState(record);
+      outputState.set(state);
+    }
   }
 
-  @Override
-  public T next() {
-    final T next = iterator.next();
-    consumer.accept(next);
+  public long getRecordCount() {
+    return recordCount.get();
+  }
 
-    return next;
+  public Optional<State> getOutputState() {
+    return Optional.ofNullable(outputState.get());
   }
 }

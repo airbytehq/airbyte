@@ -26,14 +26,15 @@ package io.dataline.workers.singer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Streams;
 import io.dataline.config.SingerCatalog;
-import io.dataline.config.SingerProtocol;
+import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.SyncTap;
+import io.dataline.workers.TapFactory;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.protocol.SingerJsonIterator;
 import io.dataline.workers.utils.DockerUtils;
@@ -41,13 +42,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerTap implements SyncTap<SingerProtocol> {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerTap.class);
+public class SingerTapFactory implements TapFactory<SingerMessage> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerTapFactory.class);
 
   private static final String CONFIG_JSON_FILENAME = "tap_config.json";
   private static final String CATALOG_JSON_FILENAME = "catalog.json";
@@ -56,15 +56,16 @@ public class SingerTap implements SyncTap<SingerProtocol> {
 
   private final String dockerImageName;
 
-  private Process tapProcess;
-  private InputStream stdout;
+  private Process tapProcess = null;
+  private InputStream stdout = null;
 
-  public SingerTap(String dockerImageName) {
+  public SingerTapFactory(String dockerImageName) {
     this.dockerImageName = dockerImageName;
   }
 
+  @SuppressWarnings("UnstableApiUsage")
   @Override
-  public Iterator<SingerProtocol> run(StandardTapConfig input, Path workspaceRoot)
+  public Stream<SingerMessage> create(StandardTapConfig input, Path workspaceRoot)
       throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, workspaceRoot);
 
@@ -120,35 +121,22 @@ public class SingerTap implements SyncTap<SingerProtocol> {
       throw new RuntimeException(e);
     }
 
-    final InputStream stdout = tapProcess.getInputStream();
-    return new SingerJsonIterator(stdout);
+    stdout = tapProcess.getInputStream();
+    return Streams.stream(new SingerJsonIterator(stdout)).onClose(getCloseFunction());
   }
 
-  @Override
-  public void cancel() {
-    WorkerUtils.cancelHelper(tapProcess);
-  }
-
-  @Override
-  public void close() {
-    if (stdout != null) {
-      try {
-        stdout.close();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    if (tapProcess != null) {
-      try {
-        while (!tapProcess.waitFor(1, TimeUnit.MINUTES)) {
-          LOGGER.debug(
-              "Waiting for sync worker (job:{}) target", ""); // TODO when job id is passed in
+  public Runnable getCloseFunction() {
+    return () -> {
+      if (stdout != null) {
+        try {
+          stdout.close();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
         }
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
       }
-    }
+
+      WorkerUtils.cancelHelper(tapProcess);
+    };
   }
 
   private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path workspaceRoot)

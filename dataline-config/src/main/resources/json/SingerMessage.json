@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/SingerProtocol.json",
-  "title": "SingerProtocol",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/SingerMessage.json",
+  "title": "SingerMessage",
   "description": "This is a compromise. Java codegen doesn't support union types. So we need to just make a flat json schema that looks like at of the possible permutations of a singer message. See the description for each field to see which message type that field belongs to.",
   "type": "object",
   "additionalProperties": false,

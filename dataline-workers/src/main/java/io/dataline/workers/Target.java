@@ -24,13 +24,11 @@
 
 package io.dataline.workers;
 
-import io.dataline.config.StandardTapConfig;
+import io.dataline.config.StandardTargetConfig;
 import java.nio.file.Path;
-import java.util.Iterator;
+import java.util.stream.Stream;
 
-public interface SyncTap<T> extends AutoCloseable {
-  Iterator<T> run(StandardTapConfig tapConfig, Path workspacePath)
-      throws InvalidCredentialsException, InvalidCatalogException, SyncException;
-
-  void cancel();
+public interface Target<T> extends AutoCloseable {
+  void consume(Stream<T> data, StandardTargetConfig targetConfig, Path workspacePath)
+      throws SyncException;
 }

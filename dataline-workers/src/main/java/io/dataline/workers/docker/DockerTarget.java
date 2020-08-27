@@ -22,9 +22,8 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.docker;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import io.dataline.config.SingerMessage;
@@ -42,35 +41,25 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerTarget implements Target<SingerMessage> {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerTarget.class);
+public class DockerTarget implements Target<SingerMessage> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(DockerTarget.class);
 
-  private static final String CONFIG_JSON_FILENAME = "target_config.json";
+  private static final String CONFIG_JSON_FILENAME = "input.json";
 
   private final String dockerImageName;
   private Process targetProcess;
 
-  public SingerTarget(String dockerImageName) {
+  public DockerTarget(String dockerImageName) {
     this.dockerImageName = dockerImageName;
   }
 
   @Override
   public void consume(
       Stream<SingerMessage> data, StandardTargetConfig targetConfig, Path workspacePath) {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String configDotJson;
 
-    try {
-      configDotJson =
-          objectMapper.writeValueAsString(
-              targetConfig.getDestinationConnectionImplementation().getConfiguration());
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-
-    // write config.json to disk
-    Path configPath =
-        WorkerUtils.writeFileToWorkspace(workspacePath, CONFIG_JSON_FILENAME, configDotJson);
+    final Path configPath =
+        WorkerUtils.writeObjectToJsonFileWorkspace(
+            workspacePath, CONFIG_JSON_FILENAME, targetConfig);
 
     String[] dockerCmd =
         DockerUtils.getDockerCommand(
@@ -87,6 +76,7 @@ public class SingerTarget implements Target<SingerMessage> {
           new BufferedWriter(
               new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8))) {
 
+        final ObjectMapper objectMapper = new ObjectMapper();
         data.forEach(
             record -> {
               try {
