@@ -8,6 +8,23 @@ We hope you are enjoying Dataline and look forward to hearing your feedback. Whe
 
 We do ask that you read this document and send us any issues or raise pull requests to make sure we understand clearly what you are asking for. This will help ensure we are making the right decisions and taking the right actions.
 
+## **Review Process**
+
+**‌‌**If you are considering adding to the codebase or contributing a new integration, first a big thank you. We sincerely appreciate your help in our mission to solve the data integration problem!
+
+Here is a list of easy [good first issues](https://github.com/datalineio/dataline/labels/good%20first%20issue) to do. 
+
+As soon as you are done with your development, just put up a PR.   
+When we review we look at:
+
+* ‌Does the PR solve the issue?
+* Is the proposed solution reasonable?
+* Is it tested? \(unit tests or integration tests\)
+* Is it introducing security risks?
+* Does it pass QA?
+
+‌Once your PR passes, we will merge it.
+
 ## **Upvoting Issues, Feature and Integration Requests**
 
 You are very welcome to add your own reactions to the existing issues. We will take them in consideration in our prioritization efforts, especially for integrations. 
@@ -40,17 +57,4 @@ To see what has already been proposed by the community you can look [here](https
 ## **Reporting Security Issues**
 
 Please do not create a public GitHub issue. If you've found a security issue, please email us directly at [security@dataline.io](mailto:security@dataline.io) instead of raising an issue.
-
-## **Review Process**
-
-**‌**As soon as you are done with your development, just put up a PR.   
-When we review we look at:
-
-* ‌Does the PR solve the issue?
-* Is the proposed solution reasonable?
-* Is it tested? \(unit tests or integration tests\)
-* Is it introducing security risks?
-* Does it pass QA?
-
-‌Once your PR passes, we will merge it.
 
