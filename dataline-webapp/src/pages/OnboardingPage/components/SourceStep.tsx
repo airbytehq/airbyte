@@ -10,6 +10,7 @@ type IProps = {
   onSubmit: () => void;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
   hasSuccess?: boolean;
+  errorMessage?: React.ReactNode;
 };
 
 const useSourceSpecificationLoad = (sourceId: string) => {
@@ -34,7 +35,8 @@ const useSourceSpecificationLoad = (sourceId: string) => {
 const SourceStep: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
-  hasSuccess
+  hasSuccess,
+  errorMessage
 }) => {
   const [sourceId, setSourceId] = useState("");
   const spec = useSourceSpecificationLoad(sourceId);
@@ -50,6 +52,7 @@ const SourceStep: React.FC<IProps> = ({
         formType="source"
         dropDownData={dropDownData}
         hasSuccess={hasSuccess}
+        errorMessage={errorMessage}
       />
     </ContentCard>
   );

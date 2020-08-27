@@ -32,6 +32,7 @@
   "form.every": "Every {value}",
   "form.testingConnection": "Testing connection...",
   "form.successTests": "All connection tests passed!",
+  "form.failedTests": "The connection tests failed.",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",

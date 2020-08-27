@@ -15,6 +15,7 @@ type IProps = {
   formType: "source" | "destination" | "connection";
   formValues?: { name: string; serviceType: string; frequency?: string };
   hasSuccess?: boolean;
+  errorMessage?: React.ReactNode;
 };
 
 const FormContainer = styled(Form)`
@@ -32,7 +33,8 @@ const ServiceForm: React.FC<IProps> = ({
   dropDownData,
   formValues,
   onDropDownSelect,
-  hasSuccess
+  hasSuccess,
+  errorMessage
 }) => {
   const isEditMode = !!formValues;
   return (
@@ -75,6 +77,7 @@ const ServiceForm: React.FC<IProps> = ({
               dirty={dirty}
               formType={formType}
               hasSuccess={hasSuccess}
+              errorMessage={errorMessage}
             />
           )}
         </FormContainer>
