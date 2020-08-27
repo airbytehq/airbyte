@@ -6,33 +6,16 @@ import ServiceForm from "../../../components/ServiceForm";
 import ConnectionBlock from "../../../components/ConnectionBlock";
 
 type IProps = {
+  hasSuccess?: boolean;
   onSubmit: () => void;
+  dropDownData: Array<{ text: string; value: string; img?: string }>;
 };
 
-const Destination: React.FC<IProps> = ({ onSubmit }) => {
-  const data = [
-    {
-      text: "destination 1",
-      value: "1",
-      img: "/default-logo-catalog.svg"
-    },
-    {
-      text: "destination 2",
-      value: "2",
-      img: "/default-logo-catalog.svg"
-    },
-    {
-      text: "destination 3",
-      value: "3",
-      img: "/default-logo-catalog.svg"
-    },
-    {
-      text: "destination 4",
-      value: "4",
-      img: "/default-logo-catalog.svg"
-    }
-  ];
-
+const Destination: React.FC<IProps> = ({
+  onSubmit,
+  dropDownData,
+  hasSuccess
+}) => {
   return (
     <>
       <ConnectionBlock itemFrom={{ name: "Test 1" }} />
@@ -40,9 +23,10 @@ const Destination: React.FC<IProps> = ({ onSubmit }) => {
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >
         <ServiceForm
+          hasSuccess={hasSuccess}
           onSubmit={onSubmit}
           formType="destination"
-          dropDownData={data}
+          dropDownData={dropDownData}
         />
       </ContentCard>
     </>

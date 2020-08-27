@@ -5,19 +5,24 @@ type IProps = {
   id: string;
   lightMode?: boolean;
   name: string | React.ReactNode;
-  onClick: (id: string) => void;
+  onClick?: (id: string) => void;
   isActive?: boolean;
   num: number;
 };
 
-const StepView = styled.div<{ isActive?: boolean; lightMode?: boolean }>`
+const StepView = styled.div<{
+  isActive?: boolean;
+  lightMode?: boolean;
+  nonClickable?: boolean;
+}>`
   width: ${({ lightMode }) => (lightMode ? "auto" : "212px")};
   min-width: ${({ lightMode }) => (lightMode ? "70px" : "auto")};
   min-height: 28px;
   padding: 6px;
   border-radius: 4px;
-  pointer-events: ${({ isActive }) => (isActive ? "none" : "all")};
-  cursor: pointer;
+  pointer-events: ${({ isActive, nonClickable }) =>
+    isActive || nonClickable ? "none" : "all"};
+  cursor: ${({ nonClickable }) => (nonClickable ? "default" : "pointer")};
   text-align: center;
   background: ${({ theme, isActive }) =>
     isActive ? theme.primaryColor12 : "none"};
@@ -53,10 +58,15 @@ const Step: React.FC<IProps> = ({
   num,
   lightMode
 }) => {
-  const onItemClickItem = () => onClick(id);
+  const onItemClickItem = () => {
+    if (onClick) {
+      onClick(id);
+    }
+  };
 
   return (
     <StepView
+      nonClickable={!onClick}
       onClick={onItemClickItem}
       isActive={isActive}
       lightMode={lightMode}

@@ -13,6 +13,7 @@ type IProps = {
   isEditMode?: boolean;
   dropDownData: Array<IDataItem>;
   setFieldValue: (item: any, value: any) => void;
+  onDropDownSelect?: (id: string) => void;
   formType: "source" | "destination" | "connection";
   values: { name: string; serviceType: string; frequency?: string };
 };
@@ -30,7 +31,8 @@ const FormContent: React.FC<IProps> = ({
   formType,
   setFieldValue,
   values,
-  isEditMode
+  isEditMode,
+  onDropDownSelect
 }) => {
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
@@ -89,7 +91,12 @@ const FormContent: React.FC<IProps> = ({
                 id: "form.searchName"
               })}
               data={dropDownData}
-              onSelect={item => setFieldValue("serviceType", item.value)}
+              onSelect={item => {
+                setFieldValue("serviceType", item.value);
+                if (onDropDownSelect) {
+                  onDropDownSelect(item.value);
+                }
+              }}
             />
           )}
         </Field>
