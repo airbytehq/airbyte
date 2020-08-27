@@ -63,7 +63,7 @@ docker-compose -f docker-compose.build.yaml push
 ## Contributing
 
 We love contributions to Dataline, big or small. See our <a href="https://docs.dataline.io/contributing/contributing-to-dataline">Contributing Guide</a> on how to get started.
-Not sure where to start? We’ve listed some <a href="https://github.com/datalineio/dataline/labels/good%20first%20issue">good first issues</a> to start with. You can also <a href="http://drift.me/johnlafleur">book a free, no-pressure pairing session</a> with one of our core contributors.
+Not sure where to start? We’ve listed some <a href="https://github.com/datalineio/dataline/labels/good%20first%20issue">good first issues</a> to start with. You can also <a href="http://drift.me/micheltricot/meeting">book a free, no-pressure pairing session</a> with one of our core contributors.
  
 ## Community support
 
