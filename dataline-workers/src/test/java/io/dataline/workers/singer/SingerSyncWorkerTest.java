@@ -112,8 +112,8 @@ public final class SingerSyncWorkerTest extends BaseWorkerTestCase {
         objectMapper.readTree(PostgreSQLContainerTestHelper.getSingerTapConfig(sourceDb)));
     syncInput.setSourceConnectionImplementation(sourceConnection);
 
+    // state is null
     State state = new State();
-    state.setState("{}");
     syncInput.setState(state);
 
     OutputAndStatus<StandardSyncOutput> syncResult =

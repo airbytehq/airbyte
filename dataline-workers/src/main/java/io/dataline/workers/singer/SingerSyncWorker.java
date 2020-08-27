@@ -28,7 +28,6 @@ import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import io.dataline.config.SingerCatalog;
@@ -58,22 +57,22 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
 
   private static final String TAP_CONFIG_FILENAME = "tap_config.json";
   private static final String CATALOG_FILENAME = "catalog.json";
-  private static final String INPUT_STATE_FILENAME = "state.json";
+  private static final String INPUT_STATE_FILENAME = "input_state.json";
   private static final String TARGET_CONFIG_FILENAME = "target_config.json";
 
-  private static final String OUTPUT_STATE_FILENAME = "outputState.json";
+  private static final String OUTPUT_STATE_FILENAME = "output_state.json";
   private static final String TAP_ERR_LOG = "tap_err.log";
   private static final String TARGET_ERR_LOG = "target_err.log";
 
   private final String tapImageName;
-  private final String targetImageNae;
+  private final String targetImageName;
 
   private Process tapProcess;
   private Process targetProcess;
 
   public SingerSyncWorker(String tapImageName, String targetImageName) {
     this.tapImageName = tapImageName;
-    this.targetImageNae = targetImageName;
+    this.targetImageName = targetImageName;
   }
 
   @Override
@@ -83,10 +82,10 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
   }
 
   @Override
-  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput input, Path workspaceRoot)
+  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput inputConfig, Path workspaceRoot)
       throws InvalidCredentialsException {
 
-    OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, workspaceRoot);
+    OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(inputConfig, workspaceRoot);
     if (discoveryOutput.getStatus() != SUCCESSFUL || discoveryOutput.getOutput().isEmpty()) {
       LOGGER.debug(
           "Sync worker failed due to failed discovery. Discovery output: {}", discoveryOutput);
@@ -96,13 +95,15 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
     try {
       SingerCatalog selectedCatalog =
           SingerCatalogConverters.applySchemaToDiscoveredCatalog(
-              discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
-      writeSingerInputsToDisk(input, workspaceRoot, selectedCatalog);
+              discoveryOutput.getOutput().get(), inputConfig.getStandardSync().getSchema());
+      writeSingerInputsToDisk(inputConfig, workspaceRoot, selectedCatalog);
+
       MutableInt numRecords = new MutableInt();
 
       String[] dockerCmd = {
         "docker",
         "run",
+        "-i",
         "-v",
         String.format("%s:/singer/data", workspaceRoot.toString()),
         // TODO network=host is not recommended for production settings, create a bridge network
@@ -114,16 +115,20 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
           ArrayUtils.addAll(
               dockerCmd,
               tapImageName,
-              "--config",
+              "-c",
               TAP_CONFIG_FILENAME,
               // TODO support both --properties and --catalog depending on integration
               "--properties",
-              CATALOG_FILENAME,
-              "--state",
-              INPUT_STATE_FILENAME);
+              CATALOG_FILENAME);
+
+      // jsonschema2pojo does not use optional types, so we have to verify if state is provided
+      // manually
+      if (inputConfig.getState().getState() != null) {
+        tapCmd = ArrayUtils.addAll(tapCmd, "--state", INPUT_STATE_FILENAME);
+      }
 
       String[] targetCmd =
-          ArrayUtils.addAll(dockerCmd, targetImageNae, "--config", TARGET_CONFIG_FILENAME);
+          ArrayUtils.addAll(dockerCmd, targetImageName, "-c", TARGET_CONFIG_FILENAME);
       LOGGER.debug("Tap command: {}", String.join(" ", tapCmd));
       LOGGER.debug("target command: {}", String.join(" ", targetCmd));
 
@@ -146,6 +151,7 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
           BufferedWriter writer =
               new BufferedWriter(
                   new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8))) {
+
         ObjectMapper objectMapper = new ObjectMapper();
         reader
             .lines()
@@ -154,8 +160,8 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
                   try {
                     writer.write(line);
                     writer.newLine();
-                    JsonNode lineJson = objectMapper.readTree(line);
-                    if (lineJson.get("type").asText().equals("RECORD")) {
+                    if (isValidJson(line, objectMapper)
+                        && objectMapper.readTree(line).get("type").asText().equals("RECORD")) {
                       numRecords.increment();
                     }
                   } catch (IOException e) {
@@ -203,6 +209,15 @@ public class SingerSyncWorker extends BaseSingerWorker<StandardSyncInput, Standa
     } catch (IOException | InterruptedException e) {
       // TODO return state
       throw new RuntimeException(e);
+    }
+  }
+
+  private static boolean isValidJson(String token, ObjectMapper mapper) {
+    try {
+      mapper.readTree(token);
+      return true;
+    } catch (IOException e) {
+      return false;
     }
   }
 

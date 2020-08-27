@@ -42,6 +42,7 @@ main() {
 
   if [ "$path" == "all" ]; then
     for path in $(find dataline-integrations -iname "Dockerfile" -type f); do
+      echo "Executing $cmd in $path"
       cmd_$cmd $path
     done
   else
