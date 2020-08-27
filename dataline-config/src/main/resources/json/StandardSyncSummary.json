@@ -7,10 +7,6 @@
   "required": ["jobId", "recordsSynced", "status", "startTime", "endTime"],
   "additionalProperties": false,
   "properties": {
-    "jobId": {
-      "type": "string",
-      "format": "uuid"
-    },
     "status": {
       "type": "string",
       "enum": ["completed", "failed", "cancelled"]

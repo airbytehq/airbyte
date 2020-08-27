@@ -57,7 +57,6 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
   private static final long LAST_SYNC_TIME = 1598565106;
-  private static final UUID JOB_ID = UUID.randomUUID();
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID SOURCE_SPECIFICATION_ID = UUID.randomUUID();
   private static final UUID SOURCE_IMPLEMENTATION_ID = UUID.randomUUID();
@@ -123,7 +122,6 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     state.setState(stateValue);
 
     final StandardSyncSummary syncSummary = new StandardSyncSummary();
-    syncSummary.setJobId(JOB_ID);
     syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
     syncSummary.setRecordsSynced(10L);
     //    syncSummary.setLogs(); // todo (cgardens) - figure out logs.
