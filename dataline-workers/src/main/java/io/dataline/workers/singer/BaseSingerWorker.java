@@ -72,11 +72,4 @@ public abstract class BaseSingerWorker<InputType, OutputType>
   protected static Path getFullPath(Path workspaceRoot, String fileName) {
     return workspaceRoot.resolve(fileName);
   }
-
-  public static void main(String[] args) {
-    writeFile(
-        Path.of("/tmp/tests/dataline7245568476522994644/1/"),
-        "config.json",
-        "{\"password\":\"test\",\"dbname\":\"test\",\"port\":\"32841\",\"host\":\"172.17.0.1\",\"user\":\"test\"}");
-  }
 }

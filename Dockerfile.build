@@ -22,6 +22,8 @@ RUN apt-get update && apt-get -y install \
 #######################
 FROM build-base AS build-project
 
+WORKDIR /code
+
 # Cache Gradle executable
 COPY ./gradlew .
 COPY ./gradle ./gradle
@@ -32,8 +34,10 @@ RUN ./gradlew build --no-daemon -g /home/gradle/.gradle
 ###################
 FROM build-project AS build
 
+WORKDIR /code
+
 # Copy code, etc.
-COPY . /code
+COPY . ./
 
 RUN ./gradlew clean distTar build -x test --no-daemon -g /home/gradle/.gradle
 
