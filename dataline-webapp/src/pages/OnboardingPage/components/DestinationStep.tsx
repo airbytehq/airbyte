@@ -9,12 +9,14 @@ type IProps = {
   hasSuccess?: boolean;
   onSubmit: () => void;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
+  errorMessage?: React.ReactNode;
 };
 
 const Destination: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
-  hasSuccess
+  hasSuccess,
+  errorMessage
 }) => {
   return (
     <>
@@ -27,6 +29,7 @@ const Destination: React.FC<IProps> = ({
           onSubmit={onSubmit}
           formType="destination"
           dropDownData={dropDownData}
+          errorMessage={errorMessage}
         />
       </ContentCard>
     </>

@@ -113,6 +113,7 @@ const OnboardingPage: React.FC = () => {
           onSubmit={onSubmitSourceStep}
           dropDownData={sourcesDropDownData}
           hasSuccess={successRequest}
+          errorMessage={""}
         />
       );
     }
@@ -122,6 +123,7 @@ const OnboardingPage: React.FC = () => {
           onSubmit={onSubmitDestinationStep}
           dropDownData={destinationsDropDownData}
           hasSuccess={successRequest}
+          errorMessage={""}
         />
       );
     }
