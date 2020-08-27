@@ -10,9 +10,11 @@ import EditControls from "./components/EditControls";
 
 type IProps = {
   dropDownData: Array<IDataItem>;
+  onDropDownSelect?: (id: string) => void;
   onSubmit: () => void;
   formType: "source" | "destination" | "connection";
   formValues?: { name: string; serviceType: string; frequency?: string };
+  hasSuccess?: boolean;
 };
 
 const FormContainer = styled(Form)`
@@ -28,7 +30,9 @@ const ServiceForm: React.FC<IProps> = ({
   onSubmit,
   formType,
   dropDownData,
-  formValues
+  formValues,
+  onDropDownSelect,
+  hasSuccess
 }) => {
   const isEditMode = !!formValues;
   return (
@@ -54,6 +58,7 @@ const ServiceForm: React.FC<IProps> = ({
             setFieldValue={setFieldValue}
             values={values}
             isEditMode={isEditMode}
+            onDropDownSelect={onDropDownSelect}
           />
 
           {isEditMode ? (
@@ -69,6 +74,7 @@ const ServiceForm: React.FC<IProps> = ({
               isValid={isValid}
               dirty={dirty}
               formType={formType}
+              hasSuccess={hasSuccess}
             />
           )}
         </FormContainer>

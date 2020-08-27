@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import { useResource } from "rest-hooks";
 
 import { H2 } from "../../components/Titles";
 import StepsMenu from "../../components/StepsMenu";
@@ -9,6 +10,8 @@ import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
 import useRouter from "../../components/hooks/useRouterHook";
 import { Routes } from "../routes";
+import SourceResource from "../../core/resources/Source";
+import DestinationResource from "../../core/resources/Destination";
 
 const Content = styled.div`
   width: 100%;
@@ -43,7 +46,31 @@ const StepsCover = styled.div`
 `;
 
 const OnboardingPage: React.FC = () => {
+  const [successRequest, setSuccessRequest] = useState(false);
+
   const { push } = useRouter();
+  const { sources } = useResource(SourceResource.listShape(), {});
+  const { destinations } = useResource(DestinationResource.listShape(), {});
+
+  const sourcesDropDownData = useMemo(
+    () =>
+      sources.map(item => ({
+        text: item.name,
+        value: item.sourceId,
+        img: "/default-logo-catalog.svg"
+      })),
+    [sources]
+  );
+
+  const destinationsDropDownData = useMemo(
+    () =>
+      destinations.map(item => ({
+        text: item.name,
+        value: item.destinationId,
+        img: "/default-logo-catalog.svg"
+      })),
+    [destinations]
+  );
 
   const steps = [
     {
@@ -61,17 +88,42 @@ const OnboardingPage: React.FC = () => {
   ];
   const [currentStep, setCurrentStep] = useState("create-source");
 
-  const onSelectStep = (id: string) => setCurrentStep(id);
-  const onSubmitSourceStep = () => setCurrentStep("create-destination");
-  const onSubmitDestinationStep = () => setCurrentStep("set-up-connection");
+  const onSubmitSourceStep = () => {
+    // TODO: action after success request
+    setSuccessRequest(true);
+    setTimeout(() => {
+      setSuccessRequest(false);
+      setCurrentStep("create-destination");
+    }, 2000);
+  };
+  const onSubmitDestinationStep = () => {
+    // TODO: action after success request
+    setSuccessRequest(true);
+    setTimeout(() => {
+      setSuccessRequest(false);
+      setCurrentStep("set-up-connection");
+    }, 2000);
+  };
   const onSubmitConnectionStep = () => push(Routes.Root);
 
   const renderStep = () => {
     if (currentStep === "create-source") {
-      return <SourceStep onSubmit={onSubmitSourceStep} />;
+      return (
+        <SourceStep
+          onSubmit={onSubmitSourceStep}
+          dropDownData={sourcesDropDownData}
+          hasSuccess={successRequest}
+        />
+      );
     }
     if (currentStep === "create-destination") {
-      return <DestinationStep onSubmit={onSubmitDestinationStep} />;
+      return (
+        <DestinationStep
+          onSubmit={onSubmitDestinationStep}
+          dropDownData={destinationsDropDownData}
+          hasSuccess={successRequest}
+        />
+      );
     }
 
     return <ConnectionStep onSubmit={onSubmitConnectionStep} />;
@@ -87,11 +139,7 @@ const OnboardingPage: React.FC = () => {
         <FormattedMessage id={"onboarding.subtitle"} />
       </Subtitle>
       <StepsCover>
-        <StepsMenu
-          data={steps}
-          onSelect={onSelectStep}
-          activeStep={currentStep}
-        />
+        <StepsMenu data={steps} activeStep={currentStep} />
       </StepsCover>
       {renderStep()}
     </Content>
