@@ -4,20 +4,29 @@ import { useFetcher } from "rest-hooks";
 
 import ContentCard from "../../../components/ContentCard";
 import ServiceForm from "../../../components/ServiceForm";
-import SourceSpecification from "../../../core/resources/SourceSpecification";
+import SourceSpecificationResource, {
+  SourceSpecification
+} from "../../../core/resources/SourceSpecification";
 
 type IProps = {
-  onSubmit: () => void;
+  onSubmit: (values: {
+    name: string;
+    serviceType: string;
+    specificationId?: string;
+  }) => void;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
   hasSuccess?: boolean;
   errorMessage?: React.ReactNode;
 };
 
 const useSourceSpecificationLoad = (sourceId: string) => {
-  const [sourceSpecification, setSourceSpecification] = useState(null);
+  const [
+    sourceSpecification,
+    setSourceSpecification
+  ] = useState<null | SourceSpecification>(null);
 
   const fetchSourceSpecification = useFetcher(
-    SourceSpecification.detailShape(),
+    SourceSpecificationResource.detailShape(),
     true
   );
 
@@ -39,16 +48,24 @@ const SourceStep: React.FC<IProps> = ({
   errorMessage
 }) => {
   const [sourceId, setSourceId] = useState("");
-  const spec = useSourceSpecificationLoad(sourceId);
-  console.log(spec); // TODO: add spec fields to form
+  const specification = useSourceSpecificationLoad(sourceId);
 
   const onDropDownSelect = (sourceId: string) => setSourceId(sourceId);
+  const onSubmitForm = async (values: {
+    name: string;
+    serviceType: string;
+  }) => {
+    await onSubmit({
+      ...values,
+      specificationId: specification?.sourceSpecificationId
+    });
+  };
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
       <ServiceForm
         onDropDownSelect={onDropDownSelect}
-        onSubmit={onSubmit}
+        onSubmit={onSubmitForm}
         formType="source"
         dropDownData={dropDownData}
         hasSuccess={hasSuccess}

@@ -11,7 +11,11 @@ import EditControls from "./components/EditControls";
 type IProps = {
   dropDownData: Array<IDataItem>;
   onDropDownSelect?: (id: string) => void;
-  onSubmit: () => void;
+  onSubmit: (values: {
+    name: string;
+    serviceType: string;
+    frequency?: string;
+  }) => void;
   formType: "source" | "destination" | "connection";
   formValues?: { name: string; serviceType: string; frequency?: string };
   hasSuccess?: boolean;
@@ -47,9 +51,9 @@ const ServiceForm: React.FC<IProps> = ({
       validateOnBlur={true}
       validateOnChange={true}
       validationSchema={onboardingValidationSchema}
-      onSubmit={async (_, { setSubmitting }) => {
+      onSubmit={async (values, { setSubmitting }) => {
+        await onSubmit(values);
         setSubmitting(false);
-        onSubmit();
       }}
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, values, resetForm }) => (

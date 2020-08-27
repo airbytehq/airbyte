@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
+import { useResource, useFetcher } from "rest-hooks";
 
 import { H2 } from "../../components/Titles";
 import StepsMenu from "../../components/StepsMenu";
@@ -12,6 +12,8 @@ import useRouter from "../../components/hooks/useRouterHook";
 import { Routes } from "../routes";
 import SourceResource from "../../core/resources/Source";
 import DestinationResource from "../../core/resources/Destination";
+import SourceImplementationResource from "../../core/resources/SourceImplementation";
+import config from "../../config";
 
 const Content = styled.div`
   width: 100%;
@@ -51,6 +53,15 @@ const OnboardingPage: React.FC = () => {
   const { push } = useRouter();
   const { sources } = useResource(SourceResource.listShape(), {});
   const { destinations } = useResource(DestinationResource.listShape(), {});
+  const sourcesImplementation = useResource(
+    SourceImplementationResource.listShape(),
+    {
+      workspaceId: config.ui.workspaceId
+    }
+  );
+  const createSourcesImplementation = useFetcher(
+    SourceImplementationResource.createShape()
+  );
 
   const sourcesDropDownData = useMemo(
     () =>
@@ -86,9 +97,27 @@ const OnboardingPage: React.FC = () => {
       name: <FormattedMessage id={"onboarding.setUpConnection"} />
     }
   ];
-  const [currentStep, setCurrentStep] = useState("create-source");
 
-  const onSubmitSourceStep = () => {
+  const initialStep = sourcesImplementation.sources.length
+    ? "create-destination"
+    : "create-source";
+  const [currentStep, setCurrentStep] = useState(initialStep);
+
+  const onSubmitSourceStep = async (values: {
+    name: string;
+    serviceType: string;
+    specificationId?: string;
+  }) => {
+    const result = await createSourcesImplementation(
+      {},
+      {
+        workspaceId: config.ui.workspaceId,
+        sourceSpecificationId: values.specificationId,
+        connectionConfiguration: {}
+      },
+      []
+    );
+    console.log(result);
     // TODO: action after success request
     setSuccessRequest(true);
     setTimeout(() => {
