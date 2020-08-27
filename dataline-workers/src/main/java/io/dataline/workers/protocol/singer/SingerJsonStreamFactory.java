@@ -24,58 +24,45 @@
 
 package io.dataline.workers.protocol.singer;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.AbstractIterator;
 import io.dataline.config.SingerMessage;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Objects;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class SingerJsonIterator extends AbstractIterator<SingerMessage> {
+/**
+ * Creates a stream from an input stream. The produced stream attempts to parse each line of the
+ * InputStream into a SingerMessage. If the line cannot be parsed into a SingerMessage it is
+ * dropped. Each record MUST be new line separated.
+ *
+ * <p>If a line starts with a SingerMessage and then has other characters after it, that
+ * SingerMessage will still be parsed. If there are multiple SingerMessage records on the same line,
+ * only the first will be parsed.
+ */
+public class SingerJsonStreamFactory {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerJsonStreamFactory.class);
   private final ObjectMapper objectMapper;
-  private final JsonParser jsonParser;
-  private boolean hasReadFirstToken = false;
 
-  // https://cassiomolin.com/2019/08/19/combining-jackson-streaming-api-with-objectmapper-for-parsing-json/
-  public SingerJsonIterator(InputStream inputStream) {
+  public SingerJsonStreamFactory() {
     this.objectMapper = new ObjectMapper();
-    try {
-      this.jsonParser = objectMapper.getFactory().createParser(inputStream);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
-  @Override
-  protected SingerMessage computeNext() {
-    if (!hasReadFirstToken) {
-      checkInputStreamIsJson();
-      hasReadFirstToken = true;
-    }
-    try {
-      if (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-        return endOfData();
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    try {
-      return objectMapper.readValue(jsonParser, SingerMessage.class);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public Stream<SingerMessage> create(BufferedReader bufferedReader) {
+    return bufferedReader.lines().map(this::parseJsonOrNull).filter(Objects::nonNull);
   }
 
-  private void checkInputStreamIsJson() {
+  private SingerMessage parseJsonOrNull(String record) {
     try {
-      // Check the first token
-      if (jsonParser.nextToken() != JsonToken.START_ARRAY) {
-        throw new IllegalStateException("Expected content to be an array");
-      }
+      return objectMapper.readValue(record, SingerMessage.class);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      LOGGER.info(
+          String.format(
+              "Record was not a json representation of a SingerMessage. Record: %s", record),
+          e);
+      return null;
     }
   }
 }

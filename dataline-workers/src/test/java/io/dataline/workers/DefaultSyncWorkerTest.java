@@ -24,12 +24,16 @@
 
 package io.dataline.workers;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.commons.json.JsonUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.config.Column;
 import io.dataline.config.DataType;
 import io.dataline.config.DestinationConnectionImplementation;
@@ -47,6 +51,9 @@ import io.dataline.workers.protocol.singer.MessageUtils;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
+import io.dataline.workers.protocol.singer.MessageFactory;
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -124,6 +131,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     final StandardSyncSummary syncSummary = new StandardSyncSummary();
     syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
     syncSummary.setRecordsSynced(10L);
+    syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
     syncSummary.setStartTime(LAST_SYNC_TIME);
     syncSummary.setEndTime(LAST_SYNC_TIME);
 
@@ -152,6 +160,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
         MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
     SingerMessage recordMessage2 =
         MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+
     final Stream<SingerMessage> tapStream = Stream.of(recordMessage1, recordMessage2);
 
     when(tapFactory.create(tapConfig, WORKSPACE_ROOT)).thenReturn(tapStream);

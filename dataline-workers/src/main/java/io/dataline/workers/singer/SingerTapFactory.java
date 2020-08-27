@@ -26,7 +26,6 @@ package io.dataline.workers.singer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Streams;
 import io.dataline.config.SingerCatalog;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardDiscoverSchemaInput;
@@ -37,9 +36,10 @@ import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.TapFactory;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocol.singer.SingerJsonIterator;
+import io.dataline.workers.protocol.singer.SingerJsonStreamFactory;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -58,7 +58,7 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   private final ProcessBuilderFactory pbf;
 
   private Process tapProcess = null;
-  private InputStream stdout = null;
+  private BufferedReader bufferedReader = null;
 
   public SingerTapFactory(final String imageName, final ProcessBuilderFactory pbf) {
     this.imageName = imageName;
@@ -111,15 +111,16 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
       throw new RuntimeException(e);
     }
 
-    stdout = tapProcess.getInputStream();
-    return Streams.stream(new SingerJsonIterator(stdout)).onClose(getCloseFunction());
+    bufferedReader = new BufferedReader(new InputStreamReader(tapProcess.getInputStream()));
+
+    return new SingerJsonStreamFactory().create(bufferedReader).onClose(getCloseFunction());
   }
 
   public Runnable getCloseFunction() {
     return () -> {
-      if (stdout != null) {
+      if (bufferedReader != null) {
         try {
-          stdout.close();
+          bufferedReader.close();
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
