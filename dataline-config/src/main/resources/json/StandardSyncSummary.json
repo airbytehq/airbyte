@@ -20,8 +20,6 @@
     },
     "endTime": {
       "type": "integer"
-    },
-    "logs": {
     }
   }
 }

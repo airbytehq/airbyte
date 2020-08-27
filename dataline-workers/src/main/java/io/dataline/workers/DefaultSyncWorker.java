@@ -86,7 +86,6 @@ public class DefaultSyncWorker implements SyncWorker {
     summary.setRecordsSynced(singerMessageTracker.getRecordCount());
     summary.setStartTime(startTime);
     summary.setEndTime(System.currentTimeMillis());
-    // TODO set logs
 
     final StandardSyncOutput output = new StandardSyncOutput();
     output.setStandardSyncSummary(summary);
