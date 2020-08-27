@@ -31,3 +31,21 @@ Dataline is on a mission to make data integration pipelines a commodity.
 - **Your data stays in your cloud**. Have full control over your data, and the costs of your data transfers. 
 - **No more security compliance process** to go through as self-hosted. 
 - **No more pricing indexed on volume**, as cloud-based solutions offer. 
+
+# Getting Started
+
+## Quick start
+
+```bash
+docker-compose up
+```
+
+Now go to [http://localhost:8000](http://localhost:8000)
+
+## Update images
+
+```bash
+docker-compose -f docker-compose.build.yaml build
+docker-compose -f docker-compose.build.yaml push
+```
+
