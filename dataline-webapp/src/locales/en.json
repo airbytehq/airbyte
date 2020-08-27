@@ -30,6 +30,8 @@
   "form.saveChanges": "Save changes",
   "form.discardChanges": "Discard changes",
   "form.every": "Every {value}",
+  "form.testingConnection": "Testing connection...",
+  "form.successTests": "All connection tests passed!",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
