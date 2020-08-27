@@ -6,30 +6,32 @@
     "title": "BigQuery Destination Spec",
     "type": "object",
     "required": [
-      "serviceAccount"
+      "project_id",
+      "dataset_id",
+      "credentials_json",
+      "disable_collection",
+      "replication_method"
     ],
     "additionalProperties": false,
     "properties": {
       "project_id": {
-
+        "type": "string"
       },
       "dataset_id": {
-
+        "type": "string"
       },
       "validate_records": {
-
+        "type": "boolean"
       },
-      "clientSecretsFile": { // todo: how to structure this -- should we just have a file upload in the UI?
+      "credentials_json": {
         "type": "string"
       },
       "disable_collection": {
-
+        "type": "boolean"
       },
       "replication_method": {
-
+        "type": "string"
       }
-      // todo: table_id says its required but it isn't read or used?
-
     }
   }
 }
