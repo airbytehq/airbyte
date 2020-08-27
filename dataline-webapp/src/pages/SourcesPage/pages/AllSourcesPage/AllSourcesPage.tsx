@@ -1,11 +1,11 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import Link from "../../../../components/Link";
 import Button from "../../../../components/Button";
 import { Routes } from "../../../routes";
 import PageTitle from "../../../../components/PageTitle";
 import useRouter from "../../../../components/hooks/useRouterHook";
+import SourcesTable from "./components/SourcesTable";
 
 const AllSourcesPage: React.FC = () => {
   const { push } = useRouter();
@@ -21,8 +21,7 @@ const AllSourcesPage: React.FC = () => {
           </Button>
         }
       />
-      <br />
-      <Link to={Routes.Preferences}>Go to Preferences Form</Link>
+      <SourcesTable />
     </>
   );
 };

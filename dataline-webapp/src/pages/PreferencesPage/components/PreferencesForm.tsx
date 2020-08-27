@@ -8,9 +8,15 @@ import { BigButton } from "../../../components/CenteredPageComponents";
 import LabeledInput from "../../../components/LabeledInput";
 import Label from "../../../components/Label";
 import LabeledToggle from "../../../components/LabeledToggle";
+import config from "../../../config";
 
 export type IProps = {
-  onSubmit: () => void;
+  onSubmit: (data: {
+    email: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  }) => void;
 };
 
 const ButtonContainer = styled.div`
@@ -55,19 +61,19 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
     <Formik
       initialValues={{
         email: "",
-        anonymizeData: false,
+        anonymousDataCollection: false,
         news: false,
-        security: true
+        securityUpdates: false
       }}
       validateOnBlur={true}
       validateOnChange={false}
       validationSchema={preferencesValidationSchema}
-      onSubmit={async (_, { setSubmitting }) => {
+      onSubmit={async (values, { setSubmitting }) => {
         setSubmitting(false);
-        onSubmit();
+        onSubmit(values);
       }}
     >
-      {({ isSubmitting, values }) => (
+      {({ isSubmitting, values, handleChange, setFieldValue, resetForm }) => (
         <MainForm>
           <FormItem>
             <Field name="email">
@@ -85,6 +91,20 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
                     meta.error &&
                     formatMessage({ id: meta.error })
                   }
+                  onChange={event => {
+                    handleChange(event);
+                    if (
+                      field.value.length === 0 &&
+                      event.target.value.length > 0
+                    ) {
+                      setFieldValue("securityUpdates", true);
+                    } else if (
+                      field.value.length > 0 &&
+                      event.target.value.length === 0
+                    ) {
+                      resetForm();
+                    }
+                  }}
                 />
               )}
             </Field>
@@ -97,7 +117,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
               id={"preferences.collectData"}
               values={{
                 docs: (...docs: React.ReactNode[]) => (
-                  <DocsLink target="_blank" href="https://dataline.io">
+                  <DocsLink target="_blank" href={config.ui.docsLink}>
                     {docs}
                   </DocsLink>
                 )
@@ -105,7 +125,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
             />
           </Text>
           <FormItem>
-            <Field name="anonymizeData">
+            <Field name="anonymousDataCollection">
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
@@ -136,7 +156,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
             <FormattedMessage id="preferences.security" />
           </Subtitle>
           <FormItem>
-            <Field name="security">
+            <Field name="securityUpdates">
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
