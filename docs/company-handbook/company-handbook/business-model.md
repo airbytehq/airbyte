@@ -28,3 +28,5 @@ Some features that we’re considering for the enterprise edition:
 * Single-Sign On
 * Hosting management
 
+This is just a snapshot about our current state of mind. We will learn a lot along the way and our vision of the enterprise edition will surely evolve. And please don’t hesitate to share about your companies’ pain points that we can help solve.
+
