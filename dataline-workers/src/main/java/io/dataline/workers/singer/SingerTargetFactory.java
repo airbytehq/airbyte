@@ -29,34 +29,33 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardTargetConfig;
+import io.dataline.workers.CloseableConsumer;
 import io.dataline.workers.DefaultSyncWorker;
-import io.dataline.workers.Target;
+import io.dataline.workers.TargetConsumer;
+import io.dataline.workers.TargetFactory;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.utils.DockerUtils;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerTarget implements Target<SingerMessage> {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerTarget.class);
+public class SingerTargetFactory implements TargetFactory<SingerMessage> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerTargetFactory.class);
 
   private static final String CONFIG_JSON_FILENAME = "target_config.json";
 
   private final String dockerImageName;
-  private Process targetProcess;
 
-  public SingerTarget(String dockerImageName) {
+  public SingerTargetFactory(String dockerImageName) {
     this.dockerImageName = dockerImageName;
   }
 
   @Override
-  public void consume(
-      Stream<SingerMessage> data, StandardTargetConfig targetConfig, Path workspacePath) {
+  public CloseableConsumer<SingerMessage> create(
+      StandardTargetConfig targetConfig, Path workspacePath) {
     final ObjectMapper objectMapper = new ObjectMapper();
     final String configDotJson;
 
@@ -77,7 +76,7 @@ public class SingerTarget implements Target<SingerMessage> {
             workspacePath, dockerImageName, "--config", configPath.toString());
 
     try {
-      targetProcess =
+      final Process targetProcess =
           new ProcessBuilder()
               .command(dockerCmd)
               .redirectError(workspacePath.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile())
@@ -87,33 +86,12 @@ public class SingerTarget implements Target<SingerMessage> {
           new BufferedWriter(
               new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8))) {
 
-        data.forEach(
-            record -> {
-              try {
-                writer.write(objectMapper.writeValueAsString(record));
-                writer.newLine();
-              } catch (IOException e) {
-                throw new RuntimeException(e);
-              }
-            });
+        return new TargetConsumer(writer, targetProcess);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
-
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
-    try {
-      while (!targetProcess.waitFor(1, TimeUnit.MINUTES)) {
-        LOGGER.debug(
-            "Waiting for sync worker (job:{}) target", ""); // TODO when job id is passed in
-      }
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public void close() {
-    WorkerUtils.cancelHelper(targetProcess);
   }
 }

@@ -32,7 +32,7 @@ import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.workers.protocol.SingerMessageTracker;
 import io.dataline.workers.singer.SingerTapFactory;
-import io.dataline.workers.singer.SingerTarget;
+import io.dataline.workers.singer.SingerTargetFactory;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
@@ -72,15 +72,17 @@ public class DefaultSyncWorker implements SyncWorker {
 
     final SingerMessageTracker singerMessageTracker =
         new SingerMessageTracker(syncInput.getStandardSync().getConnectionId());
-    try (Stream<SingerMessage> tap =
-        new SingerTapFactory(tapDockerImage).create(tapConfig, workspacePath)) {
+
+    final SingerTapFactory singerTapFactory = new SingerTapFactory(tapDockerImage);
+    final SingerTargetFactory singerTargetFactory = new SingerTargetFactory(targetDockerImage);
+
+    try (Stream<SingerMessage> tap = singerTapFactory.create(tapConfig, workspacePath)) {
       tapCloser = tap::close;
 
-      final Stream<SingerMessage> peakedTapStream = tap.peek(singerMessageTracker);
-      try (Target<SingerMessage> target = new SingerTarget(targetDockerImage)) {
-        targetCloser = getTargetCloser(target);
-
-        target.consume(peakedTapStream, targetConfig, workspacePath);
+      try (CloseableConsumer<SingerMessage> consumer =
+          singerTargetFactory.create(targetConfig, workspacePath)) {
+        targetCloser = getTargetCloser(consumer);
+        tap.peek(singerMessageTracker).forEach(consumer);
       }
 
     } catch (Exception e) {
@@ -106,10 +108,10 @@ public class DefaultSyncWorker implements SyncWorker {
     return new OutputAndStatus<>(JobStatus.SUCCESSFUL, output);
   }
 
-  private Runnable getTargetCloser(Target<SingerMessage> target) {
+  private Runnable getTargetCloser(CloseableConsumer<SingerMessage> consumer) {
     return () -> {
       try {
-        target.close();
+        consumer.close();
       } catch (Exception e) {
         LOGGER.error("Failed to close target", e);
       }

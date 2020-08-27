@@ -24,11 +24,41 @@
 
 package io.dataline.workers;
 
-import io.dataline.config.StandardTargetConfig;
-import java.nio.file.Path;
-import java.util.stream.Stream;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.config.SingerMessage;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public interface Target<T> extends AutoCloseable {
-  void consume(Stream<T> data, StandardTargetConfig targetConfig, Path workspacePath)
-      throws SyncException;
+public class TargetConsumer implements CloseableConsumer<SingerMessage> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TargetConsumer.class);
+
+  private final BufferedWriter writer;
+  private final Process process;
+  private final ObjectMapper objectMapper;
+
+  public TargetConsumer(BufferedWriter writer, Process process) {
+    this.writer = writer;
+    this.process = process;
+    this.objectMapper = new ObjectMapper();
+  }
+
+  @Override
+  public void accept(SingerMessage record) {
+    try {
+      writer.write(objectMapper.writeValueAsString(record));
+      writer.newLine();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void close() throws Exception {
+    while (!process.waitFor(1, TimeUnit.MINUTES)) {
+      LOGGER.debug("Waiting for sync worker (job:{}) target", ""); // TODO when job id is passed in
+    }
+  }
 }
