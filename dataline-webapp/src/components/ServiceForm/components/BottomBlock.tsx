@@ -63,12 +63,33 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
+const LoadingContainer = styled(ButtonContainer)`
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 17px;
+  color: ${({ theme }) => theme.darkPrimaryColor};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const Loader = styled.div`
+  margin-right: 10px;
+`;
+
+const Success = styled(StatusIcon)`
+  width: 26px;
+  height: 26px;
+  padding-top: 5px;
+  font-size: 17px;
+`;
+
 const BottomBlock: React.FC<IProps> = ({
   isSubmitting,
   isValid,
   dirty,
   formType,
-  hasSuccess,
+  hasSuccess
   errorMessage
 }) => {
   if (hasSuccess) {

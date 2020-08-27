@@ -11,6 +11,9 @@ import { useFetcher } from "rest-hooks";
 
 type IProps = {
   hasSuccess?: boolean;
+  onSubmit: () => void;
+  dropDownData: Array<{ text: string; value: string; img?: string }>;
+  hasSuccess?: boolean;
   onSubmit: (values: {
     name: string;
     serviceType: string;
