@@ -30,9 +30,11 @@ import io.dataline.config.JobSyncConfig;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardSyncInput;
+import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
-import io.dataline.workers.singer.SingerSyncWorker;
+import io.dataline.workers.singer.SingerTapFactory;
+import io.dataline.workers.singer.SingerTargetFactory;
 import java.io.IOException;
 import org.apache.commons.dbcp2.BasicDataSource;
 
@@ -89,9 +91,13 @@ public class WorkerRunner implements Runnable {
         new WorkerRun<>(
                 jobId,
                 syncInput,
-                new SingerSyncWorker(
-                    job.getConfig().getSync().getSourceDockerImage(),
-                    job.getConfig().getSync().getDestinationDockerImage()),
+                // todo (cgardens) - still locked into only using SingerTaps and Targets. Next step
+                //   here is to create DefaultTap and DefaultTarget which will be able to
+                //   interoperate with SingerTap and SingerTarget now that they are split and
+                //   mediated in DefaultSyncWorker.
+                new DefaultSyncWorker(
+                    new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage()),
+                    new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage())),
                 connectionPool)
             .run();
     }
