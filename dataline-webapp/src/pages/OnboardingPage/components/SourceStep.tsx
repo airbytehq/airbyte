@@ -13,6 +13,7 @@ type IProps = {
     name: string;
     serviceType: string;
     specificationId?: string;
+    connectionConfiguration?: any;
   }) => void;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
   hasSuccess?: boolean;
@@ -70,6 +71,7 @@ const SourceStep: React.FC<IProps> = ({
         dropDownData={dropDownData}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
+        specifications={specification?.connectionSpecification}
       />
     </ContentCard>
   );
