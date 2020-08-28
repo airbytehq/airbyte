@@ -64,7 +64,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testPostgresDiscovery()
-      throws IOException, InvalidCredentialsException, InvalidCatalogException {
+      throws IOException, InvalidCredentialsException {
     final String jobId = "1";
     String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
     final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);

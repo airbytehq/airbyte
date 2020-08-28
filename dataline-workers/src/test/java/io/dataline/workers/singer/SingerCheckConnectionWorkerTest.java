@@ -38,7 +38,6 @@ import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerTestHelper;
-import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -50,8 +49,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   private PostgreSQLContainer db;
-
-  private ProcessBuilderFactory pbf;
 
   @BeforeAll
   public void initDb() throws SQLException {

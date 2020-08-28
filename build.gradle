@@ -8,7 +8,7 @@ clean {
 }
 
 Properties env = new Properties()
-File envFile = new File('.env')
+File envFile = rootProject.file(".env")
 envFile.withInputStream { env.load(it) }
 
 if (!env.containsKey("VERSION")) {
@@ -67,7 +67,7 @@ subprojects {
         testLogging() {
             events "failed"
             exceptionFormat "full"
-            showStandardStreams true
+//            showStandardStreams true
         }
     }
 
