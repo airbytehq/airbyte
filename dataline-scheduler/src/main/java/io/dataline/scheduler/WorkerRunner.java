@@ -35,14 +35,19 @@ import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerTapFactory;
 import io.dataline.workers.singer.SingerTargetFactory;
-import java.io.IOException;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * This class is a runnable that give a job id and db connection figures out how to run the
  * appropriate worker for a given job.
  */
 public class WorkerRunner implements Runnable {
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunner.class);
+
   private final long jobId;
   private final BasicDataSource connectionPool;
   private final SchedulerPersistence persistence;
@@ -63,11 +68,15 @@ public class WorkerRunner implements Runnable {
       throw new RuntimeException(e);
     }
 
+    LOGGER.info("job: " + job.getId() + " " + job.getScope() + " " + job.getConfig().getConfigType());
+
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION_SOURCE:
       case CHECK_CONNECTION_DESTINATION:
+        LOGGER.info("check connection ");
         final StandardCheckConnectionInput checkConnectionInput =
             getCheckConnectionInput(job.getConfig().getCheckConnection());
+        LOGGER.info("check connection input " + checkConnectionInput);
         new WorkerRun<>(
                 jobId,
                 checkConnectionInput,
@@ -86,6 +95,7 @@ public class WorkerRunner implements Runnable {
                     job.getConfig().getDiscoverSchema().getDockerImage()),
                 connectionPool)
             .run();
+        break;
       case SYNC:
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         new WorkerRun<>(
@@ -100,6 +110,7 @@ public class WorkerRunner implements Runnable {
                     new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage())),
                 connectionPool)
             .run();
+        break;
     }
   }
 

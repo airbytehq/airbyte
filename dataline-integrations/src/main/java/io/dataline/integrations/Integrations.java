@@ -32,7 +32,10 @@ public enum Integrations {
       new IntegrationMapping("dataline/integration-singer-postgres-source")),
   POSTGRES_TARGET(
       UUID.fromString("71cb2b91-1b2f-4c42-8f4d-f1ab2bd72080"),
-      new IntegrationMapping("dataline/integration-singer-postgres-destination"));
+      new IntegrationMapping("dataline/integration-singer-postgres-destination")),
+  BIGQUERY_TARGET(
+      UUID.fromString("e28a1a10-214a-4051-8cf4-79b6f88719cd"),
+      new IntegrationMapping("dataline/integration-singer-bigquery-destination"));
 
   private final UUID specId;
   private final IntegrationMapping integrationMapping;
