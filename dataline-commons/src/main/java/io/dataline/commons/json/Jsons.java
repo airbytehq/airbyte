@@ -25,14 +25,36 @@
 package io.dataline.commons.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.Map;
 
-public class JsonUtils {
-  public static String toJson(Map<String, String> map) {
+public class Jsons {
+
+  // Object Mapper is thread-safe
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+  public static String toJson(final Map<String, String> map) {
     try {
-      return new ObjectMapper().writeValueAsString(map);
+      return OBJECT_MAPPER.writeValueAsString(map);
     } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T toClass(final String jsonString, final Class<T> klass) {
+    try {
+      return OBJECT_MAPPER.readValue(jsonString, klass);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static JsonNode toJsonNode(final String jsonString) {
+    try {
+      return OBJECT_MAPPER.readTree(jsonString);
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
