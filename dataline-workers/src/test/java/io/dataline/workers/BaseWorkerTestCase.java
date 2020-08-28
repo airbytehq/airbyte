@@ -60,8 +60,8 @@ public abstract class BaseWorkerTestCase {
   }
 
   protected String readResource(String name) throws IOException {
-      URL resource = Resources.getResource(name);
-      return Resources.toString(resource, Charset.defaultCharset());
+    URL resource = Resources.getResource(name);
+    return Resources.toString(resource, Charset.defaultCharset());
   }
 
   protected void assertJsonEquals(final String s1, final String s2) {

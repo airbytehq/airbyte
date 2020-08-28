@@ -35,7 +35,8 @@ import java.util.UUID;
 
 public class DestinationSpecificationHelpers {
 
-  public static DestinationConnectionSpecification generateDestinationSpecification() throws IOException {
+  public static DestinationConnectionSpecification generateDestinationSpecification()
+      throws IOException {
     final UUID destinationId = UUID.randomUUID();
     final UUID destinationSpecificationId = UUID.randomUUID();
 

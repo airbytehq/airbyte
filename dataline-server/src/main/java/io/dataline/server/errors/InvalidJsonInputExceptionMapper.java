@@ -37,9 +37,9 @@ public class InvalidJsonInputExceptionMapper implements ExceptionMapper<JsonMapp
   @Override
   public Response toResponse(JsonMappingException e) {
     return Response.status(422)
-        .entity(Jsons.serializeMap(ImmutableMap.of(
-            "message", "Invalid JSON",
-            "details", e.getOriginalMessage())))
+        .entity(
+            Jsons.serializeMap(
+                ImmutableMap.of("message", "Invalid JSON", "details", e.getOriginalMessage())))
         .type("application/json")
         .build();
   }

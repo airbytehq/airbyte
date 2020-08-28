@@ -47,8 +47,7 @@ public class IntegrationSchemaValidation {
   }
 
   public void validateSourceConnectionConfiguration(
-      UUID sourceConnectionSpecificationId, Object configuration)
-      throws JsonValidationException {
+      UUID sourceConnectionSpecificationId, Object configuration) throws JsonValidationException {
     final SourceConnectionSpecification sourceConnectionSpecification =
         ConfigFetchers.getSourceConnectionSpecification(
             configPersistence, sourceConnectionSpecificationId);
@@ -66,7 +65,8 @@ public class IntegrationSchemaValidation {
         ConfigFetchers.getDestinationConnectionSpecification(
             configPersistence, destinationConnectionSpecificationId);
 
-    final JsonNode schemaJson = Jsons.jsonNode(destinationConnectionSpecification.getSpecification());
+    final JsonNode schemaJson =
+        Jsons.jsonNode(destinationConnectionSpecification.getSpecification());
     final JsonNode configJson = Jsons.jsonNode(configuration);
 
     jsonSchemaValidation.validateThrow(schemaJson, configJson);

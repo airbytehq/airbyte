@@ -40,9 +40,13 @@ public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintVi
   @Override
   public Response toResponse(ConstraintViolationException exception) {
     return Response.status(Response.Status.BAD_REQUEST)
-        .entity(Jsons.serializeMap(ImmutableMap.of(
-            "message", "The received object did not pass validation",
-            "details", prepareMessage(exception))))
+        .entity(
+            Jsons.serializeMap(
+                ImmutableMap.of(
+                    "message",
+                    "The received object did not pass validation",
+                    "details",
+                    prepareMessage(exception))))
         .type("application/json")
         .build();
   }

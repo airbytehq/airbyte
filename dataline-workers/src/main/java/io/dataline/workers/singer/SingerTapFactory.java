@@ -70,11 +70,12 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
       throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, jobRoot);
 
-    final String configDotJson = Jsons.serialize(input.getSourceConnectionImplementation().getConfiguration());
+    final String configDotJson =
+        Jsons.serialize(input.getSourceConnectionImplementation().getConfiguration());
 
-    final SingerCatalog selectedCatalog = SingerCatalogConverters.applySchemaToDiscoveredCatalog(
-        discoveryOutput.getOutput().get(),
-        input.getStandardSync().getSchema());
+    final SingerCatalog selectedCatalog =
+        SingerCatalogConverters.applySchemaToDiscoveredCatalog(
+            discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
     final String catalogDotJson = Jsons.serialize(selectedCatalog);
     final String stateDotJson = Jsons.serialize(input.getState());
 
@@ -85,15 +86,15 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     try {
       tapProcess =
           pbf.create(
-              jobRoot,
-              imageName,
-              "--config",
-              CONFIG_JSON_FILENAME,
-              // TODO support both --properties and --catalog depending on integration
-              "--properties",
-              CATALOG_JSON_FILENAME,
-              "--state",
-              STATE_JSON_FILENAME)
+                  jobRoot,
+                  imageName,
+                  "--config",
+                  CONFIG_JSON_FILENAME,
+                  // TODO support both --properties and --catalog depending on integration
+                  "--properties",
+                  CATALOG_JSON_FILENAME,
+                  "--state",
+                  STATE_JSON_FILENAME)
               .redirectError(jobRoot.resolve(DefaultSyncWorker.TAP_ERR_LOG).toFile())
               .start();
     } catch (IOException e) {

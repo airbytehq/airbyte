@@ -79,7 +79,8 @@ class SourceImplementationsHandlerTest {
   }
 
   @Test
-  void testCreateSourceImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testCreateSourceImplementation()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get())
         .thenReturn(sourceConnectionImplementation.getSourceImplementationId());
 

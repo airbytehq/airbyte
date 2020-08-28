@@ -90,9 +90,7 @@ public class SingerDiscoverSchemaWorker
       int exitCode = workerProcess.exitValue();
       if (exitCode == 0) {
         final String catalog = readFile(jobRoot, CATALOG_JSON_FILENAME);
-        return new OutputAndStatus<>(
-            SUCCESSFUL,
-            Jsons.deserialize(catalog, SingerCatalog.class));
+        return new OutputAndStatus<>(SUCCESSFUL, Jsons.deserialize(catalog, SingerCatalog.class));
       } else {
         // TODO throw invalid credentials exception where appropriate based on error log
         String errLog = readFile(jobRoot, ERROR_LOG_FILENAME);

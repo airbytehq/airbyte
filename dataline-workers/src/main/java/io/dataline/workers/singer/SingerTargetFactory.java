@@ -57,8 +57,8 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
 
   @Override
   public CloseableConsumer<SingerMessage> create(StandardTargetConfig targetConfig, Path jobRoot) {
-    final String configDotJson = Jsons.serialize(
-        targetConfig.getDestinationConnectionImplementation().getConfiguration());
+    final String configDotJson =
+        Jsons.serialize(targetConfig.getDestinationConnectionImplementation().getConfiguration());
 
     // write config.json to disk
     Path configPath =

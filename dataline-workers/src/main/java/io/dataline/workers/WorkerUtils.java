@@ -75,7 +75,8 @@ public class WorkerUtils {
   }
 
   /**
-   * Translates a StandardSyncInput into a StandardTapConfig. StandardTapConfig is a subset of StandardSyncInput.
+   * Translates a StandardSyncInput into a StandardTapConfig. StandardTapConfig is a subset of
+   * StandardSyncInput.
    */
   public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
     final StandardTapConfig tapConfig = new StandardTapConfig();
@@ -86,7 +87,8 @@ public class WorkerUtils {
   }
 
   /**
-   * Translates a StandardSyncInput into a StandardTargetConfig. StandardTargetConfig is a subset of StandardSyncInput.
+   * Translates a StandardSyncInput into a StandardTargetConfig. StandardTargetConfig is a subset of
+   * StandardSyncInput.
    */
   public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
     final StandardTargetConfig targetConfig = new StandardTargetConfig();

@@ -169,18 +169,18 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     try {
       record =
           DatabaseHelper.query(
-              connectionPool,
-              ctx ->
-                  ctx.fetch(
-                      "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?) RETURNING id",
-                      scope,
-                      now,
-                      now,
-                      JobStatus.PENDING.toString().toLowerCase(),
-                      configJson,
-                      null,
-                      JobLogs.getLogDirectory(scope),
-                      JobLogs.getLogDirectory(scope)))
+                  connectionPool,
+                  ctx ->
+                      ctx.fetch(
+                          "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?) RETURNING id",
+                          scope,
+                          now,
+                          now,
+                          JobStatus.PENDING.toString().toLowerCase(),
+                          configJson,
+                          null,
+                          JobLogs.getLogDirectory(scope),
+                          JobLogs.getLogDirectory(scope)))
               .stream()
               .findFirst()
               .orElseThrow(() -> new RuntimeException("This should not happen"));
@@ -226,7 +226,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   public static Job getJobFromRecord(Record jobEntry) {
-    final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
+    final JobConfig jobConfig =
+        Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
 
     final String outputDb = jobEntry.get("output", String.class);
     final JobOutput output = outputDb == null ? null : Jsons.deserialize(outputDb, JobOutput.class);

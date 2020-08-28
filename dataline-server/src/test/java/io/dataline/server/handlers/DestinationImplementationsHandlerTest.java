@@ -85,7 +85,7 @@ class DestinationImplementationsHandlerTest {
     final Path path =
         Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
 
-      return Jsons.deserialize(Files.readString(path));
+    return Jsons.deserialize(Files.readString(path));
   }
 
   private DestinationConnectionImplementation generateDestinationImplementation(
