@@ -124,7 +124,6 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     final StandardSyncSummary syncSummary = new StandardSyncSummary();
     syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
     syncSummary.setRecordsSynced(10L);
-    //    syncSummary.setLogs(); // todo (cgardens) - figure out logs.
     syncSummary.setStartTime(LAST_SYNC_TIME);
     syncSummary.setEndTime(LAST_SYNC_TIME);
 
