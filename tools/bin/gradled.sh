@@ -21,12 +21,11 @@ main() {
 
   docker build -f Dockerfile.build . -t $IMG_NAME --target build-project
 
-  docker volume rm --force $TMP_VOLUME_NAME >/dev/null || true
-  docker volume create $TMP_VOLUME_NAME >/dev/null || true
   docker run $OPTS --rm \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v $TMP_VOLUME_NAME:/tmp \
+    -v /tmp:/tmp \
     -v $(pwd):/code \
+    -p 5005:5005 \
     -e GRADLE_OPTS="-Dorg.gradle.daemon=false" \
     $IMG_NAME $CMD
 }
