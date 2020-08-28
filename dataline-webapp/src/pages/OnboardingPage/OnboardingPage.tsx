@@ -20,6 +20,7 @@ import { Routes } from "../routes";
 import SourceResource from "../../core/resources/Source";
 import DestinationResource from "../../core/resources/Destination";
 import SourceImplementationResource from "../../core/resources/SourceImplementation";
+import DestinationImplementationResource from "../../core/resources/DestinationImplementation";
 import config from "../../config";
 
 const Content = styled.div`
@@ -59,6 +60,12 @@ const OnboardingPage: React.FC = () => {
     workspaceId: config.ui.workspaceId
   });
   const { destinations } = useResource(
+    DestinationImplementationResource.listShape(),
+    {
+      workspaceId: config.ui.workspaceId
+    }
+  );
+  const destinationsImplementation = useResource(
     DestinationImplementationResource.listShape(),
     {
       workspaceId: config.ui.workspaceId

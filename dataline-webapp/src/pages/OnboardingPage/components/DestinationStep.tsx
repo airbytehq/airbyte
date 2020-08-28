@@ -11,7 +11,12 @@ import { useFetcher } from "rest-hooks";
 
 type IProps = {
   hasSuccess?: boolean;
-  onSubmit: () => void;
+  onSubmit: (values: {
+    name: string;
+    serviceType: string;
+    specificationId?: string;
+    connectionConfiguration?: any;
+  }) => void;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
   hasSuccess?: boolean;
   onSubmit: (values: {
@@ -22,6 +27,30 @@ type IProps = {
   }) => void;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
   errorStatus?: number;
+};
+
+const useDestinationSpecificationLoad = (destinationId: string) => {
+  const [
+    destinationSpecification,
+    setDestinationSpecification
+  ] = useState<null | DestinationSpecification>(null);
+
+  const fetchSourceSpecification = useFetcher(
+    DestinationSpecificationResource.detailShape(),
+    true
+  );
+
+  useEffect(() => {
+    (async () => {
+      if (destinationId) {
+        setDestinationSpecification(
+          await fetchSourceSpecification({ destinationId })
+        );
+      }
+    })();
+  }, [fetchSourceSpecification, destinationId]);
+
+  return destinationSpecification;
 };
 
 const useDestinationSpecificationLoad = (destinationId: string) => {
