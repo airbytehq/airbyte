@@ -1,20 +1,20 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
-import { useResource, useFetcher } from "rest-hooks";
+import { useFetcher, useResource } from "rest-hooks";
 
 import { H2 } from "../../components/Titles";
 import StepsMenu from "../../components/StepsMenu";
 import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
-import useRouter from "../../components/hooks/useRouterHook";
-import { Routes } from "../routes";
-import SourceResource from "../../core/resources/Source";
-import DestinationResource from "../../core/resources/Destination";
 import SourceImplementationResource from "../../core/resources/SourceImplementation";
 import DestinationImplementationResource from "../../core/resources/DestinationImplementation";
+import ConnectionResource from "../../core/resources/Connection";
 import config from "../../config";
+import StepsConfig, { StepsTypes } from "./components/StepsConfig";
+import PrepareDropDownLists from "./components/PrepareDropDownLists";
+import FrequencyConfig from "../../data/FrequencyConfig.json";
 
 const Content = styled.div`
   width: 100%;
@@ -49,22 +49,20 @@ const StepsCover = styled.div`
 `;
 
 const OnboardingPage: React.FC = () => {
-  const [successRequest, setSuccessRequest] = useState(false);
-
-  const { push } = useRouter();
-  const { sources } = useResource(SourceResource.listShape(), {});
-  const { destinations } = useResource(DestinationResource.listShape(), {});
-  const sourcesImplementation = useResource(
-    SourceImplementationResource.listShape(),
-    {
-      workspaceId: config.ui.workspaceId
-    }
-  );
-  const destinationsImplementation = useResource(
+  const { sources } = useResource(SourceImplementationResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
+  const { destinations } = useResource(
     DestinationImplementationResource.listShape(),
     {
       workspaceId: config.ui.workspaceId
     }
+  );
+
+  const [successRequest, setSuccessRequest] = useState(false);
+  const { currentStep, steps, nextStep } = StepsConfig(
+    !!sources.length,
+    !!destinations.length
   );
   const createSourcesImplementation = useFetcher(
     SourceImplementationResource.createShape()
@@ -72,48 +70,12 @@ const OnboardingPage: React.FC = () => {
   const createDestinationsImplementation = useFetcher(
     DestinationImplementationResource.createShape()
   );
+  const createConnection = useFetcher(ConnectionResource.createShape());
 
-  const sourcesDropDownData = useMemo(
-    () =>
-      sources.map(item => ({
-        text: item.name,
-        value: item.sourceId,
-        img: "/default-logo-catalog.svg"
-      })),
-    [sources]
-  );
-
-  const destinationsDropDownData = useMemo(
-    () =>
-      destinations.map(item => ({
-        text: item.name,
-        value: item.destinationId,
-        img: "/default-logo-catalog.svg"
-      })),
-    [destinations]
-  );
-
-  const steps = [
-    {
-      id: "create-source",
-      name: <FormattedMessage id={"onboarding.createSource"} />
-    },
-    {
-      id: "create-destination",
-      name: <FormattedMessage id={"onboarding.createDestination"} />
-    },
-    {
-      id: "set-up-connection",
-      name: <FormattedMessage id={"onboarding.setUpConnection"} />
-    }
-  ];
-
-  const initialStep = sourcesImplementation.sources.length
-    ? destinationsImplementation.destinations.length
-      ? "set-up-connection"
-      : "create-destination"
-    : "create-source";
-  const [currentStep, setCurrentStep] = useState(initialStep);
+  const {
+    sourcesDropDownData,
+    destinationsDropDownData
+  } = PrepareDropDownLists();
 
   const onSubmitSourceStep = async (values: {
     name: string;
@@ -135,7 +97,7 @@ const OnboardingPage: React.FC = () => {
     setSuccessRequest(true);
     setTimeout(() => {
       setSuccessRequest(false);
-      setCurrentStep("create-destination");
+      nextStep();
     }, 2000);
   };
   const onSubmitDestinationStep = async (values: {
@@ -159,13 +121,30 @@ const OnboardingPage: React.FC = () => {
     setSuccessRequest(true);
     setTimeout(() => {
       setSuccessRequest(false);
-      setCurrentStep("set-up-connection");
+      nextStep();
     }, 2000);
   };
-  const onSubmitConnectionStep = () => push(Routes.Root);
+  const onSubmitConnectionStep = async (values: { frequency: string }) => {
+    const frequencyData = FrequencyConfig.find(
+      item => item.value === values.frequency
+    );
+    const result = await createConnection(
+      {},
+      {
+        sourceImplementationId: sources[0].sourceImplementationId,
+        destinationImplementationId:
+          destinations[0].destinationImplementationId,
+        syncMode: "full_refresh",
+        schedule: frequencyData?.config,
+        status: "active"
+      }
+    );
+
+    console.log(result);
+  };
 
   const renderStep = () => {
-    if (currentStep === "create-source") {
+    if (currentStep === StepsTypes.CREATE_SOURCE) {
       return (
         <SourceStep
           onSubmit={onSubmitSourceStep}
@@ -175,7 +154,7 @@ const OnboardingPage: React.FC = () => {
         />
       );
     }
-    if (currentStep === "create-destination") {
+    if (currentStep === StepsTypes.CREATE_DESTINATION) {
       return (
         <DestinationStep
           onSubmit={onSubmitDestinationStep}

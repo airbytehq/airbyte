@@ -54,4 +54,11 @@ export default class ConnectionResource extends BaseResource
       schema: this.asSchema()
     };
   }
+
+  static createShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.createShape(),
+      schema: this.asSchema()
+    };
+  }
 }

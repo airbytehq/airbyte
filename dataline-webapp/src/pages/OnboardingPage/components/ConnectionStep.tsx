@@ -6,7 +6,7 @@ import ConnectionBlock from "../../../components/ConnectionBlock";
 import FrequencyForm from "../../../components/FrequencyForm";
 
 type IProps = {
-  onSubmit: () => void;
+  onSubmit: (values: { frequency: string }) => void;
 };
 
 const ConnectionStep: React.FC<IProps> = ({ onSubmit }) => {

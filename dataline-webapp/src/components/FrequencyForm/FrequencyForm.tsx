@@ -10,7 +10,7 @@ import FrequencyConfig from "../../data/FrequencyConfig.json";
 
 type IProps = {
   className?: string;
-  onSubmit: () => void;
+  onSubmit: (values: { frequency: string }) => void;
 };
 
 const SmallLabeledDropDown = styled(LabeledDropDown)`
@@ -59,9 +59,9 @@ const FrequencyForm: React.FC<IProps> = ({ onSubmit, className }) => {
       validateOnBlur={true}
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
-      onSubmit={async (_, { setSubmitting }) => {
+      onSubmit={async (values, { setSubmitting }) => {
+        onSubmit(values);
         setSubmitting(false);
-        onSubmit();
       }}
     >
       {({ isSubmitting, setFieldValue, isValid, dirty }) => (
