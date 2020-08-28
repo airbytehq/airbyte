@@ -3,7 +3,7 @@
   <img alt="License" src="https://img.shields.io/github/license/datalineio/dataline" />
 </p>
 
-<p> align="center">
+<p align="center">
   <img alt="Dataline" src="https://raw.githubusercontent.com/datalineio/dataline/1a2d32401e519a923f4d28e4341f005992bc297f/docs/.gitbook/assets/dataline_light-background.svg" width="400px" />
 </p>
 
