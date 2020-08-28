@@ -1,4 +1,9 @@
 # Getting Started
+<p align="center">
+  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI">
+  <img alt="License" src="https://img.shields.io/github/license/datalineio/dataline" />
+</p>
+
 
 ![](docs/.gitbook/assets/dataline_light-background.svg)
 
