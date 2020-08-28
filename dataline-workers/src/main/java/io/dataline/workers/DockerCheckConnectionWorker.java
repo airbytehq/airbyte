@@ -92,7 +92,7 @@ public class DockerCheckConnectionWorker implements CheckConnectionWorker {
   @Override
   public void cancel() {
     if (tapProcess != null) {
-      WorkerUtils.cancelHelper(tapProcess);
+      WorkerUtils.cancelProcess(tapProcess);
     }
   }
 }
