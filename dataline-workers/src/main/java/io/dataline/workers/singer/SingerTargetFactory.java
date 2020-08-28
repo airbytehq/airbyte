@@ -34,7 +34,7 @@ import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.TargetConsumer;
 import io.dataline.workers.TargetFactory;
 import io.dataline.workers.WorkerUtils;
-import io.dataline.workers.utils.DockerUtils;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -43,19 +43,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SingerTargetFactory implements TargetFactory<SingerMessage> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerTargetFactory.class);
 
   private static final String CONFIG_JSON_FILENAME = "target_config.json";
 
-  private final String dockerImageName;
+  private final String imageName;
+  private final ProcessBuilderFactory pbf;
 
-  public SingerTargetFactory(String dockerImageName) {
-    this.dockerImageName = dockerImageName;
+  public SingerTargetFactory(final String imageName, final ProcessBuilderFactory pbf) {
+    this.imageName = imageName;
+    this.pbf = pbf;
   }
 
   @Override
-  public CloseableConsumer<SingerMessage> create(
-      StandardTargetConfig targetConfig, Path workspacePath) {
+  public CloseableConsumer<SingerMessage> create(StandardTargetConfig targetConfig, Path jobRoot) {
     final ObjectMapper objectMapper = new ObjectMapper();
     final String configDotJson;
 
@@ -69,17 +71,12 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
 
     // write config.json to disk
     Path configPath =
-        WorkerUtils.writeFileToWorkspace(workspacePath, CONFIG_JSON_FILENAME, configDotJson);
-
-    String[] dockerCmd =
-        DockerUtils.getDockerCommand(
-            workspacePath, dockerImageName, "--config", configPath.toString());
+        WorkerUtils.writeFileToWorkspace(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
 
     try {
       final Process targetProcess =
-          new ProcessBuilder()
-              .command(dockerCmd)
-              .redirectError(workspacePath.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile())
+          pbf.create(jobRoot, imageName, "--config", configPath.toString())
+              .redirectError(jobRoot.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile())
               .start();
 
       try (BufferedWriter writer =
