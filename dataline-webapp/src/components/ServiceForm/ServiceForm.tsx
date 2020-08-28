@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Formik, Form } from "formik";
-import * as yup from "yup";
 import styled from "styled-components";
 
 import { IDataItem } from "../DropDown/components/ListItem";
 import FormContent from "./components/FormContent";
 import BottomBlock from "./components/BottomBlock";
 import EditControls from "./components/EditControls";
+import ConstructValidationSchema from "./components/ConstructValidationSchema";
+import { specification } from "../../core/resources/SourceSpecification";
 
 type IProps = {
   dropDownData: Array<IDataItem>;
@@ -15,21 +16,18 @@ type IProps = {
     name: string;
     serviceType: string;
     frequency?: string;
+    connectionConfiguration: any;
   }) => void;
   formType: "source" | "destination" | "connection";
   formValues?: { name: string; serviceType: string; frequency?: string };
   hasSuccess?: boolean;
   errorMessage?: React.ReactNode;
+  specifications?: specification;
 };
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
 `;
-
-const onboardingValidationSchema = yup.object().shape({
-  name: yup.string().required("form.empty.error"),
-  serviceType: yup.string().required("form.empty.error")
-});
 
 const ServiceForm: React.FC<IProps> = ({
   onSubmit,
@@ -38,21 +36,40 @@ const ServiceForm: React.FC<IProps> = ({
   formValues,
   onDropDownSelect,
   hasSuccess,
-  errorMessage
+  errorMessage,
+  specifications
 }) => {
+  const properties = Object.keys(specifications?.properties || {});
+
+  const validationSchema = useMemo(
+    () => ConstructValidationSchema(specifications, properties),
+    [specifications, properties]
+  );
+  const additionalFields = properties
+    ? Object.fromEntries([...properties.map(item => [item, ""])])
+    : null;
+
   const isEditMode = !!formValues;
   return (
     <Formik
       initialValues={{
         name: formValues?.name || "",
         serviceType: formValues?.serviceType || "",
-        frequency: formValues?.frequency || ""
+        frequency: formValues?.frequency || "",
+        ...additionalFields
       }}
       validateOnBlur={true}
       validateOnChange={true}
-      validationSchema={onboardingValidationSchema}
+      validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting }) => {
-        await onSubmit(values);
+        await onSubmit({
+          name: values.name,
+          serviceType: values.serviceType,
+          frequency: values.frequency,
+          connectionConfiguration: Object.fromEntries([
+            ...properties.map(item => [item, values[item]])
+          ])
+        });
         setSubmitting(false);
       }}
     >
@@ -65,6 +82,8 @@ const ServiceForm: React.FC<IProps> = ({
             values={values}
             isEditMode={isEditMode}
             onDropDownSelect={onDropDownSelect}
+            specifications={specifications}
+            properties={properties}
           />
 
           {isEditMode ? (
