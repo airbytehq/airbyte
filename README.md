@@ -1,11 +1,10 @@
-# Getting Started
 <p align="center">
   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI">
   <img alt="License" src="https://img.shields.io/github/license/datalineio/dataline" />
 </p>
 
 
-![](docs/.gitbook/assets/dataline_light-background.svg)
+![](docs/.gitbook/assets/dataline_light-background.svg){width=400px}
 
 **Data integration made simple, secure and reliable**  
 The new open-source standard to sync data from applications & databases to warehouses.
@@ -32,22 +31,16 @@ The new open-source standard for data integration engine that syncs data from ap
 ### Quick start
 
 ```bash
-docker-compose up
+docker-compose -f docker-compose.build.yaml -f docker-compose.yaml up
 ```
-
-```bash
-docker-compose up
-```
-
-Now go to [http://localhost:8000](http://localhost:8000)
 
 Now go to [http://localhost:8000](http://localhost:8000)
 
 ### Update images
 
 ```bash
-docker-compose -f docker-compose.build.yaml build
-docker-compose -f docker-compose.build.yaml push
+docker-compose -f docker-compose.build.yaml -f docker-compose.yaml build
+docker-compose -f docker-compose.build.yaml -f docker-compose.yaml push
 ```
 
 ## Features
