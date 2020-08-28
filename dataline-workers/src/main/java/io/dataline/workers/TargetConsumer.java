@@ -24,8 +24,8 @@
 
 package io.dataline.workers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.commons.functional.CloseableConsumer;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -34,22 +34,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TargetConsumer implements CloseableConsumer<SingerMessage> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(TargetConsumer.class);
 
   private final BufferedWriter writer;
   private final Process process;
-  private final ObjectMapper objectMapper;
 
   public TargetConsumer(BufferedWriter writer, Process process) {
     this.writer = writer;
     this.process = process;
-    this.objectMapper = new ObjectMapper();
   }
 
   @Override
   public void accept(SingerMessage record) {
     try {
-      writer.write(objectMapper.writeValueAsString(record));
+      writer.write(Jsons.serialize(record));
       writer.newLine();
     } catch (IOException e) {
       throw new RuntimeException(e);

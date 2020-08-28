@@ -25,7 +25,7 @@
 package io.dataline.workers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.db.DatabaseHelper;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -70,8 +70,7 @@ public class PostgreSQLContainerTestHelper {
   }
 
   public static String getSingerTapConfig(
-      String user, String password, String host, String dbname, String port)
-      throws JsonProcessingException {
+      String user, String password, String host, String dbname, String port) {
     Map<String, String> creds = new HashMap<>();
     creds.put("user", user);
     creds.put("password", password);
@@ -79,7 +78,7 @@ public class PostgreSQLContainerTestHelper {
     creds.put("dbname", dbname);
     creds.put("port", port);
 
-    return new ObjectMapper().writeValueAsString(creds);
+    return Jsons.serialize(creds);
   }
 
   public static String getSingerTargetConfig(PostgreSQLContainer db)
@@ -95,8 +94,7 @@ public class PostgreSQLContainerTestHelper {
 
   // TODO this will be moved into Taps/Targets
   public static String getSingerTargetConfig(
-      String user, String password, String host, String dbname, String port, String schema)
-      throws JsonProcessingException {
+      String user, String password, String host, String dbname, String port, String schema) {
     Map<String, String> creds = new HashMap<>();
     creds.put("postgres_username", user);
     creds.put("postgres_schema", schema);
@@ -105,6 +103,6 @@ public class PostgreSQLContainerTestHelper {
     creds.put("postgres_database", dbname);
     creds.put("postgres_port", port);
 
-    return new ObjectMapper().writeValueAsString(creds);
+    return Jsons.serialize(creds);
   }
 }

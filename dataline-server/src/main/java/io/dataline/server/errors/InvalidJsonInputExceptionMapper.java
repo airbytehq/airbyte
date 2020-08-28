@@ -25,22 +25,21 @@
 package io.dataline.server.errors;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import io.dataline.commons.json.Jsons;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 @Provider
 public class InvalidJsonInputExceptionMapper implements ExceptionMapper<JsonMappingException> {
+
   @Override
   public Response toResponse(JsonMappingException e) {
     return Response.status(422)
-        .entity(
-            new ObjectMapper()
-                .createObjectNode()
-                .put("message", "Invalid JSON")
-                .put("details", e.getOriginalMessage())
-                .toString())
+        .entity(Jsons.serializeMap(ImmutableMap.of(
+            "message", "Invalid JSON",
+            "details", e.getOriginalMessage())))
         .type("application/json")
         .build();
   }

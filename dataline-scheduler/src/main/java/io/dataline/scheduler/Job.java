@@ -24,14 +24,13 @@
 
 package io.dataline.scheduler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.JobConfig;
 import io.dataline.config.JobOutput;
 import java.util.Optional;
 import javax.annotation.Nullable;
 
 public class Job {
+
   private final long id;
   private final String scope;
   private final JobStatus status;
@@ -92,11 +91,6 @@ public class Job {
 
   public JobConfig getConfig() {
     return config;
-  }
-
-  public String getConfigAsJson() throws JsonProcessingException {
-    ObjectMapper objectMapper = new ObjectMapper();
-    return objectMapper.writeValueAsString(config);
   }
 
   public Optional<JobOutput> getOutput() {

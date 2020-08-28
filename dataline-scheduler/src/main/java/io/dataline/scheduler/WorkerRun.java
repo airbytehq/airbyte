@@ -24,8 +24,7 @@
 
 package io.dataline.scheduler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
@@ -40,16 +39,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class represents a single run of a worker. It handles making sure the correct inputs and
- * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
- * persisted to the db.
+ * This class represents a single run of a worker. It handles making sure the correct inputs and outputs are passed to the selected worker. It also
+ * makes sures that the outputs of the worker are persisted to the db.
  *
  * <p>todo (cgardens) - this line between this abstraction and WorkerRunner is a little blurry. we
- * can clarify it later. the main benefit is of this class is that it gives us some type safety when
- * working with workers. you can probably make an argument that this class should not have access to
- * the db.
+ * can clarify it later. the main benefit is of this class is that it gives us some type safety when working with workers. you can probably make an
+ * argument that this class should not have access to the db.
  *
- * @param <InputType> - the type that the worker consumes.
+ * @param <InputType>  - the type that the worker consumes.
  * @param <OutputType> - the type that the worker outputs.
  */
 public class WorkerRun<InputType, OutputType> implements Runnable {
@@ -95,18 +92,12 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
       }
 
       if (outputAndStatus.getOutput().isPresent()) {
-        ObjectMapper objectMapper = new ObjectMapper();
         outputAndStatus
             .getOutput()
             .ifPresentOrElse(
                 output -> {
-                  String json = null;
-                  try {
-                    json = objectMapper.writeValueAsString(output);
-                    LOGGER.info("Set job output for job " + jobId);
-                  } catch (JsonProcessingException e) {
-                    LOGGER.info("Failed to set job output for job " + jobId);
-                  }
+                  LOGGER.info("Set job output for job " + jobId);
+                  final String json = Jsons.serialize(output);
                   setJobOutput(connectionPool, jobId, json);
                 },
                 () -> LOGGER.info("No output present for job " + jobId));

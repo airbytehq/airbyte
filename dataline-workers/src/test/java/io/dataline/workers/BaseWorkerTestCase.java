@@ -26,11 +26,10 @@ package io.dataline.workers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import io.dataline.commons.json.Jsons;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -60,27 +59,16 @@ public abstract class BaseWorkerTestCase {
     return Files.createDirectories(jobRoot);
   }
 
-  protected String readResource(String name) {
-    URL resource = Resources.getResource(name);
-    try {
+  protected String readResource(String name) throws IOException {
+      URL resource = Resources.getResource(name);
       return Resources.toString(resource, Charset.defaultCharset());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
-  protected void assertJsonEquals(String s1, String s2) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    assertEquals(mapper.readTree(s1), mapper.readTree(s2));
+  protected void assertJsonEquals(final String s1, final String s2) {
+    assertEquals(Jsons.deserialize(s1), Jsons.deserialize(s2));
   }
 
-  protected <T> T getJsonAsTyped(String file, Class<T> clazz) {
-    final URL resource = Resources.getResource(file);
-    final ObjectMapper objectMapper = new ObjectMapper();
-    try {
-      return objectMapper.readValue(new File(resource.getFile()), clazz);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  protected <T> T readAs(final String name, final Class<T> klass) throws IOException {
+    return Jsons.deserialize(readResource(name), klass);
   }
 }

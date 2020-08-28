@@ -24,7 +24,7 @@
 
 package io.dataline.scheduler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.JobCheckConnectionConfig;
 import io.dataline.config.JobConfig;
@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultSchedulerPersistence implements SchedulerPersistence {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSchedulerPersistence.class);
   private final BasicDataSource connectionPool;
 
@@ -162,25 +163,24 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     LOGGER.info("creating pending job for scope: " + scope);
     LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
 
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String configJson = objectMapper.writeValueAsString(jobConfig);
+    final String configJson = Jsons.serialize(jobConfig);
 
     final Record record;
     try {
       record =
           DatabaseHelper.query(
-                  connectionPool,
-                  ctx ->
-                      ctx.fetch(
-                          "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?) RETURNING id",
-                          scope,
-                          now,
-                          now,
-                          JobStatus.PENDING.toString().toLowerCase(),
-                          configJson,
-                          null,
-                          JobLogs.getLogDirectory(scope),
-                          JobLogs.getLogDirectory(scope)))
+              connectionPool,
+              ctx ->
+                  ctx.fetch(
+                      "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?) RETURNING id",
+                      scope,
+                      now,
+                      now,
+                      JobStatus.PENDING.toString().toLowerCase(),
+                      configJson,
+                      null,
+                      JobLogs.getLogDirectory(scope),
+                      JobLogs.getLogDirectory(scope)))
               .stream()
               .findFirst()
               .orElseThrow(() -> new RuntimeException("This should not happen"));
@@ -226,27 +226,10 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   public static Job getJobFromRecord(Record jobEntry) {
-    final ObjectMapper objectMapper = new ObjectMapper();
+    final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
 
-    final JobConfig jobConfig;
-    try {
-      jobConfig = objectMapper.readValue(jobEntry.get("config", String.class), JobConfig.class);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    final JobOutput output;
-    try {
-      final String outputDb = jobEntry.get("output", String.class);
-      if (outputDb == null) {
-        output = null;
-      } else {
-        output = objectMapper.readValue(outputDb, JobOutput.class);
-      }
-
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    final String outputDb = jobEntry.get("output", String.class);
+    final JobOutput output = outputDb == null ? null : Jsons.deserialize(outputDb, JobOutput.class);
 
     return new Job(
         jobEntry.get("id", Long.class),

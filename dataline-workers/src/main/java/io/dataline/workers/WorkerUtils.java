@@ -24,8 +24,6 @@
 
 package io.dataline.workers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
@@ -39,30 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WorkerUtils {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
-
-  public static Path writeObjectToJsonFileWorkspace(
-      Path workspaceRoot, String fileName, Object object) {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String inputString;
-    try {
-      inputString = objectMapper.writeValueAsString(object);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-    return writeFileToWorkspace(workspaceRoot, fileName, inputString);
-  }
-
-  public static <T> T readObjectFromJsonFileWorkspace(
-      Path workspaceRoot, String fileName, Class<T> clazz) {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String outputString = WorkerUtils.readFileFromWorkspace(workspaceRoot, fileName);
-    try {
-      return objectMapper.readValue(outputString, clazz);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   public static Path writeFileToWorkspace(Path workspaceRoot, String fileName, String contents) {
     try {
@@ -99,8 +75,7 @@ public class WorkerUtils {
   }
 
   /**
-   * Translates a StandardSyncInput into a StandardTapConfig. StandardTapConfig is a subset of
-   * StandardSyncInput.
+   * Translates a StandardSyncInput into a StandardTapConfig. StandardTapConfig is a subset of StandardSyncInput.
    */
   public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
     final StandardTapConfig tapConfig = new StandardTapConfig();
@@ -111,8 +86,7 @@ public class WorkerUtils {
   }
 
   /**
-   * Translates a StandardSyncInput into a StandardTargetConfig. StandardTargetConfig is a subset of
-   * StandardSyncInput.
+   * Translates a StandardSyncInput into a StandardTargetConfig. StandardTargetConfig is a subset of StandardSyncInput.
    */
   public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
     final StandardTargetConfig targetConfig = new StandardTargetConfig();

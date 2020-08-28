@@ -29,9 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
 import io.dataline.api.model.DestinationImplementationCreate;
@@ -40,6 +38,7 @@ import io.dataline.api.model.DestinationImplementationRead;
 import io.dataline.api.model.DestinationImplementationReadList;
 import io.dataline.api.model.DestinationImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.persistence.ConfigNotFoundException;
@@ -48,8 +47,10 @@ import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.helpers.DestinationSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,7 +66,7 @@ class DestinationImplementationsHandlerTest {
 
   @SuppressWarnings("unchecked")
   @BeforeEach
-  void setUp() {
+  void setUp() throws IOException {
     configPersistence = mock(ConfigPersistence.class);
     validator = mock(IntegrationSchemaValidation.class);
     uuidGenerator = mock(Supplier.class);
@@ -80,19 +81,15 @@ class DestinationImplementationsHandlerTest {
         new DestinationImplementationsHandler(configPersistence, validator, uuidGenerator);
   }
 
-  private JsonNode getTestImplementationJson() {
-    final File implementationFile =
-        new File("../dataline-server/src/test/resources/json/TestImplementation.json");
+  private JsonNode getTestImplementationJson() throws IOException {
+    final Path path =
+        Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
 
-    try {
-      return new ObjectMapper().readTree(implementationFile);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+      return Jsons.deserialize(Files.readString(path));
   }
 
   private DestinationConnectionImplementation generateDestinationImplementation(
-      UUID destinationSpecificationId) {
+      UUID destinationSpecificationId) throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID destinationImplementationId = UUID.randomUUID();
 
@@ -110,7 +107,7 @@ class DestinationImplementationsHandlerTest {
 
   @Test
   void testCreateDestinationImplementation()
-      throws JsonValidationException, ConfigNotFoundException {
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get())
         .thenReturn(destinationConnectionImplementation.getDestinationImplementationId());
 
@@ -162,12 +159,8 @@ class DestinationImplementationsHandlerTest {
   void testUpdateDestinationImplementation()
       throws JsonValidationException, ConfigNotFoundException {
     final Object configuration = destinationConnectionImplementation.getConfiguration();
-    final JsonNode newConfiguration;
-    try {
-      newConfiguration = new ObjectMapper().readTree(configuration.toString());
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    final JsonNode newConfiguration = Jsons.deserialize(configuration.toString());
+
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final DestinationConnectionImplementation expectedDestinationConnectionImplementation =

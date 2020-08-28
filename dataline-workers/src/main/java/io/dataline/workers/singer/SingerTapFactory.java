@@ -24,9 +24,8 @@
 
 package io.dataline.workers.singer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Streams;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerCatalog;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardDiscoverSchemaInput;
@@ -71,23 +70,13 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
       throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, jobRoot);
 
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String configDotJson;
-    final String catalogDotJson;
-    final String stateDotJson;
+    final String configDotJson = Jsons.serialize(input.getSourceConnectionImplementation().getConfiguration());
 
-    try {
-      configDotJson =
-          objectMapper.writeValueAsString(
-              input.getSourceConnectionImplementation().getConfiguration());
-      SingerCatalog selectedCatalog =
-          SingerCatalogConverters.applySchemaToDiscoveredCatalog(
-              discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
-      catalogDotJson = objectMapper.writeValueAsString(selectedCatalog);
-      stateDotJson = objectMapper.writeValueAsString(input.getState());
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    final SingerCatalog selectedCatalog = SingerCatalogConverters.applySchemaToDiscoveredCatalog(
+        discoveryOutput.getOutput().get(),
+        input.getStandardSync().getSchema());
+    final String catalogDotJson = Jsons.serialize(selectedCatalog);
+    final String stateDotJson = Jsons.serialize(input.getState());
 
     WorkerUtils.writeFileToWorkspace(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
     WorkerUtils.writeFileToWorkspace(jobRoot, CATALOG_JSON_FILENAME, catalogDotJson);
@@ -96,15 +85,15 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     try {
       tapProcess =
           pbf.create(
-                  jobRoot,
-                  imageName,
-                  "--config",
-                  CONFIG_JSON_FILENAME,
-                  // TODO support both --properties and --catalog depending on integration
-                  "--properties",
-                  CATALOG_JSON_FILENAME,
-                  "--state",
-                  STATE_JSON_FILENAME)
+              jobRoot,
+              imageName,
+              "--config",
+              CONFIG_JSON_FILENAME,
+              // TODO support both --properties and --catalog depending on integration
+              "--properties",
+              CATALOG_JSON_FILENAME,
+              "--state",
+              STATE_JSON_FILENAME)
               .redirectError(jobRoot.resolve(DefaultSyncWorker.TAP_ERR_LOG).toFile())
               .start();
     } catch (IOException e) {

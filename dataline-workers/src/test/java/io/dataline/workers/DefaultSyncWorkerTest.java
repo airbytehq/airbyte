@@ -66,13 +66,13 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
   @Test
   public void test() throws Exception {
     final String sourceConnection =
-        Jsons.toJson(
+        Jsons.serializeMap(
             Map.of(
                 "apiKey", "123",
                 "region", "us-east"));
 
     final String destinationConnection =
-        Jsons.toJson(
+        Jsons.serializeMap(
             Map.of(
                 "username", "dataline",
                 "token", "anau81b"));
@@ -115,7 +115,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     standardSync.setName("favorite_color_pipe");
     standardSync.setSchema(schema);
 
-    final String stateValue = Jsons.toJson(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
+    final String stateValue = Jsons.serializeMap(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
     State state = new State();
     state.setConnectionId(connectionId);

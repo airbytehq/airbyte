@@ -35,7 +35,15 @@ public class Jsons {
   // Object Mapper is thread-safe
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  public static String toJson(final Map<String, String> map) {
+  public static <T> String serialize(T object) {
+    try {
+      return OBJECT_MAPPER.writeValueAsString(object);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static String serializeMap(final Map<String, String> map) {
     try {
       return OBJECT_MAPPER.writeValueAsString(map);
     } catch (JsonProcessingException e) {
@@ -43,7 +51,11 @@ public class Jsons {
     }
   }
 
-  public static <T> T toClass(final String jsonString, final Class<T> klass) {
+  public static String serializeJsonNode(final JsonNode jsonNode) {
+    return jsonNode.toString();
+  }
+
+  public static <T> T deserialize(final String jsonString, final Class<T> klass) {
     try {
       return OBJECT_MAPPER.readValue(jsonString, klass);
     } catch (IOException e) {
@@ -51,11 +63,15 @@ public class Jsons {
     }
   }
 
-  public static JsonNode toJsonNode(final String jsonString) {
+  public static JsonNode deserialize(final String jsonString) {
     try {
       return OBJECT_MAPPER.readTree(jsonString);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static <T> JsonNode jsonNode(final T object) {
+    return OBJECT_MAPPER.valueToTree(object);
   }
 }

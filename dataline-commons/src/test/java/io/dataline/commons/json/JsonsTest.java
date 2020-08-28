@@ -33,29 +33,58 @@ import org.junit.jupiter.api.Test;
 class JsonsTest {
 
   @Test
-  void testToJson() {
+  void testSerialize() {
+    Assertions.assertEquals(
+        "{\"str\":\"abc\",\"num\":999,\"numLong\":888}",
+        Jsons.serialize(new ToClass("abc", 999, 888L)));
+  }
+
+  @Test
+  void testSerializeMap() {
     Assertions.assertEquals(
         "{\"test\":\"abc\",\"test2\":\"def\"}",
-        Jsons.toJson(
+        Jsons.serializeMap(
             ImmutableMap.of(
                 "test", "abc",
                 "test2", "def")));
   }
 
   @Test
-  void testToClass() {
+  void testSerializeJsonNode() {
+    Assertions.assertEquals(
+        "{\"str\":\"abc\",\"num\":999,\"numLong\":888}",
+        Jsons.serializeJsonNode(Jsons.jsonNode(new ToClass("abc", 999, 888L))));
+  }
+
+  @Test
+  void testDeserialize() {
     Assertions.assertEquals(
         new ToClass("abc", 999, 888L),
-        Jsons.toClass("{\"str\":\"abc\", \"num\": 999, \"numLong\": 888}", ToClass.class));
+        Jsons.deserialize("{\"str\":\"abc\", \"num\": 999, \"numLong\": 888}", ToClass.class));
+  }
+
+  @Test
+  void testDeserializeToJsonNode() {
+    Assertions.assertEquals("{\"str\":\"abc\"}", Jsons.deserialize("{\"str\":\"abc\"}").toString());
+
+    Assertions.assertEquals(
+        "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
+        Jsons.deserialize("[{\"str\":\"abc\"},{\"str\":\"abc\"}]").toString());
   }
 
   @Test
   void testToJsonNode() {
-    Assertions.assertEquals("{\"str\":\"abc\"}", Jsons.toJsonNode("{\"str\":\"abc\"}").toString());
+    Assertions.assertEquals(
+        "{\"str\":\"abc\",\"num\":999,\"numLong\":888}",
+        Jsons.jsonNode(new ToClass("abc", 999, 888L)).toString());
 
     Assertions.assertEquals(
-        "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
-        Jsons.toJsonNode("[{\"str\":\"abc\"},{\"str\":\"abc\"}]").toString());
+        "{\"test\":\"abc\",\"test2\":\"def\"}",
+        Jsons.jsonNode(
+                ImmutableMap.of(
+                    "test", "abc",
+                    "test2", "def"))
+            .toString());
   }
 
   private static class ToClass {
