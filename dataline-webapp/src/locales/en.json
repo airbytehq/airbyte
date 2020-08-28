@@ -33,6 +33,13 @@
   "form.testingConnection": "Testing connection...",
   "form.successTests": "All connection tests passed!",
   "form.failedTests": "The connection tests failed.",
+  "form.host": "Host",
+  "form.port": "Port",
+  "form.user": "User",
+  "form.password": "Password",
+  "form.dbname": "DB Name",
+  "form.filter_dbs": "Filter DBs",
+  "form.serviceAccount": "Service Account",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",

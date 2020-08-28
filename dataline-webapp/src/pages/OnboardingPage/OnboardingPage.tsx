@@ -13,6 +13,7 @@ import { Routes } from "../routes";
 import SourceResource from "../../core/resources/Source";
 import DestinationResource from "../../core/resources/Destination";
 import SourceImplementationResource from "../../core/resources/SourceImplementation";
+import DestinationImplementationResource from "../../core/resources/DestinationImplementation";
 import config from "../../config";
 
 const Content = styled.div`
@@ -59,8 +60,17 @@ const OnboardingPage: React.FC = () => {
       workspaceId: config.ui.workspaceId
     }
   );
+  const destinationsImplementation = useResource(
+    DestinationImplementationResource.listShape(),
+    {
+      workspaceId: config.ui.workspaceId
+    }
+  );
   const createSourcesImplementation = useFetcher(
     SourceImplementationResource.createShape()
+  );
+  const createDestinationsImplementation = useFetcher(
+    DestinationImplementationResource.createShape()
   );
 
   const sourcesDropDownData = useMemo(
@@ -99,7 +109,9 @@ const OnboardingPage: React.FC = () => {
   ];
 
   const initialStep = sourcesImplementation.sources.length
-    ? "create-destination"
+    ? destinationsImplementation.destinations.length
+      ? "set-up-connection"
+      : "create-destination"
     : "create-source";
   const [currentStep, setCurrentStep] = useState(initialStep);
 
@@ -107,13 +119,14 @@ const OnboardingPage: React.FC = () => {
     name: string;
     serviceType: string;
     specificationId?: string;
+    connectionConfiguration?: any;
   }) => {
     const result = await createSourcesImplementation(
       {},
       {
         workspaceId: config.ui.workspaceId,
         sourceSpecificationId: values.specificationId,
-        connectionConfiguration: {}
+        connectionConfiguration: values.connectionConfiguration
       },
       []
     );
@@ -125,7 +138,23 @@ const OnboardingPage: React.FC = () => {
       setCurrentStep("create-destination");
     }, 2000);
   };
-  const onSubmitDestinationStep = () => {
+  const onSubmitDestinationStep = async (values: {
+    name: string;
+    serviceType: string;
+    specificationId?: string;
+    connectionConfiguration?: any;
+  }) => {
+    const result = await createDestinationsImplementation(
+      {},
+      {
+        workspaceId: config.ui.workspaceId,
+        destinationSpecificationId: values.specificationId,
+        connectionConfiguration: values.connectionConfiguration
+      },
+      []
+    );
+
+    console.log(result);
     // TODO: action after success request
     setSuccessRequest(true);
     setTimeout(() => {

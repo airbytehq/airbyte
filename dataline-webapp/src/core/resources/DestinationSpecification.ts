@@ -1,9 +1,9 @@
 import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
-export interface SourceSpecification {
-  sourceSpecificationId: string;
-  sourceId: string;
+export interface DestinationSpecification {
+  destinationSpecificationId: string;
+  destinationId: string;
   connectionSpecification: {
     properties: any;
     required: [string];
@@ -15,26 +15,26 @@ export type specification = {
   required: [string];
 };
 
-export interface SourceSpecification {
-  sourceSpecificationId: string;
-  sourceId: string;
+export interface DestinationSpecification {
+  destinationSpecificationId: string;
+  destinationId: string;
   connectionSpecification: specification;
 }
 
-export default class SourceSpecificationResource extends BaseResource
-  implements SourceSpecification {
-  readonly sourceSpecificationId: string = "";
-  readonly sourceId: string = "";
+export default class DestinationSpecificationResource extends BaseResource
+  implements DestinationSpecification {
+  readonly destinationSpecificationId: string = "";
+  readonly destinationId: string = "";
   readonly connectionSpecification: specification = {
     properties: {},
     required: [""]
   };
 
   pk() {
-    return this.sourceSpecificationId?.toString();
+    return this.destinationSpecificationId?.toString();
   }
 
-  static urlRoot = "source_specifications";
+  static urlRoot = "destination_specifications";
 
   static detailShape<T extends typeof Resource>(this: T) {
     return {
