@@ -37,9 +37,9 @@ import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.utils.DockerUtils;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,16 +82,25 @@ public class SingerDiscoverSchemaWorker
 
     // exec
     try {
-      String[] cmd =
-          DockerUtils.getDockerCommand(
-              workspaceRoot,
-              imageName,
-              "--config",
-              CONFIG_JSON_FILENAME,
-              imageName,
-              "--config",
-              CONFIG_JSON_FILENAME,
-              "--discover");
+      final String[] cmd = {
+        "docker",
+        "run",
+        "-v",
+        "gradlew-tmp:/tmp",
+        "-w",
+        workspaceRoot.toString(),
+        "--entrypoint",
+        "/bin/sh",
+        "--network=host",
+        imageName,
+        //        "--config",
+        //        CONFIG_JSON_FILENAME,
+        //        "--discover"
+        "-c",
+        "sleep 999999"
+      };
+
+      System.out.println("Arrays.toString(cmd) = " + Arrays.toString(cmd));
 
       workerProcess =
           new ProcessBuilder(cmd)

@@ -22,22 +22,13 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.utils;
+package io.dataline.config;
 
 import java.nio.file.Path;
-import org.apache.commons.lang3.ArrayUtils;
 
-public class DockerUtils {
-  public static String[] getDockerCommand(Path workspaceRoot, String imageName, String... args) {
-    final String[] dockerCommander = {
-      "docker",
-      "run",
-      "-v",
-      String.format("gradlew-tmp:/dataline/data", workspaceRoot.toString()),
-      "--network=host",
-      imageName
-    };
+public interface Configs {
 
-    return ArrayUtils.addAll(dockerCommander, args);
-  }
+  Path getWorkspaceRoot();
+
+  Path getConfigRoot();
 }

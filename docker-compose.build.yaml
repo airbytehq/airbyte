@@ -24,3 +24,10 @@ services:
       dockerfile: Dockerfile.build
       target: webapp
       context: .
+
+volumes:
+  workspace:
+
+networks:
+  dataline:
+    driver: "bridge"

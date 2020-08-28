@@ -1,7 +1,5 @@
 FROM python:3.7-slim
 
-ARG WORKDIR=/data
-
 WORKDIR /singer
 
 ENV VIRTUAL_ENV=/singer/env
@@ -19,6 +17,4 @@ RUN python -m pip install --upgrade pip && \
 
 RUN apt-get autoremove -y gcc
 
-VOLUME $WORKDIR
-WORKDIR $WORKDIR
 ENTRYPOINT ["tap-postgres"]

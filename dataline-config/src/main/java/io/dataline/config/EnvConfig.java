@@ -22,22 +22,45 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.utils;
+package io.dataline.config;
 
 import java.nio.file.Path;
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.function.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class DockerUtils {
-  public static String[] getDockerCommand(Path workspaceRoot, String imageName, String... args) {
-    final String[] dockerCommander = {
-      "docker",
-      "run",
-      "-v",
-      String.format("gradlew-tmp:/dataline/data", workspaceRoot.toString()),
-      "--network=host",
-      imageName
-    };
+public class EnvConfig implements Configs {
 
-    return ArrayUtils.addAll(dockerCommander, args);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfig.class);
+
+  public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
+  public static final String CONFIG_ROOT = "CONFIG_ROOT";
+
+  private final Function<String, String> getEnv;
+
+  public EnvConfig() {
+    this(System::getenv);
+  }
+
+  EnvConfig(final Function<String, String> getEnv) {
+    this.getEnv = getEnv;
+  }
+
+  @Override
+  public Path getWorkspaceRoot() {
+    return getPath(WORKSPACE_ROOT);
+  }
+
+  @Override
+  public Path getConfigRoot() {
+    return getPath(CONFIG_ROOT);
+  }
+
+  private Path getPath(final String name) {
+    final String value = getEnv.apply(name);
+    if (value == null) {
+      throw new IllegalArgumentException("Env variable not defined: " + name);
+    }
+    return Path.of(value);
   }
 }
