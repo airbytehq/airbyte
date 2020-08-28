@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
@@ -21,7 +21,11 @@ import SourceResource from "../../core/resources/Source";
 import DestinationResource from "../../core/resources/Destination";
 import SourceImplementationResource from "../../core/resources/SourceImplementation";
 import DestinationImplementationResource from "../../core/resources/DestinationImplementation";
+import ConnectionResource from "../../core/resources/Connection";
 import config from "../../config";
+import StepsConfig, { StepsTypes } from "./components/StepsConfig";
+import PrepareDropDownLists from "./components/PrepareDropDownLists";
+import FrequencyConfig from "../../data/FrequencyConfig.json";
 
 const Content = styled.div`
   width: 100%;
