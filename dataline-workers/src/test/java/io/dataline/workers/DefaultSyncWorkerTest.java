@@ -24,14 +24,12 @@
 
 package io.dataline.workers;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.dataline.commons.functional.CloseableConsumer;
+import io.dataline.commons.json.JsonUtils;
 import io.dataline.config.Column;
 import io.dataline.config.DataType;
 import io.dataline.config.DestinationConnectionImplementation;
@@ -45,9 +43,10 @@ import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.config.State;
 import io.dataline.config.Table;
-import io.dataline.workers.protocol.singer.MessageFactory;
+import io.dataline.workers.protocol.singer.MessageUtils;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -66,15 +65,17 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
   @SuppressWarnings("unchecked")
   @Test
   public void test() throws Exception {
-    final ObjectMapper objectMapper = new ObjectMapper();
+    final String sourceConnection =
+        JsonUtils.toJson(
+            Map.of(
+                "apiKey", "123",
+                "region", "us-east"));
 
-    final ObjectNode sourceConnection = objectMapper.createObjectNode();
-    sourceConnection.put("apiKey", "123");
-    sourceConnection.put("region", "us-east");
-
-    final ObjectNode destinationConnection = objectMapper.createObjectNode();
-    destinationConnection.put("username", "dataline");
-    destinationConnection.put("token", "anau81b");
+    final String destinationConnection =
+        JsonUtils.toJson(
+            Map.of(
+                "username", "dataline",
+                "token", "anau81b"));
 
     final SourceConnectionImplementation sourceConnectionConfig =
         new SourceConnectionImplementation();
@@ -114,8 +115,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     standardSync.setName("favorite_color_pipe");
     standardSync.setSchema(schema);
 
-    final ObjectNode stateValue = objectMapper.createObjectNode();
-    stateValue.put("lastSync", LAST_SYNC_TIME);
+    final String stateValue = JsonUtils.toJson(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
     State state = new State();
     state.setConnectionId(connectionId);
@@ -149,9 +149,9 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
         (CloseableConsumer<SingerMessage>) mock(CloseableConsumer.class);
 
     SingerMessage recordMessage1 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
     SingerMessage recordMessage2 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
     final Stream<SingerMessage> tapStream = Stream.of(recordMessage1, recordMessage2);
 
     when(tapFactory.create(tapConfig, WORKSPACE_ROOT)).thenReturn(tapStream);
