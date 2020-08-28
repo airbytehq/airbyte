@@ -4,7 +4,7 @@
 </p>
 
 
-![](docs/.gitbook/assets/dataline_light-background.svg){width=400px}
+![](docs/.gitbook/assets/dataline_light-background.svg | width=400px)
 
 **Data integration made simple, secure and reliable**  
 The new open-source standard to sync data from applications & databases to warehouses.
