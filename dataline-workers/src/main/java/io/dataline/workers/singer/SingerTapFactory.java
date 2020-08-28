@@ -36,7 +36,7 @@ import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.TapFactory;
 import io.dataline.workers.WorkerUtils;
-import io.dataline.workers.protocol.SingerJsonIterator;
+import io.dataline.workers.protocol.singer.SingerJsonIterator;
 import io.dataline.workers.utils.DockerUtils;
 import java.io.IOException;
 import java.io.InputStream;

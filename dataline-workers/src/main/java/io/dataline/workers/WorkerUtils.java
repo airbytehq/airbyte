@@ -26,6 +26,9 @@ package io.dataline.workers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.config.StandardSyncInput;
+import io.dataline.config.StandardTapConfig;
+import io.dataline.config.StandardTargetConfig;
 import io.dataline.workers.singer.BaseSingerWorker;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -93,5 +96,29 @@ public class WorkerUtils {
     } catch (InterruptedException e) {
       LOGGER.error("Exception when cancelling job.", e);
     }
+  }
+
+  /**
+   * Translates a StandardSyncInput into a StandardTapConfig. StandardTapConfig is a subset of
+   * StandardSyncInput.
+   */
+  public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
+    final StandardTapConfig tapConfig = new StandardTapConfig();
+    tapConfig.setSourceConnectionImplementation(sync.getSourceConnectionImplementation());
+    tapConfig.setStandardSync(sync.getStandardSync());
+    tapConfig.setState(sync.getState());
+    return tapConfig;
+  }
+
+  /**
+   * Translates a StandardSyncInput into a StandardTargetConfig. StandardTargetConfig is a subset of
+   * StandardSyncInput.
+   */
+  public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
+    final StandardTargetConfig targetConfig = new StandardTargetConfig();
+    targetConfig.setDestinationConnectionImplementation(
+        sync.getDestinationConnectionImplementation());
+    targetConfig.setStandardSync(sync.getStandardSync());
+    return targetConfig;
   }
 }

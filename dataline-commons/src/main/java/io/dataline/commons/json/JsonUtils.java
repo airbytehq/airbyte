@@ -22,35 +22,18 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.commons.json;
 
-import java.util.Optional;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 
-public class OutputAndStatus<OutputType> {
-  private final OutputType output;
-  private final JobStatus status;
-
-  public OutputAndStatus(JobStatus status, OutputType output) {
-    this.output = output;
-    this.status = status;
-  }
-
-  public OutputAndStatus(JobStatus status) {
-    this.status = status;
-    this.output = null;
-  }
-
-  @Override
-  public String toString() {
-    return new ToStringBuilder(this).append(status).append(output).build();
-  }
-
-  public Optional<OutputType> getOutput() {
-    return Optional.ofNullable(output);
-  }
-
-  public JobStatus getStatus() {
-    return status;
+public class JsonUtils {
+  public static String toJson(Map<String, String> map) {
+    try {
+      return new ObjectMapper().writeValueAsString(map);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
