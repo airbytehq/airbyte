@@ -37,7 +37,7 @@ FROM build-project AS build
 WORKDIR /code
 
 # Copy code, etc.
-COPY . ./
+COPY . /code
 
 RUN ./gradlew clean distTar build -x test --no-daemon -g /home/gradle/.gradle
 
