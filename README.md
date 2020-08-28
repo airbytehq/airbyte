@@ -1,12 +1,20 @@
 # Getting Started
+<p align="center">
+  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI">
+  <img alt="License" src="https://img.shields.io/github/license/datalineio/dataline" />
+</p>
 
- [![Dataline logo](https://dataline.io/wp-content/uploads/2020/08/Dataline_light-background.svg)](https://dataline.io)  
+
+![](docs/.gitbook/assets/dataline_light-background.svg)
+
 **Data integration made simple, secure and reliable**  
 The new open-source standard to sync data from applications & databases to warehouses.
 
  [![](https://dataline.io/wp-content/uploads/2020/08/Deploy-with-Docker.png)](https://docs.dataline.io/deployment/deploying-dataline)
 
 ![](https://dataline.io/wp-content/uploads/2020/08/Sources_List.png)
+
+
 
 Dataline is on a mission to make data integration pipelines a commodity.
 
@@ -17,6 +25,8 @@ Dataline is on a mission to make data integration pipelines a commodity.
 * **No more security compliance process** to go through as self-hosted. 
 * **No more pricing indexed on volume**, as cloud-based solutions offer. 
 
+The new open-source standard for data integration engine that syncs data from applications & databases to warehouses.
+
 ## Getting Started
 
 ### Quick start
@@ -24,6 +34,12 @@ Dataline is on a mission to make data integration pipelines a commodity.
 ```bash
 docker-compose up
 ```
+
+```bash
+docker-compose up
+```
+
+Now go to [http://localhost:8000](http://localhost:8000)
 
 Now go to [http://localhost:8000](http://localhost:8000)
 
