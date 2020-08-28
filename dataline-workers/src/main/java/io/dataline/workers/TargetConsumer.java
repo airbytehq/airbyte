@@ -57,6 +57,7 @@ public class TargetConsumer implements CloseableConsumer<SingerMessage> {
 
   @Override
   public void close() throws IOException {
+    // if the writer is not flushed, there is no guarantee all data will be written.
     writer.flush();
     WorkerUtils.closeProcess(process);
   }
