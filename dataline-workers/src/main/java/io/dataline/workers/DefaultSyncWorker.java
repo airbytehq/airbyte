@@ -31,9 +31,8 @@ import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
-import io.dataline.workers.protocol.SingerMessageTracker;
+import io.dataline.workers.protocol.singer.SingerMessageTracker;
 import java.nio.file.Path;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -62,14 +61,8 @@ public class DefaultSyncWorker implements SyncWorker {
   public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path jobRoot) {
     long startTime = System.currentTimeMillis();
 
-    final StandardTapConfig tapConfig = new StandardTapConfig();
-    tapConfig.setSourceConnectionImplementation(syncInput.getSourceConnectionImplementation());
-    tapConfig.setStandardSync(syncInput.getStandardSync());
-
-    final StandardTargetConfig targetConfig = new StandardTargetConfig();
-    targetConfig.setDestinationConnectionImplementation(
-        syncInput.getDestinationConnectionImplementation());
-    targetConfig.setStandardSync(syncInput.getStandardSync());
+    final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
+    final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
 
     final SingerMessageTracker singerMessageTracker =
         new SingerMessageTracker(syncInput.getStandardSync().getConnectionId());
@@ -93,8 +86,6 @@ public class DefaultSyncWorker implements SyncWorker {
     summary.setRecordsSynced(singerMessageTracker.getRecordCount());
     summary.setStartTime(startTime);
     summary.setEndTime(System.currentTimeMillis());
-    summary.setJobId(UUID.randomUUID()); // TODO this is not input anywhere
-    // TODO set logs
 
     final StandardSyncOutput output = new StandardSyncOutput();
     output.setStandardSyncSummary(summary);

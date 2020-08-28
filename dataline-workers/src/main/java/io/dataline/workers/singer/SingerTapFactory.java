@@ -37,7 +37,7 @@ import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.TapFactory;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocol.SingerJsonIterator;
+import io.dataline.workers.protocol.singer.SingerJsonIterator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;

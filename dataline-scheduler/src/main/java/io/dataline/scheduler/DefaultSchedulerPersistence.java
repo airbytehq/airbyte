@@ -149,9 +149,6 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final Optional<StandardSyncOutput> standardSyncOutput =
         previousJobOptional.flatMap(Job::getOutput).map(JobOutput::getSync);
 
-    standardSyncOutput
-        .map(StandardSyncOutput::getStandardSyncSummary)
-        .ifPresent(jobSyncConfig::setStandardSyncSummary);
     standardSyncOutput.map(StandardSyncOutput::getState).ifPresent(jobSyncConfig::setState);
 
     final JobConfig jobConfig = new JobConfig();
