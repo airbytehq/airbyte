@@ -10,7 +10,6 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
     implementation "com.fasterxml.jackson.core:jackson-databind:2.9.8"
 
-    implementation project(":dataline-commons")
     implementation project(":dataline-config")
     implementation project(":dataline-db")
     implementation project(":dataline-integrations")
