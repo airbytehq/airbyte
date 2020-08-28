@@ -30,5 +30,7 @@ public interface Configs {
 
   Path getWorkspaceRoot();
 
+  String getWorkspaceMount();
+
   Path getConfigRoot();
 }

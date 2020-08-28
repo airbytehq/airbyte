@@ -34,6 +34,7 @@ public class EnvConfigs implements Configs {
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
 
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
+  public static final String WORKSPACE_MOUNT = "WORKSPACE_MOUNT";
   public static final String CONFIG_ROOT = "CONFIG_ROOT";
 
   private final Function<String, String> getEnv;
@@ -49,6 +50,18 @@ public class EnvConfigs implements Configs {
   @Override
   public Path getWorkspaceRoot() {
     return getPath(WORKSPACE_ROOT);
+  }
+
+  @Override
+  public String getWorkspaceMount() {
+    final String mount = getEnv.apply(WORKSPACE_MOUNT);
+
+    if (mount != null) {
+      return mount;
+    }
+
+    LOGGER.info(WORKSPACE_MOUNT + " not found, defaulting to " + WORKSPACE_ROOT);
+    return getWorkspaceRoot().toString();
   }
 
   @Override

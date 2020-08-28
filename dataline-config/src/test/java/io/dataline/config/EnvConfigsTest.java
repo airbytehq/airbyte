@@ -45,25 +45,40 @@ class EnvConfigsTest {
   }
 
   @Test
-  void testGetEnvBehavior() {
+  void ensureGetEnvBehavior() {
     Assertions.assertNull(System.getenv("MY_RANDOM_VAR_1234"));
   }
 
   @Test
-  void testGet() {
+  void testWorkspaceRoot() {
+    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getWorkspaceRoot());
+
     when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn("abc/def");
     Assertions.assertEquals(Paths.get("abc/def"), config.getWorkspaceRoot());
+  }
+
+  @Test
+  void testConfigRoot() {
+    when(function.apply(EnvConfigs.CONFIG_ROOT)).thenReturn(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getConfigRoot());
 
     when(function.apply(EnvConfigs.CONFIG_ROOT)).thenReturn("a/b");
     Assertions.assertEquals(Paths.get("a/b"), config.getConfigRoot());
   }
 
   @Test
-  void testMissing() {
-    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
-    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getWorkspaceRoot());
+  void testGetMountPoint() {
+    when(function.apply(EnvConfigs.WORKSPACE_MOUNT)).thenReturn(null);
+    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn("abc/def");
+    Assertions.assertEquals("abc/def", config.getWorkspaceMount());
 
-    when(function.apply(EnvConfigs.CONFIG_ROOT)).thenReturn(null);
-    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getConfigRoot());
+    when(function.apply(EnvConfigs.WORKSPACE_MOUNT)).thenReturn("root");
+    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
+    Assertions.assertEquals("root", config.getWorkspaceMount());
+
+    when(function.apply(EnvConfigs.WORKSPACE_MOUNT)).thenReturn(null);
+    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getWorkspaceMount());
   }
 }
