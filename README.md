@@ -3,8 +3,9 @@
   <img alt="License" src="https://img.shields.io/github/license/datalineio/dataline" />
 </p>
 
-
-![](docs/.gitbook/assets/dataline_light-background.svg | width=400px)
+<p> align="center">
+  <img alt="Dataline" src="https://raw.githubusercontent.com/datalineio/dataline/1a2d32401e519a923f4d28e4341f005992bc297f/docs/.gitbook/assets/dataline_light-background.svg" width="400px" />
+</p>
 
 **Data integration made simple, secure and reliable**  
 The new open-source standard to sync data from applications & databases to warehouses.
