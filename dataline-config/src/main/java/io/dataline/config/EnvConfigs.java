@@ -29,20 +29,20 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EnvConfig implements Configs {
+public class EnvConfigs implements Configs {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfig.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
 
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String CONFIG_ROOT = "CONFIG_ROOT";
 
   private final Function<String, String> getEnv;
 
-  public EnvConfig() {
+  public EnvConfigs() {
     this(System::getenv);
   }
 
-  EnvConfig(final Function<String, String> getEnv) {
+  EnvConfigs(final Function<String, String> getEnv) {
     this.getEnv = getEnv;
   }
 

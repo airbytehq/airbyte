@@ -33,37 +33,37 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class EnvConfigTest {
+class EnvConfigsTest {
 
   private Function<String, String> function;
-  private EnvConfig config;
+  private EnvConfigs config;
 
   @BeforeEach
   void setUp() {
     function = Mockito.mock(Function.class);
-    config = new EnvConfig(function);
+    config = new EnvConfigs(function);
   }
 
   @Test
   void testGetEnvBehavior() {
-    Assertions.assertNull(System.getenv("MY_RANDOM_VAR_23lk4j1234lkj213"));
+    Assertions.assertNull(System.getenv("MY_RANDOM_VAR_1234"));
   }
 
   @Test
   void testGet() {
-    when(function.apply(EnvConfig.WORKSPACE_ROOT)).thenReturn("abc/def");
+    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn("abc/def");
     Assertions.assertEquals(Paths.get("abc/def"), config.getWorkspaceRoot());
 
-    when(function.apply(EnvConfig.CONFIG_ROOT)).thenReturn("a/b");
+    when(function.apply(EnvConfigs.CONFIG_ROOT)).thenReturn("a/b");
     Assertions.assertEquals(Paths.get("a/b"), config.getConfigRoot());
   }
 
   @Test
   void testMissing() {
-    when(function.apply(EnvConfig.WORKSPACE_ROOT)).thenReturn(null);
+    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
     Assertions.assertThrows(IllegalArgumentException.class, () -> config.getWorkspaceRoot());
 
-    when(function.apply(EnvConfig.CONFIG_ROOT)).thenReturn(null);
+    when(function.apply(EnvConfigs.CONFIG_ROOT)).thenReturn(null);
     Assertions.assertThrows(IllegalArgumentException.class, () -> config.getConfigRoot());
   }
 }
