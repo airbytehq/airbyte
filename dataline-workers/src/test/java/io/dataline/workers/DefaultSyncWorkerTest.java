@@ -131,7 +131,6 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     tapConfig.setStandardSync(standardSync);
     tapConfig.setSourceConnectionImplementation(sourceConnectionConfig);
     tapConfig.setState(state);
-    tapConfig.setStandardSyncSummary(syncSummary);
 
     final StandardTargetConfig targetConfig = new StandardTargetConfig();
     targetConfig.setStandardSync(standardSync);
@@ -142,7 +141,6 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     syncInput.setStandardSync(standardSync);
     syncInput.setSourceConnectionImplementation(sourceConnectionConfig);
     syncInput.setState(state);
-    syncInput.setStandardSyncSummary(syncSummary);
 
     final TapFactory<SingerMessage> tapFactory = (TapFactory<SingerMessage>) mock(TapFactory.class);
     final TargetFactory<SingerMessage> targetFactory =

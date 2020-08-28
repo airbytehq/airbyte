@@ -107,7 +107,6 @@ public class WorkerUtils {
     tapConfig.setSourceConnectionImplementation(sync.getSourceConnectionImplementation());
     tapConfig.setStandardSync(sync.getStandardSync());
     tapConfig.setState(sync.getState());
-    tapConfig.setStandardSyncSummary(sync.getStandardSyncSummary());
     return tapConfig;
   }
 
