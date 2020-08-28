@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.SingerMessage;
 import io.dataline.workers.protocol.singer.MessageFactory;
@@ -48,7 +47,6 @@ public class TargetConsumerTest {
   @BeforeEach
   public void setup() {
     objectMapper = new ObjectMapper();
-    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
   }
 
   @Test
