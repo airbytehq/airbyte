@@ -54,7 +54,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
             "docker",
             "run",
             "-v",
-            String.format("%s:/%s", mountSource, MOUNT_DESTINATION),
+            String.format("%s:%s", mountSource, MOUNT_DESTINATION),
             "-w",
             rebasePath(jobRoot).toString(),
             "--network",

@@ -34,12 +34,10 @@ import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.integrations.Integrations;
 import io.dataline.workers.BaseWorkerTestCase;
-import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerTestHelper;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,7 +53,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
   PostgreSQLContainer db;
 
   @BeforeAll
-  public void initDb() throws SQLException, IOException, InterruptedException {
+  public void initDb() throws IOException, InterruptedException {
     db = new PostgreSQLContainer();
     db.start();
     PostgreSQLContainerTestHelper.runSqlScript(
@@ -63,8 +61,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testPostgresDiscovery()
-      throws IOException, InvalidCredentialsException {
+  public void testPostgresDiscovery() throws IOException, InvalidCredentialsException {
     final String jobId = "1";
     String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
     final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
@@ -103,9 +100,9 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     Future<?> workerWasCancelled =
         threadPool.submit(
             () -> {
-              OutputAndStatus<StandardDiscoverSchemaOutput> output = null;
               try {
-                output = worker.run(input, createJobRoot(jobId));
+                OutputAndStatus<StandardDiscoverSchemaOutput> output =
+                    worker.run(input, createJobRoot(jobId));
                 assertEquals(FAILED, output.getStatus());
               } catch (Exception e) {
                 throw new RuntimeException(e);
