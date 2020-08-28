@@ -25,6 +25,7 @@
 package io.dataline.scheduler;
 
 import io.dataline.db.DatabaseHelper;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -42,16 +43,19 @@ public class JobSubmitter implements Runnable {
   private final BasicDataSource connectionPool;
   private final SchedulerPersistence persistence;
   private final Path workspaceRoot;
+  private final ProcessBuilderFactory pbf;
 
   public JobSubmitter(
-      ExecutorService threadPool,
-      BasicDataSource connectionPool,
-      SchedulerPersistence persistence,
-      Path workspaceRoot) {
+      final ExecutorService threadPool,
+      final BasicDataSource connectionPool,
+      final SchedulerPersistence persistence,
+      final Path workspaceRoot,
+      final ProcessBuilderFactory pbf) {
     this.threadPool = threadPool;
     this.connectionPool = connectionPool;
     this.persistence = persistence;
     this.workspaceRoot = workspaceRoot;
+    this.pbf = pbf;
   }
 
   @Override
@@ -90,6 +94,7 @@ public class JobSubmitter implements Runnable {
   }
 
   private void submitJob(Job job) {
-    threadPool.submit(new WorkerRunner(job.getId(), connectionPool, persistence, workspaceRoot));
+    threadPool.submit(
+        new WorkerRunner(job.getId(), connectionPool, persistence, workspaceRoot, pbf));
   }
 }

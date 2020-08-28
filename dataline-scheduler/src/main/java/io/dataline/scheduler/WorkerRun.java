@@ -56,19 +56,19 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
 
   private final long jobId;
-  private final Path workspaceRoot;
+  private final Path jobRoot;
   private final InputType input;
   private final Worker<InputType, OutputType> worker;
   private final BasicDataSource connectionPool;
 
   public WorkerRun(
       long jobId,
-      Path workspaceRoot,
+      Path jobRoot,
       InputType input,
       Worker<InputType, OutputType> worker,
       BasicDataSource connectionPool) {
     this.jobId = jobId;
-    this.workspaceRoot = workspaceRoot;
+    this.jobRoot = jobRoot;
     this.input = input;
     this.worker = worker;
     this.connectionPool = connectionPool;
@@ -80,8 +80,6 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
     try {
       setJobStatus(connectionPool, jobId, JobStatus.RUNNING);
 
-      Files.createDirectories(workspaceRoot);
-      final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
       Files.createDirectories(jobRoot);
 
       OutputAndStatus<OutputType> outputAndStatus = worker.run(input, jobRoot);

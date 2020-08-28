@@ -37,9 +37,9 @@ import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,17 +55,20 @@ public class SingerDiscoverSchemaWorker
   private static String CATALOG_JSON_FILENAME = "catalog.json";
   private static String ERROR_LOG_FILENAME = "err.log";
 
-  private volatile Process workerProcess;
   private final String imageName;
+  private final ProcessBuilderFactory pbf;
 
-  public SingerDiscoverSchemaWorker(String imageName) {
+  private volatile Process workerProcess;
+
+  public SingerDiscoverSchemaWorker(final String imageName, final ProcessBuilderFactory pbf) {
     this.imageName = imageName;
+    this.pbf = pbf;
   }
 
   // package private since package-local classes need direct access to singer catalog, and the
   // conversion from SingerSchema to Dataline schema is lossy
   OutputAndStatus<SingerCatalog> runInternal(
-      StandardDiscoverSchemaInput discoverSchemaInput, Path workspaceRoot)
+      StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot)
       throws InvalidCredentialsException {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
     //   reduced.
@@ -78,34 +81,14 @@ public class SingerDiscoverSchemaWorker
       throw new RuntimeException(e);
     }
 
-    writeFile(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson);
+    writeFile(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
 
     // exec
     try {
-      final String[] cmd = {
-        "docker",
-        "run",
-        "-v",
-        "gradlew-tmp:/tmp",
-        "-w",
-        workspaceRoot.toString(),
-        "--entrypoint",
-        "/bin/sh",
-        "--network=host",
-        imageName,
-        //        "--config",
-        //        CONFIG_JSON_FILENAME,
-        //        "--discover"
-        "-c",
-        "sleep 999999"
-      };
-
-      System.out.println("Arrays.toString(cmd) = " + Arrays.toString(cmd));
-
       workerProcess =
-          new ProcessBuilder(cmd)
-              .redirectError(getFullPath(workspaceRoot, ERROR_LOG_FILENAME).toFile())
-              .redirectOutput(getFullPath(workspaceRoot, CATALOG_JSON_FILENAME).toFile())
+          pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME, "--discover")
+              .redirectError(getFullPath(jobRoot, ERROR_LOG_FILENAME).toFile())
+              .redirectOutput(getFullPath(jobRoot, CATALOG_JSON_FILENAME).toFile())
               .start();
 
       while (!workerProcess.waitFor(1, TimeUnit.MINUTES)) {
@@ -114,12 +97,12 @@ public class SingerDiscoverSchemaWorker
 
       int exitCode = workerProcess.exitValue();
       if (exitCode == 0) {
-        String catalog = readFile(workspaceRoot, CATALOG_JSON_FILENAME);
+        String catalog = readFile(jobRoot, CATALOG_JSON_FILENAME);
         final SingerCatalog singerCatalog = jsonCatalogToTyped(catalog);
         return new OutputAndStatus<>(SUCCESSFUL, singerCatalog);
       } else {
         // TODO throw invalid credentials exception where appropriate based on error log
-        String errLog = readFile(workspaceRoot, ERROR_LOG_FILENAME);
+        String errLog = readFile(jobRoot, ERROR_LOG_FILENAME);
         LOGGER.debug(
             "Discovery job subprocess finished with exit code {}. Error log: {}", exitCode, errLog);
         return new OutputAndStatus<>(FAILED);

@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
@@ -35,17 +36,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DockerCheckConnectionWorker implements CheckConnectionWorker {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerCheckConnectionWorker.class);
 
   private static final String INPUT = "input.json";
   private static final String OUTPUT = "output.json";
 
   private final String imageName;
+  private final ProcessBuilderFactory pbf;
 
   Process tapProcess;
 
-  public DockerCheckConnectionWorker(String imageName) {
+  public DockerCheckConnectionWorker(final String imageName, final ProcessBuilderFactory pbf) {
     this.imageName = imageName;
+    this.pbf = pbf;
   }
 
   @Override
@@ -60,18 +64,12 @@ public class DockerCheckConnectionWorker implements CheckConnectionWorker {
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
-    final Path configPath =
-        WorkerUtils.writeFileToWorkspace(jobRoot, INPUT, inputString); // wrong type
+
+    WorkerUtils.writeFileToWorkspace(jobRoot, INPUT, inputString); // wrong type
 
     // run it. patiently.
     try {
-      String[] tapCmd = {
-        "docker", "run", jobRoot.toString(), imageName, "--config", configPath.toString()
-      };
-
-      LOGGER.debug("Tap command: {}", String.join(" ", tapCmd));
-
-      tapProcess = new ProcessBuilder().command(tapCmd).start();
+      tapProcess = pbf.create(jobRoot, imageName, "--config", INPUT).start();
 
       while (!tapProcess.waitFor(1, TimeUnit.MINUTES)) {
         LOGGER.debug("Waiting for worker");

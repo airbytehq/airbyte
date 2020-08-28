@@ -72,10 +72,9 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     input.setConnectionConfiguration(o);
     System.out.println(input);
     SingerDiscoverSchemaWorker worker =
-        new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage());
+        new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage(), pbf);
 
-    OutputAndStatus<StandardDiscoverSchemaOutput> run =
-        worker.run(input, createWorkspacePath(jobId));
+    OutputAndStatus<StandardDiscoverSchemaOutput> run = worker.run(input, createJobRoot(jobId));
 
     assertEquals(SUCCESSFUL, run.getStatus());
 
@@ -98,7 +97,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     input.setConnectionConfiguration(o);
 
     SingerDiscoverSchemaWorker worker =
-        new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage());
+        new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage(), pbf);
 
     ExecutorService threadPool = Executors.newFixedThreadPool(2);
     Future<?> workerWasCancelled =
@@ -106,9 +105,9 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
             () -> {
               OutputAndStatus<StandardDiscoverSchemaOutput> output = null;
               try {
-                output = worker.run(input, createWorkspacePath(jobId));
+                output = worker.run(input, createJobRoot(jobId));
                 assertEquals(FAILED, output.getStatus());
-              } catch (InvalidCredentialsException e) {
+              } catch (Exception e) {
                 throw new RuntimeException(e);
               }
             });

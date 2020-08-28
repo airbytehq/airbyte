@@ -32,6 +32,7 @@ import io.dataline.workers.CheckConnectionWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +45,8 @@ public class SingerCheckConnectionWorker
 
   private final SingerDiscoverSchemaWorker singerDiscoverSchemaWorker;
 
-  public SingerCheckConnectionWorker(String imageName) {
-    this.singerDiscoverSchemaWorker = new SingerDiscoverSchemaWorker(imageName);
+  public SingerCheckConnectionWorker(final String imageName, final ProcessBuilderFactory pbf) {
+    this.singerDiscoverSchemaWorker = new SingerDiscoverSchemaWorker(imageName, pbf);
   }
 
   @Override

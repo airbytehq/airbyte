@@ -30,6 +30,8 @@ import io.dataline.config.EnvConfigs;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.workers.process.DockerProcessBuilderFactory;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,11 +60,17 @@ public class SchedulerApp {
   private final BasicDataSource connectionPool;
   private final Path configRoot;
   private final Path workspaceRoot;
+  private final ProcessBuilderFactory pbf;
 
-  public SchedulerApp(BasicDataSource connectionPool, Path configRoot, Path workspaceRoot) {
+  public SchedulerApp(
+      BasicDataSource connectionPool,
+      Path configRoot,
+      Path workspaceRoot,
+      ProcessBuilderFactory pbf) {
     this.connectionPool = connectionPool;
     this.configRoot = configRoot;
     this.workspaceRoot = workspaceRoot;
+    this.pbf = pbf;
   }
 
   public void start() {
@@ -74,7 +82,8 @@ public class SchedulerApp {
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
 
     final JobSubmitter jobSubmitter =
-        new JobSubmitter(workerThreadPool, connectionPool, schedulerPersistence, workspaceRoot);
+        new JobSubmitter(
+            workerThreadPool, connectionPool, schedulerPersistence, workspaceRoot, pbf);
     final JobScheduler jobScheduler =
         new JobScheduler(connectionPool, schedulerPersistence, configPersistence);
 
@@ -101,9 +110,13 @@ public class SchedulerApp {
     LOGGER.info("workspaceRoot = " + workspaceRoot);
 
     LOGGER.info("Creating DB connection pool...");
-    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+    final BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+
+    final ProcessBuilderFactory pbf =
+        new DockerProcessBuilderFactory(
+            workspaceRoot, configs.getWorkspaceDockerMount(), configs.getDockerNetwork());
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(connectionPool, configRoot, workspaceRoot).start();
+    new SchedulerApp(connectionPool, configRoot, workspaceRoot, pbf).start();
   }
 }
