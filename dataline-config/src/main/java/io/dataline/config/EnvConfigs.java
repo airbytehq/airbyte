@@ -34,8 +34,11 @@ public class EnvConfigs implements Configs {
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
 
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
-  public static final String WORKSPACE_MOUNT = "WORKSPACE_MOUNT";
+  public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
   public static final String CONFIG_ROOT = "CONFIG_ROOT";
+  public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
+
+  public static final String DEFAULT_NETWORK = "host";
 
   private final Function<String, String> getEnv;
 
@@ -48,25 +51,36 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public Path getConfigRoot() {
+    return getPath(CONFIG_ROOT);
+  }
+
+  @Override
   public Path getWorkspaceRoot() {
     return getPath(WORKSPACE_ROOT);
   }
 
   @Override
-  public String getWorkspaceMount() {
-    final String mount = getEnv.apply(WORKSPACE_MOUNT);
+  public String getWorkspaceDockerMount() {
+    final String mount = getEnv.apply(WORKSPACE_DOCKER_MOUNT);
 
     if (mount != null) {
       return mount;
     }
 
-    LOGGER.info(WORKSPACE_MOUNT + " not found, defaulting to " + WORKSPACE_ROOT);
+    LOGGER.info(WORKSPACE_DOCKER_MOUNT + " not found, defaulting to " + WORKSPACE_ROOT);
     return getWorkspaceRoot().toString();
   }
 
   @Override
-  public Path getConfigRoot() {
-    return getPath(CONFIG_ROOT);
+  public String getDockerNetwork() {
+    final String network = getEnv.apply(DOCKER_NETWORK);
+    if (network != null) {
+      return network;
+    }
+
+    LOGGER.info(DOCKER_NETWORK + " not found, defaulting to " + DEFAULT_NETWORK);
+    return DEFAULT_NETWORK;
   }
 
   private Path getPath(final String name) {

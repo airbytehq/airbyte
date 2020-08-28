@@ -68,17 +68,26 @@ class EnvConfigsTest {
   }
 
   @Test
-  void testGetMountPoint() {
-    when(function.apply(EnvConfigs.WORKSPACE_MOUNT)).thenReturn(null);
+  void testGetDockerMount() {
+    when(function.apply(EnvConfigs.WORKSPACE_DOCKER_MOUNT)).thenReturn(null);
     when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn("abc/def");
-    Assertions.assertEquals("abc/def", config.getWorkspaceMount());
+    Assertions.assertEquals("abc/def", config.getWorkspaceDockerMount());
 
-    when(function.apply(EnvConfigs.WORKSPACE_MOUNT)).thenReturn("root");
+    when(function.apply(EnvConfigs.WORKSPACE_DOCKER_MOUNT)).thenReturn("root");
     when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
-    Assertions.assertEquals("root", config.getWorkspaceMount());
+    Assertions.assertEquals("root", config.getWorkspaceDockerMount());
 
-    when(function.apply(EnvConfigs.WORKSPACE_MOUNT)).thenReturn(null);
+    when(function.apply(EnvConfigs.WORKSPACE_DOCKER_MOUNT)).thenReturn(null);
     when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
-    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getWorkspaceMount());
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getWorkspaceDockerMount());
+  }
+
+  @Test
+  void testDockerNetwork() {
+    when(function.apply(EnvConfigs.DOCKER_NETWORK)).thenReturn(null);
+    Assertions.assertEquals("host", config.getDockerNetwork());
+
+    when(function.apply(EnvConfigs.DOCKER_NETWORK)).thenReturn("abc");
+    Assertions.assertEquals("abc", config.getDockerNetwork());
   }
 }

@@ -28,9 +28,11 @@ import java.nio.file.Path;
 
 public interface Configs {
 
+  Path getConfigRoot();
+
   Path getWorkspaceRoot();
 
-  String getWorkspaceMount();
+  String getWorkspaceDockerMount();
 
-  Path getConfigRoot();
+  String getDockerNetwork();
 }
