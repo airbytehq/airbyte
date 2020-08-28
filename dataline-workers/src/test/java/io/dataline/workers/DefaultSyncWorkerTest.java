@@ -24,6 +24,7 @@
 
 package io.dataline.workers;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -124,6 +125,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     final StandardSyncSummary syncSummary = new StandardSyncSummary();
     syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
     syncSummary.setRecordsSynced(10L);
+    syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
     syncSummary.setStartTime(LAST_SYNC_TIME);
     syncSummary.setEndTime(LAST_SYNC_TIME);
 
@@ -152,6 +154,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
         MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
     SingerMessage recordMessage2 =
         MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+
     final Stream<SingerMessage> tapStream = Stream.of(recordMessage1, recordMessage2);
 
     when(tapFactory.create(tapConfig, WORKSPACE_ROOT)).thenReturn(tapStream);

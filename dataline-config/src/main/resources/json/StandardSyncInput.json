@@ -23,6 +23,10 @@
     },
     "state": {
       "$ref": "State.json"
+    },
+    "standardSyncSummary": {
+      "description": "optional state of the previous run. this object is standard for any sync run.",
+      "$ref": "StandardSyncSummary.json"
     }
   }
 }
