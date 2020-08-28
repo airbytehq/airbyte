@@ -86,6 +86,7 @@ public class WorkerRunner implements Runnable {
                     job.getConfig().getDiscoverSchema().getDockerImage()),
                 connectionPool)
             .run();
+        break;
       case SYNC:
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         new WorkerRun<>(
@@ -100,6 +101,9 @@ public class WorkerRunner implements Runnable {
                     new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage())),
                 connectionPool)
             .run();
+        break;
+      default:
+        throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }
   }
 
