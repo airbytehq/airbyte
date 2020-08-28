@@ -3,10 +3,6 @@ plugins {
     id "com.diffplug.spotless" version "5.1.1" apply false
 }
 
-clean {
-    delete "${rootProject}/.gradle/"
-}
-
 Properties env = new Properties()
 File envFile = rootProject.file(".env")
 envFile.withInputStream { env.load(it) }

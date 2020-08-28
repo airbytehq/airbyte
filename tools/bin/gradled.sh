@@ -21,7 +21,6 @@ main() {
 
   docker build -f Dockerfile.build . -t $IMG_NAME --target build-project
 
-  ./gradlew clean
   docker volume rm --force $TMP_VOLUME_NAME >/dev/null || true
   docker volume create $TMP_VOLUME_NAME >/dev/null || true
   docker run $OPTS --rm \
