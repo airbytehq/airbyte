@@ -62,7 +62,9 @@ class DefaultConfigPersistenceTest {
   }
 
   private JsonNode generateStandardSourceJson(UUID sourceId) {
-    return Jsons.jsonNode(ImmutableMap.of("sourceId", sourceId.toString(), "name", "apache storm"));
+    return Jsons.jsonNode(ImmutableMap.of(
+        "sourceId", sourceId.toString(),
+        "name", "apache storm"));
   }
 
   @Test
