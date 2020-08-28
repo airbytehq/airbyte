@@ -29,7 +29,6 @@ import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.config.SingerMessage;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,9 +56,8 @@ public class TargetConsumer implements CloseableConsumer<SingerMessage> {
   }
 
   @Override
-  public void close() throws Exception {
-    while (!process.waitFor(1, TimeUnit.MINUTES)) {
-      LOGGER.debug("Waiting for sync worker (job:{}) target", ""); // TODO when job id is passed in
-    }
+  public void close() throws IOException {
+    writer.flush();
+    WorkerUtils.closeProcess(process);
   }
 }

@@ -83,19 +83,27 @@ public class WorkerUtils {
     }
   }
 
-  public static void cancelProcess(Process workerProcess) {
-    if (workerProcess == null) {
+  public static void closeProcess(Process process) {
+    closeProcess(process, 1, TimeUnit.MINUTES);
+  }
+
+  public static void closeProcess(Process process, int duration, TimeUnit timeUnit) {
+    if (process == null) {
       return;
     }
     try {
-      workerProcess.destroy();
-      workerProcess.waitFor(10, TimeUnit.SECONDS);
-      if (workerProcess.isAlive()) {
-        workerProcess.destroyForcibly();
+      process.destroy();
+      process.waitFor(duration, timeUnit);
+      if (process.isAlive()) {
+        process.destroyForcibly();
       }
     } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling job.", e);
+      LOGGER.error("Exception when closing process.", e);
     }
+  }
+
+  public static void cancelProcess(Process process) {
+    closeProcess(process, 10, TimeUnit.SECONDS);
   }
 
   /**
