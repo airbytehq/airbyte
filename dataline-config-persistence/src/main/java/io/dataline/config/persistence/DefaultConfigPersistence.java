@@ -43,13 +43,14 @@ import org.apache.commons.io.FileUtils;
 
 // we force all interaction with disk storage to be effectively single threaded.
 public class DefaultConfigPersistence implements ConfigPersistence {
+
   private static final Object lock = new Object();
 
   private final ObjectMapper objectMapper;
   private final JsonSchemaValidation jsonSchemaValidation;
-  private final String storageRoot;
+  private final Path storageRoot;
 
-  public DefaultConfigPersistence(String storageRoot) {
+  public DefaultConfigPersistence(Path storageRoot) {
     this.storageRoot = storageRoot;
     jsonSchemaValidation = new JsonSchemaValidation();
     objectMapper = new ObjectMapper();
@@ -145,7 +146,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   private Path getConfigDirectory(PersistenceConfigType persistenceConfigType) {
-    return Path.of(storageRoot).resolve(persistenceConfigType.toString());
+    return storageRoot.resolve(persistenceConfigType.toString());
   }
 
   private Path getConfigPath(PersistenceConfigType persistenceConfigType, String configId) {

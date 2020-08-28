@@ -36,17 +36,17 @@ import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.TapFactory;
 import io.dataline.workers.WorkerUtils;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import io.dataline.workers.protocol.singer.SingerJsonIterator;
-import io.dataline.workers.utils.DockerUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SingerTapFactory implements TapFactory<SingerMessage> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerTapFactory.class);
 
   private static final String CONFIG_JSON_FILENAME = "tap_config.json";
@@ -54,20 +54,22 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
 
   private static final String STATE_JSON_FILENAME = "input_state.json";
 
-  private final String dockerImageName;
+  private final String imageName;
+  private final ProcessBuilderFactory pbf;
 
   private Process tapProcess = null;
   private InputStream stdout = null;
 
-  public SingerTapFactory(String dockerImageName) {
-    this.dockerImageName = dockerImageName;
+  public SingerTapFactory(final String imageName, final ProcessBuilderFactory pbf) {
+    this.imageName = imageName;
+    this.pbf = pbf;
   }
 
   @SuppressWarnings("UnstableApiUsage")
   @Override
-  public Stream<SingerMessage> create(StandardTapConfig input, Path workspaceRoot)
+  public Stream<SingerMessage> create(StandardTapConfig input, Path jobRoot)
       throws InvalidCredentialsException {
-    OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, workspaceRoot);
+    OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, jobRoot);
 
     final ObjectMapper objectMapper = new ObjectMapper();
     final String configDotJson;
@@ -87,36 +89,24 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
       throw new RuntimeException(e);
     }
 
-    // write config.json to disk
-    Path configPath =
-        WorkerUtils.writeFileToWorkspace(workspaceRoot, CONFIG_JSON_FILENAME, configDotJson);
-    Path catalogPath =
-        WorkerUtils.writeFileToWorkspace(workspaceRoot, CATALOG_JSON_FILENAME, catalogDotJson);
-    Path statePath =
-        WorkerUtils.writeFileToWorkspace(workspaceRoot, STATE_JSON_FILENAME, stateDotJson);
+    WorkerUtils.writeFileToWorkspace(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
+    WorkerUtils.writeFileToWorkspace(jobRoot, CATALOG_JSON_FILENAME, catalogDotJson);
+    WorkerUtils.writeFileToWorkspace(jobRoot, STATE_JSON_FILENAME, stateDotJson);
 
     try {
-
-      String[] tapCmd =
-          DockerUtils.getDockerCommand(
-              workspaceRoot,
-              dockerImageName,
-              "--config",
-              configPath.toString(),
-              // TODO support both --properties and --catalog depending on integration
-              "--properties",
-              catalogPath.toString(),
-              "--state",
-              statePath.toString());
-
-      LOGGER.info("running command: {}", Arrays.toString(tapCmd));
-
       tapProcess =
-          new ProcessBuilder()
-              .command(tapCmd)
-              .redirectError(workspaceRoot.resolve(DefaultSyncWorker.TAP_ERR_LOG).toFile())
+          pbf.create(
+                  jobRoot,
+                  imageName,
+                  "--config",
+                  CONFIG_JSON_FILENAME,
+                  // TODO support both --properties and --catalog depending on integration
+                  "--properties",
+                  CATALOG_JSON_FILENAME,
+                  "--state",
+                  STATE_JSON_FILENAME)
+              .redirectError(jobRoot.resolve(DefaultSyncWorker.TAP_ERR_LOG).toFile())
               .start();
-
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -145,7 +135,7 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     discoveryInput.setConnectionConfiguration(
         input.getSourceConnectionImplementation().getConfiguration());
     Path scopedWorkspace = workspaceRoot.resolve("discovery");
-    return new SingerDiscoverSchemaWorker(dockerImageName)
+    return new SingerDiscoverSchemaWorker(imageName, pbf)
         .runInternal(discoveryInput, scopedWorkspace);
   }
 }

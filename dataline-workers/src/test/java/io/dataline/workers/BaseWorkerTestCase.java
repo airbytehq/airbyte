@@ -28,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import io.dataline.workers.process.DockerProcessBuilderFactory;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -36,28 +38,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
-import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseWorkerTestCase {
   // TODO inject via env
-  protected Path workspaceDirectory;
+  protected Path workspaceRoot;
+  protected ProcessBuilderFactory pbf;
 
   @BeforeAll
   public void init() throws IOException {
-    FileUtils.forceMkdir(new File("/tmp/tests"));
-    workspaceDirectory = Files.createTempDirectory(Path.of("/tmp/tests"), "dataline");
-    System.out.println("Workspace directory: " + workspaceDirectory.toString());
+    final Path testsPath = Path.of("/tmp/tests");
+    Files.createDirectories(testsPath);
+    this.workspaceRoot = Files.createTempDirectory(testsPath, "dataline");
+    this.pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
+
+    System.out.println("Workspace directory: " + workspaceRoot.toString());
   }
 
-  protected Path createWorkspacePath(String jobId) {
-    final Path workspacePath = workspaceDirectory.resolve(jobId);
-    try {
-      FileUtils.forceMkdir(workspacePath.toFile());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    return workspacePath;
+  protected Path createJobRoot(String jobId) throws IOException {
+    final Path jobRoot = workspaceRoot.resolve(jobId);
+    return Files.createDirectories(jobRoot);
   }
 
   protected String readResource(String name) {

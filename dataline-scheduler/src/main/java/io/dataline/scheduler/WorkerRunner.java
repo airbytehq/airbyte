@@ -31,11 +31,13 @@ import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.workers.DefaultSyncWorker;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerTapFactory;
 import io.dataline.workers.singer.SingerTargetFactory;
 import java.io.IOException;
+import java.nio.file.Path;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 /**
@@ -43,15 +45,24 @@ import org.apache.commons.dbcp2.BasicDataSource;
  * appropriate worker for a given job.
  */
 public class WorkerRunner implements Runnable {
+
   private final long jobId;
   private final BasicDataSource connectionPool;
   private final SchedulerPersistence persistence;
+  private final Path workspaceRoot;
+  private final ProcessBuilderFactory pbf;
 
   public WorkerRunner(
-      long jobId, BasicDataSource connectionPool, SchedulerPersistence persistence) {
+      long jobId,
+      BasicDataSource connectionPool,
+      SchedulerPersistence persistence,
+      Path workspaceRoot,
+      ProcessBuilderFactory pbf) {
     this.jobId = jobId;
     this.connectionPool = connectionPool;
     this.persistence = persistence;
+    this.workspaceRoot = workspaceRoot;
+    this.pbf = pbf;
   }
 
   @Override
@@ -63,6 +74,8 @@ public class WorkerRunner implements Runnable {
       throw new RuntimeException(e);
     }
 
+    final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
+
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION_SOURCE:
       case CHECK_CONNECTION_DESTINATION:
@@ -70,9 +83,10 @@ public class WorkerRunner implements Runnable {
             getCheckConnectionInput(job.getConfig().getCheckConnection());
         new WorkerRun<>(
                 jobId,
+                jobRoot,
                 checkConnectionInput,
                 new SingerCheckConnectionWorker(
-                    job.getConfig().getCheckConnection().getDockerImage()),
+                    job.getConfig().getCheckConnection().getDockerImage(), pbf),
                 connectionPool)
             .run();
         break;
@@ -81,9 +95,10 @@ public class WorkerRunner implements Runnable {
             getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
         new WorkerRun<>(
                 jobId,
+                jobRoot,
                 discoverSchemaInput,
                 new SingerDiscoverSchemaWorker(
-                    job.getConfig().getDiscoverSchema().getDockerImage()),
+                    job.getConfig().getDiscoverSchema().getDockerImage(), pbf),
                 connectionPool)
             .run();
         break;
@@ -91,14 +106,16 @@ public class WorkerRunner implements Runnable {
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         new WorkerRun<>(
                 jobId,
+                jobRoot,
                 syncInput,
                 // todo (cgardens) - still locked into only using SingerTaps and Targets. Next step
                 //   here is to create DefaultTap and DefaultTarget which will be able to
                 //   interoperate with SingerTap and SingerTarget now that they are split and
                 //   mediated in DefaultSyncWorker.
                 new DefaultSyncWorker(
-                    new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage()),
-                    new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage())),
+                    new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf),
+                    new SingerTargetFactory(
+                        job.getConfig().getSync().getDestinationDockerImage(), pbf)),
                 connectionPool)
             .run();
         break;
