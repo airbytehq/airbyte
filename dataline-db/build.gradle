@@ -8,7 +8,5 @@ dependencies {
     api 'org.jooq:jooq:3.13.4'
     api 'org.postgresql:postgresql:42.2.16'
 
-    implementation project(':dataline-commons')
-
     testImplementation "org.testcontainers:postgresql:1.14.3"
 }
