@@ -35,8 +35,9 @@ import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerTapFactory;
 import io.dataline.workers.singer.SingerTargetFactory;
-import java.io.IOException;
 import org.apache.commons.dbcp2.BasicDataSource;
+
+import java.io.IOException;
 
 /**
  * This class is a runnable that give a job id and db connection figures out how to run the
@@ -86,6 +87,7 @@ public class WorkerRunner implements Runnable {
                     job.getConfig().getDiscoverSchema().getDockerImage()),
                 connectionPool)
             .run();
+        break;
       case SYNC:
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         new WorkerRun<>(
@@ -100,6 +102,9 @@ public class WorkerRunner implements Runnable {
                     new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage())),
                 connectionPool)
             .run();
+        break;
+      default:
+        throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }
   }
 
