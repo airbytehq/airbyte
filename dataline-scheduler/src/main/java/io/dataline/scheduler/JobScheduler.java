@@ -132,7 +132,7 @@ public class JobScheduler implements Runnable {
   }
 
   private static Long getIntervalInSeconds(Schedule schedule) {
-    return getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits().longValue();
+    return getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
   }
 
   private Set<StandardSync> getAllActiveConnections() {

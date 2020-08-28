@@ -36,6 +36,7 @@ import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerTapFactory;
 import io.dataline.workers.singer.SingerTargetFactory;
 import java.io.IOException;
+import java.nio.file.Path;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 /**
@@ -43,15 +44,21 @@ import org.apache.commons.dbcp2.BasicDataSource;
  * appropriate worker for a given job.
  */
 public class WorkerRunner implements Runnable {
+
   private final long jobId;
   private final BasicDataSource connectionPool;
   private final SchedulerPersistence persistence;
+  private final Path workspaceRoot;
 
   public WorkerRunner(
-      long jobId, BasicDataSource connectionPool, SchedulerPersistence persistence) {
+      long jobId,
+      BasicDataSource connectionPool,
+      SchedulerPersistence persistence,
+      Path workspaceRoot) {
     this.jobId = jobId;
     this.connectionPool = connectionPool;
     this.persistence = persistence;
+    this.workspaceRoot = workspaceRoot;
   }
 
   @Override
@@ -70,6 +77,7 @@ public class WorkerRunner implements Runnable {
             getCheckConnectionInput(job.getConfig().getCheckConnection());
         new WorkerRun<>(
                 jobId,
+                workspaceRoot,
                 checkConnectionInput,
                 new SingerCheckConnectionWorker(
                     job.getConfig().getCheckConnection().getDockerImage()),
@@ -81,6 +89,7 @@ public class WorkerRunner implements Runnable {
             getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
         new WorkerRun<>(
                 jobId,
+                workspaceRoot,
                 discoverSchemaInput,
                 new SingerDiscoverSchemaWorker(
                     job.getConfig().getDiscoverSchema().getDockerImage()),
@@ -90,6 +99,7 @@ public class WorkerRunner implements Runnable {
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         new WorkerRun<>(
                 jobId,
+                workspaceRoot,
                 syncInput,
                 // todo (cgardens) - still locked into only using SingerTaps and Targets. Next step
                 //   here is to create DefaultTap and DefaultTarget which will be able to

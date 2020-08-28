@@ -28,13 +28,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,16 +56,19 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
 
   private final long jobId;
-  private InputType input;
+  private final Path workspaceRoot;
+  private final InputType input;
   private final Worker<InputType, OutputType> worker;
   private final BasicDataSource connectionPool;
 
   public WorkerRun(
       long jobId,
+      Path workspaceRoot,
       InputType input,
       Worker<InputType, OutputType> worker,
       BasicDataSource connectionPool) {
     this.jobId = jobId;
+    this.workspaceRoot = workspaceRoot;
     this.input = input;
     this.worker = worker;
     this.connectionPool = connectionPool;
@@ -77,13 +80,11 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
     try {
       setJobStatus(connectionPool, jobId, JobStatus.RUNNING);
 
-      // todo (cgardens) - replace this with whatever the correct path is. probably dependency
-      //   inject it based via env.
-      final Path workspacesRoot = Path.of("/tmp/dataline/workspaces/");
-      FileUtils.forceMkdir(workspacesRoot.toFile());
-      final Path workspaceRoot = workspacesRoot.resolve(String.valueOf(jobId));
-      FileUtils.forceMkdir(workspaceRoot.toFile());
-      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, workspaceRoot);
+      Files.createDirectories(workspaceRoot);
+      final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
+      Files.createDirectories(jobRoot);
+
+      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, jobRoot);
 
       switch (outputAndStatus.getStatus()) {
         case FAILED:

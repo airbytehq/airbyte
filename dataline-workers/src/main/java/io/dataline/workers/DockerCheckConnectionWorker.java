@@ -50,7 +50,7 @@ public class DockerCheckConnectionWorker implements CheckConnectionWorker {
 
   @Override
   public OutputAndStatus<StandardCheckConnectionOutput> run(
-      StandardCheckConnectionInput standardCheckConnectionInput, Path workspacePath) {
+      StandardCheckConnectionInput standardCheckConnectionInput, Path jobRoot) {
     final ObjectMapper objectMapper = new ObjectMapper();
 
     // write input struct to docker image
@@ -61,12 +61,12 @@ public class DockerCheckConnectionWorker implements CheckConnectionWorker {
       throw new RuntimeException(e);
     }
     final Path configPath =
-        WorkerUtils.writeFileToWorkspace(workspacePath, INPUT, inputString); // wrong type
+        WorkerUtils.writeFileToWorkspace(jobRoot, INPUT, inputString); // wrong type
 
     // run it. patiently.
     try {
       String[] tapCmd = {
-        "docker", "run", workspacePath.toString(), imageName, "--config", configPath.toString()
+        "docker", "run", jobRoot.toString(), imageName, "--config", configPath.toString()
       };
 
       LOGGER.debug("Tap command: {}", String.join(" ", tapCmd));
@@ -78,7 +78,7 @@ public class DockerCheckConnectionWorker implements CheckConnectionWorker {
       }
 
       // read output struct. assume it is written to correct place.
-      final String outputString = WorkerUtils.readFileFromWorkspace(workspacePath, OUTPUT);
+      final String outputString = WorkerUtils.readFileFromWorkspace(jobRoot, OUTPUT);
       final StandardCheckConnectionOutput standardCheckConnectionOutput =
           objectMapper.readValue(outputString, StandardCheckConnectionOutput.class);
 

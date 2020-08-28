@@ -132,9 +132,9 @@ public class SingerDiscoverSchemaWorker
 
   @Override
   public OutputAndStatus<StandardDiscoverSchemaOutput> run(
-      StandardDiscoverSchemaInput discoverSchemaInput, Path workspaceRoot)
+      StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot)
       throws InvalidCredentialsException {
-    OutputAndStatus<SingerCatalog> output = runInternal(discoverSchemaInput, workspaceRoot);
+    OutputAndStatus<SingerCatalog> output = runInternal(discoverSchemaInput, jobRoot);
     JobStatus status = output.getStatus();
 
     OutputAndStatus<StandardDiscoverSchemaOutput> finalOutput;
