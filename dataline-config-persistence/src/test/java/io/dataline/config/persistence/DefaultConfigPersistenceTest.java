@@ -47,7 +47,7 @@ class DefaultConfigPersistenceTest {
   @BeforeEach
   void setUp() throws IOException {
     rootPath = Files.createTempDirectory(DefaultConfigPersistenceTest.class.getName());
-    configPersistence = new DefaultConfigPersistence(rootPath.toString());
+    configPersistence = new DefaultConfigPersistence(rootPath);
   }
 
   private StandardSource generateStandardSource() {

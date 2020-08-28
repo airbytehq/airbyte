@@ -58,7 +58,7 @@ public class DefaultSyncWorker implements SyncWorker {
   }
 
   @Override
-  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path workspacePath) {
+  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path jobRoot) {
     long startTime = System.currentTimeMillis();
 
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
@@ -67,17 +67,17 @@ public class DefaultSyncWorker implements SyncWorker {
     final SingerMessageTracker singerMessageTracker =
         new SingerMessageTracker(syncInput.getStandardSync().getConnectionId());
 
-    try (Stream<SingerMessage> tap = singerTapFactory.create(tapConfig, workspacePath);
+    try (Stream<SingerMessage> tap = singerTapFactory.create(tapConfig, jobRoot);
         CloseableConsumer<SingerMessage> consumer =
-            singerTargetFactory.create(targetConfig, workspacePath)) {
+            singerTargetFactory.create(targetConfig, jobRoot)) {
 
       tap.takeWhile(record -> !cancelled.get()).peek(singerMessageTracker).forEach(consumer);
 
     } catch (Exception e) {
       LOGGER.debug(
           "Sync worker failed. Tap error log: {}.\n Target error log: {}",
-          WorkerUtils.readFileFromWorkspace(workspacePath, TAP_ERR_LOG),
-          WorkerUtils.readFileFromWorkspace(workspacePath, TARGET_ERR_LOG));
+          WorkerUtils.readFileFromWorkspace(jobRoot, TAP_ERR_LOG),
+          WorkerUtils.readFileFromWorkspace(jobRoot, TARGET_ERR_LOG));
 
       return new OutputAndStatus<>(JobStatus.FAILED, null);
     }

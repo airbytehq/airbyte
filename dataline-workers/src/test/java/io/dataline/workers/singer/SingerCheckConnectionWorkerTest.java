@@ -43,7 +43,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -73,9 +72,9 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     standardCheckConnectionInput.setConnectionConfiguration(o);
 
     SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage());
+        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
     OutputAndStatus<StandardCheckConnectionOutput> run =
-        worker.run(standardCheckConnectionInput, createWorkspacePath(jobId));
+        worker.run(standardCheckConnectionInput, createJobRoot(jobId));
 
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
@@ -97,7 +96,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
             db.getFirstMappedPort() + "");
 
     SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage());
+        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
 
     final Object o = new ObjectMapper().readValue(incorrectCreds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
@@ -105,7 +104,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     standardCheckConnectionInput.setConnectionConfiguration(o);
 
     OutputAndStatus<StandardCheckConnectionOutput> run =
-        worker.run(standardCheckConnectionInput, createWorkspacePath(jobId));
+        worker.run(standardCheckConnectionInput, createJobRoot(jobId));
 
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
@@ -114,7 +113,6 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     // in the logs
   }
 
-  @Disabled
   @Test
   public void testSuccessfulConnection()
       throws IOException, InvalidCredentialsException, InvalidCatalogException {
@@ -128,9 +126,9 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     standardCheckConnectionInput.setConnectionConfiguration(o);
 
     SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage());
+        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
     OutputAndStatus<StandardCheckConnectionOutput> run =
-        worker.run(standardCheckConnectionInput, createWorkspacePath(jobId));
+        worker.run(standardCheckConnectionInput, createJobRoot(jobId));
 
     assertEquals(SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());

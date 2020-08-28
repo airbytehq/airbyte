@@ -25,18 +25,20 @@
 package io.dataline.server;
 
 import io.dataline.server.apis.ConfigurationApi;
+import java.nio.file.Path;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.glassfish.hk2.api.Factory;
 
 public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
-  private static String dbRoot;
+
+  private static Path dbRoot;
   private static BasicDataSource connectionPool;
 
-  public static void setConfigPersistenceRoot(String dbRoot) {
+  public static void setConfigPersistenceRoot(final Path dbRoot) {
     ConfigurationApiFactory.dbRoot = dbRoot;
   }
 
-  public static void setDbConnectionPool(BasicDataSource connectionPool) {
+  public static void setDbConnectionPool(final BasicDataSource connectionPool) {
     ConfigurationApiFactory.connectionPool = connectionPool;
   }
 
