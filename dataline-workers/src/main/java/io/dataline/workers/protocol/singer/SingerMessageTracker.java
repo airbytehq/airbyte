@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocol;
+package io.dataline.workers.protocol.singer;
 
 import io.dataline.config.SingerMessage;
 import io.dataline.config.State;
