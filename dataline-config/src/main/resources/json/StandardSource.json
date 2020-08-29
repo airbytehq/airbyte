@@ -4,10 +4,7 @@
   "title": "Source",
   "description": "describes a source",
   "type": "object",
-  "required": [
-    "sourceId",
-    "name"
-  ],
+  "required": ["sourceId", "name"],
   "additionalProperties": false,
   "properties": {
     "sourceId": {
