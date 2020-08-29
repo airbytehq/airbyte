@@ -24,7 +24,6 @@
 
 package io.dataline.workers.singer;
 
-import com.google.common.collect.Streams;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerCatalog;
 import io.dataline.config.SingerMessage;
@@ -36,9 +35,10 @@ import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.TapFactory;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocol.singer.SingerJsonIterator;
+import io.dataline.workers.protocol.singer.SingerJsonStreamFactory;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -50,14 +50,13 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
 
   private static final String CONFIG_JSON_FILENAME = "tap_config.json";
   private static final String CATALOG_JSON_FILENAME = "catalog.json";
-
   private static final String STATE_JSON_FILENAME = "input_state.json";
 
   private final String imageName;
   private final ProcessBuilderFactory pbf;
 
   private Process tapProcess = null;
-  private InputStream stdout = null;
+  private BufferedReader bufferedReader = null;
 
   public SingerTapFactory(final String imageName, final ProcessBuilderFactory pbf) {
     this.imageName = imageName;
@@ -86,30 +85,31 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     try {
       tapProcess =
           pbf.create(
-                  jobRoot,
-                  imageName,
-                  "--config",
-                  CONFIG_JSON_FILENAME,
-                  // TODO support both --properties and --catalog depending on integration
-                  "--properties",
-                  CATALOG_JSON_FILENAME,
-                  "--state",
-                  STATE_JSON_FILENAME)
+              jobRoot,
+              imageName,
+              "--config",
+              CONFIG_JSON_FILENAME,
+              // TODO support both --properties and --catalog depending on integration
+              "--properties",
+              CATALOG_JSON_FILENAME,
+              "--state",
+              STATE_JSON_FILENAME)
               .redirectError(jobRoot.resolve(DefaultSyncWorker.TAP_ERR_LOG).toFile())
               .start();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
-    stdout = tapProcess.getInputStream();
-    return Streams.stream(new SingerJsonIterator(stdout)).onClose(getCloseFunction());
+    bufferedReader = new BufferedReader(new InputStreamReader(tapProcess.getInputStream()));
+
+    return new SingerJsonStreamFactory().create(bufferedReader).onClose(getCloseFunction());
   }
 
   public Runnable getCloseFunction() {
     return () -> {
-      if (stdout != null) {
+      if (bufferedReader != null) {
         try {
-          stdout.close();
+          bufferedReader.close();
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
