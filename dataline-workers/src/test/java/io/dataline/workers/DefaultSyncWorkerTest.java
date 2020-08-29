@@ -115,8 +115,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     standardSync.setName("favorite_color_pipe");
     standardSync.setSchema(schema);
 
-    final String stateValue =
-        Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
+    final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
     State state = new State();
     state.setConnectionId(connectionId);
