@@ -25,15 +25,53 @@
 package io.dataline.commons.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Map;
+import java.io.IOException;
+import java.util.Optional;
 
-public class JsonUtils {
-  public static String toJson(Map<String, String> map) {
+public class Jsons {
+
+  // Object Mapper is thread-safe
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+  public static <T> String serialize(T object) {
     try {
-      return new ObjectMapper().writeValueAsString(map);
+      return OBJECT_MAPPER.writeValueAsString(object);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static String serializeJsonNode(final JsonNode jsonNode) {
+    return jsonNode.toString();
+  }
+
+  public static <T> T deserialize(final String jsonString, final Class<T> klass) {
+    try {
+      return OBJECT_MAPPER.readValue(jsonString, klass);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
+    try {
+      return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
+    } catch (IOException e) {
+      return Optional.empty();
+    }
+  }
+
+  public static JsonNode deserialize(final String jsonString) {
+    try {
+      return OBJECT_MAPPER.readTree(jsonString);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> JsonNode jsonNode(final T object) {
+    return OBJECT_MAPPER.valueToTree(object);
   }
 }

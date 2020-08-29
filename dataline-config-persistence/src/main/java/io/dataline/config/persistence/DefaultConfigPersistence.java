@@ -25,10 +25,9 @@
 package io.dataline.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.ConfigSchema;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -46,14 +45,12 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
   private static final Object lock = new Object();
 
-  private final ObjectMapper objectMapper;
   private final JsonSchemaValidation jsonSchemaValidation;
   private final Path storageRoot;
 
   public DefaultConfigPersistence(Path storageRoot) {
     this.storageRoot = storageRoot;
     jsonSchemaValidation = new JsonSchemaValidation();
-    objectMapper = new ObjectMapper();
   }
 
   @Override
@@ -68,14 +65,16 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   private <T> T getConfigInternal(
       PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException {
-    // find file
-    File configFile = getFileOrThrow(persistenceConfigType, configId);
-
     // validate file with schema
-    validateJson(configFile, persistenceConfigType);
+    try {
+      final Path configPath = getFileOrThrow(persistenceConfigType, configId);
+      final T config = Jsons.deserialize(Files.readString(configPath), clazz);
+      validateJson(config, persistenceConfigType);
 
-    // cast file to type
-    return fileToPojo(configFile, clazz);
+      return config;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -101,12 +100,12 @@ public class DefaultConfigPersistence implements ConfigPersistence {
       throws JsonValidationException {
     synchronized (lock) {
       // validate config with schema
-      validateJson(objectMapper.valueToTree(config), persistenceConfigType);
+      validateJson(Jsons.jsonNode(config), persistenceConfigType);
 
       final Path configPath = getConfigPath(persistenceConfigType, configId);
       ensureDirectory(getConfigDirectory(persistenceConfigType));
       try {
-        objectMapper.writeValue(configPath.toFile(), config);
+        Files.writeString(configPath, Jsons.serialize(config));
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -210,29 +209,16 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     }
   }
 
-  private void validateJson(File configFile, PersistenceConfigType persistenceConfigType)
-      throws JsonValidationException {
-    JsonNode configJson;
-    try {
-      configJson = objectMapper.readTree(configFile);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    validateJson(configJson, persistenceConfigType);
-  }
-
-  private void validateJson(JsonNode configJson, PersistenceConfigType persistenceConfigType)
+  private <T> void validateJson(T config, PersistenceConfigType persistenceConfigType)
       throws JsonValidationException {
 
     JsonNode schema = getSchema(persistenceConfigType);
-    jsonSchemaValidation.validateThrow(schema, configJson);
+    jsonSchemaValidation.validateThrow(schema, Jsons.jsonNode(config));
   }
 
-  private File getFileOrThrow(PersistenceConfigType persistenceConfigType, String configId)
+  private Path getFileOrThrow(PersistenceConfigType persistenceConfigType, String configId)
       throws ConfigNotFoundException {
     return getFile(persistenceConfigType, configId)
-        .map(Path::toFile)
         .orElseThrow(
             () ->
                 new ConfigNotFoundException(
@@ -241,14 +227,6 @@ public class DefaultConfigPersistence implements ConfigPersistence {
                         persistenceConfigType,
                         configId,
                         getConfigPath(persistenceConfigType, configId))));
-  }
-
-  private <T> T fileToPojo(File file, Class<T> clazz) {
-    try {
-      return objectMapper.readValue(file, clazz);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private void ensureDirectory(Path path) {

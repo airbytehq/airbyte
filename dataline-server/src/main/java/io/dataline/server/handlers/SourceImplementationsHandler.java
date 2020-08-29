@@ -31,7 +31,6 @@ import io.dataline.api.model.SourceImplementationReadList;
 import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
@@ -177,11 +176,6 @@ public class SourceImplementationsHandler {
           String.format(
               "The provided configuration does not fulfill the specification. Errors: %s",
               e.getMessage()));
-    } catch (ConfigNotFoundException e) {
-      throw new KnownException(
-          422,
-          String.format(
-              "Could not find source specification: %s.", sourceConnectionSpecificationId));
     }
   }
 

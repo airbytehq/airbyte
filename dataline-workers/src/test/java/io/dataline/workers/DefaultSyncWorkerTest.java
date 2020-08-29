@@ -24,13 +24,12 @@
 
 package io.dataline.workers;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.dataline.commons.functional.CloseableConsumer;
-import io.dataline.commons.json.JsonUtils;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.Column;
 import io.dataline.config.DataType;
 import io.dataline.config.DestinationConnectionImplementation;
@@ -67,13 +66,13 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
   @Test
   public void test() throws Exception {
     final String sourceConnection =
-        JsonUtils.toJson(
+        Jsons.serialize(
             Map.of(
                 "apiKey", "123",
                 "region", "us-east"));
 
     final String destinationConnection =
-        JsonUtils.toJson(
+        Jsons.serialize(
             Map.of(
                 "username", "dataline",
                 "token", "anau81b"));
@@ -116,7 +115,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     standardSync.setName("favorite_color_pipe");
     standardSync.setSchema(schema);
 
-    final String stateValue = JsonUtils.toJson(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
+    final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
     State state = new State();
     state.setConnectionId(connectionId);

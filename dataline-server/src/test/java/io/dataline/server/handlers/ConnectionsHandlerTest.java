@@ -57,6 +57,7 @@ import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.helpers.SourceImplementationHelpers;
+import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +75,7 @@ class ConnectionsHandlerTest {
 
   @SuppressWarnings("unchecked")
   @BeforeEach
-  void setUp() {
+  void setUp() throws IOException {
     configPersistence = mock(ConfigPersistence.class);
     uuidGenerator = mock(Supplier.class);
 

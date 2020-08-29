@@ -24,7 +24,8 @@
 
 package io.dataline.server.errors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import io.dataline.commons.json.Jsons;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
@@ -40,10 +41,12 @@ public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintVi
   public Response toResponse(ConstraintViolationException exception) {
     return Response.status(Response.Status.BAD_REQUEST)
         .entity(
-            new ObjectMapper()
-                .createObjectNode()
-                .put("message", "The received object did not pass validation")
-                .put("details", prepareMessage(exception)))
+            Jsons.serialize(
+                ImmutableMap.of(
+                    "message",
+                    "The received object did not pass validation",
+                    "details",
+                    prepareMessage(exception))))
         .type("application/json")
         .build();
   }

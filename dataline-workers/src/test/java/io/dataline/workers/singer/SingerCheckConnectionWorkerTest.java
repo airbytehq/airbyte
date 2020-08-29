@@ -29,7 +29,7 @@ import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.integrations.Integrations;
@@ -66,7 +66,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
         PostgreSQLContainerTestHelper.getSingerTapConfig(
             "user", "pass", "localhost", "postgres", "111111");
 
-    final Object o = new ObjectMapper().readValue(fakeDbCreds, Object.class);
+    final Object o = Jsons.deserialize(fakeDbCreds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
     standardCheckConnectionInput.setConnectionConfiguration(o);
@@ -98,7 +98,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     SingerCheckConnectionWorker worker =
         new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
 
-    final Object o = new ObjectMapper().readValue(incorrectCreds, Object.class);
+    final Object o = Jsons.deserialize(incorrectCreds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
     standardCheckConnectionInput.setConnectionConfiguration(o);
@@ -120,7 +120,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     String creds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
-    final Object o = new ObjectMapper().readValue(creds, Object.class);
+    final Object o = Jsons.deserialize(creds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
     standardCheckConnectionInput.setConnectionConfiguration(o);

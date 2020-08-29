@@ -24,11 +24,11 @@
 
 package io.dataline.workers.protocol.singer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,25 +43,19 @@ import org.slf4j.LoggerFactory;
  * only the first will be parsed.
  */
 public class SingerJsonStreamFactory {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerJsonStreamFactory.class);
-  private final ObjectMapper objectMapper;
 
-  public SingerJsonStreamFactory() {
-    this.objectMapper = new ObjectMapper();
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerJsonStreamFactory.class);
 
   public Stream<SingerMessage> create(BufferedReader bufferedReader) {
     return bufferedReader.lines().map(this::parseJsonOrNull).filter(Objects::nonNull);
   }
 
   private SingerMessage parseJsonOrNull(String record) {
-    try {
-      return objectMapper.readValue(record, SingerMessage.class);
-    } catch (IOException e) {
-      LOGGER.info(
-          String.format(
-              "Record was not a json representation of a SingerMessage. Record: %s", record),
-          e);
+    Optional<SingerMessage> message = Jsons.tryDeserialize(record, SingerMessage.class);
+    if (message.isPresent()) {
+      return message.get();
+    } else {
+      LOGGER.info("Record was not a json representation of a SingerMessage. Record: {}", record);
       return null;
     }
   }

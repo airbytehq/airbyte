@@ -24,8 +24,7 @@
 
 package io.dataline.scheduler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
@@ -95,18 +94,12 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
       }
 
       if (outputAndStatus.getOutput().isPresent()) {
-        ObjectMapper objectMapper = new ObjectMapper();
         outputAndStatus
             .getOutput()
             .ifPresentOrElse(
                 output -> {
-                  String json = null;
-                  try {
-                    json = objectMapper.writeValueAsString(output);
-                    LOGGER.info("Set job output for job " + jobId);
-                  } catch (JsonProcessingException e) {
-                    LOGGER.info("Failed to set job output for job " + jobId);
-                  }
+                  LOGGER.info("Set job output for job " + jobId);
+                  final String json = Jsons.serialize(output);
                   setJobOutput(connectionPool, jobId, json);
                 },
                 () -> LOGGER.info("No output present for job " + jobId));
