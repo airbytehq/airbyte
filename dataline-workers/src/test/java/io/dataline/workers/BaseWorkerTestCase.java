@@ -64,11 +64,11 @@ public abstract class BaseWorkerTestCase {
     return Resources.toString(resource, Charset.defaultCharset());
   }
 
-  protected void assertJsonEquals(final String s1, final String s2) {
-    assertEquals(Jsons.deserialize(s1), Jsons.deserialize(s2));
+  protected <T> T readResource(final String name, final Class<T> klass) throws IOException {
+    return Jsons.deserialize(readResource(name), klass);
   }
 
-  protected <T> T readAs(final String name, final Class<T> klass) throws IOException {
-    return Jsons.deserialize(readResource(name), klass);
+  protected void assertJsonEquals(final String s1, final String s2) {
+    assertEquals(Jsons.deserialize(s1), Jsons.deserialize(s2));
   }
 }
