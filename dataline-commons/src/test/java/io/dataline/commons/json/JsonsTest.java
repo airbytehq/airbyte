@@ -44,7 +44,7 @@ class JsonsTest {
   void testSerializeMap() {
     Assertions.assertEquals(
         "{\"test\":\"abc\",\"test2\":\"def\"}",
-        Jsons.serializeMap(
+        Jsons.serialize(
             ImmutableMap.of(
                 "test", "abc",
                 "test2", "def")));

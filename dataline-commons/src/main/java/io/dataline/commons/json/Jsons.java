@@ -28,7 +28,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Optional;
 
 public class Jsons {
@@ -39,14 +38,6 @@ public class Jsons {
   public static <T> String serialize(T object) {
     try {
       return OBJECT_MAPPER.writeValueAsString(object);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static String serializeMap(final Map<String, String> map) {
-    try {
-      return OBJECT_MAPPER.writeValueAsString(map);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
