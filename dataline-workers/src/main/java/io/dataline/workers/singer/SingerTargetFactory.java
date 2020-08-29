@@ -24,10 +24,9 @@
 
 package io.dataline.workers.singer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import io.dataline.commons.functional.CloseableConsumer;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.workers.DefaultSyncWorker;
@@ -58,16 +57,8 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
 
   @Override
   public CloseableConsumer<SingerMessage> create(StandardTargetConfig targetConfig, Path jobRoot) {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String configDotJson;
-
-    try {
-      configDotJson =
-          objectMapper.writeValueAsString(
-              targetConfig.getDestinationConnectionImplementation().getConfiguration());
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    final String configDotJson =
+        Jsons.serialize(targetConfig.getDestinationConnectionImplementation().getConfiguration());
 
     // write config.json to disk
     Path configPath =

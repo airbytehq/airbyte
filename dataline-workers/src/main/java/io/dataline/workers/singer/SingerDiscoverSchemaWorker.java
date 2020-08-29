@@ -27,8 +27,7 @@ package io.dataline.workers.singer;
 import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.Schema;
 import io.dataline.config.SingerCatalog;
 import io.dataline.config.StandardDiscoverSchemaInput;
@@ -72,14 +71,7 @@ public class SingerDiscoverSchemaWorker
       throws InvalidCredentialsException {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
     //   reduced.
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String configDotJson;
-    try {
-      configDotJson =
-          objectMapper.writeValueAsString(discoverSchemaInput.getConnectionConfiguration());
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    final String configDotJson = Jsons.serialize(discoverSchemaInput.getConnectionConfiguration());
 
     writeFile(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
 
@@ -97,9 +89,8 @@ public class SingerDiscoverSchemaWorker
 
       int exitCode = workerProcess.exitValue();
       if (exitCode == 0) {
-        String catalog = readFile(jobRoot, CATALOG_JSON_FILENAME);
-        final SingerCatalog singerCatalog = jsonCatalogToTyped(catalog);
-        return new OutputAndStatus<>(SUCCESSFUL, singerCatalog);
+        final String catalog = readFile(jobRoot, CATALOG_JSON_FILENAME);
+        return new OutputAndStatus<>(SUCCESSFUL, Jsons.deserialize(catalog, SingerCatalog.class));
       } else {
         // TODO throw invalid credentials exception where appropriate based on error log
         String errLog = readFile(jobRoot, ERROR_LOG_FILENAME);
@@ -125,16 +116,6 @@ public class SingerDiscoverSchemaWorker
       return new OutputAndStatus<>(status, toDiscoveryOutput(output.getOutput().get()));
     } else {
       return new OutputAndStatus<>(status);
-    }
-  }
-
-  private static SingerCatalog jsonCatalogToTyped(String catalogJson) {
-    final ObjectMapper objectMapper = new ObjectMapper();
-
-    try {
-      return objectMapper.readValue(catalogJson, SingerCatalog.class);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
     }
   }
 

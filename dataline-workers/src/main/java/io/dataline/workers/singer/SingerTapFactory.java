@@ -24,8 +24,7 @@
 
 package io.dataline.workers.singer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerCatalog;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardDiscoverSchemaInput;
@@ -51,7 +50,6 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
 
   private static final String CONFIG_JSON_FILENAME = "tap_config.json";
   private static final String CATALOG_JSON_FILENAME = "catalog.json";
-
   private static final String STATE_JSON_FILENAME = "input_state.json";
 
   private final String imageName;
@@ -71,23 +69,14 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
       throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, jobRoot);
 
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String configDotJson;
-    final String catalogDotJson;
-    final String stateDotJson;
+    final String configDotJson =
+        Jsons.serialize(input.getSourceConnectionImplementation().getConfiguration());
 
-    try {
-      configDotJson =
-          objectMapper.writeValueAsString(
-              input.getSourceConnectionImplementation().getConfiguration());
-      SingerCatalog selectedCatalog =
-          SingerCatalogConverters.applySchemaToDiscoveredCatalog(
-              discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
-      catalogDotJson = objectMapper.writeValueAsString(selectedCatalog);
-      stateDotJson = objectMapper.writeValueAsString(input.getState());
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    final SingerCatalog selectedCatalog =
+        SingerCatalogConverters.applySchemaToDiscoveredCatalog(
+            discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
+    final String catalogDotJson = Jsons.serialize(selectedCatalog);
+    final String stateDotJson = Jsons.serialize(input.getState());
 
     WorkerUtils.writeFileToWorkspace(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
     WorkerUtils.writeFileToWorkspace(jobRoot, CATALOG_JSON_FILENAME, catalogDotJson);
