@@ -27,6 +27,7 @@ package io.dataline.commons.json;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import java.util.Objects;
+import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -61,6 +62,17 @@ class JsonsTest {
     Assertions.assertEquals(
         new ToClass("abc", 999, 888L),
         Jsons.deserialize("{\"str\":\"abc\", \"num\": 999, \"numLong\": 888}", ToClass.class));
+  }
+
+  @Test
+  void testTryDeserialize() {
+    Assertions.assertEquals(
+        Optional.of(new ToClass("abc", 999, 888L)),
+        Jsons.tryDeserialize("{\"str\":\"abc\", \"num\": 999, \"numLong\": 888}", ToClass.class));
+
+    Assertions.assertEquals(
+        Optional.empty(),
+        Jsons.tryDeserialize("{\"str\":\"abc\", \"num\": 999, \"test\": 888}", ToClass.class));
   }
 
   @Test

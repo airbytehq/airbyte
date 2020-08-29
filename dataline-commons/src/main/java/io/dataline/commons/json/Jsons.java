@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 public class Jsons {
 
@@ -60,6 +61,14 @@ public class Jsons {
       return OBJECT_MAPPER.readValue(jsonString, klass);
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
+    try {
+      return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
+    } catch (IOException e) {
+      return Optional.empty();
     }
   }
 

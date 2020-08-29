@@ -43,7 +43,7 @@ public class MessageUtils {
       String tableName, JsonNode record, Instant timeExtracted) {
     final SingerMessage singerMessage = new SingerMessage();
     singerMessage.setType(SingerMessage.Type.RECORD);
-    singerMessage.setRecord(record);
+    singerMessage.setRecord(Jsons.serialize(record));
     singerMessage.setStream(tableName);
 
     Optional.ofNullable(timeExtracted)

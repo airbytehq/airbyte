@@ -85,15 +85,15 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     try {
       tapProcess =
           pbf.create(
-              jobRoot,
-              imageName,
-              "--config",
-              CONFIG_JSON_FILENAME,
-              // TODO support both --properties and --catalog depending on integration
-              "--properties",
-              CATALOG_JSON_FILENAME,
-              "--state",
-              STATE_JSON_FILENAME)
+                  jobRoot,
+                  imageName,
+                  "--config",
+                  CONFIG_JSON_FILENAME,
+                  // TODO support both --properties and --catalog depending on integration
+                  "--properties",
+                  CATALOG_JSON_FILENAME,
+                  "--state",
+                  STATE_JSON_FILENAME)
               .redirectError(jobRoot.resolve(DefaultSyncWorker.TAP_ERR_LOG).toFile())
               .start();
     } catch (IOException e) {
