@@ -5,10 +5,7 @@
   "description": "job check connection config",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "connectionConfiguration",
-    "dockerImage"
-  ],
+  "required": ["connectionConfiguration", "dockerImage"],
   "properties": {
     "connectionConfigurationJson": {
       "type": "string",

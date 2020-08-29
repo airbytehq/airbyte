@@ -4,11 +4,7 @@
   "title": "DestinationConnectionSpecification",
   "description": "specification for how to configure a connection to a destination",
   "type": "object",
-  "required": [
-    "destinationId",
-    "destinationSpecificationId",
-    "specification"
-  ],
+  "required": ["destinationId", "destinationSpecificationId", "specification"],
   "additionalProperties": false,
   "properties": {
     "destinationId": {

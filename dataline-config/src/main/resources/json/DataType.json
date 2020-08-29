@@ -4,9 +4,5 @@
   "title": "DataType",
   "description": "standard data types.",
   "type": "string",
-  "enum": [
-    "string",
-    "number",
-    "boolean"
-  ]
+  "enum": ["string", "number", "boolean"]
 }

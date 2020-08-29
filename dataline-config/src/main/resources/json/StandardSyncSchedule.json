@@ -4,10 +4,7 @@
   "description": "ideally this should be a union but java codegen does not handle the union type properly.",
   "title": "StandardScheduleConfiguration",
   "type": "object",
-  "required": [
-    "manual",
-    "connectionId"
-  ],
+  "required": ["manual", "connectionId"],
   "additionalProperties": false,
   "properties": {
     "connectionId": {
@@ -16,20 +13,11 @@
     },
     "schedule": {
       "type": "object",
-      "required": [
-        "timeUnit",
-        "units"
-      ],
+      "required": ["timeUnit", "units"],
       "properties": {
         "timeUnit": {
           "type": "string",
-          "enum": [
-            "minutes",
-            "hours",
-            "days",
-            "weeks",
-            "months"
-          ]
+          "enum": ["minutes", "hours", "days", "weeks", "months"]
         },
         "units": {
           "type": "integer"

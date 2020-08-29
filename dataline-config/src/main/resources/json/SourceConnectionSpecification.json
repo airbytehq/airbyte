@@ -4,11 +4,7 @@
   "title": "SourceConnectionSpecification",
   "description": "specification for how to configure a connection to a source",
   "type": "object",
-  "required": [
-    "sourceId",
-    "sourceSpecificationId",
-    "specification"
-  ],
+  "required": ["sourceId", "sourceSpecificationId", "specification"],
   "additionalProperties": false,
   "properties": {
     "sourceId": {
