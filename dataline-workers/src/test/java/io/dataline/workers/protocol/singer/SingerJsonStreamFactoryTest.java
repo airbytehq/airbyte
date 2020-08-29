@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("StringBufferReplaceableByString")
 class SingerJsonStreamFactoryTest {
 
   private static final String TABLE_NAME = "user_preferences";
@@ -48,7 +49,12 @@ class SingerJsonStreamFactoryTest {
     final SingerMessage record2 =
         MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
-    final String inputString = Jsons.serialize(record1) + '\n' + Jsons.serialize(record2);
+    final String inputString =
+        new StringBuilder()
+            .append(Jsons.serialize(record1))
+            .append('\n')
+            .append(Jsons.serialize(record2))
+            .toString();
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
     final Stream<SingerMessage> expectedStream = Stream.of(record1, record2);
@@ -65,7 +71,13 @@ class SingerJsonStreamFactoryTest {
         MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
     final String inputString =
-        Jsons.serialize(record1) + '\n' + "{ \"fish\": \"tuna\"}" + '\n' + Jsons.serialize(record2);
+        new StringBuilder()
+            .append(Jsons.serialize(record1))
+            .append('\n')
+            .append("{ \"fish\": \"tuna\"}")
+            .append('\n')
+            .append(Jsons.serialize(record2))
+            .toString();
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
     final Stream<SingerMessage> expectedStream = Stream.of(record1, record2);
@@ -81,7 +93,11 @@ class SingerJsonStreamFactoryTest {
     final SingerMessage record2 =
         MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
-    final String inputString = Jsons.serialize(record1) + Jsons.serialize(record2);
+    final String inputString =
+        new StringBuilder()
+            .append(Jsons.serialize(record1))
+            .append(Jsons.serialize(record2))
+            .toString();
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
     final Stream<SingerMessage> expectedStream = Stream.of(record1);
@@ -98,7 +114,12 @@ class SingerJsonStreamFactoryTest {
         MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
     final String inputString =
-        Jsons.serialize(record1) + "{ \"fish\": \"tuna\"}" + '\n' + Jsons.serialize(record2);
+        new StringBuilder()
+            .append(Jsons.serialize(record1))
+            .append("{ \"fish\": \"tuna\"}")
+            .append('\n')
+            .append(Jsons.serialize(record2))
+            .toString();
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
     final Stream<SingerMessage> expectedStream = Stream.of(record1, record2);
@@ -115,7 +136,12 @@ class SingerJsonStreamFactoryTest {
         MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
     final String inputString =
-        Jsons.serialize(record1) + '\n' + "{ \"fish\": \"tuna\"}" + Jsons.serialize(record2);
+        new StringBuilder()
+            .append(Jsons.serialize(record1))
+            .append('\n')
+            .append("{ \"fish\": \"tuna\"}")
+            .append(Jsons.serialize(record2))
+            .toString();
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
     final Stream<SingerMessage> expectedStream = Stream.of(record1);

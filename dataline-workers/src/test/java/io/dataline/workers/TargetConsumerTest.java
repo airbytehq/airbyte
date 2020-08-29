@@ -28,39 +28,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
-import io.dataline.workers.protocol.singer.MessageFactory;
+import io.dataline.workers.protocol.singer.MessageUtils;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("StringBufferReplaceableByString")
 public class TargetConsumerTest {
+
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
-  private ObjectMapper objectMapper;
-
-  @BeforeEach
-  public void setup() {
-    objectMapper = new ObjectMapper();
-  }
 
   @Test
   public void test() throws IOException {
     final SingerMessage record1 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
     final SingerMessage record2 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
     final String expected =
         new StringBuilder()
-            .append(objectMapper.writeValueAsString(record1))
+            .append(Jsons.serialize(record1))
             .append('\n')
-            .append(objectMapper.writeValueAsString(record2))
+            .append(Jsons.serialize(record2))
             .append('\n')
             .toString();
 
