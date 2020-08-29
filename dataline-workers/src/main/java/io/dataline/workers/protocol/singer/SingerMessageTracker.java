@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class SingerMessageTracker implements Consumer<SingerMessage> {
+
   private final AtomicLong recordCount;
   private final AtomicReference<State> outputState;
   private final UUID connectionId;
@@ -51,7 +52,7 @@ public class SingerMessageTracker implements Consumer<SingerMessage> {
     if (record.getType().equals(SingerMessage.Type.STATE)) {
       final State state = new State();
       state.setConnectionId(connectionId);
-      state.setState(record);
+      state.setStateJson(record.getRecord());
       outputState.set(state);
     }
   }

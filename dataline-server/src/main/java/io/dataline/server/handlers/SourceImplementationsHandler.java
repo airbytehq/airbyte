@@ -68,7 +68,7 @@ public class SourceImplementationsHandler {
     // validate configuration
     validateSourceImplementation(
         sourceImplementationCreate.getSourceSpecificationId(),
-        sourceImplementationCreate.getConnectionConfiguration());
+        (String) sourceImplementationCreate.getConnectionConfiguration());
 
     // persist
     final UUID sourceImplementationId = uuidGenerator.get();
@@ -77,7 +77,7 @@ public class SourceImplementationsHandler {
         sourceImplementationCreate.getWorkspaceId(),
         sourceImplementationId,
         false,
-        sourceImplementationCreate.getConnectionConfiguration());
+        (String) sourceImplementationCreate.getConnectionConfiguration());
 
     // read configuration from db
     return getSourceImplementationReadInternal(sourceImplementationId);
@@ -93,7 +93,7 @@ public class SourceImplementationsHandler {
     // validate configuration
     validateSourceImplementation(
         persistedSourceImplementation.getSourceSpecificationId(),
-        sourceImplementationUpdate.getConnectionConfiguration());
+        (String) sourceImplementationUpdate.getConnectionConfiguration());
 
     // persist
     persistSourceConnectionImplementation(
@@ -101,7 +101,7 @@ public class SourceImplementationsHandler {
         persistedSourceImplementation.getWorkspaceId(),
         sourceImplementationUpdate.getSourceImplementationId(),
         persistedSourceImplementation.getTombstone(),
-        sourceImplementationUpdate.getConnectionConfiguration());
+        (String) sourceImplementationUpdate.getConnectionConfiguration());
 
     // read configuration from db
     return getSourceImplementationReadInternal(
@@ -147,7 +147,7 @@ public class SourceImplementationsHandler {
         persistedSourceImplementation.getWorkspaceId(),
         persistedSourceImplementation.getSourceImplementationId(),
         true,
-        persistedSourceImplementation.getConnectionConfiguration());
+        (String) persistedSourceImplementation.getConnectionConfiguration());
   }
 
   private SourceConnectionImplementation getSourceConnectionImplementationInternal(
@@ -166,10 +166,10 @@ public class SourceImplementationsHandler {
   }
 
   private void validateSourceImplementation(
-      UUID sourceConnectionSpecificationId, Object implementation) {
+      UUID sourceConnectionSpecificationId, String implementationJson) {
     try {
       validator.validateSourceConnectionConfiguration(
-          sourceConnectionSpecificationId, implementation);
+          sourceConnectionSpecificationId, implementationJson);
     } catch (JsonValidationException e) {
       throw new KnownException(
           422,
@@ -184,14 +184,14 @@ public class SourceImplementationsHandler {
       UUID workspaceId,
       UUID sourceImplementationId,
       boolean tombstone,
-      Object configuration) {
+      String configurationJson) {
     final SourceConnectionImplementation sourceConnectionImplementation =
         new SourceConnectionImplementation();
     sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionImplementation.setWorkspaceId(workspaceId);
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
     sourceConnectionImplementation.setTombstone(tombstone);
-    sourceConnectionImplementation.setConfiguration(configuration);
+    sourceConnectionImplementation.setConfigurationJson(configurationJson);
 
     ConfigFetchers.writeConfig(
         configPersistence,
@@ -209,7 +209,7 @@ public class SourceImplementationsHandler {
     sourceImplementationRead.setSourceSpecificationId(
         sourceConnectionImplementation.getSourceSpecificationId());
     sourceImplementationRead.setConnectionConfiguration(
-        sourceConnectionImplementation.getConfiguration());
+        sourceConnectionImplementation.getConfigurationJson());
 
     return sourceImplementationRead;
   }

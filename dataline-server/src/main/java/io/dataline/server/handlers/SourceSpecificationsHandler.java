@@ -32,6 +32,7 @@ import io.dataline.server.errors.KnownException;
 import io.dataline.server.helpers.ConfigFetchers;
 
 public class SourceSpecificationsHandler {
+
   private final ConfigPersistence configPersistence;
 
   public SourceSpecificationsHandler(ConfigPersistence configPersistence) {
@@ -67,7 +68,7 @@ public class SourceSpecificationsHandler {
     sourceSpecificationRead.setSourceSpecificationId(
         sourceConnectionSpecification.getSourceSpecificationId());
     sourceSpecificationRead.setConnectionSpecification(
-        sourceConnectionSpecification.getSpecification());
+        sourceConnectionSpecification.getSpecificationJson());
 
     return sourceSpecificationRead;
   }
