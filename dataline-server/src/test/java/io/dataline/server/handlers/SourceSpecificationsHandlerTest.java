@@ -36,16 +36,18 @@ import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.helpers.SourceSpecificationHelpers;
+import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SourceSpecificationsHandlerTest {
+
   private ConfigPersistence configPersistence;
   private SourceConnectionSpecification sourceConnectionSpecification;
   private SourceSpecificationsHandler sourceSpecificationHandler;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws IOException {
     configPersistence = mock(ConfigPersistence.class);
     sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
     sourceSpecificationHandler = new SourceSpecificationsHandler(configPersistence);

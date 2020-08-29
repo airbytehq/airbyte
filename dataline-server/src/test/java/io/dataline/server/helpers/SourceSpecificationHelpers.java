@@ -25,26 +25,24 @@
 package io.dataline.server.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SourceConnectionSpecification;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 public class SourceSpecificationHelpers {
-  public static SourceConnectionSpecification generateSourceSpecification() {
+
+  public static SourceConnectionSpecification generateSourceSpecification() throws IOException {
     final UUID sourceId = UUID.randomUUID();
     final UUID sourceSpecificationId = UUID.randomUUID();
 
-    final File specificationFile =
-        new File("../dataline-server/src/test/resources/json/TestSpecification.json");
+    final Path path =
+        Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
 
-    JsonNode specificationJson;
-    try {
-      specificationJson = new ObjectMapper().readTree(specificationFile);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    JsonNode specificationJson = Jsons.deserialize(Files.readString(path));
 
     final SourceConnectionSpecification sourceConnectionSpecification =
         new SourceConnectionSpecification();

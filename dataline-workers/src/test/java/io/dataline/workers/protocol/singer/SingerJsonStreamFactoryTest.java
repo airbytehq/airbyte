@@ -26,6 +26,7 @@ package io.dataline.workers.protocol.singer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -33,36 +34,26 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
-@SuppressWarnings({"StringBufferReplaceableByString", "UnstableApiUsage"})
+@SuppressWarnings("StringBufferReplaceableByString")
 class SingerJsonStreamFactoryTest {
+
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
-  private ObjectMapper objectMapper;
-
-  @BeforeEach
-  public void setup() {
-    objectMapper = new ObjectMapper();
-  }
 
   @Test
-  public void testValid() throws JsonProcessingException {
+  public void testValid() {
     final SingerMessage record1 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
     final SingerMessage record2 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
-    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     final String inputString =
         new StringBuilder()
-            .append(objectMapper.writeValueAsString(record1))
+            .append(Jsons.serialize(record1))
             .append('\n')
-            .append(objectMapper.writeValueAsString(record2))
+            .append(Jsons.serialize(record2))
             .toString();
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
@@ -73,20 +64,19 @@ class SingerJsonStreamFactoryTest {
   }
 
   @Test
-  public void testInvalid() throws JsonProcessingException {
+  public void testInvalid() {
     final SingerMessage record1 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
     final SingerMessage record2 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
-    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     final String inputString =
         new StringBuilder()
-            .append(objectMapper.writeValueAsString(record1))
+            .append(Jsons.serialize(record1))
             .append('\n')
             .append("{ \"fish\": \"tuna\"}")
             .append('\n')
-            .append(objectMapper.writeValueAsString(record2))
+            .append(Jsons.serialize(record2))
             .toString();
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
@@ -97,17 +87,16 @@ class SingerJsonStreamFactoryTest {
   }
 
   @Test
-  public void testMissingNewLineBetweenValidRecords() throws JsonProcessingException {
+  public void testMissingNewLineBetweenValidRecords() {
     final SingerMessage record1 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
     final SingerMessage record2 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
-    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     final String inputString =
         new StringBuilder()
-            .append(objectMapper.writeValueAsString(record1))
-            .append(objectMapper.writeValueAsString(record2))
+            .append(Jsons.serialize(record1))
+            .append(Jsons.serialize(record2))
             .toString();
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
@@ -118,19 +107,18 @@ class SingerJsonStreamFactoryTest {
   }
 
   @Test
-  public void testMissingNewLineAndLineStartsWithValidRecord() throws JsonProcessingException {
+  public void testMissingNewLineAndLineStartsWithValidRecord() {
     final SingerMessage record1 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
     final SingerMessage record2 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
-    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     final String inputString =
         new StringBuilder()
-            .append(objectMapper.writeValueAsString(record1))
+            .append(Jsons.serialize(record1))
             .append("{ \"fish\": \"tuna\"}")
             .append('\n')
-            .append(objectMapper.writeValueAsString(record2))
+            .append(Jsons.serialize(record2))
             .toString();
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
@@ -141,19 +129,18 @@ class SingerJsonStreamFactoryTest {
   }
 
   @Test
-  public void testMissingNewLineAndLineStartsWithInvalidRecord() throws JsonProcessingException {
+  public void testMissingNewLineAndLineStartsWithInvalidRecord() {
     final SingerMessage record1 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
     final SingerMessage record2 =
-        MessageFactory.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
-    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     final String inputString =
         new StringBuilder()
-            .append(objectMapper.writeValueAsString(record1))
+            .append(Jsons.serialize(record1))
             .append('\n')
             .append("{ \"fish\": \"tuna\"}")
-            .append(objectMapper.writeValueAsString(record2))
+            .append(Jsons.serialize(record2))
             .toString();
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);

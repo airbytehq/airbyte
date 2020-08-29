@@ -24,10 +24,9 @@
 
 package io.dataline.workers.protocol.singer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -44,7 +43,7 @@ public class MessageUtils {
       String tableName, JsonNode record, Instant timeExtracted) {
     final SingerMessage singerMessage = new SingerMessage();
     singerMessage.setType(SingerMessage.Type.RECORD);
-    singerMessage.setRecord(record);
+    singerMessage.setRecord(Jsons.serialize(record));
     singerMessage.setStream(tableName);
 
     Optional.ofNullable(timeExtracted)
@@ -54,27 +53,11 @@ public class MessageUtils {
     return singerMessage;
   }
 
-  public static SingerMessage createRecordMessage(String tableName, JsonNode record) {
-    return createRecordMessage(tableName, record, null);
+  public static SingerMessage createRecordMessage(String tableName, String key, String value) {
+    return createRecordMessage(tableName, ImmutableMap.of(key, value));
   }
 
   public static SingerMessage createRecordMessage(String tableName, Map<String, String> record) {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    String json = null;
-    try {
-      json = objectMapper.writeValueAsString(record);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-
-    return createRecordMessage(tableName, json, null);
-  }
-
-  public static SingerMessage createRecordMessage(String tableName, String key, String value) {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final ObjectNode record = objectMapper.createObjectNode();
-    record.put(key, value);
-
-    return createRecordMessage(tableName, record);
+    return createRecordMessage(tableName, Jsons.jsonNode(record), null);
   }
 }

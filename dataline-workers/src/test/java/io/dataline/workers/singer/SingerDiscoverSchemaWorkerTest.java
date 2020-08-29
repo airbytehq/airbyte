@@ -29,7 +29,7 @@ import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.integrations.Integrations;
@@ -64,7 +64,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
   public void testPostgresDiscovery() throws IOException, InvalidCredentialsException {
     final String jobId = "1";
     String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
-    final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
+    final Object o = Jsons.deserialize(postgresCreds, Object.class);
     final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
     input.setConnectionConfiguration(o);
     System.out.println(input);
@@ -75,9 +75,8 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
 
     assertEquals(SUCCESSFUL, run.getStatus());
 
-    String expectedSchema = readResource("simple_discovered_postgres_schema.json");
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String actualSchema = objectMapper.writeValueAsString(run.getOutput().get());
+    final String expectedSchema = readResource("simple_discovered_postgres_schema.json");
+    final String actualSchema = Jsons.serialize(run.getOutput().get());
 
     assertTrue(run.getOutput().isPresent());
     assertJsonEquals(expectedSchema, actualSchema);
@@ -88,7 +87,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     final String jobId = "1";
     String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
-    final Object o = new ObjectMapper().readValue(postgresCreds, Object.class);
+    final Object o = Jsons.deserialize(postgresCreds, Object.class);
 
     final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
     input.setConnectionConfiguration(o);
