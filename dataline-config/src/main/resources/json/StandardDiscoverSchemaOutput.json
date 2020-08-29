@@ -4,7 +4,9 @@
   "title": "StandardDiscoveryOutput",
   "description": "describes the standard output for any discovery run.",
   "type": "object",
-  "required": ["schema"],
+  "required": [
+    "schema"
+  ],
   "additionalProperties": false,
   "properties": {
     "schema": {

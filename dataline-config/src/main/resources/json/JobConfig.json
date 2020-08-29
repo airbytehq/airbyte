@@ -5,7 +5,9 @@
   "description": "job config",
   "type": "object",
   "additionalProperties": false,
-  "required": ["configType"],
+  "required": [
+    "configType"
+  ],
   "properties": {
     "configType": {
       "type": "string",

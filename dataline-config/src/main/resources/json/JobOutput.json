@@ -5,7 +5,9 @@
   "description": "job output",
   "type": "object",
   "additionalProperties": false,
-  "required": ["outputType"],
+  "required": [
+    "outputType"
+  ],
   "properties": {
     "outputType": {
       "type": "string",

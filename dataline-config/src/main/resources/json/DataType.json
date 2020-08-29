@@ -3,10 +3,10 @@
   "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/DataType.json",
   "title": "DataType",
   "description": "standard data types.",
-    "type": "string",
-    "enum": [
-      "string",
-      "number",
-      "boolean"
-    ]
+  "type": "string",
+  "enum": [
+    "string",
+    "number",
+    "boolean"
+  ]
 }

@@ -4,12 +4,17 @@
   "title": "StandardCheckConnectionOutput",
   "description": "describes the result of a 'check connection' action.",
   "type": "object",
-  "required": ["status"],
+  "required": [
+    "status"
+  ],
   "additionalProperties": false,
   "properties": {
     "status": {
       "type": "string",
-      "enum": ["success", "failure"]
+      "enum": [
+        "success",
+        "failure"
+      ]
     },
     "message": {
       "type": "string"

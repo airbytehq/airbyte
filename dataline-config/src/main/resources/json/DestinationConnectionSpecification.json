@@ -4,7 +4,11 @@
   "title": "DestinationConnectionSpecification",
   "description": "specification for how to configure a connection to a destination",
   "type": "object",
-  "required": ["destinationId", "destinationSpecificationId", "specification"],
+  "required": [
+    "destinationId",
+    "destinationSpecificationId",
+    "specification"
+  ],
   "additionalProperties": false,
   "properties": {
     "destinationId": {
@@ -15,8 +19,9 @@
       "type": "string",
       "format": "uuid"
     },
-    "specification": {
-      "description": "type any. information here varies by integration"
+    "specificationJson": {
+      "type": "string",
+      "description": "Integration specific blob. Must be a valid JSON string."
     }
   }
 }
