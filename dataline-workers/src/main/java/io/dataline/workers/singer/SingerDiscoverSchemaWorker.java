@@ -111,7 +111,6 @@ public class SingerDiscoverSchemaWorker
     OutputAndStatus<SingerCatalog> output = runInternal(discoverSchemaInput, jobRoot);
     JobStatus status = output.getStatus();
 
-    OutputAndStatus<StandardDiscoverSchemaOutput> finalOutput;
     if (output.getOutput().isPresent()) {
       return new OutputAndStatus<>(status, toDiscoveryOutput(output.getOutput().get()));
     } else {

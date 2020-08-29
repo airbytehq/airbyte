@@ -30,25 +30,16 @@ import static org.mockito.Mockito.when;
 
 import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.Column;
-import io.dataline.config.DataType;
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.Schema;
 import io.dataline.config.SingerMessage;
-import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
-import io.dataline.config.State;
-import io.dataline.config.Table;
 import io.dataline.workers.protocol.singer.MessageUtils;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
 
 class DefaultSyncWorkerTest extends BaseWorkerTestCase {
@@ -57,70 +48,14 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
   private static final long LAST_SYNC_TIME = 1598565106;
-  private static final UUID WORKSPACE_ID = UUID.randomUUID();
-  private static final UUID SOURCE_SPECIFICATION_ID = UUID.randomUUID();
-  private static final UUID SOURCE_IMPLEMENTATION_ID = UUID.randomUUID();
-  private static final UUID DESTINATION_SPECIFICATION_ID = UUID.randomUUID();
-  private static final UUID DESTINATION_IMPLEMENTATION_ID = UUID.randomUUID();
 
   @SuppressWarnings("unchecked")
   @Test
   public void test() throws Exception {
-    final String sourceConnection =
-        Jsons.serialize(
-            Map.of(
-                "apiKey", "123",
-                "region", "us-east"));
-
-    final String destinationConnection =
-        Jsons.serialize(
-            Map.of(
-                "username", "dataline",
-                "token", "anau81b"));
-
-    final SourceConnectionImplementation sourceConnectionConfig =
-        new SourceConnectionImplementation();
-    sourceConnectionConfig.setConfigurationJson(sourceConnection);
-    sourceConnectionConfig.setWorkspaceId(WORKSPACE_ID);
-    sourceConnectionConfig.setSourceSpecificationId(SOURCE_SPECIFICATION_ID);
-    sourceConnectionConfig.setSourceImplementationId(SOURCE_IMPLEMENTATION_ID);
-    sourceConnectionConfig.setTombstone(false);
-
-    final DestinationConnectionImplementation destinationConnectionConfig =
-        new DestinationConnectionImplementation();
-    destinationConnectionConfig.setConfigurationJson(destinationConnection);
-    destinationConnectionConfig.setWorkspaceId(WORKSPACE_ID);
-    destinationConnectionConfig.setDestinationSpecificationId(DESTINATION_SPECIFICATION_ID);
-    destinationConnectionConfig.setDestinationImplementationId(DESTINATION_IMPLEMENTATION_ID);
-
-    final Column column = new Column();
-    column.setName(COLUMN_NAME);
-    column.setDataType(DataType.STRING);
-    column.setSelected(true);
-
-    final Table table = new Table();
-    table.setName(TABLE_NAME);
-    table.setSelected(true);
-    table.setColumns(Collections.singletonList(column));
-
-    final Schema schema = new Schema();
-    schema.setTables(Collections.singletonList(table));
-
-    final UUID connectionId = UUID.randomUUID();
-    StandardSync standardSync = new StandardSync();
-    standardSync.setConnectionId(connectionId);
-    standardSync.setDestinationImplementationId(DESTINATION_IMPLEMENTATION_ID);
-    standardSync.setSourceImplementationId(SOURCE_IMPLEMENTATION_ID);
-    standardSync.setStatus(StandardSync.Status.ACTIVE);
-    standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
-    standardSync.setName("favorite_color_pipe");
-    standardSync.setSchema(schema);
-
-    final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
-
-    State state = new State();
-    state.setConnectionId(connectionId);
-    state.setStateJson(stateValue);
+    final ImmutablePair<StandardSync, StandardSyncInput> syncPair =
+        TestConfigHelpers.createSyncConfig();
+    final StandardSync standardSync = syncPair.getKey();
+    final StandardSyncInput syncInput = syncPair.getValue();
 
     final StandardSyncSummary syncSummary = new StandardSyncSummary();
     syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
@@ -131,18 +66,13 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
 
     final StandardTapConfig tapConfig = new StandardTapConfig();
     tapConfig.setStandardSync(standardSync);
-    tapConfig.setSourceConnectionImplementation(sourceConnectionConfig);
-    tapConfig.setState(state);
+    tapConfig.setSourceConnectionImplementation(syncInput.getSourceConnectionImplementation());
+    tapConfig.setState(syncInput.getState());
 
     final StandardTargetConfig targetConfig = new StandardTargetConfig();
     targetConfig.setStandardSync(standardSync);
-    targetConfig.setDestinationConnectionImplementation(destinationConnectionConfig);
-
-    StandardSyncInput syncInput = new StandardSyncInput();
-    syncInput.setDestinationConnectionImplementation(destinationConnectionConfig);
-    syncInput.setStandardSync(standardSync);
-    syncInput.setSourceConnectionImplementation(sourceConnectionConfig);
-    syncInput.setState(state);
+    targetConfig.setDestinationConnectionImplementation(
+        syncInput.getDestinationConnectionImplementation());
 
     final TapFactory<SingerMessage> tapFactory = (TapFactory<SingerMessage>) mock(TapFactory.class);
     final TargetFactory<SingerMessage> targetFactory =
