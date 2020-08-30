@@ -60,7 +60,8 @@ const OnboardingPage: React.FC = () => {
   );
 
   const [successRequest, setSuccessRequest] = useState(false);
-  const { currentStep, steps, nextStep } = StepsConfig(
+  const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
+  const { currentStep, steps, setCurrentStep } = StepsConfig(
     !!sources.length,
     !!destinations.length
   );
@@ -83,47 +84,54 @@ const OnboardingPage: React.FC = () => {
     specificationId?: string;
     connectionConfiguration?: any;
   }) => {
-    const result = await createSourcesImplementation(
-      {},
-      {
-        workspaceId: config.ui.workspaceId,
-        sourceSpecificationId: values.specificationId,
-        connectionConfiguration: values.connectionConfiguration
-      },
-      []
-    );
-    console.log(result);
-    // TODO: action after success request
-    setSuccessRequest(true);
-    setTimeout(() => {
-      setSuccessRequest(false);
-      nextStep();
-    }, 2000);
+    setErrorStatusRequest(0);
+    try {
+      await createSourcesImplementation(
+        {},
+        {
+          workspaceId: config.ui.workspaceId,
+          sourceSpecificationId: values.specificationId,
+          connectionConfiguration: values.connectionConfiguration
+        }
+      );
+
+      setSuccessRequest(true);
+      setTimeout(() => {
+        setSuccessRequest(false);
+        setCurrentStep(StepsTypes.CREATE_DESTINATION);
+      }, 2000);
+    } catch (e) {
+      setErrorStatusRequest(e.status);
+    }
   };
+
   const onSubmitDestinationStep = async (values: {
     name: string;
     serviceType: string;
     specificationId?: string;
     connectionConfiguration?: any;
   }) => {
-    const result = await createDestinationsImplementation(
-      {},
-      {
-        workspaceId: config.ui.workspaceId,
-        destinationSpecificationId: values.specificationId,
-        connectionConfiguration: values.connectionConfiguration
-      },
-      []
-    );
+    setErrorStatusRequest(0);
+    try {
+      await createDestinationsImplementation(
+        {},
+        {
+          workspaceId: config.ui.workspaceId,
+          destinationSpecificationId: values.specificationId,
+          connectionConfiguration: values.connectionConfiguration
+        }
+      );
 
-    console.log(result);
-    // TODO: action after success request
-    setSuccessRequest(true);
-    setTimeout(() => {
-      setSuccessRequest(false);
-      nextStep();
-    }, 2000);
+      setSuccessRequest(true);
+      setTimeout(() => {
+        setSuccessRequest(false);
+        setCurrentStep(StepsTypes.SET_UP_CONNECTION);
+      }, 2000);
+    } catch (e) {
+      setErrorStatusRequest(e.status);
+    }
   };
+
   const onSubmitConnectionStep = async (values: { frequency: string }) => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
@@ -150,7 +158,7 @@ const OnboardingPage: React.FC = () => {
           onSubmit={onSubmitSourceStep}
           dropDownData={sourcesDropDownData}
           hasSuccess={successRequest}
-          errorMessage={""}
+          errorStatus={errorStatusRequest}
         />
       );
     }
@@ -160,7 +168,7 @@ const OnboardingPage: React.FC = () => {
           onSubmit={onSubmitDestinationStep}
           dropDownData={destinationsDropDownData}
           hasSuccess={successRequest}
-          errorMessage={""}
+          errorStatus={errorStatusRequest}
         />
       );
     }
