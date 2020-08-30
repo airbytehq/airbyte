@@ -9,6 +9,14 @@ import EditControls from "./components/EditControls";
 import ConstructValidationSchema from "./components/ConstructValidationSchema";
 import { specification } from "../../core/resources/SourceSpecification";
 
+type formInitialValues = {
+  [key: string]: any;
+} & {
+  name: string;
+  serviceType: string;
+  frequency?: string;
+};
+
 type IProps = {
   dropDownData: Array<IDataItem>;
   onDropDownSelect?: (id: string) => void;
@@ -19,7 +27,7 @@ type IProps = {
     connectionConfiguration: any;
   }) => void;
   formType: "source" | "destination" | "connection";
-  formValues?: { name: string; serviceType: string; frequency?: string };
+  formValues?: formInitialValues;
   hasSuccess?: boolean;
   errorMessage?: React.ReactNode;
   specifications?: specification;
@@ -46,7 +54,9 @@ const ServiceForm: React.FC<IProps> = ({
     [specifications, properties]
   );
   const additionalFields = properties
-    ? Object.fromEntries([...properties.map(item => [item, ""])])
+    ? Object.fromEntries([
+        ...properties.map(item => [item, formValues ? formValues[item] : ""])
+      ])
     : null;
 
   const isEditMode = !!formValues;
