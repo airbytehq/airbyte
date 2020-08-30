@@ -17,7 +17,7 @@ type IProps = {
   }) => void;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
   hasSuccess?: boolean;
-  errorMessage?: React.ReactNode;
+  errorStatus?: number;
 };
 
 const useSourceSpecificationLoad = (sourceId: string) => {
@@ -46,7 +46,7 @@ const SourceStep: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
   hasSuccess,
-  errorMessage
+  errorStatus
 }) => {
   const [sourceId, setSourceId] = useState("");
   const specification = useSourceSpecificationLoad(sourceId);
@@ -61,6 +61,13 @@ const SourceStep: React.FC<IProps> = ({
       specificationId: specification?.sourceSpecificationId
     });
   };
+
+  const errorMessage =
+    errorStatus === 0 ? null : errorStatus === 400 ? (
+      <FormattedMessage id="form.validationError" />
+    ) : (
+      <FormattedMessage id="form.someError" />
+    );
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>

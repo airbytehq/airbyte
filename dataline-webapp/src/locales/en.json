@@ -40,6 +40,8 @@
   "form.dbname": "DB Name",
   "form.filter_dbs": "Filter DBs",
   "form.serviceAccount": "Service Account",
+  "form.validationError": "The received form did not pass validation",
+  "form.someError": "Sorry. Something went wrong... ",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",

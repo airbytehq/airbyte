@@ -37,18 +37,10 @@ const StepsConfig = (hasSources: boolean, hasDestinations: boolean) => {
 
   const [currentStep, setCurrentStep] = useState(getInitialStep());
 
-  const nextStep = () => {
-    if (currentStep === StepsTypes.CREATE_SOURCE) {
-      setCurrentStep(StepsTypes.CREATE_DESTINATION);
-    }
-
-    return setCurrentStep(StepsTypes.SET_UP_CONNECTION);
-  };
-
   return {
     steps,
     currentStep,
-    nextStep
+    setCurrentStep
   };
 };
 

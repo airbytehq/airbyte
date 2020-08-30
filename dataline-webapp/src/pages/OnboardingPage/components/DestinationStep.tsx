@@ -18,7 +18,7 @@ type IProps = {
     connectionConfiguration?: any;
   }) => void;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
-  errorMessage?: React.ReactNode;
+  errorStatus?: number;
 };
 
 const useDestinationSpecificationLoad = (destinationId: string) => {
@@ -49,7 +49,7 @@ const Destination: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
   hasSuccess,
-  errorMessage
+  errorStatus
 }) => {
   const [destinationId, setDestinationId] = useState("");
   const specification = useDestinationSpecificationLoad(destinationId);
@@ -64,6 +64,13 @@ const Destination: React.FC<IProps> = ({
       specificationId: specification?.destinationSpecificationId
     });
   };
+
+  const errorMessage =
+    errorStatus === 0 ? null : errorStatus === 400 ? (
+      <FormattedMessage id="form.validationError" />
+    ) : (
+      <FormattedMessage id="form.someError" />
+    );
 
   return (
     <>
