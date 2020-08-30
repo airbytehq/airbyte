@@ -55,6 +55,11 @@ subprojects {
         groovyGradle {
             target '**/*.gradle'
         }
+        sql {
+            target '**/*.sql'
+
+            dbeaver().configFile(rootProject.file('tools/gradle/codestyle/dbeaver.properties'))
+        }
         format 'json', {
             target "**/*.json"
 
