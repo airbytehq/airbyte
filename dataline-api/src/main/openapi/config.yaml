@@ -813,11 +813,14 @@ components:
     SourceImplementationRead:
       type: object
       required:
+      - sourceId
       - sourceImplementationId
       - workspaceId
       - sourceSpecificationId
       - connectionConfiguration
       properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
         sourceImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
         workspaceId:
@@ -929,11 +932,14 @@ components:
     DestinationImplementationRead:
       type: object
       required:
+      - destinationId
       - destinationImplementationId
       - workspaceId
       - destinationSpecificationId
       - connectionConfiguration
       properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
         destinationImplementationId:
           $ref: "#/components/schemas/DestinationImplementationId"
         workspaceId:
