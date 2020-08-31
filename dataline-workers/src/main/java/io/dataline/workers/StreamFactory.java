@@ -29,5 +29,7 @@ import java.io.BufferedReader;
 import java.util.stream.Stream;
 
 public interface StreamFactory {
+
   Stream<SingerMessage> create(BufferedReader bufferedReader);
+
 }

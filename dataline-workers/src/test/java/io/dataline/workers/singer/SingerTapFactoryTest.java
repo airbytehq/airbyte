@@ -61,9 +61,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SingerTapFactoryTest {
+
   private static final String IMAGE_NAME = "hudi:latest";
   private static final String JOB_ROOT_PREFIX = "workspace";
-  private static final String DISCOVER_SCHEMA_JOB_ROOT_PREFIX = "discover";
   private static final String CONFIG_JSON_FILENAME = "tap_config.json";
   private static final String CATALOG_JSON_FILENAME = "catalog.json";
   private static final String STATE_JSON_FILENAME = "input_state.json";
@@ -75,15 +75,10 @@ class SingerTapFactoryTest {
   private Path errorLogPath;
 
   @BeforeEach
-  public void setup() {
-    try {
-      jobRoot = Files.createTempDirectory(JOB_ROOT_PREFIX);
-      discoverSchemaJobRoot = jobRoot.resolve(DISCOVER_SCHEMA_JOB_ROOT_PREFIX);
-      errorLogPath = jobRoot.resolve(DefaultSyncWorker.TAP_ERR_LOG);
-
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public void setup() throws IOException {
+    jobRoot = Files.createTempDirectory(JOB_ROOT_PREFIX);
+    discoverSchemaJobRoot = jobRoot.resolve(SingerTapFactory.DISCOVERY_DIR);
+    errorLogPath = jobRoot.resolve(DefaultSyncWorker.TAP_ERR_LOG);
   }
 
   @Test
@@ -99,8 +94,8 @@ class SingerTapFactoryTest {
     StandardTapConfig tapConfig =
         WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
     StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfiguration(
-        tapConfig.getSourceConnectionImplementation().getConfiguration());
+    discoverSchemaInput.setConnectionConfigurationJson(
+        tapConfig.getSourceConnectionImplementation().getConfigurationJson());
     ProcessBuilderFactory pbf = mock(ProcessBuilderFactory.class);
     ProcessBuilder processBuilder = mock(ProcessBuilder.class);
     Process process = mock(Process.class);
@@ -133,15 +128,15 @@ class SingerTapFactoryTest {
         .thenReturn(discoverSchemaOutput);
 
     when(pbf.create(
-            jobRoot,
-            IMAGE_NAME,
-            "--config",
-            CONFIG_JSON_FILENAME,
-            "--properties",
-            CATALOG_JSON_FILENAME,
-            "--state",
-            STATE_JSON_FILENAME))
-        .thenReturn(processBuilder);
+        jobRoot,
+        IMAGE_NAME,
+        "--config",
+        CONFIG_JSON_FILENAME,
+        "--properties",
+        CATALOG_JSON_FILENAME,
+        "--state",
+        STATE_JSON_FILENAME))
+            .thenReturn(processBuilder);
     when(processBuilder.redirectError(errorLogPath.toFile())).thenReturn(processBuilder);
     when(processBuilder.start()).thenReturn(process);
     when(process.getInputStream()).thenReturn(inputStream);
@@ -161,4 +156,5 @@ class SingerTapFactoryTest {
 
     verify(discoverSchemaWorker).runInternal(discoverSchemaInput, discoverSchemaJobRoot);
   }
+
 }

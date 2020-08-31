@@ -29,7 +29,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.dataline.commons.functional.CloseableConsumer;
-import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncInput;

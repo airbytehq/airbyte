@@ -24,6 +24,7 @@
 
 package io.dataline.workers.singer;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerCatalog;
 import io.dataline.config.SingerMessage;
@@ -52,7 +53,8 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   private static final String CONFIG_JSON_FILENAME = "tap_config.json";
   private static final String CATALOG_JSON_FILENAME = "catalog.json";
   private static final String STATE_JSON_FILENAME = "input_state.json";
-  private static final String DISCOVERY_DIR = "discover";
+  @VisibleForTesting
+  static final String DISCOVERY_DIR = "discover";
 
   private final String imageName;
   private final ProcessBuilderFactory pbf;
@@ -63,17 +65,17 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   private BufferedReader bufferedReader = null;
 
   public SingerTapFactory(
-      final String imageName,
-      final ProcessBuilderFactory pbf,
-      final SingerDiscoverSchemaWorker discoverSchemaWorker) {
+                          final String imageName,
+                          final ProcessBuilderFactory pbf,
+                          final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this(imageName, pbf, new SingerJsonStreamFactory(), discoverSchemaWorker);
   }
 
   public SingerTapFactory(
-      final String imageName,
-      final ProcessBuilderFactory pbf,
-      final StreamFactory streamFactory,
-      final SingerDiscoverSchemaWorker discoverSchemaWorker) {
+                          final String imageName,
+                          final ProcessBuilderFactory pbf,
+                          final StreamFactory streamFactory,
+                          final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this.imageName = imageName;
     this.pbf = pbf;
     this.streamFactory = streamFactory;
@@ -134,13 +136,13 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     };
   }
 
-  private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path workspaceRoot)
+  private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path jobRoot)
       throws InvalidCredentialsException {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput();
-    discoveryInput.setConnectionConfiguration(
-        input.getSourceConnectionImplementation().getConfiguration());
-    Path scopedWorkspace = workspaceRoot.resolve(DISCOVERY_DIR);
-    return discoverSchemaWorker.runInternal(discoveryInput, scopedWorkspace);
+    discoveryInput.setConnectionConfigurationJson(
+        input.getSourceConnectionImplementation().getConfigurationJson());
+    Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
+    return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot);
   }
 
 }

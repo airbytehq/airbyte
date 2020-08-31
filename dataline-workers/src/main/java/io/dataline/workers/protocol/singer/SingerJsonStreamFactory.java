@@ -45,8 +45,6 @@ import org.slf4j.LoggerFactory;
  * first will be parsed.
  */
 public class SingerJsonStreamFactory implements StreamFactory {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerJsonStreamFactory.class);
-  private final ObjectMapper objectMapper;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerJsonStreamFactory.class);
 

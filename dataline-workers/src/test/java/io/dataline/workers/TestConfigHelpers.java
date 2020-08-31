@@ -24,7 +24,7 @@
 
 package io.dataline.workers;
 
-import io.dataline.commons.json.JsonUtils;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.Column;
 import io.dataline.config.DataType;
 import io.dataline.config.DestinationConnectionImplementation;
@@ -40,6 +40,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class TestConfigHelpers {
+
   private static final String CONNECTION_NAME = "favorite_color_pipe";
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
@@ -54,20 +55,20 @@ public class TestConfigHelpers {
     final UUID connectionId = UUID.randomUUID();
 
     final String sourceConnection =
-        JsonUtils.toJson(
+        Jsons.serialize(
             Map.of(
                 "apiKey", "123",
                 "region", "us-east"));
 
     final String destinationConnection =
-        JsonUtils.toJson(
+        Jsons.serialize(
             Map.of(
                 "username", "dataline",
                 "token", "anau81b"));
 
     final SourceConnectionImplementation sourceConnectionConfig =
         new SourceConnectionImplementation();
-    sourceConnectionConfig.setConfiguration(sourceConnection);
+    sourceConnectionConfig.setConfigurationJson(sourceConnection);
     sourceConnectionConfig.setWorkspaceId(workspaceId);
     sourceConnectionConfig.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionConfig.setSourceImplementationId(sourceImplementationId);
@@ -75,7 +76,7 @@ public class TestConfigHelpers {
 
     final DestinationConnectionImplementation destinationConnectionConfig =
         new DestinationConnectionImplementation();
-    destinationConnectionConfig.setConfiguration(destinationConnection);
+    destinationConnectionConfig.setConfigurationJson(destinationConnection);
     destinationConnectionConfig.setWorkspaceId(workspaceId);
     destinationConnectionConfig.setDestinationSpecificationId(destinationSpecificationId);
     destinationConnectionConfig.setDestinationImplementationId(destinationImplementationId);
@@ -102,11 +103,11 @@ public class TestConfigHelpers {
     standardSync.setName(CONNECTION_NAME);
     standardSync.setSchema(schema);
 
-    final String stateValue = JsonUtils.toJson(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
+    final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
     State state = new State();
     state.setConnectionId(connectionId);
-    state.setState(stateValue);
+    state.setStateJson(stateValue);
 
     StandardSyncInput syncInput = new StandardSyncInput();
     syncInput.setDestinationConnectionImplementation(destinationConnectionConfig);
@@ -116,4 +117,5 @@ public class TestConfigHelpers {
 
     return new ImmutablePair<>(standardSync, syncInput);
   }
+
 }
