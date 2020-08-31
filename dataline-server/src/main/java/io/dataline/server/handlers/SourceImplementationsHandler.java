@@ -115,16 +115,15 @@ public class SourceImplementationsHandler {
     final List<SourceImplementationRead> reads =
         ConfigFetchers.getSourceConnectionImplementations(configPersistence).stream()
             .filter(
-                sourceConnectionImplementation ->
-                    sourceConnectionImplementation
-                        .getWorkspaceId()
-                        .equals(workspaceIdRequestBody.getWorkspaceId()))
+                sourceConnectionImplementation -> sourceConnectionImplementation
+                    .getWorkspaceId()
+                    .equals(workspaceIdRequestBody.getWorkspaceId()))
             .map(
                 sourceConnectionImplementation -> {
                   final UUID sourceId =
                       ConfigFetchers.getSourceConnectionSpecification(
-                              configPersistence,
-                              sourceConnectionImplementation.getSourceSpecificationId())
+                          configPersistence,
+                          sourceConnectionImplementation.getSourceSpecificationId())
                           .getSourceId();
                   return toSourceImplementationRead(sourceConnectionImplementation, sourceId);
                 })
@@ -163,14 +162,14 @@ public class SourceImplementationsHandler {
 
     final UUID sourceId =
         ConfigFetchers.getSourceConnectionSpecification(
-                configPersistence,
-                retrievedSourceConnectionImplementation.getSourceSpecificationId())
+            configPersistence,
+            retrievedSourceConnectionImplementation.getSourceSpecificationId())
             .getSourceId();
 
     return toSourceImplementationRead(retrievedSourceConnectionImplementation, sourceId);
   }
 
-  private void validateSourceImplementation(      UUID sourceConnectionSpecificationId, String implementationJson) {
+  private void validateSourceImplementation(UUID sourceConnectionSpecificationId, String implementationJson) {
     try {
       validator.validateSourceConnectionConfiguration(
           sourceConnectionSpecificationId, implementationJson);
@@ -183,11 +182,11 @@ public class SourceImplementationsHandler {
     }
   }
 
-  private void persistSourceConnectionImplementation(      UUID sourceSpecificationId,
-      UUID workspaceId,
-      UUID sourceImplementationId,
-      boolean tombstone,
-      String configurationJson) {
+  private void persistSourceConnectionImplementation(UUID sourceSpecificationId,
+                                                     UUID workspaceId,
+                                                     UUID sourceImplementationId,
+                                                     boolean tombstone,
+                                                     String configurationJson) {
     final SourceConnectionImplementation sourceConnectionImplementation =
         new SourceConnectionImplementation();
     sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
@@ -203,7 +202,7 @@ public class SourceImplementationsHandler {
         sourceConnectionImplementation);
   }
 
-  private SourceImplementationRead toSourceImplementationRead(      SourceConnectionImplementation sourceConnectionImplementation, UUID sourceId) {
+  private SourceImplementationRead toSourceImplementationRead(SourceConnectionImplementation sourceConnectionImplementation, UUID sourceId) {
     final SourceImplementationRead sourceImplementationRead = new SourceImplementationRead();
     sourceImplementationRead.setSourceId(sourceId);
     sourceImplementationRead.setSourceImplementationId(

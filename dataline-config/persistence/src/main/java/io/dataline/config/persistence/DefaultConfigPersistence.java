@@ -46,6 +46,7 @@ import org.apache.commons.io.FileUtils;
 
 // we force all interaction with disk storage to be effectively single threaded.
 public class DefaultConfigPersistence implements ConfigPersistence {
+
   private static final String CONFIG_PATH_IN_JAR = "/json";
   private static final String CONFIG_DIR = "schemas";
   private static final Path configFilesRoot = getConfigFiles();

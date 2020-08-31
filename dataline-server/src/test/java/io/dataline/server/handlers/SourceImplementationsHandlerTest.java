@@ -92,10 +92,10 @@ class SourceImplementationsHandlerTest {
             .thenReturn(sourceConnectionImplementation);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
-            sourceConnectionSpecification.getSourceSpecificationId().toString(),
-            SourceConnectionSpecification.class))
-        .thenReturn(sourceConnectionSpecification);
+        PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+        sourceConnectionSpecification.getSourceSpecificationId().toString(),
+        SourceConnectionSpecification.class))
+            .thenReturn(sourceConnectionSpecification);
 
     final SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate();
     sourceImplementationCreate.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
@@ -157,10 +157,10 @@ class SourceImplementationsHandlerTest {
             .thenReturn(expectedSourceConnectionImplementation);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
-            sourceConnectionSpecification.getSourceSpecificationId().toString(),
-            SourceConnectionSpecification.class))
-        .thenReturn(sourceConnectionSpecification);
+        PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+        sourceConnectionSpecification.getSourceSpecificationId().toString(),
+        SourceConnectionSpecification.class))
+            .thenReturn(sourceConnectionSpecification);
 
     final SourceImplementationUpdate sourceImplementationUpdate = new SourceImplementationUpdate();
     sourceImplementationUpdate.setSourceImplementationId(
@@ -197,10 +197,10 @@ class SourceImplementationsHandlerTest {
             .thenReturn(sourceConnectionImplementation);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
-            sourceConnectionSpecification.getSourceSpecificationId().toString(),
-            SourceConnectionSpecification.class))
-        .thenReturn(sourceConnectionSpecification);
+        PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+        sourceConnectionSpecification.getSourceSpecificationId().toString(),
+        SourceConnectionSpecification.class))
+            .thenReturn(sourceConnectionSpecification);
 
     SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
     expectedSourceImplementationRead.setSourceId(sourceConnectionSpecification.getSourceId());
@@ -233,10 +233,10 @@ class SourceImplementationsHandlerTest {
             .thenReturn(Sets.newHashSet(sourceConnectionImplementation));
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
-            sourceConnectionSpecification.getSourceSpecificationId().toString(),
-            SourceConnectionSpecification.class))
-        .thenReturn(sourceConnectionSpecification);
+        PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+        sourceConnectionSpecification.getSourceSpecificationId().toString(),
+        SourceConnectionSpecification.class))
+            .thenReturn(sourceConnectionSpecification);
 
     SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
     expectedSourceImplementationRead.setSourceId(sourceConnectionSpecification.getSourceId());
@@ -285,10 +285,10 @@ class SourceImplementationsHandlerTest {
             .thenReturn(expectedSourceConnectionImplementation);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
-            sourceConnectionSpecification.getSourceSpecificationId().toString(),
-            SourceConnectionSpecification.class))
-        .thenReturn(sourceConnectionSpecification);
+        PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+        sourceConnectionSpecification.getSourceSpecificationId().toString(),
+        SourceConnectionSpecification.class))
+            .thenReturn(sourceConnectionSpecification);
 
     final SourceImplementationIdRequestBody sourceImplementationIdRequestBody =
         new SourceImplementationIdRequestBody();
