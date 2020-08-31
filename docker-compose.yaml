@@ -18,6 +18,7 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS=db:5432
+      - WORKSPACE_ROOT=${WORKSPACE_ROOT}
       - CONFIG_ROOT=${CONFIG_ROOT}
     depends_on:
       - db
