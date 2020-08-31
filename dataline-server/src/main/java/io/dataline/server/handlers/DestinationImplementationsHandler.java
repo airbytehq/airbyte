@@ -122,7 +122,16 @@ public class DestinationImplementationsHandler {
                     destinationConnectionImplementation
                         .getWorkspaceId()
                         .equals(workspaceIdRequestBody.getWorkspaceId()))
-            .map(this::toDestinationImplementationRead)
+            .map(
+                destinationConnectionImplementation -> {
+                  final UUID destinationId =
+                      ConfigFetchers.getDestinationConnectionSpecification(
+                              configPersistence,
+                              destinationConnectionImplementation.getDestinationSpecificationId())
+                          .getDestinationId();
+                  return toDestinationImplementationRead(
+                      destinationConnectionImplementation, destinationId);
+                })
             .collect(Collectors.toList());
 
     final DestinationImplementationReadList destinationImplementationReadList =
@@ -139,7 +148,14 @@ public class DestinationImplementationsHandler {
         ConfigFetchers.getDestinationConnectionImplementation(
             configPersistence, destinationImplementationId);
 
-    return toDestinationImplementationRead(retrievedDestinationConnectionImplementation);
+    final UUID destinationId =
+        ConfigFetchers.getDestinationConnectionSpecification(
+                configPersistence,
+                retrievedDestinationConnectionImplementation.getDestinationSpecificationId())
+            .getDestinationId();
+
+    return toDestinationImplementationRead(
+        retrievedDestinationConnectionImplementation, destinationId);
   }
 
   private void validateDestinationImplementation(
@@ -176,9 +192,10 @@ public class DestinationImplementationsHandler {
   }
 
   private DestinationImplementationRead toDestinationImplementationRead(
-      DestinationConnectionImplementation destinationConnectionImplementation) {
+      DestinationConnectionImplementation destinationConnectionImplementation, UUID destinationId) {
     final DestinationImplementationRead destinationImplementationRead =
         new DestinationImplementationRead();
+    destinationImplementationRead.setDestinationId(destinationId);
     destinationImplementationRead.setDestinationImplementationId(
         destinationConnectionImplementation.getDestinationImplementationId());
     destinationImplementationRead.setWorkspaceId(

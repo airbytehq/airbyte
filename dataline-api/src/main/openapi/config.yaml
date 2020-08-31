@@ -932,11 +932,14 @@ components:
     DestinationImplementationRead:
       type: object
       required:
+      - destinationId
       - destinationImplementationId
       - workspaceId
       - destinationSpecificationId
       - connectionConfiguration
       properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
         destinationImplementationId:
           $ref: "#/components/schemas/DestinationImplementationId"
         workspaceId:
