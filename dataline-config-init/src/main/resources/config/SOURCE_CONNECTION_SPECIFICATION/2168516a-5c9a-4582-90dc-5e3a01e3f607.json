@@ -5,13 +5,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Postgres Source Spec",
     "type": "object",
-    "required": [
-      "host",
-      "port",
-      "user",
-      "dbname",
-      "filter_dbs"
-    ],
+    "required": ["host", "port", "user", "dbname", "filter_dbs"],
     "additionalProperties": false,
     "properties": {
       "host": {

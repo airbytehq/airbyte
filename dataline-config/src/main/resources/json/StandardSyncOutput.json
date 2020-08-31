@@ -5,10 +5,7 @@
   "description": "job sync config",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "standardSyncSummary",
-    "state"
-  ],
+  "required": ["standardSyncSummary", "state"],
   "properties": {
     "standardSyncSummary": {
       "$ref": "StandardSyncSummary.json"

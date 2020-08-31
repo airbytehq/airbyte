@@ -30,21 +30,14 @@
     },
     "syncMode": {
       "type": "string",
-      "enum": [
-        "full_refresh",
-        "append"
-      ]
+      "enum": ["full_refresh", "append"]
     },
     "schema": {
       "$ref": "StandardDataSchema.json#/definitions/schema"
     },
     "status": {
       "type": "string",
-      "enum": [
-        "active",
-        "inactive",
-        "deprecated"
-      ]
+      "enum": ["active", "inactive", "deprecated"]
     }
   }
 }

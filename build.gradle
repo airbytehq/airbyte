@@ -55,6 +55,11 @@ subprojects {
         groovyGradle {
             target '**/*.gradle'
         }
+        format 'json', {
+            target "**/*.json"
+
+            prettier()
+        }
     }
     compileJava.dependsOn 'spotlessApply'
 

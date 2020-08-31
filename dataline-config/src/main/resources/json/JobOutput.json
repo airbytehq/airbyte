@@ -9,11 +9,7 @@
   "properties": {
     "outputType": {
       "type": "string",
-      "enum": [
-        "checkConnection",
-        "discoverSchema",
-        "sync"
-      ]
+      "enum": ["checkConnection", "discoverSchema", "sync"]
     },
     "checkConnection": {
       "$ref": "StandardCheckConnectionOutput.json"
