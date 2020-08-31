@@ -10,5 +10,7 @@
     <exclude-pattern>.*/generated/.*</exclude-pattern>
 
     <!-- https://pmd.github.io/pmd-6.23.0/pmd_rules_java.html -->
-    <rule ref="category/java/bestpractices.xml/AbstractClassWithoutAbstractMethod"/>
+    <rule ref="category/java/bestpractices.xml/AbstractClassWithoutAbstractMethod" />
+<!--    <rule ref="category/java/codestyle.xml/LocalVariableCouldBeFinal" />-->
+<!--    <rule ref="category/java/codestyle.xml/MethodArgumentCouldBeFinal" />-->
 </ruleset>
