@@ -52,6 +52,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 class DefaultSyncWorkerTest extends BaseWorkerTestCase {
+
   private static final Path WORKSPACE_ROOT = Path.of("/workspaces/10");
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
@@ -168,4 +169,5 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     verify(consumer).accept(recordMessage2);
     verify(consumer).close();
   }
+
 }

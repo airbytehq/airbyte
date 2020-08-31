@@ -102,9 +102,9 @@ class JsonsTest {
     Assertions.assertEquals(
         "{\"test\":\"abc\",\"test2\":\"def\"}",
         Jsons.jsonNode(
-                ImmutableMap.of(
-                    "test", "abc",
-                    "test2", "def"))
+            ImmutableMap.of(
+                "test", "abc",
+                "test2", "def"))
             .toString());
   }
 
@@ -145,5 +145,7 @@ class JsonsTest {
     public int hashCode() {
       return Objects.hash(str, num, numLong);
     }
+
   }
+
 }

@@ -50,8 +50,9 @@ public class SingerCheckConnectionWorker
   }
 
   @Override
-  public OutputAndStatus<StandardCheckConnectionOutput> run(
-      StandardCheckConnectionInput input, Path jobRoot) throws InvalidCredentialsException {
+  public OutputAndStatus<StandardCheckConnectionOutput> run(StandardCheckConnectionInput input,
+                                                            Path jobRoot)
+      throws InvalidCredentialsException {
 
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
     discoverSchemaInput.setConnectionConfigurationJson(input.getConnectionConfigurationJson());
@@ -79,4 +80,5 @@ public class SingerCheckConnectionWorker
   public void cancel() {
     singerDiscoverSchemaWorker.cancel();
   }
+
 }

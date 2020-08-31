@@ -110,4 +110,5 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     worker.cancel();
     workerWasCancelled.get();
   }
+
 }

@@ -81,4 +81,5 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
       throw new RuntimeException(e);
     }
   }
+
 }

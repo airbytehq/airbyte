@@ -90,4 +90,5 @@ class EnvConfigsTest {
     when(function.apply(EnvConfigs.DOCKER_NETWORK)).thenReturn("abc");
     Assertions.assertEquals("abc", config.getDockerNetwork());
   }
+
 }
