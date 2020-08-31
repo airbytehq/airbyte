@@ -586,6 +586,29 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/connections/list:
+    post:
+      tags:
+        - connection
+      summary: Returns all connections for a workspace.
+      operationId: webBackendListConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WbConnectionReadList"
+        "404":
+          description: Workspace not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/connections/sync:
     post:
       tags:
@@ -613,7 +636,7 @@ paths:
     post:
       tags:
         - jobs
-      summary: Returns recent jobs for a connection.
+      summary: Returns recent jobs for a connection. Jobs are returned in descending order by createdAt.
       operationId: listJobsFor
       requestBody:
         content:
@@ -1234,6 +1257,53 @@ components:
             - failure
         message:
           type: string
+    # Web Backend
+    WbConnectionRead:
+      type: object
+      required:
+        - connectionId
+        - name
+        - sourceImplementationId
+        - destinationImplementationId
+        - syncMode
+        - syncSchema
+        - status
+        - source
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        name:
+          type: string
+        sourceImplementationId:
+          $ref: "#/components/schemas/SourceImplementationId"
+        destinationImplementationId:
+          $ref: "#/components/schemas/DestinationImplementationId"
+        syncMode:
+          type: string
+          enum:
+            - full_refresh
+            - append
+        syncSchema:
+          $ref: "#/components/schemas/SourceSchema"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        source:
+          $ref: "#/components/schemas/SourceImplementationRead"
+        lastSync:
+          description: epoch time of last sync. null if no sync has taken place.
+          type: integer
+          format: int64
+    WbConnectionReadList:
+      type: object
+      required:
+        - connections
+      properties:
+        connections:
+          type: array
+          items:
+            $ref: "#/components/schemas/WbConnectionRead"
   responses:
     InvalidInput:
       description: Invalid Input
