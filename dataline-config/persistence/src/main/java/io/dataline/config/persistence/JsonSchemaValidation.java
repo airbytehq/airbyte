@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class JsonSchemaValidation {
+
   private final SchemaValidatorsConfig schemaValidatorsConfig;
   private final JsonSchemaFactory jsonSchemaFactory;
 
@@ -62,4 +63,5 @@ public class JsonSchemaValidation {
               configJson.toPrettyString()));
     }
   }
+
 }

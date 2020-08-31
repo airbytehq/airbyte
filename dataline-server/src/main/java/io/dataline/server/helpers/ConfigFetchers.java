@@ -48,8 +48,8 @@ import java.util.UUID;
  */
 public class ConfigFetchers {
 
-  public static StandardWorkspace getStandardWorkspace(
-      ConfigPersistence configPersistence, UUID workspaceId) {
+  public static StandardWorkspace getStandardWorkspace(ConfigPersistence configPersistence,
+                                                       UUID workspaceId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.STANDARD_WORKSPACE,
@@ -62,8 +62,8 @@ public class ConfigFetchers {
     }
   }
 
-  public static StandardSource getStandardSource(
-      ConfigPersistence configPersistence, UUID sourceId) {
+  public static StandardSource getStandardSource(ConfigPersistence configPersistence,
+                                                 UUID sourceId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.STANDARD_SOURCE, sourceId.toString(), StandardSource.class);
@@ -75,11 +75,10 @@ public class ConfigFetchers {
   }
 
   // wrap json validation errors for usages in API handlers.
-  public static <T> void writeConfig(
-      ConfigPersistence configPersistence,
-      PersistenceConfigType persistenceConfigType,
-      String configId,
-      T config) {
+  public static <T> void writeConfig(ConfigPersistence configPersistence,
+                                     PersistenceConfigType persistenceConfigType,
+                                     String configId,
+                                     T config) {
     try {
       configPersistence.writeConfig(persistenceConfigType, configId, config);
     } catch (JsonValidationException e) {
@@ -96,8 +95,8 @@ public class ConfigFetchers {
     }
   }
 
-  public static SourceConnectionSpecification getSourceConnectionSpecification(
-      ConfigPersistence configPersistence, UUID sourceSpecificationId) {
+  public static SourceConnectionSpecification getSourceConnectionSpecification(ConfigPersistence configPersistence,
+                                                                               UUID sourceSpecificationId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
@@ -110,8 +109,7 @@ public class ConfigFetchers {
     }
   }
 
-  public static Set<SourceConnectionSpecification> getSourceConnectionSpecifications(
-      ConfigPersistence configPersistence) {
+  public static Set<SourceConnectionSpecification> getSourceConnectionSpecifications(ConfigPersistence configPersistence) {
     try {
       return configPersistence.getConfigs(
           PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
@@ -121,8 +119,8 @@ public class ConfigFetchers {
     }
   }
 
-  public static SourceConnectionImplementation getSourceConnectionImplementation(
-      ConfigPersistence configPersistence, UUID sourceImplementationId) {
+  public static SourceConnectionImplementation getSourceConnectionImplementation(ConfigPersistence configPersistence,
+                                                                                 UUID sourceImplementationId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
@@ -135,8 +133,7 @@ public class ConfigFetchers {
     }
   }
 
-  public static Set<SourceConnectionImplementation> getSourceConnectionImplementations(
-      ConfigPersistence configPersistence) {
+  public static Set<SourceConnectionImplementation> getSourceConnectionImplementations(ConfigPersistence configPersistence) {
     try {
       return configPersistence.getConfigs(
           PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
@@ -146,8 +143,8 @@ public class ConfigFetchers {
     }
   }
 
-  public static StandardDestination getStandardDestination(
-      ConfigPersistence configPersistence, UUID destinationId) {
+  public static StandardDestination getStandardDestination(ConfigPersistence configPersistence,
+                                                           UUID destinationId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.STANDARD_DESTINATION,
@@ -160,8 +157,7 @@ public class ConfigFetchers {
     }
   }
 
-  public static Set<StandardDestination> getStandardDestinations(
-      ConfigPersistence configPersistence) {
+  public static Set<StandardDestination> getStandardDestinations(ConfigPersistence configPersistence) {
     try {
       return configPersistence.getConfigs(
           PersistenceConfigType.STANDARD_DESTINATION, StandardDestination.class);
@@ -170,8 +166,8 @@ public class ConfigFetchers {
     }
   }
 
-  public static DestinationConnectionSpecification getDestinationConnectionSpecification(
-      ConfigPersistence configPersistence, UUID destinationSpecificationId) {
+  public static DestinationConnectionSpecification getDestinationConnectionSpecification(ConfigPersistence configPersistence,
+                                                                                         UUID destinationSpecificationId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
@@ -185,8 +181,7 @@ public class ConfigFetchers {
     }
   }
 
-  public static Set<DestinationConnectionSpecification> getDestinationConnectionSpecifications(
-      ConfigPersistence configPersistence) {
+  public static Set<DestinationConnectionSpecification> getDestinationConnectionSpecifications(ConfigPersistence configPersistence) {
     try {
       return configPersistence.getConfigs(
           PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
@@ -196,8 +191,8 @@ public class ConfigFetchers {
     }
   }
 
-  public static DestinationConnectionImplementation getDestinationConnectionImplementation(
-      ConfigPersistence configPersistence, UUID destinationImplementationId) {
+  public static DestinationConnectionImplementation getDestinationConnectionImplementation(ConfigPersistence configPersistence,
+                                                                                           UUID destinationImplementationId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
@@ -211,8 +206,7 @@ public class ConfigFetchers {
     }
   }
 
-  public static Set<DestinationConnectionImplementation> getDestinationConnectionImplementations(
-      ConfigPersistence configPersistence) {
+  public static Set<DestinationConnectionImplementation> getDestinationConnectionImplementations(ConfigPersistence configPersistence) {
     try {
       return configPersistence.getConfigs(
           PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
@@ -222,8 +216,8 @@ public class ConfigFetchers {
     }
   }
 
-  public static StandardSync getStandardSync(
-      ConfigPersistence configPersistence, UUID connectionId) {
+  public static StandardSync getStandardSync(ConfigPersistence configPersistence,
+                                             UUID connectionId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
@@ -242,8 +236,8 @@ public class ConfigFetchers {
     }
   }
 
-  public static StandardSyncSchedule getStandardSyncSchedule(
-      ConfigPersistence configPersistence, UUID connectionId) {
+  public static StandardSyncSchedule getStandardSyncSchedule(ConfigPersistence configPersistence,
+                                                             UUID connectionId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
@@ -256,8 +250,9 @@ public class ConfigFetchers {
     }
   }
 
-  private static KnownException getConfigNotFoundException(
-      Throwable e, String configName, UUID id) {
+  private static KnownException getConfigNotFoundException(Throwable e,
+                                                           String configName,
+                                                           UUID id) {
     return new KnownException(
         422, String.format("Could not find sync configuration for %s: %s.", configName, id), e);
   }
@@ -270,4 +265,5 @@ public class ConfigFetchers {
             e.getMessage()),
         e);
   }
+
 }

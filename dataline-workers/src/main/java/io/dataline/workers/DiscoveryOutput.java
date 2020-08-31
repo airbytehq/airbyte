@@ -27,6 +27,7 @@ package io.dataline.workers;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class DiscoveryOutput {
+
   // TODO line this up with conduit config type
   private final String catalog;
 
@@ -42,4 +43,5 @@ public class DiscoveryOutput {
   public String toString() {
     return new ToStringBuilder(this).append(catalog).toString();
   }
+
 }

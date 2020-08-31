@@ -44,6 +44,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SourcesHandlerTest {
+
   private ConfigPersistence configPersistence;
   private StandardSource source;
   private SourcesHandler sourceHandler;
@@ -102,10 +103,10 @@ class SourcesHandlerTest {
   @Test
   void testGetSource() throws JsonValidationException, ConfigNotFoundException {
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_SOURCE,
-            source.getSourceId().toString(),
-            StandardSource.class))
-        .thenReturn(source);
+        PersistenceConfigType.STANDARD_SOURCE,
+        source.getSourceId().toString(),
+        StandardSource.class))
+            .thenReturn(source);
 
     SourceRead expectedSourceRead = new SourceRead();
     expectedSourceRead.setSourceId(source.getSourceId());
@@ -118,4 +119,5 @@ class SourcesHandlerTest {
 
     assertEquals(expectedSourceRead, actualSourceRead);
   }
+
 }

@@ -82,4 +82,5 @@ public class Jsons {
   public static <T> JsonNode jsonNode(final T object) {
     return OBJECT_MAPPER.valueToTree(object);
   }
+
 }

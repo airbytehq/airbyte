@@ -33,8 +33,8 @@ import java.util.UUID;
 
 public class SourceImplementationHelpers {
 
-  public static SourceConnectionImplementation generateSourceImplementation(
-      UUID sourceSpecificationId) throws IOException {
+  public static SourceConnectionImplementation generateSourceImplementation(UUID sourceSpecificationId)
+      throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
 
@@ -56,4 +56,5 @@ public class SourceImplementationHelpers {
         Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
     return Files.readString(path);
   }
+
 }

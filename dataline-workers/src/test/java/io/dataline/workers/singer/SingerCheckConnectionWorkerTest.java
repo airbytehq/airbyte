@@ -46,6 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
+
   private PostgreSQLContainer db;
 
   @BeforeAll
@@ -132,4 +133,5 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     // TODO Once log file locations are accessible externally, also verify the correct error message
     // in the logs
   }
+
 }

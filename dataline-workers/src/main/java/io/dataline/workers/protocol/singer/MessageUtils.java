@@ -39,8 +39,9 @@ public class MessageUtils {
   private static final DateTimeFormatter SINGER_DATETIME_FORMATTER =
       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.of("UTC"));
 
-  public static SingerMessage createRecordMessage(
-      String tableName, JsonNode record, Instant timeExtracted) {
+  public static SingerMessage createRecordMessage(String tableName,
+                                                  JsonNode record,
+                                                  Instant timeExtracted) {
     final SingerMessage singerMessage = new SingerMessage();
     singerMessage.setType(SingerMessage.Type.RECORD);
     singerMessage.setRecord(Jsons.serialize(record));
@@ -60,4 +61,5 @@ public class MessageUtils {
   public static SingerMessage createRecordMessage(String tableName, Map<String, String> record) {
     return createRecordMessage(tableName, Jsons.jsonNode(record), null);
   }
+
 }

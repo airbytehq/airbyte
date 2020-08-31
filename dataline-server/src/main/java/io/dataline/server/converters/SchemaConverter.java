@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class SchemaConverter {
+
   public static Schema toPersistenceSchema(SourceSchema api) {
     final List<Table> persistenceTables =
         api.getTables().stream()
@@ -104,4 +105,5 @@ public class SchemaConverter {
   public static io.dataline.api.model.DataType toApiDataType(DataType persistenceDataType) {
     return Enums.convertTo(persistenceDataType, io.dataline.api.model.DataType.class);
   }
+
 }

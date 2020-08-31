@@ -92,16 +92,16 @@ class ConnectionsHandlerTest {
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_SYNC,
-            standardSync.getConnectionId().toString(),
-            StandardSync.class))
-        .thenReturn(standardSync);
+        PersistenceConfigType.STANDARD_SYNC,
+        standardSync.getConnectionId().toString(),
+        StandardSync.class))
+            .thenReturn(standardSync);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
-            standardSyncSchedule.getConnectionId().toString(),
-            StandardSyncSchedule.class))
-        .thenReturn(standardSyncSchedule);
+        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+        standardSyncSchedule.getConnectionId().toString(),
+        StandardSyncSchedule.class))
+            .thenReturn(standardSyncSchedule);
 
     final ConnectionCreate connectionCreate = new ConnectionCreate();
     connectionCreate.setSourceImplementationId(standardSync.getSourceImplementationId());
@@ -109,7 +109,7 @@ class ConnectionsHandlerTest {
     connectionCreate.setName("presto to hudi");
     connectionCreate.setStatus(ConnectionStatus.ACTIVE);
     // todo (cgardens) - the codegen auto-nests enums as subclasses. this won't work. we expect
-    //   these enums to be reusable in create, update, read.
+    // these enums to be reusable in create, update, read.
     connectionCreate.setSyncMode(ConnectionCreate.SyncModeEnum.APPEND);
     connectionCreate.setSchedule(generateBasicSchedule());
     connectionCreate.setSyncSchema(generateBasicApiSchema());
@@ -167,18 +167,18 @@ class ConnectionsHandlerTest {
     updatedPersistenceSchedule.setManual(true);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_SYNC,
-            standardSync.getConnectionId().toString(),
-            StandardSync.class))
-        .thenReturn(standardSync)
-        .thenReturn(updatedStandardSync);
+        PersistenceConfigType.STANDARD_SYNC,
+        standardSync.getConnectionId().toString(),
+        StandardSync.class))
+            .thenReturn(standardSync)
+            .thenReturn(updatedStandardSync);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
-            standardSyncSchedule.getConnectionId().toString(),
-            StandardSyncSchedule.class))
-        .thenReturn(standardSyncSchedule)
-        .thenReturn(updatedPersistenceSchedule);
+        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+        standardSyncSchedule.getConnectionId().toString(),
+        StandardSyncSchedule.class))
+            .thenReturn(standardSyncSchedule)
+            .thenReturn(updatedPersistenceSchedule);
 
     final ConnectionRead actualConnectionRead =
         connectionsHandler.updateConnection(connectionUpdate);
@@ -211,16 +211,16 @@ class ConnectionsHandlerTest {
   @Test
   void testGetConnection() throws JsonValidationException, ConfigNotFoundException {
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_SYNC,
-            standardSync.getConnectionId().toString(),
-            StandardSync.class))
-        .thenReturn(standardSync);
+        PersistenceConfigType.STANDARD_SYNC,
+        standardSync.getConnectionId().toString(),
+        StandardSync.class))
+            .thenReturn(standardSync);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
-            standardSync.getConnectionId().toString(),
-            StandardSyncSchedule.class))
-        .thenReturn(standardSyncSchedule);
+        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+        standardSync.getConnectionId().toString(),
+        StandardSyncSchedule.class))
+            .thenReturn(standardSyncSchedule);
 
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(standardSync.getConnectionId());
@@ -239,17 +239,17 @@ class ConnectionsHandlerTest {
     // mock get source connection impl (used to check that connection is associated with given
     // workspace)
     when(configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-            sourceImplementation.getSourceImplementationId().toString(),
-            SourceConnectionImplementation.class))
-        .thenReturn(sourceImplementation);
+        PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+        sourceImplementation.getSourceImplementationId().toString(),
+        SourceConnectionImplementation.class))
+            .thenReturn(sourceImplementation);
 
     // mock get schedule for the now verified connection
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
-            standardSync.getConnectionId().toString(),
-            StandardSyncSchedule.class))
-        .thenReturn(standardSyncSchedule);
+        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+        standardSync.getConnectionId().toString(),
+        StandardSyncSchedule.class))
+            .thenReturn(standardSyncSchedule);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceImplementation.getWorkspaceId());
@@ -323,8 +323,9 @@ class ConnectionsHandlerTest {
     return connectionSchedule;
   }
 
-  private ConnectionRead generateExpectedConnectionRead(
-      UUID connectionId, UUID sourceImplementationId, UUID destinationImplementationId) {
+  private ConnectionRead generateExpectedConnectionRead(UUID connectionId,
+                                                        UUID sourceImplementationId,
+                                                        UUID destinationImplementationId) {
     final ConnectionRead expectedConnectionRead = new ConnectionRead();
     expectedConnectionRead.setConnectionId(connectionId);
     expectedConnectionRead.setSourceImplementationId(sourceImplementationId);
@@ -357,4 +358,5 @@ class ConnectionsHandlerTest {
 
     return standardSchedule;
   }
+
 }

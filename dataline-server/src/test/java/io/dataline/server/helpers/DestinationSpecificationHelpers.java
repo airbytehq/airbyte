@@ -49,4 +49,5 @@ public class DestinationSpecificationHelpers {
 
     return destinationConnectionSpecification;
   }
+
 }

@@ -71,4 +71,5 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
     final Path relativePath = workspaceRoot.relativize(jobRoot);
     return MOUNT_DESTINATION.resolve(relativePath);
   }
+
 }

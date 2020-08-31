@@ -64,4 +64,5 @@ public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintVi
     }
     return message.toString();
   }
+
 }

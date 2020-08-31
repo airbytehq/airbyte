@@ -142,4 +142,5 @@ class DefaultConfigPersistenceTest {
     }
     fail("expected to throw invalid json exception.");
   }
+
 }
