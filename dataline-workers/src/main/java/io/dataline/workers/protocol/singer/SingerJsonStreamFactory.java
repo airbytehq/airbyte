@@ -26,6 +26,7 @@ package io.dataline.workers.protocol.singer;
 
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
+import io.dataline.workers.StreamFactory;
 import java.io.BufferedReader;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * will still be parsed. If there are multiple SingerMessage records on the same line, only the
  * first will be parsed.
  */
-public class SingerJsonStreamFactory {
+public class SingerJsonStreamFactory implements StreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerJsonStreamFactory.class);
 
