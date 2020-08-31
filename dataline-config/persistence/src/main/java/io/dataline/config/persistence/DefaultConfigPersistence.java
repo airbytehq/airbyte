@@ -46,6 +46,7 @@ import org.apache.commons.io.FileUtils;
 
 // we force all interaction with disk storage to be effectively single threaded.
 public class DefaultConfigPersistence implements ConfigPersistence {
+
   private static final String CONFIG_PATH_IN_JAR = "/json";
   private static final String CONFIG_DIR = "schemas";
   private static final Path configFilesRoot = getConfigFiles();
@@ -98,16 +99,18 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getConfig(
-      PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz)
+  public <T> T getConfig(PersistenceConfigType persistenceConfigType,
+                         String configId,
+                         Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException {
     synchronized (lock) {
       return getConfigInternal(persistenceConfigType, configId, clazz);
     }
   }
 
-  private <T> T getConfigInternal(
-      PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz)
+  private <T> T getConfigInternal(PersistenceConfigType persistenceConfigType,
+                                  String configId,
+                                  Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException {
     // validate file with schema
     try {
@@ -139,8 +142,9 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void writeConfig(
-      PersistenceConfigType persistenceConfigType, String configId, T config)
+  public <T> void writeConfig(PersistenceConfigType persistenceConfigType,
+                              String configId,
+                              T config)
       throws JsonValidationException {
     synchronized (lock) {
       // validate config with schema
@@ -211,8 +215,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     return String.format("%s.json", id);
   }
 
-  private ConfigSchema standardConfigTypeToConfigSchema(
-      PersistenceConfigType persistenceConfigType) {
+  private ConfigSchema standardConfigTypeToConfigSchema(PersistenceConfigType persistenceConfigType) {
     switch (persistenceConfigType) {
       case STANDARD_WORKSPACE:
         return ConfigSchema.STANDARD_WORKSPACE;
@@ -259,13 +262,12 @@ public class DefaultConfigPersistence implements ConfigPersistence {
       throws ConfigNotFoundException {
     return getFile(persistenceConfigType, configId)
         .orElseThrow(
-            () ->
-                new ConfigNotFoundException(
-                    String.format(
-                        "config type: %s id: %s not found in path %s",
-                        persistenceConfigType,
-                        configId,
-                        getConfigPath(persistenceConfigType, configId))));
+            () -> new ConfigNotFoundException(
+                String.format(
+                    "config type: %s id: %s not found in path %s",
+                    persistenceConfigType,
+                    configId,
+                    getConfigPath(persistenceConfigType, configId))));
   }
 
   private void ensureDirectory(Path path) {
@@ -275,4 +277,5 @@ public class DefaultConfigPersistence implements ConfigPersistence {
       throw new RuntimeException(e);
     }
   }
+
 }

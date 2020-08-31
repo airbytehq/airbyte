@@ -73,4 +73,5 @@ public class TargetConsumerTest {
 
     verify(processMock).destroy();
   }
+
 }

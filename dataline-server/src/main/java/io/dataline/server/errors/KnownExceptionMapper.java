@@ -45,4 +45,5 @@ public class KnownExceptionMapper implements ExceptionMapper<KnownException> {
         .type("application/json")
         .build();
   }
+
 }

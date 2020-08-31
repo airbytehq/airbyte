@@ -65,4 +65,5 @@ public class SingerMessageTracker implements Consumer<SingerMessage> {
   public Optional<State> getOutputState() {
     return Optional.ofNullable(outputState.get());
   }
+
 }

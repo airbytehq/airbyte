@@ -33,9 +33,10 @@ import org.jooq.Record;
 import org.jooq.Result;
 
 /*
-The server UUID identifies a specific database installation of Dataline for analytics purposes.
+ * The server UUID identifies a specific database installation of Dataline for analytics purposes.
  */
 public class ServerUuid {
+
   public static Optional<String> get(BasicDataSource connectionPool) throws SQLException {
     return DatabaseHelper.query(
         connectionPool,
@@ -51,4 +52,5 @@ public class ServerUuid {
           }
         });
   }
+
 }

@@ -27,6 +27,7 @@ package io.dataline.integrations;
 import java.util.UUID;
 
 public enum Integrations {
+
   POSTGRES_TAP(
       UUID.fromString("2168516a-5c9a-4582-90dc-5e3a01e3f607"),
       new IntegrationMapping("dataline/integration-singer-postgres-source")),
@@ -38,7 +39,7 @@ public enum Integrations {
   private final IntegrationMapping integrationMapping;
 
   // todo (cgardens) - turn this into a map if we have enough integrations that iterating through
-  //   the enum becomes expensive.
+  // the enum becomes expensive.
   public static Integrations findBySpecId(UUID specId) {
     for (Integrations value : values()) {
       if (value.getSpecId().equals(specId)) {
@@ -70,6 +71,7 @@ public enum Integrations {
   }
 
   public static class IntegrationMapping {
+
     private final String checkConnection;
     private final String discoverSchema;
     private final String sync;
@@ -95,5 +97,7 @@ public enum Integrations {
     public String getSync() {
       return sync;
     }
+
   }
+
 }

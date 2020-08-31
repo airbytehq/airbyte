@@ -82,8 +82,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public long createDestinationCheckConnectionJob(
-      DestinationConnectionImplementation destinationImplementation) throws IOException {
+  public long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation)
+      throws IOException {
     final String scope =
         ScopeHelper.createScope(
             JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION,
@@ -127,10 +127,9 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public long createSyncJob(
-      SourceConnectionImplementation sourceImplementation,
-      DestinationConnectionImplementation destinationImplementation,
-      StandardSync standardSync)
+  public long createSyncJob(SourceConnectionImplementation sourceImplementation,
+                            DestinationConnectionImplementation destinationImplementation,
+                            StandardSync standardSync)
       throws IOException {
     final UUID connectionId = standardSync.getConnectionId();
 
@@ -171,18 +170,17 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     try {
       record =
           DatabaseHelper.query(
-                  connectionPool,
-                  ctx ->
-                      ctx.fetch(
-                          "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?) RETURNING id",
-                          scope,
-                          now,
-                          now,
-                          JobStatus.PENDING.toString().toLowerCase(),
-                          configJson,
-                          null,
-                          JobLogs.getLogDirectory(scope),
-                          JobLogs.getLogDirectory(scope)))
+              connectionPool,
+              ctx -> ctx.fetch(
+                  "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?) RETURNING id",
+                  scope,
+                  now,
+                  now,
+                  JobStatus.PENDING.toString().toLowerCase(),
+                  configJson,
+                  null,
+                  JobLogs.getLogDirectory(scope),
+                  JobLogs.getLogDirectory(scope)))
               .stream()
               .findFirst()
               .orElseThrow(() -> new RuntimeException("This should not happen"));
@@ -218,10 +216,9 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       String scope = ScopeHelper.createScope(configType, configId);
       return DatabaseHelper.query(
           connectionPool,
-          ctx ->
-              ctx.fetch("SELECT * FROM jobs WHERE scope = ?", scope).stream()
-                  .map(DefaultSchedulerPersistence::getJobFromRecord)
-                  .collect(Collectors.toList()));
+          ctx -> ctx.fetch("SELECT * FROM jobs WHERE scope = ?", scope).stream()
+              .map(DefaultSchedulerPersistence::getJobFromRecord)
+              .collect(Collectors.toList()));
     } catch (SQLException e) {
       throw new IOException(e);
     }
@@ -252,4 +249,5 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private static long getEpoch(Record record, String fieldName) {
     return record.getValue(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
   }
+
 }

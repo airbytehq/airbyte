@@ -27,6 +27,7 @@ package io.dataline.config.persistence;
 import java.util.Set;
 
 public interface ConfigPersistence {
+
   <T> T getConfig(PersistenceConfigType persistenceConfigType, String configId, Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException;
 
@@ -35,4 +36,5 @@ public interface ConfigPersistence {
 
   <T> void writeConfig(PersistenceConfigType persistenceConfigType, String configId, T config)
       throws JsonValidationException;
+
 }

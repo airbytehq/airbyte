@@ -45,4 +45,5 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
         .type("application/json")
         .build();
   }
+
 }

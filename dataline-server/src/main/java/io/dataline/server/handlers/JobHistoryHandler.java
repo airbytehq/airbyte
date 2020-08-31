@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.input.ReversedLinesFileReader;
 
 public class JobHistoryHandler {
+
   private static final int LOG_TAIL_SIZE = 10;
   private final SchedulerPersistence schedulerPersistence;
 
@@ -131,4 +132,5 @@ public class JobHistoryHandler {
 
     return jobRead;
   }
+
 }

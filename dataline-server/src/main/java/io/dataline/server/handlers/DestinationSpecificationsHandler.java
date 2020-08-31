@@ -39,33 +39,29 @@ public class DestinationSpecificationsHandler {
     this.configPersistence = configPersistence;
   }
 
-  public DestinationSpecificationRead getDestinationSpecification(
-      DestinationIdRequestBody destinationIdRequestBody) {
+  public DestinationSpecificationRead getDestinationSpecification(DestinationIdRequestBody destinationIdRequestBody) {
     final DestinationConnectionSpecification destinationConnection;
     // todo (cgardens) - this is a shortcoming of rolling our own disk storage. since we are not
-    //   querying on a the primary key, we have to list all of the specification objects and then
-    //   filter.
+    // querying on a the primary key, we have to list all of the specification objects and then
+    // filter.
     destinationConnection =
         ConfigFetchers.getDestinationConnectionSpecifications(configPersistence).stream()
             .filter(
-                destinationSpecification ->
-                    destinationSpecification
-                        .getDestinationId()
-                        .equals(destinationIdRequestBody.getDestinationId()))
+                destinationSpecification -> destinationSpecification
+                    .getDestinationId()
+                    .equals(destinationIdRequestBody.getDestinationId()))
             .findFirst()
             .orElseThrow(
-                () ->
-                    new KnownException(
-                        404,
-                        String.format(
-                            "Could not find a destination specification for destination: %s",
-                            destinationIdRequestBody.getDestinationId())));
+                () -> new KnownException(
+                    404,
+                    String.format(
+                        "Could not find a destination specification for destination: %s",
+                        destinationIdRequestBody.getDestinationId())));
 
     return toDestinationSpecificationRead(destinationConnection);
   }
 
-  private static DestinationSpecificationRead toDestinationSpecificationRead(
-      DestinationConnectionSpecification destinationConnectionSpecification) {
+  private static DestinationSpecificationRead toDestinationSpecificationRead(DestinationConnectionSpecification destinationConnectionSpecification) {
     final DestinationSpecificationRead destinationSpecificationRead =
         new DestinationSpecificationRead();
     destinationSpecificationRead.setDestinationId(
@@ -77,4 +73,5 @@ public class DestinationSpecificationsHandler {
 
     return destinationSpecificationRead;
   }
+
 }

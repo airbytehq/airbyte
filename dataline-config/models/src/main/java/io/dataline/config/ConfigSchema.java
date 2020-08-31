@@ -25,6 +25,7 @@
 package io.dataline.config;
 
 public enum ConfigSchema {
+
   // workspace
   STANDARD_WORKSPACE("StandardWorkspace.json"),
 
@@ -63,4 +64,5 @@ public enum ConfigSchema {
   public static String getSchemaDirectory() {
     return "json/";
   }
+
 }

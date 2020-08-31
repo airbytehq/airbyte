@@ -69,8 +69,11 @@ public class PostgreSQLContainerTestHelper {
         String.valueOf(db.getFirstMappedPort()));
   }
 
-  public static String getSingerTapConfig(
-      String user, String password, String host, String dbname, String port) {
+  public static String getSingerTapConfig(String user,
+                                          String password,
+                                          String host,
+                                          String dbname,
+                                          String port) {
     Map<String, String> creds = new HashMap<>();
     creds.put("user", user);
     creds.put("password", password);
@@ -93,8 +96,12 @@ public class PostgreSQLContainerTestHelper {
   }
 
   // TODO this will be moved into Taps/Targets
-  public static String getSingerTargetConfig(
-      String user, String password, String host, String dbname, String port, String schema) {
+  public static String getSingerTargetConfig(String user,
+                                             String password,
+                                             String host,
+                                             String dbname,
+                                             String port,
+                                             String schema) {
     Map<String, String> creds = new HashMap<>();
     creds.put("postgres_username", user);
     creds.put("postgres_schema", schema);
@@ -105,4 +112,5 @@ public class PostgreSQLContainerTestHelper {
 
     return Jsons.serialize(creds);
   }
+
 }
