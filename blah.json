@@ -1,0 +1,1 @@
+{ "sourceImplementationId":"68c1e91f-2d8b-4cdf-a87b-33124c1dc34f", "destinationImplementationId": "97b8d853-d33c-4513-afb4-6a421157a0ee", "syncMode": "full_refresh", "status": "active", "syncSchema": { "tables": [ { name: "tableName", "columns": [ { "name": "columnName", "dataType": "boolean" } ] } ] } }

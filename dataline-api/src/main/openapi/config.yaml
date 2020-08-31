@@ -969,7 +969,7 @@ components:
       - sourceImplementationId
       - destinationImplementationId
       - syncMode
-      - schema
+      - syncSchema
       - status
       properties:
         name:
