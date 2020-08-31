@@ -1100,11 +1100,14 @@ components:
       required:
       - name
       - dataType
+      - selected
       properties:
         name:
           type: string
         dataType:
           $ref: "#/components/schemas/DataType"
+        selected:
+          type: boolean
     DataType:
       type: string
       enum:
