@@ -30,10 +30,16 @@ import static org.junit.jupiter.api.Assertions.fail;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.json.Jsons;
+import io.dataline.config.Column;
+import io.dataline.config.DataType;
+import io.dataline.config.Schema;
 import io.dataline.config.StandardSource;
+import io.dataline.config.StandardSync;
+import io.dataline.config.Table;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.io.FileUtils;
@@ -125,6 +131,49 @@ class DefaultConfigPersistenceTest {
     // check reading to json
     final JsonNode actualJson = Jsons.deserialize(Files.readString(expectedPath));
     assertEquals(expectedJson, actualJson);
+  }
+
+  @Test
+  void writeConfigWithJsonSchemaRef() throws JsonValidationException, IOException {
+    final Column column = new Column();
+    column.setName("columnName");
+    column.setDataType(DataType.BOOLEAN);
+    column.setSelected(true);
+
+    final Table table = new Table();
+    table.setName("tableName");
+    table.setColumns(Collections.singletonList(column));
+
+    final Schema schema = new Schema();
+    schema.setTables(Collections.singletonList(table));
+
+    final StandardSync standardSync = new StandardSync();
+    standardSync.setName("sync");
+    standardSync.setConnectionId(UUID.randomUUID());
+    standardSync.setSourceImplementationId(UUID.randomUUID());
+    standardSync.setDestinationImplementationId(UUID.randomUUID());
+    standardSync.setSyncMode(StandardSync.SyncMode.FULL_REFRESH);
+    standardSync.setStatus(StandardSync.Status.ACTIVE);
+    standardSync.setSchema(schema);
+
+    configPersistence.writeConfig(
+        PersistenceConfigType.STANDARD_SYNC,
+        standardSync.getConnectionId().toString(),
+        standardSync);
+
+    final Path expectedPath =
+        rootPath
+            .resolve("STANDARD_SYNC")
+            .resolve(standardSync.getConnectionId().toString() + ".json");
+
+    // check reading to pojo
+    final StandardSync actualSync =
+        Jsons.deserialize(Files.readString(expectedPath), StandardSync.class);
+    assertEquals(standardSync, actualSync);
+
+    // check reading to json
+    final JsonNode actualJson = Jsons.deserialize(Files.readString(expectedPath));
+    assertEquals(Jsons.jsonNode(actualSync), actualJson);
   }
 
   @Test
