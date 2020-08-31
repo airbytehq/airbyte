@@ -10,11 +10,7 @@
     "type": {
       "description": "record, schema, and state message: used to determine record type. used in all singer messages.",
       "type": "string",
-      "enum": [
-        "RECORD",
-        "SCHEMA",
-        "STATE"
-      ]
+      "enum": ["RECORD", "SCHEMA", "STATE"]
     },
     "stream": {
       "description": "record AND schema message: name of stream",

@@ -5,7 +5,6 @@ plugins {
 dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
 
-    implementation project(':dataline-commons')
     implementation project(':dataline-config')
     implementation project(':dataline-config-persistence')
     implementation project(':dataline-db')
@@ -19,7 +18,7 @@ application {
 
 run {
     // default for running on local machine.
-    environment "CONFIG_PERSISTENCE_ROOT", new File(".").absolutePath + "data/config"
+    environment "CONFIG_ROOT", new File(".").absolutePath + "data/config"
     environment "VERSION", "0.1.0"
     environment "DATABASE_USER", "postgres"
     environment "DATABASE_PASSWORD", ""

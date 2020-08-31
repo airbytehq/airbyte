@@ -5,9 +5,7 @@
   "description": "the schema of the singer catalog",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "streams"
-  ],
+  "required": ["streams"],
   "properties": {
     "streams": {
       "type": "array",
@@ -20,11 +18,7 @@
     "SingerStream": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "tap_stream_id",
-        "stream",
-        "schema"
-      ],
+      "required": ["tap_stream_id", "stream", "schema"],
       "properties": {
         "stream": {
           "type": "string",
@@ -52,9 +46,7 @@
     "SingerTableSchema": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "properties"
-      ],
+      "required": ["properties"],
       "description": "The JSON schema for the stream. This struct is weird because it's essentially modeling the properties field of a jsonschema object.",
       "properties": {
         "type": {
@@ -77,9 +69,7 @@
     "SingerColumn": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type"
-      ],
+      "required": ["type"],
       "properties": {
         "type": {
           "$ref": "SingerCatalog.json#/definitions/SingerType"
@@ -105,10 +95,7 @@
     "SingerMetadata": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "metadata",
-        "breadcrumb"
-      ],
+      "required": ["metadata", "breadcrumb"],
       "properties": {
         "metadata": {
           "$ref": "SingerCatalog.json#/definitions/SingerMetadataChild"
@@ -133,11 +120,7 @@
         "replication-method": {
           "description": "Non-Discoverable: Either FULL_TABLE, INCREMENTAL, or LOG_BASED. The replication method to use for a stream.",
           "type": "string",
-          "enum": [
-            "FULL_TABLE",
-            "INCREMENTAL",
-            "LOG_BASED"
-          ]
+          "enum": ["FULL_TABLE", "INCREMENTAL", "LOG_BASED"]
         },
         "replication-key": {
           "description": "Non-Discoverable: The name of a property in the source to use as a \"bookmark\". For example, this will often be an \"updated-at\" field or an auto-incrementing primary key (requires replication-method",
@@ -156,11 +139,7 @@
         "inclusion": {
           "description": "Discoverable: available means the field is available for selection, and the tap will only emit values for that field if it is marked with \"selected\": true. automatic means that the tap will emit values for the field. unsupported means that the field exists in the source data but the tap is unable to provide it.",
           "type": "string",
-          "enum": [
-            "available",
-            "automatic",
-            "unsupported"
-          ]
+          "enum": ["available", "automatic", "unsupported"]
         },
         "selected-by-default": {
           "description": "Discoverable: Indicates if a node in the schema should be replicated if a user has not expressed any opinion on whether or not to replicate it.",
@@ -209,12 +188,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": [
-          "string",
-          "integer",
-          "null",
-          "boolean"
-        ]
+        "enum": ["string", "integer", "null", "boolean"]
       }
     }
   }

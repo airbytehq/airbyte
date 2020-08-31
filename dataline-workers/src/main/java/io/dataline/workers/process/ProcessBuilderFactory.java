@@ -22,14 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer.postgres_tap;
+package io.dataline.workers.process;
 
-import io.dataline.integrations.Integrations;
-import io.dataline.workers.singer.SingerCheckConnectionWorker;
+import java.nio.file.Path;
 
-public class SingerPostgresTapCheckConnectionWorker extends SingerCheckConnectionWorker {
+public interface ProcessBuilderFactory {
 
-  public SingerPostgresTapCheckConnectionWorker() {
-    super(Integrations.POSTGRES_TAP.getCheckConnectionImage());
-  }
+  ProcessBuilder create(Path jobPath, String imageName, String... args);
 }

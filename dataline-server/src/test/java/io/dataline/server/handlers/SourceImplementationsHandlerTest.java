@@ -29,9 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
 import io.dataline.api.model.SourceImplementationCreate;
@@ -40,6 +38,7 @@ import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.api.model.SourceImplementationReadList;
 import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.SourceConnectionSpecification;
 import io.dataline.config.persistence.ConfigNotFoundException;
@@ -49,6 +48,7 @@ import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.helpers.SourceImplementationHelpers;
 import io.dataline.server.helpers.SourceSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
+import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,7 +64,7 @@ class SourceImplementationsHandlerTest {
 
   @SuppressWarnings("unchecked")
   @BeforeEach
-  void setUp() {
+  void setUp() throws IOException {
     configPersistence = mock(ConfigPersistence.class);
     validator = mock(IntegrationSchemaValidation.class);
     uuidGenerator = mock(Supplier.class);
@@ -79,7 +79,8 @@ class SourceImplementationsHandlerTest {
   }
 
   @Test
-  void testCreateSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
+  void testCreateSourceImplementation()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get())
         .thenReturn(sourceConnectionImplementation.getSourceImplementationId());
 
@@ -126,12 +127,7 @@ class SourceImplementationsHandlerTest {
   @Test
   void testUpdateSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
     final Object configuration = sourceConnectionImplementation.getConfiguration();
-    final JsonNode newConfiguration;
-    try {
-      newConfiguration = new ObjectMapper().readTree(configuration.toString());
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    final JsonNode newConfiguration = Jsons.deserialize(configuration.toString());
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
@@ -236,12 +232,7 @@ class SourceImplementationsHandlerTest {
   @Test
   void testDeleteSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
     final Object configuration = sourceConnectionImplementation.getConfiguration();
-    final JsonNode newConfiguration;
-    try {
-      newConfiguration = new ObjectMapper().readTree(configuration.toString());
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    final JsonNode newConfiguration = Jsons.deserialize(configuration.toString());
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =

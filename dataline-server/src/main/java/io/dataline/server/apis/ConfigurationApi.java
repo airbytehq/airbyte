@@ -73,11 +73,11 @@ import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
 import io.dataline.server.handlers.WorkspacesHandler;
 import io.dataline.server.validation.IntegrationSchemaValidation;
+import java.nio.file.Path;
 import javax.validation.Valid;
-import javax.ws.rs.Path;
 import org.apache.commons.dbcp2.BasicDataSource;
 
-@Path("/v1")
+@javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.dataline.api.V1Api {
   private final WorkspacesHandler workspacesHandler;
   private final SourcesHandler sourcesHandler;
@@ -90,7 +90,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final SchedulerHandler schedulerHandler;
   private final JobHistoryHandler jobHistoryHandler;
 
-  public ConfigurationApi(String dbRoot, BasicDataSource connectionPool) {
+  public ConfigurationApi(final Path dbRoot, BasicDataSource connectionPool) {
     ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot);
     final IntegrationSchemaValidation integrationSchemaValidation =
         new IntegrationSchemaValidation(configPersistence);

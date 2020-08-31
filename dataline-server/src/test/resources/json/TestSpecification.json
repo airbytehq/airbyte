@@ -5,10 +5,7 @@
     "title": "TestSpecification",
     "description": "information output by the connection.",
     "type": "object",
-    "required": [
-      "apiKey",
-      "hostname"
-    ],
+    "required": ["apiKey", "hostname"],
     "additionalProperties": false,
     "properties": {
       "apiKey": {

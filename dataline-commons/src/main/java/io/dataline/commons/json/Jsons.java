@@ -22,60 +22,56 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocol;
+package io.dataline.commons.json;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.AbstractIterator;
-import io.dataline.config.SingerMessage;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Optional;
 
-public class SingerJsonIterator extends AbstractIterator<SingerMessage> {
-  private final ObjectMapper objectMapper;
-  private final JsonParser jsonParser;
-  private boolean hasReadFirstToken = false;
+public class Jsons {
 
-  // https://cassiomolin.com/2019/08/19/combining-jackson-streaming-api-with-objectmapper-for-parsing-json/
-  public SingerJsonIterator(InputStream inputStream) {
-    this.objectMapper = new ObjectMapper();
+  // Object Mapper is thread-safe
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+  public static <T> String serialize(T object) {
     try {
-      this.jsonParser = objectMapper.getFactory().createParser(inputStream);
+      return OBJECT_MAPPER.writeValueAsString(object);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static String serializeJsonNode(final JsonNode jsonNode) {
+    return jsonNode.toString();
+  }
+
+  public static <T> T deserialize(final String jsonString, final Class<T> klass) {
+    try {
+      return OBJECT_MAPPER.readValue(jsonString, klass);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  @Override
-  protected SingerMessage computeNext() {
-    if (!hasReadFirstToken) {
-      checkInputStreamIsJson();
-      hasReadFirstToken = true;
-    }
+  public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
     try {
-      if (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-        return endOfData();
-      }
+      return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      return Optional.empty();
     }
+  }
 
+  public static JsonNode deserialize(final String jsonString) {
     try {
-      return objectMapper.readValue(jsonParser, SingerMessage.class);
+      return OBJECT_MAPPER.readTree(jsonString);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void checkInputStreamIsJson() {
-    try {
-      // Check the first token
-      if (jsonParser.nextToken() != JsonToken.START_ARRAY) {
-        throw new IllegalStateException("Expected content to be an array");
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public static <T> JsonNode jsonNode(final T object) {
+    return OBJECT_MAPPER.valueToTree(object);
   }
 }

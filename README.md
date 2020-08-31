@@ -1,20 +1,15 @@
 # Getting Started
-<p align="center">
-  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI">
-  <img alt="License" src="https://img.shields.io/github/license/datalineio/dataline" />
-</p>
 
+ ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI) ![License](https://img.shields.io/github/license/datalineio/dataline)
 
-![](docs/.gitbook/assets/dataline_light-background.svg)
+![](docs/.gitbook/assets/dataline_light-background%20%281%29.svg)
 
 **Data integration made simple, secure and reliable**  
 The new open-source standard to sync data from applications & databases to warehouses.
 
- [![](https://dataline.io/wp-content/uploads/2020/08/Deploy-with-Docker.png)](https://docs.dataline.io/deployment/deploying-dataline)
+[![](https://dataline.io/wp-content/uploads/2020/08/Deploy-with-Docker.png)](https://docs.dataline.io/deployment/deploying-dataline)
 
 ![](https://dataline.io/wp-content/uploads/2020/08/Sources_List.png)
-
-
 
 Dataline is on a mission to make data integration pipelines a commodity.
 
@@ -34,12 +29,6 @@ The new open-source standard for data integration engine that syncs data from ap
 ```bash
 docker-compose up
 ```
-
-```bash
-docker-compose up
-```
-
-Now go to [http://localhost:8000](http://localhost:8000)
 
 Now go to [http://localhost:8000](http://localhost:8000)
 

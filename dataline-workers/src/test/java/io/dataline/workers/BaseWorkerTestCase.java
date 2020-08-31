@@ -26,9 +26,10 @@ package io.dataline.workers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
-import java.io.File;
+import io.dataline.commons.json.Jsons;
+import io.dataline.workers.process.DockerProcessBuilderFactory;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -36,51 +37,38 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
-import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseWorkerTestCase {
   // TODO inject via env
-  protected Path workspaceDirectory;
+  protected Path workspaceRoot;
+  protected ProcessBuilderFactory pbf;
 
   @BeforeAll
   public void init() throws IOException {
-    FileUtils.forceMkdir(new File("/tmp/tests"));
-    workspaceDirectory = Files.createTempDirectory(Path.of("/tmp/tests"), "dataline");
-    System.out.println("Workspace directory: " + workspaceDirectory.toString());
+    final Path testsPath = Path.of("/tmp/tests");
+    Files.createDirectories(testsPath);
+    this.workspaceRoot = Files.createTempDirectory(testsPath, "dataline");
+    this.pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
+
+    System.out.println("Workspace directory: " + workspaceRoot.toString());
   }
 
-  protected Path createWorkspacePath(String jobId) {
-    final Path workspacePath = workspaceDirectory.resolve(jobId);
-    try {
-      FileUtils.forceMkdir(workspacePath.toFile());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    return workspacePath;
+  protected Path createJobRoot(String jobId) throws IOException {
+    final Path jobRoot = workspaceRoot.resolve(jobId);
+    return Files.createDirectories(jobRoot);
   }
 
-  protected String readResource(String name) {
+  protected String readResource(String name) throws IOException {
     URL resource = Resources.getResource(name);
-    try {
-      return Resources.toString(resource, Charset.defaultCharset());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    return Resources.toString(resource, Charset.defaultCharset());
   }
 
-  protected void assertJsonEquals(String s1, String s2) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    assertEquals(mapper.readTree(s1), mapper.readTree(s2));
+  protected <T> T readResource(final String name, final Class<T> klass) throws IOException {
+    return Jsons.deserialize(readResource(name), klass);
   }
 
-  protected <T> T getJsonAsTyped(String file, Class<T> clazz) {
-    final URL resource = Resources.getResource(file);
-    final ObjectMapper objectMapper = new ObjectMapper();
-    try {
-      return objectMapper.readValue(new File(resource.getFile()), clazz);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  protected void assertJsonEquals(final String s1, final String s2) {
+    assertEquals(Jsons.deserialize(s1), Jsons.deserialize(s2));
   }
 }

@@ -29,7 +29,7 @@ import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.integrations.Integrations;
@@ -43,7 +43,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -67,15 +66,15 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
         PostgreSQLContainerTestHelper.getSingerTapConfig(
             "user", "pass", "localhost", "postgres", "111111");
 
-    final Object o = new ObjectMapper().readValue(fakeDbCreds, Object.class);
+    final Object o = Jsons.deserialize(fakeDbCreds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
     standardCheckConnectionInput.setConnectionConfiguration(o);
 
     SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage());
+        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
     OutputAndStatus<StandardCheckConnectionOutput> run =
-        worker.run(standardCheckConnectionInput, createWorkspacePath(jobId));
+        worker.run(standardCheckConnectionInput, createJobRoot(jobId));
 
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
@@ -97,15 +96,15 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
             db.getFirstMappedPort() + "");
 
     SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage());
+        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
 
-    final Object o = new ObjectMapper().readValue(incorrectCreds, Object.class);
+    final Object o = Jsons.deserialize(incorrectCreds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
     standardCheckConnectionInput.setConnectionConfiguration(o);
 
     OutputAndStatus<StandardCheckConnectionOutput> run =
-        worker.run(standardCheckConnectionInput, createWorkspacePath(jobId));
+        worker.run(standardCheckConnectionInput, createJobRoot(jobId));
 
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
@@ -114,7 +113,6 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     // in the logs
   }
 
-  @Disabled
   @Test
   public void testSuccessfulConnection()
       throws IOException, InvalidCredentialsException, InvalidCatalogException {
@@ -122,15 +120,15 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     String creds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
-    final Object o = new ObjectMapper().readValue(creds, Object.class);
+    final Object o = Jsons.deserialize(creds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
     standardCheckConnectionInput.setConnectionConfiguration(o);
 
     SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage());
+        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
     OutputAndStatus<StandardCheckConnectionOutput> run =
-        worker.run(standardCheckConnectionInput, createWorkspacePath(jobId));
+        worker.run(standardCheckConnectionInput, createJobRoot(jobId));
 
     assertEquals(SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());

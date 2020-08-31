@@ -24,6 +24,8 @@
 
 package io.dataline.server;
 
+import io.dataline.config.Configs;
+import io.dataline.config.EnvConfigs;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
@@ -31,6 +33,7 @@ import io.dataline.server.errors.InvalidJsonExceptionMapper;
 import io.dataline.server.errors.InvalidJsonInputExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
 import io.dataline.server.errors.UncaughtExceptionMapper;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
@@ -46,12 +49,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ServerApp {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
-  private final String configPersistenceRoot;
 
-  public ServerApp(String configPersistenceRoot) {
+  private final Path configRoot;
 
-    this.configPersistenceRoot = configPersistenceRoot;
+  public ServerApp(final Path configRoot) {
+    this.configRoot = configRoot;
   }
 
   public void start() throws Exception {
@@ -61,7 +65,7 @@ public class ServerApp {
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    ConfigurationApiFactory.setConfigPersistenceRoot(configPersistenceRoot);
+    ConfigurationApiFactory.setConfigPersistenceRoot(configRoot);
     ConfigurationApiFactory.setDbConnectionPool(connectionPool);
 
     ResourceConfig rc =
@@ -110,10 +114,12 @@ public class ServerApp {
   }
 
   public static void main(String[] args) throws Exception {
-    final String configPersistenceRoot = System.getenv("CONFIG_PERSISTENCE_ROOT");
-    LOGGER.info("configPersistenceRoot = " + configPersistenceRoot);
+    final Configs configs = new EnvConfigs();
+
+    final Path configRoot = configs.getConfigRoot();
+    LOGGER.info("configRoot = " + configRoot);
 
     LOGGER.info("Starting server...");
-    new ServerApp(configPersistenceRoot).start();
+    new ServerApp(configRoot).start();
   }
 }

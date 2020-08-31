@@ -25,15 +25,18 @@
 package io.dataline.server.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SourceConnectionImplementation;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 public class SourceImplementationHelpers {
+
   public static SourceConnectionImplementation generateSourceImplementation(
-      UUID sourceSpecificationId) {
+      UUID sourceSpecificationId) throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
 
@@ -50,14 +53,9 @@ public class SourceImplementationHelpers {
     return sourceConnectionImplementation;
   }
 
-  public static JsonNode getTestImplementationJson() {
-    final File implementationFile =
-        new File("../dataline-server/src/test/resources/json/TestImplementation.json");
-
-    try {
-      return new ObjectMapper().readTree(implementationFile);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public static JsonNode getTestImplementationJson() throws IOException {
+    final Path path =
+        Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
+    return Jsons.deserialize(Files.readString(path));
   }
 }

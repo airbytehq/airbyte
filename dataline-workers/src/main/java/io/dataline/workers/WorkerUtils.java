@@ -24,8 +24,9 @@
 
 package io.dataline.workers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.config.StandardSyncInput;
+import io.dataline.config.StandardTapConfig;
+import io.dataline.config.StandardTargetConfig;
 import io.dataline.workers.singer.BaseSingerWorker;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -36,30 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WorkerUtils {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
-
-  public static Path writeObjectToJsonFileWorkspace(
-      Path workspaceRoot, String fileName, Object object) {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String inputString;
-    try {
-      inputString = objectMapper.writeValueAsString(object);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-    return writeFileToWorkspace(workspaceRoot, fileName, inputString);
-  }
-
-  public static <T> T readObjectFromJsonFileWorkspace(
-      Path workspaceRoot, String fileName, Class<T> clazz) {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String outputString = WorkerUtils.readFileFromWorkspace(workspaceRoot, fileName);
-    try {
-      return objectMapper.readValue(outputString, clazz);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   public static Path writeFileToWorkspace(Path workspaceRoot, String fileName, String contents) {
     try {
@@ -80,18 +59,50 @@ public class WorkerUtils {
     }
   }
 
-  public static void cancelProcess(Process workerProcess) {
-    if (workerProcess == null) {
+  public static void closeProcess(Process process) {
+    closeProcess(process, 1, TimeUnit.MINUTES);
+  }
+
+  public static void closeProcess(Process process, int duration, TimeUnit timeUnit) {
+    if (process == null) {
       return;
     }
     try {
-      workerProcess.destroy();
-      workerProcess.waitFor(10, TimeUnit.SECONDS);
-      if (workerProcess.isAlive()) {
-        workerProcess.destroyForcibly();
+      process.destroy();
+      process.waitFor(duration, timeUnit);
+      if (process.isAlive()) {
+        process.destroyForcibly();
       }
     } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling job.", e);
+      LOGGER.error("Exception when closing process.", e);
     }
+  }
+
+  public static void cancelProcess(Process process) {
+    closeProcess(process, 10, TimeUnit.SECONDS);
+  }
+
+  /**
+   * Translates a StandardSyncInput into a StandardTapConfig. StandardTapConfig is a subset of
+   * StandardSyncInput.
+   */
+  public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
+    final StandardTapConfig tapConfig = new StandardTapConfig();
+    tapConfig.setSourceConnectionImplementation(sync.getSourceConnectionImplementation());
+    tapConfig.setStandardSync(sync.getStandardSync());
+    tapConfig.setState(sync.getState());
+    return tapConfig;
+  }
+
+  /**
+   * Translates a StandardSyncInput into a StandardTargetConfig. StandardTargetConfig is a subset of
+   * StandardSyncInput.
+   */
+  public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
+    final StandardTargetConfig targetConfig = new StandardTargetConfig();
+    targetConfig.setDestinationConnectionImplementation(
+        sync.getDestinationConnectionImplementation());
+    targetConfig.setStandardSync(sync.getStandardSync());
+    return targetConfig;
   }
 }

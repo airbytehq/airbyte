@@ -28,8 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardSource;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,13 +41,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DefaultConfigPersistenceTest {
+
   private Path rootPath;
   private DefaultConfigPersistence configPersistence;
 
   @BeforeEach
   void setUp() throws IOException {
     rootPath = Files.createTempDirectory(DefaultConfigPersistenceTest.class.getName());
-    configPersistence = new DefaultConfigPersistence(rootPath.toString());
+    configPersistence = new DefaultConfigPersistence(rootPath);
   }
 
   private StandardSource generateStandardSource() {
@@ -61,13 +62,7 @@ class DefaultConfigPersistenceTest {
   }
 
   private JsonNode generateStandardSourceJson(UUID sourceId) {
-    ObjectMapper objectMapper = new ObjectMapper();
-
-    final ObjectNode expectedJson = objectMapper.createObjectNode();
-    expectedJson.put("sourceId", sourceId.toString());
-    expectedJson.put("name", "apache storm");
-
-    return expectedJson;
+    return Jsons.jsonNode(ImmutableMap.of("sourceId", sourceId.toString(), "name", "apache storm"));
   }
 
   @Test
@@ -79,8 +74,7 @@ class DefaultConfigPersistenceTest {
     final Path standardSourceDir = rootPath.resolve("STANDARD_SOURCE");
     FileUtils.forceMkdir(standardSourceDir.toFile());
     Path configPath = standardSourceDir.resolve(standardSource.getSourceId().toString() + ".json");
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.writeValue(configPath.toFile(), expectedJson);
+    Files.writeString(configPath, expectedJson.toString());
 
     final StandardSource actualSource =
         configPersistence.getConfig(
@@ -100,8 +94,7 @@ class DefaultConfigPersistenceTest {
     final Path standardSourceDir = rootPath.resolve("STANDARD_SOURCE");
     FileUtils.forceMkdir(standardSourceDir.toFile());
     Path configPath = standardSourceDir.resolve(standardSource.getSourceId().toString() + ".json");
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.writeValue(configPath.toFile(), expectedJson);
+    Files.writeString(configPath, expectedJson.toString());
 
     final Set<StandardSource> actualSource =
         configPersistence.getConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class);
@@ -110,9 +103,7 @@ class DefaultConfigPersistenceTest {
   }
 
   @Test
-  void writeConfig() throws IOException, JsonValidationException {
-    final ObjectMapper objectMapper = new ObjectMapper();
-
+  void writeConfig() throws JsonValidationException, IOException {
     StandardSource standardSource = generateStandardSource();
     JsonNode expectedJson = generateStandardSourceJson(standardSource.getSourceId());
 
@@ -128,11 +119,11 @@ class DefaultConfigPersistenceTest {
 
     // check reading to pojo
     final StandardSource actualSource =
-        objectMapper.readValue(expectedPath.toFile(), StandardSource.class);
+        Jsons.deserialize(Files.readString(expectedPath), StandardSource.class);
     assertEquals(standardSource, actualSource);
 
     // check reading to json
-    final JsonNode actualJson = objectMapper.readTree(expectedPath.toFile());
+    final JsonNode actualJson = Jsons.deserialize(Files.readString(expectedPath));
     assertEquals(expectedJson, actualJson);
   }
 
