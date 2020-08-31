@@ -117,7 +117,7 @@ const FormContent: React.FC<IProps> = ({
         const condition = specifications?.properties[item];
 
         return (
-          <FormItem>
+          <FormItem key={`form-field-${item}`}>
             <Field name={item}>
               {({ field }: FieldProps<string>) => (
                 <LabeledInput
