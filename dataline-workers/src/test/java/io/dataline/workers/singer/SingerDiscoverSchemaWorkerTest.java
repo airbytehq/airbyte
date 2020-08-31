@@ -64,10 +64,10 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
   public void testPostgresDiscovery() throws IOException, InvalidCredentialsException {
     final String jobId = "1";
     String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
-    final Object o = Jsons.deserialize(postgresCreds, Object.class);
+
     final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
-    input.setConnectionConfiguration(o);
-    System.out.println(input);
+    input.setConnectionConfigurationJson(postgresCreds);
+
     SingerDiscoverSchemaWorker worker =
         new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage(), pbf);
 
@@ -87,10 +87,8 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     final String jobId = "1";
     String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
-    final Object o = Jsons.deserialize(postgresCreds, Object.class);
-
     final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
-    input.setConnectionConfiguration(o);
+    input.setConnectionConfigurationJson(postgresCreds);
 
     SingerDiscoverSchemaWorker worker =
         new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage(), pbf);

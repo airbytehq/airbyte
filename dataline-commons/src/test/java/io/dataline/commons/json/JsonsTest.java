@@ -65,6 +65,15 @@ class JsonsTest {
   }
 
   @Test
+  void testDeserializeToJsonNode() {
+    Assertions.assertEquals("{\"str\":\"abc\"}", Jsons.deserialize("{\"str\":\"abc\"}").toString());
+
+    Assertions.assertEquals(
+        "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
+        Jsons.deserialize("[{\"str\":\"abc\"},{\"str\":\"abc\"}]").toString());
+  }
+
+  @Test
   void testTryDeserialize() {
     Assertions.assertEquals(
         Optional.of(new ToClass("abc", 999, 888L)),
@@ -76,12 +85,12 @@ class JsonsTest {
   }
 
   @Test
-  void testDeserializeToJsonNode() {
-    Assertions.assertEquals("{\"str\":\"abc\"}", Jsons.deserialize("{\"str\":\"abc\"}").toString());
+  void testTryDeserializeToJsonNode() {
+    Assertions.assertEquals(
+        Jsons.deserialize("{\"str\":\"abc\"}"), Jsons.tryDeserialize("{\"str\":\"abc\"}").get());
 
     Assertions.assertEquals(
-        "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
-        Jsons.deserialize("[{\"str\":\"abc\"},{\"str\":\"abc\"}]").toString());
+        Optional.empty(), Jsons.tryDeserialize("{\"str\":\"abc\", \"num\": 999, \"test}"));
   }
 
   @Test

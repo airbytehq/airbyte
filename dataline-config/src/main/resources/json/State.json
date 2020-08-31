@@ -11,8 +11,9 @@
       "type": "string",
       "format": "uuid"
     },
-    "state": {
-      "description": "type any. information here varies by integration"
+    "stateJson": {
+      "type": "string",
+      "description": "Integration specific blob. Must be a valid JSON string."
     }
   }
 }

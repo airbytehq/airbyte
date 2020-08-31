@@ -63,14 +63,12 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     this.pbf = pbf;
   }
 
-  @SuppressWarnings("UnstableApiUsage")
   @Override
   public Stream<SingerMessage> create(StandardTapConfig input, Path jobRoot)
       throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, jobRoot);
 
-    final String configDotJson =
-        Jsons.serialize(input.getSourceConnectionImplementation().getConfiguration());
+    final String configDotJson = input.getSourceConnectionImplementation().getConfigurationJson();
 
     final SingerCatalog selectedCatalog =
         SingerCatalogConverters.applySchemaToDiscoveredCatalog(
@@ -122,8 +120,8 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path workspaceRoot)
       throws InvalidCredentialsException {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput();
-    discoveryInput.setConnectionConfiguration(
-        input.getSourceConnectionImplementation().getConfiguration());
+    discoveryInput.setConnectionConfigurationJson(
+        input.getSourceConnectionImplementation().getConfigurationJson());
     Path scopedWorkspace = workspaceRoot.resolve("discovery");
     return new SingerDiscoverSchemaWorker(imageName, pbf)
         .runInternal(discoveryInput, scopedWorkspace);
