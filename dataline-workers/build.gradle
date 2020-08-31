@@ -14,7 +14,7 @@ dependencies {
     implementation project(":dataline-db")
     implementation project(":dataline-integrations")
 
-    testImplementation "org.postgresql:postgresql:42.2.16"
     testImplementation "org.testcontainers:testcontainers:1.14.3"
     testImplementation "org.testcontainers:postgresql:1.14.3"
+    testImplementation "org.postgresql:postgresql:42.2.16"
 }
