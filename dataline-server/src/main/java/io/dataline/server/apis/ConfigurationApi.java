@@ -55,6 +55,7 @@ import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.SourceRead;
 import io.dataline.api.model.SourceReadList;
 import io.dataline.api.model.SourceSpecificationRead;
+import io.dataline.api.model.WbConnectionReadList;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
@@ -71,6 +72,7 @@ import io.dataline.server.handlers.SchedulerHandler;
 import io.dataline.server.handlers.SourceImplementationsHandler;
 import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
+import io.dataline.server.handlers.WebBackendConnectionsHandler;
 import io.dataline.server.handlers.WorkspacesHandler;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.nio.file.Path;
@@ -90,6 +92,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final ConnectionsHandler connectionsHandler;
   private final SchedulerHandler schedulerHandler;
   private final JobHistoryHandler jobHistoryHandler;
+  private final WebBackendConnectionsHandler webBackendConnectionsHandler;
 
   public ConfigurationApi(final Path dbRoot, BasicDataSource connectionPool) {
     ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot);
@@ -109,6 +112,9 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
         new DefaultSchedulerPersistence(connectionPool);
     schedulerHandler = new SchedulerHandler(configPersistence, schedulerPersistence);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
+    webBackendConnectionsHandler =
+        new WebBackendConnectionsHandler(
+            connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
   }
 
   // WORKSPACE
@@ -143,45 +149,53 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   // SOURCE SPECIFICATION
 
   @Override
-  public SourceSpecificationRead getSourceSpecification(@Valid SourceIdRequestBody sourceIdRequestBody) {
+  public SourceSpecificationRead getSourceSpecification(
+                                                        @Valid SourceIdRequestBody sourceIdRequestBody) {
     return sourceSpecificationsHandler.getSourceSpecification(sourceIdRequestBody);
   }
 
   // SOURCE IMPLEMENTATION
 
   @Override
-  public SourceImplementationRead createSourceImplementation(@Valid SourceImplementationCreate sourceImplementationCreate) {
+  public SourceImplementationRead createSourceImplementation(
+                                                             @Valid SourceImplementationCreate sourceImplementationCreate) {
     return sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
   }
 
   @Override
-  public SourceImplementationRead updateSourceImplementation(@Valid SourceImplementationUpdate sourceImplementationUpdate) {
+  public SourceImplementationRead updateSourceImplementation(
+                                                             @Valid SourceImplementationUpdate sourceImplementationUpdate) {
     return sourceImplementationsHandler.updateSourceImplementation(sourceImplementationUpdate);
   }
 
   @Override
-  public SourceImplementationReadList listSourceImplementationsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public SourceImplementationReadList listSourceImplementationsForWorkspace(
+                                                                            @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return sourceImplementationsHandler.listSourceImplementationsForWorkspace(
         workspaceIdRequestBody);
   }
 
   @Override
-  public SourceImplementationRead getSourceImplementation(@Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+  public SourceImplementationRead getSourceImplementation(
+                                                          @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
   }
 
   @Override
-  public void deleteSourceImplementation(@Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+  public void deleteSourceImplementation(
+                                         @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
   }
 
   @Override
-  public CheckConnectionRead checkConnectionToSourceImplementation(@Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+  public CheckConnectionRead checkConnectionToSourceImplementation(
+                                                                   @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return schedulerHandler.checkSourceImplementationConnection(sourceImplementationIdRequestBody);
   }
 
   @Override
-  public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(@Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+  public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(
+                                                                                      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return schedulerHandler.discoverSchemaForSourceImplementation(
         sourceImplementationIdRequestBody);
   }
@@ -201,37 +215,43 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   // DESTINATION SPECIFICATION
 
   @Override
-  public DestinationSpecificationRead getDestinationSpecification(@Valid DestinationIdRequestBody destinationIdRequestBody) {
+  public DestinationSpecificationRead getDestinationSpecification(
+                                                                  @Valid DestinationIdRequestBody destinationIdRequestBody) {
     return destinationSpecificationsHandler.getDestinationSpecification(destinationIdRequestBody);
   }
 
   // DESTINATION IMPLEMENTATION
   @Override
-  public DestinationImplementationRead createDestinationImplementation(@Valid DestinationImplementationCreate destinationImplementationCreate) {
+  public DestinationImplementationRead createDestinationImplementation(
+                                                                       @Valid DestinationImplementationCreate destinationImplementationCreate) {
     return destinationImplementationsHandler.createDestinationImplementation(
         destinationImplementationCreate);
   }
 
   @Override
-  public DestinationImplementationRead updateDestinationImplementation(@Valid DestinationImplementationUpdate destinationImplementationUpdate) {
+  public DestinationImplementationRead updateDestinationImplementation(
+                                                                       @Valid DestinationImplementationUpdate destinationImplementationUpdate) {
     return destinationImplementationsHandler.updateDestinationImplementation(
         destinationImplementationUpdate);
   }
 
   @Override
-  public DestinationImplementationReadList listDestinationImplementationsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public DestinationImplementationReadList listDestinationImplementationsForWorkspace(
+                                                                                      @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return destinationImplementationsHandler.listDestinationImplementationsForWorkspace(
         workspaceIdRequestBody);
   }
 
   @Override
-  public DestinationImplementationRead getDestinationImplementation(@Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+  public DestinationImplementationRead getDestinationImplementation(
+                                                                    @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
     return destinationImplementationsHandler.getDestinationImplementation(
         destinationImplementationIdRequestBody);
   }
 
   @Override
-  public CheckConnectionRead checkConnectionToDestinationImplementation(@Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+  public CheckConnectionRead checkConnectionToDestinationImplementation(
+                                                                        @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
     return schedulerHandler.checkDestinationImplementationConnection(
         destinationImplementationIdRequestBody);
   }
@@ -249,7 +269,8 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   @Override
-  public ConnectionReadList listConnectionsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public ConnectionReadList listConnectionsForWorkspace(
+                                                        @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
   }
 
@@ -273,6 +294,15 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   @Override
   public JobInfoRead getJobInfo(@Valid JobIdRequestBody jobIdRequestBody) {
     return jobHistoryHandler.getJobInfo(jobIdRequestBody);
+  }
+
+  // WEB BACKEND
+
+  @Override
+  public WbConnectionReadList webBackendListConnectionsForWorkspace(
+                                                                    @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(
+        workspaceIdRequestBody);
   }
 
 }

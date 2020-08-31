@@ -24,6 +24,7 @@
 
 package io.dataline.server.helpers;
 
+import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.config.SourceConnectionImplementation;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,7 +34,8 @@ import java.util.UUID;
 
 public class SourceImplementationHelpers {
 
-  public static SourceConnectionImplementation generateSourceImplementation(UUID sourceSpecificationId)
+  public static SourceConnectionImplementation generateSourceImplementation(
+                                                                            UUID sourceSpecificationId)
       throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
@@ -55,6 +57,22 @@ public class SourceImplementationHelpers {
     final Path path =
         Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
     return Files.readString(path);
+  }
+
+  public static SourceImplementationRead getSourceImplementationRead(
+                                                                     SourceConnectionImplementation sourceImplementation,
+                                                                     UUID sourceId) {
+    SourceImplementationRead sourceImplementationRead = new SourceImplementationRead();
+    sourceImplementationRead.setSourceId(sourceId);
+    sourceImplementationRead.setWorkspaceId(sourceImplementation.getWorkspaceId());
+    sourceImplementationRead.setSourceSpecificationId(
+        sourceImplementation.getSourceSpecificationId());
+    sourceImplementationRead.setSourceImplementationId(
+        sourceImplementation.getSourceImplementationId());
+    sourceImplementationRead.setConnectionConfiguration(
+        sourceImplementation.getConfigurationJson());
+
+    return sourceImplementationRead;
   }
 
 }
