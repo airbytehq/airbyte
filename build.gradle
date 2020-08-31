@@ -50,7 +50,6 @@ subprojects {
             eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
 
             licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
-//            googleJavaFormat('1.8')
             removeUnusedImports()
             trimTrailingWhitespace()
         }
