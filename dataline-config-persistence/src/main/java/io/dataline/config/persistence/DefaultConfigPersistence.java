@@ -76,7 +76,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
     try {
       final Path configRoot = Files.createTempDirectory("").resolve(CONFIG_DIR);
-      FileUtils.forceMkdir(configRoot.toFile());
+      Files.createDirectories(configRoot);
 
       final FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
       Path configPathInJar = fileSystem.getPath(CONFIG_PATH_IN_JAR);
