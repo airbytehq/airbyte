@@ -289,10 +289,12 @@ class ConnectionsHandlerTest {
     final Column column = new Column();
     column.setDataType(DataType.STRING);
     column.setName("id");
+    column.setSelected(true);
 
     final Table table = new Table();
     table.setName("users");
     table.setColumns(Lists.newArrayList(column));
+    table.setSelected(true);
 
     final Schema schema = new Schema();
     schema.setTables(Lists.newArrayList(table));
@@ -304,6 +306,7 @@ class ConnectionsHandlerTest {
     final SourceSchemaColumn column = new SourceSchemaColumn();
     column.setDataType(io.dataline.api.model.DataType.STRING);
     column.setName("id");
+    column.setSelected(true);
 
     final SourceSchemaTable table = new SourceSchemaTable();
     table.setName("users");
