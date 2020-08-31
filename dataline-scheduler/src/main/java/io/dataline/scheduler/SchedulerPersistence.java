@@ -50,9 +50,8 @@ public interface SchedulerPersistence {
   Job getJob(long jobId) throws IOException;
 
   /**
-   *
    * @param configType - type of config, e.g. sync
-   * @param configId - id of that config
+   * @param configId   - id of that config
    * @return lists job in descending order by created_at
    * @throws IOException - what you do when you IO
    */
