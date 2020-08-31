@@ -150,7 +150,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
 
   @Override
   public SourceSpecificationRead getSourceSpecification(
-      @Valid SourceIdRequestBody sourceIdRequestBody) {
+                                                        @Valid SourceIdRequestBody sourceIdRequestBody) {
     return sourceSpecificationsHandler.getSourceSpecification(sourceIdRequestBody);
   }
 
@@ -158,44 +158,44 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
 
   @Override
   public SourceImplementationRead createSourceImplementation(
-      @Valid SourceImplementationCreate sourceImplementationCreate) {
+                                                             @Valid SourceImplementationCreate sourceImplementationCreate) {
     return sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
   }
 
   @Override
   public SourceImplementationRead updateSourceImplementation(
-      @Valid SourceImplementationUpdate sourceImplementationUpdate) {
+                                                             @Valid SourceImplementationUpdate sourceImplementationUpdate) {
     return sourceImplementationsHandler.updateSourceImplementation(sourceImplementationUpdate);
   }
 
   @Override
   public SourceImplementationReadList listSourceImplementationsForWorkspace(
-      @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+                                                                            @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return sourceImplementationsHandler.listSourceImplementationsForWorkspace(
         workspaceIdRequestBody);
   }
 
   @Override
   public SourceImplementationRead getSourceImplementation(
-      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+                                                          @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
   }
 
   @Override
   public void deleteSourceImplementation(
-      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+                                         @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
   }
 
   @Override
   public CheckConnectionRead checkConnectionToSourceImplementation(
-      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+                                                                   @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return schedulerHandler.checkSourceImplementationConnection(sourceImplementationIdRequestBody);
   }
 
   @Override
   public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(
-      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+                                                                                      @Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return schedulerHandler.discoverSchemaForSourceImplementation(
         sourceImplementationIdRequestBody);
   }
@@ -216,42 +216,42 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
 
   @Override
   public DestinationSpecificationRead getDestinationSpecification(
-      @Valid DestinationIdRequestBody destinationIdRequestBody) {
+                                                                  @Valid DestinationIdRequestBody destinationIdRequestBody) {
     return destinationSpecificationsHandler.getDestinationSpecification(destinationIdRequestBody);
   }
 
   // DESTINATION IMPLEMENTATION
   @Override
   public DestinationImplementationRead createDestinationImplementation(
-      @Valid DestinationImplementationCreate destinationImplementationCreate) {
+                                                                       @Valid DestinationImplementationCreate destinationImplementationCreate) {
     return destinationImplementationsHandler.createDestinationImplementation(
         destinationImplementationCreate);
   }
 
   @Override
   public DestinationImplementationRead updateDestinationImplementation(
-      @Valid DestinationImplementationUpdate destinationImplementationUpdate) {
+                                                                       @Valid DestinationImplementationUpdate destinationImplementationUpdate) {
     return destinationImplementationsHandler.updateDestinationImplementation(
         destinationImplementationUpdate);
   }
 
   @Override
   public DestinationImplementationReadList listDestinationImplementationsForWorkspace(
-      @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+                                                                                      @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return destinationImplementationsHandler.listDestinationImplementationsForWorkspace(
         workspaceIdRequestBody);
   }
 
   @Override
   public DestinationImplementationRead getDestinationImplementation(
-      @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+                                                                    @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
     return destinationImplementationsHandler.getDestinationImplementation(
         destinationImplementationIdRequestBody);
   }
 
   @Override
   public CheckConnectionRead checkConnectionToDestinationImplementation(
-      @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+                                                                        @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
     return schedulerHandler.checkDestinationImplementationConnection(
         destinationImplementationIdRequestBody);
   }
@@ -270,7 +270,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
 
   @Override
   public ConnectionReadList listConnectionsForWorkspace(
-      @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+                                                        @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
   }
 
@@ -300,7 +300,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
 
   @Override
   public WbConnectionReadList webBackendListConnectionsForWorkspace(
-      @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+                                                                    @Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(
         workspaceIdRequestBody);
   }

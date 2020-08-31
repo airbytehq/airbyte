@@ -35,7 +35,7 @@ import java.util.UUID;
 public class SourceImplementationHelpers {
 
   public static SourceConnectionImplementation generateSourceImplementation(
-      UUID sourceSpecificationId)
+                                                                            UUID sourceSpecificationId)
       throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
@@ -60,8 +60,8 @@ public class SourceImplementationHelpers {
   }
 
   public static SourceImplementationRead getSourceImplementationRead(
-      SourceConnectionImplementation sourceImplementation,
-      UUID sourceId) {
+                                                                     SourceConnectionImplementation sourceImplementation,
+                                                                     UUID sourceId) {
     SourceImplementationRead sourceImplementationRead = new SourceImplementationRead();
     sourceImplementationRead.setSourceId(sourceId);
     sourceImplementationRead.setWorkspaceId(sourceImplementation.getWorkspaceId());
