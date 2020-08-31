@@ -21,7 +21,8 @@
       "type": "string"
     },
     "record": {
-      "description": "record message: no schema, just a map of string to object!"
+      "description": "record message: must me a JSON object",
+      "type": "string"
     },
     "schema": {
       "description": "schema message: the schema",
