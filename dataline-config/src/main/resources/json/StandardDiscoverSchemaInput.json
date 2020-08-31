@@ -4,9 +4,7 @@
   "title": "StandardDiscoverSchemaOutput",
   "description": "information required for connection.",
   "type": "object",
-  "required": [
-    "connectionConfiguration"
-  ],
+  "required": ["connectionConfiguration"],
   "additionalProperties": false,
   "properties": {
     "connectionConfiguration": {
