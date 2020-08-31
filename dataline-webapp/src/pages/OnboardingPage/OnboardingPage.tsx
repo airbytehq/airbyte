@@ -92,7 +92,22 @@ const OnboardingPage: React.FC = () => {
           workspaceId: config.ui.workspaceId,
           sourceSpecificationId: values.specificationId,
           connectionConfiguration: values.connectionConfiguration
-        }
+        },
+        [
+          [
+            SourceImplementationResource.listShape(),
+            { workspaceId: config.ui.workspaceId },
+            (
+              newSourceImplementationId: string,
+              sourcesImplementationIds: { sources: string[] }
+            ) => ({
+              sources: [
+                ...sourcesImplementationIds.sources,
+                newSourceImplementationId
+              ]
+            })
+          ]
+        ]
       );
 
       setSuccessRequest(true);
@@ -119,7 +134,22 @@ const OnboardingPage: React.FC = () => {
           workspaceId: config.ui.workspaceId,
           destinationSpecificationId: values.specificationId,
           connectionConfiguration: values.connectionConfiguration
-        }
+        },
+        [
+          [
+            DestinationImplementationResource.listShape(),
+            { workspaceId: config.ui.workspaceId },
+            (
+              newDestinationImplementationId: string,
+              destinationsImplementationIds: { destinations: string[] }
+            ) => ({
+              destinations: [
+                ...destinationsImplementationIds.destinations,
+                newDestinationImplementationId
+              ]
+            })
+          ]
+        ]
       );
 
       setSuccessRequest(true);
@@ -136,6 +166,9 @@ const OnboardingPage: React.FC = () => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
+
+    console.log(sources, destinations);
+
     const result = await createConnection(
       {},
       {
