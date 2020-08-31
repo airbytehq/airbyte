@@ -1,14 +1,15 @@
 plugins {
-    id "base"
-    id "com.diffplug.spotless" version "5.3.0" apply false
+    id 'base'
+    id 'com.diffplug.spotless' version '5.3.0' apply false
+    id 'pmd'
 }
 
 Properties env = new Properties()
-File envFile = rootProject.file(".env")
+File envFile = rootProject.file('.env')
 envFile.withInputStream { env.load(it) }
 
-if (!env.containsKey("VERSION")) {
-    throw new Exception("Version not specified in .env file...")
+if (!env.containsKey('VERSION')) {
+    throw new Exception('Version not specified in .env file...')
 }
 
 allprojects {
@@ -17,7 +18,7 @@ allprojects {
 }
 
 def createLicenseWith = { licence ->
-    def tmp = File.createTempFile("tmp", ".tmp")
+    def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
         w.writeLine("/*")
@@ -34,16 +35,39 @@ def createLicenseWith = { licence ->
 // Java projects common configurations
 subprojects {
 
-    if (project.name == "dataline-webapp") {
+    if (project.name == 'dataline-webapp') {
         return
     }
 
     apply plugin: 'java'
     apply plugin: 'com.diffplug.spotless'
+    apply plugin: 'pmd'
 
     repositories {
         mavenCentral()
     }
+
+
+    pmdMain {
+        exclude 
+        ignoreFailures = true
+        consoleOutput = true
+
+        rulePriority = 5
+        ruleSets = [
+//                'category/java/errorprone.xml',
+                'category/java/bestpractices.xml'
+        ]
+    }
+    pmdTest {
+        exclude '**/build/**'
+
+        ignoreFailures = true
+        consoleOutput = true
+    }
+//    pmd {
+//
+//    }
 
     spotless {
         java {
@@ -74,13 +98,13 @@ subprojects {
     test {
         useJUnitPlatform()
         testLogging() {
-            events "failed"
-            exceptionFormat "full"
+            events 'failed'
+            exceptionFormat 'full'
         }
     }
 
     dependencies {
-        if (project.name != "dataline-commons") {
+        if (project.name != 'dataline-commons') {
             implementation project(':dataline-commons')
         }
 
