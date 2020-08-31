@@ -48,7 +48,6 @@ subprojects {
     }
 
     pmd {
-        ignoreFailures = true
         consoleOutput = true
 
         rulePriority = 5

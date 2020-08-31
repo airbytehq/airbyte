@@ -9,5 +9,6 @@
     <!-- TODO: couldn't figure out how to make gradle exclude to work so defining exclude at PMD level. Cons: hardcoding 'generated' -->
     <exclude-pattern>.*/generated/.*</exclude-pattern>
 
+    <!-- https://pmd.github.io/pmd-6.23.0/pmd_rules_java.html -->
     <rule ref="category/java/bestpractices.xml/AbstractClassWithoutAbstractMethod"/>
 </ruleset>

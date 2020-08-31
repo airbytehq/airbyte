@@ -39,6 +39,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
 public abstract class BaseWorkerTestCase {
 
   // TODO inject via env
