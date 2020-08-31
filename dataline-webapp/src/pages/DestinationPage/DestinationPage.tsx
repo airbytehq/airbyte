@@ -9,6 +9,7 @@ import ServiceForm from "../../components/ServiceForm";
 import DestinationImplementationResource from "../../core/resources/DestinationImplementation";
 import config from "../../config";
 import DestinationSpecificationResource from "../../core/resources/DestinationSpecification";
+import DestinationResource from "../../core/resources/Destination";
 
 const Content = styled.div`
   width: 100%;
@@ -32,6 +33,9 @@ const DestinationPage: React.FC = () => {
       destinationId: "22f6c74f-5699-40ff-833c-4a879ea40133" // TODO: fix it. Take from API
     }
   );
+  const destination = useResource(DestinationResource.detailShape(), {
+    destinationId: "22f6c74f-5699-40ff-833c-4a879ea40133" // TODO: fix it. Take from API
+  });
   const updateDestination = useFetcher(
     DestinationImplementationResource.updateShape()
   );
@@ -66,15 +70,15 @@ const DestinationPage: React.FC = () => {
             formType="source"
             dropDownData={[
               {
-                value: "Test",
-                text: "Test",
+                value: destination.destinationId,
+                text: destination.name,
                 img: "/default-logo-catalog.svg"
               }
             ]}
             formValues={{
               ...currentDestination.connectionConfiguration,
               name: "Test",
-              serviceType: "Test"
+              serviceType: destination.destinationId
             }}
             specifications={destinationSpecification.connectionSpecification}
           />
