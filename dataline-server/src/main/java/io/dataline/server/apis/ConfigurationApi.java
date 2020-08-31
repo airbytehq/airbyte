@@ -96,25 +96,19 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
 
   public ConfigurationApi(final Path dbRoot, BasicDataSource connectionPool) {
     ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot);
-    final IntegrationSchemaValidation integrationSchemaValidation =
-        new IntegrationSchemaValidation(configPersistence);
+    final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation(configPersistence);
     workspacesHandler = new WorkspacesHandler(configPersistence);
     sourcesHandler = new SourcesHandler(configPersistence);
     sourceSpecificationsHandler = new SourceSpecificationsHandler(configPersistence);
-    sourceImplementationsHandler =
-        new SourceImplementationsHandler(configPersistence, integrationSchemaValidation);
+    sourceImplementationsHandler = new SourceImplementationsHandler(configPersistence, integrationSchemaValidation);
     destinationsHandler = new DestinationsHandler(configPersistence);
     destinationSpecificationsHandler = new DestinationSpecificationsHandler(configPersistence);
-    destinationImplementationsHandler =
-        new DestinationImplementationsHandler(configPersistence, integrationSchemaValidation);
+    destinationImplementationsHandler = new DestinationImplementationsHandler(configPersistence, integrationSchemaValidation);
     connectionsHandler = new ConnectionsHandler(configPersistence);
-    final SchedulerPersistence schedulerPersistence =
-        new DefaultSchedulerPersistence(connectionPool);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
     schedulerHandler = new SchedulerHandler(configPersistence, schedulerPersistence);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
-    webBackendConnectionsHandler =
-        new WebBackendConnectionsHandler(
-            connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
+    webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
   }
 
   // WORKSPACE
