@@ -60,4 +60,5 @@ public class TargetConsumer implements CloseableConsumer<SingerMessage> {
     writer.flush();
     WorkerUtils.closeProcess(process);
   }
+
 }

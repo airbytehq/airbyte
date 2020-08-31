@@ -24,8 +24,6 @@
 
 package io.dataline.server.helpers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.json.Jsons;
 import io.dataline.config.SourceConnectionImplementation;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,27 +33,28 @@ import java.util.UUID;
 
 public class SourceImplementationHelpers {
 
-  public static SourceConnectionImplementation generateSourceImplementation(
-      UUID sourceSpecificationId) throws IOException {
+  public static SourceConnectionImplementation generateSourceImplementation(UUID sourceSpecificationId)
+      throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
 
-    JsonNode implementationJson = getTestImplementationJson();
+    String implementationJson = getTestImplementationJson();
 
     final SourceConnectionImplementation sourceConnectionImplementation =
         new SourceConnectionImplementation();
     sourceConnectionImplementation.setWorkspaceId(workspaceId);
     sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setConfiguration(implementationJson.toString());
+    sourceConnectionImplementation.setConfigurationJson(implementationJson);
     sourceConnectionImplementation.setTombstone(false);
 
     return sourceConnectionImplementation;
   }
 
-  public static JsonNode getTestImplementationJson() throws IOException {
+  public static String getTestImplementationJson() throws IOException {
     final Path path =
         Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
-    return Jsons.deserialize(Files.readString(path));
+    return Files.readString(path);
   }
+
 }

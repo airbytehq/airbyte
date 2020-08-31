@@ -29,6 +29,8 @@ import io.dataline.config.StandardTargetConfig;
 import java.nio.file.Path;
 
 public interface TargetFactory<T> {
+
   CloseableConsumer<T> create(StandardTargetConfig targetConfig, Path workspacePath)
       throws SyncException;
+
 }

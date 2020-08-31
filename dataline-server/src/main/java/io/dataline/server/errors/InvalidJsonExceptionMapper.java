@@ -43,4 +43,5 @@ public class InvalidJsonExceptionMapper implements ExceptionMapper<JsonParseExce
         .type("application/json")
         .build();
   }
+
 }

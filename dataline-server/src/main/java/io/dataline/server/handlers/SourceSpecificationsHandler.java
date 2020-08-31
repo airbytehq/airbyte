@@ -32,6 +32,7 @@ import io.dataline.server.errors.KnownException;
 import io.dataline.server.helpers.ConfigFetchers;
 
 public class SourceSpecificationsHandler {
+
   private final ConfigPersistence configPersistence;
 
   public SourceSpecificationsHandler(ConfigPersistence configPersistence) {
@@ -41,34 +42,32 @@ public class SourceSpecificationsHandler {
   public SourceSpecificationRead getSourceSpecification(SourceIdRequestBody sourceIdRequestBody) {
     final SourceConnectionSpecification sourceConnection;
     // todo (cgardens) - this is a shortcoming of rolling our own disk storage. since we are not
-    //   querying on a the primary key, we have to list all of the specification objects and then
-    //   filter.
+    // querying on a the primary key, we have to list all of the specification objects and then
+    // filter.
     sourceConnection =
         ConfigFetchers.getSourceConnectionSpecifications(configPersistence).stream()
             .filter(
-                sourceSpecification ->
-                    sourceSpecification.getSourceId().equals(sourceIdRequestBody.getSourceId()))
+                sourceSpecification -> sourceSpecification.getSourceId().equals(sourceIdRequestBody.getSourceId()))
             .findFirst()
             .orElseThrow(
-                () ->
-                    new KnownException(
-                        404,
-                        String.format(
-                            "Could not find a source specification for source: %s",
-                            sourceIdRequestBody.getSourceId())));
+                () -> new KnownException(
+                    404,
+                    String.format(
+                        "Could not find a source specification for source: %s",
+                        sourceIdRequestBody.getSourceId())));
 
     return toSourceSpecificationRead(sourceConnection);
   }
 
-  private static SourceSpecificationRead toSourceSpecificationRead(
-      SourceConnectionSpecification sourceConnectionSpecification) {
+  private static SourceSpecificationRead toSourceSpecificationRead(SourceConnectionSpecification sourceConnectionSpecification) {
     final SourceSpecificationRead sourceSpecificationRead = new SourceSpecificationRead();
     sourceSpecificationRead.setSourceId(sourceConnectionSpecification.getSourceId());
     sourceSpecificationRead.setSourceSpecificationId(
         sourceConnectionSpecification.getSourceSpecificationId());
     sourceSpecificationRead.setConnectionSpecification(
-        sourceConnectionSpecification.getSpecification());
+        sourceConnectionSpecification.getSpecificationJson());
 
     return sourceSpecificationRead;
   }
+
 }

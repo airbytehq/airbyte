@@ -93,4 +93,5 @@ class SingerCatalogConvertersTest extends BaseWorkerTestCase {
 
     assertEquals(expectedSchema, actualSchema);
   }
+
 }

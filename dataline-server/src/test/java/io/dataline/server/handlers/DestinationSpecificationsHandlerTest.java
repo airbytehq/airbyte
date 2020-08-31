@@ -57,9 +57,9 @@ class DestinationSpecificationsHandlerTest {
   @Test
   void testGetDestinationSpecification() throws JsonValidationException {
     when(configPersistence.getConfigs(
-            PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
-            DestinationConnectionSpecification.class))
-        .thenReturn(Sets.newHashSet(destinationConnectionSpecification));
+        PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
+        DestinationConnectionSpecification.class))
+            .thenReturn(Sets.newHashSet(destinationConnectionSpecification));
 
     DestinationSpecificationRead expectedDestinationSpecificationRead =
         new DestinationSpecificationRead();
@@ -68,7 +68,7 @@ class DestinationSpecificationsHandlerTest {
     expectedDestinationSpecificationRead.setDestinationSpecificationId(
         destinationConnectionSpecification.getDestinationSpecificationId());
     expectedDestinationSpecificationRead.setConnectionSpecification(
-        destinationConnectionSpecification.getSpecification());
+        destinationConnectionSpecification.getSpecificationJson());
 
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody();
     destinationIdRequestBody.setDestinationId(
@@ -79,4 +79,5 @@ class DestinationSpecificationsHandlerTest {
 
     assertEquals(expectedDestinationSpecificationRead, actualDestinationSpecificationRead);
   }
+
 }

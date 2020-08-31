@@ -35,6 +35,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class SourcesHandler {
+
   private final ConfigPersistence configPersistence;
 
   public SourcesHandler(ConfigPersistence configPersistence) {
@@ -67,4 +68,5 @@ public class SourcesHandler {
 
     return sourceRead;
   }
+
 }

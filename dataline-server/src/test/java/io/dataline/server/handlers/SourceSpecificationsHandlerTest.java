@@ -56,16 +56,16 @@ class SourceSpecificationsHandlerTest {
   @Test
   void testGetSourceSpecification() throws JsonValidationException {
     when(configPersistence.getConfigs(
-            PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
-            SourceConnectionSpecification.class))
-        .thenReturn(Sets.newHashSet(sourceConnectionSpecification));
+        PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+        SourceConnectionSpecification.class))
+            .thenReturn(Sets.newHashSet(sourceConnectionSpecification));
 
     SourceSpecificationRead expectedSourceSpecificationRead = new SourceSpecificationRead();
     expectedSourceSpecificationRead.setSourceId(sourceConnectionSpecification.getSourceId());
     expectedSourceSpecificationRead.setSourceSpecificationId(
         sourceConnectionSpecification.getSourceSpecificationId());
     expectedSourceSpecificationRead.setConnectionSpecification(
-        sourceConnectionSpecification.getSpecification());
+        sourceConnectionSpecification.getSpecificationJson());
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
     sourceIdRequestBody.setSourceId(expectedSourceSpecificationRead.getSourceId());
@@ -75,4 +75,5 @@ class SourceSpecificationsHandlerTest {
 
     assertEquals(expectedSourceSpecificationRead, actualSourceSpecificationRead);
   }
+
 }

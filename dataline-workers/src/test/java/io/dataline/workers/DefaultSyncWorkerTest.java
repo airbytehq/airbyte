@@ -52,6 +52,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 class DefaultSyncWorkerTest extends BaseWorkerTestCase {
+
   private static final Path WORKSPACE_ROOT = Path.of("/workspaces/10");
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
@@ -79,7 +80,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
 
     final SourceConnectionImplementation sourceConnectionConfig =
         new SourceConnectionImplementation();
-    sourceConnectionConfig.setConfiguration(sourceConnection);
+    sourceConnectionConfig.setConfigurationJson(sourceConnection);
     sourceConnectionConfig.setWorkspaceId(WORKSPACE_ID);
     sourceConnectionConfig.setSourceSpecificationId(SOURCE_SPECIFICATION_ID);
     sourceConnectionConfig.setSourceImplementationId(SOURCE_IMPLEMENTATION_ID);
@@ -87,7 +88,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
 
     final DestinationConnectionImplementation destinationConnectionConfig =
         new DestinationConnectionImplementation();
-    destinationConnectionConfig.setConfiguration(destinationConnection);
+    destinationConnectionConfig.setConfigurationJson(destinationConnection);
     destinationConnectionConfig.setWorkspaceId(WORKSPACE_ID);
     destinationConnectionConfig.setDestinationSpecificationId(DESTINATION_SPECIFICATION_ID);
     destinationConnectionConfig.setDestinationImplementationId(DESTINATION_IMPLEMENTATION_ID);
@@ -119,7 +120,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
 
     State state = new State();
     state.setConnectionId(connectionId);
-    state.setState(stateValue);
+    state.setStateJson(stateValue);
 
     final StandardSyncSummary syncSummary = new StandardSyncSummary();
     syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
@@ -168,4 +169,5 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     verify(consumer).accept(recordMessage2);
     verify(consumer).close();
   }
+
 }

@@ -48,27 +48,24 @@ public class DestinationImplementationsHandler {
   private final ConfigPersistence configPersistence;
   private final IntegrationSchemaValidation validator;
 
-  public DestinationImplementationsHandler(
-      ConfigPersistence configPersistence,
-      IntegrationSchemaValidation integrationSchemaValidation,
-      Supplier<UUID> uuidGenerator) {
+  public DestinationImplementationsHandler(ConfigPersistence configPersistence,
+                                           IntegrationSchemaValidation integrationSchemaValidation,
+                                           Supplier<UUID> uuidGenerator) {
     this.configPersistence = configPersistence;
     this.validator = integrationSchemaValidation;
     this.uuidGenerator = uuidGenerator;
   }
 
-  public DestinationImplementationsHandler(
-      ConfigPersistence configPersistence,
-      IntegrationSchemaValidation integrationSchemaValidation) {
+  public DestinationImplementationsHandler(ConfigPersistence configPersistence,
+                                           IntegrationSchemaValidation integrationSchemaValidation) {
     this(configPersistence, integrationSchemaValidation, UUID::randomUUID);
   }
 
-  public DestinationImplementationRead createDestinationImplementation(
-      DestinationImplementationCreate destinationImplementationCreate) {
+  public DestinationImplementationRead createDestinationImplementation(DestinationImplementationCreate destinationImplementationCreate) {
     // validate configuration
     validateDestinationImplementation(
         destinationImplementationCreate.getDestinationSpecificationId(),
-        destinationImplementationCreate.getConnectionConfiguration());
+        (String) destinationImplementationCreate.getConnectionConfiguration());
 
     // persist
     final UUID destinationImplementationId = uuidGenerator.get();
@@ -76,14 +73,13 @@ public class DestinationImplementationsHandler {
         destinationImplementationCreate.getDestinationSpecificationId(),
         destinationImplementationCreate.getWorkspaceId(),
         destinationImplementationId,
-        destinationImplementationCreate.getConnectionConfiguration());
+        (String) destinationImplementationCreate.getConnectionConfiguration());
 
     // read configuration from db
     return getDestinationImplementationInternal(destinationImplementationId);
   }
 
-  public DestinationImplementationRead updateDestinationImplementation(
-      DestinationImplementationUpdate destinationImplementationUpdate) {
+  public DestinationImplementationRead updateDestinationImplementation(DestinationImplementationUpdate destinationImplementationUpdate) {
     // get existing implementation
     final DestinationImplementationRead persistedDestinationImplementation =
         getDestinationImplementationInternal(
@@ -92,42 +88,39 @@ public class DestinationImplementationsHandler {
     // validate configuration
     validateDestinationImplementation(
         persistedDestinationImplementation.getDestinationSpecificationId(),
-        destinationImplementationUpdate.getConnectionConfiguration());
+        (String) destinationImplementationUpdate.getConnectionConfiguration());
 
     // persist
     persistDestinationConnectionImplementation(
         persistedDestinationImplementation.getDestinationSpecificationId(),
         persistedDestinationImplementation.getWorkspaceId(),
         destinationImplementationUpdate.getDestinationImplementationId(),
-        destinationImplementationUpdate.getConnectionConfiguration());
+        (String) destinationImplementationUpdate.getConnectionConfiguration());
 
     // read configuration from db
     return getDestinationImplementationInternal(
         destinationImplementationUpdate.getDestinationImplementationId());
   }
 
-  public DestinationImplementationRead getDestinationImplementation(
-      DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+  public DestinationImplementationRead getDestinationImplementation(DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
 
     return getDestinationImplementationInternal(
         destinationImplementationIdRequestBody.getDestinationImplementationId());
   }
 
-  public DestinationImplementationReadList listDestinationImplementationsForWorkspace(
-      WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public DestinationImplementationReadList listDestinationImplementationsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
     final List<DestinationImplementationRead> reads =
         ConfigFetchers.getDestinationConnectionImplementations(configPersistence).stream()
             .filter(
-                destinationConnectionImplementation ->
-                    destinationConnectionImplementation
-                        .getWorkspaceId()
-                        .equals(workspaceIdRequestBody.getWorkspaceId()))
+                destinationConnectionImplementation -> destinationConnectionImplementation
+                    .getWorkspaceId()
+                    .equals(workspaceIdRequestBody.getWorkspaceId()))
             .map(
                 destinationConnectionImplementation -> {
                   final UUID destinationId =
                       ConfigFetchers.getDestinationConnectionSpecification(
-                              configPersistence,
-                              destinationConnectionImplementation.getDestinationSpecificationId())
+                          configPersistence,
+                          destinationConnectionImplementation.getDestinationSpecificationId())
                           .getDestinationId();
                   return toDestinationImplementationRead(
                       destinationConnectionImplementation, destinationId);
@@ -140,8 +133,7 @@ public class DestinationImplementationsHandler {
     return destinationImplementationReadList;
   }
 
-  private DestinationImplementationRead getDestinationImplementationInternal(
-      UUID destinationImplementationId) {
+  private DestinationImplementationRead getDestinationImplementationInternal(UUID destinationImplementationId) {
     // read configuration from db
     final DestinationConnectionImplementation retrievedDestinationConnectionImplementation;
     retrievedDestinationConnectionImplementation =
@@ -150,19 +142,17 @@ public class DestinationImplementationsHandler {
 
     final UUID destinationId =
         ConfigFetchers.getDestinationConnectionSpecification(
-                configPersistence,
-                retrievedDestinationConnectionImplementation.getDestinationSpecificationId())
+            configPersistence,
+            retrievedDestinationConnectionImplementation.getDestinationSpecificationId())
             .getDestinationId();
 
     return toDestinationImplementationRead(
         retrievedDestinationConnectionImplementation, destinationId);
   }
 
-  private void validateDestinationImplementation(
-      UUID destinationConnectionSpecificationId, Object implementation) {
+  private void validateDestinationImplementation(UUID destinationConnectionSpecificationId, String implementationJson) {
     try {
-      validator.validateDestinationConnectionConfiguration(
-          destinationConnectionSpecificationId, implementation);
+      validator.validateDestinationConnectionConfiguration(destinationConnectionSpecificationId, implementationJson);
     } catch (JsonValidationException e) {
       throw new KnownException(
           422,
@@ -172,17 +162,16 @@ public class DestinationImplementationsHandler {
     }
   }
 
-  private void persistDestinationConnectionImplementation(
-      UUID destinationSpecificationId,
-      UUID workspaceId,
-      UUID destinationImplementationId,
-      Object configuration) {
+  private void persistDestinationConnectionImplementation(UUID destinationSpecificationId,
+                                                          UUID workspaceId,
+                                                          UUID destinationImplementationId,
+                                                          String configurationJson) {
     final DestinationConnectionImplementation destinationConnectionImplementation =
         new DestinationConnectionImplementation();
     destinationConnectionImplementation.setDestinationSpecificationId(destinationSpecificationId);
     destinationConnectionImplementation.setWorkspaceId(workspaceId);
     destinationConnectionImplementation.setDestinationImplementationId(destinationImplementationId);
-    destinationConnectionImplementation.setConfiguration(configuration);
+    destinationConnectionImplementation.setConfigurationJson(configurationJson);
 
     ConfigFetchers.writeConfig(
         configPersistence,
@@ -191,8 +180,8 @@ public class DestinationImplementationsHandler {
         destinationConnectionImplementation);
   }
 
-  private DestinationImplementationRead toDestinationImplementationRead(
-      DestinationConnectionImplementation destinationConnectionImplementation, UUID destinationId) {
+  private DestinationImplementationRead toDestinationImplementationRead(DestinationConnectionImplementation destinationConnectionImplementation,
+                                                                        UUID destinationId) {
     final DestinationImplementationRead destinationImplementationRead =
         new DestinationImplementationRead();
     destinationImplementationRead.setDestinationId(destinationId);
@@ -203,8 +192,9 @@ public class DestinationImplementationsHandler {
     destinationImplementationRead.setDestinationSpecificationId(
         destinationConnectionImplementation.getDestinationSpecificationId());
     destinationImplementationRead.setConnectionConfiguration(
-        destinationConnectionImplementation.getConfiguration());
+        destinationConnectionImplementation.getConfigurationJson());
 
     return destinationImplementationRead;
   }
+
 }

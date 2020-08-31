@@ -29,7 +29,6 @@ import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.integrations.Integrations;
@@ -47,6 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
+
   private PostgreSQLContainer db;
 
   @BeforeAll
@@ -66,10 +66,9 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
         PostgreSQLContainerTestHelper.getSingerTapConfig(
             "user", "pass", "localhost", "postgres", "111111");
 
-    final Object o = Jsons.deserialize(fakeDbCreds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfiguration(o);
+    standardCheckConnectionInput.setConnectionConfigurationJson(fakeDbCreds);
 
     SingerCheckConnectionWorker worker =
         new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
@@ -98,10 +97,9 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     SingerCheckConnectionWorker worker =
         new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
 
-    final Object o = Jsons.deserialize(incorrectCreds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfiguration(o);
+    standardCheckConnectionInput.setConnectionConfigurationJson(incorrectCreds);
 
     OutputAndStatus<StandardCheckConnectionOutput> run =
         worker.run(standardCheckConnectionInput, createJobRoot(jobId));
@@ -120,10 +118,9 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     String creds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
-    final Object o = Jsons.deserialize(creds, Object.class);
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfiguration(o);
+    standardCheckConnectionInput.setConnectionConfigurationJson(creds);
 
     SingerCheckConnectionWorker worker =
         new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
@@ -136,4 +133,5 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
     // TODO Once log file locations are accessible externally, also verify the correct error message
     // in the logs
   }
+
 }

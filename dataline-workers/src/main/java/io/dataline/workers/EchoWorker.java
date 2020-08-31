@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EchoWorker implements Worker<String, String> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(EchoWorker.class);
 
   public EchoWorker() {}
@@ -43,4 +44,5 @@ public class EchoWorker implements Worker<String, String> {
   public void cancel() {
     // no-op
   }
+
 }

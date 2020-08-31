@@ -38,9 +38,10 @@ import org.slf4j.LoggerFactory;
  * InputStream into a SingerMessage. If the line cannot be parsed into a SingerMessage it is
  * dropped. Each record MUST be new line separated.
  *
- * <p>If a line starts with a SingerMessage and then has other characters after it, that
- * SingerMessage will still be parsed. If there are multiple SingerMessage records on the same line,
- * only the first will be parsed.
+ * <p>
+ * If a line starts with a SingerMessage and then has other characters after it, that SingerMessage
+ * will still be parsed. If there are multiple SingerMessage records on the same line, only the
+ * first will be parsed.
  */
 public class SingerJsonStreamFactory {
 
@@ -59,4 +60,5 @@ public class SingerJsonStreamFactory {
       return null;
     }
   }
+
 }

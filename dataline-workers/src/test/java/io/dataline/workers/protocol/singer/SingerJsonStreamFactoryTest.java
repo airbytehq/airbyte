@@ -155,4 +155,5 @@ class SingerJsonStreamFactoryTest {
     final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
     return new SingerJsonStreamFactory().create(bufferedReader);
   }
+
 }

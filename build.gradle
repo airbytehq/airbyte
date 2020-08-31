@@ -1,6 +1,6 @@
 plugins {
     id "base"
-    id "com.diffplug.spotless" version "5.1.1" apply false
+    id "com.diffplug.spotless" version "5.3.0" apply false
 }
 
 Properties env = new Properties()
@@ -47,16 +47,24 @@ subprojects {
 
     spotless {
         java {
+            importOrder()
+
+            eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
+
             licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
-            googleJavaFormat('1.8')
             removeUnusedImports()
             trimTrailingWhitespace()
         }
         groovyGradle {
             target '**/*.gradle'
         }
-        format 'json', {
-            target "**/*.json"
+        sql {
+            target '**/*.sql'
+
+            dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
+        }
+        format 'styling', {
+            target '**/*.json', '**/*.yaml'
 
             prettier()
         }
