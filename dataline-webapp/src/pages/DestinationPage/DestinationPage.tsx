@@ -28,13 +28,11 @@ const DestinationPage: React.FC = () => {
   const destinationSpecification = useResource(
     DestinationSpecificationResource.detailShape(),
     {
-      // destinationSpecificationId: currentDestination.destinationSpecificationId
-      // destinationId: currentDestination.destinationId
-      destinationId: "22f6c74f-5699-40ff-833c-4a879ea40133" // TODO: fix it. Take from API
+      destinationId: currentDestination.destinationId
     }
   );
   const destination = useResource(DestinationResource.detailShape(), {
-    destinationId: "22f6c74f-5699-40ff-833c-4a879ea40133" // TODO: fix it. Take from API
+    destinationId: currentDestination.destinationId
   });
   const updateDestination = useFetcher(
     DestinationImplementationResource.updateShape()

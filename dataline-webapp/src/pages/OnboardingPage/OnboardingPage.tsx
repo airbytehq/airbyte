@@ -15,17 +15,6 @@ import config from "../../config";
 import StepsConfig, { StepsTypes } from "./components/StepsConfig";
 import PrepareDropDownLists from "./components/PrepareDropDownLists";
 import FrequencyConfig from "../../data/FrequencyConfig.json";
-import useRouter from "../../components/hooks/useRouterHook";
-import { Routes } from "../routes";
-import SourceResource from "../../core/resources/Source";
-import DestinationResource from "../../core/resources/Destination";
-import SourceImplementationResource from "../../core/resources/SourceImplementation";
-import DestinationImplementationResource from "../../core/resources/DestinationImplementation";
-import ConnectionResource from "../../core/resources/Connection";
-import config from "../../config";
-import StepsConfig, { StepsTypes } from "./components/StepsConfig";
-import PrepareDropDownLists from "./components/PrepareDropDownLists";
-import FrequencyConfig from "../../data/FrequencyConfig.json";
 
 const Content = styled.div`
   width: 100%;
@@ -64,12 +53,6 @@ const OnboardingPage: React.FC = () => {
     workspaceId: config.ui.workspaceId
   });
   const { destinations } = useResource(
-    DestinationImplementationResource.listShape(),
-    {
-      workspaceId: config.ui.workspaceId
-    }
-  );
-  const destinationsImplementation = useResource(
     DestinationImplementationResource.listShape(),
     {
       workspaceId: config.ui.workspaceId
@@ -183,10 +166,7 @@ const OnboardingPage: React.FC = () => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
-
-    console.log(sources, destinations);
-
-    const result = await createConnection(
+    await createConnection(
       {},
       {
         sourceImplementationId: sources[0].sourceImplementationId,
@@ -197,8 +177,6 @@ const OnboardingPage: React.FC = () => {
         status: "active"
       }
     );
-
-    console.log(result);
   };
 
   const renderStep = () => {
@@ -219,11 +197,18 @@ const OnboardingPage: React.FC = () => {
           dropDownData={destinationsDropDownData}
           hasSuccess={successRequest}
           errorStatus={errorStatusRequest}
+          currentSourceId={sources[0].sourceId}
         />
       );
     }
 
-    return <ConnectionStep onSubmit={onSubmitConnectionStep} />;
+    return (
+      <ConnectionStep
+        onSubmit={onSubmitConnectionStep}
+        currentSourceId={sources[0].sourceId}
+        currentDestinationId={destinations[0].destinationId}
+      />
+    );
   };
 
   return (

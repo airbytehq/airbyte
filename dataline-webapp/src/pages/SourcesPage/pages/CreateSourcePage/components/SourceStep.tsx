@@ -16,7 +16,6 @@ type IProps = {
     serviceType: string;
     specificationId?: string;
     connectionConfiguration?: any;
-    selectedSource: string;
   }) => void;
   destination: Destination;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
@@ -63,8 +62,7 @@ const CreateSourcePage: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      specificationId: specification?.sourceSpecificationId,
-      selectedSource: sourceId
+      specificationId: specification?.sourceSpecificationId
     });
   };
 

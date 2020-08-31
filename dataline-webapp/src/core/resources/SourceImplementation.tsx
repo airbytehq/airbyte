@@ -5,12 +5,14 @@ export interface SourceImplementation {
   sourceImplementationId: string;
   workspaceId: string;
   sourceSpecificationId: string;
+  sourceId: string;
   connectionConfiguration: any; // TODO: fix type
 }
 
 export default class SourceImplementationResource extends BaseResource
   implements SourceImplementation {
   readonly sourceImplementationId: string = "";
+  readonly sourceId: string = "";
   readonly workspaceId: string = "";
   readonly sourceSpecificationId: string = "";
   readonly connectionConfiguration: any = [];

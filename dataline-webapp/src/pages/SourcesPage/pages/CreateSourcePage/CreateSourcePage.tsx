@@ -11,9 +11,11 @@ import { Routes } from "../../../routes";
 import useRouter from "../../../../components/hooks/useRouterHook";
 import DestinationImplementationResource from "../../../../core/resources/DestinationImplementation";
 import config from "../../../../config";
-import SourceResource, { Source } from "../../../../core/resources/Source";
+import SourceResource from "../../../../core/resources/Source";
 import DestinationResource from "../../../../core/resources/Destination";
-import SourceImplementationResource from "../../../../core/resources/SourceImplementation";
+import SourceImplementationResource, {
+  SourceImplementation
+} from "../../../../core/resources/SourceImplementation";
 
 const Content = styled.div`
   max-width: 638px;
@@ -41,7 +43,7 @@ const CreateSourcePage: React.FC = () => {
     workspaceId: config.ui.workspaceId
   });
   const destination = useResource(DestinationResource.detailShape(), {
-    destinationId: "22f6c74f-5699-40ff-833c-4a879ea40133" // TODO: fix it. Take from API
+    destinationId: currentDestination.destinationId
   });
   const createSourcesImplementation = useFetcher(
     SourceImplementationResource.createShape()
@@ -55,7 +57,6 @@ const CreateSourcePage: React.FC = () => {
       })),
     [sources]
   );
-  console.log(currentDestination);
 
   const steps = [
     {
@@ -68,21 +69,18 @@ const CreateSourcePage: React.FC = () => {
     }
   ];
   const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_SOURCE);
-  const [currentSource, setCurrentSource] = useState<Source | undefined>(
-    undefined
-  );
+  const [
+    currentSourceImplementation,
+    setCurrentSourceImplementation
+  ] = useState<SourceImplementation | null>(null);
 
   const onSubmitSourceStep = async (values: {
     name: string;
     serviceType: string;
     specificationId?: string;
     connectionConfiguration?: any;
-    selectedSource: string;
   }) => {
     setErrorStatusRequest(0);
-    setCurrentSource(
-      sources.find(item => item.sourceId === values.selectedSource)
-    );
     try {
       const result = await createSourcesImplementation(
         {},
@@ -92,7 +90,7 @@ const CreateSourcePage: React.FC = () => {
           connectionConfiguration: values.connectionConfiguration
         }
       );
-      console.log(result);
+      setCurrentSourceImplementation(result);
       setSuccessRequest(true);
       setTimeout(() => {
         setSuccessRequest(false);
@@ -121,7 +119,7 @@ const CreateSourcePage: React.FC = () => {
       <ConnectionStep
         onSubmit={onSubmitConnectionStep}
         destination={destination}
-        source={currentSource}
+        sourceId={currentSourceImplementation?.sourceId || ""}
       />
     );
   };

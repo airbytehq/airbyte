@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useResource, useFetcher } from "rest-hooks";
 
 import ContentCard from "../../../components/ContentCard";
 import ServiceForm from "../../../components/ServiceForm";
@@ -7,16 +8,9 @@ import ConnectionBlock from "../../../components/ConnectionBlock";
 import DestinationSpecificationResource, {
   DestinationSpecification
 } from "../../../core/resources/DestinationSpecification";
-import { useFetcher } from "rest-hooks";
+import SourceResource from "../../../core/resources/Source";
 
 type IProps = {
-  hasSuccess?: boolean;
-  onSubmit: (values: {
-    name: string;
-    serviceType: string;
-    specificationId?: string;
-    connectionConfiguration?: any;
-  }) => void;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
   hasSuccess?: boolean;
   onSubmit: (values: {
@@ -25,8 +19,8 @@ type IProps = {
     specificationId?: string;
     connectionConfiguration?: any;
   }) => void;
-  dropDownData: Array<{ text: string; value: string; img?: string }>;
   errorStatus?: number;
+  currentSourceId: string;
 };
 
 const useDestinationSpecificationLoad = (destinationId: string) => {
@@ -53,38 +47,18 @@ const useDestinationSpecificationLoad = (destinationId: string) => {
   return destinationSpecification;
 };
 
-const useDestinationSpecificationLoad = (destinationId: string) => {
-  const [
-    destinationSpecification,
-    setDestinationSpecification
-  ] = useState<null | DestinationSpecification>(null);
-
-  const fetchSourceSpecification = useFetcher(
-    DestinationSpecificationResource.detailShape(),
-    true
-  );
-
-  useEffect(() => {
-    (async () => {
-      if (destinationId) {
-        setDestinationSpecification(
-          await fetchSourceSpecification({ destinationId })
-        );
-      }
-    })();
-  }, [fetchSourceSpecification, destinationId]);
-
-  return destinationSpecification;
-};
-
-const Destination: React.FC<IProps> = ({
+const DestinationStep: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
   hasSuccess,
-  errorStatus
+  errorStatus,
+  currentSourceId
 }) => {
   const [destinationId, setDestinationId] = useState("");
   const specification = useDestinationSpecificationLoad(destinationId);
+  const currentSource = useResource(SourceResource.detailShape(), {
+    sourceId: currentSourceId
+  });
 
   const onDropDownSelect = (sourceId: string) => setDestinationId(sourceId);
   const onSubmitForm = async (values: {
@@ -106,7 +80,7 @@ const Destination: React.FC<IProps> = ({
 
   return (
     <>
-      <ConnectionBlock itemFrom={{ name: "Test 1" }} />
+      <ConnectionBlock itemFrom={{ name: currentSource.name }} />
       <ContentCard
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >
@@ -124,4 +98,4 @@ const Destination: React.FC<IProps> = ({
   );
 };
 
-export default Destination;
+export default DestinationStep;
