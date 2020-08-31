@@ -77,7 +77,8 @@ public class WorkerRunner implements Runnable {
       throw new RuntimeException(e);
     }
 
-    LOGGER.info("job: " + job.getId() + " " + job.getScope() + " " + job.getConfig().getConfigType());
+    LOGGER.info(
+        "job: " + job.getId() + " " + job.getScope() + " " + job.getConfig().getConfigType());
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
 
     switch (job.getConfig().getConfigType()) {
