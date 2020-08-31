@@ -11,3 +11,5 @@ include 'dataline-scheduler'
 include 'dataline-server'
 include 'dataline-webapp'
 include 'dataline-workers'
+include 'dataline-e2e-tests'
+
