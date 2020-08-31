@@ -99,9 +99,9 @@ public class ConnectionHelpers {
   }
 
   public static ConnectionRead generateExpectedConnectionRead(
-                                                              UUID connectionId,
-                                                              UUID sourceImplementationId,
-                                                              UUID destinationImplementationId) {
+      UUID connectionId,
+      UUID sourceImplementationId,
+      UUID destinationImplementationId) {
     final ConnectionRead expectedConnectionRead = new ConnectionRead();
     expectedConnectionRead.setConnectionId(connectionId);
     expectedConnectionRead.setSourceImplementationId(sourceImplementationId);

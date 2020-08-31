@@ -66,7 +66,7 @@ public class SourceImplementationsHandler {
     // validate configuration
     validateSourceImplementation(
         sourceImplementationCreate.getSourceSpecificationId(),
-        (String) sourceImplementationCreate.getConnectionConfiguration());
+        Jsons.serialize(sourceImplementationCreate.getConnectionConfiguration()));
 
     // persist
     final UUID sourceImplementationId = uuidGenerator.get();

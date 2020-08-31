@@ -89,13 +89,13 @@ class SourceImplementationsHandlerTest {
         PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
-            .thenReturn(sourceConnectionImplementation);
+        .thenReturn(sourceConnectionImplementation);
 
     when(configPersistence.getConfig(
         PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
-            .thenReturn(sourceConnectionSpecification);
+        .thenReturn(sourceConnectionSpecification);
 
     final SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate();
     sourceImplementationCreate.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
@@ -148,14 +148,14 @@ class SourceImplementationsHandlerTest {
         PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
-            .thenReturn(sourceConnectionImplementation)
-            .thenReturn(expectedSourceConnectionImplementation);
+        .thenReturn(sourceConnectionImplementation)
+        .thenReturn(expectedSourceConnectionImplementation);
 
     when(configPersistence.getConfig(
         PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
-            .thenReturn(sourceConnectionSpecification);
+        .thenReturn(sourceConnectionSpecification);
 
     final SourceImplementationUpdate sourceImplementationUpdate = new SourceImplementationUpdate();
     sourceImplementationUpdate.setSourceImplementationId(
@@ -184,13 +184,13 @@ class SourceImplementationsHandlerTest {
         PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
-            .thenReturn(sourceConnectionImplementation);
+        .thenReturn(sourceConnectionImplementation);
 
     when(configPersistence.getConfig(
         PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
-            .thenReturn(sourceConnectionSpecification);
+        .thenReturn(sourceConnectionSpecification);
 
     SourceImplementationRead expectedSourceImplementationRead =
         SourceImplementationHelpers.getSourceImplementationRead(
@@ -213,13 +213,13 @@ class SourceImplementationsHandlerTest {
     when(configPersistence.getConfigs(
         PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
         SourceConnectionImplementation.class))
-            .thenReturn(Sets.newHashSet(sourceConnectionImplementation));
+        .thenReturn(Sets.newHashSet(sourceConnectionImplementation));
 
     when(configPersistence.getConfig(
         PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
-            .thenReturn(sourceConnectionSpecification);
+        .thenReturn(sourceConnectionSpecification);
 
     SourceImplementationRead expectedSourceImplementationRead =
         SourceImplementationHelpers.getSourceImplementationRead(
@@ -257,14 +257,14 @@ class SourceImplementationsHandlerTest {
         PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
-            .thenReturn(sourceConnectionImplementation)
-            .thenReturn(expectedSourceConnectionImplementation);
+        .thenReturn(sourceConnectionImplementation)
+        .thenReturn(expectedSourceConnectionImplementation);
 
     when(configPersistence.getConfig(
         PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
-            .thenReturn(sourceConnectionSpecification);
+        .thenReturn(sourceConnectionSpecification);
 
     final SourceImplementationIdRequestBody sourceImplementationIdRequestBody =
         new SourceImplementationIdRequestBody();

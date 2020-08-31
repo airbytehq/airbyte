@@ -91,13 +91,13 @@ class ConnectionsHandlerTest {
         PersistenceConfigType.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         StandardSync.class))
-            .thenReturn(standardSync);
+        .thenReturn(standardSync);
 
     when(configPersistence.getConfig(
         PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
         standardSyncSchedule.getConnectionId().toString(),
         StandardSyncSchedule.class))
-            .thenReturn(standardSyncSchedule);
+        .thenReturn(standardSyncSchedule);
 
     final ConnectionCreate connectionCreate = new ConnectionCreate();
     connectionCreate.setSourceImplementationId(standardSync.getSourceImplementationId());
@@ -166,15 +166,15 @@ class ConnectionsHandlerTest {
         PersistenceConfigType.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         StandardSync.class))
-            .thenReturn(standardSync)
-            .thenReturn(updatedStandardSync);
+        .thenReturn(standardSync)
+        .thenReturn(updatedStandardSync);
 
     when(configPersistence.getConfig(
         PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
         standardSyncSchedule.getConnectionId().toString(),
         StandardSyncSchedule.class))
-            .thenReturn(standardSyncSchedule)
-            .thenReturn(updatedPersistenceSchedule);
+        .thenReturn(standardSyncSchedule)
+        .thenReturn(updatedPersistenceSchedule);
 
     final ConnectionRead actualConnectionRead =
         connectionsHandler.updateConnection(connectionUpdate);
@@ -210,13 +210,13 @@ class ConnectionsHandlerTest {
         PersistenceConfigType.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         StandardSync.class))
-            .thenReturn(standardSync);
+        .thenReturn(standardSync);
 
     when(configPersistence.getConfig(
         PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
         standardSync.getConnectionId().toString(),
         StandardSyncSchedule.class))
-            .thenReturn(standardSyncSchedule);
+        .thenReturn(standardSyncSchedule);
 
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(standardSync.getConnectionId());
@@ -239,14 +239,14 @@ class ConnectionsHandlerTest {
         PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
-            .thenReturn(sourceImplementation);
+        .thenReturn(sourceImplementation);
 
     // mock get schedule for the now verified connection
     when(configPersistence.getConfig(
         PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
         standardSync.getConnectionId().toString(),
         StandardSyncSchedule.class))
-            .thenReturn(standardSyncSchedule);
+        .thenReturn(standardSyncSchedule);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceImplementation.getWorkspaceId());

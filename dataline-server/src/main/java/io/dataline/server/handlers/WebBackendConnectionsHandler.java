@@ -44,16 +44,16 @@ public class WebBackendConnectionsHandler {
   private final JobHistoryHandler jobHistoryHandler;
 
   public WebBackendConnectionsHandler(
-                                      ConnectionsHandler connectionsHandler,
-                                      SourceImplementationsHandler sourceImplementationsHandler,
-                                      JobHistoryHandler jobHistoryHandler) {
+      ConnectionsHandler connectionsHandler,
+      SourceImplementationsHandler sourceImplementationsHandler,
+      JobHistoryHandler jobHistoryHandler) {
     this.connectionsHandler = connectionsHandler;
     this.sourceImplementationsHandler = sourceImplementationsHandler;
     this.jobHistoryHandler = jobHistoryHandler;
   }
 
   public WbConnectionReadList webBackendListConnectionsForWorkspace(
-                                                                    WorkspaceIdRequestBody workspaceIdRequestBody) {
+      WorkspaceIdRequestBody workspaceIdRequestBody) {
     final ConnectionReadList connectionReadList =
         connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
 
