@@ -69,6 +69,7 @@ class TestBigQueryDestination {
 
   @Test
   public void runTest() {
+    // todo: create script that builds the image and runs this test (and a script to publish)
     // todo: mount and submit config file
     GenericContainer<?> container = new GenericContainer<>("dataline/integration-singer-bigquery-destination");
     container.start();
