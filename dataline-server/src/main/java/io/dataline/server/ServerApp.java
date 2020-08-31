@@ -71,19 +71,21 @@ public class ServerApp {
     ResourceConfig rc =
         new ResourceConfig()
             // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add
-            //   auth.
+            // auth.
             // cors
             .register(new CorsFilter())
             // api
             .register(ConfigurationApi.class)
             .register(
                 new AbstractBinder() {
+
                   @Override
                   public void configure() {
                     bindFactory(ConfigurationApiFactory.class)
                         .to(ConfigurationApi.class)
                         .in(RequestScoped.class);
                   }
+
                 })
             // exception handling
             .register(InvalidInputExceptionMapper.class)
@@ -122,4 +124,5 @@ public class ServerApp {
     LOGGER.info("Starting server...");
     new ServerApp(configRoot).start();
   }
+
 }

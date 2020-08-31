@@ -29,6 +29,8 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 public interface TapFactory<T> {
+
   Stream<T> create(StandardTapConfig tapConfig, Path workspacePath)
       throws InvalidCredentialsException, InvalidCatalogException, SyncException;
+
 }

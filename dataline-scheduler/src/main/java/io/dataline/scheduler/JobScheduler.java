@@ -46,10 +46,9 @@ public class JobScheduler implements Runnable {
   private final SchedulerPersistence schedulerPersistence;
   private final ConfigPersistence configPersistence;
 
-  public JobScheduler(
-      BasicDataSource connectionPool,
-      SchedulerPersistence schedulerPersistence,
-      ConfigPersistence configPersistence) {
+  public JobScheduler(BasicDataSource connectionPool,
+                      SchedulerPersistence schedulerPersistence,
+                      ConfigPersistence configPersistence) {
     this.connectionPool = connectionPool;
     this.schedulerPersistence = schedulerPersistence;
     this.configPersistence = configPersistence;
@@ -102,7 +101,7 @@ public class JobScheduler implements Runnable {
               schedulerPersistence, configPersistence, connectionId);
         }
         break;
-        // todo (cgardens) - add max retry concept
+      // todo (cgardens) - add max retry concept
       case FAILED:
         JobUtils.createSyncJobFromConnectionId(
             schedulerPersistence, configPersistence, connectionId);
@@ -138,4 +137,5 @@ public class JobScheduler implements Runnable {
   private Set<StandardSync> getAllActiveConnections() {
     return ConfigFetchers.getStandardSyncs(configPersistence);
   }
+
 }

@@ -52,4 +52,5 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   public void dispose(ConfigurationApi service) {
     /* noop */
   }
+
 }

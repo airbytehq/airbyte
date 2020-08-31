@@ -24,6 +24,7 @@
 
 package io.dataline.workers.protocol.singer;
 
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.State;
 import java.util.Optional;
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class SingerMessageTracker implements Consumer<SingerMessage> {
+
   private final AtomicLong recordCount;
   private final AtomicReference<State> outputState;
   private final UUID connectionId;
@@ -51,7 +53,7 @@ public class SingerMessageTracker implements Consumer<SingerMessage> {
     if (record.getType().equals(SingerMessage.Type.STATE)) {
       final State state = new State();
       state.setConnectionId(connectionId);
-      state.setState(record);
+      state.setStateJson(Jsons.serialize(record));
       outputState.set(state);
     }
   }
@@ -63,4 +65,5 @@ public class SingerMessageTracker implements Consumer<SingerMessage> {
   public Optional<State> getOutputState() {
     return Optional.ofNullable(outputState.get());
   }
+
 }

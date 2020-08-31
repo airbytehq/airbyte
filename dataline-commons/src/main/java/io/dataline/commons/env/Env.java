@@ -27,6 +27,7 @@ package io.dataline.commons.env;
 import java.util.Objects;
 
 public enum Env {
+
   TEST,
   DOCKER;
 
@@ -40,4 +41,5 @@ public enum Env {
   public static boolean isDocker() {
     return CURRENT_ENV == Env.DOCKER;
   }
+
 }

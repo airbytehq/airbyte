@@ -66,12 +66,12 @@ public class SingerDiscoverSchemaWorker
 
   // package private since package-local classes need direct access to singer catalog, and the
   // conversion from SingerSchema to Dataline schema is lossy
-  OutputAndStatus<SingerCatalog> runInternal(
-      StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot)
+  OutputAndStatus<SingerCatalog> runInternal(StandardDiscoverSchemaInput discoverSchemaInput,
+                                             Path jobRoot)
       throws InvalidCredentialsException {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
-    //   reduced.
-    final String configDotJson = Jsons.serialize(discoverSchemaInput.getConnectionConfiguration());
+    // reduced.
+    final String configDotJson = discoverSchemaInput.getConnectionConfigurationJson();
 
     writeFile(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
 
@@ -105,8 +105,8 @@ public class SingerDiscoverSchemaWorker
   }
 
   @Override
-  public OutputAndStatus<StandardDiscoverSchemaOutput> run(
-      StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot)
+  public OutputAndStatus<StandardDiscoverSchemaOutput> run(StandardDiscoverSchemaInput discoverSchemaInput,
+                                                           Path jobRoot)
       throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> output = runInternal(discoverSchemaInput, jobRoot);
     JobStatus status = output.getStatus();
@@ -131,4 +131,5 @@ public class SingerDiscoverSchemaWorker
   public void cancel() {
     cancelHelper(workerProcess);
   }
+
 }

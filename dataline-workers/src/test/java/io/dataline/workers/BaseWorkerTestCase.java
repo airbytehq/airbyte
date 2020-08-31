@@ -40,6 +40,7 @@ import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseWorkerTestCase {
+
   // TODO inject via env
   protected Path workspaceRoot;
   protected ProcessBuilderFactory pbf;
@@ -71,4 +72,5 @@ public abstract class BaseWorkerTestCase {
   protected void assertJsonEquals(final String s1, final String s2) {
     assertEquals(Jsons.deserialize(s1), Jsons.deserialize(s2));
   }
+
 }

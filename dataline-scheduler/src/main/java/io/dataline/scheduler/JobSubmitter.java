@@ -45,12 +45,11 @@ public class JobSubmitter implements Runnable {
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
 
-  public JobSubmitter(
-      final ExecutorService threadPool,
-      final BasicDataSource connectionPool,
-      final SchedulerPersistence persistence,
-      final Path workspaceRoot,
-      final ProcessBuilderFactory pbf) {
+  public JobSubmitter(final ExecutorService threadPool,
+                      final BasicDataSource connectionPool,
+                      final SchedulerPersistence persistence,
+                      final Path workspaceRoot,
+                      final ProcessBuilderFactory pbf) {
     this.threadPool = threadPool;
     this.connectionPool = connectionPool;
     this.persistence = persistence;
@@ -97,4 +96,5 @@ public class JobSubmitter implements Runnable {
     threadPool.submit(
         new WorkerRunner(job.getId(), connectionPool, persistence, workspaceRoot, pbf));
   }
+
 }

@@ -29,5 +29,7 @@ import org.jooq.DSLContext;
 
 @FunctionalInterface
 public interface ContextExecutionFunction {
+
   void execute(DSLContext context) throws SQLException;
+
 }

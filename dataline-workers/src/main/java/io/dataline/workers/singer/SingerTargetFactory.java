@@ -26,7 +26,6 @@ package io.dataline.workers.singer;
 
 import com.google.common.base.Charsets;
 import io.dataline.commons.functional.CloseableConsumer;
-import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.workers.DefaultSyncWorker;
@@ -58,7 +57,7 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
   @Override
   public CloseableConsumer<SingerMessage> create(StandardTargetConfig targetConfig, Path jobRoot) {
     final String configDotJson =
-        Jsons.serialize(targetConfig.getDestinationConnectionImplementation().getConfiguration());
+        targetConfig.getDestinationConnectionImplementation().getConfigurationJson();
 
     // write config.json to disk
     Path configPath =
@@ -82,4 +81,5 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
       throw new RuntimeException(e);
     }
   }
+
 }

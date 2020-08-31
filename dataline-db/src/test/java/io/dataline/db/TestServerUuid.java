@@ -37,6 +37,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 public class TestServerUuid {
+
   private static PostgreSQLContainer container;
   private static BasicDataSource connectionPool;
 
@@ -46,8 +47,7 @@ public class TestServerUuid {
         new PostgreSQLContainer("postgres:13-alpine")
             .withDatabaseName("dataline")
             .withUsername("docker")
-            .withPassword("docker");
-    ;
+            .withPassword("docker");;
     container.start();
 
     try {
@@ -82,4 +82,5 @@ public class TestServerUuid {
 
     assertEquals(uuid1, uuid2);
   }
+
 }

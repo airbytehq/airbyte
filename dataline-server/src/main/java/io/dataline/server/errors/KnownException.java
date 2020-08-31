@@ -25,6 +25,7 @@
 package io.dataline.server.errors;
 
 public class KnownException extends RuntimeException {
+
   private final int httpCode;
 
   public KnownException(int httpCode, String message) {
@@ -40,4 +41,5 @@ public class KnownException extends RuntimeException {
   public int getHttpCode() {
     return httpCode;
   }
+
 }

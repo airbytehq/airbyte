@@ -28,6 +28,7 @@ import java.util.Optional;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class OutputAndStatus<OutputType> {
+
   private final OutputType output;
   private final JobStatus status;
 
@@ -53,4 +54,5 @@ public class OutputAndStatus<OutputType> {
   public JobStatus getStatus() {
     return status;
   }
+
 }

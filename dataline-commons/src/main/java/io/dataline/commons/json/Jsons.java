@@ -55,14 +55,6 @@ public class Jsons {
     }
   }
 
-  public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
-    try {
-      return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
-    } catch (IOException e) {
-      return Optional.empty();
-    }
-  }
-
   public static JsonNode deserialize(final String jsonString) {
     try {
       return OBJECT_MAPPER.readTree(jsonString);
@@ -71,7 +63,24 @@ public class Jsons {
     }
   }
 
+  public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
+    try {
+      return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
+    } catch (IOException e) {
+      return Optional.empty();
+    }
+  }
+
+  public static Optional<JsonNode> tryDeserialize(final String jsonString) {
+    try {
+      return Optional.of(OBJECT_MAPPER.readTree(jsonString));
+    } catch (IOException e) {
+      return Optional.empty();
+    }
+  }
+
   public static <T> JsonNode jsonNode(final T object) {
     return OBJECT_MAPPER.valueToTree(object);
   }
+
 }

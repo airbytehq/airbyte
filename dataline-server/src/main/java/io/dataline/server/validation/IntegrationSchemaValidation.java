@@ -46,29 +46,30 @@ public class IntegrationSchemaValidation {
     this.jsonSchemaValidation = new JsonSchemaValidation();
   }
 
-  public void validateSourceConnectionConfiguration(
-      UUID sourceConnectionSpecificationId, Object configuration) throws JsonValidationException {
+  public void validateSourceConnectionConfiguration(UUID sourceConnectionSpecificationId, String configurationJson)
+      throws JsonValidationException {
     final SourceConnectionSpecification sourceConnectionSpecification =
         ConfigFetchers.getSourceConnectionSpecification(
             configPersistence, sourceConnectionSpecificationId);
 
-    final JsonNode schemaJson = Jsons.jsonNode(sourceConnectionSpecification.getSpecification());
-    final JsonNode configJson = Jsons.jsonNode(configuration);
+    final JsonNode schemaJson =
+        Jsons.deserialize(sourceConnectionSpecification.getSpecificationJson());
+    final JsonNode configJson = Jsons.deserialize(configurationJson);
 
     jsonSchemaValidation.validateThrow(schemaJson, configJson);
   }
 
-  public void validateDestinationConnectionConfiguration(
-      UUID destinationConnectionSpecificationId, Object configuration)
+  public void validateDestinationConnectionConfiguration(UUID destinationConnectionSpecificationId, String configurationJson)
       throws JsonValidationException {
     final DestinationConnectionSpecification destinationConnectionSpecification =
         ConfigFetchers.getDestinationConnectionSpecification(
             configPersistence, destinationConnectionSpecificationId);
 
     final JsonNode schemaJson =
-        Jsons.jsonNode(destinationConnectionSpecification.getSpecification());
-    final JsonNode configJson = Jsons.jsonNode(configuration);
+        Jsons.deserialize(destinationConnectionSpecification.getSpecificationJson());
+    final JsonNode configJson = Jsons.deserialize(configurationJson);
 
     jsonSchemaValidation.validateThrow(schemaJson, configJson);
   }
+
 }

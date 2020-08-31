@@ -52,12 +52,11 @@ public class WorkerRunner implements Runnable {
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
 
-  public WorkerRunner(
-      long jobId,
-      BasicDataSource connectionPool,
-      SchedulerPersistence persistence,
-      Path workspaceRoot,
-      ProcessBuilderFactory pbf) {
+  public WorkerRunner(long jobId,
+                      BasicDataSource connectionPool,
+                      SchedulerPersistence persistence,
+                      Path workspaceRoot,
+                      ProcessBuilderFactory pbf) {
     this.jobId = jobId;
     this.connectionPool = connectionPool;
     this.persistence = persistence;
@@ -82,60 +81,58 @@ public class WorkerRunner implements Runnable {
         final StandardCheckConnectionInput checkConnectionInput =
             getCheckConnectionInput(job.getConfig().getCheckConnection());
         new WorkerRun<>(
-                jobId,
-                jobRoot,
-                checkConnectionInput,
-                new SingerCheckConnectionWorker(
-                    job.getConfig().getCheckConnection().getDockerImage(), pbf),
-                connectionPool)
-            .run();
+            jobId,
+            jobRoot,
+            checkConnectionInput,
+            new SingerCheckConnectionWorker(
+                job.getConfig().getCheckConnection().getDockerImage(), pbf),
+            connectionPool)
+                .run();
         break;
       case DISCOVER_SCHEMA:
         final StandardDiscoverSchemaInput discoverSchemaInput =
             getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
         new WorkerRun<>(
-                jobId,
-                jobRoot,
-                discoverSchemaInput,
-                new SingerDiscoverSchemaWorker(
-                    job.getConfig().getDiscoverSchema().getDockerImage(), pbf),
-                connectionPool)
-            .run();
+            jobId,
+            jobRoot,
+            discoverSchemaInput,
+            new SingerDiscoverSchemaWorker(
+                job.getConfig().getDiscoverSchema().getDockerImage(), pbf),
+            connectionPool)
+                .run();
         break;
       case SYNC:
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         new WorkerRun<>(
-                jobId,
-                jobRoot,
-                syncInput,
-                // todo (cgardens) - still locked into only using SingerTaps and Targets. Next step
-                //   here is to create DefaultTap and DefaultTarget which will be able to
-                //   interoperate with SingerTap and SingerTarget now that they are split and
-                //   mediated in DefaultSyncWorker.
-                new DefaultSyncWorker(
-                    new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf),
-                    new SingerTargetFactory(
-                        job.getConfig().getSync().getDestinationDockerImage(), pbf)),
-                connectionPool)
-            .run();
+            jobId,
+            jobRoot,
+            syncInput,
+            // todo (cgardens) - still locked into only using SingerTaps and Targets. Next step
+            // here is to create DefaultTap and DefaultTarget which will be able to
+            // interoperate with SingerTap and SingerTarget now that they are split and
+            // mediated in DefaultSyncWorker.
+            new DefaultSyncWorker(
+                new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf),
+                new SingerTargetFactory(
+                    job.getConfig().getSync().getDestinationDockerImage(), pbf)),
+            connectionPool)
+                .run();
         break;
       default:
         throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }
   }
 
-  private static StandardCheckConnectionInput getCheckConnectionInput(
-      JobCheckConnectionConfig config) {
+  private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
     final StandardCheckConnectionInput checkConnectionInput = new StandardCheckConnectionInput();
-    checkConnectionInput.setConnectionConfiguration(config.getConnectionConfiguration());
+    checkConnectionInput.setConnectionConfigurationJson(config.getConnectionConfigurationJson());
 
     return checkConnectionInput;
   }
 
-  private static StandardDiscoverSchemaInput getDiscoverSchemaInput(
-      JobDiscoverSchemaConfig config) {
+  private static StandardDiscoverSchemaInput getDiscoverSchemaInput(JobDiscoverSchemaConfig config) {
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfiguration(config.getConnectionConfiguration());
+    discoverSchemaInput.setConnectionConfigurationJson(config.getConnectionConfigurationJson());
 
     return discoverSchemaInput;
   }
@@ -149,4 +146,5 @@ public class WorkerRunner implements Runnable {
 
     return syncInput;
   }
+
 }

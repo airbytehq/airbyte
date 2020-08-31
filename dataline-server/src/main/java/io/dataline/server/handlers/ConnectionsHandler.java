@@ -34,12 +34,14 @@ import io.dataline.api.model.ConnectionUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.enums.Enums;
 import io.dataline.config.Schedule;
+import io.dataline.config.Schema;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.converters.SchemaConverter;
 import io.dataline.server.helpers.ConfigFetchers;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -69,7 +71,13 @@ public class ConnectionsHandler {
     standardSync.setDestinationImplementationId(connectionCreate.getDestinationImplementationId());
     // todo (cgardens): for MVP we only support append.
     standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
-    standardSync.setSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
+    if (connectionCreate.getSyncSchema() != null) {
+      standardSync.setSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
+    } else {
+      final Schema schema = new Schema();
+      schema.setTables(Collections.emptyList());
+      standardSync.setSchema(schema);
+    }
     standardSync.setName(
         connectionCreate.getName() != null ? connectionCreate.getName() : "default");
     standardSync.setStatus(toPersistenceStatus(connectionCreate.getStatus()));
@@ -143,8 +151,7 @@ public class ConnectionsHandler {
   }
 
   // todo (cgardens) - this is a disaster without a relational db.
-  public ConnectionReadList listConnectionsForWorkspace(
-      WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public ConnectionReadList listConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
 
     final List<ConnectionRead> reads =
         // read all connections.
@@ -152,11 +159,10 @@ public class ConnectionsHandler {
             // filter out connections attached to source implementations NOT associated with the
             // workspace
             .filter(
-                standardSync ->
-                    ConfigFetchers.getSourceConnectionImplementation(
-                            configPersistence, standardSync.getSourceImplementationId())
-                        .getWorkspaceId()
-                        .equals(workspaceIdRequestBody.getWorkspaceId()))
+                standardSync -> ConfigFetchers.getSourceConnectionImplementation(
+                    configPersistence, standardSync.getSourceImplementationId())
+                    .getWorkspaceId()
+                    .equals(workspaceIdRequestBody.getWorkspaceId()))
 
             // pull the sync schedule
             // convert to api format
@@ -194,8 +200,8 @@ public class ConnectionsHandler {
     return ConfigFetchers.getStandardSyncSchedule(configPersistence, connectionId);
   }
 
-  private ConnectionRead toConnectionRead(
-      StandardSync standardSync, StandardSyncSchedule standardSyncSchedule) {
+  private ConnectionRead toConnectionRead(StandardSync standardSync,
+                                          StandardSyncSchedule standardSyncSchedule) {
     final ConnectionSchedule apiSchedule;
 
     standardSyncSchedule.setConnectionId(standardSyncSchedule.getConnectionId());
@@ -239,4 +245,5 @@ public class ConnectionsHandler {
   private ConnectionSchedule.TimeUnitEnum toApiTimeUnit(Schedule.TimeUnit apiTimeUnit) {
     return Enums.convertTo(apiTimeUnit, ConnectionSchedule.TimeUnitEnum.class);
   }
+
 }

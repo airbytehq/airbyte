@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/SourceConnectionConfiguration.json",
+  "title": "SourceConnectionConfiguration",
+  "description": "information required for connection to a destination.",
+  "type": "object",
+  "required": [
+    "sourceSpecificationId",
+    "sourceImplementationId",
+    "workspaceId",
+    "configuration",
+    "tombstone"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "sourceSpecificationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "workspaceId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "sourceImplementationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "configurationJson": {
+      "type": "string",
+      "description": "Integration specific blob. Must be a valid JSON string."
+    },
+    "tombstone": {
+      "description": "if not set or false, the configuration is active. if true, then this configuration is permanently off.",
+      "type": "boolean"
+    }
+  }
+}
