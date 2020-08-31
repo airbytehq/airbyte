@@ -118,6 +118,12 @@ class DestinationImplementationsHandlerTest {
         DestinationConnectionImplementation.class))
             .thenReturn(destinationConnectionImplementation);
 
+    when(configPersistence.getConfig(
+            PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
+            destinationConnectionImplementation.getDestinationSpecificationId().toString(),
+            DestinationConnectionSpecification.class))
+        .thenReturn(destinationConnectionSpecification);
+
     final DestinationImplementationCreate destinationImplementationCreate =
         new DestinationImplementationCreate();
     destinationImplementationCreate.setWorkspaceId(
@@ -133,6 +139,8 @@ class DestinationImplementationsHandlerTest {
 
     DestinationImplementationRead expectedDestinationImplementationRead =
         new DestinationImplementationRead();
+    expectedDestinationImplementationRead.setDestinationId(
+        destinationConnectionSpecification.getDestinationId());
     expectedDestinationImplementationRead.setDestinationSpecificationId(
         destinationConnectionSpecification.getDestinationSpecificationId());
     expectedDestinationImplementationRead.setWorkspaceId(
@@ -181,6 +189,12 @@ class DestinationImplementationsHandlerTest {
             .thenReturn(destinationConnectionImplementation)
             .thenReturn(expectedDestinationConnectionImplementation);
 
+    when(configPersistence.getConfig(
+            PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
+            destinationConnectionImplementation.getDestinationSpecificationId().toString(),
+            DestinationConnectionSpecification.class))
+        .thenReturn(destinationConnectionSpecification);
+
     final DestinationImplementationUpdate destinationImplementationUpdate =
         new DestinationImplementationUpdate();
     destinationImplementationUpdate.setDestinationImplementationId(
@@ -192,6 +206,8 @@ class DestinationImplementationsHandlerTest {
 
     DestinationImplementationRead expectedDestinationImplementationRead =
         new DestinationImplementationRead();
+    expectedDestinationImplementationRead.setDestinationId(
+        destinationConnectionSpecification.getDestinationId());
     expectedDestinationImplementationRead.setDestinationSpecificationId(
         destinationConnectionSpecification.getDestinationSpecificationId());
     expectedDestinationImplementationRead.setWorkspaceId(
@@ -217,8 +233,16 @@ class DestinationImplementationsHandlerTest {
         DestinationConnectionImplementation.class))
             .thenReturn(destinationConnectionImplementation);
 
+    when(configPersistence.getConfig(
+            PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
+            destinationConnectionImplementation.getDestinationSpecificationId().toString(),
+            DestinationConnectionSpecification.class))
+        .thenReturn(destinationConnectionSpecification);
+
     DestinationImplementationRead expectedDestinationImplementationRead =
         new DestinationImplementationRead();
+    expectedDestinationImplementationRead.setDestinationId(
+        destinationConnectionSpecification.getDestinationId());
     expectedDestinationImplementationRead.setDestinationSpecificationId(
         destinationConnectionImplementation.getDestinationSpecificationId());
     expectedDestinationImplementationRead.setWorkspaceId(
@@ -241,14 +265,23 @@ class DestinationImplementationsHandlerTest {
   }
 
   @Test
-  void testListDestinationImplementationsForWorkspace() throws JsonValidationException {
+  void testListDestinationImplementationsForWorkspace()
+      throws JsonValidationException, ConfigNotFoundException {
     when(configPersistence.getConfigs(
         PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
         DestinationConnectionImplementation.class))
             .thenReturn(Sets.newHashSet(destinationConnectionImplementation));
 
+    when(configPersistence.getConfig(
+            PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
+            destinationConnectionImplementation.getDestinationSpecificationId().toString(),
+            DestinationConnectionSpecification.class))
+        .thenReturn(destinationConnectionSpecification);
+
     DestinationImplementationRead expectedDestinationImplementationRead =
         new DestinationImplementationRead();
+    expectedDestinationImplementationRead.setDestinationId(
+        destinationConnectionSpecification.getDestinationId());
     expectedDestinationImplementationRead.setDestinationSpecificationId(
         destinationConnectionImplementation.getDestinationSpecificationId());
     expectedDestinationImplementationRead.setWorkspaceId(

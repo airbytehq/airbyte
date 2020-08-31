@@ -29,9 +29,13 @@ import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.ConfigSchema;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -42,7 +46,9 @@ import org.apache.commons.io.FileUtils;
 
 // we force all interaction with disk storage to be effectively single threaded.
 public class DefaultConfigPersistence implements ConfigPersistence {
-
+  private static final String CONFIG_PATH_IN_JAR = "/json";
+  private static final String CONFIG_DIR = "schemas";
+  private static final Path configFilesRoot = getConfigFiles();
   private static final Object lock = new Object();
 
   private final JsonSchemaValidation jsonSchemaValidation;
@@ -51,6 +57,44 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   public DefaultConfigPersistence(Path storageRoot) {
     this.storageRoot = storageRoot;
     jsonSchemaValidation = new JsonSchemaValidation();
+  }
+
+  /**
+   * JsonReferenceProcessor relies on all of the json in consumes being in a file system (not in a
+   * jar). This method copies all of the json configs out of the jar into a temporary directory so
+   * that JsonReferenceProcessor can find them.
+   *
+   * @return path where the config files can be found.
+   */
+  private static Path getConfigFiles() {
+    final URI uri;
+    try {
+      uri = ConfigSchema.class.getResource(CONFIG_PATH_IN_JAR).toURI();
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+
+    try {
+      final Path configRoot = Files.createTempDirectory("").resolve(CONFIG_DIR);
+      Files.createDirectories(configRoot);
+
+      final FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
+      Path configPathInJar = fileSystem.getPath(CONFIG_PATH_IN_JAR);
+      Files.walk(configPathInJar, 1)
+          .forEach(
+              path -> {
+                if (path.toString().endsWith(".json")) {
+                  try {
+                    Files.copy(path, configRoot.resolve(path.getFileName().toString()));
+                  } catch (IOException e) {
+                    throw new RuntimeException(e);
+                  }
+                }
+              });
+      return configRoot;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -119,19 +163,14 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   JsonNode getSchema(PersistenceConfigType persistenceConfigType) {
     final String configSchemaFilename =
         standardConfigTypeToConfigSchema(persistenceConfigType).getSchemaFilename();
-    final String filenameWithPrefix = ConfigSchema.getSchemaDirectory() + configSchemaFilename;
-    final URL resource = ConfigSchema.class.getClassLoader().getResource(filenameWithPrefix);
-    if (resource == null) {
-      throw new RuntimeException(
-          String.format("Could not find resource for %s.", persistenceConfigType));
-    }
+    final Path configFilePath = configFilesRoot.resolve(configSchemaFilename);
 
     try {
       // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
       // this.
       final JsonReferenceProcessor jsonReferenceProcessor = new JsonReferenceProcessor();
       jsonReferenceProcessor.setMaxDepth(-1); // no max.
-      return jsonReferenceProcessor.process(resource);
+      return jsonReferenceProcessor.process(configFilePath.toFile());
     } catch (IOException | JsonReferenceException e) {
       throw new RuntimeException(e);
     }
