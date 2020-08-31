@@ -49,7 +49,7 @@ subprojects {
 
 
     pmdMain {
-        exclude 
+        exclude '**'
         ignoreFailures = true
         consoleOutput = true
 
