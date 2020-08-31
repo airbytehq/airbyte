@@ -47,27 +47,16 @@ subprojects {
         mavenCentral()
     }
 
-
-    pmdMain {
-        exclude '**'
+    pmd {
         ignoreFailures = true
         consoleOutput = true
 
         rulePriority = 5
-        ruleSets = [
-//                'category/java/errorprone.xml',
-                'category/java/bestpractices.xml'
-        ]
+        ruleSets = []
+        ruleSetFiles = files(
+                rootProject.file('tools/gradle/pmd/rules.xml')
+        )
     }
-    pmdTest {
-        exclude '**/build/**'
-
-        ignoreFailures = true
-        consoleOutput = true
-    }
-//    pmd {
-//
-//    }
 
     spotless {
         java {
