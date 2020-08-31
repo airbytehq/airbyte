@@ -612,7 +612,7 @@ paths:
   /v1/jobs/list:
     post:
       tags:
-        - jobs
+      - jobs
       summary: Returns recent jobs for a connection.
       operationId: listJobsFor
       requestBody:
@@ -635,7 +635,7 @@ paths:
   /v1/jobs/get:
     post:
       tags:
-        - jobs
+      - jobs
       summary: Get information about a job
       operationId: getJobInfo
       requestBody:
@@ -1020,7 +1020,7 @@ components:
       - sourceImplementationId
       - destinationImplementationId
       - syncMode
-      - schema
+      - syncSchema
       - status
       properties:
         connectionId:
@@ -1090,11 +1090,25 @@ components:
     SourceSchema:
       description: describes the available schema.
       type: object
+      required:
+      - tables
       properties:
         tables:
           type: array
           items:
             $ref: "#/components/schemas/SourceSchemaTable"
+    SourceSchemaTable:
+      type: object
+      required:
+      - name
+      - columns
+      properties:
+        name:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceSchemaColumn"
     SourceSchemaColumn:
       type: object
       required:
@@ -1114,18 +1128,6 @@ components:
       - string
       - number
       - boolean
-    SourceSchemaTable:
-      type: object
-      required:
-      - name
-      - columns
-      properties:
-        name:
-          type: string
-        columns:
-          type: array
-          items:
-            $ref: "#/components/schemas/SourceSchemaColumn"
     # SCHEDULER
     JobId:
       type: integer
@@ -1133,15 +1135,15 @@ components:
     JobConfigType:
       type: string
       enum:
-        - checkConnectionSource
-        - checkConnectionDestination
-        - discoverSchema
-        - sync
+      - checkConnectionSource
+      - checkConnectionDestination
+      - discoverSchema
+      - sync
     JobListRequestBody:
       type: object
       required:
-        - config_type
-        - config_id
+      - config_type
+      - config_id
       properties:
         config_type:
           $ref: "#/components/schemas/JobConfigType"
@@ -1150,19 +1152,19 @@ components:
     JobIdRequestBody:
       type: object
       required:
-        - id
+      - id
       properties:
         id:
           $ref: "#/components/schemas/JobId"
     JobRead:
       type: object
       required:
-        - id
-        - config_type
-        - config_id
-        - created_at
-        - updated_at
-        - status
+      - id
+      - config_type
+      - config_id
+      - created_at
+      - updated_at
+      - status
       properties:
         id:
           $ref: "#/components/schemas/JobId"
@@ -1182,15 +1184,15 @@ components:
         status:
           type: string
           enum:
-            - pending
-            - running
-            - failed
-            - completed
-            - cancelled
+          - pending
+          - running
+          - failed
+          - completed
+          - cancelled
     JobReadList:
       type: object
       required:
-        - jobs
+      - jobs
       properties:
         jobs:
           type: array
@@ -1199,8 +1201,8 @@ components:
     JobInfoRead:
       type: object
       required:
-        - job
-        - logs
+      - job
+      - logs
       properties:
         job:
           $ref: "#/components/schemas/JobRead"
@@ -1209,8 +1211,8 @@ components:
     LogRead:
       type: object
       required:
-        - stdout
-        - stderr
+      - stdout
+      - stderr
       properties:
         stdout:
           type: array
