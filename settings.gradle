@@ -11,3 +11,12 @@ include 'dataline-scheduler'
 include 'dataline-server'
 include 'dataline-webapp'
 include 'dataline-workers'
+
+Properties env = new Properties()
+File envFile = file(".env.integration-tests")
+envFile.withInputStream { env.load(it) }
+
+if (env.containsKey("INTEGRATION_TESTS")) {
+    include 'dataline-integration-tests'
+}
+
