@@ -975,7 +975,6 @@ components:
       - sourceImplementationId
       - destinationImplementationId
       - syncMode
-      - syncSchema
       - status
       properties:
         name:
