@@ -37,10 +37,10 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 
 public class JobUtils {
-  public static long createSyncJobFromConnectionId(
-      SchedulerPersistence schedulerPersistence,
-      ConfigPersistence configPersistence,
-      UUID connectionId) {
+
+  public static long createSyncJobFromConnectionId(SchedulerPersistence schedulerPersistence,
+                                                   ConfigPersistence configPersistence,
+                                                   UUID connectionId) {
     final StandardSync standardSync;
     standardSync = ConfigFetchers.getStandardSync(configPersistence, connectionId);
 
@@ -59,8 +59,9 @@ public class JobUtils {
     }
   }
 
-  public static Optional<Job> getLastSyncJobForConnectionId(
-      BasicDataSource connectionPool, UUID connectionId) throws IOException {
+  public static Optional<Job> getLastSyncJobForConnectionId(BasicDataSource connectionPool,
+                                                            UUID connectionId)
+      throws IOException {
     try {
       return DatabaseHelper.query(
           connectionPool,
@@ -86,4 +87,5 @@ public class JobUtils {
       throw new IOException(throwables);
     }
   }
+
 }

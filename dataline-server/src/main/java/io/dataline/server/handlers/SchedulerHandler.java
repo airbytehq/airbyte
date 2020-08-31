@@ -49,20 +49,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SchedulerHandler {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
 
   private final ConfigPersistence configPersistence;
   private final SchedulerPersistence schedulerPersistence;
 
-  public SchedulerHandler(
-      ConfigPersistence configPersistence, SchedulerPersistence schedulerPersistence) {
+  public SchedulerHandler(ConfigPersistence configPersistence,
+                          SchedulerPersistence schedulerPersistence) {
 
     this.configPersistence = configPersistence;
     this.schedulerPersistence = schedulerPersistence;
   }
 
-  public CheckConnectionRead checkSourceImplementationConnection(
-      SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+  public CheckConnectionRead checkSourceImplementationConnection(SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
 
     final SourceConnectionImplementation connectionImplementation =
         ConfigFetchers.getSourceConnectionImplementation(
@@ -80,8 +80,7 @@ public class SchedulerHandler {
     return reportConnectionStatus(job);
   }
 
-  public CheckConnectionRead checkDestinationImplementationConnection(
-      DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+  public CheckConnectionRead checkDestinationImplementationConnection(DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
 
     final DestinationConnectionImplementation connectionImplementation =
         ConfigFetchers.getDestinationConnectionImplementation(
@@ -100,8 +99,7 @@ public class SchedulerHandler {
     return reportConnectionStatus(job);
   }
 
-  public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(
-      SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
+  public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     final SourceConnectionImplementation connectionImplementation =
         ConfigFetchers.getSourceConnectionImplementation(
             configPersistence, sourceImplementationIdRequestBody.getSourceImplementationId());
@@ -131,7 +129,8 @@ public class SchedulerHandler {
   }
 
   public ConnectionSyncRead syncConnection(ConnectionIdRequestBody connectionIdRequestBody) {
-    @NotNull final UUID connectionId = connectionIdRequestBody.getConnectionId();
+    @NotNull
+    final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync;
     standardSync = ConfigFetchers.getStandardSync(configPersistence, connectionId);
 
@@ -204,4 +203,5 @@ public class SchedulerHandler {
 
     return checkConnectionRead;
   }
+
 }

@@ -72,4 +72,5 @@ public abstract class BaseSingerWorker<InputType, OutputType>
   protected static Path getFullPath(Path workspaceRoot, String fileName) {
     return workspaceRoot.resolve(fileName);
   }
+
 }

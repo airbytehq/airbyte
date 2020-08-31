@@ -25,5 +25,7 @@
 package io.dataline.config.init;
 
 public class DatalineConfigInitConstants {
+
   public static final String PLACEHOLDER = "";
+
 }

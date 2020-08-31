@@ -43,8 +43,9 @@ import org.slf4j.LoggerFactory;
  * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
  * persisted to the db.
  *
- * <p>todo (cgardens) - this line between this abstraction and WorkerRunner is a little blurry. we
- * can clarify it later. the main benefit is of this class is that it gives us some type safety when
+ * <p>
+ * todo (cgardens) - this line between this abstraction and WorkerRunner is a little blurry. we can
+ * clarify it later. the main benefit is of this class is that it gives us some type safety when
  * working with workers. you can probably make an argument that this class should not have access to
  * the db.
  *
@@ -61,12 +62,11 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
   private final Worker<InputType, OutputType> worker;
   private final BasicDataSource connectionPool;
 
-  public WorkerRun(
-      long jobId,
-      Path jobRoot,
-      InputType input,
-      Worker<InputType, OutputType> worker,
-      BasicDataSource connectionPool) {
+  public WorkerRun(long jobId,
+                   Path jobRoot,
+                   InputType input,
+                   Worker<InputType, OutputType> worker,
+                   BasicDataSource connectionPool) {
     this.jobId = jobId;
     this.jobRoot = jobRoot;
     this.input = input;
@@ -117,12 +117,11 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
     try {
       DatabaseHelper.query(
           connectionPool,
-          ctx ->
-              ctx.execute(
-                  "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
-                  status.toString().toLowerCase(),
-                  now,
-                  jobId));
+          ctx -> ctx.execute(
+              "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
+              status.toString().toLowerCase(),
+              now,
+              jobId));
     } catch (SQLException e) {
       LOGGER.error("SQL Error", e);
       throw new RuntimeException(e);
@@ -135,15 +134,15 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
     try {
       DatabaseHelper.query(
           connectionPool,
-          ctx ->
-              ctx.execute(
-                  "UPDATE jobs SET output = CAST(? as JSONB), updated_at = ? WHERE id = ?",
-                  outputJson,
-                  now,
-                  jobId));
+          ctx -> ctx.execute(
+              "UPDATE jobs SET output = CAST(? as JSONB), updated_at = ? WHERE id = ?",
+              outputJson,
+              now,
+              jobId));
     } catch (SQLException e) {
       LOGGER.error("SQL Error", e);
       throw new RuntimeException(e);
     }
   }
+
 }

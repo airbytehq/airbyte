@@ -36,16 +36,16 @@ import java.util.Set;
 import java.util.UUID;
 
 // todo (cgardens) - deduplicate this with the ConfigFetchers in dataline-server. requires creating
-//   a class that takes in an exception provider. also requires figuring out the dependency DAG to
-//   avoid circular dependency issues.
+// a class that takes in an exception provider. also requires figuring out the dependency DAG to
+// avoid circular dependency issues.
 /**
  * These helpers catch exceptions thrown in the config persistence and throws them as
  * RuntimeExceptions
  */
 public class ConfigFetchers {
 
-  public static SourceConnectionImplementation getSourceConnectionImplementation(
-      ConfigPersistence configPersistence, UUID sourceImplementationId) {
+  public static SourceConnectionImplementation getSourceConnectionImplementation(ConfigPersistence configPersistence,
+                                                                                 UUID sourceImplementationId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
@@ -58,8 +58,8 @@ public class ConfigFetchers {
     }
   }
 
-  public static DestinationConnectionImplementation getDestinationConnectionImplementation(
-      ConfigPersistence configPersistence, UUID destinationImplementationId) {
+  public static DestinationConnectionImplementation getDestinationConnectionImplementation(ConfigPersistence configPersistence,
+                                                                                           UUID destinationImplementationId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
@@ -73,8 +73,8 @@ public class ConfigFetchers {
     }
   }
 
-  public static StandardSync getStandardSync(
-      ConfigPersistence configPersistence, UUID connectionId) {
+  public static StandardSync getStandardSync(ConfigPersistence configPersistence,
+                                             UUID connectionId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
@@ -93,8 +93,8 @@ public class ConfigFetchers {
     }
   }
 
-  public static StandardSyncSchedule getStandardSyncSchedule(
-      ConfigPersistence configPersistence, UUID connectionId) {
+  public static StandardSyncSchedule getStandardSyncSchedule(ConfigPersistence configPersistence,
+                                                             UUID connectionId) {
     try {
       return configPersistence.getConfig(
           PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
@@ -107,8 +107,9 @@ public class ConfigFetchers {
     }
   }
 
-  private static RuntimeException getConfigNotFoundException(
-      Throwable e, String configName, UUID id) {
+  private static RuntimeException getConfigNotFoundException(Throwable e,
+                                                             String configName,
+                                                             UUID id) {
     return new RuntimeException(
         String.format("Could not find sync configuration for %s: %s.", configName, id), e);
   }
@@ -120,4 +121,5 @@ public class ConfigFetchers {
             e.getMessage()),
         e);
   }
+
 }

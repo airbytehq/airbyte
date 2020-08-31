@@ -44,6 +44,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DestinationsHandlerTest {
+
   private ConfigPersistence configPersistence;
   private StandardDestination destination;
   private DestinationsHandler destinationHandler;
@@ -74,8 +75,8 @@ class DestinationsHandlerTest {
         destination2);
 
     when(configPersistence.getConfigs(
-            PersistenceConfigType.STANDARD_DESTINATION, StandardDestination.class))
-        .thenReturn(Sets.newHashSet(destination, destination2));
+        PersistenceConfigType.STANDARD_DESTINATION, StandardDestination.class))
+            .thenReturn(Sets.newHashSet(destination, destination2));
 
     DestinationRead expectedDestinationRead1 = new DestinationRead();
     expectedDestinationRead1.setDestinationId(destination.getDestinationId());
@@ -90,14 +91,12 @@ class DestinationsHandlerTest {
     final Optional<DestinationRead> actualDestinationRead1 =
         actualDestinationReadList.getDestinations().stream()
             .filter(
-                destinationRead ->
-                    destinationRead.getDestinationId().equals(destination.getDestinationId()))
+                destinationRead -> destinationRead.getDestinationId().equals(destination.getDestinationId()))
             .findFirst();
     final Optional<DestinationRead> actualDestinationRead2 =
         actualDestinationReadList.getDestinations().stream()
             .filter(
-                destinationRead ->
-                    destinationRead.getDestinationId().equals(destination2.getDestinationId()))
+                destinationRead -> destinationRead.getDestinationId().equals(destination2.getDestinationId()))
             .findFirst();
 
     assertTrue(actualDestinationRead1.isPresent());
@@ -109,10 +108,10 @@ class DestinationsHandlerTest {
   @Test
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException {
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_DESTINATION,
-            destination.getDestinationId().toString(),
-            StandardDestination.class))
-        .thenReturn(destination);
+        PersistenceConfigType.STANDARD_DESTINATION,
+        destination.getDestinationId().toString(),
+        StandardDestination.class))
+            .thenReturn(destination);
 
     DestinationRead expectedDestinationRead = new DestinationRead();
     expectedDestinationRead.setDestinationId(destination.getDestinationId());
@@ -126,4 +125,5 @@ class DestinationsHandlerTest {
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
   }
+
 }

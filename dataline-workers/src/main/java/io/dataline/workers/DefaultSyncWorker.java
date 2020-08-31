@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultSyncWorker implements SyncWorker {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSyncWorker.class);
 
   public static final String TAP_ERR_LOG = "tap_err.log";
@@ -49,9 +50,8 @@ public class DefaultSyncWorker implements SyncWorker {
 
   private final AtomicBoolean cancelled;
 
-  public DefaultSyncWorker(
-      TapFactory<SingerMessage> singerTapFactory,
-      TargetFactory<SingerMessage> singerTargetFactory) {
+  public DefaultSyncWorker(TapFactory<SingerMessage> singerTapFactory,
+                           TargetFactory<SingerMessage> singerTargetFactory) {
     this.singerTapFactory = singerTapFactory;
     this.singerTargetFactory = singerTargetFactory;
     this.cancelled = new AtomicBoolean(false);
@@ -98,4 +98,5 @@ public class DefaultSyncWorker implements SyncWorker {
   public void cancel() {
     cancelled.set(true);
   }
+
 }

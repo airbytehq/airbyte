@@ -44,6 +44,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class WorkspacesHandlerTest {
+
   private ConfigPersistence configPersistence;
   private StandardWorkspace workspace;
   private WorkspacesHandler workspacesHandler;
@@ -71,10 +72,10 @@ class WorkspacesHandlerTest {
   @Test
   void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException {
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_WORKSPACE,
-            workspace.getWorkspaceId().toString(),
-            StandardWorkspace.class))
-        .thenReturn(workspace);
+        PersistenceConfigType.STANDARD_WORKSPACE,
+        workspace.getWorkspaceId().toString(),
+        StandardWorkspace.class))
+            .thenReturn(workspace);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(workspace.getWorkspaceId());
@@ -91,10 +92,10 @@ class WorkspacesHandlerTest {
   @Test
   void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException {
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_WORKSPACE,
-            workspace.getWorkspaceId().toString(),
-            StandardWorkspace.class))
-        .thenReturn(workspace);
+        PersistenceConfigType.STANDARD_WORKSPACE,
+        workspace.getWorkspaceId().toString(),
+        StandardWorkspace.class))
+            .thenReturn(workspace);
 
     final SlugRequestBody slugRequestBody = new SlugRequestBody();
     slugRequestBody.setSlug("default");
@@ -129,11 +130,11 @@ class WorkspacesHandlerTest {
     expectedWorkspace.setInitialSetupComplete(true);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_WORKSPACE,
-            workspace.getWorkspaceId().toString(),
-            StandardWorkspace.class))
-        .thenReturn(workspace)
-        .thenReturn(expectedWorkspace);
+        PersistenceConfigType.STANDARD_WORKSPACE,
+        workspace.getWorkspaceId().toString(),
+        StandardWorkspace.class))
+            .thenReturn(workspace)
+            .thenReturn(expectedWorkspace);
 
     final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
 
@@ -151,4 +152,5 @@ class WorkspacesHandlerTest {
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
+
 }

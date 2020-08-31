@@ -105,4 +105,5 @@ public class WorkerUtils {
     targetConfig.setStandardSync(sync.getStandardSync());
     return targetConfig;
   }
+
 }

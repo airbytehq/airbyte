@@ -27,28 +27,28 @@ info:
     name: MIT
     url: "https://opensource.org/licenses/MIT"
 tags:
-- name: workspace
-  description: Workspace related resources.
-- name: source
-  description: Source related resources.
-- name: source_specification
-  description: Source specification related resources.
-- name: source_implementation
-  description: Source implementation related resources.
-- name: destination
-  description: Destination related resources.
-- name: destination_specification
-  description: Destination specification related resources.
-- name: destination_implementation
-  description: Destination implementation related resources.
-- name: connection
-  description: Connection between sources and destinations.
+  - name: workspace
+    description: Workspace related resources.
+  - name: source
+    description: Source related resources.
+  - name: source_specification
+    description: Source specification related resources.
+  - name: source_implementation
+    description: Source implementation related resources.
+  - name: destination
+    description: Destination related resources.
+  - name: destination_specification
+    description: Destination specification related resources.
+  - name: destination_implementation
+    description: Destination implementation related resources.
+  - name: connection
+    description: Connection between sources and destinations.
 
 paths:
   /v1/workspaces/get:
     post:
       tags:
-      - workspace
+        - workspace
       summary: Find workspace by ID
       operationId: getWorkspace
       requestBody:
@@ -71,7 +71,7 @@ paths:
   /v1/workspaces/get_by_slug:
     post:
       tags:
-      - workspace
+        - workspace
       summary: Find workspace by slug
       operationId: getWorkspaceBySlug
       requestBody:
@@ -94,7 +94,7 @@ paths:
   /v1/workspaces/update:
     post:
       tags:
-      - workspace
+        - workspace
       summary: Update workspace state
       operationId: updateWorkspace
       requestBody:
@@ -117,7 +117,7 @@ paths:
   /v1/sources/list:
     post:
       tags:
-      - source
+        - source
       summary: List all of the sources that Dataline supports
       operationId: listSources
       responses:
@@ -130,7 +130,7 @@ paths:
   /v1/sources/get:
     post:
       tags:
-      - source
+        - source
       summary: Get source
       operationId: getSource
       requestBody:
@@ -153,7 +153,7 @@ paths:
   /v1/source_specifications/get:
     post:
       tags:
-      - source_specification
+        - source_specification
       summary: Get specification for a source.
       operationId: getSourceSpecification
       requestBody:
@@ -176,7 +176,7 @@ paths:
   /v1/source_implementations/create:
     post:
       tags:
-      - source_implementation
+        - source_implementation
       summary: Create a source implementation
       operationId: createSourceImplementation
       requestBody:
@@ -197,7 +197,7 @@ paths:
   /v1/source_implementations/update:
     post:
       tags:
-      - source_implementation
+        - source_implementation
       summary: Update a source
       operationId: updateSourceImplementation
       requestBody:
@@ -220,7 +220,7 @@ paths:
   /v1/source_implementations/list:
     post:
       tags:
-      - source_implementation
+        - source_implementation
       summary: List source implementations for workspace
       operationId: listSourceImplementationsForWorkspace
       requestBody:
@@ -243,7 +243,7 @@ paths:
   /v1/source_implementations/get:
     post:
       tags:
-      - source_implementation
+        - source_implementation
       summary: Get source implementation
       operationId: getSourceImplementation
       requestBody:
@@ -266,7 +266,7 @@ paths:
   /v1/source_implementations/delete:
     post:
       tags:
-      - source_implementation
+        - source_implementation
       summary: Delete a source implementation
       operationId: deleteSourceImplementation
       requestBody:
@@ -285,7 +285,7 @@ paths:
   /v1/source_implementations/check_connection:
     post:
       tags:
-      - source_implementation
+        - source_implementation
       summary: Check connection to the source implementation
       operationId: checkConnectionToSourceImplementation
       requestBody:
@@ -308,7 +308,7 @@ paths:
   /v1/source_implementations/discover_schema:
     post:
       tags:
-      - source_implementation
+        - source_implementation
       summary: Discover the schema of the source implementation
       operationId: discoverSchemaForSourceImplementation
       requestBody:
@@ -331,7 +331,7 @@ paths:
   /v1/destinations/list:
     post:
       tags:
-      - destination
+        - destination
       summary: List all of the destinations that Dataline supports
       operationId: listDestinations
       responses:
@@ -344,7 +344,7 @@ paths:
   /v1/destinations/get:
     post:
       tags:
-      - destination
+        - destination
       summary: Get destination
       operationId: getDestination
       requestBody:
@@ -367,7 +367,7 @@ paths:
   /v1/destination_specifications/get:
     post:
       tags:
-      - destination_specification
+        - destination_specification
       summary: Get specification for a destination
       operationId: getDestinationSpecification
       requestBody:
@@ -390,7 +390,7 @@ paths:
   /v1/destination_implementations/create:
     post:
       tags:
-      - destination_implementation
+        - destination_implementation
       summary: Create a destination implementation
       operationId: createDestinationImplementation
       requestBody:
@@ -411,7 +411,7 @@ paths:
   /v1/destination_implementations/update:
     post:
       tags:
-      - destination_implementation
+        - destination_implementation
       summary: Update a destination implementation
       operationId: updateDestinationImplementation
       requestBody:
@@ -432,7 +432,7 @@ paths:
   /v1/destination_implementations/list:
     post:
       tags:
-      - destination_implementation
+        - destination_implementation
       summary: List configured destinations for a workspace
       operationId: listDestinationImplementationsForWorkspace
       requestBody:
@@ -455,7 +455,7 @@ paths:
   /v1/destination_implementations/get:
     post:
       tags:
-      - destination_implementation
+        - destination_implementation
       summary: get configured destination
       operationId: getDestinationImplementation
       requestBody:
@@ -478,7 +478,7 @@ paths:
   /v1/destination_implementations/check_connection:
     post:
       tags:
-      - destination_implementation
+        - destination_implementation
       summary: Check connection to the destination implementation
       operationId: checkConnectionToDestinationImplementation
       requestBody:
@@ -501,7 +501,7 @@ paths:
   /v1/connections/create:
     post:
       tags:
-      - connection
+        - connection
       summary: Create a connection between a source implementation and a destination implementation
       operationId: createConnection
       requestBody:
@@ -522,7 +522,7 @@ paths:
   /v1/connections/update:
     post:
       tags:
-      - connection
+        - connection
       summary: Updated a connection status
       operationId: updateConnection
       requestBody:
@@ -543,7 +543,7 @@ paths:
   /v1/connections/list:
     post:
       tags:
-      - connection
+        - connection
       summary: Returns all connections for a workspace.
       operationId: listConnectionsForWorkspace
       requestBody:
@@ -566,7 +566,7 @@ paths:
   /v1/connections/get:
     post:
       tags:
-      - connection
+        - connection
       summary: Get a connection
       operationId: getConnection
       requestBody:
@@ -589,7 +589,7 @@ paths:
   /v1/connections/sync:
     post:
       tags:
-      - connection
+        - connection
       summary: Trigger a manual sync of the connection
       operationId: syncConnection
       requestBody:
@@ -612,7 +612,7 @@ paths:
   /v1/jobs/list:
     post:
       tags:
-      - jobs
+        - jobs
       summary: Returns recent jobs for a connection.
       operationId: listJobsFor
       requestBody:
@@ -635,7 +635,7 @@ paths:
   /v1/jobs/get:
     post:
       tags:
-      - jobs
+        - jobs
       summary: Get information about a job
       operationId: getJobInfo
       requestBody:
@@ -659,8 +659,8 @@ externalDocs:
   description: Find out more about Dataline
   url: "http://dataline.io"
 servers:
-- url: "https://virtserver.swaggerhub.com/cgardens6/dataline/1.0.0"
-- url: "http://virtserver.swaggerhub.com/cgardens6/dataline/1.0.0"
+  - url: "https://virtserver.swaggerhub.com/cgardens6/dataline/1.0.0"
+  - url: "http://virtserver.swaggerhub.com/cgardens6/dataline/1.0.0"
 components:
   securitySchemes:
     bearerAuth:
@@ -675,17 +675,17 @@ components:
     WorkspaceIdRequestBody:
       type: object
       required:
-      - workspaceId
+        - workspaceId
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
     WorkspaceRead:
       type: object
       required:
-      - workspaceId
-      - name
-      - slug
-      - initialSetupComplete
+        - workspaceId
+        - name
+        - slug
+        - initialSetupComplete
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -698,11 +698,11 @@ components:
     WorkspaceUpdate:
       type: object
       required:
-      - workspaceId
-      - initialSetupComplete
-      - anonymousDataCollection
-      - news
-      - securityUpdates
+        - workspaceId
+        - initialSetupComplete
+        - anonymousDataCollection
+        - news
+        - securityUpdates
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -721,7 +721,7 @@ components:
     SlugRequestBody:
       type: object
       required:
-      - slug
+        - slug
       properties:
         slug:
           type: string
@@ -732,15 +732,15 @@ components:
     SourceIdRequestBody:
       type: object
       required:
-      - sourceId
+        - sourceId
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
     SourceRead:
       type: object
       required:
-      - sourceId
-      - name
+        - sourceId
+        - name
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
@@ -749,7 +749,7 @@ components:
     SourceReadList:
       type: object
       required:
-      - sources
+        - sources
       properties:
         sources:
           type: array
@@ -762,9 +762,9 @@ components:
     SourceSpecificationRead:
       type: object
       required:
-      - sourceSpecificationId
-      - sourceId
-      - specification
+        - sourceSpecificationId
+        - sourceId
+        - specification
       properties:
         sourceSpecificationId:
           $ref: "#/components/schemas/SourceSpecificationId"
@@ -780,7 +780,7 @@ components:
     SourceImplementationIdRequestBody:
       type: object
       required:
-      - sourceId
+        - sourceId
       properties:
         sourceImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
@@ -790,9 +790,9 @@ components:
     SourceImplementationCreate:
       type: object
       required:
-      - workspaceId
-      - sourceSpecificationId
-      - connectionConfiguration
+        - workspaceId
+        - sourceSpecificationId
+        - connectionConfiguration
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -803,8 +803,8 @@ components:
     SourceImplementationUpdate:
       type: object
       required:
-      - sourceImplementationId
-      - connectionConfiguration
+        - sourceImplementationId
+        - connectionConfiguration
       properties:
         sourceImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
@@ -813,11 +813,11 @@ components:
     SourceImplementationRead:
       type: object
       required:
-      - sourceId
-      - sourceImplementationId
-      - workspaceId
-      - sourceSpecificationId
-      - connectionConfiguration
+        - sourceId
+        - sourceImplementationId
+        - workspaceId
+        - sourceSpecificationId
+        - connectionConfiguration
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
@@ -832,7 +832,7 @@ components:
     SourceImplementationReadList:
       type: object
       required:
-      - sources
+        - sources
       properties:
         sources:
           type: array
@@ -841,7 +841,7 @@ components:
     SourceImplementationDiscoverSchemaRead:
       type: object
       required:
-      - schema
+        - schema
       properties:
         schema:
           $ref: "#/components/schemas/SourceSchema"
@@ -852,15 +852,15 @@ components:
     DestinationIdRequestBody:
       type: object
       required:
-      - destinationId
+        - destinationId
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
     DestinationRead:
       type: object
       required:
-      - destinationId
-      - name
+        - destinationId
+        - name
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
@@ -869,7 +869,7 @@ components:
     DestinationReadList:
       type: object
       required:
-      - destinations
+        - destinations
       properties:
         destinations:
           type: array
@@ -882,9 +882,9 @@ components:
     DestinationSpecificationRead:
       type: object
       required:
-      - destinationSpecificationId
-      - destinationId
-      - specification
+        - destinationSpecificationId
+        - destinationId
+        - specification
       properties:
         destinationSpecificationId:
           $ref: "#/components/schemas/DestinationSpecificationId"
@@ -900,16 +900,16 @@ components:
     DestinationImplementationIdRequestBody:
       type: object
       required:
-      - destinationImplementationId
+        - destinationImplementationId
       properties:
         destinationImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
     DestinationImplementationCreate:
       type: object
       required:
-      - workspaceId
-      - destinationSpecificationId
-      - connectionConfiguration
+        - workspaceId
+        - destinationSpecificationId
+        - connectionConfiguration
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -921,8 +921,8 @@ components:
     DestinationImplementationUpdate:
       type: object
       required:
-      - destinationImplementationId
-      - connectionConfiguration
+        - destinationImplementationId
+        - connectionConfiguration
       properties:
         destinationImplementationId:
           $ref: "#/components/schemas/DestinationImplementationId"
@@ -932,11 +932,11 @@ components:
     DestinationImplementationRead:
       type: object
       required:
-      - destinationId
-      - destinationImplementationId
-      - workspaceId
-      - destinationSpecificationId
-      - connectionConfiguration
+        - destinationId
+        - destinationImplementationId
+        - workspaceId
+        - destinationSpecificationId
+        - connectionConfiguration
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
@@ -952,7 +952,7 @@ components:
     DestinationImplementationReadList:
       type: object
       required:
-      - destinations
+        - destinations
       properties:
         destinations:
           type: array
@@ -965,17 +965,17 @@ components:
     ConnectionIdRequestBody:
       type: object
       required:
-      - connectionId
+        - connectionId
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
     ConnectionCreate:
       type: object
       required:
-      - sourceImplementationId
-      - destinationImplementationId
-      - syncMode
-      - status
+        - sourceImplementationId
+        - destinationImplementationId
+        - syncMode
+        - status
       properties:
         name:
           type: string
@@ -987,8 +987,8 @@ components:
         syncMode:
           type: string
           enum:
-          - full_refresh
-          - append
+            - full_refresh
+            - append
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -998,10 +998,10 @@ components:
     ConnectionUpdate:
       type: object
       required:
-      - sourceImplementationId
-      - destinationImplementationId
-      - syncSchema
-      - status
+        - sourceImplementationId
+        - destinationImplementationId
+        - syncSchema
+        - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -1014,13 +1014,13 @@ components:
     ConnectionRead:
       type: object
       required:
-      - connectionId
-      - name
-      - sourceImplementationId
-      - destinationImplementationId
-      - syncMode
-      - syncSchema
-      - status
+        - connectionId
+        - name
+        - sourceImplementationId
+        - destinationImplementationId
+        - syncMode
+        - syncSchema
+        - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -1033,8 +1033,8 @@ components:
         syncMode:
           type: string
           enum:
-          - full_refresh
-          - append
+            - full_refresh
+            - append
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1044,7 +1044,7 @@ components:
     ConnectionReadList:
       type: object
       required:
-      - connections
+        - connections
       properties:
         connections:
           type: array
@@ -1054,15 +1054,15 @@ components:
       type: string
       description: Active means that data is flowing through the connection. Inactive means it is not. Deprecated means the connection is off and cannot be re-activated. the schema field describes the elements of the schema that will be synced.
       enum:
-      - active
-      - inactive
-      - deprecated
+        - active
+        - inactive
+        - deprecated
     ConnectionSchedule:
       description: if null, then no schedule is set.
       type: object
       required:
-      - units
-      - timeUnit
+        - units
+        - timeUnit
       properties:
         units:
           type: integer
@@ -1070,27 +1070,27 @@ components:
         timeUnit:
           type: string
           enum:
-          - minutes
-          - hours
-          - days
-          - weeks
-          - months
+            - minutes
+            - hours
+            - days
+            - weeks
+            - months
     ConnectionSyncRead:
       type: object
       required:
-      - status
+        - status
       properties:
         status:
           type: string
           enum:
-          - success
-          - fail
+            - success
+            - fail
     # SCHEMA
     SourceSchema:
       description: describes the available schema.
       type: object
       required:
-      - tables
+        - tables
       properties:
         tables:
           type: array
@@ -1099,8 +1099,8 @@ components:
     SourceSchemaTable:
       type: object
       required:
-      - name
-      - columns
+        - name
+        - columns
       properties:
         name:
           type: string
@@ -1111,9 +1111,9 @@ components:
     SourceSchemaColumn:
       type: object
       required:
-      - name
-      - dataType
-      - selected
+        - name
+        - dataType
+        - selected
       properties:
         name:
           type: string
@@ -1124,9 +1124,9 @@ components:
     DataType:
       type: string
       enum:
-      - string
-      - number
-      - boolean
+        - string
+        - number
+        - boolean
     # SCHEDULER
     JobId:
       type: integer
@@ -1134,15 +1134,15 @@ components:
     JobConfigType:
       type: string
       enum:
-      - checkConnectionSource
-      - checkConnectionDestination
-      - discoverSchema
-      - sync
+        - checkConnectionSource
+        - checkConnectionDestination
+        - discoverSchema
+        - sync
     JobListRequestBody:
       type: object
       required:
-      - config_type
-      - config_id
+        - config_type
+        - config_id
       properties:
         config_type:
           $ref: "#/components/schemas/JobConfigType"
@@ -1151,19 +1151,19 @@ components:
     JobIdRequestBody:
       type: object
       required:
-      - id
+        - id
       properties:
         id:
           $ref: "#/components/schemas/JobId"
     JobRead:
       type: object
       required:
-      - id
-      - config_type
-      - config_id
-      - created_at
-      - updated_at
-      - status
+        - id
+        - config_type
+        - config_id
+        - created_at
+        - updated_at
+        - status
       properties:
         id:
           $ref: "#/components/schemas/JobId"
@@ -1183,15 +1183,15 @@ components:
         status:
           type: string
           enum:
-          - pending
-          - running
-          - failed
-          - completed
-          - cancelled
+            - pending
+            - running
+            - failed
+            - completed
+            - cancelled
     JobReadList:
       type: object
       required:
-      - jobs
+        - jobs
       properties:
         jobs:
           type: array
@@ -1200,8 +1200,8 @@ components:
     JobInfoRead:
       type: object
       required:
-      - job
-      - logs
+        - job
+        - logs
       properties:
         job:
           $ref: "#/components/schemas/JobRead"
@@ -1210,8 +1210,8 @@ components:
     LogRead:
       type: object
       required:
-      - stdout
-      - stderr
+        - stdout
+        - stderr
       properties:
         stdout:
           type: array
@@ -1225,13 +1225,13 @@ components:
     CheckConnectionRead:
       type: object
       required:
-      - status
+        - status
       properties:
         status:
           type: string
           enum:
-          - success
-          - failure
+            - success
+            - failure
         message:
           type: string
   responses:
@@ -1239,4 +1239,4 @@ components:
       description: Invalid Input
 # apply the security globally to all operations
 security:
-- bearerAuth: []
+  - bearerAuth: []
