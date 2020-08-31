@@ -22,32 +22,27 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.commons.io;
 
-import io.dataline.workers.Worker;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.Test;
 
-public abstract class BaseSingerWorker<InputType, OutputType> implements Worker<InputType, OutputType> {
+class IOsTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
+  @Test
+  void testReadWrite() throws IOException {
+    final Path path = Files.createTempDirectory("tmp");
 
-  protected void cancelHelper(Process workerProcess) {
-    try {
-      workerProcess.destroy();
-      workerProcess.waitFor(10, TimeUnit.SECONDS);
-      if (workerProcess.isAlive()) {
-        workerProcess.destroyForcibly();
-      }
-    } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling job.", e);
-    }
-  }
+    final Path filePath = IOs.writeFile(path, "file", "abc");
 
-  protected static Path getFullPath(Path workspaceRoot, String fileName) {
-    return workspaceRoot.resolve(fileName);
+    assertEquals(path.resolve("file"), filePath);
+    assertEquals(
+        "abc",
+        IOs.readFile(path, "file"));
   }
 
 }
