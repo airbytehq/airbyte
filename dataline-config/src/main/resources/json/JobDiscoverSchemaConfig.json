@@ -7,8 +7,9 @@
   "additionalProperties": false,
   "required": ["connectionConfiguration", "dockerImage"],
   "properties": {
-    "connectionConfiguration": {
-      "description": "type any. information here varies by integration. this data is validated against a specification"
+    "connectionConfigurationJson": {
+      "type": "string",
+      "description": "Integration specific blob. Must be a valid JSON string."
     },
     "dockerImage": {
       "type": "string"

@@ -25,8 +25,9 @@
       "type": "string",
       "format": "uuid"
     },
-    "configuration": {
-      "description": "type any. information here varies by integration. this data is validated against a specification"
+    "configurationJson": {
+      "type": "string",
+      "description": "Integration specific blob. Must be a valid JSON string."
     },
     "tombstone": {
       "description": "if not set or false, the configuration is active. if true, then this configuration is permanently off.",

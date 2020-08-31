@@ -68,7 +68,7 @@ public class DestinationImplementationsHandler {
     // validate configuration
     validateDestinationImplementation(
         destinationImplementationCreate.getDestinationSpecificationId(),
-        destinationImplementationCreate.getConnectionConfiguration());
+        (String) destinationImplementationCreate.getConnectionConfiguration());
 
     // persist
     final UUID destinationImplementationId = uuidGenerator.get();
@@ -76,7 +76,7 @@ public class DestinationImplementationsHandler {
         destinationImplementationCreate.getDestinationSpecificationId(),
         destinationImplementationCreate.getWorkspaceId(),
         destinationImplementationId,
-        destinationImplementationCreate.getConnectionConfiguration());
+        (String) destinationImplementationCreate.getConnectionConfiguration());
 
     // read configuration from db
     return getDestinationImplementationInternal(destinationImplementationId);
@@ -92,14 +92,14 @@ public class DestinationImplementationsHandler {
     // validate configuration
     validateDestinationImplementation(
         persistedDestinationImplementation.getDestinationSpecificationId(),
-        destinationImplementationUpdate.getConnectionConfiguration());
+        (String) destinationImplementationUpdate.getConnectionConfiguration());
 
     // persist
     persistDestinationConnectionImplementation(
         persistedDestinationImplementation.getDestinationSpecificationId(),
         persistedDestinationImplementation.getWorkspaceId(),
         destinationImplementationUpdate.getDestinationImplementationId(),
-        destinationImplementationUpdate.getConnectionConfiguration());
+        (String) destinationImplementationUpdate.getConnectionConfiguration());
 
     // read configuration from db
     return getDestinationImplementationInternal(
@@ -159,10 +159,10 @@ public class DestinationImplementationsHandler {
   }
 
   private void validateDestinationImplementation(
-      UUID destinationConnectionSpecificationId, Object implementation) {
+      UUID destinationConnectionSpecificationId, String implementationJson) {
     try {
       validator.validateDestinationConnectionConfiguration(
-          destinationConnectionSpecificationId, implementation);
+          destinationConnectionSpecificationId, implementationJson);
     } catch (JsonValidationException e) {
       throw new KnownException(
           422,
@@ -176,13 +176,13 @@ public class DestinationImplementationsHandler {
       UUID destinationSpecificationId,
       UUID workspaceId,
       UUID destinationImplementationId,
-      Object configuration) {
+      String configurationJson) {
     final DestinationConnectionImplementation destinationConnectionImplementation =
         new DestinationConnectionImplementation();
     destinationConnectionImplementation.setDestinationSpecificationId(destinationSpecificationId);
     destinationConnectionImplementation.setWorkspaceId(workspaceId);
     destinationConnectionImplementation.setDestinationImplementationId(destinationImplementationId);
-    destinationConnectionImplementation.setConfiguration(configuration);
+    destinationConnectionImplementation.setConfigurationJson(configurationJson);
 
     ConfigFetchers.writeConfig(
         configPersistence,
@@ -203,7 +203,7 @@ public class DestinationImplementationsHandler {
     destinationImplementationRead.setDestinationSpecificationId(
         destinationConnectionImplementation.getDestinationSpecificationId());
     destinationImplementationRead.setConnectionConfiguration(
-        destinationConnectionImplementation.getConfiguration());
+        destinationConnectionImplementation.getConfigurationJson());
 
     return destinationImplementationRead;
   }
