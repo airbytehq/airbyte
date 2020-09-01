@@ -77,7 +77,8 @@ public class AcceptanceTests {
     UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
     UUID sourceSpecificationId = sourceSpecRead.getSourceSpecificationId();
 
-    SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate().sourceSpecificationId(sourceSpecificationId)
+    SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate()
+            .sourceSpecificationId(sourceSpecificationId)
         .workspaceId(defaultWorkspaceId)
         .connectionConfiguration(dbConfiguration);
 
