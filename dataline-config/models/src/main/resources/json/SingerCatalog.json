@@ -50,7 +50,8 @@
       "description": "The JSON schema for the stream. This struct is weird because it's essentially modeling the properties field of a jsonschema object.",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "string",
+          "const": "object"
         },
         "properties": {
           "$ref": "SingerCatalog.json#/definitions/SingerColumnMap"

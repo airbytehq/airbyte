@@ -24,6 +24,7 @@
 
 package io.dataline.workers.singer;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerCatalog;
@@ -33,6 +34,7 @@ import io.dataline.config.StandardTapConfig;
 import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.StreamFactory;
 import io.dataline.workers.TapFactory;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
@@ -52,16 +54,33 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   private static final String CONFIG_JSON_FILENAME = "tap_config.json";
   private static final String CATALOG_JSON_FILENAME = "catalog.json";
   private static final String STATE_JSON_FILENAME = "input_state.json";
+  @VisibleForTesting
+  static final String DISCOVERY_DIR = "discover";
 
   private final String imageName;
   private final ProcessBuilderFactory pbf;
+  private final StreamFactory streamFactory;
+  private final SingerDiscoverSchemaWorker discoverSchemaWorker;
 
   private Process tapProcess = null;
   private BufferedReader bufferedReader = null;
 
-  public SingerTapFactory(final String imageName, final ProcessBuilderFactory pbf) {
+  public SingerTapFactory(
+                          final String imageName,
+                          final ProcessBuilderFactory pbf,
+                          final SingerDiscoverSchemaWorker discoverSchemaWorker) {
+    this(imageName, pbf, new SingerJsonStreamFactory(), discoverSchemaWorker);
+  }
+
+  public SingerTapFactory(
+                          final String imageName,
+                          final ProcessBuilderFactory pbf,
+                          final StreamFactory streamFactory,
+                          final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this.imageName = imageName;
     this.pbf = pbf;
+    this.streamFactory = streamFactory;
+    this.discoverSchemaWorker = discoverSchemaWorker;
   }
 
   @Override
@@ -99,7 +118,7 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
 
     bufferedReader = new BufferedReader(new InputStreamReader(tapProcess.getInputStream()));
 
-    return new SingerJsonStreamFactory().create(bufferedReader).onClose(getCloseFunction());
+    return streamFactory.create(bufferedReader).onClose(getCloseFunction());
   }
 
   public Runnable getCloseFunction() {
@@ -116,14 +135,13 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     };
   }
 
-  private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path workspaceRoot)
+  private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path jobRoot)
       throws InvalidCredentialsException {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput();
     discoveryInput.setConnectionConfigurationJson(
         input.getSourceConnectionImplementation().getConfigurationJson());
-    Path scopedWorkspace = workspaceRoot.resolve("discovery");
-    return new SingerDiscoverSchemaWorker(imageName, pbf)
-        .runInternal(discoveryInput, scopedWorkspace);
+    Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
+    return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot);
   }
 
 }
