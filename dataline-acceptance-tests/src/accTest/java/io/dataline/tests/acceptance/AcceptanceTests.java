@@ -25,7 +25,6 @@
 package io.dataline.tests.acceptance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -59,11 +58,6 @@ public class AcceptanceTests {
   public static void init() {
     PSQL_DB1 = new PostgreSQLContainer();
     PSQL_DB1.start();
-  }
-
-  @Test
-  public void testFailure() {
-    fail();
   }
 
   @Test
@@ -112,5 +106,4 @@ public class AcceptanceTests {
       return responseBody;
     }
   }
-
 }
