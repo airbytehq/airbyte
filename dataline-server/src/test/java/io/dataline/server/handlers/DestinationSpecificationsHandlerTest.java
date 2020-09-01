@@ -67,8 +67,8 @@ class DestinationSpecificationsHandlerTest {
         destinationConnectionSpecification.getDestinationId());
     expectedDestinationSpecificationRead.setDestinationSpecificationId(
         destinationConnectionSpecification.getDestinationSpecificationId());
-    expectedDestinationSpecificationRead.setConnectionSpecification(
-        destinationConnectionSpecification.getSpecificationJson());
+    expectedDestinationSpecificationRead.setConnectionSpecification12345(
+        destinationConnectionSpecification.getSpecificationJson12345());
 
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody();
     destinationIdRequestBody.setDestinationId(

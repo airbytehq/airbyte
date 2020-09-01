@@ -130,14 +130,14 @@ public class WorkerRunner implements Runnable {
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
     final StandardCheckConnectionInput checkConnectionInput = new StandardCheckConnectionInput();
-    checkConnectionInput.setConnectionConfigurationJson(config.getConnectionConfigurationJson());
+    checkConnectionInput.setConnectionConfigurationJson12345(config.getConnectionConfigurationJson12345());
 
     return checkConnectionInput;
   }
 
   private static StandardDiscoverSchemaInput getDiscoverSchemaInput(JobDiscoverSchemaConfig config) {
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfigurationJson(config.getConnectionConfigurationJson());
+    discoverSchemaInput.setConnectionConfigurationJson12345(config.getConnectionConfigurationJson12345());
 
     return discoverSchemaInput;
   }

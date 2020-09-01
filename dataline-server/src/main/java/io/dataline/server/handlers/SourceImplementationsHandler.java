@@ -24,12 +24,14 @@
 
 package io.dataline.server.handlers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.api.model.SourceImplementationCreate;
 import io.dataline.api.model.SourceImplementationIdRequestBody;
 import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.api.model.SourceImplementationReadList;
 import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
@@ -65,7 +67,7 @@ public class SourceImplementationsHandler {
     // validate configuration
     validateSourceImplementation(
         sourceImplementationCreate.getSourceSpecificationId(),
-        (String) sourceImplementationCreate.getConnectionConfiguration());
+        Jsons.jsonNode(sourceImplementationCreate.getConnectionConfiguration12345()));
 
     // persist
     final UUID sourceImplementationId = uuidGenerator.get();
@@ -74,7 +76,7 @@ public class SourceImplementationsHandler {
         sourceImplementationCreate.getWorkspaceId(),
         sourceImplementationId,
         false,
-        (String) sourceImplementationCreate.getConnectionConfiguration());
+        Jsons.jsonNode(sourceImplementationCreate.getConnectionConfiguration12345()));
 
     // read configuration from db
     return getSourceImplementationReadInternal(sourceImplementationId);
@@ -89,7 +91,7 @@ public class SourceImplementationsHandler {
     // validate configuration
     validateSourceImplementation(
         persistedSourceImplementation.getSourceSpecificationId(),
-        (String) sourceImplementationUpdate.getConnectionConfiguration());
+        Jsons.jsonNode(sourceImplementationUpdate.getConnectionConfiguration12345()));
 
     // persist
     persistSourceConnectionImplementation(
@@ -97,7 +99,7 @@ public class SourceImplementationsHandler {
         persistedSourceImplementation.getWorkspaceId(),
         sourceImplementationUpdate.getSourceImplementationId(),
         persistedSourceImplementation.getTombstone(),
-        (String) sourceImplementationUpdate.getConnectionConfiguration());
+        Jsons.jsonNode(sourceImplementationUpdate.getConnectionConfiguration12345()));
 
     // read configuration from db
     return getSourceImplementationReadInternal(
@@ -147,7 +149,7 @@ public class SourceImplementationsHandler {
         persistedSourceImplementation.getWorkspaceId(),
         persistedSourceImplementation.getSourceImplementationId(),
         true,
-        (String) persistedSourceImplementation.getConnectionConfiguration());
+        Jsons.jsonNode(persistedSourceImplementation.getConnectionConfiguration12345()));
   }
 
   private SourceConnectionImplementation getSourceConnectionImplementationInternal(UUID sourceImplementationId) {
@@ -169,10 +171,9 @@ public class SourceImplementationsHandler {
     return toSourceImplementationRead(retrievedSourceConnectionImplementation, sourceId);
   }
 
-  private void validateSourceImplementation(UUID sourceConnectionSpecificationId, String implementationJson) {
+  private void validateSourceImplementation(UUID sourceConnectionSpecificationId, JsonNode implementationJson) {
     try {
-      validator.validateSourceConnectionConfiguration(
-          sourceConnectionSpecificationId, implementationJson);
+      validator.validateSourceConnectionConfiguration(sourceConnectionSpecificationId, implementationJson);
     } catch (JsonValidationException e) {
       throw new KnownException(
           422,
@@ -186,14 +187,14 @@ public class SourceImplementationsHandler {
                                                      UUID workspaceId,
                                                      UUID sourceImplementationId,
                                                      boolean tombstone,
-                                                     String configurationJson) {
+                                                     JsonNode configurationJson) {
     final SourceConnectionImplementation sourceConnectionImplementation =
         new SourceConnectionImplementation();
     sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionImplementation.setWorkspaceId(workspaceId);
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
     sourceConnectionImplementation.setTombstone(tombstone);
-    sourceConnectionImplementation.setConfigurationJson(configurationJson);
+    sourceConnectionImplementation.setConfigurationJson12345(configurationJson);
 
     ConfigFetchers.writeConfig(
         configPersistence,
@@ -210,8 +211,7 @@ public class SourceImplementationsHandler {
     sourceImplementationRead.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
     sourceImplementationRead.setSourceSpecificationId(
         sourceConnectionImplementation.getSourceSpecificationId());
-    sourceImplementationRead.setConnectionConfiguration(
-        sourceConnectionImplementation.getConfigurationJson());
+    sourceImplementationRead.setConnectionConfiguration12345(sourceConnectionImplementation.getConfigurationJson12345());
 
     return sourceImplementationRead;
   }

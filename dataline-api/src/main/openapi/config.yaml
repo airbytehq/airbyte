@@ -793,7 +793,7 @@ components:
           $ref: "#/components/schemas/SourceSpecificationId"
         sourceId:
           $ref: "#/components/schemas/SourceId"
-        connectionSpecification:
+        connectionSpecification12345:
           description: The specification for what values are required to configure the source.
           example: { user: { type: string } }
     # SOURCE IMPLEMENTATION
@@ -821,7 +821,7 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         sourceSpecificationId:
           $ref: "#/components/schemas/SourceSpecificationId"
-        connectionConfiguration:
+        connectionConfiguration12345:
           $ref: "#/components/schemas/SourceConfigurationField"
     SourceImplementationUpdate:
       type: object
@@ -831,7 +831,7 @@ components:
       properties:
         sourceImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
-        connectionConfiguration:
+        connectionConfiguration12345:
           $ref: "#/components/schemas/SourceConfigurationField"
     SourceImplementationRead:
       type: object
@@ -850,7 +850,7 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         sourceSpecificationId:
           $ref: "#/components/schemas/SourceSpecificationId"
-        connectionConfiguration:
+        connectionConfiguration12345:
           $ref: "#/components/schemas/SourceConfigurationField"
     SourceImplementationReadList:
       type: object
@@ -913,7 +913,7 @@ components:
           $ref: "#/components/schemas/DestinationSpecificationId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        connectionSpecification:
+        connectionSpecification12345:
           description: The specification for what values are required to configure the destination.
           example: { user: { type: string } }
     # DESTINATION IMPLEMENTATION
@@ -927,6 +927,9 @@ components:
       properties:
         destinationImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
+    DestinationConfigurationField:
+      description: The values required to configure the destination. The schema for this must match the schema return by destination_specifications/get for the destination.
+      example: { user: "charles" }
     DestinationImplementationCreate:
       type: object
       required:
@@ -938,9 +941,8 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         destinationSpecificationId:
           $ref: "#/components/schemas/DestinationSpecificationId"
-        connectionConfiguration:
-          description: The values required to configure the destination. The schema for this must match the schema return by destination_specifications/get for the source.
-          example: { user: "charles" }
+        connectionConfiguration12345:
+          $ref: "#/components/schemas/DestinationConfigurationField"
     DestinationImplementationUpdate:
       type: object
       required:
@@ -949,9 +951,8 @@ components:
       properties:
         destinationImplementationId:
           $ref: "#/components/schemas/DestinationImplementationId"
-        connectionConfiguration:
-          description: The values required to configure the destination. The schema for this must match the schema return by destination_specifications/get for the source.
-          example: { user: "charles" }
+        connectionConfiguration12345:
+          $ref: "#/components/schemas/DestinationConfigurationField"
     DestinationImplementationRead:
       type: object
       required:
@@ -969,9 +970,8 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         destinationSpecificationId:
           $ref: "#/components/schemas/DestinationSpecificationId"
-        connectionConfiguration:
-          description: The values required to configure the destination. The schema for this must match the schema return by destination_specifications/get for the source.
-          example: { user: "charles" }
+        connectionConfiguration12345:
+          $ref: "#/components/schemas/DestinationConfigurationField"
     DestinationImplementationReadList:
       type: object
       required:

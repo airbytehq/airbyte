@@ -11,7 +11,7 @@
       "type": "string",
       "format": "uuid"
     },
-    "stateJson": {
+    "stateJson12345": {
       "description": "Integration specific blob. Must be a valid JSON string.",
       "type": "object",
       "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"

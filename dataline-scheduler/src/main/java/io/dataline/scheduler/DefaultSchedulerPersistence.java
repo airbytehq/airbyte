@@ -68,8 +68,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             sourceImplementation.getSourceImplementationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfigurationJson(
-        sourceImplementation.getConfigurationJson());
+    jobCheckConnectionConfig.setConnectionConfigurationJson12345(sourceImplementation.getConfigurationJson12345());
     jobCheckConnectionConfig.setDockerImage(
         Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
             .getCheckConnectionImage());
@@ -90,8 +89,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             destinationImplementation.getDestinationImplementationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfigurationJson(
-        destinationImplementation.getConfigurationJson());
+    jobCheckConnectionConfig.setConnectionConfigurationJson12345(destinationImplementation.getConfigurationJson12345());
     jobCheckConnectionConfig.setDockerImage(
         Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId())
             .getCheckConnectionImage());
@@ -113,8 +111,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             sourceImplementation.getSourceImplementationId().toString());
 
     final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig();
-    jobDiscoverSchemaConfig.setConnectionConfigurationJson(
-        sourceImplementation.getConfigurationJson());
+    jobDiscoverSchemaConfig.setConnectionConfigurationJson12345(sourceImplementation.getConfigurationJson12345());
     jobDiscoverSchemaConfig.setDockerImage(
         Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
             .getDiscoverSchemaImage());

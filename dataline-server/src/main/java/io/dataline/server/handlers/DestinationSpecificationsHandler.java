@@ -68,8 +68,7 @@ public class DestinationSpecificationsHandler {
         destinationConnectionSpecification.getDestinationId());
     destinationSpecificationRead.setDestinationSpecificationId(
         destinationConnectionSpecification.getDestinationSpecificationId());
-    destinationSpecificationRead.setConnectionSpecification(
-        destinationConnectionSpecification.getSpecificationJson());
+    destinationSpecificationRead.setConnectionSpecification12345(destinationConnectionSpecification.getSpecificationJson12345());
 
     return destinationSpecificationRead;
   }

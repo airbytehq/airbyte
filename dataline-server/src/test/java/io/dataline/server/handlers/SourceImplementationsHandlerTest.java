@@ -38,7 +38,6 @@ import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.api.model.SourceImplementationReadList;
 import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
-import io.dataline.commons.json.Jsons;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.SourceConnectionSpecification;
 import io.dataline.config.persistence.ConfigNotFoundException;
@@ -101,7 +100,7 @@ class SourceImplementationsHandlerTest {
     sourceImplementationCreate.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
     sourceImplementationCreate.setSourceSpecificationId(
         sourceConnectionSpecification.getSourceSpecificationId());
-    sourceImplementationCreate.setConnectionConfiguration(
+    sourceImplementationCreate.setConnectionConfiguration12345(
         SourceImplementationHelpers.getTestImplementationJson());
 
     final SourceImplementationRead actualSourceImplementationRead =
@@ -110,7 +109,7 @@ class SourceImplementationsHandlerTest {
     SourceImplementationRead expectedSourceImplementationRead =
         SourceImplementationHelpers.getSourceImplementationRead(
             sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
-    expectedSourceImplementationRead.setConnectionConfiguration(
+    expectedSourceImplementationRead.setConnectionConfiguration12345(
         SourceImplementationHelpers.getTestImplementationJson());
 
     assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead);
@@ -118,7 +117,7 @@ class SourceImplementationsHandlerTest {
     verify(validator)
         .validateSourceConnectionConfiguration(
             sourceConnectionSpecification.getSourceSpecificationId(),
-            sourceConnectionImplementation.getConfigurationJson());
+            sourceConnectionImplementation.getConfigurationJson12345());
 
     verify(configPersistence)
         .writeConfig(
@@ -129,8 +128,7 @@ class SourceImplementationsHandlerTest {
 
   @Test
   void testUpdateSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
-    final JsonNode newConfiguration =
-        Jsons.deserialize(sourceConnectionImplementation.getConfigurationJson());
+    final JsonNode newConfiguration = sourceConnectionImplementation.getConfigurationJson12345();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
@@ -141,7 +139,7 @@ class SourceImplementationsHandlerTest {
         sourceConnectionImplementation.getSourceSpecificationId());
     expectedSourceConnectionImplementation.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceConnectionImplementation.setConfigurationJson(newConfiguration.toString());
+    expectedSourceConnectionImplementation.setConfigurationJson12345(newConfiguration);
     expectedSourceConnectionImplementation.setTombstone(false);
 
     when(configPersistence.getConfig(
@@ -160,14 +158,14 @@ class SourceImplementationsHandlerTest {
     final SourceImplementationUpdate sourceImplementationUpdate = new SourceImplementationUpdate();
     sourceImplementationUpdate.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
-    sourceImplementationUpdate.setConnectionConfiguration(newConfiguration.toString());
+    sourceImplementationUpdate.setConnectionConfiguration12345(newConfiguration);
     final SourceImplementationRead actualSourceImplementationRead =
         sourceImplementationsHandler.updateSourceImplementation(sourceImplementationUpdate);
 
     SourceImplementationRead expectedSourceImplementationRead =
         SourceImplementationHelpers.getSourceImplementationRead(
             sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
-    expectedSourceImplementationRead.setConnectionConfiguration(newConfiguration.toString());
+    expectedSourceImplementationRead.setConnectionConfiguration12345(newConfiguration);
 
     assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead);
 
@@ -237,8 +235,7 @@ class SourceImplementationsHandlerTest {
 
   @Test
   void testDeleteSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
-    final JsonNode newConfiguration =
-        Jsons.deserialize(sourceConnectionImplementation.getConfigurationJson());
+    final JsonNode newConfiguration = sourceConnectionImplementation.getConfigurationJson12345();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
@@ -249,8 +246,8 @@ class SourceImplementationsHandlerTest {
         sourceConnectionImplementation.getSourceSpecificationId());
     expectedSourceConnectionImplementation.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceConnectionImplementation.setConfigurationJson(
-        sourceConnectionImplementation.getConfigurationJson());
+    expectedSourceConnectionImplementation.setConfigurationJson12345(
+        sourceConnectionImplementation.getConfigurationJson12345());
     expectedSourceConnectionImplementation.setTombstone(true);
 
     when(configPersistence.getConfig(

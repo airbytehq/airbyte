@@ -25,7 +25,6 @@
 package io.dataline.server.validation;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.json.Jsons;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.SourceConnectionSpecification;
 import io.dataline.config.persistence.ConfigPersistence;
@@ -46,28 +45,24 @@ public class IntegrationSchemaValidation {
     this.jsonSchemaValidation = new JsonSchemaValidation();
   }
 
-  public void validateSourceConnectionConfiguration(UUID sourceConnectionSpecificationId, String configurationJson)
+  public void validateSourceConnectionConfiguration(UUID sourceConnectionSpecificationId, JsonNode configJson)
       throws JsonValidationException {
     final SourceConnectionSpecification sourceConnectionSpecification =
         ConfigFetchers.getSourceConnectionSpecification(
             configPersistence, sourceConnectionSpecificationId);
 
-    final JsonNode schemaJson =
-        Jsons.deserialize(sourceConnectionSpecification.getSpecificationJson());
-    final JsonNode configJson = Jsons.deserialize(configurationJson);
+    final JsonNode schemaJson = sourceConnectionSpecification.getSpecificationJson12345();
 
     jsonSchemaValidation.validateThrow(schemaJson, configJson);
   }
 
-  public void validateDestinationConnectionConfiguration(UUID destinationConnectionSpecificationId, String configurationJson)
+  public void validateDestinationConnectionConfiguration(UUID destinationConnectionSpecificationId, JsonNode configJson)
       throws JsonValidationException {
     final DestinationConnectionSpecification destinationConnectionSpecification =
         ConfigFetchers.getDestinationConnectionSpecification(
             configPersistence, destinationConnectionSpecificationId);
 
-    final JsonNode schemaJson =
-        Jsons.deserialize(destinationConnectionSpecification.getSpecificationJson());
-    final JsonNode configJson = Jsons.deserialize(configurationJson);
+    final JsonNode schemaJson = destinationConnectionSpecification.getSpecificationJson12345();
 
     jsonSchemaValidation.validateThrow(schemaJson, configJson);
   }

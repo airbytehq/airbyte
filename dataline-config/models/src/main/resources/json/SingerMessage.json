@@ -23,7 +23,7 @@
     "record": {
       "description": "record message: must me a JSON object",
       "type": "object",
-      "javaName": "recordJson",
+      "javaName": "recordJson12345",
       "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
     },
     "schema": {
@@ -47,7 +47,7 @@
     "value": {
       "description": "value message: must me a JSON object",
       "type": "object",
-      "javaName": "valueJson",
+      "javaName": "valueJson12345",
       "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
     }
   }
