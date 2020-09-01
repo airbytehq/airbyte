@@ -14,6 +14,13 @@ openApiGenerate {
     invokerPackage = "io.dataline.api.invoker"
     modelPackage = "io.dataline.api.model"
 
+    importMappings = [
+        'SourceSpecification' : 'com.fasterxml.jackson.databind.JsonNode',
+        'SourceConfiguration' : 'com.fasterxml.jackson.databind.JsonNode',
+        'DestinationSpecification' : 'com.fasterxml.jackson.databind.JsonNode',
+        'DestinationConfiguration' : 'com.fasterxml.jackson.databind.JsonNode',
+    ]
+
     generateApiDocumentation = false
 
     configOptions = [
@@ -25,6 +32,7 @@ openApiGenerate {
 
 dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
 
     implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2'
 
