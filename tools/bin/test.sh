@@ -13,7 +13,7 @@ VERSION=dev docker-compose up -d
 trap "docker-compose stop" EXIT
 
 echo "Waiting for services to begin"
-sleep 10 # TODO what's a better way to wait on this
+sleep 10 # TODO need a better way to wait
 
 echo "Running e2e tests via gradle"
 ./gradlew :dataline-acceptance-tests:acceptanceTests
