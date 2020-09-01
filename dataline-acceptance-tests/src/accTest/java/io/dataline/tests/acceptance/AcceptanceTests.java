@@ -106,4 +106,5 @@ public class AcceptanceTests {
       return responseBody;
     }
   }
+
 }
