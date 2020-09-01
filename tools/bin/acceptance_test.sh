@@ -16,4 +16,4 @@ echo "Waiting for services to begin"
 sleep 10 # TODO need a better way to wait
 
 echo "Running e2e tests via gradle"
-./gradlew :dataline-acceptance-tests:acceptanceTests
+./gradlew :dataline-tests:acceptanceTests
