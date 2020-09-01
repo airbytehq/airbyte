@@ -216,7 +216,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       String scope = ScopeHelper.createScope(configType, configId);
       return DatabaseHelper.query(
           connectionPool,
-          ctx -> ctx.fetch("SELECT * FROM jobs WHERE scope = ?", scope).stream()
+          ctx -> ctx.fetch("SELECT * FROM jobs WHERE scope = ? ORDER BY created_at DESC", scope).stream()
               .map(DefaultSchedulerPersistence::getJobFromRecord)
               .collect(Collectors.toList()));
     } catch (SQLException e) {

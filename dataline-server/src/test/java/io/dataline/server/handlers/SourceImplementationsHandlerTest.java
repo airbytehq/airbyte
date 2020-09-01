@@ -107,14 +107,9 @@ class SourceImplementationsHandlerTest {
     final SourceImplementationRead actualSourceImplementationRead =
         sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
 
-    SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
-    expectedSourceImplementationRead.setSourceId(sourceConnectionSpecification.getSourceId());
-    expectedSourceImplementationRead.setSourceSpecificationId(
-        sourceConnectionSpecification.getSourceSpecificationId());
-    expectedSourceImplementationRead.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceImplementationRead.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
+    SourceImplementationRead expectedSourceImplementationRead =
+        SourceImplementationHelpers.getSourceImplementationRead(
+            sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
     expectedSourceImplementationRead.setConnectionConfiguration(
         SourceImplementationHelpers.getTestImplementationJson());
 
@@ -169,14 +164,9 @@ class SourceImplementationsHandlerTest {
     final SourceImplementationRead actualSourceImplementationRead =
         sourceImplementationsHandler.updateSourceImplementation(sourceImplementationUpdate);
 
-    SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
-    expectedSourceImplementationRead.setSourceId(sourceConnectionSpecification.getSourceId());
-    expectedSourceImplementationRead.setSourceSpecificationId(
-        sourceConnectionSpecification.getSourceSpecificationId());
-    expectedSourceImplementationRead.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceImplementationRead.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
+    SourceImplementationRead expectedSourceImplementationRead =
+        SourceImplementationHelpers.getSourceImplementationRead(
+            sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
     expectedSourceImplementationRead.setConnectionConfiguration(newConfiguration.toString());
 
     assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead);
@@ -202,16 +192,9 @@ class SourceImplementationsHandlerTest {
         SourceConnectionSpecification.class))
             .thenReturn(sourceConnectionSpecification);
 
-    SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
-    expectedSourceImplementationRead.setSourceId(sourceConnectionSpecification.getSourceId());
-    expectedSourceImplementationRead.setSourceSpecificationId(
-        sourceConnectionImplementation.getSourceSpecificationId());
-    expectedSourceImplementationRead.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceImplementationRead.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceImplementationRead.setConnectionConfiguration(
-        sourceConnectionImplementation.getConfigurationJson());
+    SourceImplementationRead expectedSourceImplementationRead =
+        SourceImplementationHelpers.getSourceImplementationRead(
+            sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
 
     final SourceImplementationIdRequestBody sourceImplementationIdRequestBody =
         new SourceImplementationIdRequestBody();
@@ -238,16 +221,9 @@ class SourceImplementationsHandlerTest {
         SourceConnectionSpecification.class))
             .thenReturn(sourceConnectionSpecification);
 
-    SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
-    expectedSourceImplementationRead.setSourceId(sourceConnectionSpecification.getSourceId());
-    expectedSourceImplementationRead.setSourceSpecificationId(
-        sourceConnectionImplementation.getSourceSpecificationId());
-    expectedSourceImplementationRead.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceImplementationRead.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceImplementationRead.setConnectionConfiguration(
-        sourceConnectionImplementation.getConfigurationJson());
+    SourceImplementationRead expectedSourceImplementationRead =
+        SourceImplementationHelpers.getSourceImplementationRead(
+            sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
@@ -296,15 +272,6 @@ class SourceImplementationsHandlerTest {
         sourceConnectionImplementation.getSourceImplementationId());
 
     sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
-
-    SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
-    expectedSourceImplementationRead.setSourceSpecificationId(
-        sourceConnectionSpecification.getSourceSpecificationId());
-    expectedSourceImplementationRead.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceImplementationRead.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceImplementationRead.setConnectionConfiguration(newConfiguration.toString());
 
     verify(configPersistence)
         .writeConfig(

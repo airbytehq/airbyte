@@ -13,7 +13,8 @@ dependencies {
     implementation project(":dataline-config:models")
     implementation project(":dataline-db")
     implementation project(":dataline-integrations")
-
+    
+    testImplementation "org.mockito:mockito-inline:2.13.0"
     testImplementation "org.testcontainers:testcontainers:1.14.3"
     testImplementation "org.testcontainers:postgresql:1.14.3"
     testImplementation "org.postgresql:postgresql:42.2.16"
