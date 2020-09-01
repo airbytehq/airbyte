@@ -23,10 +23,16 @@ package io.dataline.tests.acceptance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceImplementationCreate;
 import io.dataline.api.model.SourceImplementationRead;
@@ -34,16 +40,11 @@ import io.dataline.api.model.SourceReadList;
 import io.dataline.api.model.SourceSpecificationRead;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.persistence.PersistenceConstants;
-import java.io.IOException;
-import java.util.UUID;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 public class AcceptanceTests {
 
