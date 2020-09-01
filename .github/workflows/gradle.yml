@@ -41,14 +41,6 @@ jobs:
       - name: Ensure no file change
         run: git diff-index --quiet HEAD
 
-      - name: Cache java deps
-          uses: actions/cache@v2
-          with:
-            path: ${{ env.GRADLE_PATH }}
-            key: docker-${{ hashFiles('**/*.gradle') }}
-            restore-keys: |
-              gradle-
-
       - name: Build Docker Images (Master branch only)
         #        if: success() && github.ref == "refs/heads/master"
         run: docker-compose -f docker-compose.build.yaml build
