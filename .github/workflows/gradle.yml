@@ -50,7 +50,7 @@ jobs:
         run: ./tools/bin/test.sh
 
       - name: Slack Notification
-        if: failure() && github.ref == "refs/heads/master"
+        if: failure() && github.ref == 'refs/heads/master'
         uses: rtCamp/action-slack-notify@master
         env:
           SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
