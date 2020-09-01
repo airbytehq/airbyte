@@ -67,7 +67,7 @@ public class SourceImplementationsHandler {
     // validate configuration
     validateSourceImplementation(
         sourceImplementationCreate.getSourceSpecificationId(),
-        Jsons.jsonNode(sourceImplementationCreate.getConnectionConfiguration()));
+        sourceImplementationCreate.getConnectionConfiguration());
 
     // persist
     final UUID sourceImplementationId = uuidGenerator.get();
@@ -76,7 +76,7 @@ public class SourceImplementationsHandler {
         sourceImplementationCreate.getWorkspaceId(),
         sourceImplementationId,
         false,
-        Jsons.jsonNode(sourceImplementationCreate.getConnectionConfiguration()));
+        sourceImplementationCreate.getConnectionConfiguration());
 
     // read configuration from db
     return getSourceImplementationReadInternal(sourceImplementationId);
@@ -91,7 +91,7 @@ public class SourceImplementationsHandler {
     // validate configuration
     validateSourceImplementation(
         persistedSourceImplementation.getSourceSpecificationId(),
-        Jsons.jsonNode(sourceImplementationUpdate.getConnectionConfiguration()));
+        sourceImplementationUpdate.getConnectionConfiguration());
 
     // persist
     persistSourceConnectionImplementation(
@@ -99,7 +99,7 @@ public class SourceImplementationsHandler {
         persistedSourceImplementation.getWorkspaceId(),
         sourceImplementationUpdate.getSourceImplementationId(),
         persistedSourceImplementation.getTombstone(),
-        Jsons.jsonNode(sourceImplementationUpdate.getConnectionConfiguration()));
+        sourceImplementationUpdate.getConnectionConfiguration());
 
     // read configuration from db
     return getSourceImplementationReadInternal(
@@ -149,7 +149,7 @@ public class SourceImplementationsHandler {
         persistedSourceImplementation.getWorkspaceId(),
         persistedSourceImplementation.getSourceImplementationId(),
         true,
-        Jsons.jsonNode(persistedSourceImplementation.getConnectionConfiguration()));
+        persistedSourceImplementation.getConnectionConfiguration());
   }
 
   private SourceConnectionImplementation getSourceConnectionImplementationInternal(UUID sourceImplementationId) {

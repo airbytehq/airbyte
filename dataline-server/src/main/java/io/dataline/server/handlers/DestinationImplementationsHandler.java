@@ -67,7 +67,7 @@ public class DestinationImplementationsHandler {
     // validate configuration
     validateDestinationImplementation(
         destinationImplementationCreate.getDestinationSpecificationId(),
-        Jsons.jsonNode(destinationImplementationCreate.getConnectionConfiguration()));
+        destinationImplementationCreate.getConnectionConfiguration());
 
     // persist
     final UUID destinationImplementationId = uuidGenerator.get();
@@ -75,7 +75,7 @@ public class DestinationImplementationsHandler {
         destinationImplementationCreate.getDestinationSpecificationId(),
         destinationImplementationCreate.getWorkspaceId(),
         destinationImplementationId,
-        Jsons.jsonNode(destinationImplementationCreate.getConnectionConfiguration()));
+        destinationImplementationCreate.getConnectionConfiguration());
 
     // read configuration from db
     return getDestinationImplementationInternal(destinationImplementationId);
@@ -90,14 +90,14 @@ public class DestinationImplementationsHandler {
     // validate configuration
     validateDestinationImplementation(
         persistedDestinationImplementation.getDestinationSpecificationId(),
-        Jsons.jsonNode(destinationImplementationUpdate.getConnectionConfiguration()));
+        destinationImplementationUpdate.getConnectionConfiguration());
 
     // persist
     persistDestinationConnectionImplementation(
         persistedDestinationImplementation.getDestinationSpecificationId(),
         persistedDestinationImplementation.getWorkspaceId(),
         destinationImplementationUpdate.getDestinationImplementationId(),
-        Jsons.jsonNode(destinationImplementationUpdate.getConnectionConfiguration()));
+        destinationImplementationUpdate.getConnectionConfiguration());
 
     // read configuration from db
     return getDestinationImplementationInternal(
