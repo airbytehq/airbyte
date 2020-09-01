@@ -24,15 +24,12 @@
 
 package io.dataline.workers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.json.Jsons;
-import io.dataline.db.DatabaseHelper;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -46,21 +43,7 @@ public class PostgreSQLContainerTestHelper {
         "psql", "-d", db.getDatabaseName(), "-U", db.getUsername(), "-a", "-f", scriptPath);
   }
 
-  public static void wipePublicSchema(PostgreSQLContainer db) throws SQLException {
-    BasicDataSource connectionPool = getConnectionPool(db);
-    DatabaseHelper.execute(
-        connectionPool,
-        context -> {
-          context.execute("DROP SCHEMA public CASCADE;");
-          context.execute("CREATE SCHEMA public;");
-        });
-  }
-
-  public static BasicDataSource getConnectionPool(PostgreSQLContainer db) {
-    return DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl());
-  }
-
-  public static String getSingerTapConfig(PostgreSQLContainer db) throws JsonProcessingException {
+  public static JsonNode getSingerTapConfig(PostgreSQLContainer db) {
     return getSingerTapConfig(
         db.getUsername(),
         db.getPassword(),
@@ -69,11 +52,11 @@ public class PostgreSQLContainerTestHelper {
         String.valueOf(db.getFirstMappedPort()));
   }
 
-  public static String getSingerTapConfig(String user,
-                                          String password,
-                                          String host,
-                                          String dbname,
-                                          String port) {
+  public static JsonNode getSingerTapConfig(String user,
+                                            String password,
+                                            String host,
+                                            String dbname,
+                                            String port) {
     Map<String, String> creds = new HashMap<>();
     creds.put("user", user);
     creds.put("password", password);
@@ -81,36 +64,7 @@ public class PostgreSQLContainerTestHelper {
     creds.put("dbname", dbname);
     creds.put("port", port);
 
-    return Jsons.serialize(creds);
-  }
-
-  public static String getSingerTargetConfig(PostgreSQLContainer db)
-      throws JsonProcessingException {
-    return getSingerTargetConfig(
-        db.getUsername(),
-        db.getPassword(),
-        db.getHost(),
-        db.getDatabaseName(),
-        String.valueOf(db.getFirstMappedPort()),
-        "public");
-  }
-
-  // TODO this will be moved into Taps/Targets
-  public static String getSingerTargetConfig(String user,
-                                             String password,
-                                             String host,
-                                             String dbname,
-                                             String port,
-                                             String schema) {
-    Map<String, String> creds = new HashMap<>();
-    creds.put("postgres_username", user);
-    creds.put("postgres_schema", schema);
-    creds.put("postgres_password", password);
-    creds.put("postgres_host", host);
-    creds.put("postgres_database", dbname);
-    creds.put("postgres_port", port);
-
-    return Jsons.serialize(creds);
+    return Jsons.jsonNode(creds);
   }
 
 }

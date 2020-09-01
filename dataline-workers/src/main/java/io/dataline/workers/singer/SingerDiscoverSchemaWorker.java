@@ -27,6 +27,7 @@ package io.dataline.workers.singer;
 import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.Schema;
@@ -72,9 +73,9 @@ public class SingerDiscoverSchemaWorker
       throws InvalidCredentialsException {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
     // reduced.
-    final String configDotJson = discoverSchemaInput.getConnectionConfigurationJson();
+    final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
 
-    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
+    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     // exec
     try {

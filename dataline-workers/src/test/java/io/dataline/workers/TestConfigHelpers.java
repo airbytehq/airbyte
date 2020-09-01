@@ -24,6 +24,7 @@
 
 package io.dataline.workers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.Column;
 import io.dataline.config.DataType;
@@ -54,21 +55,21 @@ public class TestConfigHelpers {
     final UUID destinationImplementationId = UUID.randomUUID();
     final UUID connectionId = UUID.randomUUID();
 
-    final String sourceConnection =
-        Jsons.serialize(
+    final JsonNode sourceConnection =
+        Jsons.jsonNode(
             Map.of(
                 "apiKey", "123",
                 "region", "us-east"));
 
-    final String destinationConnection =
-        Jsons.serialize(
+    final JsonNode destinationConnection =
+        Jsons.jsonNode(
             Map.of(
                 "username", "dataline",
                 "token", "anau81b"));
 
     final SourceConnectionImplementation sourceConnectionConfig =
         new SourceConnectionImplementation();
-    sourceConnectionConfig.setConfigurationJson(sourceConnection);
+    sourceConnectionConfig.setConfiguration(sourceConnection);
     sourceConnectionConfig.setWorkspaceId(workspaceId);
     sourceConnectionConfig.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionConfig.setSourceImplementationId(sourceImplementationId);
@@ -76,7 +77,7 @@ public class TestConfigHelpers {
 
     final DestinationConnectionImplementation destinationConnectionConfig =
         new DestinationConnectionImplementation();
-    destinationConnectionConfig.setConfigurationJson(destinationConnection);
+    destinationConnectionConfig.setConfiguration(destinationConnection);
     destinationConnectionConfig.setWorkspaceId(workspaceId);
     destinationConnectionConfig.setDestinationSpecificationId(destinationSpecificationId);
     destinationConnectionConfig.setDestinationImplementationId(destinationImplementationId);
@@ -107,7 +108,7 @@ public class TestConfigHelpers {
 
     State state = new State();
     state.setConnectionId(connectionId);
-    state.setStateJson(stateValue);
+    state.setState(Jsons.jsonNode(stateValue));
 
     StandardSyncInput syncInput = new StandardSyncInput();
     syncInput.setDestinationConnectionImplementation(destinationConnectionConfig);

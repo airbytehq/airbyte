@@ -24,9 +24,11 @@
 
 package io.dataline.workers.singer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.commons.io.IOs;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.workers.DefaultSyncWorker;
@@ -56,11 +58,10 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
 
   @Override
   public CloseableConsumer<SingerMessage> create(StandardTargetConfig targetConfig, Path jobRoot) {
-    final String configDotJson =
-        targetConfig.getDestinationConnectionImplementation().getConfigurationJson();
+    final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
 
     // write config.json to disk
-    Path configPath = IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
+    Path configPath = IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
       final Process targetProcess =

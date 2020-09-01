@@ -62,14 +62,12 @@ public class DestinationSpecificationsHandler {
   }
 
   private static DestinationSpecificationRead toDestinationSpecificationRead(DestinationConnectionSpecification destinationConnectionSpecification) {
-    final DestinationSpecificationRead destinationSpecificationRead =
-        new DestinationSpecificationRead();
+    final DestinationSpecificationRead destinationSpecificationRead = new DestinationSpecificationRead();
     destinationSpecificationRead.setDestinationId(
         destinationConnectionSpecification.getDestinationId());
     destinationSpecificationRead.setDestinationSpecificationId(
         destinationConnectionSpecification.getDestinationSpecificationId());
-    destinationSpecificationRead.setConnectionSpecification(
-        destinationConnectionSpecification.getSpecificationJson());
+    destinationSpecificationRead.setConnectionSpecification(destinationConnectionSpecification.getSpecification());
 
     return destinationSpecificationRead;
   }
