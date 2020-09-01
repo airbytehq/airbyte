@@ -150,6 +150,7 @@ paths:
           description: Source not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  # todo (cgardens) - rename to source_specifications/get_latest_from_source_id
   /v1/source_specifications/get:
     post:
       tags:
