@@ -1027,8 +1027,7 @@ components:
     ConnectionUpdate:
       type: object
       required:
-        - sourceImplementationId
-        - destinationImplementationId
+        - connectionId
         - syncSchema
         - status
       properties:
