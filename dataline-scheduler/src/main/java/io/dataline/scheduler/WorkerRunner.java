@@ -103,6 +103,8 @@ public class WorkerRunner implements Runnable {
         break;
       case SYNC:
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
+        final SingerDiscoverSchemaWorker discoverSchemaWorker =
+            new SingerDiscoverSchemaWorker(job.getConfig().getSync().getSourceDockerImage(), pbf);
         new WorkerRun<>(
             jobId,
             jobRoot,
@@ -112,7 +114,10 @@ public class WorkerRunner implements Runnable {
             // interoperate with SingerTap and SingerTarget now that they are split and
             // mediated in DefaultSyncWorker.
             new DefaultSyncWorker(
-                new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf),
+                new SingerTapFactory(
+                    job.getConfig().getSync().getSourceDockerImage(),
+                    pbf,
+                    discoverSchemaWorker),
                 new SingerTargetFactory(
                     job.getConfig().getSync().getDestinationDockerImage(), pbf)),
             connectionPool)
@@ -125,14 +130,14 @@ public class WorkerRunner implements Runnable {
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
     final StandardCheckConnectionInput checkConnectionInput = new StandardCheckConnectionInput();
-    checkConnectionInput.setConnectionConfigurationJson(config.getConnectionConfigurationJson());
+    checkConnectionInput.setConnectionConfiguration(config.getConnectionConfiguration());
 
     return checkConnectionInput;
   }
 
   private static StandardDiscoverSchemaInput getDiscoverSchemaInput(JobDiscoverSchemaConfig config) {
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfigurationJson(config.getConnectionConfigurationJson());
+    discoverSchemaInput.setConnectionConfiguration(config.getConnectionConfiguration());
 
     return discoverSchemaInput;
   }

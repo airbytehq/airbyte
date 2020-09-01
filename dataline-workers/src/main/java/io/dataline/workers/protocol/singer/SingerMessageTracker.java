@@ -24,7 +24,6 @@
 
 package io.dataline.workers.protocol.singer;
 
-import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.State;
 import java.util.Optional;
@@ -46,14 +45,14 @@ public class SingerMessageTracker implements Consumer<SingerMessage> {
   }
 
   @Override
-  public void accept(SingerMessage record) {
-    if (record.getType().equals(SingerMessage.Type.RECORD)) {
+  public void accept(SingerMessage message) {
+    if (message.getType().equals(SingerMessage.Type.RECORD)) {
       recordCount.incrementAndGet();
     }
-    if (record.getType().equals(SingerMessage.Type.STATE)) {
+    if (message.getType().equals(SingerMessage.Type.STATE)) {
       final State state = new State();
       state.setConnectionId(connectionId);
-      state.setStateJson(Jsons.serialize(record));
+      state.setState(message.getValue());
       outputState.set(state);
     }
   }

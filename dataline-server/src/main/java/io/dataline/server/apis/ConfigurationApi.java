@@ -55,6 +55,7 @@ import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.SourceRead;
 import io.dataline.api.model.SourceReadList;
 import io.dataline.api.model.SourceSpecificationRead;
+import io.dataline.api.model.WbConnectionReadList;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
@@ -71,6 +72,7 @@ import io.dataline.server.handlers.SchedulerHandler;
 import io.dataline.server.handlers.SourceImplementationsHandler;
 import io.dataline.server.handlers.SourceSpecificationsHandler;
 import io.dataline.server.handlers.SourcesHandler;
+import io.dataline.server.handlers.WebBackendConnectionsHandler;
 import io.dataline.server.handlers.WorkspacesHandler;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.nio.file.Path;
@@ -90,25 +92,23 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final ConnectionsHandler connectionsHandler;
   private final SchedulerHandler schedulerHandler;
   private final JobHistoryHandler jobHistoryHandler;
+  private final WebBackendConnectionsHandler webBackendConnectionsHandler;
 
   public ConfigurationApi(final Path dbRoot, BasicDataSource connectionPool) {
     ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot);
-    final IntegrationSchemaValidation integrationSchemaValidation =
-        new IntegrationSchemaValidation(configPersistence);
+    final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation(configPersistence);
     workspacesHandler = new WorkspacesHandler(configPersistence);
     sourcesHandler = new SourcesHandler(configPersistence);
     sourceSpecificationsHandler = new SourceSpecificationsHandler(configPersistence);
-    sourceImplementationsHandler =
-        new SourceImplementationsHandler(configPersistence, integrationSchemaValidation);
+    connectionsHandler = new ConnectionsHandler(configPersistence);
+    sourceImplementationsHandler = new SourceImplementationsHandler(configPersistence, integrationSchemaValidation, connectionsHandler);
     destinationsHandler = new DestinationsHandler(configPersistence);
     destinationSpecificationsHandler = new DestinationSpecificationsHandler(configPersistence);
-    destinationImplementationsHandler =
-        new DestinationImplementationsHandler(configPersistence, integrationSchemaValidation);
-    connectionsHandler = new ConnectionsHandler(configPersistence);
-    final SchedulerPersistence schedulerPersistence =
-        new DefaultSchedulerPersistence(connectionPool);
+    destinationImplementationsHandler = new DestinationImplementationsHandler(configPersistence, integrationSchemaValidation);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
     schedulerHandler = new SchedulerHandler(configPersistence, schedulerPersistence);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
+    webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
   }
 
   // WORKSPACE
@@ -225,7 +225,8 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   @Override
-  public DestinationImplementationRead getDestinationImplementation(@Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+  public DestinationImplementationRead getDestinationImplementation(
+                                                                    @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
     return destinationImplementationsHandler.getDestinationImplementation(
         destinationImplementationIdRequestBody);
   }
@@ -273,6 +274,14 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   @Override
   public JobInfoRead getJobInfo(@Valid JobIdRequestBody jobIdRequestBody) {
     return jobHistoryHandler.getJobInfo(jobIdRequestBody);
+  }
+
+  // WEB BACKEND
+
+  @Override
+  public WbConnectionReadList webBackendListConnectionsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(
+        workspaceIdRequestBody);
   }
 
 }

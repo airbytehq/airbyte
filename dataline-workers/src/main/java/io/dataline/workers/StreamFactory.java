@@ -22,32 +22,14 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers;
 
-import io.dataline.workers.Worker;
-import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.dataline.config.SingerMessage;
+import java.io.BufferedReader;
+import java.util.stream.Stream;
 
-public abstract class BaseSingerWorker<InputType, OutputType> implements Worker<InputType, OutputType> {
+public interface StreamFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
-
-  protected void cancelHelper(Process workerProcess) {
-    try {
-      workerProcess.destroy();
-      workerProcess.waitFor(10, TimeUnit.SECONDS);
-      if (workerProcess.isAlive()) {
-        workerProcess.destroyForcibly();
-      }
-    } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling job.", e);
-    }
-  }
-
-  protected static Path getFullPath(Path workspaceRoot, String fileName) {
-    return workspaceRoot.resolve(fileName);
-  }
+  Stream<SingerMessage> create(BufferedReader bufferedReader);
 
 }

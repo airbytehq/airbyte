@@ -68,8 +68,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             sourceImplementation.getSourceImplementationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfigurationJson(
-        sourceImplementation.getConfigurationJson());
+    jobCheckConnectionConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
     jobCheckConnectionConfig.setDockerImage(
         Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
             .getCheckConnectionImage());
@@ -90,8 +89,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             destinationImplementation.getDestinationImplementationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfigurationJson(
-        destinationImplementation.getConfigurationJson());
+    jobCheckConnectionConfig.setConnectionConfiguration(destinationImplementation.getConfiguration());
     jobCheckConnectionConfig.setDockerImage(
         Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId())
             .getCheckConnectionImage());
@@ -113,8 +111,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             sourceImplementation.getSourceImplementationId().toString());
 
     final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig();
-    jobDiscoverSchemaConfig.setConnectionConfigurationJson(
-        sourceImplementation.getConfigurationJson());
+    jobDiscoverSchemaConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
     jobDiscoverSchemaConfig.setDockerImage(
         Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
             .getDiscoverSchemaImage());
@@ -216,7 +213,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       String scope = ScopeHelper.createScope(configType, configId);
       return DatabaseHelper.query(
           connectionPool,
-          ctx -> ctx.fetch("SELECT * FROM jobs WHERE scope = ?", scope).stream()
+          ctx -> ctx.fetch("SELECT * FROM jobs WHERE scope = ? ORDER BY created_at DESC", scope).stream()
               .map(DefaultSchedulerPersistence::getJobFromRecord)
               .collect(Collectors.toList()));
     } catch (SQLException e) {

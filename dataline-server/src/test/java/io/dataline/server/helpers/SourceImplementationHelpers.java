@@ -24,6 +24,9 @@
 
 package io.dataline.server.helpers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.dataline.api.model.SourceImplementationRead;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SourceConnectionImplementation;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,23 +41,38 @@ public class SourceImplementationHelpers {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
 
-    String implementationJson = getTestImplementationJson();
+    JsonNode implementationJson = getTestImplementationJson();
 
     final SourceConnectionImplementation sourceConnectionImplementation =
         new SourceConnectionImplementation();
     sourceConnectionImplementation.setWorkspaceId(workspaceId);
     sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setConfigurationJson(implementationJson);
+    sourceConnectionImplementation.setConfiguration(implementationJson);
     sourceConnectionImplementation.setTombstone(false);
 
     return sourceConnectionImplementation;
   }
 
-  public static String getTestImplementationJson() throws IOException {
+  public static JsonNode getTestImplementationJson() throws IOException {
     final Path path =
         Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
-    return Files.readString(path);
+    return Jsons.deserialize(Files.readString(path));
+  }
+
+  public static SourceImplementationRead getSourceImplementationRead(SourceConnectionImplementation sourceImplementation,
+                                                                     UUID sourceId) {
+    SourceImplementationRead sourceImplementationRead = new SourceImplementationRead();
+    sourceImplementationRead.setSourceId(sourceId);
+    sourceImplementationRead.setWorkspaceId(sourceImplementation.getWorkspaceId());
+    sourceImplementationRead.setSourceSpecificationId(
+        sourceImplementation.getSourceSpecificationId());
+    sourceImplementationRead.setSourceImplementationId(
+        sourceImplementation.getSourceImplementationId());
+    sourceImplementationRead.setConnectionConfiguration(
+        sourceImplementation.getConfiguration());
+
+    return sourceImplementationRead;
   }
 
 }
