@@ -8,10 +8,10 @@ plugins {
 sourceSets {
     acceptanceTests {
         java {
-            srcDir("src/accTest/java")
+            srcDir("src/acceptanceTests/java")
         }
         resources {
-            srcDir("src/accTest/resources")
+            srcDir("src/acceptanceTests/resources")
         }
     }
 }
@@ -30,7 +30,7 @@ dependencies {
     acceptanceTestsImplementation "com.squareup.okhttp3:okhttp:4.8.1"
     acceptanceTestsImplementation "org.testcontainers:postgresql:1.14.3"
     acceptanceTestsImplementation "org.postgresql:postgresql:42.2.16"
-    acceptanceTestsImplementation "com.fasterxml.jackson.core:jackson-databind:2.9.8"
+    acceptanceTestsImplementation "com.fasterxml.jackson.core:jackson-databind"
 }
 
 task acceptanceTests(type: Test) {

@@ -47,7 +47,7 @@ jobs:
 
       - name: Run Acceptance Tests (Master branch only)
         if: success() && github.ref == 'refs/heads/master'
-        run: ./tools/bin/test.sh
+        run: ./tools/bin/acceptance_test.sh
 
       - name: Slack Notification (Master branch only)
         if: failure() && github.ref == 'refs/heads/master'
