@@ -44,7 +44,7 @@ public class MessageUtils {
                                                   Instant timeExtracted) {
     final SingerMessage singerMessage = new SingerMessage();
     singerMessage.setType(SingerMessage.Type.RECORD);
-    singerMessage.setRecordJson(record);
+    singerMessage.setRecord(record);
     singerMessage.setStream(tableName);
 
     Optional.ofNullable(timeExtracted)

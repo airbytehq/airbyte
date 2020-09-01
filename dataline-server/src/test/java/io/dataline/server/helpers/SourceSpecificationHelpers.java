@@ -45,7 +45,7 @@ public class SourceSpecificationHelpers {
         new SourceConnectionSpecification();
     sourceConnectionSpecification.setSourceId(sourceId);
     sourceConnectionSpecification.setSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionSpecification.setSpecificationJson(Jsons.deserialize(Files.readString(path)));
+    sourceConnectionSpecification.setSpecification(Jsons.deserialize(Files.readString(path)));
 
     return sourceConnectionSpecification;
   }

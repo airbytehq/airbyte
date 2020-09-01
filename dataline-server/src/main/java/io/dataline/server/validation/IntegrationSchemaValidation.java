@@ -51,7 +51,7 @@ public class IntegrationSchemaValidation {
         ConfigFetchers.getSourceConnectionSpecification(
             configPersistence, sourceConnectionSpecificationId);
 
-    final JsonNode schemaJson = sourceConnectionSpecification.getSpecificationJson();
+    final JsonNode schemaJson = sourceConnectionSpecification.getSpecification();
 
     jsonSchemaValidation.validateThrow(schemaJson, configJson);
   }
@@ -62,7 +62,7 @@ public class IntegrationSchemaValidation {
         ConfigFetchers.getDestinationConnectionSpecification(
             configPersistence, destinationConnectionSpecificationId);
 
-    final JsonNode schemaJson = destinationConnectionSpecification.getSpecificationJson();
+    final JsonNode schemaJson = destinationConnectionSpecification.getSpecification();
 
     jsonSchemaValidation.validateThrow(schemaJson, configJson);
   }

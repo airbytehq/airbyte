@@ -194,7 +194,7 @@ public class SourceImplementationsHandler {
     sourceConnectionImplementation.setWorkspaceId(workspaceId);
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
     sourceConnectionImplementation.setTombstone(tombstone);
-    sourceConnectionImplementation.setConfigurationJson(configurationJson);
+    sourceConnectionImplementation.setConfiguration(configurationJson);
 
     ConfigFetchers.writeConfig(
         configPersistence,
@@ -211,7 +211,7 @@ public class SourceImplementationsHandler {
     sourceImplementationRead.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
     sourceImplementationRead.setSourceSpecificationId(
         sourceConnectionImplementation.getSourceSpecificationId());
-    sourceImplementationRead.setConnectionConfiguration(sourceConnectionImplementation.getConfigurationJson());
+    sourceImplementationRead.setConnectionConfiguration(sourceConnectionImplementation.getConfiguration());
 
     return sourceImplementationRead;
   }

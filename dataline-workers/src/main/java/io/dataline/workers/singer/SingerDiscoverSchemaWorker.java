@@ -73,7 +73,7 @@ public class SingerDiscoverSchemaWorker
       throws InvalidCredentialsException {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
     // reduced.
-    final JsonNode configDotJson = discoverSchemaInput.getConnectionConfigurationJson();
+    final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
 
     IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 

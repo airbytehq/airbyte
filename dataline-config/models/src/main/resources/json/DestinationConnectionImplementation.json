@@ -24,7 +24,7 @@
       "type": "string",
       "format": "uuid"
     },
-    "configurationJson": {
+    "configuration": {
       "description": "Integration specific blob. Must be a valid JSON string.",
       "type": "object",
       "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"

@@ -48,7 +48,7 @@ public class SourceImplementationHelpers {
     sourceConnectionImplementation.setWorkspaceId(workspaceId);
     sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setConfigurationJson(implementationJson);
+    sourceConnectionImplementation.setConfiguration(implementationJson);
     sourceConnectionImplementation.setTombstone(false);
 
     return sourceConnectionImplementation;
@@ -70,7 +70,7 @@ public class SourceImplementationHelpers {
     sourceImplementationRead.setSourceImplementationId(
         sourceImplementation.getSourceImplementationId());
     sourceImplementationRead.setConnectionConfiguration(
-        sourceImplementation.getConfigurationJson());
+        sourceImplementation.getConfiguration());
 
     return sourceImplementationRead;
   }

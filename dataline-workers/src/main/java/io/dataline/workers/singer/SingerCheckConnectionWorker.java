@@ -55,7 +55,7 @@ public class SingerCheckConnectionWorker
       throws InvalidCredentialsException {
 
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfigurationJson(input.getConnectionConfigurationJson());
+    discoverSchemaInput.setConnectionConfiguration(input.getConnectionConfiguration());
 
     OutputAndStatus<StandardDiscoverSchemaOutput> outputAndStatus =
         singerDiscoverSchemaWorker.run(discoverSchemaInput, jobRoot);

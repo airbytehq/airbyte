@@ -117,7 +117,7 @@ class SourceImplementationsHandlerTest {
     verify(validator)
         .validateSourceConnectionConfiguration(
             sourceConnectionSpecification.getSourceSpecificationId(),
-            sourceConnectionImplementation.getConfigurationJson());
+            sourceConnectionImplementation.getConfiguration());
 
     verify(configPersistence)
         .writeConfig(
@@ -128,7 +128,7 @@ class SourceImplementationsHandlerTest {
 
   @Test
   void testUpdateSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
-    final JsonNode newConfiguration = sourceConnectionImplementation.getConfigurationJson();
+    final JsonNode newConfiguration = sourceConnectionImplementation.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
@@ -139,7 +139,7 @@ class SourceImplementationsHandlerTest {
         sourceConnectionImplementation.getSourceSpecificationId());
     expectedSourceConnectionImplementation.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceConnectionImplementation.setConfigurationJson(newConfiguration);
+    expectedSourceConnectionImplementation.setConfiguration(newConfiguration);
     expectedSourceConnectionImplementation.setTombstone(false);
 
     when(configPersistence.getConfig(
@@ -235,7 +235,7 @@ class SourceImplementationsHandlerTest {
 
   @Test
   void testDeleteSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
-    final JsonNode newConfiguration = sourceConnectionImplementation.getConfigurationJson();
+    final JsonNode newConfiguration = sourceConnectionImplementation.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
@@ -246,8 +246,8 @@ class SourceImplementationsHandlerTest {
         sourceConnectionImplementation.getSourceSpecificationId());
     expectedSourceConnectionImplementation.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceConnectionImplementation.setConfigurationJson(
-        sourceConnectionImplementation.getConfigurationJson());
+    expectedSourceConnectionImplementation.setConfiguration(
+        sourceConnectionImplementation.getConfiguration());
     expectedSourceConnectionImplementation.setTombstone(true);
 
     when(configPersistence.getConfig(
