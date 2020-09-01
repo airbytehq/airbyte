@@ -222,7 +222,7 @@ paths:
       tags:
         - source_implementation
       summary: List source implementations for workspace
-      description: List source implementations for workspace. Does not return deleted source imeplementations.
+      description: List source implementations for workspace. Does not return deleted source implementations.
       operationId: listSourceImplementationsForWorkspace
       requestBody:
         content:
