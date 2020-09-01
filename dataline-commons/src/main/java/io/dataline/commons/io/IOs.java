@@ -22,32 +22,31 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.commons.io;
 
-import io.dataline.workers.Worker;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public abstract class BaseSingerWorker<InputType, OutputType> implements Worker<InputType, OutputType> {
+public class IOs {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
-
-  protected void cancelHelper(Process workerProcess) {
+  public static Path writeFile(Path path, String fileName, String contents) {
     try {
-      workerProcess.destroy();
-      workerProcess.waitFor(10, TimeUnit.SECONDS);
-      if (workerProcess.isAlive()) {
-        workerProcess.destroyForcibly();
-      }
-    } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling job.", e);
+      Path filePath = path.resolve(fileName);
+      Files.writeString(filePath, contents, StandardCharsets.UTF_8);
+      return filePath;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  protected static Path getFullPath(Path workspaceRoot, String fileName) {
-    return workspaceRoot.resolve(fileName);
+  public static String readFile(Path path, String fileName) {
+    try {
+      return Files.readString(path.resolve(fileName), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

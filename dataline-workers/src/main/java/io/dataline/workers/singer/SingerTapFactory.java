@@ -25,6 +25,7 @@
 package io.dataline.workers.singer;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerCatalog;
 import io.dataline.config.SingerMessage;
@@ -83,21 +84,19 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   }
 
   @Override
-  public Stream<SingerMessage> create(StandardTapConfig input, Path jobRoot)
-      throws InvalidCredentialsException {
+  public Stream<SingerMessage> create(StandardTapConfig input, Path jobRoot) throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, jobRoot);
 
     final String configDotJson = input.getSourceConnectionImplementation().getConfigurationJson();
 
-    final SingerCatalog selectedCatalog =
-        SingerCatalogConverters.applySchemaToDiscoveredCatalog(
-            discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
+    final SingerCatalog selectedCatalog = SingerCatalogConverters.applySchemaToDiscoveredCatalog(
+        discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
     final String catalogDotJson = Jsons.serialize(selectedCatalog);
     final String stateDotJson = Jsons.serialize(input.getState());
 
-    WorkerUtils.writeFileToWorkspace(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
-    WorkerUtils.writeFileToWorkspace(jobRoot, CATALOG_JSON_FILENAME, catalogDotJson);
-    WorkerUtils.writeFileToWorkspace(jobRoot, STATE_JSON_FILENAME, stateDotJson);
+    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
+    IOs.writeFile(jobRoot, CATALOG_JSON_FILENAME, catalogDotJson);
+    IOs.writeFile(jobRoot, STATE_JSON_FILENAME, stateDotJson);
 
     try {
       tapProcess =
