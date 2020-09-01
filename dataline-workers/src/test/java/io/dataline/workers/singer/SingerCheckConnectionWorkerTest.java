@@ -29,11 +29,11 @@ import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.integrations.Integrations;
 import io.dataline.workers.BaseWorkerTestCase;
-import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.PostgreSQLContainerTestHelper;
@@ -60,15 +60,15 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testNonexistentDb()
-      throws IOException, InvalidCredentialsException, InvalidCatalogException {
+      throws IOException, InvalidCredentialsException {
     final String jobId = "1";
-    String fakeDbCreds =
+    JsonNode fakeDbCreds =
         PostgreSQLContainerTestHelper.getSingerTapConfig(
             "user", "pass", "localhost", "postgres", "111111");
 
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfigurationJson(fakeDbCreds);
+    standardCheckConnectionInput.setConnectionConfiguration(fakeDbCreds);
 
     SingerCheckConnectionWorker worker =
         new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
@@ -84,9 +84,9 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testIncorrectAuthCredentials()
-      throws IOException, InvalidCredentialsException, InvalidCatalogException {
+      throws IOException, InvalidCredentialsException {
     final String jobId = "1";
-    String incorrectCreds =
+    JsonNode incorrectCreds =
         PostgreSQLContainerTestHelper.getSingerTapConfig(
             db.getUsername(),
             "wrongpassword",
@@ -99,7 +99,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfigurationJson(incorrectCreds);
+    standardCheckConnectionInput.setConnectionConfiguration(incorrectCreds);
 
     OutputAndStatus<StandardCheckConnectionOutput> run =
         worker.run(standardCheckConnectionInput, createJobRoot(jobId));
@@ -113,14 +113,14 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testSuccessfulConnection()
-      throws IOException, InvalidCredentialsException, InvalidCatalogException {
+      throws IOException, InvalidCredentialsException {
     final String jobId = "1";
 
-    String creds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
+    JsonNode creds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfigurationJson(creds);
+    standardCheckConnectionInput.setConnectionConfiguration(creds);
 
     SingerCheckConnectionWorker worker =
         new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);

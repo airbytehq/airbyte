@@ -24,14 +24,16 @@
 
 package io.dataline.workers.singer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import io.dataline.commons.functional.CloseableConsumer;
+import io.dataline.commons.io.IOs;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.TargetConsumer;
 import io.dataline.workers.TargetFactory;
-import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -56,12 +58,10 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
 
   @Override
   public CloseableConsumer<SingerMessage> create(StandardTargetConfig targetConfig, Path jobRoot) {
-    final String configDotJson =
-        targetConfig.getDestinationConnectionImplementation().getConfigurationJson();
+    final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
 
     // write config.json to disk
-    Path configPath =
-        WorkerUtils.writeFileToWorkspace(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
+    Path configPath = IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
       final Process targetProcess =
@@ -70,8 +70,7 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
               .start();
 
       try (BufferedWriter writer =
-          new BufferedWriter(
-              new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8))) {
+          new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8))) {
 
         return new TargetConsumer(writer, targetProcess);
       } catch (IOException e) {

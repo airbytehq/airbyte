@@ -29,6 +29,7 @@ import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
@@ -62,16 +63,15 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
 
   @Test
   public void testPostgresDiscovery() throws IOException, InvalidCredentialsException {
-    final String jobId = "1";
-    String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
+    JsonNode postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
     final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
-    input.setConnectionConfigurationJson(postgresCreds);
+    input.setConnectionConfiguration(postgresCreds);
 
     SingerDiscoverSchemaWorker worker =
         new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage(), pbf);
 
-    OutputAndStatus<StandardDiscoverSchemaOutput> run = worker.run(input, createJobRoot(jobId));
+    OutputAndStatus<StandardDiscoverSchemaOutput> run = worker.run(input, createJobRoot("1"));
 
     assertEquals(SUCCESSFUL, run.getStatus());
 
@@ -83,12 +83,11 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
   }
 
   @Test
-  public void testCancellation() throws IOException, InterruptedException, ExecutionException {
-    final String jobId = "1";
-    String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
+  public void testCancellation() throws InterruptedException, ExecutionException {
+    JsonNode postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
     final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
-    input.setConnectionConfigurationJson(postgresCreds);
+    input.setConnectionConfiguration(postgresCreds);
 
     SingerDiscoverSchemaWorker worker =
         new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage(), pbf);
@@ -99,7 +98,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
             () -> {
               try {
                 OutputAndStatus<StandardDiscoverSchemaOutput> output =
-                    worker.run(input, createJobRoot(jobId));
+                    worker.run(input, createJobRoot("1"));
                 assertEquals(FAILED, output.getStatus());
               } catch (Exception e) {
                 throw new RuntimeException(e);

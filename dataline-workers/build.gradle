@@ -8,7 +8,7 @@ configurations {
 
 dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.9.8"
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
 
     implementation project(":dataline-config:models")
     implementation project(":dataline-db")

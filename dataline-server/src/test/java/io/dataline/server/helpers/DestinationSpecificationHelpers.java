@@ -24,6 +24,7 @@
 
 package io.dataline.server.helpers;
 
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.DestinationConnectionSpecification;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,7 +46,7 @@ public class DestinationSpecificationHelpers {
         new DestinationConnectionSpecification();
     destinationConnectionSpecification.setDestinationId(destinationId);
     destinationConnectionSpecification.setDestinationSpecificationId(destinationSpecificationId);
-    destinationConnectionSpecification.setSpecificationJson(Files.readString(path));
+    destinationConnectionSpecification.setSpecification(Jsons.deserialize(Files.readString(path)));
 
     return destinationConnectionSpecification;
   }

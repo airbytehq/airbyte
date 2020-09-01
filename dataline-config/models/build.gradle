@@ -3,11 +3,13 @@ plugins {
 }
 
 dependencies {
-    implementation 'javax.validation:validation-api:1.1.0.Final'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
+    implementation group: 'javax.validation', name: 'validation-api', version: '1.1.0.Final'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
 }
 
 jsonSchema2Pojo {
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+
     targetPackage = 'io.dataline.config'
     useLongIntegers = true
 }
