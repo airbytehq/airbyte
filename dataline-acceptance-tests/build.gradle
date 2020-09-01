@@ -17,7 +17,7 @@ sourceSets {
 }
 
 // Gradle links configurations with the name xImplementation or xRuntimeOnly etc.. to the source set named x. Therefore, any deps specified
-// using the extensions below apply only to this sourceset and not any other code in the project. 
+// using the extensions below apply only to this sourceset and not any other code in the project.
 configurations {
     acceptanceTestsImplementation.extendsFrom testImplementation
     acceptanceTestsRuntimeOnly.extendsFrom testRuntimeOnly
