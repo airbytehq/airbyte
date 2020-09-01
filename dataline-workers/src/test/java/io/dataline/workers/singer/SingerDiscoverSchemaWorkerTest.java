@@ -51,22 +51,24 @@ import org.junit.jupiter.api.Test;
 public class SingerDiscoverSchemaWorkerTest {
 
   private static final String IMAGE_NAME = "selfie:latest";
+  private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
 
   private Path jobRoot;
   private ProcessBuilderFactory pbf;
   private ProcessBuilder processBuilder;
   private Process process;
+  private StandardDiscoverSchemaInput input;
 
   @BeforeEach
-  public void setup() throws IOException {
+  public void setup() throws IOException, InterruptedException {
     jobRoot = Files.createTempDirectory("");
     pbf = mock(ProcessBuilderFactory.class);
     processBuilder = mock(ProcessBuilder.class);
     process = mock(Process.class);
-  }
 
-  @Test
-  public void testPostgresDiscovery() throws IOException, InterruptedException, InvalidCredentialsException {
+    input = new StandardDiscoverSchemaInput();
+    input.setConnectionConfiguration(CREDS);
+
     when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover")).thenReturn(processBuilder);
     when(processBuilder.redirectError(jobRoot.resolve(SingerDiscoverSchemaWorker.ERROR_LOG_FILENAME).toFile())).thenReturn(processBuilder);
     when(processBuilder.redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile())).thenReturn(processBuilder);
@@ -75,11 +77,10 @@ public class SingerDiscoverSchemaWorkerTest {
 
     // this would be written by the docker process.
     IOs.writeFile(jobRoot, "catalog.json", Resourzes.readResource("simple_postgres_singer_catalog.json"));
+  }
 
-    final JsonNode creds = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
-    final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
-    input.setConnectionConfiguration(creds);
-
+  @Test
+  public void testPostgresDiscovery() throws IOException, InterruptedException, InvalidCredentialsException {
     SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
     OutputAndStatus<StandardDiscoverSchemaOutput> run = worker.run(input, jobRoot);
 
@@ -98,23 +99,16 @@ public class SingerDiscoverSchemaWorkerTest {
     final JsonNode expectedConfig = Jsons.jsonNode(input.getConnectionConfiguration());
     final JsonNode actualConfig = Jsons.deserialize(IOs.readFile(jobRoot, SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME));
     assertEquals(expectedConfig, actualConfig);
+
+    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover");
+    verify(processBuilder).redirectError(jobRoot.resolve(SingerDiscoverSchemaWorker.ERROR_LOG_FILENAME).toFile());
+    verify(processBuilder).redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile());
+    verify(processBuilder).start();
+    verify(process).waitFor(1, TimeUnit.MINUTES);
   }
 
   @Test
-  public void testCancellation() throws IOException, InvalidCredentialsException, InterruptedException {
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover")).thenReturn(processBuilder);
-    when(processBuilder.redirectError(jobRoot.resolve(SingerDiscoverSchemaWorker.ERROR_LOG_FILENAME).toFile())).thenReturn(processBuilder);
-    when(processBuilder.redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile())).thenReturn(processBuilder);
-    when(processBuilder.start()).thenReturn(process);
-    when(process.waitFor(1, TimeUnit.MINUTES)).thenReturn(true);
-
-    // this would be written by the docker process.
-    IOs.writeFile(jobRoot, "catalog.json", Resourzes.readResource("simple_postgres_singer_catalog.json"));
-
-    final JsonNode creds = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
-    final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
-    input.setConnectionConfiguration(creds);
-
+  public void testCancellation() throws InvalidCredentialsException {
     SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
     worker.run(input, jobRoot);
 
