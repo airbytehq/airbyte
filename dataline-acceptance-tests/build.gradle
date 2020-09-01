@@ -2,6 +2,9 @@ plugins {
     id 'java'
 }
 
+// The java plugin automatically compiles/runs tests in the test source set (which is the default structure). Since we want acceptance tests to run
+// only when explicitly requested, we put them in a separate source set, specify the sourceset's dependencies via configuration extensions below,
+// and create a custom test task that can be invoked to run acceptance tests. 
 sourceSets {
     acceptanceTests {
         java {
