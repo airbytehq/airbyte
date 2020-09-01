@@ -45,11 +45,11 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: docker-compose -f docker-compose.build.yaml build
 
-      - name: Run Acceptance Tests
+      - name: Run Acceptance Tests (Master branch only)
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/test.sh
 
-      - name: Slack Notification
+      - name: Slack Notification (Master branch only)
         if: failure() && github.ref == 'refs/heads/master'
         uses: rtCamp/action-slack-notify@master
         env:
