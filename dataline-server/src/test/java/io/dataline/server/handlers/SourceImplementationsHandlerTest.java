@@ -32,6 +32,10 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
+import io.dataline.api.model.ConnectionRead;
+import io.dataline.api.model.ConnectionReadList;
+import io.dataline.api.model.ConnectionStatus;
+import io.dataline.api.model.ConnectionUpdate;
 import io.dataline.api.model.SourceImplementationCreate;
 import io.dataline.api.model.SourceImplementationIdRequestBody;
 import io.dataline.api.model.SourceImplementationRead;
@@ -40,14 +44,17 @@ import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.SourceConnectionSpecification;
+import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.server.helpers.ConnectionHelpers;
 import io.dataline.server.helpers.SourceImplementationHelpers;
 import io.dataline.server.helpers.SourceSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,6 +67,7 @@ class SourceImplementationsHandlerTest {
   private SourceConnectionImplementation sourceConnectionImplementation;
   private SourceImplementationsHandler sourceImplementationsHandler;
   private IntegrationSchemaValidation validator;
+  private ConnectionsHandler connectionsHandler;
   private Supplier<UUID> uuidGenerator;
 
   @SuppressWarnings("unchecked")
@@ -67,15 +75,15 @@ class SourceImplementationsHandlerTest {
   void setUp() throws IOException {
     configPersistence = mock(ConfigPersistence.class);
     validator = mock(IntegrationSchemaValidation.class);
+    connectionsHandler = mock(ConnectionsHandler.class);
     uuidGenerator = mock(Supplier.class);
 
     sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
     sourceConnectionImplementation =
-        SourceImplementationHelpers.generateSourceImplementation(
-            sourceConnectionSpecification.getSourceSpecificationId());
+        SourceImplementationHelpers.generateSourceImplementation(sourceConnectionSpecification.getSourceSpecificationId());
 
     sourceImplementationsHandler =
-        new SourceImplementationsHandler(configPersistence, validator, uuidGenerator);
+        new SourceImplementationsHandler(configPersistence, validator, connectionsHandler, uuidGenerator);
   }
 
   @Test
@@ -98,19 +106,15 @@ class SourceImplementationsHandlerTest {
 
     final SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate();
     sourceImplementationCreate.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
-    sourceImplementationCreate.setSourceSpecificationId(
-        sourceConnectionSpecification.getSourceSpecificationId());
-    sourceImplementationCreate.setConnectionConfiguration(
-        SourceImplementationHelpers.getTestImplementationJson());
+    sourceImplementationCreate.setSourceSpecificationId(sourceConnectionSpecification.getSourceSpecificationId());
+    sourceImplementationCreate.setConnectionConfiguration(SourceImplementationHelpers.getTestImplementationJson());
 
     final SourceImplementationRead actualSourceImplementationRead =
         sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
 
     SourceImplementationRead expectedSourceImplementationRead =
-        SourceImplementationHelpers.getSourceImplementationRead(
-            sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
-    expectedSourceImplementationRead.setConnectionConfiguration(
-        SourceImplementationHelpers.getTestImplementationJson());
+        SourceImplementationHelpers.getSourceImplementationRead(sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
+    expectedSourceImplementationRead.setConnectionConfiguration(SourceImplementationHelpers.getTestImplementationJson());
 
     assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead);
 
@@ -133,12 +137,9 @@ class SourceImplementationsHandlerTest {
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
         new SourceConnectionImplementation();
-    expectedSourceConnectionImplementation.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceConnectionImplementation.setSourceSpecificationId(
-        sourceConnectionImplementation.getSourceSpecificationId());
-    expectedSourceConnectionImplementation.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
+    expectedSourceConnectionImplementation.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
+    expectedSourceConnectionImplementation.setSourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId());
+    expectedSourceConnectionImplementation.setSourceImplementationId(sourceConnectionImplementation.getSourceImplementationId());
     expectedSourceConnectionImplementation.setConfiguration(newConfiguration);
     expectedSourceConnectionImplementation.setTombstone(false);
 
@@ -194,10 +195,8 @@ class SourceImplementationsHandlerTest {
         SourceImplementationHelpers.getSourceImplementationRead(
             sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
 
-    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody =
-        new SourceImplementationIdRequestBody();
-    sourceImplementationIdRequestBody.setSourceImplementationId(
-        expectedSourceImplementationRead.getSourceImplementationId());
+    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody();
+    sourceImplementationIdRequestBody.setSourceImplementationId(expectedSourceImplementationRead.getSourceImplementationId());
 
     final SourceImplementationRead actualSourceImplementationRead =
         sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
@@ -220,8 +219,7 @@ class SourceImplementationsHandlerTest {
             .thenReturn(sourceConnectionSpecification);
 
     SourceImplementationRead expectedSourceImplementationRead =
-        SourceImplementationHelpers.getSourceImplementationRead(
-            sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
+        SourceImplementationHelpers.getSourceImplementationRead(sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
@@ -229,8 +227,7 @@ class SourceImplementationsHandlerTest {
     final SourceImplementationReadList actualSourceImplementationRead =
         sourceImplementationsHandler.listSourceImplementationsForWorkspace(workspaceIdRequestBody);
 
-    assertEquals(
-        expectedSourceImplementationRead, actualSourceImplementationRead.getSources().get(0));
+    assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead.getSources().get(0));
   }
 
   @Test
@@ -240,14 +237,10 @@ class SourceImplementationsHandlerTest {
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
         new SourceConnectionImplementation();
-    expectedSourceConnectionImplementation.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceConnectionImplementation.setSourceSpecificationId(
-        sourceConnectionImplementation.getSourceSpecificationId());
-    expectedSourceConnectionImplementation.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceConnectionImplementation.setConfiguration(
-        sourceConnectionImplementation.getConfiguration());
+    expectedSourceConnectionImplementation.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
+    expectedSourceConnectionImplementation.setSourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId());
+    expectedSourceConnectionImplementation.setSourceImplementationId(sourceConnectionImplementation.getSourceImplementationId());
+    expectedSourceConnectionImplementation.setConfiguration(sourceConnectionImplementation.getConfiguration());
     expectedSourceConnectionImplementation.setTombstone(true);
 
     when(configPersistence.getConfig(
@@ -268,6 +261,16 @@ class SourceImplementationsHandlerTest {
     sourceImplementationIdRequestBody.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
 
+    final StandardSync standardSync =
+        ConnectionHelpers.generateSync(sourceConnectionImplementation.getSourceImplementationId());
+    ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+
+    ConnectionReadList connectionReadList = new ConnectionReadList();
+    connectionReadList.setConnections(Collections.singletonList(connectionRead));
+
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
+    workspaceIdRequestBody.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
+    when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
     sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
 
     verify(configPersistence)
@@ -275,6 +278,15 @@ class SourceImplementationsHandlerTest {
             PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
             sourceConnectionImplementation.getSourceImplementationId().toString(),
             expectedSourceConnectionImplementation);
+
+    final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate();
+    expectedConnectionUpdate.setConnectionId(connectionRead.getConnectionId());
+    expectedConnectionUpdate.setStatus(ConnectionStatus.DEPRECATED);
+    expectedConnectionUpdate.setSyncSchema(connectionRead.getSyncSchema());
+    expectedConnectionUpdate.setSchedule(connectionRead.getSchedule());
+
+    verify(connectionsHandler).listConnectionsForWorkspace(workspaceIdRequestBody);
+    verify(connectionsHandler).updateConnection(expectedConnectionUpdate);
   }
 
 }
