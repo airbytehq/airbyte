@@ -25,6 +25,7 @@
 package io.dataline.workers;
 
 import io.dataline.commons.functional.CloseableConsumer;
+import io.dataline.commons.io.IOs;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
@@ -76,8 +77,8 @@ public class DefaultSyncWorker implements SyncWorker {
     } catch (Exception e) {
       LOGGER.debug(
           "Sync worker failed. Tap error log: {}.\n Target error log: {}",
-          WorkerUtils.readFileFromWorkspace(jobRoot, TAP_ERR_LOG),
-          WorkerUtils.readFileFromWorkspace(jobRoot, TARGET_ERR_LOG));
+          IOs.readFile(jobRoot, TAP_ERR_LOG),
+          IOs.readFile(jobRoot, TARGET_ERR_LOG));
 
       return new OutputAndStatus<>(JobStatus.FAILED, null);
     }

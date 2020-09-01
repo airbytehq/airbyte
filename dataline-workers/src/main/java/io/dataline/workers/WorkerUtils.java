@@ -40,9 +40,9 @@ public class WorkerUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
 
-  public static Path writeFileToWorkspace(Path workspaceRoot, String fileName, String contents) {
+  public static Path writeFile(Path path, String fileName, String contents) {
     try {
-      Path filePath = workspaceRoot.resolve(fileName);
+      Path filePath = path.resolve(fileName);
       FileUtils.writeStringToFile(filePath.toFile(), contents, StandardCharsets.UTF_8);
       return filePath;
     } catch (IOException e) {
@@ -50,9 +50,9 @@ public class WorkerUtils {
     }
   }
 
-  public static String readFileFromWorkspace(Path workspaceRoot, String fileName) {
+  public static String readFile(Path path, String fileName) {
     try {
-      Path filePath = workspaceRoot.resolve(fileName);
+      Path filePath = path.resolve(fileName);
       return FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new RuntimeException(e);

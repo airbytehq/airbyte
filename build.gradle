@@ -1,14 +1,16 @@
 plugins {
-    id "base"
-    id "com.diffplug.spotless" version "5.3.0" apply false
+    id 'base'
+    id 'pmd'
+    id 'com.diffplug.spotless' version '5.3.0' apply false
+    id 'de.aaschmid.cpd' version '3.1' apply false
 }
 
 Properties env = new Properties()
-File envFile = rootProject.file(".env")
+File envFile = rootProject.file('.env')
 envFile.withInputStream { env.load(it) }
 
-if (!env.containsKey("VERSION")) {
-    throw new Exception("Version not specified in .env file...")
+if (!env.containsKey('VERSION')) {
+    throw new Exception('Version not specified in .env file...')
 }
 
 allprojects {
@@ -17,7 +19,7 @@ allprojects {
 }
 
 def createLicenseWith = { licence ->
-    def tmp = File.createTempFile("tmp", ".tmp")
+    def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
         w.writeLine("/*")
@@ -34,15 +36,34 @@ def createLicenseWith = { licence ->
 // Java projects common configurations
 subprojects {
 
-    if (project.name == "dataline-webapp") {
+    if (project.name == 'dataline-webapp') {
         return
     }
 
     apply plugin: 'java'
+    apply plugin: 'pmd'
     apply plugin: 'com.diffplug.spotless'
+    apply plugin: 'de.aaschmid.cpd'
 
     repositories {
         mavenCentral()
+    }
+
+    pmd {
+        consoleOutput = true
+
+        rulePriority = 5
+        ruleSets = []
+        ruleSetFiles = files(
+                rootProject.file('tools/gradle/pmd/rules.xml')
+        )
+    }
+
+    cpdCheck {
+        ignoreFailures = true
+        reports {
+            text.enabled = true
+        }
     }
 
     spotless {
@@ -74,13 +95,13 @@ subprojects {
     test {
         useJUnitPlatform()
         testLogging() {
-            events "failed"
-            exceptionFormat "full"
+            events 'failed'
+            exceptionFormat 'full'
         }
     }
 
     dependencies {
-        if (project.name != "dataline-commons") {
+        if (project.name != 'dataline-commons') {
             implementation project(':dataline-commons')
         }
 

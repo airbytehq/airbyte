@@ -27,6 +27,7 @@ package io.dataline.workers.singer;
 import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
+import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.Schema;
 import io.dataline.config.SingerCatalog;
@@ -73,7 +74,7 @@ public class SingerDiscoverSchemaWorker
     // reduced.
     final String configDotJson = discoverSchemaInput.getConnectionConfigurationJson();
 
-    writeFile(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
+    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
 
     // exec
     try {
@@ -89,11 +90,11 @@ public class SingerDiscoverSchemaWorker
 
       int exitCode = workerProcess.exitValue();
       if (exitCode == 0) {
-        final String catalog = readFile(jobRoot, CATALOG_JSON_FILENAME);
+        final String catalog = IOs.readFile(jobRoot, CATALOG_JSON_FILENAME);
         return new OutputAndStatus<>(SUCCESSFUL, Jsons.deserialize(catalog, SingerCatalog.class));
       } else {
         // TODO throw invalid credentials exception where appropriate based on error log
-        String errLog = readFile(jobRoot, ERROR_LOG_FILENAME);
+        String errLog = IOs.readFile(jobRoot, ERROR_LOG_FILENAME);
         LOGGER.debug(
             "Discovery job subprocess finished with exit code {}. Error log: {}", exitCode, errLog);
         return new OutputAndStatus<>(FAILED);
