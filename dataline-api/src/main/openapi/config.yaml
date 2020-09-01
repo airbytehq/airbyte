@@ -782,6 +782,9 @@ components:
     SourceSpecificationId:
       type: string
       format: uuid
+    SourceSpecification:
+      description: The specification for what values are required to configure the source.
+      example: { user: { type: string } }
     SourceSpecificationRead:
       type: object
       required:
@@ -794,8 +797,7 @@ components:
         sourceId:
           $ref: "#/components/schemas/SourceId"
         connectionSpecification:
-          description: The specification for what values are required to configure the source.
-          example: { user: { type: string } }
+          $ref: "#/components/schemas/SourceSpecification"
     # SOURCE IMPLEMENTATION
     SourceImplementationId:
       type: string
@@ -807,7 +809,7 @@ components:
       properties:
         sourceImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
-    SourceConfigurationField:
+    SourceConfiguration:
       description: The values required to configure the source. The schema for this must match the schema return by source_specifications/get for the source.
       example: { user: "charles" }
     SourceImplementationCreate:
@@ -822,7 +824,7 @@ components:
         sourceSpecificationId:
           $ref: "#/components/schemas/SourceSpecificationId"
         connectionConfiguration:
-          $ref: "#/components/schemas/SourceConfigurationField"
+          $ref: "#/components/schemas/SourceConfiguration"
     SourceImplementationUpdate:
       type: object
       required:
@@ -832,7 +834,7 @@ components:
         sourceImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
         connectionConfiguration:
-          $ref: "#/components/schemas/SourceConfigurationField"
+          $ref: "#/components/schemas/SourceConfiguration"
     SourceImplementationRead:
       type: object
       required:
@@ -851,7 +853,7 @@ components:
         sourceSpecificationId:
           $ref: "#/components/schemas/SourceSpecificationId"
         connectionConfiguration:
-          $ref: "#/components/schemas/SourceConfigurationField"
+          $ref: "#/components/schemas/SourceConfiguration"
     SourceImplementationReadList:
       type: object
       required:
@@ -902,6 +904,9 @@ components:
     DestinationSpecificationId:
       type: string
       format: uuid
+    DestinationSpecification:
+      description: The specification for what values are required to configure the destination.
+      example: { user: { type: string } }
     DestinationSpecificationRead:
       type: object
       required:
@@ -914,8 +919,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         connectionSpecification:
-          description: The specification for what values are required to configure the destination.
-          example: { user: { type: string } }
+          $ref: "#/components/schemas/DestinationSpecification"
     # DESTINATION IMPLEMENTATION
     DestinationImplementationId:
       type: string
@@ -927,6 +931,9 @@ components:
       properties:
         destinationImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
+    DestinationConfiguration:
+      description: The values required to configure the destination. The schema for this must match the schema return by destination_specifications/get for the destination.
+      example: { user: "charles" }
     DestinationImplementationCreate:
       type: object
       required:
@@ -939,8 +946,7 @@ components:
         destinationSpecificationId:
           $ref: "#/components/schemas/DestinationSpecificationId"
         connectionConfiguration:
-          description: The values required to configure the destination. The schema for this must match the schema return by destination_specifications/get for the source.
-          example: { user: "charles" }
+          $ref: "#/components/schemas/DestinationConfiguration"
     DestinationImplementationUpdate:
       type: object
       required:
@@ -950,8 +956,7 @@ components:
         destinationImplementationId:
           $ref: "#/components/schemas/DestinationImplementationId"
         connectionConfiguration:
-          description: The values required to configure the destination. The schema for this must match the schema return by destination_specifications/get for the source.
-          example: { user: "charles" }
+          $ref: "#/components/schemas/DestinationConfiguration"
     DestinationImplementationRead:
       type: object
       required:
@@ -970,8 +975,7 @@ components:
         destinationSpecificationId:
           $ref: "#/components/schemas/DestinationSpecificationId"
         connectionConfiguration:
-          description: The values required to configure the destination. The schema for this must match the schema return by destination_specifications/get for the source.
-          example: { user: "charles" }
+          $ref: "#/components/schemas/DestinationConfiguration"
     DestinationImplementationReadList:
       type: object
       required:

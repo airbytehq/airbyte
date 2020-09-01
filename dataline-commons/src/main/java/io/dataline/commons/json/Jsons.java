@@ -43,10 +43,6 @@ public class Jsons {
     }
   }
 
-  public static String serializeJsonNode(final JsonNode jsonNode) {
-    return jsonNode.toString();
-  }
-
   public static <T> T deserialize(final String jsonString, final Class<T> klass) {
     try {
       return OBJECT_MAPPER.readValue(jsonString, klass);

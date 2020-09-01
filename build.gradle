@@ -105,6 +105,8 @@ subprojects {
             implementation project(':dataline-commons')
         }
 
+        implementation(platform("com.fasterxml.jackson:jackson-bom:2.10.4"))
+
         implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
         implementation group: 'commons-io', name: 'commons-io', version: '2.7'

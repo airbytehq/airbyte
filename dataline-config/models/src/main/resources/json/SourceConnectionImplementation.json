@@ -25,9 +25,10 @@
       "type": "string",
       "format": "uuid"
     },
-    "configurationJson": {
-      "type": "string",
-      "description": "Integration specific blob. Must be a valid JSON string."
+    "configuration": {
+      "description": "Integration specific blob. Must be a valid JSON string.",
+      "type": "object",
+      "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
     },
     "tombstone": {
       "description": "if not set or false, the configuration is active. if true, then this configuration is permanently off.",
