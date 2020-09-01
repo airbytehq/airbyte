@@ -163,7 +163,8 @@ public class ConnectionsHandler {
                     configPersistence, standardSync.getSourceImplementationId())
                     .getWorkspaceId()
                     .equals(workspaceIdRequestBody.getWorkspaceId()))
-
+            // filter out deprecated connections
+            .filter(standardSync -> !standardSync.getStatus().equals(StandardSync.Status.DEPRECATED))
             // pull the sync schedule
             // convert to api format
             .map(

@@ -100,11 +100,11 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     workspacesHandler = new WorkspacesHandler(configPersistence);
     sourcesHandler = new SourcesHandler(configPersistence);
     sourceSpecificationsHandler = new SourceSpecificationsHandler(configPersistence);
-    sourceImplementationsHandler = new SourceImplementationsHandler(configPersistence, integrationSchemaValidation);
+    connectionsHandler = new ConnectionsHandler(configPersistence);
+    sourceImplementationsHandler = new SourceImplementationsHandler(configPersistence, integrationSchemaValidation, connectionsHandler);
     destinationsHandler = new DestinationsHandler(configPersistence);
     destinationSpecificationsHandler = new DestinationSpecificationsHandler(configPersistence);
     destinationImplementationsHandler = new DestinationImplementationsHandler(configPersistence, integrationSchemaValidation);
-    connectionsHandler = new ConnectionsHandler(configPersistence);
     final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
     schedulerHandler = new SchedulerHandler(configPersistence, schedulerPersistence);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
