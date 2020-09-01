@@ -164,7 +164,7 @@ public class ConnectionsHandler {
                     .getWorkspaceId()
                     .equals(workspaceIdRequestBody.getWorkspaceId()))
             // filter out deprecated connections
-            .filter(standardSync -> standardSync.getStatus().equals(StandardSync.Status.DEPRECATED))
+            .filter(standardSync -> !standardSync.getStatus().equals(StandardSync.Status.DEPRECATED))
             // pull the sync schedule
             // convert to api format
             .map(
