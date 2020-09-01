@@ -46,11 +46,16 @@ jobs:
         run: docker-compose -f docker-compose.build.yaml build
 
       - name: Run Acceptance Tests
-        #        if: success() && github.ref == "refs/heads/master"
-        run: ./tools/build/test.sh
+        #                if: success() && github.ref == "refs/heads/master"
+        run: ./tools/bin/test.sh
 
-    - name: Slack Notification
-        uses: rtCamp/action-slack-notify@master
-        if: failure() && github.ref == "refs/heads/master"
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+      - name: Slack Notification
+          uses: rtCamp/action-slack-notify@master
+          if: failure() && github.ref == "refs/heads/master"
+          env:
+            SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+            SLACK_USERNAME: Buildozer
+            SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
+            SLACK_COLOR: DC143C
+            SLACK_TITLE: "Build failure"
+            SLACK_FOOTER: ""
