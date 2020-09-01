@@ -8,6 +8,8 @@ dependencies {
 }
 
 jsonSchema2Pojo {
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+
     targetPackage = 'io.dataline.config'
     useLongIntegers = true
 }
