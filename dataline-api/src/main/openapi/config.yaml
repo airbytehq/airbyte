@@ -150,6 +150,7 @@ paths:
           description: Source not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  # todo (cgardens) - rename to source_specifications/get_latest_from_source_id
   /v1/source_specifications/get:
     post:
       tags:
@@ -222,6 +223,7 @@ paths:
       tags:
         - source_implementation
       summary: List source implementations for workspace
+      description: List source implementations for workspace. Does not return deleted source implementations.
       operationId: listSourceImplementationsForWorkspace
       requestBody:
         content:
@@ -545,6 +547,7 @@ paths:
       tags:
         - connection
       summary: Returns all connections for a workspace.
+      description: List connections for workspace. Does not return deleted connections.
       operationId: listConnectionsForWorkspace
       requestBody:
         content:
@@ -1025,8 +1028,7 @@ components:
     ConnectionUpdate:
       type: object
       required:
-        - sourceImplementationId
-        - destinationImplementationId
+        - connectionId
         - syncSchema
         - status
       properties:
