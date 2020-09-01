@@ -69,7 +69,7 @@ public class TestConfigHelpers {
 
     final SourceConnectionImplementation sourceConnectionConfig =
         new SourceConnectionImplementation();
-    sourceConnectionConfig.setConfigurationJson12345(sourceConnection);
+    sourceConnectionConfig.setConfigurationJson(sourceConnection);
     sourceConnectionConfig.setWorkspaceId(workspaceId);
     sourceConnectionConfig.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionConfig.setSourceImplementationId(sourceImplementationId);
@@ -77,7 +77,7 @@ public class TestConfigHelpers {
 
     final DestinationConnectionImplementation destinationConnectionConfig =
         new DestinationConnectionImplementation();
-    destinationConnectionConfig.setConfigurationJson12345(destinationConnection);
+    destinationConnectionConfig.setConfigurationJson(destinationConnection);
     destinationConnectionConfig.setWorkspaceId(workspaceId);
     destinationConnectionConfig.setDestinationSpecificationId(destinationSpecificationId);
     destinationConnectionConfig.setDestinationImplementationId(destinationImplementationId);
@@ -108,7 +108,7 @@ public class TestConfigHelpers {
 
     State state = new State();
     state.setConnectionId(connectionId);
-    state.setStateJson12345(Jsons.jsonNode(stateValue));
+    state.setStateJson(Jsons.jsonNode(stateValue));
 
     StandardSyncInput syncInput = new StandardSyncInput();
     syncInput.setDestinationConnectionImplementation(destinationConnectionConfig);

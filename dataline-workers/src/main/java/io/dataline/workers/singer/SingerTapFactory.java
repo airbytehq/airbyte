@@ -88,7 +88,7 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   public Stream<SingerMessage> create(StandardTapConfig input, Path jobRoot) throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, jobRoot);
 
-    final JsonNode configDotJson = input.getSourceConnectionImplementation().getConfigurationJson12345();
+    final JsonNode configDotJson = input.getSourceConnectionImplementation().getConfigurationJson();
 
     final SingerCatalog selectedCatalog = SingerCatalogConverters.applySchemaToDiscoveredCatalog(
         discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
@@ -139,7 +139,7 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path jobRoot)
       throws InvalidCredentialsException {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput();
-    discoveryInput.setConnectionConfigurationJson12345(input.getSourceConnectionImplementation().getConfigurationJson12345());
+    discoveryInput.setConnectionConfigurationJson(input.getSourceConnectionImplementation().getConfigurationJson());
     Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
     return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot);
   }

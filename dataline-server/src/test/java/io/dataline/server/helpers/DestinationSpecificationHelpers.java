@@ -46,7 +46,7 @@ public class DestinationSpecificationHelpers {
         new DestinationConnectionSpecification();
     destinationConnectionSpecification.setDestinationId(destinationId);
     destinationConnectionSpecification.setDestinationSpecificationId(destinationSpecificationId);
-    destinationConnectionSpecification.setSpecificationJson12345(Jsons.deserialize(Files.readString(path)));
+    destinationConnectionSpecification.setSpecificationJson(Jsons.deserialize(Files.readString(path)));
 
     return destinationConnectionSpecification;
   }

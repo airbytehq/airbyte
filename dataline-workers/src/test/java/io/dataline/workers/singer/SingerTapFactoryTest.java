@@ -94,8 +94,8 @@ class SingerTapFactoryTest {
     StandardTapConfig tapConfig =
         WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
     StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfigurationJson12345(
-        tapConfig.getSourceConnectionImplementation().getConfigurationJson12345());
+    discoverSchemaInput.setConnectionConfigurationJson(
+        tapConfig.getSourceConnectionImplementation().getConfigurationJson());
     ProcessBuilderFactory pbf = mock(ProcessBuilderFactory.class);
     ProcessBuilder processBuilder = mock(ProcessBuilder.class);
     Process process = mock(Process.class);

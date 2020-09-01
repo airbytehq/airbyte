@@ -100,7 +100,7 @@ class SourceImplementationsHandlerTest {
     sourceImplementationCreate.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
     sourceImplementationCreate.setSourceSpecificationId(
         sourceConnectionSpecification.getSourceSpecificationId());
-    sourceImplementationCreate.setConnectionConfiguration12345(
+    sourceImplementationCreate.setConnectionConfiguration(
         SourceImplementationHelpers.getTestImplementationJson());
 
     final SourceImplementationRead actualSourceImplementationRead =
@@ -109,7 +109,7 @@ class SourceImplementationsHandlerTest {
     SourceImplementationRead expectedSourceImplementationRead =
         SourceImplementationHelpers.getSourceImplementationRead(
             sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
-    expectedSourceImplementationRead.setConnectionConfiguration12345(
+    expectedSourceImplementationRead.setConnectionConfiguration(
         SourceImplementationHelpers.getTestImplementationJson());
 
     assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead);
@@ -117,7 +117,7 @@ class SourceImplementationsHandlerTest {
     verify(validator)
         .validateSourceConnectionConfiguration(
             sourceConnectionSpecification.getSourceSpecificationId(),
-            sourceConnectionImplementation.getConfigurationJson12345());
+            sourceConnectionImplementation.getConfigurationJson());
 
     verify(configPersistence)
         .writeConfig(
@@ -128,7 +128,7 @@ class SourceImplementationsHandlerTest {
 
   @Test
   void testUpdateSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
-    final JsonNode newConfiguration = sourceConnectionImplementation.getConfigurationJson12345();
+    final JsonNode newConfiguration = sourceConnectionImplementation.getConfigurationJson();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
@@ -139,7 +139,7 @@ class SourceImplementationsHandlerTest {
         sourceConnectionImplementation.getSourceSpecificationId());
     expectedSourceConnectionImplementation.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceConnectionImplementation.setConfigurationJson12345(newConfiguration);
+    expectedSourceConnectionImplementation.setConfigurationJson(newConfiguration);
     expectedSourceConnectionImplementation.setTombstone(false);
 
     when(configPersistence.getConfig(
@@ -158,14 +158,14 @@ class SourceImplementationsHandlerTest {
     final SourceImplementationUpdate sourceImplementationUpdate = new SourceImplementationUpdate();
     sourceImplementationUpdate.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
-    sourceImplementationUpdate.setConnectionConfiguration12345(newConfiguration);
+    sourceImplementationUpdate.setConnectionConfiguration(newConfiguration);
     final SourceImplementationRead actualSourceImplementationRead =
         sourceImplementationsHandler.updateSourceImplementation(sourceImplementationUpdate);
 
     SourceImplementationRead expectedSourceImplementationRead =
         SourceImplementationHelpers.getSourceImplementationRead(
             sourceConnectionImplementation, sourceConnectionSpecification.getSourceId());
-    expectedSourceImplementationRead.setConnectionConfiguration12345(newConfiguration);
+    expectedSourceImplementationRead.setConnectionConfiguration(newConfiguration);
 
     assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead);
 
@@ -235,7 +235,7 @@ class SourceImplementationsHandlerTest {
 
   @Test
   void testDeleteSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
-    final JsonNode newConfiguration = sourceConnectionImplementation.getConfigurationJson12345();
+    final JsonNode newConfiguration = sourceConnectionImplementation.getConfigurationJson();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
@@ -246,8 +246,8 @@ class SourceImplementationsHandlerTest {
         sourceConnectionImplementation.getSourceSpecificationId());
     expectedSourceConnectionImplementation.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceConnectionImplementation.setConfigurationJson12345(
-        sourceConnectionImplementation.getConfigurationJson12345());
+    expectedSourceConnectionImplementation.setConfigurationJson(
+        sourceConnectionImplementation.getConfigurationJson());
     expectedSourceConnectionImplementation.setTombstone(true);
 
     when(configPersistence.getConfig(

@@ -67,7 +67,7 @@ public class SourceImplementationsHandler {
     // validate configuration
     validateSourceImplementation(
         sourceImplementationCreate.getSourceSpecificationId(),
-        Jsons.jsonNode(sourceImplementationCreate.getConnectionConfiguration12345()));
+        Jsons.jsonNode(sourceImplementationCreate.getConnectionConfiguration()));
 
     // persist
     final UUID sourceImplementationId = uuidGenerator.get();
@@ -76,7 +76,7 @@ public class SourceImplementationsHandler {
         sourceImplementationCreate.getWorkspaceId(),
         sourceImplementationId,
         false,
-        Jsons.jsonNode(sourceImplementationCreate.getConnectionConfiguration12345()));
+        Jsons.jsonNode(sourceImplementationCreate.getConnectionConfiguration()));
 
     // read configuration from db
     return getSourceImplementationReadInternal(sourceImplementationId);
@@ -91,7 +91,7 @@ public class SourceImplementationsHandler {
     // validate configuration
     validateSourceImplementation(
         persistedSourceImplementation.getSourceSpecificationId(),
-        Jsons.jsonNode(sourceImplementationUpdate.getConnectionConfiguration12345()));
+        Jsons.jsonNode(sourceImplementationUpdate.getConnectionConfiguration()));
 
     // persist
     persistSourceConnectionImplementation(
@@ -99,7 +99,7 @@ public class SourceImplementationsHandler {
         persistedSourceImplementation.getWorkspaceId(),
         sourceImplementationUpdate.getSourceImplementationId(),
         persistedSourceImplementation.getTombstone(),
-        Jsons.jsonNode(sourceImplementationUpdate.getConnectionConfiguration12345()));
+        Jsons.jsonNode(sourceImplementationUpdate.getConnectionConfiguration()));
 
     // read configuration from db
     return getSourceImplementationReadInternal(
@@ -149,7 +149,7 @@ public class SourceImplementationsHandler {
         persistedSourceImplementation.getWorkspaceId(),
         persistedSourceImplementation.getSourceImplementationId(),
         true,
-        Jsons.jsonNode(persistedSourceImplementation.getConnectionConfiguration12345()));
+        Jsons.jsonNode(persistedSourceImplementation.getConnectionConfiguration()));
   }
 
   private SourceConnectionImplementation getSourceConnectionImplementationInternal(UUID sourceImplementationId) {
@@ -194,7 +194,7 @@ public class SourceImplementationsHandler {
     sourceConnectionImplementation.setWorkspaceId(workspaceId);
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
     sourceConnectionImplementation.setTombstone(tombstone);
-    sourceConnectionImplementation.setConfigurationJson12345(configurationJson);
+    sourceConnectionImplementation.setConfigurationJson(configurationJson);
 
     ConfigFetchers.writeConfig(
         configPersistence,
@@ -211,7 +211,7 @@ public class SourceImplementationsHandler {
     sourceImplementationRead.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
     sourceImplementationRead.setSourceSpecificationId(
         sourceConnectionImplementation.getSourceSpecificationId());
-    sourceImplementationRead.setConnectionConfiguration12345(sourceConnectionImplementation.getConfigurationJson12345());
+    sourceImplementationRead.setConnectionConfiguration(sourceConnectionImplementation.getConfigurationJson());
 
     return sourceImplementationRead;
   }

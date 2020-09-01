@@ -7,7 +7,7 @@
   "additionalProperties": false,
   "required": ["connectionConfiguration", "dockerImage"],
   "properties": {
-    "connectionConfigurationJson12345": {
+    "connectionConfigurationJson": {
       "description": "Integration specific blob. Must be a valid JSON string.",
       "type": "object",
       "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"

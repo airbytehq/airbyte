@@ -52,7 +52,7 @@ public class SingerMessageTracker implements Consumer<SingerMessage> {
     if (message.getType().equals(SingerMessage.Type.STATE)) {
       final State state = new State();
       state.setConnectionId(connectionId);
-      state.setStateJson12345(message.getValueJson12345());
+      state.setStateJson(message.getValueJson());
       outputState.set(state);
     }
   }

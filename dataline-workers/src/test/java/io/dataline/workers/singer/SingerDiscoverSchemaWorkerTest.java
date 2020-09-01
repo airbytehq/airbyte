@@ -66,7 +66,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     JsonNode postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
     final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
-    input.setConnectionConfigurationJson12345(postgresCreds);
+    input.setConnectionConfigurationJson(postgresCreds);
 
     SingerDiscoverSchemaWorker worker =
         new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage(), pbf);
@@ -87,7 +87,7 @@ public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
     JsonNode postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
 
     final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
-    input.setConnectionConfigurationJson12345(postgresCreds);
+    input.setConnectionConfigurationJson(postgresCreds);
 
     SingerDiscoverSchemaWorker worker =
         new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage(), pbf);

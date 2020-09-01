@@ -793,7 +793,7 @@ components:
           $ref: "#/components/schemas/SourceSpecificationId"
         sourceId:
           $ref: "#/components/schemas/SourceId"
-        connectionSpecification12345:
+        connectionSpecification:
           description: The specification for what values are required to configure the source.
           example: { user: { type: string } }
     # SOURCE IMPLEMENTATION
@@ -821,7 +821,7 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         sourceSpecificationId:
           $ref: "#/components/schemas/SourceSpecificationId"
-        connectionConfiguration12345:
+        connectionConfiguration:
           $ref: "#/components/schemas/SourceConfigurationField"
     SourceImplementationUpdate:
       type: object
@@ -831,7 +831,7 @@ components:
       properties:
         sourceImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
-        connectionConfiguration12345:
+        connectionConfiguration:
           $ref: "#/components/schemas/SourceConfigurationField"
     SourceImplementationRead:
       type: object
@@ -850,7 +850,7 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         sourceSpecificationId:
           $ref: "#/components/schemas/SourceSpecificationId"
-        connectionConfiguration12345:
+        connectionConfiguration:
           $ref: "#/components/schemas/SourceConfigurationField"
     SourceImplementationReadList:
       type: object
@@ -913,7 +913,7 @@ components:
           $ref: "#/components/schemas/DestinationSpecificationId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        connectionSpecification12345:
+        connectionSpecification:
           description: The specification for what values are required to configure the destination.
           example: { user: { type: string } }
     # DESTINATION IMPLEMENTATION
@@ -941,7 +941,7 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         destinationSpecificationId:
           $ref: "#/components/schemas/DestinationSpecificationId"
-        connectionConfiguration12345:
+        connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfigurationField"
     DestinationImplementationUpdate:
       type: object
@@ -951,7 +951,7 @@ components:
       properties:
         destinationImplementationId:
           $ref: "#/components/schemas/DestinationImplementationId"
-        connectionConfiguration12345:
+        connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfigurationField"
     DestinationImplementationRead:
       type: object
@@ -970,7 +970,7 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         destinationSpecificationId:
           $ref: "#/components/schemas/DestinationSpecificationId"
-        connectionConfiguration12345:
+        connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfigurationField"
     DestinationImplementationReadList:
       type: object

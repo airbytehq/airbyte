@@ -64,7 +64,7 @@ public class SourceSpecificationsHandler {
     sourceSpecificationRead.setSourceId(sourceConnectionSpecification.getSourceId());
     sourceSpecificationRead.setSourceSpecificationId(
         sourceConnectionSpecification.getSourceSpecificationId());
-    sourceSpecificationRead.setConnectionSpecification12345(sourceConnectionSpecification.getSpecificationJson12345());
+    sourceSpecificationRead.setConnectionSpecification(sourceConnectionSpecification.getSpecificationJson());
 
     return sourceSpecificationRead;
   }

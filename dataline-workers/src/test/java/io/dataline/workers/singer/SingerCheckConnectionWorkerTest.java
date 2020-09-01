@@ -69,7 +69,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfigurationJson12345(fakeDbCreds);
+    standardCheckConnectionInput.setConnectionConfigurationJson(fakeDbCreds);
 
     SingerCheckConnectionWorker worker =
         new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
@@ -100,7 +100,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfigurationJson12345(incorrectCreds);
+    standardCheckConnectionInput.setConnectionConfigurationJson(incorrectCreds);
 
     OutputAndStatus<StandardCheckConnectionOutput> run =
         worker.run(standardCheckConnectionInput, createJobRoot(jobId));
@@ -121,7 +121,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
     final StandardCheckConnectionInput standardCheckConnectionInput =
         new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfigurationJson12345(creds);
+    standardCheckConnectionInput.setConnectionConfigurationJson(creds);
 
     SingerCheckConnectionWorker worker =
         new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
