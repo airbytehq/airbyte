@@ -121,10 +121,8 @@ public class SourceImplementationsHandler {
 
     final List<SourceImplementationRead> reads =
         ConfigFetchers.getSourceConnectionImplementations(configPersistence).stream()
-            .filter(
-                sourceConnectionImplementation -> sourceConnectionImplementation
-                    .getWorkspaceId()
-                    .equals(workspaceIdRequestBody.getWorkspaceId()))
+            .filter(sourceImpl -> sourceImpl.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId()))
+            .filter(sourceImpl -> !sourceImpl.getTombstone())
             .map(
                 sourceConnectionImplementation -> {
                   final UUID sourceId =
