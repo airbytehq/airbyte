@@ -37,9 +37,7 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerCheckConnectionWorker
-    extends BaseSingerWorker<StandardCheckConnectionInput, StandardCheckConnectionOutput>
-    implements CheckConnectionWorker {
+public class SingerCheckConnectionWorker implements CheckConnectionWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerCheckConnectionWorker.class);
 
@@ -50,19 +48,15 @@ public class SingerCheckConnectionWorker
   }
 
   @Override
-  public OutputAndStatus<StandardCheckConnectionOutput> run(StandardCheckConnectionInput input,
-                                                            Path jobRoot)
-      throws InvalidCredentialsException {
+  public OutputAndStatus<StandardCheckConnectionOutput> run(StandardCheckConnectionInput input, Path jobRoot) throws InvalidCredentialsException {
 
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
     discoverSchemaInput.setConnectionConfiguration(input.getConnectionConfiguration());
 
-    OutputAndStatus<StandardDiscoverSchemaOutput> outputAndStatus =
-        singerDiscoverSchemaWorker.run(discoverSchemaInput, jobRoot);
+    OutputAndStatus<StandardDiscoverSchemaOutput> outputAndStatus = singerDiscoverSchemaWorker.run(discoverSchemaInput, jobRoot);
     StandardCheckConnectionOutput output = new StandardCheckConnectionOutput();
     JobStatus jobStatus;
-    if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL
-        && outputAndStatus.getOutput().isPresent()) {
+    if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL && outputAndStatus.getOutput().isPresent()) {
       output.setStatus(StandardCheckConnectionOutput.Status.SUCCESS);
       jobStatus = JobStatus.SUCCESSFUL;
     } else {
