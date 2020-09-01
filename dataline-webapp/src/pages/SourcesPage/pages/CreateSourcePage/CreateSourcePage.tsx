@@ -16,6 +16,8 @@ import DestinationResource from "../../../../core/resources/Destination";
 import SourceImplementationResource, {
   SourceImplementation
 } from "../../../../core/resources/SourceImplementation";
+import FrequencyConfig from "../../../../data/FrequencyConfig.json";
+import ConnectionResource from "../../../../core/resources/Connection";
 
 const Content = styled.div`
   max-width: 638px;
@@ -38,6 +40,7 @@ const CreateSourcePage: React.FC = () => {
       workspaceId: config.ui.workspaceId
     }
   );
+  const createConnection = useFetcher(ConnectionResource.createShape());
   const currentDestination = destinations[0]; // Now we have only one destination. If we support multiple destinations we will fix this line
   const { sources } = useResource(SourceResource.listShape(), {
     workspaceId: config.ui.workspaceId
@@ -100,8 +103,41 @@ const CreateSourcePage: React.FC = () => {
       setErrorStatusRequest(e.status);
     }
   };
-  const onSubmitConnectionStep = () => push(Routes.Root);
-
+  const onSubmitConnectionStep = async (values: { frequency: string }) => {
+    const frequencyData = FrequencyConfig.find(
+      item => item.value === values.frequency
+    );
+    setErrorStatusRequest(0);
+    try {
+      await createConnection(
+        {},
+        {
+          sourceImplementationId:
+            currentSourceImplementation?.sourceImplementationId,
+          destinationImplementationId:
+            currentDestination.destinationImplementationId,
+          syncMode: "full_refresh",
+          schedule: frequencyData?.config,
+          status: "active"
+        },
+        [
+          [
+            ConnectionResource.listShape(),
+            { workspaceId: config.ui.workspaceId },
+            (
+              newConnectionId: string,
+              connectionsIds: { connections: string[] }
+            ) => ({
+              connections: [...connectionsIds.connections, newConnectionId]
+            })
+          ]
+        ]
+      );
+      push(Routes.Root);
+    } catch (e) {
+      setErrorStatusRequest(e.status);
+    }
+  };
   const renderStep = () => {
     if (currentStep === StepsTypes.CREATE_SOURCE) {
       return (

@@ -9,7 +9,7 @@ import { Destination } from "../../../../../core/resources/Destination";
 import SourceResource from "../../../../../core/resources/Source";
 
 type IProps = {
-  onSubmit: () => void;
+  onSubmit: (values: { frequency: string }) => void;
   destination: Destination;
   sourceId: string;
 };

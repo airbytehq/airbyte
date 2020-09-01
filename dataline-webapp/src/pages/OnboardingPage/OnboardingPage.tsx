@@ -15,6 +15,8 @@ import config from "../../config";
 import StepsConfig, { StepsTypes } from "./components/StepsConfig";
 import PrepareDropDownLists from "./components/PrepareDropDownLists";
 import FrequencyConfig from "../../data/FrequencyConfig.json";
+import { Routes } from "../routes";
+import useRouter from "../../components/hooks/useRouterHook";
 
 const Content = styled.div`
   width: 100%;
@@ -49,6 +51,8 @@ const StepsCover = styled.div`
 `;
 
 const OnboardingPage: React.FC = () => {
+  const { push } = useRouter();
+
   const { sources } = useResource(SourceImplementationResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
@@ -166,17 +170,35 @@ const OnboardingPage: React.FC = () => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
-    await createConnection(
-      {},
-      {
-        sourceImplementationId: sources[0].sourceImplementationId,
-        destinationImplementationId:
-          destinations[0].destinationImplementationId,
-        syncMode: "full_refresh",
-        schedule: frequencyData?.config,
-        status: "active"
-      }
-    );
+    setErrorStatusRequest(0);
+    try {
+      await createConnection(
+        {},
+        {
+          sourceImplementationId: sources[0].sourceImplementationId,
+          destinationImplementationId:
+            destinations[0].destinationImplementationId,
+          syncMode: "full_refresh",
+          schedule: frequencyData?.config,
+          status: "active"
+        },
+        [
+          [
+            ConnectionResource.listShape(),
+            { workspaceId: config.ui.workspaceId },
+            (
+              newConnectionId: string,
+              connectionsIds: { connections: string[] }
+            ) => ({
+              connections: [...connectionsIds.connections, newConnectionId]
+            })
+          ]
+        ]
+      );
+      push(Routes.Root);
+    } catch (e) {
+      setErrorStatusRequest(e.status);
+    }
   };
 
   const renderStep = () => {
@@ -207,6 +229,7 @@ const OnboardingPage: React.FC = () => {
         onSubmit={onSubmitConnectionStep}
         currentSourceId={sources[0].sourceId}
         currentDestinationId={destinations[0].destinationId}
+        errorStatus={errorStatusRequest}
       />
     );
   };

@@ -12,12 +12,14 @@ type IProps = {
   onSubmit: (values: { frequency: string }) => void;
   currentSourceId: string;
   currentDestinationId: string;
+  errorStatus?: number;
 };
 
 const ConnectionStep: React.FC<IProps> = ({
   onSubmit,
   currentSourceId,
-  currentDestinationId
+  currentDestinationId,
+  errorStatus
 }) => {
   const currentSource = useResource(SourceResource.detailShape(), {
     sourceId: currentSourceId
@@ -25,6 +27,13 @@ const ConnectionStep: React.FC<IProps> = ({
   const currentDestination = useResource(DestinationResource.detailShape(), {
     destinationId: currentDestinationId
   });
+
+  const errorMessage =
+    errorStatus === 0 ? null : errorStatus === 400 ? (
+      <FormattedMessage id="form.validationError" />
+    ) : (
+      <FormattedMessage id="form.someError" />
+    );
   return (
     <>
       <ConnectionBlock
@@ -32,7 +41,7 @@ const ConnectionStep: React.FC<IProps> = ({
         itemTo={{ name: currentDestination.name }}
       />
       <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
-        <FrequencyForm onSubmit={onSubmit} />
+        <FrequencyForm onSubmit={onSubmit} errorMessage={errorMessage} />
       </ContentCard>
     </>
   );
