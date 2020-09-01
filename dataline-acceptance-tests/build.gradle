@@ -13,7 +13,7 @@ sourceSets {
     }
 }
 
-// Gradle links configurations with the name xImplementation or xRuntimeOnly etc.. to the source set named X.
+// Gradle links configurations with the name xImplementation or xRuntimeOnly etc.. to the source set named x.
 configurations {
     acceptanceTestsImplementation.extendsFrom testImplementation
     acceptanceTestsRuntimeOnly.extendsFrom testRuntimeOnly
