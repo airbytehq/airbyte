@@ -24,9 +24,7 @@
 
 package io.dataline.workers;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.config.SingerMessage;
@@ -84,7 +82,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
     SingerMessage recordMessage2 =
         MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
-    final Stream<SingerMessage> tapStream = Stream.of(recordMessage1, recordMessage2);
+    final Stream<SingerMessage> tapStream = spy(Stream.of(recordMessage1, recordMessage2));
 
     when(tapFactory.create(tapConfig, WORKSPACE_ROOT)).thenReturn(tapStream);
     when(targetFactory.create(targetConfig, WORKSPACE_ROOT)).thenReturn(consumer);
@@ -94,6 +92,7 @@ class DefaultSyncWorkerTest extends BaseWorkerTestCase {
 
     verify(tapFactory).create(tapConfig, WORKSPACE_ROOT);
     verify(targetFactory).create(targetConfig, WORKSPACE_ROOT);
+    verify(tapStream).close();
     verify(consumer).accept(recordMessage1);
     verify(consumer).accept(recordMessage2);
     verify(consumer).close();
