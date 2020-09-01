@@ -51,7 +51,7 @@ class SingerMessageTrackerTest {
   }
 
   @Test
-  public void testRetainsLatestStateWhenState() {
+  public void testRetainsLatestState() {
     final JsonNode oldStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598900000").build());
     final JsonNode newStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598993526").build());
     final SingerMessage oldSingerMessage = new SingerMessage();
@@ -77,7 +77,7 @@ class SingerMessageTrackerTest {
   }
 
   @Test
-  public void testNoStateIfNoneEverAccepted() {
+  public void testReturnEmptyStateIfNoneEverAccepted() {
     final UUID connectionId = UUID.randomUUID();
     final SingerMessageTracker singerMessageTracker = new SingerMessageTracker(connectionId);
     assertTrue(singerMessageTracker.getOutputState().isEmpty());
