@@ -1,0 +1,5 @@
+name: Dataline Acceptance Tests
+on: workflow_dispatch
+jobs:
+  test:
+

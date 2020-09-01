@@ -2,12 +2,40 @@ plugins {
     id 'java'
 }
 
-dependencies {
-    testImplementation "com.squareup.okhttp3:okhttp:4.8.1"
-    testImplementation project(':dataline-api')
-    testImplementation project(':dataline-config:persistence')
-
-    testImplementation "org.testcontainers:postgresql:1.14.3"
-    testImplementation "org.postgresql:postgresql:42.2.16"
-    testImplementation "com.fasterxml.jackson.core:jackson-databind:2.9.8"
+sourceSets {
+    acceptanceTests {
+        java {
+            srcDir("src/accTest/java")
+        }
+        resources {
+            srcDir("src/accTest/resources")
+        }
+    }
 }
+
+configurations {
+    acceptanceTestsImplementation.extendsFrom testImplementation
+    acceptanceTestsRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+dependencies {
+    acceptanceTestsImplementation project(':dataline-api')
+    acceptanceTestsImplementation project(':dataline-config:persistence')
+
+    acceptanceTestsImplementation "com.squareup.okhttp3:okhttp:4.8.1"
+    acceptanceTestsImplementation "org.testcontainers:postgresql:1.14.3"
+    acceptanceTestsImplementation "org.postgresql:postgresql:42.2.16"
+    acceptanceTestsImplementation "com.fasterxml.jackson.core:jackson-databind:2.9.8"
+}
+
+task acceptanceTests(type: Test) {
+    testClassesDirs += sourceSets.acceptanceTests.output.classesDirs
+    classpath += sourceSets.acceptanceTests.runtimeClasspath
+    useJUnitPlatform()
+    testLogging() {
+        events "passed", "failed"
+        exceptionFormat "full"
+    }
+    mustRunAfter test
+}
+

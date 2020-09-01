@@ -7,7 +7,6 @@ jobs:
     env:
       GRADLE_PATH: /tmp/gradle
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Dataline
         uses: actions/checkout@v2
@@ -41,3 +40,14 @@ jobs:
 
       - name: Ensure no file change
         run: git diff-index --quiet HEAD
+
+      - name: Build Docker Images (Master branch only)
+        #        if: success() && github.ref == "refs/heads/master"
+        run: docker-compose -f docker-compose.build.yaml build
+
+      - name: Run Acceptance Tests
+        #        if: success() && github.ref == "refs/heads/master"
+        run: ./tools/build/test.sh
+
+      #- name: Alert if acceptance tests fail
+      # run:
