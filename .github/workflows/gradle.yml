@@ -46,7 +46,7 @@ jobs:
         run: docker-compose -f docker-compose.build.yaml build
 
       - name: Run Acceptance Tests
-        #        if: success() && github.ref == "refs/heads/master"
+        #        if: success() && github.ref == "refs/heads/master"`
         run: ./tools/build/test.sh
 
       #- name: Alert if acceptance tests fail
