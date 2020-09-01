@@ -46,8 +46,11 @@ jobs:
         run: docker-compose -f docker-compose.build.yaml build
 
       - name: Run Acceptance Tests
-        #        if: success() && github.ref == "refs/heads/master"`
+        #        if: success() && github.ref == "refs/heads/master"
         run: ./tools/build/test.sh
 
-      #- name: Alert if acceptance tests fail
-      # run:
+    - name: Slack Notification
+        uses: rtCamp/action-slack-notify@master
+        if: failure() && github.ref == "refs/heads/master"
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
