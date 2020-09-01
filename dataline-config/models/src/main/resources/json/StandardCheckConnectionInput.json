@@ -8,8 +8,9 @@
   "additionalProperties": false,
   "properties": {
     "connectionConfigurationJson": {
-      "type": "string",
-      "description": "Integration specific blob. Must be a valid JSON string."
+      "description": "Integration specific blob. Must be a valid JSON string.",
+      "type": "object",
+      "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
     }
   }
 }

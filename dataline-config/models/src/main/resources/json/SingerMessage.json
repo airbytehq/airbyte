@@ -22,7 +22,9 @@
     },
     "record": {
       "description": "record message: must me a JSON object",
-      "type": "string"
+      "type": "object",
+      "javaName": "recordJson",
+      "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
     },
     "schema": {
       "description": "schema message: the schema",
@@ -43,7 +45,10 @@
       }
     },
     "value": {
-      "description": "state message: no schema, just a map of string to object!"
+      "description": "value message: must me a JSON object",
+      "type": "object",
+      "javaName": "valueJson",
+      "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
     }
   }
 }

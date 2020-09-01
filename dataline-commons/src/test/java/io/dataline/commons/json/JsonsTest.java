@@ -38,10 +38,7 @@ class JsonsTest {
     Assertions.assertEquals(
         "{\"str\":\"abc\",\"num\":999,\"numLong\":888}",
         Jsons.serialize(new ToClass("abc", 999, 888L)));
-  }
 
-  @Test
-  void testSerializeMap() {
     Assertions.assertEquals(
         "{\"test\":\"abc\",\"test2\":\"def\"}",
         Jsons.serialize(
@@ -54,7 +51,13 @@ class JsonsTest {
   void testSerializeJsonNode() {
     Assertions.assertEquals(
         "{\"str\":\"abc\",\"num\":999,\"numLong\":888}",
-        Jsons.serializeJsonNode(Jsons.jsonNode(new ToClass("abc", 999, 888L))));
+        Jsons.serialize(Jsons.jsonNode(new ToClass("abc", 999, 888L))));
+
+    Assertions.assertEquals(
+        "{\"test\":\"abc\",\"test2\":\"def\"}",
+        Jsons.serialize(Jsons.jsonNode(ImmutableMap.of(
+            "test", "abc",
+            "test2", "def"))));
   }
 
   @Test
@@ -66,7 +69,9 @@ class JsonsTest {
 
   @Test
   void testDeserializeToJsonNode() {
-    Assertions.assertEquals("{\"str\":\"abc\"}", Jsons.deserialize("{\"str\":\"abc\"}").toString());
+    Assertions.assertEquals(
+        "{\"str\":\"abc\"}",
+        Jsons.deserialize("{\"str\":\"abc\"}").toString());
 
     Assertions.assertEquals(
         "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
@@ -87,10 +92,12 @@ class JsonsTest {
   @Test
   void testTryDeserializeToJsonNode() {
     Assertions.assertEquals(
-        Jsons.deserialize("{\"str\":\"abc\"}"), Jsons.tryDeserialize("{\"str\":\"abc\"}").get());
+        Jsons.deserialize("{\"str\":\"abc\"}"),
+        Jsons.tryDeserialize("{\"str\":\"abc\"}").get());
 
     Assertions.assertEquals(
-        Optional.empty(), Jsons.tryDeserialize("{\"str\":\"abc\", \"num\": 999, \"test}"));
+        Optional.empty(),
+        Jsons.tryDeserialize("{\"str\":\"abc\", \"num\": 999, \"test}"));
   }
 
   @Test
@@ -106,6 +113,18 @@ class JsonsTest {
                 "test", "abc",
                 "test2", "def"))
             .toString());
+
+    Assertions.assertEquals(
+        "{\"test\":\"abc\",\"test2\":{\"inner\":1}}",
+        Jsons.jsonNode(
+            ImmutableMap.of(
+                "test", "abc",
+                "test2", ImmutableMap.of("inner", 1)))
+            .toString());
+
+    Assertions.assertEquals(
+        Jsons.jsonNode(new ToClass("abc", 999, 888L)),
+        Jsons.jsonNode(Jsons.jsonNode(new ToClass("abc", 999, 888L))));
   }
 
   private static class ToClass {

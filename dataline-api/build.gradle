@@ -8,7 +8,7 @@ def specFile = "$projectDir/src/main/openapi/config.yaml".toString()
 openApiGenerate {
     generatorName = "jaxrs-spec"
     inputSpec = specFile
-    outputDir = "$buildDir/generated".toString()
+    outputDir = "$buildDir/generated"
 
     apiPackage = "io.dataline.api"
     invokerPackage = "io.dataline.api.invoker"
@@ -24,7 +24,7 @@ openApiGenerate {
 }
 
 dependencies {
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.2'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations'
 
     implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2'
 
