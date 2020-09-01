@@ -6,15 +6,13 @@ ENV VIRTUAL_ENV=/singer/env
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-RUN apk add --no-cache gcc musl-dev libffi-dev
+RUN apk add --no-cache gcc musl-dev libffi-dev jq
 
 # Install dependencies:
 COPY requirements.txt .
 RUN python -m pip install --upgrade pip && \
   pip install -r requirements.txt
 
-WORKDIR /singer/data
+COPY bigquery-destination.sh /singer/bigquery-destination.sh
 
-COPY bigquery-target.sh .
-
-ENTRYPOINT ["sh", "target-bigquery.sh"]
+ENTRYPOINT ["sh", "/singer/bigquery-destination.sh"]
