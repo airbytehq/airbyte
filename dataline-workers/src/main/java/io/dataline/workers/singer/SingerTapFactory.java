@@ -24,6 +24,7 @@
 
 package io.dataline.workers.singer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
@@ -87,14 +88,14 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   public Stream<SingerMessage> create(StandardTapConfig input, Path jobRoot) throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> discoveryOutput = runDiscovery(input, jobRoot);
 
-    final String configDotJson = input.getSourceConnectionImplementation().getConfigurationJson();
+    final JsonNode configDotJson = input.getSourceConnectionImplementation().getConfiguration();
 
     final SingerCatalog selectedCatalog = SingerCatalogConverters.applySchemaToDiscoveredCatalog(
         discoveryOutput.getOutput().get(), input.getStandardSync().getSchema());
     final String catalogDotJson = Jsons.serialize(selectedCatalog);
     final String stateDotJson = Jsons.serialize(input.getState());
 
-    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
+    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
     IOs.writeFile(jobRoot, CATALOG_JSON_FILENAME, catalogDotJson);
     IOs.writeFile(jobRoot, STATE_JSON_FILENAME, stateDotJson);
 
@@ -138,8 +139,7 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path jobRoot)
       throws InvalidCredentialsException {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput();
-    discoveryInput.setConnectionConfigurationJson(
-        input.getSourceConnectionImplementation().getConfigurationJson());
+    discoveryInput.setConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
     Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
     return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot);
   }

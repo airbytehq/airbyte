@@ -24,6 +24,7 @@
 
 package io.dataline.server.handlers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.api.model.DestinationImplementationCreate;
 import io.dataline.api.model.DestinationImplementationIdRequestBody;
 import io.dataline.api.model.DestinationImplementationRead;
@@ -65,7 +66,7 @@ public class DestinationImplementationsHandler {
     // validate configuration
     validateDestinationImplementation(
         destinationImplementationCreate.getDestinationSpecificationId(),
-        (String) destinationImplementationCreate.getConnectionConfiguration());
+        destinationImplementationCreate.getConnectionConfiguration());
 
     // persist
     final UUID destinationImplementationId = uuidGenerator.get();
@@ -73,7 +74,7 @@ public class DestinationImplementationsHandler {
         destinationImplementationCreate.getDestinationSpecificationId(),
         destinationImplementationCreate.getWorkspaceId(),
         destinationImplementationId,
-        (String) destinationImplementationCreate.getConnectionConfiguration());
+        destinationImplementationCreate.getConnectionConfiguration());
 
     // read configuration from db
     return getDestinationImplementationInternal(destinationImplementationId);
@@ -88,14 +89,14 @@ public class DestinationImplementationsHandler {
     // validate configuration
     validateDestinationImplementation(
         persistedDestinationImplementation.getDestinationSpecificationId(),
-        (String) destinationImplementationUpdate.getConnectionConfiguration());
+        destinationImplementationUpdate.getConnectionConfiguration());
 
     // persist
     persistDestinationConnectionImplementation(
         persistedDestinationImplementation.getDestinationSpecificationId(),
         persistedDestinationImplementation.getWorkspaceId(),
         destinationImplementationUpdate.getDestinationImplementationId(),
-        (String) destinationImplementationUpdate.getConnectionConfiguration());
+        destinationImplementationUpdate.getConnectionConfiguration());
 
     // read configuration from db
     return getDestinationImplementationInternal(
@@ -150,7 +151,7 @@ public class DestinationImplementationsHandler {
         retrievedDestinationConnectionImplementation, destinationId);
   }
 
-  private void validateDestinationImplementation(UUID destinationConnectionSpecificationId, String implementationJson) {
+  private void validateDestinationImplementation(UUID destinationConnectionSpecificationId, JsonNode implementationJson) {
     try {
       validator.validateDestinationConnectionConfiguration(destinationConnectionSpecificationId, implementationJson);
     } catch (JsonValidationException e) {
@@ -165,13 +166,13 @@ public class DestinationImplementationsHandler {
   private void persistDestinationConnectionImplementation(UUID destinationSpecificationId,
                                                           UUID workspaceId,
                                                           UUID destinationImplementationId,
-                                                          String configurationJson) {
+                                                          JsonNode configurationJson) {
     final DestinationConnectionImplementation destinationConnectionImplementation =
         new DestinationConnectionImplementation();
     destinationConnectionImplementation.setDestinationSpecificationId(destinationSpecificationId);
     destinationConnectionImplementation.setWorkspaceId(workspaceId);
     destinationConnectionImplementation.setDestinationImplementationId(destinationImplementationId);
-    destinationConnectionImplementation.setConfigurationJson(configurationJson);
+    destinationConnectionImplementation.setConfiguration(configurationJson);
 
     ConfigFetchers.writeConfig(
         configPersistence,
@@ -191,8 +192,7 @@ public class DestinationImplementationsHandler {
         destinationConnectionImplementation.getWorkspaceId());
     destinationImplementationRead.setDestinationSpecificationId(
         destinationConnectionImplementation.getDestinationSpecificationId());
-    destinationImplementationRead.setConnectionConfiguration(
-        destinationConnectionImplementation.getConfigurationJson());
+    destinationImplementationRead.setConnectionConfiguration(destinationConnectionImplementation.getConfiguration());
 
     return destinationImplementationRead;
   }
