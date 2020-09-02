@@ -43,6 +43,8 @@ tags:
     description: Destination implementation related resources.
   - name: connection
     description: Connection between sources and destinations.
+  - name: web_backend
+    description: Connection between sources and destinations.
 
 paths:
   /v1/workspaces/get:
@@ -615,7 +617,7 @@ paths:
   /v1/web_backend/connections/list:
     post:
       tags:
-        - connection
+        - web_backend
       summary: Returns all connections for a workspace.
       operationId: webBackendListConnectionsForWorkspace
       requestBody:
@@ -638,7 +640,7 @@ paths:
   /v1/web_backend/connections/get:
     post:
       tags:
-        - connection
+        - web_backend
       summary: Get a connection
       operationId: webBackendGetConnection
       requestBody:
@@ -655,7 +657,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/WbConnectionRead"
         "404":
-          description: Workspace not found
+          description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/jobs/list:
