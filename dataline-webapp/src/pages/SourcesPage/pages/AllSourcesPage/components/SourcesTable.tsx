@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
-import { useResource } from "rest-hooks";
+import { useFetcher, useResource } from "rest-hooks";
 
 import Table from "../../../../../components/Table";
 import FrequencyCell from "./FrequencyCell";
@@ -20,30 +20,46 @@ const Content = styled.div`
 `;
 
 type ITableDataItem = {
+  connectionId: string;
+  sourceId: string;
   name: string;
-  connector: string;
-  frequency: string;
-  date: number;
+  schedule: string;
+  lastSync: number;
   enabled: boolean;
   error: boolean;
 };
 
 const SourcesTable: React.FC = () => {
   const { push } = useRouter();
-  const { connections } = useResource(ConnectionResource.listShape(), {
+  const { connections } = useResource(ConnectionResource.listWebShape(), {
     workspaceId: config.ui.workspaceId
   });
+  const updateConnection = useFetcher(ConnectionResource.updateShape());
 
-  // TODO: add real data for table
   const data = connections.map(item => ({
     connectionId: item.connectionId,
     name: item.name,
-    connector: "TEST data",
-    frequency: "manual",
-    date: 1597693584000,
-    enabled: true,
-    error: false
+    enabled: item.status === "active",
+    sourceId: item.source?.sourceId,
+    schedule: item.schedule,
+    lastSync: item.lastSync
   }));
+
+  const onChangeStatus = async (connectionId: string) => {
+    const connection = connections.find(
+      item => item.connectionId === connectionId
+    );
+
+    await updateConnection(
+      {},
+      {
+        connectionId,
+        syncSchema: connection?.syncSchema,
+        schedule: connection?.schedule,
+        status: connection?.status === "active" ? "inactive" : "active"
+      }
+    );
+  };
 
   const columns = React.useMemo(
     () => [
@@ -61,21 +77,21 @@ const SourcesTable: React.FC = () => {
       },
       {
         Header: <FormattedMessage id="sources.connector" />,
-        accessor: "connector",
+        accessor: "sourceId",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <ConnectorCell value={cell.value} enabled={row.original.enabled} />
         )
       },
       {
         Header: <FormattedMessage id="sources.frequency" />,
-        accessor: "frequency",
+        accessor: "schedule",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <FrequencyCell value={cell.value} enabled={row.original.enabled} />
         )
       },
       {
         Header: <FormattedMessage id="sources.lastSync" />,
-        accessor: "date",
+        accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <LastSyncCell value={cell.value} enabled={row.original.enabled} />
         )
@@ -85,11 +101,16 @@ const SourcesTable: React.FC = () => {
         accessor: "enabled",
         collapse: true,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <StatusCell enabled={cell.value} error={row.original.error} />
+          <StatusCell
+            enabled={cell.value}
+            error={row.original.error}
+            connectionId={row.original.connectionId}
+            onChangeStatus={onChangeStatus}
+          />
         )
       }
     ],
-    []
+    [onChangeStatus]
   );
 
   const clickRow = (connection: any) =>

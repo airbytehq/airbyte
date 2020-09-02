@@ -8,25 +8,33 @@ import styled from "styled-components";
 type IProps = {
   enabled?: boolean;
   error?: boolean;
+  connectionId: string;
+  onChangeStatus: (connectionId: string) => void;
 };
 
 const SmallButton = styled(Button)`
   padding: 6px 8px 7px;
 `;
 
-const StatusCell: React.FC<IProps> = ({ enabled, error }) => {
+const StatusCell: React.FC<IProps> = ({
+  enabled,
+  error,
+  connectionId,
+  onChangeStatus
+}) => {
   // TODO: add real actions
   const OnLaunch = (event: React.SyntheticEvent) => {
     event.stopPropagation();
     console.log("Launch");
   };
+
   const OnToggleClick = (event: React.SyntheticEvent) => {
     event.stopPropagation();
-    console.log("ToggleClick");
+    onChangeStatus(connectionId);
   };
 
   if (!error) {
-    return <Toggle checked={enabled} onClick={OnToggleClick} />;
+    return <Toggle checked={enabled} onChange={OnToggleClick} />;
   }
 
   return (

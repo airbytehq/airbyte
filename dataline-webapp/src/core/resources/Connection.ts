@@ -15,6 +15,8 @@ export interface Connection {
   status: string;
   schedule: ScheduleProperties | null;
   syncSchema: any; // TODO: fix type
+  source?: { sourceId: string };
+  lastSync?: number | null;
 }
 
 export default class ConnectionResource extends BaseResource
@@ -26,6 +28,8 @@ export default class ConnectionResource extends BaseResource
   readonly syncMode: string = "";
   readonly status: string = "";
   readonly schedule: ScheduleProperties | null = null;
+  readonly source: { sourceId: string } | undefined = undefined;
+  readonly lastSync: number | undefined | null = null;
   readonly syncSchema: any | null = null; // TODO: fix it
 
   pk() {
@@ -59,6 +63,23 @@ export default class ConnectionResource extends BaseResource
     return {
       ...super.createShape(),
       schema: this.asSchema()
+    };
+  }
+
+  static listWebShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.listShape(),
+      getFetchKey: (params: { workspaceId: string }) =>
+        "POST /web_backend/list" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<any> =>
+        await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/connections/list`,
+          params
+        ),
+      schema: { connections: [this.asSchema()] }
     };
   }
 }

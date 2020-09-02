@@ -1,6 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
+import { useResource } from "rest-hooks";
 
 import ContentCard from "../../../../../components/ContentCard";
 import ImageBlock from "../../../../../components/ImageBlock";
@@ -11,9 +12,13 @@ import {
 } from "../../../../../components/SimpleTableComponents";
 import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
 import Toggle from "../../../../../components/Toggle";
+import DestinationImplementationResource from "../../../../../core/resources/DestinationImplementation";
+import config from "../../../../../config";
+import DestinationResource from "../../../../../core/resources/Destination";
+import { Connection } from "../../../../../core/resources/Connection";
 
 type IProps = {
-  sourceData: any;
+  sourceData: Connection;
   onEnabledChange: () => void;
 };
 
@@ -50,8 +55,21 @@ const ToggleLabel = styled.label`
 `;
 
 const StatusMainInfo: React.FC<IProps> = ({ sourceData, onEnabledChange }) => {
+  const { destinations } = useResource(
+    DestinationImplementationResource.listShape(),
+    {
+      workspaceId: config.ui.workspaceId
+    }
+  );
+  const currentDestination = destinations[0]; // Now we have only one destination. If we support multiple destinations we will fix this line
+  const destination = useResource(DestinationResource.detailShape(), {
+    destinationId: currentDestination.destinationId
+  });
+
   const cellText = FrequencyConfig.find(
-    item => item.value === sourceData.frequency
+    item =>
+      item.config.units === sourceData.schedule?.units &&
+      item.config.timeUnit === sourceData.schedule?.timeUnit
   );
 
   return (
@@ -71,22 +89,26 @@ const StatusMainInfo: React.FC<IProps> = ({ sourceData, onEnabledChange }) => {
       <Row>
         <SourceCell flex={2}>
           <Img />
-          {sourceData.source}
+          {/*{sourceData.source}*/}
         </SourceCell>
         <SourceCell flex={2}>
           <Img />
-          {sourceData.destination}
+          {destination.name}
         </SourceCell>
         <Cell>{cellText?.text}</Cell>
         <EnabledCell flex={1.1}>
           <ToggleLabel htmlFor="toggle-enabled-source">
             <FormattedMessage
-              id={sourceData.enabled ? "sources.enabled" : "sources.disabled"}
+              id={
+                sourceData.status === "active"
+                  ? "sources.enabled"
+                  : "sources.disabled"
+              }
             />
           </ToggleLabel>
           <Toggle
             onChange={onEnabledChange}
-            value={sourceData.enabled}
+            checked={sourceData.status === "active"}
             id="toggle-enabled-source"
           />
         </EnabledCell>

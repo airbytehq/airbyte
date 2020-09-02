@@ -1,7 +1,9 @@
 import React from "react";
 import styled from "styled-components";
+import { useResource } from "rest-hooks";
 
 import ImageBlock from "../../../../../components/ImageBlock";
+import SourceResource from "../../../../../core/resources/Source";
 
 type IProps = {
   value: string;
@@ -19,10 +21,14 @@ const Image = styled(ImageBlock)`
 `;
 
 const StatusCell: React.FC<IProps> = ({ value, enabled }) => {
+  const source = useResource(SourceResource.detailShape(), {
+    sourceId: value
+  });
+
   return (
     <Content enabled={enabled}>
       <Image />
-      {value}
+      {source.name}
     </Content>
   );
 };
