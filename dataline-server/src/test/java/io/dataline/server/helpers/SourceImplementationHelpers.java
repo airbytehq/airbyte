@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.StandardSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,16 +62,14 @@ public class SourceImplementationHelpers {
   }
 
   public static SourceImplementationRead getSourceImplementationRead(SourceConnectionImplementation sourceImplementation,
-                                                                     UUID sourceId) {
+                                                                     StandardSource standardSource) {
     SourceImplementationRead sourceImplementationRead = new SourceImplementationRead();
-    sourceImplementationRead.setSourceId(sourceId);
+    sourceImplementationRead.setSourceId(standardSource.getSourceId());
     sourceImplementationRead.setWorkspaceId(sourceImplementation.getWorkspaceId());
-    sourceImplementationRead.setSourceSpecificationId(
-        sourceImplementation.getSourceSpecificationId());
-    sourceImplementationRead.setSourceImplementationId(
-        sourceImplementation.getSourceImplementationId());
-    sourceImplementationRead.setConnectionConfiguration(
-        sourceImplementation.getConfiguration());
+    sourceImplementationRead.setSourceSpecificationId(sourceImplementation.getSourceSpecificationId());
+    sourceImplementationRead.setSourceImplementationId(sourceImplementation.getSourceImplementationId());
+    sourceImplementationRead.setConnectionConfiguration(sourceImplementation.getConfiguration());
+    sourceImplementationRead.setSourceName(standardSource.getName());
 
     return sourceImplementationRead;
   }

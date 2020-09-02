@@ -846,6 +846,7 @@ components:
         - workspaceId
         - sourceSpecificationId
         - connectionConfiguration
+        - sourceName
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
@@ -857,6 +858,8 @@ components:
           $ref: "#/components/schemas/SourceSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
+        sourceName:
+          type: string
     SourceImplementationReadList:
       type: object
       required:
