@@ -32,6 +32,7 @@ import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
+import io.dataline.config.State;
 import io.dataline.workers.protocol.singer.SingerMessageTracker;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,12 +66,10 @@ public class DefaultSyncWorker implements SyncWorker {
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
     final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
 
-    final SingerMessageTracker singerMessageTracker =
-        new SingerMessageTracker(syncInput.getStandardSync().getConnectionId());
+    final SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
 
     try (Stream<SingerMessage> tap = singerTapFactory.create(tapConfig, jobRoot);
-        CloseableConsumer<SingerMessage> consumer =
-            singerTargetFactory.create(targetConfig, jobRoot)) {
+        CloseableConsumer<SingerMessage> consumer = singerTargetFactory.create(targetConfig, jobRoot)) {
 
       tap.takeWhile(record -> !cancelled.get()).peek(singerMessageTracker).forEach(consumer);
 
@@ -90,7 +89,12 @@ public class DefaultSyncWorker implements SyncWorker {
 
     final StandardSyncOutput output = new StandardSyncOutput();
     output.setStandardSyncSummary(summary);
-    singerMessageTracker.getOutputState().ifPresent(output::setState);
+    singerMessageTracker.getOutputState().ifPresent(singerState -> {
+      final State state = new State();
+      state.setConnectionId(tapConfig.getStandardSync().getConnectionId());
+      state.setState(singerState);
+      output.setState(state);
+    });
 
     return new OutputAndStatus<>(cancelled.get() ? JobStatus.FAILED : JobStatus.SUCCESSFUL, output);
   }

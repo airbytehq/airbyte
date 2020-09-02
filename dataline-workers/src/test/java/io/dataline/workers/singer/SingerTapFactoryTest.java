@@ -24,13 +24,17 @@
 
 package io.dataline.workers.singer;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.dataline.commons.io.IOs;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerCatalog;
 import io.dataline.config.SingerColumn;
 import io.dataline.config.SingerColumnMap;
@@ -64,9 +68,6 @@ class SingerTapFactoryTest {
 
   private static final String IMAGE_NAME = "hudi:latest";
   private static final String JOB_ROOT_PREFIX = "workspace";
-  private static final String CONFIG_JSON_FILENAME = "tap_config.json";
-  private static final String CATALOG_JSON_FILENAME = "catalog.json";
-  private static final String STATE_JSON_FILENAME = "input_state.json";
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
 
@@ -91,7 +92,7 @@ class SingerTapFactoryTest {
 
     final List<SingerMessage> expected = Lists.newArrayList(recordMessage1, recordMessage2);
 
-    StandardTapConfig tapConfig =
+    final StandardTapConfig tapConfig =
         WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
     StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
     discoverSchemaInput.setConnectionConfiguration(
@@ -131,11 +132,11 @@ class SingerTapFactoryTest {
         jobRoot,
         IMAGE_NAME,
         "--config",
-        CONFIG_JSON_FILENAME,
+        SingerTapFactory.CONFIG_JSON_FILENAME,
         "--properties",
-        CATALOG_JSON_FILENAME,
+        SingerTapFactory.CATALOG_JSON_FILENAME,
         "--state",
-        STATE_JSON_FILENAME))
+        SingerTapFactory.STATE_JSON_FILENAME))
             .thenReturn(processBuilder);
     when(processBuilder.redirectError(errorLogPath.toFile())).thenReturn(processBuilder);
     when(processBuilder.start()).thenReturn(process);
@@ -148,9 +149,21 @@ class SingerTapFactoryTest {
     final Stream<SingerMessage> actual = tapFactory.create(tapConfig, jobRoot);
 
     assertTrue(Files.exists(jobRoot));
-    assertTrue(Files.exists(jobRoot.resolve("tap_config.json")));
-    assertTrue(Files.exists(jobRoot.resolve("catalog.json")));
-    assertTrue(Files.exists(jobRoot.resolve("input_state.json")));
+    assertTrue(Files.exists(jobRoot.resolve(SingerTapFactory.CONFIG_JSON_FILENAME)));
+    assertTrue(Files.exists(jobRoot.resolve(SingerTapFactory.CATALOG_JSON_FILENAME)));
+    assertTrue(Files.exists(jobRoot.resolve(SingerTapFactory.STATE_JSON_FILENAME)));
+
+    final JsonNode expectedConfig = Jsons.jsonNode(tapConfig.getSourceConnectionImplementation().getConfiguration());
+    final JsonNode actualConfig = Jsons.deserialize(IOs.readFile(jobRoot, SingerTapFactory.CONFIG_JSON_FILENAME));
+    assertEquals(expectedConfig, actualConfig);
+
+    final JsonNode expectedCatalog = Jsons.jsonNode(singerCatalog);
+    final JsonNode actualCatalog = Jsons.deserialize(IOs.readFile(jobRoot, SingerTapFactory.CATALOG_JSON_FILENAME));
+    assertEquals(expectedCatalog, actualCatalog);
+
+    final JsonNode expectedInputState = Jsons.jsonNode(tapConfig.getState());
+    final JsonNode actualInputState = Jsons.deserialize(IOs.readFile(jobRoot, SingerTapFactory.STATE_JSON_FILENAME));
+    assertEquals(expectedInputState, actualInputState);
 
     assertEquals(expected, actual.collect(Collectors.toList()));
 

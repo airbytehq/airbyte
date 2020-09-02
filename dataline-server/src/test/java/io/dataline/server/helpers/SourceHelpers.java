@@ -22,32 +22,19 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.server.helpers;
 
-import io.dataline.workers.Worker;
-import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.dataline.config.StandardSource;
+import java.util.UUID;
 
-public abstract class BaseSingerWorker<InputType, OutputType> implements Worker<InputType, OutputType> {
+public class SourceHelpers {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
+  public static StandardSource generateSource() {
+    StandardSource source = new StandardSource();
+    source.setSourceId(UUID.randomUUID());
+    source.setName("marketo");
 
-  protected void cancelHelper(Process workerProcess) {
-    try {
-      workerProcess.destroy();
-      workerProcess.waitFor(10, TimeUnit.SECONDS);
-      if (workerProcess.isAlive()) {
-        workerProcess.destroyForcibly();
-      }
-    } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling job.", e);
-    }
-  }
-
-  protected static Path getFullPath(Path workspaceRoot, String fileName) {
-    return workspaceRoot.resolve(fileName);
+    return source;
   }
 
 }

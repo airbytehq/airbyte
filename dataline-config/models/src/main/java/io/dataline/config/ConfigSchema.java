@@ -24,18 +24,12 @@
 
 package io.dataline.config;
 
-import com.google.common.io.Resources;
 import io.dataline.commons.io.IOs;
+import io.dataline.commons.resources.MoreResources;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,30 +66,21 @@ public enum ConfigSchema {
   @SuppressWarnings("UnstableApiUsage")
   private static Path prepareSchemas() {
     try {
-      final String rootedResourceDir = String.format("/%s", RESOURCE_DIR);
-      final URL url = ConfigSchema.class.getResource(rootedResourceDir);
-
-      Path searchPath;
-      if (url.toString().startsWith("jar")) {
-        final FileSystem fileSystem = FileSystems.newFileSystem(url.toURI(), Collections.emptyMap());
-        searchPath = fileSystem.getPath(rootedResourceDir);
-      } else {
-        searchPath = Path.of(url.toURI());
-      }
-
-      final List<String> filenames = Files.walk(searchPath, 1)
+      final List<String> filenames = MoreResources.listResources(ConfigSchema.class, RESOURCE_DIR)
           .map(p -> p.getFileName().toString())
           .filter(p -> p.endsWith(".json"))
           .collect(Collectors.toList());
 
       final Path configRoot = Files.createTempDirectory("schemas");
       for (String filename : filenames) {
-        final URL resource = Resources.getResource(String.format("%s/%s", RESOURCE_DIR, filename));
-        IOs.writeFile(configRoot, filename, Resources.toString(resource, StandardCharsets.UTF_8));
+        IOs.writeFile(
+            configRoot,
+            filename,
+            MoreResources.readResource(String.format("%s/%s", RESOURCE_DIR, filename)));
       }
 
       return configRoot;
-    } catch (IOException | URISyntaxException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }

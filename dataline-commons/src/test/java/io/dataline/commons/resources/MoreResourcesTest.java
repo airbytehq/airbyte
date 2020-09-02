@@ -22,26 +22,34 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.commons.resources;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class DiscoveryOutput {
+import com.google.common.collect.Sets;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
 
-  // TODO line this up with conduit config type
-  private final String catalog;
+class MoreResourcesTest {
 
-  public DiscoveryOutput(String catalog) {
-    this.catalog = catalog;
+  @Test
+  void testResourceRead() throws IOException {
+    assertEquals("content1\n", MoreResources.readResource("resource_test"));
+    assertEquals("content2\n", MoreResources.readResource("subdir/resource_test_sub"));
+
+    assertThrows(IllegalArgumentException.class, () -> MoreResources.readResource("invalid"));
   }
 
-  public String getCatalog() {
-    return catalog;
-  }
-
-  @Override
-  public String toString() {
-    return new ToStringBuilder(this).append(catalog).toString();
+  @Test
+  void testListResource() throws IOException {
+    assertEquals(
+        Sets.newHashSet("subdir", "resource_test_sub", "resource_test_sub_2"),
+        MoreResources.listResources(MoreResourcesTest.class, "subdir")
+            .map(Path::getFileName)
+            .map(Path::toString)
+            .collect(Collectors.toSet()));
   }
 
 }

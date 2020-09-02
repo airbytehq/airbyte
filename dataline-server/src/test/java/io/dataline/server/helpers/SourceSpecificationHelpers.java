@@ -35,14 +35,15 @@ import java.util.UUID;
 public class SourceSpecificationHelpers {
 
   public static SourceConnectionSpecification generateSourceSpecification() throws IOException {
-    final UUID sourceId = UUID.randomUUID();
+    return generateSourceSpecification(UUID.randomUUID());
+  }
+
+  public static SourceConnectionSpecification generateSourceSpecification(UUID sourceId) throws IOException {
     final UUID sourceSpecificationId = UUID.randomUUID();
 
-    final Path path =
-        Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
+    final Path path = Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
 
-    final SourceConnectionSpecification sourceConnectionSpecification =
-        new SourceConnectionSpecification();
+    final SourceConnectionSpecification sourceConnectionSpecification = new SourceConnectionSpecification();
     sourceConnectionSpecification.setSourceId(sourceId);
     sourceConnectionSpecification.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionSpecification.setSpecification(Jsons.deserialize(Files.readString(path)));
