@@ -76,8 +76,7 @@ public class WorkerUtils {
    */
   public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
     final StandardTargetConfig targetConfig = new StandardTargetConfig();
-    targetConfig.setDestinationConnectionImplementation(
-        sync.getDestinationConnectionImplementation());
+    targetConfig.setDestinationConnectionImplementation(sync.getDestinationConnectionImplementation());
     targetConfig.setStandardSync(sync.getStandardSync());
     return targetConfig;
   }
