@@ -3,10 +3,10 @@ plugins {
 }
 
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
 
-    implementation project(':dataline-config')
-    implementation project(':dataline-config-persistence')
+    implementation project(':dataline-config:models')
+    implementation project(':dataline-config:persistence')
     implementation project(':dataline-db')
     implementation project(':dataline-integrations')
     implementation project(':dataline-workers')

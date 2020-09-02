@@ -24,92 +24,97 @@
 
 package io.dataline.workers.singer;
 
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
+import io.dataline.commons.resources.MoreResources;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.integrations.Integrations;
-import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.InvalidCredentialsException;
+import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.PostgreSQLContainerTestHelper;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
-public class SingerDiscoverSchemaWorkerTest extends BaseWorkerTestCase {
+public class SingerDiscoverSchemaWorkerTest {
 
-  PostgreSQLContainer db;
+  private static final String IMAGE_NAME = "selfie:latest";
+  private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
 
-  @BeforeAll
-  public void initDb() throws IOException, InterruptedException {
-    db = new PostgreSQLContainer();
-    db.start();
-    PostgreSQLContainerTestHelper.runSqlScript(
-        MountableFile.forClasspathResource("simple_postgres_init.sql"), db);
+  private Path jobRoot;
+  private ProcessBuilderFactory pbf;
+  private ProcessBuilder processBuilder;
+  private Process process;
+  private StandardDiscoverSchemaInput input;
+
+  @BeforeEach
+  public void setup() throws IOException, InterruptedException {
+    jobRoot = Files.createTempDirectory("");
+    pbf = mock(ProcessBuilderFactory.class);
+    processBuilder = mock(ProcessBuilder.class);
+    process = mock(Process.class);
+
+    input = new StandardDiscoverSchemaInput();
+    input.setConnectionConfiguration(CREDS);
+
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover")).thenReturn(processBuilder);
+    when(processBuilder.redirectError(jobRoot.resolve(SingerDiscoverSchemaWorker.ERROR_LOG_FILENAME).toFile())).thenReturn(processBuilder);
+    when(processBuilder.redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile())).thenReturn(processBuilder);
+    when(processBuilder.start()).thenReturn(process);
+    when(process.waitFor(1, TimeUnit.MINUTES)).thenReturn(true);
+
+    // this would be written by the docker process.
+    IOs.writeFile(jobRoot, "catalog.json", MoreResources.readResource("simple_postgres_singer_catalog.json"));
   }
 
   @Test
-  public void testPostgresDiscovery() throws IOException, InvalidCredentialsException {
-    final String jobId = "1";
-    String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
-    final Object o = Jsons.deserialize(postgresCreds, Object.class);
-    final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
-    input.setConnectionConfiguration(o);
-    System.out.println(input);
-    SingerDiscoverSchemaWorker worker =
-        new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage(), pbf);
+  public void testDiscoverSchema() throws IOException, InterruptedException, InvalidCredentialsException {
+    SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
+    OutputAndStatus<StandardDiscoverSchemaOutput> run = worker.run(input, jobRoot);
 
-    OutputAndStatus<StandardDiscoverSchemaOutput> run = worker.run(input, createJobRoot(jobId));
+    assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
 
-    assertEquals(SUCCESSFUL, run.getStatus());
-
-    final String expectedSchema = readResource("simple_discovered_postgres_schema.json");
-    final String actualSchema = Jsons.serialize(run.getOutput().get());
+    final StandardDiscoverSchemaOutput expectedOutput =
+        Jsons.deserialize(MoreResources.readResource("simple_discovered_postgres_schema.json"), StandardDiscoverSchemaOutput.class);
+    final StandardDiscoverSchemaOutput actualOutput = run.getOutput().get();
 
     assertTrue(run.getOutput().isPresent());
-    assertJsonEquals(expectedSchema, actualSchema);
+    assertEquals(expectedOutput, actualOutput);
+
+    assertTrue(Files.exists(jobRoot.resolve(SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME)));
+    assertTrue(Files.exists(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME)));
+
+    final JsonNode expectedConfig = Jsons.jsonNode(input.getConnectionConfiguration());
+    final JsonNode actualConfig = Jsons.deserialize(IOs.readFile(jobRoot, SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME));
+    assertEquals(expectedConfig, actualConfig);
+
+    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover");
+    verify(processBuilder).redirectError(jobRoot.resolve(SingerDiscoverSchemaWorker.ERROR_LOG_FILENAME).toFile());
+    verify(processBuilder).redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile());
+    verify(processBuilder).start();
+    verify(process).waitFor(1, TimeUnit.MINUTES);
   }
 
   @Test
-  public void testCancellation() throws IOException, InterruptedException, ExecutionException {
-    final String jobId = "1";
-    String postgresCreds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
+  public void testCancel() throws InvalidCredentialsException {
+    SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
+    worker.run(input, jobRoot);
 
-    final Object o = Jsons.deserialize(postgresCreds, Object.class);
-
-    final StandardDiscoverSchemaInput input = new StandardDiscoverSchemaInput();
-    input.setConnectionConfiguration(o);
-
-    SingerDiscoverSchemaWorker worker =
-        new SingerDiscoverSchemaWorker(Integrations.POSTGRES_TAP.getDiscoverSchemaImage(), pbf);
-
-    ExecutorService threadPool = Executors.newFixedThreadPool(2);
-    Future<?> workerWasCancelled =
-        threadPool.submit(
-            () -> {
-              try {
-                OutputAndStatus<StandardDiscoverSchemaOutput> output =
-                    worker.run(input, createJobRoot(jobId));
-                assertEquals(FAILED, output.getStatus());
-              } catch (Exception e) {
-                throw new RuntimeException(e);
-              }
-            });
-
-    TimeUnit.MILLISECONDS.sleep(50);
     worker.cancel();
-    workerWasCancelled.get();
+
+    verify(process).destroy();
   }
+
 }

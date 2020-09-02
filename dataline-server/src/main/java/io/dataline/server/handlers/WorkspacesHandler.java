@@ -28,14 +28,15 @@ import io.dataline.api.model.SlugRequestBody;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.StandardWorkspace;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.server.helpers.ConfigFetchers;
 import java.util.UUID;
 
 public class WorkspacesHandler {
+
   private final ConfigPersistence configPersistence;
 
   public WorkspacesHandler(ConfigPersistence configPersistence) {
@@ -80,10 +81,11 @@ public class WorkspacesHandler {
     persistedWorkspace.setSecurityUpdates(workspaceUpdate.getSecurityUpdates());
     ConfigFetchers.writeConfig(
         configPersistence,
-        PersistenceConfigType.STANDARD_WORKSPACE,
+        ConfigSchema.STANDARD_WORKSPACE,
         workspaceId.toString(),
         persistedWorkspace);
 
     return getWorkspaceFromId(workspaceUpdate.getWorkspaceId());
   }
+
 }

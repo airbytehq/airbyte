@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import io.dataline.api.model.DestinationImplementationCreate;
 import io.dataline.api.model.DestinationImplementationIdRequestBody;
 import io.dataline.api.model.DestinationImplementationRead;
@@ -39,12 +39,12 @@ import io.dataline.api.model.DestinationImplementationReadList;
 import io.dataline.api.model.DestinationImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.json.Jsons;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.helpers.DestinationSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
@@ -57,6 +57,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DestinationImplementationsHandlerTest {
+
   private ConfigPersistence configPersistence;
   private DestinationConnectionSpecification destinationConnectionSpecification;
   private DestinationConnectionImplementation destinationConnectionImplementation;
@@ -88,8 +89,8 @@ class DestinationImplementationsHandlerTest {
     return Jsons.deserialize(Files.readString(path));
   }
 
-  private DestinationConnectionImplementation generateDestinationImplementation(
-      UUID destinationSpecificationId) throws IOException {
+  private DestinationConnectionImplementation generateDestinationImplementation(UUID destinationSpecificationId)
+      throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID destinationImplementationId = UUID.randomUUID();
 
@@ -100,7 +101,7 @@ class DestinationImplementationsHandlerTest {
     destinationConnectionImplementation.setWorkspaceId(workspaceId);
     destinationConnectionImplementation.setDestinationSpecificationId(destinationSpecificationId);
     destinationConnectionImplementation.setDestinationImplementationId(destinationImplementationId);
-    destinationConnectionImplementation.setConfiguration(implementationJson.toString());
+    destinationConnectionImplementation.setConfiguration(implementationJson);
 
     return destinationConnectionImplementation;
   }
@@ -112,10 +113,16 @@ class DestinationImplementationsHandlerTest {
         .thenReturn(destinationConnectionImplementation.getDestinationImplementationId());
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
-            destinationConnectionImplementation.getDestinationImplementationId().toString(),
-            DestinationConnectionImplementation.class))
-        .thenReturn(destinationConnectionImplementation);
+        ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
+        destinationConnectionImplementation.getDestinationImplementationId().toString(),
+        DestinationConnectionImplementation.class))
+            .thenReturn(destinationConnectionImplementation);
+
+    when(configPersistence.getConfig(
+        ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
+        destinationConnectionImplementation.getDestinationSpecificationId().toString(),
+        DestinationConnectionSpecification.class))
+            .thenReturn(destinationConnectionSpecification);
 
     final DestinationImplementationCreate destinationImplementationCreate =
         new DestinationImplementationCreate();
@@ -124,7 +131,7 @@ class DestinationImplementationsHandlerTest {
     destinationImplementationCreate.setDestinationSpecificationId(
         destinationConnectionSpecification.getDestinationSpecificationId());
     destinationImplementationCreate.setConnectionConfiguration(
-        getTestImplementationJson().toString());
+        getTestImplementationJson());
 
     final DestinationImplementationRead actualDestinationImplementationRead =
         destinationImplementationsHandler.createDestinationImplementation(
@@ -132,6 +139,8 @@ class DestinationImplementationsHandlerTest {
 
     DestinationImplementationRead expectedDestinationImplementationRead =
         new DestinationImplementationRead();
+    expectedDestinationImplementationRead.setDestinationId(
+        destinationConnectionSpecification.getDestinationId());
     expectedDestinationImplementationRead.setDestinationSpecificationId(
         destinationConnectionSpecification.getDestinationSpecificationId());
     expectedDestinationImplementationRead.setWorkspaceId(
@@ -139,7 +148,7 @@ class DestinationImplementationsHandlerTest {
     expectedDestinationImplementationRead.setDestinationImplementationId(
         destinationConnectionImplementation.getDestinationImplementationId());
     expectedDestinationImplementationRead.setConnectionConfiguration(
-        getTestImplementationJson().toString());
+        getTestImplementationJson());
 
     assertEquals(expectedDestinationImplementationRead, actualDestinationImplementationRead);
 
@@ -150,16 +159,15 @@ class DestinationImplementationsHandlerTest {
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
+            ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
             destinationConnectionImplementation.getDestinationImplementationId().toString(),
             destinationConnectionImplementation);
   }
 
   @Test
   void testUpdateDestinationImplementation()
-      throws JsonValidationException, ConfigNotFoundException {
-    final Object configuration = destinationConnectionImplementation.getConfiguration();
-    final JsonNode newConfiguration = Jsons.deserialize(configuration.toString());
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final JsonNode newConfiguration = destinationConnectionImplementation.getConfiguration();
 
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
@@ -171,53 +179,69 @@ class DestinationImplementationsHandlerTest {
         destinationConnectionImplementation.getDestinationSpecificationId());
     expectedDestinationConnectionImplementation.setDestinationImplementationId(
         destinationConnectionImplementation.getDestinationImplementationId());
-    expectedDestinationConnectionImplementation.setConfiguration(newConfiguration.toString());
+    expectedDestinationConnectionImplementation.setConfiguration(newConfiguration);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
-            destinationConnectionImplementation.getDestinationImplementationId().toString(),
-            DestinationConnectionImplementation.class))
-        .thenReturn(destinationConnectionImplementation)
-        .thenReturn(expectedDestinationConnectionImplementation);
+        ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
+        destinationConnectionImplementation.getDestinationImplementationId().toString(),
+        DestinationConnectionImplementation.class))
+            .thenReturn(destinationConnectionImplementation)
+            .thenReturn(expectedDestinationConnectionImplementation);
+
+    when(configPersistence.getConfig(
+        ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
+        destinationConnectionImplementation.getDestinationSpecificationId().toString(),
+        DestinationConnectionSpecification.class))
+            .thenReturn(destinationConnectionSpecification);
 
     final DestinationImplementationUpdate destinationImplementationUpdate =
         new DestinationImplementationUpdate();
     destinationImplementationUpdate.setDestinationImplementationId(
         destinationConnectionImplementation.getDestinationImplementationId());
-    destinationImplementationUpdate.setConnectionConfiguration(newConfiguration.toString());
+    destinationImplementationUpdate.setConnectionConfiguration(newConfiguration);
     final DestinationImplementationRead actualDestinationImplementationRead =
         destinationImplementationsHandler.updateDestinationImplementation(
             destinationImplementationUpdate);
 
     DestinationImplementationRead expectedDestinationImplementationRead =
         new DestinationImplementationRead();
+    expectedDestinationImplementationRead.setDestinationId(
+        destinationConnectionSpecification.getDestinationId());
     expectedDestinationImplementationRead.setDestinationSpecificationId(
         destinationConnectionSpecification.getDestinationSpecificationId());
     expectedDestinationImplementationRead.setWorkspaceId(
         destinationConnectionImplementation.getWorkspaceId());
     expectedDestinationImplementationRead.setDestinationImplementationId(
         destinationConnectionImplementation.getDestinationImplementationId());
-    expectedDestinationImplementationRead.setConnectionConfiguration(newConfiguration.toString());
+    expectedDestinationImplementationRead.setConnectionConfiguration(newConfiguration);
 
     assertEquals(expectedDestinationImplementationRead, actualDestinationImplementationRead);
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
+            ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
             destinationConnectionImplementation.getDestinationImplementationId().toString(),
             expectedDestinationConnectionImplementation);
   }
 
   @Test
-  void testGetDestinationImplementation() throws JsonValidationException, ConfigNotFoundException {
+  void testGetDestinationImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
-            PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
-            destinationConnectionImplementation.getDestinationImplementationId().toString(),
-            DestinationConnectionImplementation.class))
-        .thenReturn(destinationConnectionImplementation);
+        ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
+        destinationConnectionImplementation.getDestinationImplementationId().toString(),
+        DestinationConnectionImplementation.class))
+            .thenReturn(destinationConnectionImplementation);
+
+    when(configPersistence.getConfig(
+        ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
+        destinationConnectionImplementation.getDestinationSpecificationId().toString(),
+        DestinationConnectionSpecification.class))
+            .thenReturn(destinationConnectionSpecification);
 
     DestinationImplementationRead expectedDestinationImplementationRead =
         new DestinationImplementationRead();
+    expectedDestinationImplementationRead.setDestinationId(
+        destinationConnectionSpecification.getDestinationId());
     expectedDestinationImplementationRead.setDestinationSpecificationId(
         destinationConnectionImplementation.getDestinationSpecificationId());
     expectedDestinationImplementationRead.setWorkspaceId(
@@ -240,14 +264,23 @@ class DestinationImplementationsHandlerTest {
   }
 
   @Test
-  void testListDestinationImplementationsForWorkspace() throws JsonValidationException {
-    when(configPersistence.getConfigs(
-            PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
-            DestinationConnectionImplementation.class))
-        .thenReturn(Sets.newHashSet(destinationConnectionImplementation));
+  void testListDestinationImplementationsForWorkspace()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configPersistence.listConfigs(
+        ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
+        DestinationConnectionImplementation.class))
+            .thenReturn(Lists.newArrayList(destinationConnectionImplementation));
+
+    when(configPersistence.getConfig(
+        ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
+        destinationConnectionImplementation.getDestinationSpecificationId().toString(),
+        DestinationConnectionSpecification.class))
+            .thenReturn(destinationConnectionSpecification);
 
     DestinationImplementationRead expectedDestinationImplementationRead =
         new DestinationImplementationRead();
+    expectedDestinationImplementationRead.setDestinationId(
+        destinationConnectionSpecification.getDestinationId());
     expectedDestinationImplementationRead.setDestinationSpecificationId(
         destinationConnectionImplementation.getDestinationSpecificationId());
     expectedDestinationImplementationRead.setWorkspaceId(
@@ -268,4 +301,5 @@ class DestinationImplementationsHandlerTest {
         expectedDestinationImplementationRead,
         actualDestinationImplementationRead.getDestinations().get(0));
   }
+
 }

@@ -27,37 +27,13 @@ package io.dataline.workers;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
-import io.dataline.workers.singer.BaseSingerWorker;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WorkerUtils {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
-
-  public static Path writeFileToWorkspace(Path workspaceRoot, String fileName, String contents) {
-    try {
-      Path filePath = workspaceRoot.resolve(fileName);
-      FileUtils.writeStringToFile(filePath.toFile(), contents, StandardCharsets.UTF_8);
-      return filePath;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static String readFileFromWorkspace(Path workspaceRoot, String fileName) {
-    try {
-      Path filePath = workspaceRoot.resolve(fileName);
-      return FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
 
   public static void closeProcess(Process process) {
     closeProcess(process, 1, TimeUnit.MINUTES);
@@ -100,9 +76,9 @@ public class WorkerUtils {
    */
   public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
     final StandardTargetConfig targetConfig = new StandardTargetConfig();
-    targetConfig.setDestinationConnectionImplementation(
-        sync.getDestinationConnectionImplementation());
+    targetConfig.setDestinationConnectionImplementation(sync.getDestinationConnectionImplementation());
     targetConfig.setStandardSync(sync.getStandardSync());
     return targetConfig;
   }
+
 }

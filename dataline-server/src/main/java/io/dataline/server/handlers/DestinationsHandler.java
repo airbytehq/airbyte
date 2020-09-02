@@ -35,6 +35,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class DestinationsHandler {
+
   private final ConfigPersistence configPersistence;
 
   public DestinationsHandler(ConfigPersistence configPersistence) {
@@ -67,4 +68,5 @@ public class DestinationsHandler {
 
     return destinationRead;
   }
+
 }

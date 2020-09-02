@@ -43,13 +43,17 @@ public class Jsons {
     }
   }
 
-  public static String serializeJsonNode(final JsonNode jsonNode) {
-    return jsonNode.toString();
-  }
-
   public static <T> T deserialize(final String jsonString, final Class<T> klass) {
     try {
       return OBJECT_MAPPER.readValue(jsonString, klass);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static JsonNode deserialize(final String jsonString) {
+    try {
+      return OBJECT_MAPPER.readTree(jsonString);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -63,15 +67,16 @@ public class Jsons {
     }
   }
 
-  public static JsonNode deserialize(final String jsonString) {
+  public static Optional<JsonNode> tryDeserialize(final String jsonString) {
     try {
-      return OBJECT_MAPPER.readTree(jsonString);
+      return Optional.of(OBJECT_MAPPER.readTree(jsonString));
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      return Optional.empty();
     }
   }
 
   public static <T> JsonNode jsonNode(final T object) {
     return OBJECT_MAPPER.valueToTree(object);
   }
+
 }

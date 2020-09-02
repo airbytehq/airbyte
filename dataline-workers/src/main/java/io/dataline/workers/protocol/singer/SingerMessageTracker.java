@@ -24,35 +24,30 @@
 
 package io.dataline.workers.protocol.singer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.config.SingerMessage;
-import io.dataline.config.State;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class SingerMessageTracker implements Consumer<SingerMessage> {
-  private final AtomicLong recordCount;
-  private final AtomicReference<State> outputState;
-  private final UUID connectionId;
 
-  public SingerMessageTracker(UUID connectionId) {
-    this.connectionId = connectionId;
+  private final AtomicLong recordCount;
+  private final AtomicReference<JsonNode> outputState;
+
+  public SingerMessageTracker() {
     this.recordCount = new AtomicLong();
     this.outputState = new AtomicReference<>();
   }
 
   @Override
-  public void accept(SingerMessage record) {
-    if (record.getType().equals(SingerMessage.Type.RECORD)) {
+  public void accept(SingerMessage message) {
+    if (message.getType().equals(SingerMessage.Type.RECORD)) {
       recordCount.incrementAndGet();
     }
-    if (record.getType().equals(SingerMessage.Type.STATE)) {
-      final State state = new State();
-      state.setConnectionId(connectionId);
-      state.setState(record);
-      outputState.set(state);
+    if (message.getType().equals(SingerMessage.Type.STATE)) {
+      outputState.set(message.getValue());
     }
   }
 
@@ -60,7 +55,8 @@ public class SingerMessageTracker implements Consumer<SingerMessage> {
     return recordCount.get();
   }
 
-  public Optional<State> getOutputState() {
+  public Optional<JsonNode> getOutputState() {
     return Optional.ofNullable(outputState.get());
   }
+
 }

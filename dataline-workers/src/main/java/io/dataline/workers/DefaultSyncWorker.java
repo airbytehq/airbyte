@@ -25,12 +25,14 @@
 package io.dataline.workers;
 
 import io.dataline.commons.functional.CloseableConsumer;
+import io.dataline.commons.io.IOs;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
+import io.dataline.config.State;
 import io.dataline.workers.protocol.singer.SingerMessageTracker;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultSyncWorker implements SyncWorker {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSyncWorker.class);
 
   public static final String TAP_ERR_LOG = "tap_err.log";
@@ -49,9 +52,8 @@ public class DefaultSyncWorker implements SyncWorker {
 
   private final AtomicBoolean cancelled;
 
-  public DefaultSyncWorker(
-      TapFactory<SingerMessage> singerTapFactory,
-      TargetFactory<SingerMessage> singerTargetFactory) {
+  public DefaultSyncWorker(TapFactory<SingerMessage> singerTapFactory,
+                           TargetFactory<SingerMessage> singerTargetFactory) {
     this.singerTapFactory = singerTapFactory;
     this.singerTargetFactory = singerTargetFactory;
     this.cancelled = new AtomicBoolean(false);
@@ -64,20 +66,18 @@ public class DefaultSyncWorker implements SyncWorker {
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
     final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
 
-    final SingerMessageTracker singerMessageTracker =
-        new SingerMessageTracker(syncInput.getStandardSync().getConnectionId());
+    final SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
 
     try (Stream<SingerMessage> tap = singerTapFactory.create(tapConfig, jobRoot);
-        CloseableConsumer<SingerMessage> consumer =
-            singerTargetFactory.create(targetConfig, jobRoot)) {
+        CloseableConsumer<SingerMessage> consumer = singerTargetFactory.create(targetConfig, jobRoot)) {
 
       tap.takeWhile(record -> !cancelled.get()).peek(singerMessageTracker).forEach(consumer);
 
     } catch (Exception e) {
       LOGGER.debug(
           "Sync worker failed. Tap error log: {}.\n Target error log: {}",
-          WorkerUtils.readFileFromWorkspace(jobRoot, TAP_ERR_LOG),
-          WorkerUtils.readFileFromWorkspace(jobRoot, TARGET_ERR_LOG));
+          IOs.readFile(jobRoot, TAP_ERR_LOG),
+          IOs.readFile(jobRoot, TARGET_ERR_LOG));
 
       return new OutputAndStatus<>(JobStatus.FAILED, null);
     }
@@ -89,7 +89,12 @@ public class DefaultSyncWorker implements SyncWorker {
 
     final StandardSyncOutput output = new StandardSyncOutput();
     output.setStandardSyncSummary(summary);
-    singerMessageTracker.getOutputState().ifPresent(output::setState);
+    singerMessageTracker.getOutputState().ifPresent(singerState -> {
+      final State state = new State();
+      state.setConnectionId(tapConfig.getStandardSync().getConnectionId());
+      state.setState(singerState);
+      output.setState(state);
+    });
 
     return new OutputAndStatus<>(cancelled.get() ? JobStatus.FAILED : JobStatus.SUCCESSFUL, output);
   }
@@ -98,4 +103,5 @@ public class DefaultSyncWorker implements SyncWorker {
   public void cancel() {
     cancelled.set(true);
   }
+
 }

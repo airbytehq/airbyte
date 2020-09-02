@@ -42,17 +42,16 @@ public class Job {
   private final String stdoutPath;
   private final String stderrPath;
 
-  public Job(
-      long id,
-      String scope,
-      JobStatus status,
-      JobConfig config,
-      @Nullable JobOutput output,
-      String stdoutPath,
-      String stderrPath,
-      long createdAt,
-      @Nullable Long startedAt,
-      long updatedAt) {
+  public Job(long id,
+             String scope,
+             JobStatus status,
+             JobConfig config,
+             @Nullable JobOutput output,
+             String stdoutPath,
+             String stderrPath,
+             long createdAt,
+             @Nullable Long startedAt,
+             long updatedAt) {
     this.id = id;
     this.scope = scope;
     this.status = status;
@@ -134,4 +133,5 @@ public class Job {
         + '\''
         + '}';
   }
+
 }

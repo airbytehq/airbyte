@@ -31,35 +31,46 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
+import io.dataline.api.model.ConnectionRead;
+import io.dataline.api.model.ConnectionReadList;
+import io.dataline.api.model.ConnectionStatus;
+import io.dataline.api.model.ConnectionUpdate;
 import io.dataline.api.model.SourceImplementationCreate;
 import io.dataline.api.model.SourceImplementationIdRequestBody;
 import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.api.model.SourceImplementationReadList;
 import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
-import io.dataline.commons.json.Jsons;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.SourceConnectionSpecification;
+import io.dataline.config.StandardSource;
+import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.server.helpers.ConnectionHelpers;
+import io.dataline.server.helpers.SourceHelpers;
 import io.dataline.server.helpers.SourceImplementationHelpers;
 import io.dataline.server.helpers.SourceSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SourceImplementationsHandlerTest {
+
   private ConfigPersistence configPersistence;
+  private StandardSource standardSource;
   private SourceConnectionSpecification sourceConnectionSpecification;
   private SourceConnectionImplementation sourceConnectionImplementation;
   private SourceImplementationsHandler sourceImplementationsHandler;
   private IntegrationSchemaValidation validator;
+  private ConnectionsHandler connectionsHandler;
   private Supplier<UUID> uuidGenerator;
 
   @SuppressWarnings("unchecked")
@@ -67,15 +78,15 @@ class SourceImplementationsHandlerTest {
   void setUp() throws IOException {
     configPersistence = mock(ConfigPersistence.class);
     validator = mock(IntegrationSchemaValidation.class);
+    connectionsHandler = mock(ConnectionsHandler.class);
     uuidGenerator = mock(Supplier.class);
 
-    sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
+    standardSource = SourceHelpers.generateSource();
+    sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification(standardSource.getSourceId());
     sourceConnectionImplementation =
-        SourceImplementationHelpers.generateSourceImplementation(
-            sourceConnectionSpecification.getSourceSpecificationId());
+        SourceImplementationHelpers.generateSourceImplementation(sourceConnectionSpecification.getSourceSpecificationId());
 
-    sourceImplementationsHandler =
-        new SourceImplementationsHandler(configPersistence, validator, uuidGenerator);
+    sourceImplementationsHandler = new SourceImplementationsHandler(configPersistence, validator, connectionsHandler, uuidGenerator);
   }
 
   @Test
@@ -85,30 +96,34 @@ class SourceImplementationsHandlerTest {
         .thenReturn(sourceConnectionImplementation.getSourceImplementationId());
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-            sourceConnectionImplementation.getSourceImplementationId().toString(),
-            SourceConnectionImplementation.class))
-        .thenReturn(sourceConnectionImplementation);
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
+        sourceConnectionImplementation.getSourceImplementationId().toString(),
+        SourceConnectionImplementation.class))
+            .thenReturn(sourceConnectionImplementation);
+
+    when(configPersistence.getConfig(
+        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
+        sourceConnectionSpecification.getSourceSpecificationId().toString(),
+        SourceConnectionSpecification.class))
+            .thenReturn(sourceConnectionSpecification);
+
+    when(configPersistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE,
+        sourceConnectionSpecification.getSourceId().toString(),
+        StandardSource.class))
+            .thenReturn(standardSource);
 
     final SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate();
     sourceImplementationCreate.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
-    sourceImplementationCreate.setSourceSpecificationId(
-        sourceConnectionSpecification.getSourceSpecificationId());
-    sourceImplementationCreate.setConnectionConfiguration(
-        SourceImplementationHelpers.getTestImplementationJson().toString());
+    sourceImplementationCreate.setSourceSpecificationId(sourceConnectionSpecification.getSourceSpecificationId());
+    sourceImplementationCreate.setConnectionConfiguration(SourceImplementationHelpers.getTestImplementationJson());
 
     final SourceImplementationRead actualSourceImplementationRead =
         sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
 
-    SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
-    expectedSourceImplementationRead.setSourceSpecificationId(
-        sourceConnectionSpecification.getSourceSpecificationId());
-    expectedSourceImplementationRead.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceImplementationRead.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceImplementationRead.setConnectionConfiguration(
-        SourceImplementationHelpers.getTestImplementationJson().toString());
+    SourceImplementationRead expectedSourceImplementationRead =
+        SourceImplementationHelpers.getSourceImplementationRead(sourceConnectionImplementation, standardSource);
+    expectedSourceImplementationRead.setConnectionConfiguration(SourceImplementationHelpers.getTestImplementationJson());
 
     assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead);
 
@@ -119,82 +134,88 @@ class SourceImplementationsHandlerTest {
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+            ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
             sourceConnectionImplementation.getSourceImplementationId().toString(),
             sourceConnectionImplementation);
   }
 
   @Test
-  void testUpdateSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
-    final Object configuration = sourceConnectionImplementation.getConfiguration();
-    final JsonNode newConfiguration = Jsons.deserialize(configuration.toString());
+  void testUpdateSourceImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final JsonNode newConfiguration = sourceConnectionImplementation.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
         new SourceConnectionImplementation();
-    expectedSourceConnectionImplementation.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceConnectionImplementation.setSourceSpecificationId(
-        sourceConnectionImplementation.getSourceSpecificationId());
-    expectedSourceConnectionImplementation.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceConnectionImplementation.setConfiguration(newConfiguration.toString());
+    expectedSourceConnectionImplementation.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
+    expectedSourceConnectionImplementation.setSourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId());
+    expectedSourceConnectionImplementation.setSourceImplementationId(sourceConnectionImplementation.getSourceImplementationId());
+    expectedSourceConnectionImplementation.setConfiguration(newConfiguration);
     expectedSourceConnectionImplementation.setTombstone(false);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-            sourceConnectionImplementation.getSourceImplementationId().toString(),
-            SourceConnectionImplementation.class))
-        .thenReturn(sourceConnectionImplementation)
-        .thenReturn(expectedSourceConnectionImplementation);
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
+        sourceConnectionImplementation.getSourceImplementationId().toString(),
+        SourceConnectionImplementation.class))
+            .thenReturn(sourceConnectionImplementation)
+            .thenReturn(expectedSourceConnectionImplementation);
+
+    when(configPersistence.getConfig(
+        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
+        sourceConnectionSpecification.getSourceSpecificationId().toString(),
+        SourceConnectionSpecification.class))
+            .thenReturn(sourceConnectionSpecification);
+
+    when(configPersistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE,
+        sourceConnectionSpecification.getSourceId().toString(),
+        StandardSource.class))
+            .thenReturn(standardSource);
 
     final SourceImplementationUpdate sourceImplementationUpdate = new SourceImplementationUpdate();
     sourceImplementationUpdate.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
-    sourceImplementationUpdate.setConnectionConfiguration(newConfiguration.toString());
+    sourceImplementationUpdate.setConnectionConfiguration(newConfiguration);
     final SourceImplementationRead actualSourceImplementationRead =
         sourceImplementationsHandler.updateSourceImplementation(sourceImplementationUpdate);
 
-    SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
-    expectedSourceImplementationRead.setSourceSpecificationId(
-        sourceConnectionSpecification.getSourceSpecificationId());
-    expectedSourceImplementationRead.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceImplementationRead.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceImplementationRead.setConnectionConfiguration(newConfiguration.toString());
+    SourceImplementationRead expectedSourceImplementationRead =
+        SourceImplementationHelpers.getSourceImplementationRead(sourceConnectionImplementation, standardSource);
+    expectedSourceImplementationRead.setConnectionConfiguration(newConfiguration);
 
     assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead);
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+            ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
             sourceConnectionImplementation.getSourceImplementationId().toString(),
             expectedSourceConnectionImplementation);
   }
 
   @Test
-  void testGetSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
+  void testGetSourceImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-            sourceConnectionImplementation.getSourceImplementationId().toString(),
-            SourceConnectionImplementation.class))
-        .thenReturn(sourceConnectionImplementation);
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
+        sourceConnectionImplementation.getSourceImplementationId().toString(),
+        SourceConnectionImplementation.class))
+            .thenReturn(sourceConnectionImplementation);
 
-    SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
-    expectedSourceImplementationRead.setSourceSpecificationId(
-        sourceConnectionImplementation.getSourceSpecificationId());
-    expectedSourceImplementationRead.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceImplementationRead.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceImplementationRead.setConnectionConfiguration(
-        sourceConnectionImplementation.getConfiguration());
+    when(configPersistence.getConfig(
+        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
+        sourceConnectionSpecification.getSourceSpecificationId().toString(),
+        SourceConnectionSpecification.class))
+            .thenReturn(sourceConnectionSpecification);
 
-    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody =
-        new SourceImplementationIdRequestBody();
-    sourceImplementationIdRequestBody.setSourceImplementationId(
-        expectedSourceImplementationRead.getSourceImplementationId());
+    when(configPersistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE,
+        sourceConnectionSpecification.getSourceId().toString(),
+        StandardSource.class))
+            .thenReturn(standardSource);
+
+    SourceImplementationRead expectedSourceImplementationRead =
+        SourceImplementationHelpers.getSourceImplementationRead(sourceConnectionImplementation, standardSource);
+
+    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody();
+    sourceImplementationIdRequestBody.setSourceImplementationId(expectedSourceImplementationRead.getSourceImplementationId());
 
     final SourceImplementationRead actualSourceImplementationRead =
         sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
@@ -203,21 +224,27 @@ class SourceImplementationsHandlerTest {
   }
 
   @Test
-  void testListSourceImplementationsForWorkspace() throws JsonValidationException {
-    when(configPersistence.getConfigs(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-            SourceConnectionImplementation.class))
-        .thenReturn(Sets.newHashSet(sourceConnectionImplementation));
+  void testListSourceImplementationsForWorkspace()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configPersistence.listConfigs(
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
+        SourceConnectionImplementation.class))
+            .thenReturn(Lists.newArrayList(sourceConnectionImplementation));
 
-    SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
-    expectedSourceImplementationRead.setSourceSpecificationId(
-        sourceConnectionImplementation.getSourceSpecificationId());
-    expectedSourceImplementationRead.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceImplementationRead.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceImplementationRead.setConnectionConfiguration(
-        sourceConnectionImplementation.getConfiguration());
+    when(configPersistence.getConfig(
+        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
+        sourceConnectionSpecification.getSourceSpecificationId().toString(),
+        SourceConnectionSpecification.class))
+            .thenReturn(sourceConnectionSpecification);
+
+    when(configPersistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE,
+        sourceConnectionSpecification.getSourceId().toString(),
+        StandardSource.class))
+            .thenReturn(standardSource);
+
+    SourceImplementationRead expectedSourceImplementationRead =
+        SourceImplementationHelpers.getSourceImplementationRead(sourceConnectionImplementation, standardSource);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
@@ -225,55 +252,72 @@ class SourceImplementationsHandlerTest {
     final SourceImplementationReadList actualSourceImplementationRead =
         sourceImplementationsHandler.listSourceImplementationsForWorkspace(workspaceIdRequestBody);
 
-    assertEquals(
-        expectedSourceImplementationRead, actualSourceImplementationRead.getSources().get(0));
+    assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead.getSources().get(0));
   }
 
   @Test
-  void testDeleteSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
-    final Object configuration = sourceConnectionImplementation.getConfiguration();
-    final JsonNode newConfiguration = Jsons.deserialize(configuration.toString());
+  void testDeleteSourceImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final JsonNode newConfiguration = sourceConnectionImplementation.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
         new SourceConnectionImplementation();
-    expectedSourceConnectionImplementation.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceConnectionImplementation.setSourceSpecificationId(
-        sourceConnectionImplementation.getSourceSpecificationId());
-    expectedSourceConnectionImplementation.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceConnectionImplementation.setConfiguration(
-        sourceConnectionImplementation.getConfiguration());
+    expectedSourceConnectionImplementation.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
+    expectedSourceConnectionImplementation.setSourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId());
+    expectedSourceConnectionImplementation.setSourceImplementationId(sourceConnectionImplementation.getSourceImplementationId());
+    expectedSourceConnectionImplementation.setConfiguration(sourceConnectionImplementation.getConfiguration());
     expectedSourceConnectionImplementation.setTombstone(true);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
-            sourceConnectionImplementation.getSourceImplementationId().toString(),
-            SourceConnectionImplementation.class))
-        .thenReturn(sourceConnectionImplementation)
-        .thenReturn(expectedSourceConnectionImplementation);
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
+        sourceConnectionImplementation.getSourceImplementationId().toString(),
+        SourceConnectionImplementation.class))
+            .thenReturn(sourceConnectionImplementation)
+            .thenReturn(expectedSourceConnectionImplementation);
+
+    when(configPersistence.getConfig(
+        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
+        sourceConnectionSpecification.getSourceSpecificationId().toString(),
+        SourceConnectionSpecification.class))
+            .thenReturn(sourceConnectionSpecification);
+
+    when(configPersistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE,
+        sourceConnectionSpecification.getSourceId().toString(),
+        StandardSource.class))
+            .thenReturn(standardSource);
 
     final SourceImplementationIdRequestBody sourceImplementationIdRequestBody =
         new SourceImplementationIdRequestBody();
     sourceImplementationIdRequestBody.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
 
-    sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
+    final StandardSync standardSync =
+        ConnectionHelpers.generateSync(sourceConnectionImplementation.getSourceImplementationId());
+    ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
 
-    SourceImplementationRead expectedSourceImplementationRead = new SourceImplementationRead();
-    expectedSourceImplementationRead.setSourceSpecificationId(
-        sourceConnectionSpecification.getSourceSpecificationId());
-    expectedSourceImplementationRead.setWorkspaceId(
-        sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceImplementationRead.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceImplementationRead.setConnectionConfiguration(newConfiguration.toString());
+    ConnectionReadList connectionReadList = new ConnectionReadList();
+    connectionReadList.setConnections(Collections.singletonList(connectionRead));
+
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
+    workspaceIdRequestBody.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
+    when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
+    sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+            ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
             sourceConnectionImplementation.getSourceImplementationId().toString(),
             expectedSourceConnectionImplementation);
+
+    final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate();
+    expectedConnectionUpdate.setConnectionId(connectionRead.getConnectionId());
+    expectedConnectionUpdate.setStatus(ConnectionStatus.DEPRECATED);
+    expectedConnectionUpdate.setSyncSchema(connectionRead.getSyncSchema());
+    expectedConnectionUpdate.setSchedule(connectionRead.getSchedule());
+
+    verify(connectionsHandler).listConnectionsForWorkspace(workspaceIdRequestBody);
+    verify(connectionsHandler).updateConnection(expectedConnectionUpdate);
   }
+
 }

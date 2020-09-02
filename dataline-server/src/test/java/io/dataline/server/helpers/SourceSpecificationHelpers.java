@@ -24,7 +24,6 @@
 
 package io.dataline.server.helpers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.SourceConnectionSpecification;
 import java.io.IOException;
@@ -36,20 +35,20 @@ import java.util.UUID;
 public class SourceSpecificationHelpers {
 
   public static SourceConnectionSpecification generateSourceSpecification() throws IOException {
-    final UUID sourceId = UUID.randomUUID();
+    return generateSourceSpecification(UUID.randomUUID());
+  }
+
+  public static SourceConnectionSpecification generateSourceSpecification(UUID sourceId) throws IOException {
     final UUID sourceSpecificationId = UUID.randomUUID();
 
-    final Path path =
-        Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
+    final Path path = Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
 
-    JsonNode specificationJson = Jsons.deserialize(Files.readString(path));
-
-    final SourceConnectionSpecification sourceConnectionSpecification =
-        new SourceConnectionSpecification();
+    final SourceConnectionSpecification sourceConnectionSpecification = new SourceConnectionSpecification();
     sourceConnectionSpecification.setSourceId(sourceId);
     sourceConnectionSpecification.setSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionSpecification.setSpecification(specificationJson.toString());
+    sourceConnectionSpecification.setSpecification(Jsons.deserialize(Files.readString(path)));
 
     return sourceConnectionSpecification;
   }
+
 }

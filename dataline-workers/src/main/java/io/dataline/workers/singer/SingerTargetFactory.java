@@ -24,18 +24,19 @@
 
 package io.dataline.workers.singer;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import io.dataline.commons.functional.CloseableConsumer;
+import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.TargetConsumer;
 import io.dataline.workers.TargetFactory;
-import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import org.slf4j.Logger;
@@ -45,7 +46,8 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerTargetFactory.class);
 
-  private static final String CONFIG_JSON_FILENAME = "target_config.json";
+  @VisibleForTesting
+  static final String CONFIG_JSON_FILENAME = "target_config.json";
 
   private final String imageName;
   private final ProcessBuilderFactory pbf;
@@ -57,12 +59,10 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
 
   @Override
   public CloseableConsumer<SingerMessage> create(StandardTargetConfig targetConfig, Path jobRoot) {
-    final String configDotJson =
-        Jsons.serialize(targetConfig.getDestinationConnectionImplementation().getConfiguration());
+    final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
 
     // write config.json to disk
-    Path configPath =
-        WorkerUtils.writeFileToWorkspace(jobRoot, CONFIG_JSON_FILENAME, configDotJson);
+    Path configPath = IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
       final Process targetProcess =
@@ -70,16 +70,12 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
               .redirectError(jobRoot.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile())
               .start();
 
-      try (BufferedWriter writer =
-          new BufferedWriter(
-              new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8))) {
-
-        return new TargetConsumer(writer, targetProcess);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      // the TargetConsumer is responsible for closing this.
+      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));
+      return new TargetConsumer(writer, targetProcess);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
+
 }

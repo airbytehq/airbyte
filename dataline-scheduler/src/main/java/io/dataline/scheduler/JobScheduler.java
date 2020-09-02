@@ -30,8 +30,8 @@ import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigPersistence;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -46,10 +46,9 @@ public class JobScheduler implements Runnable {
   private final SchedulerPersistence schedulerPersistence;
   private final ConfigPersistence configPersistence;
 
-  public JobScheduler(
-      BasicDataSource connectionPool,
-      SchedulerPersistence schedulerPersistence,
-      ConfigPersistence configPersistence) {
+  public JobScheduler(BasicDataSource connectionPool,
+                      SchedulerPersistence schedulerPersistence,
+                      ConfigPersistence configPersistence) {
     this.connectionPool = connectionPool;
     this.schedulerPersistence = schedulerPersistence;
     this.configPersistence = configPersistence;
@@ -68,8 +67,7 @@ public class JobScheduler implements Runnable {
   }
 
   private void scheduleSyncJobs() throws IOException {
-    Set<StandardSync> activeConnections = getAllActiveConnections();
-    for (StandardSync connection : activeConnections) {
+    for (StandardSync connection : getAllActiveConnections()) {
       Optional<Job> lastJob =
           JobUtils.getLastSyncJobForConnectionId(connectionPool, connection.getConnectionId());
 
@@ -102,7 +100,7 @@ public class JobScheduler implements Runnable {
               schedulerPersistence, configPersistence, connectionId);
         }
         break;
-        // todo (cgardens) - add max retry concept
+      // todo (cgardens) - add max retry concept
       case FAILED:
         JobUtils.createSyncJobFromConnectionId(
             schedulerPersistence, configPersistence, connectionId);
@@ -135,7 +133,8 @@ public class JobScheduler implements Runnable {
     return getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
   }
 
-  private Set<StandardSync> getAllActiveConnections() {
+  private List<StandardSync> getAllActiveConnections() {
     return ConfigFetchers.getStandardSyncs(configPersistence);
   }
+
 }

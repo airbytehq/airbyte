@@ -25,8 +25,10 @@
 package io.dataline.server.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.StandardSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,8 +37,8 @@ import java.util.UUID;
 
 public class SourceImplementationHelpers {
 
-  public static SourceConnectionImplementation generateSourceImplementation(
-      UUID sourceSpecificationId) throws IOException {
+  public static SourceConnectionImplementation generateSourceImplementation(UUID sourceSpecificationId)
+      throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
 
@@ -47,7 +49,7 @@ public class SourceImplementationHelpers {
     sourceConnectionImplementation.setWorkspaceId(workspaceId);
     sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
     sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setConfiguration(implementationJson.toString());
+    sourceConnectionImplementation.setConfiguration(implementationJson);
     sourceConnectionImplementation.setTombstone(false);
 
     return sourceConnectionImplementation;
@@ -58,4 +60,18 @@ public class SourceImplementationHelpers {
         Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
     return Jsons.deserialize(Files.readString(path));
   }
+
+  public static SourceImplementationRead getSourceImplementationRead(SourceConnectionImplementation sourceImplementation,
+                                                                     StandardSource standardSource) {
+    SourceImplementationRead sourceImplementationRead = new SourceImplementationRead();
+    sourceImplementationRead.setSourceId(standardSource.getSourceId());
+    sourceImplementationRead.setWorkspaceId(sourceImplementation.getWorkspaceId());
+    sourceImplementationRead.setSourceSpecificationId(sourceImplementation.getSourceSpecificationId());
+    sourceImplementationRead.setSourceImplementationId(sourceImplementation.getSourceImplementationId());
+    sourceImplementationRead.setConnectionConfiguration(sourceImplementation.getConfiguration());
+    sourceImplementationRead.setSourceName(standardSource.getName());
+
+    return sourceImplementationRead;
+  }
+
 }

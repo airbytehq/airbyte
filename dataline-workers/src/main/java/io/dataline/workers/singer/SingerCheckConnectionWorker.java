@@ -29,39 +29,36 @@ import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.CheckConnectionWorker;
+import io.dataline.workers.DiscoverSchemaWorker;
+import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerCheckConnectionWorker
-    extends BaseSingerWorker<StandardCheckConnectionInput, StandardCheckConnectionOutput>
-    implements CheckConnectionWorker {
+public class SingerCheckConnectionWorker implements CheckConnectionWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerCheckConnectionWorker.class);
 
-  private final SingerDiscoverSchemaWorker singerDiscoverSchemaWorker;
+  private final DiscoverSchemaWorker discoverSchemaWorker;
 
-  public SingerCheckConnectionWorker(final String imageName, final ProcessBuilderFactory pbf) {
-    this.singerDiscoverSchemaWorker = new SingerDiscoverSchemaWorker(imageName, pbf);
+  public SingerCheckConnectionWorker(DiscoverSchemaWorker discoverSchemaWorker) {
+    this.discoverSchemaWorker = discoverSchemaWorker;
   }
 
   @Override
-  public OutputAndStatus<StandardCheckConnectionOutput> run(
-      StandardCheckConnectionInput input, Path jobRoot) throws InvalidCredentialsException {
+  public OutputAndStatus<StandardCheckConnectionOutput> run(StandardCheckConnectionInput input, Path jobRoot)
+      throws InvalidCredentialsException, InvalidCatalogException {
 
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
     discoverSchemaInput.setConnectionConfiguration(input.getConnectionConfiguration());
 
-    OutputAndStatus<StandardDiscoverSchemaOutput> outputAndStatus =
-        singerDiscoverSchemaWorker.run(discoverSchemaInput, jobRoot);
+    OutputAndStatus<StandardDiscoverSchemaOutput> outputAndStatus = discoverSchemaWorker.run(discoverSchemaInput, jobRoot);
     StandardCheckConnectionOutput output = new StandardCheckConnectionOutput();
     JobStatus jobStatus;
-    if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL
-        && outputAndStatus.getOutput().isPresent()) {
+    if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL && outputAndStatus.getOutput().isPresent()) {
       output.setStatus(StandardCheckConnectionOutput.Status.SUCCESS);
       jobStatus = JobStatus.SUCCESSFUL;
     } else {
@@ -77,6 +74,7 @@ public class SingerCheckConnectionWorker
 
   @Override
   public void cancel() {
-    singerDiscoverSchemaWorker.cancel();
+    discoverSchemaWorker.cancel();
   }
+
 }

@@ -27,6 +27,7 @@ package io.dataline.scheduler;
 import io.dataline.config.JobConfig;
 
 public class ScopeHelper {
+
   public static String createScope(JobConfig.ConfigType configType, String configId) {
     return configType.value() + ":" + configId;
   }
@@ -34,4 +35,5 @@ public class ScopeHelper {
   public static String getConfigId(String scope) {
     return scope.split(":")[1];
   }
+
 }

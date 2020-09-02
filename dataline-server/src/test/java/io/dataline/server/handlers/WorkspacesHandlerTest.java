@@ -33,17 +33,19 @@ import io.dataline.api.model.SlugRequestBody;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.StandardWorkspace;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.config.persistence.PersistenceConstants;
+import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class WorkspacesHandlerTest {
+
   private ConfigPersistence configPersistence;
   private StandardWorkspace workspace;
   private WorkspacesHandler workspacesHandler;
@@ -69,12 +71,12 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException {
+  void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_WORKSPACE,
-            workspace.getWorkspaceId().toString(),
-            StandardWorkspace.class))
-        .thenReturn(workspace);
+        ConfigSchema.STANDARD_WORKSPACE,
+        workspace.getWorkspaceId().toString(),
+        StandardWorkspace.class))
+            .thenReturn(workspace);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(workspace.getWorkspaceId());
@@ -89,12 +91,12 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException {
+  void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_WORKSPACE,
-            workspace.getWorkspaceId().toString(),
-            StandardWorkspace.class))
-        .thenReturn(workspace);
+        ConfigSchema.STANDARD_WORKSPACE,
+        workspace.getWorkspaceId().toString(),
+        StandardWorkspace.class))
+            .thenReturn(workspace);
 
     final SlugRequestBody slugRequestBody = new SlugRequestBody();
     slugRequestBody.setSlug("default");
@@ -109,7 +111,7 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testUpdateWorkspace() throws JsonValidationException, ConfigNotFoundException {
+  void testUpdateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
 
     final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate();
     workspaceUpdate.setWorkspaceId(workspace.getWorkspaceId());
@@ -129,11 +131,11 @@ class WorkspacesHandlerTest {
     expectedWorkspace.setInitialSetupComplete(true);
 
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_WORKSPACE,
-            workspace.getWorkspaceId().toString(),
-            StandardWorkspace.class))
-        .thenReturn(workspace)
-        .thenReturn(expectedWorkspace);
+        ConfigSchema.STANDARD_WORKSPACE,
+        workspace.getWorkspaceId().toString(),
+        StandardWorkspace.class))
+            .thenReturn(workspace)
+            .thenReturn(expectedWorkspace);
 
     final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
 
@@ -145,10 +147,11 @@ class WorkspacesHandlerTest {
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.STANDARD_WORKSPACE,
+            ConfigSchema.STANDARD_WORKSPACE,
             expectedWorkspace.getWorkspaceId().toString(),
             expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
+
 }

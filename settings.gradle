@@ -2,21 +2,14 @@ rootProject.name = 'dataline'
 
 include 'dataline-api'
 include 'dataline-commons'
-include 'dataline-config'
-include 'dataline-config-init'
-include 'dataline-config-persistence'
+include ':dataline-config:models'
+include ':dataline-config:init'
+include ':dataline-config:persistence'
 include 'dataline-db'
 include 'dataline-integrations'
 include 'dataline-scheduler'
 include 'dataline-server'
 include 'dataline-webapp'
 include 'dataline-workers'
-
-Properties env = new Properties()
-File envFile = file(".env.integration-tests")
-envFile.withInputStream { env.load(it) }
-
-if (env.containsKey("INTEGRATION_TESTS")) {
-    include 'dataline-integration-tests'
-}
-
+include 'dataline-integration-tests'
+include 'dataline-tests'

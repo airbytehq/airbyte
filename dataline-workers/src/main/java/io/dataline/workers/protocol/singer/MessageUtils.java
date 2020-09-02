@@ -25,6 +25,7 @@
 package io.dataline.workers.protocol.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
@@ -36,14 +37,16 @@ import java.util.Optional;
 
 public class MessageUtils {
 
-  private static final DateTimeFormatter SINGER_DATETIME_FORMATTER =
+  @VisibleForTesting
+  static final DateTimeFormatter SINGER_DATETIME_FORMATTER =
       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.of("UTC"));
 
-  public static SingerMessage createRecordMessage(
-      String tableName, JsonNode record, Instant timeExtracted) {
+  public static SingerMessage createRecordMessage(String tableName,
+                                                  JsonNode record,
+                                                  Instant timeExtracted) {
     final SingerMessage singerMessage = new SingerMessage();
     singerMessage.setType(SingerMessage.Type.RECORD);
-    singerMessage.setRecord(Jsons.serialize(record));
+    singerMessage.setRecord(record);
     singerMessage.setStream(tableName);
 
     Optional.ofNullable(timeExtracted)
@@ -60,4 +63,5 @@ public class MessageUtils {
   public static SingerMessage createRecordMessage(String tableName, Map<String, String> record) {
     return createRecordMessage(tableName, Jsons.jsonNode(record), null);
   }
+
 }

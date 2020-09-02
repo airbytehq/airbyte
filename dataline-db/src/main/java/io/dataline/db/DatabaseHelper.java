@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DatabaseHelper {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseHelper.class);
 
   public static BasicDataSource getConnectionPoolFromEnv() {
@@ -43,8 +44,9 @@ public class DatabaseHelper {
         System.getenv("DATABASE_URL"));
   }
 
-  public static BasicDataSource getConnectionPool(
-      String username, String password, String jdbcConnectionString) {
+  public static BasicDataSource getConnectionPool(String username,
+                                                  String password,
+                                                  String jdbcConnectionString) {
 
     BasicDataSource connectionPool = new BasicDataSource();
     connectionPool.setDriverClassName("org.postgresql.Driver");
@@ -67,8 +69,8 @@ public class DatabaseHelper {
     }
   }
 
-  public static void execute(
-      BasicDataSource connectionPool, ContextExecutionFunction executionFunction)
+  public static void execute(BasicDataSource connectionPool,
+                             ContextExecutionFunction executionFunction)
       throws SQLException {
     query(
         connectionPool,
@@ -77,4 +79,5 @@ public class DatabaseHelper {
           return 1;
         });
   }
+
 }

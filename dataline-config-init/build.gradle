@@ -1,5 +1,0 @@
-// seed local directory with initial configurations.
-copy {
-    from 'src/main/resources'
-    into '../data'
-}

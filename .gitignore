@@ -4,4 +4,3 @@ build
 .DS_Store
 dataline-db/pg_data/*
 data
-.env.integration-tests

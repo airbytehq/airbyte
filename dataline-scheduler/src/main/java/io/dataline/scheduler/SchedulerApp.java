@@ -62,11 +62,10 @@ public class SchedulerApp {
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
 
-  public SchedulerApp(
-      BasicDataSource connectionPool,
-      Path configRoot,
-      Path workspaceRoot,
-      ProcessBuilderFactory pbf) {
+  public SchedulerApp(BasicDataSource connectionPool,
+                      Path configRoot,
+                      Path workspaceRoot,
+                      ProcessBuilderFactory pbf) {
     this.connectionPool = connectionPool;
     this.configRoot = configRoot;
     this.workspaceRoot = workspaceRoot;
@@ -119,4 +118,5 @@ public class SchedulerApp {
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(connectionPool, configRoot, workspaceRoot, pbf).start();
   }
+
 }

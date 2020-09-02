@@ -29,21 +29,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceRead;
 import io.dataline.api.model.SourceReadList;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.StandardSource;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SourcesHandlerTest {
+
   private ConfigPersistence configPersistence;
   private StandardSource source;
   private SourcesHandler sourceHandler;
@@ -66,13 +68,13 @@ class SourcesHandlerTest {
   }
 
   @Test
-  void testListSources() throws JsonValidationException {
+  void testListSources() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardSource source2 = generateSource();
     configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_SOURCE, source2.getSourceId().toString(), source2);
+        ConfigSchema.STANDARD_SOURCE, source2.getSourceId().toString(), source2);
 
-    when(configPersistence.getConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class))
-        .thenReturn(Sets.newHashSet(source, source2));
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE, StandardSource.class))
+        .thenReturn(Lists.newArrayList(source, source2));
 
     SourceRead expectedSourceRead1 = new SourceRead();
     expectedSourceRead1.setSourceId(source.getSourceId());
@@ -100,12 +102,12 @@ class SourcesHandlerTest {
   }
 
   @Test
-  void testGetSource() throws JsonValidationException, ConfigNotFoundException {
+  void testGetSource() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_SOURCE,
-            source.getSourceId().toString(),
-            StandardSource.class))
-        .thenReturn(source);
+        ConfigSchema.STANDARD_SOURCE,
+        source.getSourceId().toString(),
+        StandardSource.class))
+            .thenReturn(source);
 
     SourceRead expectedSourceRead = new SourceRead();
     expectedSourceRead.setSourceId(source.getSourceId());
@@ -118,4 +120,5 @@ class SourcesHandlerTest {
 
     assertEquals(expectedSourceRead, actualSourceRead);
   }
+
 }

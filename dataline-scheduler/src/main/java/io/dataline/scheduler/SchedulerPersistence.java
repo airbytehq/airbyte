@@ -32,22 +32,29 @@ import java.io.IOException;
 import java.util.List;
 
 public interface SchedulerPersistence {
+
   long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation)
       throws IOException;
 
-  long createDestinationCheckConnectionJob(
-      DestinationConnectionImplementation destinationImplementation) throws IOException;
+  long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation)
+      throws IOException;
 
   long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation)
       throws IOException;
 
-  long createSyncJob(
-      SourceConnectionImplementation sourceImplementation,
-      DestinationConnectionImplementation destinationImplementation,
-      StandardSync standardSync)
+  long createSyncJob(SourceConnectionImplementation sourceImplementation,
+                     DestinationConnectionImplementation destinationImplementation,
+                     StandardSync standardSync)
       throws IOException;
 
   Job getJob(long jobId) throws IOException;
 
+  /**
+   * @param configType - type of config, e.g. sync
+   * @param configId - id of that config
+   * @return lists job in descending order by created_at
+   * @throws IOException - what you do when you IO
+   */
   List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException;
+
 }
