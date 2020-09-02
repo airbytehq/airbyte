@@ -589,29 +589,6 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-  /v1/web_backend/connections/list:
-    post:
-      tags:
-        - connection
-      summary: Returns all connections for a workspace.
-      operationId: webBackendListConnectionsForWorkspace
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WbConnectionReadList"
-        "404":
-          description: Workspace not found
-        "422":
-          $ref: "#/components/responses/InvalidInput"
   /v1/connections/sync:
     post:
       tags:
@@ -633,6 +610,29 @@ paths:
                 $ref: "#/components/schemas/ConnectionSyncRead"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/connections/list:
+    post:
+      tags:
+        - connection
+      summary: Returns all connections for a workspace.
+      operationId: webBackendListConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WbConnectionReadList"
+        "404":
+          description: Workspace not found
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/jobs/list:
