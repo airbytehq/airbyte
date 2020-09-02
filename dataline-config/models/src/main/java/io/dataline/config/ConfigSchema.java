@@ -24,45 +24,108 @@
 
 package io.dataline.config;
 
+import com.google.common.base.Preconditions;
+import com.google.common.io.Resources;
+import io.dataline.commons.io.IOs;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.apache.commons.io.IOUtils;
+
 public enum ConfigSchema {
 
   // workspace
-  STANDARD_WORKSPACE("StandardWorkspace.json"),
+  STANDARD_WORKSPACE("StandardWorkspace.json", StandardWorkspace.class),
 
   // source
-  STANDARD_SOURCE("StandardSource.json"),
-  SOURCE_CONNECTION_SPECIFICATION("SourceConnectionSpecification.json"),
-  SOURCE_CONNECTION_IMPLEMENTATION("SourceConnectionImplementation.json"),
+  STANDARD_SOURCE("StandardSource.json", StandardSource.class),
+  SOURCE_CONNECTION_SPECIFICATION("SourceConnectionSpecification.json", SourceConnectionSpecification.class),
+  SOURCE_CONNECTION_IMPLEMENTATION("SourceConnectionImplementation.json", SourceConnectionImplementation.class),
 
   // destination
-  STANDARD_DESTINATION("StandardDestination.json"),
-  DESTINATION_CONNECTION_SPECIFICATION("DestinationConnectionSpecification.json"),
-  DESTINATION_CONNECTION_IMPLEMENTATION("DestinationConnectionImplementation.json"),
-
-  // test connection
-  STANDARD_CONNECTION_STATUS("StandardConnectionStatus.json"),
-
-  // discover schema
-  STANDARD_DISCOVERY_OUTPUT("StandardDiscoveryOutput.json"),
+  STANDARD_DESTINATION("StandardDestination.json", StandardDestination.class),
+  DESTINATION_CONNECTION_SPECIFICATION("DestinationConnectionSpecification.json", DestinationConnectionSpecification.class),
+  DESTINATION_CONNECTION_IMPLEMENTATION("DestinationConnectionImplementation.json", DestinationConnectionImplementation.class),
 
   // sync
-  STANDARD_SYNC("StandardSync.json"),
-  STANDARD_SYNC_SUMMARY("StandardSyncSummary.json"),
-  STANDARD_SYNC_SCHEDULE("StandardSyncSchedule.json"),
-  STATE("State.json");
+  STANDARD_SYNC("StandardSync.json", StandardSync.class),
+  STANDARD_SYNC_SUMMARY("StandardSyncSummary.json", StandardSyncSummary.class),
+  STANDARD_SYNC_SCHEDULE("StandardSyncSchedule.json", StandardSyncSchedule.class),
+
+  STATE("State.json", State.class);
+
+  static final Path KNOWN_SCHEMAS_ROOT = prepareSchemas();
+  private static final String RESOURCE_DIR = "json";
+
+  /*
+   * JsonReferenceProcessor relies on all of the json in consumes being in a file system (not in a
+   * jar). This method copies all of the json configs out of the jar into a temporary directory so
+   * that JsonReferenceProcessor can find them.
+   */
+  @SuppressWarnings("UnstableApiUsage")
+  private static Path prepareSchemas() {
+    try {
+      final String rootedResourceDir = String.format("/%s", RESOURCE_DIR);
+      final URI uri = ConfigSchema.class.getResource(rootedResourceDir).toURI();
+
+      final FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
+
+      final List<String> filenames = Files.walk(fileSystem.getPath(rootedResourceDir), 1)
+          .map(p -> p.getFileName().toString())
+          .filter(p -> p.endsWith(".json"))
+          .collect(Collectors.toList());
+
+      final Path configRoot = Files.createTempDirectory("schemas");
+      for (String filename : filenames) {
+        final URL url = Resources.getResource(String.format("%s/%s", RESOURCE_DIR, filename));
+        IOs.writeFile(configRoot, filename, Resources.toString(url, StandardCharsets.UTF_8));
+      }
+
+      return configRoot;
+    } catch (IOException | URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static ConfigSchema valueOf(final Class<?> klass) {
+    Optional<ConfigSchema> res = Arrays.stream(ConfigSchema.values())
+        .filter(v -> v.getKlass() == klass)
+        .findFirst();
+
+    Preconditions.checkArgument(res.isPresent());
+    return res.get();
+  }
 
   private final String schemaFilename;
+  private final Class<?> klass;
 
-  ConfigSchema(String schemaFilename) {
+  ConfigSchema(final String schemaFilename, final Class<?> klass) {
     this.schemaFilename = schemaFilename;
+    this.klass = klass;
   }
 
-  public String getSchemaFilename() {
-    return schemaFilename;
+  public File getFile() {
+    return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
   }
 
-  public static String getSchemaDirectory() {
-    return "json/";
+  public Class<?> getKlass() {
+    return klass;
+  }
+
+  public static void main(String[] args) throws IOException {
+    System.out.println(IOUtils.readLines(ConfigSchema.class.getResourceAsStream("json/"), StandardCharsets.UTF_8));
   }
 
 }

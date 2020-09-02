@@ -28,10 +28,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceSpecificationRead;
 import io.dataline.config.SourceConnectionSpecification;
+import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
@@ -54,11 +55,11 @@ class SourceSpecificationsHandlerTest {
   }
 
   @Test
-  void testGetSourceSpecification() throws JsonValidationException {
-    when(configPersistence.getConfigs(
+  void testGetSourceSpecification() throws JsonValidationException, IOException, ConfigNotFoundException {
+    when(configPersistence.listConfigs(
         PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
         SourceConnectionSpecification.class))
-            .thenReturn(Sets.newHashSet(sourceConnectionSpecification));
+            .thenReturn(Lists.newArrayList(sourceConnectionSpecification));
 
     SourceSpecificationRead expectedSourceSpecificationRead = new SourceSpecificationRead();
     expectedSourceSpecificationRead.setSourceId(sourceConnectionSpecification.getSourceId());

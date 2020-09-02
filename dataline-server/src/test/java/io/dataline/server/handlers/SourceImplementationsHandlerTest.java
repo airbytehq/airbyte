@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionReadList;
 import io.dataline.api.model.ConnectionStatus;
@@ -131,7 +131,7 @@ class SourceImplementationsHandlerTest {
   }
 
   @Test
-  void testUpdateSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
+  void testUpdateSourceImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
     final JsonNode newConfiguration = sourceConnectionImplementation.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
@@ -178,7 +178,7 @@ class SourceImplementationsHandlerTest {
   }
 
   @Test
-  void testGetSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
+  void testGetSourceImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
         PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
@@ -206,11 +206,11 @@ class SourceImplementationsHandlerTest {
 
   @Test
   void testListSourceImplementationsForWorkspace()
-      throws JsonValidationException, ConfigNotFoundException {
-    when(configPersistence.getConfigs(
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configPersistence.listConfigs(
         PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
         SourceConnectionImplementation.class))
-            .thenReturn(Sets.newHashSet(sourceConnectionImplementation));
+            .thenReturn(Lists.newArrayList(sourceConnectionImplementation));
 
     when(configPersistence.getConfig(
         PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
@@ -231,7 +231,7 @@ class SourceImplementationsHandlerTest {
   }
 
   @Test
-  void testDeleteSourceImplementation() throws JsonValidationException, ConfigNotFoundException {
+  void testDeleteSourceImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
     final JsonNode newConfiguration = sourceConnectionImplementation.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 

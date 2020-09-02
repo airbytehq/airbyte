@@ -25,171 +25,105 @@
 package io.dataline.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.Column;
-import io.dataline.config.DataType;
+import com.google.common.collect.Lists;
 import io.dataline.config.Schema;
 import io.dataline.config.StandardSource;
 import io.dataline.config.StandardSync;
-import io.dataline.config.Table;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Set;
 import java.util.UUID;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DefaultConfigPersistenceTest {
 
+  public static final UUID UUID_1 = new UUID(0, 1);
+  public static final StandardSource SOURCE_1 = new StandardSource();
+
+  static {
+    SOURCE_1.setSourceId(UUID_1);
+    SOURCE_1.setName("apache storm");
+  }
+
+  public static final UUID UUID_2 = new UUID(0, 2);
+  public static final StandardSource SOURCE_2 = new StandardSource();
+
+  static {
+    SOURCE_2.setSourceId(UUID_2);
+    SOURCE_2.setName("apache storm");
+  }
+
   private Path rootPath;
+  private JsonSchemaValidator schemaValidator;
+
   private DefaultConfigPersistence configPersistence;
 
   @BeforeEach
   void setUp() throws IOException {
+    schemaValidator = mock(JsonSchemaValidator.class);
     rootPath = Files.createTempDirectory(DefaultConfigPersistenceTest.class.getName());
-    configPersistence = new DefaultConfigPersistence(rootPath);
-  }
 
-  private StandardSource generateStandardSource() {
-    final UUID sourceId = UUID.randomUUID();
-
-    final StandardSource standardSource = new StandardSource();
-    standardSource.setSourceId(sourceId);
-    standardSource.setName("apache storm");
-
-    return standardSource;
-  }
-
-  private JsonNode generateStandardSourceJson(UUID sourceId) {
-    return Jsons.jsonNode(ImmutableMap.of("sourceId", sourceId.toString(), "name", "apache storm"));
+    configPersistence = new DefaultConfigPersistence(rootPath, schemaValidator);
   }
 
   @Test
-  void getConfig() throws IOException, JsonValidationException, ConfigNotFoundException {
-    StandardSource standardSource = generateStandardSource();
-    JsonNode expectedJson = generateStandardSourceJson(standardSource.getSourceId());
+  void testReadWriteConfig() throws IOException, JsonValidationException, ConfigNotFoundException {
+    configPersistence.writeConfig(PersistenceConfigType.STANDARD_SOURCE, UUID_1.toString(), SOURCE_1);
 
-    // manually write json to disk.
-    final Path standardSourceDir = rootPath.resolve("STANDARD_SOURCE");
-    FileUtils.forceMkdir(standardSourceDir.toFile());
-    Path configPath = standardSourceDir.resolve(standardSource.getSourceId().toString() + ".json");
-    Files.writeString(configPath, expectedJson.toString());
-
-    final StandardSource actualSource =
+    assertEquals(
+        SOURCE_1,
         configPersistence.getConfig(
             PersistenceConfigType.STANDARD_SOURCE,
-            standardSource.getSourceId().toString(),
-            StandardSource.class);
-
-    assertEquals(standardSource, actualSource);
+            UUID_1.toString(),
+            StandardSource.class));
   }
 
   @Test
-  void getConfigs() throws JsonValidationException, IOException {
-    StandardSource standardSource = generateStandardSource();
-    JsonNode expectedJson = generateStandardSourceJson(standardSource.getSourceId());
+  void testListConfigs() throws JsonValidationException, IOException, ConfigNotFoundException {
+    configPersistence.writeConfig(PersistenceConfigType.STANDARD_SOURCE, UUID_1.toString(), SOURCE_1);
+    configPersistence.writeConfig(PersistenceConfigType.STANDARD_SOURCE, UUID_2.toString(), SOURCE_2);
 
-    // manually write json to disk.
-    final Path standardSourceDir = rootPath.resolve("STANDARD_SOURCE");
-    FileUtils.forceMkdir(standardSourceDir.toFile());
-    Path configPath = standardSourceDir.resolve(standardSource.getSourceId().toString() + ".json");
-    Files.writeString(configPath, expectedJson.toString());
-
-    final Set<StandardSource> actualSource =
-        configPersistence.getConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class);
-
-    assertEquals(standardSource, actualSource.iterator().next());
+    assertEquals(
+        Lists.newArrayList(SOURCE_1, SOURCE_2),
+        configPersistence.listConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class));
   }
 
   @Test
-  void writeConfig() throws JsonValidationException, IOException {
-    StandardSource standardSource = generateStandardSource();
-    JsonNode expectedJson = generateStandardSourceJson(standardSource.getSourceId());
-
-    configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_SOURCE,
-        standardSource.getSourceId().toString(),
-        standardSource);
-
-    final Path expectedPath =
-        rootPath
-            .resolve("STANDARD_SOURCE")
-            .resolve(standardSource.getSourceId().toString() + ".json");
-
-    // check reading to pojo
-    final StandardSource actualSource =
-        Jsons.deserialize(Files.readString(expectedPath), StandardSource.class);
-    assertEquals(standardSource, actualSource);
-
-    // check reading to json
-    final JsonNode actualJson = Jsons.deserialize(Files.readString(expectedPath));
-    assertEquals(expectedJson, actualJson);
-  }
-
-  @Test
-  void writeConfigWithJsonSchemaRef() throws JsonValidationException, IOException {
-    final Column column = new Column();
-    column.setName("columnName");
-    column.setDataType(DataType.BOOLEAN);
-    column.setSelected(true);
-
-    final Table table = new Table();
-    table.setName("tableName");
-    table.setColumns(Collections.singletonList(column));
-
+  void writeConfigWithJsonSchemaRef() throws JsonValidationException, IOException, ConfigNotFoundException {
     final Schema schema = new Schema();
-    schema.setTables(Collections.singletonList(table));
 
     final StandardSync standardSync = new StandardSync();
     standardSync.setName("sync");
-    standardSync.setConnectionId(UUID.randomUUID());
+    standardSync.setConnectionId(UUID_1);
     standardSync.setSourceImplementationId(UUID.randomUUID());
     standardSync.setDestinationImplementationId(UUID.randomUUID());
     standardSync.setSyncMode(StandardSync.SyncMode.FULL_REFRESH);
     standardSync.setStatus(StandardSync.Status.ACTIVE);
     standardSync.setSchema(schema);
 
-    configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_SYNC,
-        standardSync.getConnectionId().toString(),
-        standardSync);
+    configPersistence.writeConfig(PersistenceConfigType.STANDARD_SYNC, UUID_1.toString(), standardSync);
 
-    final Path expectedPath =
-        rootPath
-            .resolve("STANDARD_SYNC")
-            .resolve(standardSync.getConnectionId().toString() + ".json");
-
-    // check reading to pojo
-    final StandardSync actualSync =
-        Jsons.deserialize(Files.readString(expectedPath), StandardSync.class);
-    assertEquals(standardSync, actualSync);
-
-    // check reading to json
-    final JsonNode actualJson = Jsons.deserialize(Files.readString(expectedPath));
-    assertEquals(Jsons.jsonNode(actualSync), actualJson);
+    assertEquals(
+        standardSync,
+        configPersistence.getConfig(PersistenceConfigType.STANDARD_SYNC, UUID_1.toString(), StandardSync.class));
   }
 
   @Test
-  void writeConfigInvalidConfig() {
-    StandardSource standardSource = generateStandardSource();
+  void writeConfigInvalidConfig() throws JsonValidationException {
+    StandardSource standardSource = SOURCE_1;
     standardSource.setName(null);
 
-    try {
-      configPersistence.writeConfig(
-          PersistenceConfigType.STANDARD_SOURCE,
-          standardSource.getSourceId().toString(),
-          standardSource);
-    } catch (JsonValidationException e) {
-      return;
-    }
-    fail("expected to throw invalid json exception.");
+    doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
+
+    assertThrows(JsonValidationException.class, () -> configPersistence.writeConfig(
+        PersistenceConfigType.STANDARD_SOURCE,
+        UUID_1.toString(),
+        standardSource));
   }
 
 }

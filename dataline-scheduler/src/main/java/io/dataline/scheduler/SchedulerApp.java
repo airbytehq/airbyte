@@ -29,6 +29,7 @@ import io.dataline.config.Configs;
 import io.dataline.config.EnvConfigs;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.DefaultConfigPersistence;
+import io.dataline.config.persistence.JsonSchemaValidator;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
 import io.dataline.workers.process.ProcessBuilderFactory;
@@ -75,7 +76,7 @@ public class SchedulerApp {
   public void start() {
     final SchedulerPersistence schedulerPersistence =
         new DefaultSchedulerPersistence(connectionPool);
-    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
+    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot, new JsonSchemaValidator());
     final ExecutorService workerThreadPool =
         Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();

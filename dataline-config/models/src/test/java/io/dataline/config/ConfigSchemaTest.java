@@ -22,25 +22,34 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.dataline.config;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import org.junit.jupiter.api.Test;
 
-public interface ConfigPersistence {
+class ConfigSchemaTest {
 
-  <T> T getConfig(PersistenceConfigType persistenceConfigType,
-                  String configId,
-                  Class<T> clazz)
-      throws ConfigNotFoundException, JsonValidationException, IOException;
+  @Test
+  void testFile() throws IOException {
+    final String schema = Files.readString(ConfigSchema.STATE.getFile().toPath(), StandardCharsets.UTF_8);
+    assertTrue(schema.contains("title"));
+  }
 
-  <T> List<T> listConfigs(PersistenceConfigType persistenceConfigType,
-                          Class<T> clazz)
-      throws JsonValidationException, IOException, ConfigNotFoundException;
+  @Test
+  void testValueOfRead() {
+    assertEquals(ConfigSchema.STATE, ConfigSchema.valueOf(State.class));
+  }
 
-  <T> void writeConfig(PersistenceConfigType persistenceConfigType,
-                       String configId,
-                       T config)
-      throws JsonValidationException, IOException;
+  @Test
+  void testPrepareKnownSchemas() {
+    for (ConfigSchema value : ConfigSchema.values()) {
+      assertTrue(Files.exists(value.getFile().toPath()));
+    }
+  }
 
 }

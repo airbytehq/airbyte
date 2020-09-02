@@ -22,25 +22,38 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.dataline.commons.string;
 
-import java.io.IOException;
-import java.util.List;
+import com.google.common.collect.Lists;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public interface ConfigPersistence {
+class StringsTest {
 
-  <T> T getConfig(PersistenceConfigType persistenceConfigType,
-                  String configId,
-                  Class<T> clazz)
-      throws ConfigNotFoundException, JsonValidationException, IOException;
+  private static class JoinClass {
 
-  <T> List<T> listConfigs(PersistenceConfigType persistenceConfigType,
-                          Class<T> clazz)
-      throws JsonValidationException, IOException, ConfigNotFoundException;
+    private final int id;
 
-  <T> void writeConfig(PersistenceConfigType persistenceConfigType,
-                       String configId,
-                       T config)
-      throws JsonValidationException, IOException;
+    public JoinClass(int id) {
+      this.id = id;
+    }
+
+    @Override
+    public String toString() {
+      return "id = " + id;
+    }
+
+  }
+
+  @Test
+  void testJoin() {
+    Assertions.assertEquals(
+        "1, 2, 3, 4, 5",
+        Strings.join(Lists.newArrayList(1, 2, 3, 4, 5), ", "));
+
+    Assertions.assertEquals(
+        "id = 1, id = 2, id = 3",
+        Strings.join(Lists.newArrayList(new JoinClass(1), new JoinClass(2), new JoinClass(3)), ", "));
+  }
 
 }

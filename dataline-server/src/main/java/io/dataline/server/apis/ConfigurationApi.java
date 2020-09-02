@@ -61,6 +61,7 @@ import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.DefaultConfigPersistence;
+import io.dataline.config.persistence.JsonSchemaValidator;
 import io.dataline.scheduler.DefaultSchedulerPersistence;
 import io.dataline.scheduler.SchedulerPersistence;
 import io.dataline.server.handlers.ConnectionsHandler;
@@ -95,7 +96,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
 
   public ConfigurationApi(final Path dbRoot, BasicDataSource connectionPool) {
-    ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot);
+    ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot, new JsonSchemaValidator());
     final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation(configPersistence);
     workspacesHandler = new WorkspacesHandler(configPersistence);
     sourcesHandler = new SourcesHandler(configPersistence);
