@@ -34,6 +34,7 @@ import io.dataline.api.model.SourceImplementationReadList;
 import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.StandardSource;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
@@ -130,7 +131,11 @@ public class SourceImplementationsHandler {
                           configPersistence,
                           sourceConnectionImplementation.getSourceSpecificationId())
                           .getSourceId();
-                  return toSourceImplementationRead(sourceConnectionImplementation, sourceId);
+                  final StandardSource standardSource =
+                      ConfigFetchers.getStandardSource(
+                          configPersistence,
+                          sourceId);
+                  return toSourceImplementationRead(sourceConnectionImplementation, standardSource);
                 })
             .collect(Collectors.toList());
 
@@ -185,8 +190,11 @@ public class SourceImplementationsHandler {
             configPersistence,
             retrievedSourceConnectionImplementation.getSourceSpecificationId())
             .getSourceId();
-
-    return toSourceImplementationRead(retrievedSourceConnectionImplementation, sourceId);
+    final StandardSource standardSource =
+        ConfigFetchers.getStandardSource(
+            configPersistence,
+            sourceId);
+    return toSourceImplementationRead(retrievedSourceConnectionImplementation, standardSource);
   }
 
   private void validateSourceImplementation(UUID sourceConnectionSpecificationId, JsonNode implementationJson) {
@@ -221,15 +229,17 @@ public class SourceImplementationsHandler {
         sourceConnectionImplementation);
   }
 
-  private SourceImplementationRead toSourceImplementationRead(SourceConnectionImplementation sourceConnectionImplementation, UUID sourceId) {
+  private SourceImplementationRead toSourceImplementationRead(SourceConnectionImplementation sourceConnectionImplementation,
+                                                              StandardSource standardSource) {
     final SourceImplementationRead sourceImplementationRead = new SourceImplementationRead();
-    sourceImplementationRead.setSourceId(sourceId);
+    sourceImplementationRead.setSourceId(standardSource.getSourceId());
     sourceImplementationRead.setSourceImplementationId(
         sourceConnectionImplementation.getSourceImplementationId());
     sourceImplementationRead.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
     sourceImplementationRead.setSourceSpecificationId(
         sourceConnectionImplementation.getSourceSpecificationId());
     sourceImplementationRead.setConnectionConfiguration(sourceConnectionImplementation.getConfiguration());
+    sourceImplementationRead.setSourceName(standardSource.getName());
 
     return sourceImplementationRead;
   }
