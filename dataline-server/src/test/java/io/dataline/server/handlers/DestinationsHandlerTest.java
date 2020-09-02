@@ -33,11 +33,11 @@ import com.google.common.collect.Lists;
 import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationRead;
 import io.dataline.api.model.DestinationReadList;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.StandardDestination;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -71,12 +71,12 @@ class DestinationsHandlerTest {
   void testListDestinations() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardDestination destination2 = generateDestination();
     configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_DESTINATION,
+        ConfigSchema.STANDARD_DESTINATION,
         destination2.getDestinationId().toString(),
         destination2);
 
     when(configPersistence.listConfigs(
-        PersistenceConfigType.STANDARD_DESTINATION, StandardDestination.class))
+        ConfigSchema.STANDARD_DESTINATION, StandardDestination.class))
             .thenReturn(Lists.newArrayList(destination, destination2));
 
     DestinationRead expectedDestinationRead1 = new DestinationRead();
@@ -109,7 +109,7 @@ class DestinationsHandlerTest {
   @Test
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_DESTINATION,
+        ConfigSchema.STANDARD_DESTINATION,
         destination.getDestinationId().toString(),
         StandardDestination.class))
             .thenReturn(destination);

@@ -33,12 +33,12 @@ import io.dataline.api.model.ConnectionStatus;
 import io.dataline.api.model.ConnectionUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.enums.Enums;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.Schedule;
 import io.dataline.config.Schema;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.converters.SchemaConverter;
 import io.dataline.server.helpers.ConfigFetchers;
 import java.util.Collections;
@@ -104,7 +104,7 @@ public class ConnectionsHandler {
   private void writeStandardSync(StandardSync standardSync) {
     ConfigFetchers.writeConfig(
         configPersistence,
-        PersistenceConfigType.STANDARD_SYNC,
+        ConfigSchema.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         standardSync);
   }
@@ -113,7 +113,7 @@ public class ConnectionsHandler {
   private void writeSchedule(StandardSyncSchedule schedule) {
     ConfigFetchers.writeConfig(
         configPersistence,
-        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+        ConfigSchema.STANDARD_SYNC_SCHEDULE,
         schedule.getConnectionId().toString(),
         schedule);
   }

@@ -24,6 +24,7 @@
 
 package io.dataline.server.helpers;
 
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.SourceConnectionImplementation;
@@ -36,7 +37,6 @@ import io.dataline.config.StandardWorkspace;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.errors.KnownException;
 import java.io.IOException;
 import java.util.List;
@@ -53,7 +53,7 @@ public class ConfigFetchers {
                                                        UUID workspaceId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.STANDARD_WORKSPACE,
+          ConfigSchema.STANDARD_WORKSPACE,
           workspaceId.toString(),
           StandardWorkspace.class);
     } catch (ConfigNotFoundException e) {
@@ -69,7 +69,7 @@ public class ConfigFetchers {
                                                  UUID sourceId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.STANDARD_SOURCE, sourceId.toString(), StandardSource.class);
+          ConfigSchema.STANDARD_SOURCE, sourceId.toString(), StandardSource.class);
     } catch (ConfigNotFoundException e) {
       throw getConfigNotFoundException(e);
     } catch (JsonValidationException e) {
@@ -81,11 +81,11 @@ public class ConfigFetchers {
 
   // wrap json validation errors for usages in API handlers.
   public static <T> void writeConfig(ConfigPersistence configPersistence,
-                                     PersistenceConfigType persistenceConfigType,
+                                     ConfigSchema configType,
                                      String configId,
                                      T config) {
     try {
-      configPersistence.writeConfig(persistenceConfigType, configId, config);
+      configPersistence.writeConfig(configType, configId, config);
     } catch (JsonValidationException e) {
       throw getInvalidJsonException(e);
     } catch (IOException e) {
@@ -95,7 +95,7 @@ public class ConfigFetchers {
 
   public static List<StandardSource> getStandardSources(ConfigPersistence configPersistence) {
     try {
-      return configPersistence.listConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class);
+      return configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE, StandardSource.class);
     } catch (JsonValidationException e) {
       throw getInvalidJsonException(e);
     } catch (ConfigNotFoundException e) {
@@ -109,7 +109,7 @@ public class ConfigFetchers {
                                                                                UUID sourceSpecificationId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+          ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
           sourceSpecificationId.toString(),
           SourceConnectionSpecification.class);
     } catch (ConfigNotFoundException e) {
@@ -124,7 +124,7 @@ public class ConfigFetchers {
   public static List<SourceConnectionSpecification> getSourceConnectionSpecifications(ConfigPersistence configPersistence) {
     try {
       return configPersistence.listConfigs(
-          PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+          ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
           SourceConnectionSpecification.class);
     } catch (JsonValidationException e) {
       throw getInvalidJsonException(e);
@@ -139,7 +139,7 @@ public class ConfigFetchers {
                                                                                  UUID sourceImplementationId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+          ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
           sourceImplementationId.toString(),
           SourceConnectionImplementation.class);
     } catch (ConfigNotFoundException e) {
@@ -154,7 +154,7 @@ public class ConfigFetchers {
   public static List<SourceConnectionImplementation> getSourceConnectionImplementations(ConfigPersistence configPersistence) {
     try {
       return configPersistence.listConfigs(
-          PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+          ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
           SourceConnectionImplementation.class);
     } catch (JsonValidationException e) {
       throw getInvalidJsonException(e);
@@ -169,7 +169,7 @@ public class ConfigFetchers {
                                                            UUID destinationId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.STANDARD_DESTINATION,
+          ConfigSchema.STANDARD_DESTINATION,
           destinationId.toString(),
           StandardDestination.class);
     } catch (ConfigNotFoundException e) {
@@ -183,8 +183,7 @@ public class ConfigFetchers {
 
   public static List<StandardDestination> getStandardDestinations(ConfigPersistence configPersistence) {
     try {
-      return configPersistence.listConfigs(
-          PersistenceConfigType.STANDARD_DESTINATION, StandardDestination.class);
+      return configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION, StandardDestination.class);
     } catch (JsonValidationException e) {
       throw getInvalidJsonException(e);
     } catch (ConfigNotFoundException e) {
@@ -198,7 +197,7 @@ public class ConfigFetchers {
                                                                                          UUID destinationSpecificationId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
+          ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
           destinationSpecificationId.toString(),
           DestinationConnectionSpecification.class);
     } catch (ConfigNotFoundException e) {
@@ -213,7 +212,7 @@ public class ConfigFetchers {
   public static List<DestinationConnectionSpecification> getDestinationConnectionSpecifications(ConfigPersistence configPersistence) {
     try {
       return configPersistence.listConfigs(
-          PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
+          ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
           DestinationConnectionSpecification.class);
     } catch (JsonValidationException e) {
       throw getInvalidJsonException(e);
@@ -228,7 +227,7 @@ public class ConfigFetchers {
                                                                                            UUID destinationImplementationId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
+          ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
           destinationImplementationId.toString(),
           DestinationConnectionImplementation.class);
     } catch (JsonValidationException e) {
@@ -243,7 +242,7 @@ public class ConfigFetchers {
   public static List<DestinationConnectionImplementation> getDestinationConnectionImplementations(ConfigPersistence configPersistence) {
     try {
       return configPersistence.listConfigs(
-          PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
+          ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
           DestinationConnectionImplementation.class);
     } catch (JsonValidationException e) {
       throw getInvalidJsonException(e);
@@ -258,7 +257,7 @@ public class ConfigFetchers {
                                              UUID connectionId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
+          ConfigSchema.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
     } catch (JsonValidationException e) {
       throw getInvalidJsonException(e);
     } catch (ConfigNotFoundException e) {
@@ -270,7 +269,7 @@ public class ConfigFetchers {
 
   public static List<StandardSync> getStandardSyncs(ConfigPersistence configPersistence) {
     try {
-      return configPersistence.listConfigs(PersistenceConfigType.STANDARD_SYNC, StandardSync.class);
+      return configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
     } catch (JsonValidationException e) {
       throw getInvalidJsonException(e);
     } catch (ConfigNotFoundException e) {
@@ -284,7 +283,7 @@ public class ConfigFetchers {
                                                              UUID connectionId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+          ConfigSchema.STANDARD_SYNC_SCHEDULE,
           connectionId.toString(),
           StandardSyncSchedule.class);
     } catch (JsonValidationException e) {

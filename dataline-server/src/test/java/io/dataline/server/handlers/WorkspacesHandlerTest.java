@@ -33,11 +33,11 @@ import io.dataline.api.model.SlugRequestBody;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.StandardWorkspace;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.config.persistence.PersistenceConstants;
 import java.io.IOException;
 import java.util.UUID;
@@ -73,7 +73,7 @@ class WorkspacesHandlerTest {
   @Test
   void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_WORKSPACE,
+        ConfigSchema.STANDARD_WORKSPACE,
         workspace.getWorkspaceId().toString(),
         StandardWorkspace.class))
             .thenReturn(workspace);
@@ -93,7 +93,7 @@ class WorkspacesHandlerTest {
   @Test
   void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_WORKSPACE,
+        ConfigSchema.STANDARD_WORKSPACE,
         workspace.getWorkspaceId().toString(),
         StandardWorkspace.class))
             .thenReturn(workspace);
@@ -131,7 +131,7 @@ class WorkspacesHandlerTest {
     expectedWorkspace.setInitialSetupComplete(true);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_WORKSPACE,
+        ConfigSchema.STANDARD_WORKSPACE,
         workspace.getWorkspaceId().toString(),
         StandardWorkspace.class))
             .thenReturn(workspace)
@@ -147,7 +147,7 @@ class WorkspacesHandlerTest {
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.STANDARD_WORKSPACE,
+            ConfigSchema.STANDARD_WORKSPACE,
             expectedWorkspace.getWorkspaceId().toString(),
             expectedWorkspace);
 

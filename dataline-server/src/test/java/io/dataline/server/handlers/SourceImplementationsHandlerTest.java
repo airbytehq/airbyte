@@ -42,6 +42,7 @@ import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.api.model.SourceImplementationReadList;
 import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.SourceConnectionSpecification;
 import io.dataline.config.StandardSource;
@@ -49,7 +50,6 @@ import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.helpers.ConnectionHelpers;
 import io.dataline.server.helpers.SourceHelpers;
 import io.dataline.server.helpers.SourceImplementationHelpers;
@@ -96,19 +96,19 @@ class SourceImplementationsHandlerTest {
         .thenReturn(sourceConnectionImplementation.getSourceImplementationId());
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
             .thenReturn(sourceConnectionImplementation);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
             .thenReturn(sourceConnectionSpecification);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SOURCE,
+        ConfigSchema.STANDARD_SOURCE,
         sourceConnectionSpecification.getSourceId().toString(),
         StandardSource.class))
             .thenReturn(standardSource);
@@ -134,7 +134,7 @@ class SourceImplementationsHandlerTest {
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+            ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
             sourceConnectionImplementation.getSourceImplementationId().toString(),
             sourceConnectionImplementation);
   }
@@ -153,20 +153,20 @@ class SourceImplementationsHandlerTest {
     expectedSourceConnectionImplementation.setTombstone(false);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
             .thenReturn(sourceConnectionImplementation)
             .thenReturn(expectedSourceConnectionImplementation);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
             .thenReturn(sourceConnectionSpecification);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SOURCE,
+        ConfigSchema.STANDARD_SOURCE,
         sourceConnectionSpecification.getSourceId().toString(),
         StandardSource.class))
             .thenReturn(standardSource);
@@ -186,7 +186,7 @@ class SourceImplementationsHandlerTest {
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+            ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
             sourceConnectionImplementation.getSourceImplementationId().toString(),
             expectedSourceConnectionImplementation);
   }
@@ -194,19 +194,19 @@ class SourceImplementationsHandlerTest {
   @Test
   void testGetSourceImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
-        PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
             .thenReturn(sourceConnectionImplementation);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
             .thenReturn(sourceConnectionSpecification);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SOURCE,
+        ConfigSchema.STANDARD_SOURCE,
         sourceConnectionSpecification.getSourceId().toString(),
         StandardSource.class))
             .thenReturn(standardSource);
@@ -227,18 +227,18 @@ class SourceImplementationsHandlerTest {
   void testListSourceImplementationsForWorkspace()
       throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.listConfigs(
-        PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         SourceConnectionImplementation.class))
             .thenReturn(Lists.newArrayList(sourceConnectionImplementation));
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
             .thenReturn(sourceConnectionSpecification);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SOURCE,
+        ConfigSchema.STANDARD_SOURCE,
         sourceConnectionSpecification.getSourceId().toString(),
         StandardSource.class))
             .thenReturn(standardSource);
@@ -269,20 +269,20 @@ class SourceImplementationsHandlerTest {
     expectedSourceConnectionImplementation.setTombstone(true);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
             .thenReturn(sourceConnectionImplementation)
             .thenReturn(expectedSourceConnectionImplementation);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
+        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
             .thenReturn(sourceConnectionSpecification);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SOURCE,
+        ConfigSchema.STANDARD_SOURCE,
         sourceConnectionSpecification.getSourceId().toString(),
         StandardSource.class))
             .thenReturn(standardSource);
@@ -306,7 +306,7 @@ class SourceImplementationsHandlerTest {
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+            ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
             sourceConnectionImplementation.getSourceImplementationId().toString(),
             expectedSourceConnectionImplementation);
 
