@@ -24,6 +24,7 @@
 
 package io.dataline.scheduler;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.JobCheckConnectionConfig;
@@ -57,7 +58,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private final BasicDataSource connectionPool;
   private final Supplier<Instant> timeSupplier;
 
-  public DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
+  @VisibleForTesting
+  DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
     this.connectionPool = connectionPool;
     this.timeSupplier = timeSupplier;
   }
