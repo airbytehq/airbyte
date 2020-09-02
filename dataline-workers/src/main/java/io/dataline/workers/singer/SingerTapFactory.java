@@ -52,9 +52,12 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerTapFactory.class);
 
-  private static final String CONFIG_JSON_FILENAME = "tap_config.json";
-  private static final String CATALOG_JSON_FILENAME = "catalog.json";
-  private static final String STATE_JSON_FILENAME = "input_state.json";
+  @VisibleForTesting
+  static final String CONFIG_JSON_FILENAME = "tap_config.json";
+  @VisibleForTesting
+  static final String CATALOG_JSON_FILENAME = "catalog.json";
+  @VisibleForTesting
+  static final String STATE_JSON_FILENAME = "input_state.json";
   @VisibleForTesting
   static final String DISCOVERY_DIR = "discover";
 

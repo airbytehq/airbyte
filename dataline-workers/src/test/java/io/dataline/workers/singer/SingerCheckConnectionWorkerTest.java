@@ -24,114 +24,98 @@
 
 package io.dataline.workers.singer;
 
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
-import io.dataline.integrations.Integrations;
+import io.dataline.config.StandardDiscoverSchemaInput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.BaseWorkerTestCase;
+import io.dataline.workers.DiscoverSchemaWorker;
+import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
+import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.PostgreSQLContainerTestHelper;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import org.junit.jupiter.api.BeforeAll;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
 
-  private PostgreSQLContainer db;
+  private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
 
-  @BeforeAll
-  public void initDb() throws SQLException {
-    db = new PostgreSQLContainer();
-    db.start();
-    Connection con =
-        DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
-    con.createStatement().execute("CREATE TABLE id_and_name (id integer, name VARCHAR(200));");
+  private Path jobRoot;
+  private StandardCheckConnectionInput input;
+  private StandardDiscoverSchemaInput discoverInput;
+  private DiscoverSchemaWorker discoverSchemaWorker;
+
+  @BeforeEach
+  public void setup() throws IOException {
+    jobRoot = Files.createTempDirectory("");
+
+    input = new StandardCheckConnectionInput();
+    input.setConnectionConfiguration(CREDS);
+
+    discoverInput = new StandardDiscoverSchemaInput();
+    discoverInput.setConnectionConfiguration(CREDS);
+
+    discoverSchemaWorker = mock(DiscoverSchemaWorker.class);
   }
 
   @Test
-  public void testNonexistentDb()
-      throws IOException, InvalidCredentialsException {
-    final String jobId = "1";
-    JsonNode fakeDbCreds =
-        PostgreSQLContainerTestHelper.getSingerTapConfig(
-            "user", "pass", "localhost", "postgres", "111111");
+  public void testSuccessfulConnection() throws InvalidCredentialsException, InvalidCatalogException {
+    OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput =
+        new OutputAndStatus<>(JobStatus.SUCCESSFUL, mock(StandardDiscoverSchemaOutput.class));
+    when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
-    final StandardCheckConnectionInput standardCheckConnectionInput =
-        new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfiguration(fakeDbCreds);
+    final SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(discoverSchemaWorker);
+    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
 
-    SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
-    OutputAndStatus<StandardCheckConnectionOutput> run =
-        worker.run(standardCheckConnectionInput, createJobRoot(jobId));
+    assertEquals(JobStatus.SUCCESSFUL, output.getStatus());
+    assertTrue(output.getOutput().isPresent());
+    assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, output.getOutput().get().getStatus());
+    assertNull(output.getOutput().get().getMessage());
 
-    assertEquals(FAILED, run.getStatus());
-    assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
-    // TODO Once log file locations are accessible externally, also verify the correct error message
-    // in the logs
+    verify(discoverSchemaWorker).run(discoverInput, jobRoot);
   }
 
   @Test
-  public void testIncorrectAuthCredentials()
-      throws IOException, InvalidCredentialsException {
-    final String jobId = "1";
-    JsonNode incorrectCreds =
-        PostgreSQLContainerTestHelper.getSingerTapConfig(
-            db.getUsername(),
-            "wrongpassword",
-            db.getHost(),
-            db.getDatabaseName(),
-            db.getFirstMappedPort() + "");
+  public void testFailedConnection() throws InvalidCredentialsException, InvalidCatalogException {
+    OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput = new OutputAndStatus<>(JobStatus.FAILED, null);
+    when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
-    SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
+    final SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(discoverSchemaWorker);
+    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
 
-    final StandardCheckConnectionInput standardCheckConnectionInput =
-        new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfiguration(incorrectCreds);
+    assertEquals(JobStatus.FAILED, output.getStatus());
+    assertTrue(output.getOutput().isPresent());
+    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, output.getOutput().get().getStatus());
+    assertEquals("Failed to connect.", output.getOutput().get().getMessage());
 
-    OutputAndStatus<StandardCheckConnectionOutput> run =
-        worker.run(standardCheckConnectionInput, createJobRoot(jobId));
-
-    assertEquals(FAILED, run.getStatus());
-    assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
-    // TODO Once log file locations are accessible externally, also verify the correct error message
-    // in the logs
+    verify(discoverSchemaWorker).run(discoverInput, jobRoot);
   }
 
   @Test
-  public void testSuccessfulConnection()
-      throws IOException, InvalidCredentialsException {
-    final String jobId = "1";
+  public void testCancel() throws InvalidCredentialsException, InvalidCatalogException {
+    OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput =
+        new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverSchemaOutput());
+    when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
-    JsonNode creds = PostgreSQLContainerTestHelper.getSingerTapConfig(db);
+    final SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(discoverSchemaWorker);
+    worker.run(input, jobRoot);
+    worker.cancel();
 
-    final StandardCheckConnectionInput standardCheckConnectionInput =
-        new StandardCheckConnectionInput();
-    standardCheckConnectionInput.setConnectionConfiguration(creds);
-
-    SingerCheckConnectionWorker worker =
-        new SingerCheckConnectionWorker(Integrations.POSTGRES_TAP.getCheckConnectionImage(), pbf);
-    OutputAndStatus<StandardCheckConnectionOutput> run =
-        worker.run(standardCheckConnectionInput, createJobRoot(jobId));
-
-    assertEquals(SUCCESSFUL, run.getStatus());
-    assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, run.getOutput().get().getStatus());
-    // TODO Once log file locations are accessible externally, also verify the correct error message
-    // in the logs
+    verify(discoverSchemaWorker).cancel();
   }
 
 }
