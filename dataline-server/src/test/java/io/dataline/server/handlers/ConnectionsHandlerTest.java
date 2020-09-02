@@ -30,7 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import io.dataline.api.model.ConnectionCreate;
 import io.dataline.api.model.ConnectionIdRequestBody;
 import io.dataline.api.model.ConnectionRead;
@@ -84,7 +84,7 @@ class ConnectionsHandlerTest {
   }
 
   @Test
-  void testCreateConnection() throws JsonValidationException, ConfigNotFoundException {
+  void testCreateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
 
     when(configPersistence.getConfig(
@@ -135,7 +135,7 @@ class ConnectionsHandlerTest {
   }
 
   @Test
-  void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException {
+  void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     final SourceSchema newApiSchema = ConnectionHelpers.generateBasicApiSchema();
     newApiSchema.getTables().get(0).setName("azkaban_users");
 
@@ -205,7 +205,7 @@ class ConnectionsHandlerTest {
   }
 
   @Test
-  void testGetConnection() throws JsonValidationException, ConfigNotFoundException {
+  void testGetConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
         PersistenceConfigType.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
@@ -228,10 +228,10 @@ class ConnectionsHandlerTest {
   }
 
   @Test
-  void testListConnectionsForWorkspace() throws JsonValidationException, ConfigNotFoundException {
+  void testListConnectionsForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     // mock list off all syncs
-    when(configPersistence.getConfigs(PersistenceConfigType.STANDARD_SYNC, StandardSync.class))
-        .thenReturn(Sets.newHashSet(standardSync));
+    when(configPersistence.listConfigs(PersistenceConfigType.STANDARD_SYNC, StandardSync.class))
+        .thenReturn(Lists.newArrayList(standardSync));
 
     // mock get source connection impl (used to check that connection is associated with given
     // workspace)

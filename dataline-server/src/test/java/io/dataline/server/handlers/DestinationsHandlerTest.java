@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationRead;
 import io.dataline.api.model.DestinationReadList;
@@ -38,6 +38,7 @@ import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,16 +68,16 @@ class DestinationsHandlerTest {
   }
 
   @Test
-  void testListDestinations() throws JsonValidationException {
+  void testListDestinations() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardDestination destination2 = generateDestination();
     configPersistence.writeConfig(
         PersistenceConfigType.STANDARD_DESTINATION,
         destination2.getDestinationId().toString(),
         destination2);
 
-    when(configPersistence.getConfigs(
+    when(configPersistence.listConfigs(
         PersistenceConfigType.STANDARD_DESTINATION, StandardDestination.class))
-            .thenReturn(Sets.newHashSet(destination, destination2));
+            .thenReturn(Lists.newArrayList(destination, destination2));
 
     DestinationRead expectedDestinationRead1 = new DestinationRead();
     expectedDestinationRead1.setDestinationId(destination.getDestinationId());
@@ -106,7 +107,7 @@ class DestinationsHandlerTest {
   }
 
   @Test
-  void testGetDestination() throws JsonValidationException, ConfigNotFoundException {
+  void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
         PersistenceConfigType.STANDARD_DESTINATION,
         destination.getDestinationId().toString(),

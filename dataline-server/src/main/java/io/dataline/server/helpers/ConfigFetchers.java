@@ -38,7 +38,8 @@ import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.errors.KnownException;
-import java.util.Set;
+import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -56,9 +57,11 @@ public class ConfigFetchers {
           workspaceId.toString(),
           StandardWorkspace.class);
     } catch (ConfigNotFoundException e) {
-      throw getConfigNotFoundException(e, "standardWorkspace", workspaceId);
+      throw getConfigNotFoundException(e);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -68,9 +71,11 @@ public class ConfigFetchers {
       return configPersistence.getConfig(
           PersistenceConfigType.STANDARD_SOURCE, sourceId.toString(), StandardSource.class);
     } catch (ConfigNotFoundException e) {
-      throw getConfigNotFoundException(e, "standardSource", sourceId);
+      throw getConfigNotFoundException(e);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -82,16 +87,21 @@ public class ConfigFetchers {
     try {
       configPersistence.writeConfig(persistenceConfigType, configId, config);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  public static Set<StandardSource> getStandardSources(ConfigPersistence configPersistence) {
+  public static List<StandardSource> getStandardSources(ConfigPersistence configPersistence) {
     try {
-      return configPersistence.getConfigs(
-          PersistenceConfigType.STANDARD_SOURCE, StandardSource.class);
+      return configPersistence.listConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (ConfigNotFoundException e) {
+      throw getConfigNotFoundException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -103,19 +113,25 @@ public class ConfigFetchers {
           sourceSpecificationId.toString(),
           SourceConnectionSpecification.class);
     } catch (ConfigNotFoundException e) {
-      throw getConfigNotFoundException(e, "sourceConnectionSpecification", sourceSpecificationId);
+      throw getConfigNotFoundException(e);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  public static Set<SourceConnectionSpecification> getSourceConnectionSpecifications(ConfigPersistence configPersistence) {
+  public static List<SourceConnectionSpecification> getSourceConnectionSpecifications(ConfigPersistence configPersistence) {
     try {
-      return configPersistence.getConfigs(
+      return configPersistence.listConfigs(
           PersistenceConfigType.SOURCE_CONNECTION_SPECIFICATION,
           SourceConnectionSpecification.class);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (ConfigNotFoundException e) {
+      throw getConfigNotFoundException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -127,19 +143,25 @@ public class ConfigFetchers {
           sourceImplementationId.toString(),
           SourceConnectionImplementation.class);
     } catch (ConfigNotFoundException e) {
-      throw getConfigNotFoundException(e, "sourceConnectionImplementation", sourceImplementationId);
+      throw getConfigNotFoundException(e);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  public static Set<SourceConnectionImplementation> getSourceConnectionImplementations(ConfigPersistence configPersistence) {
+  public static List<SourceConnectionImplementation> getSourceConnectionImplementations(ConfigPersistence configPersistence) {
     try {
-      return configPersistence.getConfigs(
+      return configPersistence.listConfigs(
           PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
           SourceConnectionImplementation.class);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (ConfigNotFoundException e) {
+      throw getConfigNotFoundException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -151,18 +173,24 @@ public class ConfigFetchers {
           destinationId.toString(),
           StandardDestination.class);
     } catch (ConfigNotFoundException e) {
-      throw getConfigNotFoundException(e, "standardDestination", destinationId);
+      throw getConfigNotFoundException(e);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  public static Set<StandardDestination> getStandardDestinations(ConfigPersistence configPersistence) {
+  public static List<StandardDestination> getStandardDestinations(ConfigPersistence configPersistence) {
     try {
-      return configPersistence.getConfigs(
+      return configPersistence.listConfigs(
           PersistenceConfigType.STANDARD_DESTINATION, StandardDestination.class);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (ConfigNotFoundException e) {
+      throw getConfigNotFoundException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -174,20 +202,25 @@ public class ConfigFetchers {
           destinationSpecificationId.toString(),
           DestinationConnectionSpecification.class);
     } catch (ConfigNotFoundException e) {
-      throw getConfigNotFoundException(
-          e, "destinationConnectionSpecification", destinationSpecificationId);
+      throw getConfigNotFoundException(e);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  public static Set<DestinationConnectionSpecification> getDestinationConnectionSpecifications(ConfigPersistence configPersistence) {
+  public static List<DestinationConnectionSpecification> getDestinationConnectionSpecifications(ConfigPersistence configPersistence) {
     try {
-      return configPersistence.getConfigs(
+      return configPersistence.listConfigs(
           PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
           DestinationConnectionSpecification.class);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (ConfigNotFoundException e) {
+      throw getConfigNotFoundException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -199,20 +232,25 @@ public class ConfigFetchers {
           destinationImplementationId.toString(),
           DestinationConnectionImplementation.class);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
     } catch (ConfigNotFoundException e) {
-      throw getConfigNotFoundException(
-          e, "destinationConnectionImplementation", destinationImplementationId);
+      throw getConfigNotFoundException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  public static Set<DestinationConnectionImplementation> getDestinationConnectionImplementations(ConfigPersistence configPersistence) {
+  public static List<DestinationConnectionImplementation> getDestinationConnectionImplementations(ConfigPersistence configPersistence) {
     try {
-      return configPersistence.getConfigs(
+      return configPersistence.listConfigs(
           PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
           DestinationConnectionImplementation.class);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (ConfigNotFoundException e) {
+      throw getConfigNotFoundException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -222,17 +260,23 @@ public class ConfigFetchers {
       return configPersistence.getConfig(
           PersistenceConfigType.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
     } catch (ConfigNotFoundException e) {
-      throw getConfigNotFoundException(e, "connection", connectionId);
+      throw getConfigNotFoundException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  public static Set<StandardSync> getStandardSyncs(ConfigPersistence configPersistence) {
+  public static List<StandardSync> getStandardSyncs(ConfigPersistence configPersistence) {
     try {
-      return configPersistence.getConfigs(PersistenceConfigType.STANDARD_SYNC, StandardSync.class);
+      return configPersistence.listConfigs(PersistenceConfigType.STANDARD_SYNC, StandardSync.class);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
+    } catch (ConfigNotFoundException e) {
+      throw getConfigNotFoundException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -244,20 +288,20 @@ public class ConfigFetchers {
           connectionId.toString(),
           StandardSyncSchedule.class);
     } catch (JsonValidationException e) {
-      throw getInvalidException(e);
+      throw getInvalidJsonException(e);
     } catch (ConfigNotFoundException e) {
-      throw getConfigNotFoundException(e, "syncSchedule", connectionId);
+      throw getConfigNotFoundException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  private static KnownException getConfigNotFoundException(Throwable e,
-                                                           String configName,
-                                                           UUID id) {
+  private static KnownException getConfigNotFoundException(ConfigNotFoundException e) {
     return new KnownException(
-        422, String.format("Could not find sync configuration for %s: %s.", configName, id), e);
+        422, String.format("Could not find sync configuration for %s: %s.", e.getType().toString(), e.getConfigId()), e);
   }
 
-  private static KnownException getInvalidException(Throwable e) {
+  private static KnownException getInvalidJsonException(Throwable e) {
     return new KnownException(
         422,
         String.format(
