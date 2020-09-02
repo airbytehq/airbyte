@@ -35,6 +35,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 public abstract class BaseIntegrationTestCase {
+
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
 
   protected Path jobRoot;
@@ -55,4 +56,5 @@ public abstract class BaseIntegrationTestCase {
   public void tearDown() throws IOException {
     FileUtils.deleteDirectory(new File(workspaceRoot.toUri()));
   }
+
 }

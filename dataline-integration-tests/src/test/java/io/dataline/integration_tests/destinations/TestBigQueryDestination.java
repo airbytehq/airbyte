@@ -24,11 +24,6 @@
 
 package io.dataline.integration_tests.destinations;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.stream.Collectors.toList;
-import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -57,7 +52,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toList;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class TestBigQueryDestination extends BaseIntegrationTestCase {
+
   private static final BigQuery BQ = BigQueryOptions.getDefaultInstance().getService();
 
   private String datasetName;
@@ -99,8 +100,7 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
         .until(
             () -> {
               try {
-                getExchangeRateTable();
-                return true;
+                return getExchangeRateTable().getTotalRows() == 2L;
               } catch (Exception e) {
                 return false;
               }
@@ -133,10 +133,10 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
 
   private Process startTarget() throws IOException {
     return pbf.create(
-            jobRoot,
-            "dataline/integration-singer-bigquery-destination",
-            "--config",
-            "rendered_bigquery.json")
+        jobRoot,
+        "dataline/integration-singer-bigquery-destination",
+        "--config",
+        "rendered_bigquery.json")
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
@@ -180,4 +180,5 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
 
     return BQ.query(queryConfig);
   }
+
 }
