@@ -26,118 +26,52 @@ package io.dataline.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
+import io.dataline.commons.enums.Enums;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.ConfigSchema;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 import me.andrz.jackson.JsonReferenceException;
 import me.andrz.jackson.JsonReferenceProcessor;
-import org.apache.commons.io.FileUtils;
 
 // we force all interaction with disk storage to be effectively single threaded.
 public class DefaultConfigPersistence implements ConfigPersistence {
 
-  private static final String CONFIG_PATH_IN_JAR = "/json";
-  private static final String CONFIG_DIR = "schemas";
-  private static final Path configFilesRoot = getConfigFiles();
   private static final Object lock = new Object();
 
-  private final JsonSchemaValidation jsonSchemaValidation;
+  private final JsonSchemaValidator jsonSchemaValidator;
   private final Path storageRoot;
 
-  public DefaultConfigPersistence(Path storageRoot) {
-    this.storageRoot = storageRoot;
-    jsonSchemaValidation = new JsonSchemaValidation();
+  public DefaultConfigPersistence(final Path storageRoot) {
+    this(storageRoot, new JsonSchemaValidator());
   }
 
-  /**
-   * JsonReferenceProcessor relies on all of the json in consumes being in a file system (not in a
-   * jar). This method copies all of the json configs out of the jar into a temporary directory so
-   * that JsonReferenceProcessor can find them.
-   *
-   * @return path where the config files can be found.
-   */
-  private static Path getConfigFiles() {
-    final URI uri;
-    try {
-      uri = ConfigSchema.class.getResource(CONFIG_PATH_IN_JAR).toURI();
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
-
-    try {
-      final Path configRoot = Files.createTempDirectory("").resolve(CONFIG_DIR);
-      Files.createDirectories(configRoot);
-
-      final FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
-      Path configPathInJar = fileSystem.getPath(CONFIG_PATH_IN_JAR);
-      Files.walk(configPathInJar, 1)
-          .forEach(
-              path -> {
-                if (path.toString().endsWith(".json")) {
-                  try {
-                    Files.copy(path, configRoot.resolve(path.getFileName().toString()));
-                  } catch (IOException e) {
-                    throw new RuntimeException(e);
-                  }
-                }
-              });
-      return configRoot;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public DefaultConfigPersistence(final Path storageRoot, final JsonSchemaValidator schemaValidator) {
+    this.storageRoot = storageRoot;
+    jsonSchemaValidator = schemaValidator;
   }
 
   @Override
-  public <T> T getConfig(PersistenceConfigType persistenceConfigType,
-                         String configId,
-                         Class<T> clazz)
-      throws ConfigNotFoundException, JsonValidationException {
+  public <T> T getConfig(final PersistenceConfigType persistenceConfigType,
+                         final String configId,
+                         final Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
     synchronized (lock) {
       return getConfigInternal(persistenceConfigType, configId, clazz);
     }
   }
 
-  private <T> T getConfigInternal(PersistenceConfigType persistenceConfigType,
-                                  String configId,
-                                  Class<T> clazz)
-      throws ConfigNotFoundException, JsonValidationException {
-    // validate file with schema
-    try {
-      final Path configPath = getFileOrThrow(persistenceConfigType, configId);
-      final T config = Jsons.deserialize(Files.readString(configPath), clazz);
-      validateJson(config, persistenceConfigType);
-
-      return config;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   @Override
-  public <T> Set<T> getConfigs(PersistenceConfigType persistenceConfigType, Class<T> clazz)
-      throws JsonValidationException {
+  public <T> List<T> listConfigs(PersistenceConfigType persistenceConfigType,
+                                 Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
     synchronized (lock) {
-      final Set<T> configs = new HashSet<>();
-      for (String configId : getConfigIds(persistenceConfigType)) {
-        try {
-          configs.add(getConfig(persistenceConfigType, configId, clazz));
-          // this should not happen, because we just looked up these ids.
-        } catch (ConfigNotFoundException e) {
-          throw new RuntimeException(e);
-        }
-      }
-      return configs;
+      return listConfigsInternal(persistenceConfigType, clazz);
     }
   }
 
@@ -145,135 +79,84 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   public <T> void writeConfig(PersistenceConfigType persistenceConfigType,
                               String configId,
                               T config)
-      throws JsonValidationException {
+      throws JsonValidationException, IOException {
     synchronized (lock) {
-      // validate config with schema
-      validateJson(Jsons.jsonNode(config), persistenceConfigType);
-
-      final Path configPath = getConfigPath(persistenceConfigType, configId);
-      ensureDirectory(getConfigDirectory(persistenceConfigType));
-      try {
-        Files.writeString(configPath, Jsons.serialize(config));
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      writeConfigInternal(persistenceConfigType, configId, config);
     }
   }
 
-  @VisibleForTesting
-  JsonNode getSchema(PersistenceConfigType persistenceConfigType) {
-    final String configSchemaFilename =
-        standardConfigTypeToConfigSchema(persistenceConfigType).getSchemaFilename();
-    final Path configFilePath = configFilesRoot.resolve(configSchemaFilename);
+  private <T> T getConfigInternal(PersistenceConfigType persistenceConfigType,
+                                  String configId,
+                                  Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
+    // validate file with schema
+    final Path configPath = buildConfigPath(persistenceConfigType, configId);
+    if (!Files.exists(configPath)) {
+      throw new ConfigNotFoundException(persistenceConfigType, configId);
+    }
 
+    final T config = Jsons.deserialize(Files.readString(configPath), clazz);
+    validateJson(config, persistenceConfigType);
+
+    return config;
+  }
+
+  private <T> List<T> listConfigsInternal(PersistenceConfigType persistenceConfigType,
+                                          Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
+    final Path configTypePath = buildTypePath(persistenceConfigType);
+    if (!Files.exists(configTypePath)) {
+      return Collections.emptyList();
+    }
+
+    List<String> ids = Files.list(configTypePath)
+        .filter(p -> !p.endsWith(".json"))
+        .map(p -> p.getFileName().toString().replace(".json", ""))
+        .collect(Collectors.toList());
+
+    final List<T> configs = Lists.newArrayList();
+    for (String id : ids) {
+      configs.add(getConfig(persistenceConfigType, id, clazz));
+    }
+
+    return configs;
+  }
+
+  private <T> void writeConfigInternal(PersistenceConfigType persistenceConfigType,
+                                       String configId,
+                                       T config)
+      throws JsonValidationException, IOException {
+    // validate config with schema
+    validateJson(Jsons.jsonNode(config), persistenceConfigType);
+
+    final Path configPath = buildConfigPath(persistenceConfigType, configId);
+    Files.createDirectories(configPath.getParent());
+
+    Files.writeString(configPath, Jsons.serialize(config));
+  }
+
+  private Path buildConfigPath(PersistenceConfigType type, String configId) {
+    return buildTypePath(type).resolve(String.format("%s.json", configId));
+  }
+
+  private Path buildTypePath(PersistenceConfigType type) {
+    return storageRoot.resolve(type.toString());
+  }
+
+  private <T> void validateJson(T config, PersistenceConfigType persistenceConfigType) throws JsonValidationException {
+    JsonNode schema = getSchema(persistenceConfigType);
+    jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
+  }
+
+  @VisibleForTesting
+  private JsonNode getSchema(PersistenceConfigType persistenceConfigType) {
     try {
       // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
       // this.
       final JsonReferenceProcessor jsonReferenceProcessor = new JsonReferenceProcessor();
       jsonReferenceProcessor.setMaxDepth(-1); // no max.
-      return jsonReferenceProcessor.process(configFilePath.toFile());
+      return jsonReferenceProcessor.process(Enums.convertTo(persistenceConfigType, ConfigSchema.class).getFile());
     } catch (IOException | JsonReferenceException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private Set<Path> getFiles(PersistenceConfigType persistenceConfigType) {
-    Path configDirPath = getConfigDirectory(persistenceConfigType);
-    ensureDirectory(configDirPath);
-    try {
-      return Files.list(configDirPath).collect(Collectors.toSet());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private Path getConfigDirectory(PersistenceConfigType persistenceConfigType) {
-    return storageRoot.resolve(persistenceConfigType.toString());
-  }
-
-  private Path getConfigPath(PersistenceConfigType persistenceConfigType, String configId) {
-    return getConfigDirectory(persistenceConfigType).resolve(getFilename(configId));
-  }
-
-  private Set<String> getConfigIds(PersistenceConfigType persistenceConfigType) {
-    return getFiles(persistenceConfigType).stream()
-        .map(path -> path.getFileName().toString().replace(".json", ""))
-        .collect(Collectors.toSet());
-  }
-
-  private Optional<Path> getFile(PersistenceConfigType persistenceConfigType, String id) {
-    ensureDirectory(getConfigDirectory(persistenceConfigType));
-    final Path path = getConfigPath(persistenceConfigType, id);
-    if (Files.exists(path)) {
-      return Optional.of(path);
-    } else {
-      return Optional.empty();
-    }
-  }
-
-  private String getFilename(String id) {
-    return String.format("%s.json", id);
-  }
-
-  private ConfigSchema standardConfigTypeToConfigSchema(PersistenceConfigType persistenceConfigType) {
-    switch (persistenceConfigType) {
-      case STANDARD_WORKSPACE:
-        return ConfigSchema.STANDARD_WORKSPACE;
-      case STANDARD_SOURCE:
-        return ConfigSchema.STANDARD_SOURCE;
-      case SOURCE_CONNECTION_SPECIFICATION:
-        return ConfigSchema.SOURCE_CONNECTION_SPECIFICATION;
-      case SOURCE_CONNECTION_IMPLEMENTATION:
-        return ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION;
-      case STANDARD_DESTINATION:
-        return ConfigSchema.STANDARD_DESTINATION;
-      case DESTINATION_CONNECTION_SPECIFICATION:
-        return ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION;
-      case DESTINATION_CONNECTION_IMPLEMENTATION:
-        return ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION;
-      case STANDARD_CONNECTION_STATUS:
-        return ConfigSchema.STANDARD_CONNECTION_STATUS;
-      case STANDARD_DISCOVERY_OUTPUT:
-        return ConfigSchema.STANDARD_DISCOVERY_OUTPUT;
-      case STANDARD_SYNC:
-        return ConfigSchema.STANDARD_SYNC;
-      case STANDARD_SYNC_SUMMARY:
-        return ConfigSchema.STANDARD_SYNC_SUMMARY;
-      case STANDARD_SYNC_SCHEDULE:
-        return ConfigSchema.STANDARD_SYNC_SCHEDULE;
-      case STATE:
-        return ConfigSchema.STATE;
-      default:
-        throw new RuntimeException(
-            String.format(
-                "No mapping from StandardConfigType to ConfigSchema for %s",
-                persistenceConfigType));
-    }
-  }
-
-  private <T> void validateJson(T config, PersistenceConfigType persistenceConfigType)
-      throws JsonValidationException {
-
-    JsonNode schema = getSchema(persistenceConfigType);
-    jsonSchemaValidation.validateThrow(schema, Jsons.jsonNode(config));
-  }
-
-  private Path getFileOrThrow(PersistenceConfigType persistenceConfigType, String configId)
-      throws ConfigNotFoundException {
-    return getFile(persistenceConfigType, configId)
-        .orElseThrow(
-            () -> new ConfigNotFoundException(
-                String.format(
-                    "config type: %s id: %s not found in path %s",
-                    persistenceConfigType,
-                    configId,
-                    getConfigPath(persistenceConfigType, configId))));
-  }
-
-  private void ensureDirectory(Path path) {
-    try {
-      FileUtils.forceMkdir(path.toFile());
-    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }

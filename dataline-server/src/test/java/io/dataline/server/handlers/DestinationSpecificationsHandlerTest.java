@@ -28,10 +28,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationSpecificationRead;
 import io.dataline.config.DestinationConnectionSpecification;
+import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
@@ -55,11 +56,11 @@ class DestinationSpecificationsHandlerTest {
   }
 
   @Test
-  void testGetDestinationSpecification() throws JsonValidationException {
-    when(configPersistence.getConfigs(
+  void testGetDestinationSpecification() throws JsonValidationException, IOException, ConfigNotFoundException {
+    when(configPersistence.listConfigs(
         PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
         DestinationConnectionSpecification.class))
-            .thenReturn(Sets.newHashSet(destinationConnectionSpecification));
+            .thenReturn(Lists.newArrayList(destinationConnectionSpecification));
 
     DestinationSpecificationRead expectedDestinationSpecificationRead =
         new DestinationSpecificationRead();

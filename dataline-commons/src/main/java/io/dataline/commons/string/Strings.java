@@ -22,17 +22,17 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons;
+package io.dataline.commons.string;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import com.google.common.collect.Streams;
+import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Test;
+public class Strings {
 
-class HelloWorldTest {
-
-  @Test
-  void name() {
-    assertEquals(1, 1);
+  public static String join(Iterable<?> iterable, CharSequence separator) {
+    return Streams.stream(iterable)
+        .map(Object::toString)
+        .collect(Collectors.joining(separator));
   }
 
 }

@@ -24,10 +24,18 @@
 
 package io.dataline.commons.resources;
 
+import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.stream.Stream;
 
 public class MoreResources {
 
@@ -35,6 +43,32 @@ public class MoreResources {
   public static String readResource(String name) throws IOException {
     URL resource = Resources.getResource(name);
     return Resources.toString(resource, StandardCharsets.UTF_8);
+  }
+
+  /*
+   * This class is a bit of a hack. Might have unexpected behavior.
+   */
+  public static Stream<Path> listResources(Class<?> klass, String name) throws IOException {
+    Preconditions.checkNotNull(klass);
+    Preconditions.checkNotNull(name);
+    Preconditions.checkArgument(!name.isBlank());
+
+    try {
+      final String rootedResourceDir = !name.startsWith("/") ? String.format("/%s", name) : name;
+      final URL url = klass.getResource(rootedResourceDir);
+
+      Path searchPath;
+      if (url.toString().startsWith("jar")) {
+        final FileSystem fileSystem = FileSystems.newFileSystem(url.toURI(), Collections.emptyMap());
+        searchPath = fileSystem.getPath(rootedResourceDir);
+      } else {
+        searchPath = Path.of(url.toURI());
+      }
+
+      return Files.walk(searchPath, 1);
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

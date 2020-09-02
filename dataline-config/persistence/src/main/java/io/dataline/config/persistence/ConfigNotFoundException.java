@@ -26,12 +26,21 @@ package io.dataline.config.persistence;
 
 public class ConfigNotFoundException extends Exception {
 
-  public ConfigNotFoundException(String message) {
-    super(message);
+  private PersistenceConfigType type;
+  private final String configId;
+
+  public ConfigNotFoundException(PersistenceConfigType type, String configId) {
+    super(String.format("config type: %s id: %s", type, configId));
+    this.type = type;
+    this.configId = configId;
   }
 
-  public ConfigNotFoundException(String message, Throwable cause) {
-    super(message, cause);
+  public PersistenceConfigType getType() {
+    return type;
+  }
+
+  public String getConfigId() {
+    return configId;
   }
 
 }
