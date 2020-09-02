@@ -40,4 +40,11 @@ class ScopeHelperTest {
     assertEquals(expected, actual);
   }
 
+  @Test
+  public void testGetConfig() {
+    final String configId = UUID.randomUUID().toString();
+    assertEquals("", ScopeHelper.getConfigId("sync:"));
+    assertEquals(configId, ScopeHelper.getConfigId("sync:" + configId));
+  }
+
 }

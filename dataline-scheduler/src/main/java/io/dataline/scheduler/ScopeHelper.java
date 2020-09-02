@@ -24,16 +24,28 @@
 
 package io.dataline.scheduler;
 
+import com.google.common.base.Preconditions;
 import io.dataline.config.JobConfig;
 
 public class ScopeHelper {
 
+  private static final String SCOPE_DELIMITER = ":";
+
   public static String createScope(JobConfig.ConfigType configType, String configId) {
-    return configType.value() + ":" + configId;
+    Preconditions.checkNotNull(configType);
+    Preconditions.checkNotNull(configId);
+    return configType.value() + SCOPE_DELIMITER + configId;
   }
 
   public static String getConfigId(String scope) {
-    return scope.split(":")[1];
+    Preconditions.checkNotNull(scope);
+
+    final String[] split = scope.split(SCOPE_DELIMITER);
+    if (split.length <= 1) {
+      return "";
+    } else {
+      return split[1];
+    }
   }
 
 }
