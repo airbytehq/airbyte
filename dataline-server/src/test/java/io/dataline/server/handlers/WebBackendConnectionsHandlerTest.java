@@ -41,8 +41,10 @@ import io.dataline.api.model.WbConnectionReadList;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.enums.Enums;
 import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.StandardSource;
 import io.dataline.config.StandardSync;
 import io.dataline.server.helpers.ConnectionHelpers;
+import io.dataline.server.helpers.SourceHelpers;
 import io.dataline.server.helpers.SourceImplementationHelpers;
 import java.io.IOException;
 import java.time.Instant;
@@ -68,14 +70,11 @@ class WebBackendConnectionsHandlerTest {
     jobHistoryHandler = mock(JobHistoryHandler.class);
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
 
-    SourceConnectionImplementation sourceImplementation =
-        SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID());
-    sourceImplementationRead =
-        SourceImplementationHelpers.getSourceImplementationRead(
-            sourceImplementation, UUID.randomUUID());
+    final StandardSource standardSource = SourceHelpers.generateSource();
+    SourceConnectionImplementation sourceImplementation = SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID());
+    sourceImplementationRead = SourceImplementationHelpers.getSourceImplementationRead(sourceImplementation, standardSource);
 
-    final StandardSync standardSync =
-        ConnectionHelpers.generateSync(sourceImplementation.getSourceImplementationId());
+    final StandardSync standardSync = ConnectionHelpers.generateSync(sourceImplementation.getSourceImplementationId());
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
   }
 

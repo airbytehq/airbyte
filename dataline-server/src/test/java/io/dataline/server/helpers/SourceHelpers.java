@@ -24,31 +24,17 @@
 
 package io.dataline.server.helpers;
 
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.SourceConnectionSpecification;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import io.dataline.config.StandardSource;
 import java.util.UUID;
 
-public class SourceSpecificationHelpers {
+public class SourceHelpers {
 
-  public static SourceConnectionSpecification generateSourceSpecification() throws IOException {
-    return generateSourceSpecification(UUID.randomUUID());
-  }
+  public static StandardSource generateSource() {
+    StandardSource source = new StandardSource();
+    source.setSourceId(UUID.randomUUID());
+    source.setName("marketo");
 
-  public static SourceConnectionSpecification generateSourceSpecification(UUID sourceId) throws IOException {
-    final UUID sourceSpecificationId = UUID.randomUUID();
-
-    final Path path = Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
-
-    final SourceConnectionSpecification sourceConnectionSpecification = new SourceConnectionSpecification();
-    sourceConnectionSpecification.setSourceId(sourceId);
-    sourceConnectionSpecification.setSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionSpecification.setSpecification(Jsons.deserialize(Files.readString(path)));
-
-    return sourceConnectionSpecification;
+    return source;
   }
 
 }
