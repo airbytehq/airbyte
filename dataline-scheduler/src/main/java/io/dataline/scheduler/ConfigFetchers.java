@@ -24,6 +24,7 @@
 
 package io.dataline.scheduler;
 
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
@@ -31,7 +32,6 @@ import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -49,7 +49,7 @@ public class ConfigFetchers {
                                                                                  UUID sourceImplementationId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+          ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
           sourceImplementationId.toString(),
           SourceConnectionImplementation.class);
     } catch (ConfigNotFoundException e) {
@@ -65,7 +65,7 @@ public class ConfigFetchers {
                                                                                            UUID destinationImplementationId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
+          ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
           destinationImplementationId.toString(),
           DestinationConnectionImplementation.class);
     } catch (JsonValidationException e) {
@@ -81,7 +81,7 @@ public class ConfigFetchers {
                                              UUID connectionId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.STANDARD_SYNC,
+          ConfigSchema.STANDARD_SYNC,
           connectionId.toString(),
           StandardSync.class);
     } catch (JsonValidationException e) {
@@ -95,7 +95,7 @@ public class ConfigFetchers {
 
   public static List<StandardSync> getStandardSyncs(ConfigPersistence configPersistence) {
     try {
-      return configPersistence.listConfigs(PersistenceConfigType.STANDARD_SYNC, StandardSync.class);
+      return configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
     } catch (ConfigNotFoundException e) {
       throw getConfigNotFoundException(e);
     } catch (JsonValidationException e) {
@@ -109,7 +109,7 @@ public class ConfigFetchers {
                                                              UUID connectionId) {
     try {
       return configPersistence.getConfig(
-          PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+          ConfigSchema.STANDARD_SYNC_SCHEDULE,
           connectionId.toString(),
           StandardSyncSchedule.class);
     } catch (ConfigNotFoundException e) {

@@ -31,10 +31,10 @@ import io.dataline.api.model.DestinationImplementationRead;
 import io.dataline.api.model.DestinationImplementationReadList;
 import io.dataline.api.model.DestinationImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.errors.KnownException;
 import io.dataline.server.helpers.ConfigFetchers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
@@ -176,7 +176,7 @@ public class DestinationImplementationsHandler {
 
     ConfigFetchers.writeConfig(
         configPersistence,
-        PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
+        ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
         destinationImplementationId.toString(),
         destinationConnectionImplementation);
   }

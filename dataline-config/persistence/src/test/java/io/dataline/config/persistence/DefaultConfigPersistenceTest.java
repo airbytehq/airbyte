@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.google.common.collect.Sets;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.Schema;
 import io.dataline.config.StandardSource;
 import io.dataline.config.StandardSync;
@@ -73,24 +74,24 @@ class DefaultConfigPersistenceTest {
 
   @Test
   void testReadWriteConfig() throws IOException, JsonValidationException, ConfigNotFoundException {
-    configPersistence.writeConfig(PersistenceConfigType.STANDARD_SOURCE, UUID_1.toString(), SOURCE_1);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE, UUID_1.toString(), SOURCE_1);
 
     assertEquals(
         SOURCE_1,
         configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_SOURCE,
+            ConfigSchema.STANDARD_SOURCE,
             UUID_1.toString(),
             StandardSource.class));
   }
 
   @Test
   void testListConfigs() throws JsonValidationException, IOException, ConfigNotFoundException {
-    configPersistence.writeConfig(PersistenceConfigType.STANDARD_SOURCE, UUID_1.toString(), SOURCE_1);
-    configPersistence.writeConfig(PersistenceConfigType.STANDARD_SOURCE, UUID_2.toString(), SOURCE_2);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE, UUID_1.toString(), SOURCE_1);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE, UUID_2.toString(), SOURCE_2);
 
     assertEquals(
         Sets.newHashSet(SOURCE_1, SOURCE_2),
-        Sets.newHashSet(configPersistence.listConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class)));
+        Sets.newHashSet(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE, StandardSource.class)));
   }
 
   @Test
@@ -106,11 +107,11 @@ class DefaultConfigPersistenceTest {
     standardSync.setStatus(StandardSync.Status.ACTIVE);
     standardSync.setSchema(schema);
 
-    configPersistence.writeConfig(PersistenceConfigType.STANDARD_SYNC, UUID_1.toString(), standardSync);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), standardSync);
 
     assertEquals(
         standardSync,
-        configPersistence.getConfig(PersistenceConfigType.STANDARD_SYNC, UUID_1.toString(), StandardSync.class));
+        configPersistence.getConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), StandardSync.class));
   }
 
   @Test
@@ -121,7 +122,7 @@ class DefaultConfigPersistenceTest {
     doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
 
     assertThrows(JsonValidationException.class, () -> configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_SOURCE,
+        ConfigSchema.STANDARD_SOURCE,
         UUID_1.toString(),
         standardSource));
   }
