@@ -61,7 +61,6 @@ import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.DefaultConfigPersistence;
-import io.dataline.config.persistence.JsonSchemaValidator;
 import io.dataline.scheduler.DefaultSchedulerPersistence;
 import io.dataline.scheduler.SchedulerPersistence;
 import io.dataline.server.handlers.ConnectionsHandler;
