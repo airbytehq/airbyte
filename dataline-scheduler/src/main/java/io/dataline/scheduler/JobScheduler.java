@@ -34,7 +34,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,8 +110,6 @@ public class JobScheduler implements Runnable {
         break;
     }
   }
-
-
 
   private static Long getIntervalInSeconds(Schedule schedule) {
     return ScheduleHelpers.getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
