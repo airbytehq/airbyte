@@ -22,25 +22,34 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.dataline.commons.resources;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import com.google.common.collect.Sets;
 import java.io.IOException;
-import java.util.List;
+import java.nio.file.Path;
+import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
 
-public interface ConfigPersistence {
+class MoreResourcesTest {
 
-  <T> T getConfig(PersistenceConfigType persistenceConfigType,
-                  String configId,
-                  Class<T> clazz)
-      throws ConfigNotFoundException, JsonValidationException, IOException;
+  @Test
+  void testResourceRead() throws IOException {
+    assertEquals("content1\n", MoreResources.readResource("resource_test"));
+    assertEquals("content2\n", MoreResources.readResource("subdir/resource_test_sub"));
 
-  <T> List<T> listConfigs(PersistenceConfigType persistenceConfigType,
-                          Class<T> clazz)
-      throws JsonValidationException, IOException, ConfigNotFoundException;
+    assertThrows(IllegalArgumentException.class, () -> MoreResources.readResource("invalid"));
+  }
 
-  <T> void writeConfig(PersistenceConfigType persistenceConfigType,
-                       String configId,
-                       T config)
-      throws JsonValidationException, IOException;
+  @Test
+  void testListResource() throws IOException {
+    assertEquals(
+        Sets.newHashSet("subdir", "resource_test_sub", "resource_test_sub_2"),
+        MoreResources.listResources(MoreResourcesTest.class, "subdir")
+            .map(Path::getFileName)
+            .map(Path::toString)
+            .collect(Collectors.toSet()));
+  }
 
 }

@@ -39,6 +39,7 @@ import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.config.persistence.PersistenceConstants;
+import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +71,7 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException {
+  void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
         PersistenceConfigType.STANDARD_WORKSPACE,
         workspace.getWorkspaceId().toString(),
@@ -90,7 +91,7 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException {
+  void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
         PersistenceConfigType.STANDARD_WORKSPACE,
         workspace.getWorkspaceId().toString(),
@@ -110,7 +111,7 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testUpdateWorkspace() throws JsonValidationException, ConfigNotFoundException {
+  void testUpdateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
 
     final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate();
     workspaceUpdate.setWorkspaceId(workspace.getWorkspaceId());

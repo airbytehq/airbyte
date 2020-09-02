@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import io.dataline.api.model.DestinationImplementationCreate;
 import io.dataline.api.model.DestinationImplementationIdRequestBody;
 import io.dataline.api.model.DestinationImplementationRead;
@@ -166,7 +166,7 @@ class DestinationImplementationsHandlerTest {
 
   @Test
   void testUpdateDestinationImplementation()
-      throws JsonValidationException, ConfigNotFoundException {
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     final JsonNode newConfiguration = destinationConnectionImplementation.getConfiguration();
 
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
@@ -225,7 +225,7 @@ class DestinationImplementationsHandlerTest {
   }
 
   @Test
-  void testGetDestinationImplementation() throws JsonValidationException, ConfigNotFoundException {
+  void testGetDestinationImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
         PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
         destinationConnectionImplementation.getDestinationImplementationId().toString(),
@@ -265,11 +265,11 @@ class DestinationImplementationsHandlerTest {
 
   @Test
   void testListDestinationImplementationsForWorkspace()
-      throws JsonValidationException, ConfigNotFoundException {
-    when(configPersistence.getConfigs(
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configPersistence.listConfigs(
         PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION,
         DestinationConnectionImplementation.class))
-            .thenReturn(Sets.newHashSet(destinationConnectionImplementation));
+            .thenReturn(Lists.newArrayList(destinationConnectionImplementation));
 
     when(configPersistence.getConfig(
         PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,

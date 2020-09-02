@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.SourceConnectionSpecification;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.JsonSchemaValidation;
+import io.dataline.config.persistence.JsonSchemaValidator;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.server.helpers.ConfigFetchers;
 import java.util.UUID;
@@ -37,12 +37,12 @@ public class IntegrationSchemaValidation {
 
   private final ConfigPersistence configPersistence;
 
-  private final JsonSchemaValidation jsonSchemaValidation;
+  private final JsonSchemaValidator jsonSchemaValidator;
 
   public IntegrationSchemaValidation(ConfigPersistence configPersistence) {
     this.configPersistence = configPersistence;
 
-    this.jsonSchemaValidation = new JsonSchemaValidation();
+    this.jsonSchemaValidator = new JsonSchemaValidator();
   }
 
   public void validateSourceConnectionConfiguration(UUID sourceConnectionSpecificationId, JsonNode configJson)
@@ -53,7 +53,7 @@ public class IntegrationSchemaValidation {
 
     final JsonNode schemaJson = sourceConnectionSpecification.getSpecification();
 
-    jsonSchemaValidation.validateThrow(schemaJson, configJson);
+    jsonSchemaValidator.ensure(schemaJson, configJson);
   }
 
   public void validateDestinationConnectionConfiguration(UUID destinationConnectionSpecificationId, JsonNode configJson)
@@ -64,7 +64,7 @@ public class IntegrationSchemaValidation {
 
     final JsonNode schemaJson = destinationConnectionSpecification.getSpecification();
 
-    jsonSchemaValidation.validateThrow(schemaJson, configJson);
+    jsonSchemaValidator.ensure(schemaJson, configJson);
   }
 
 }
