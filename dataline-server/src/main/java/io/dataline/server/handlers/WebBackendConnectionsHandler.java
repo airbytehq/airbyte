@@ -24,6 +24,7 @@
 
 package io.dataline.server.handlers;
 
+import io.dataline.api.model.ConnectionIdRequestBody;
 import io.dataline.api.model.ConnectionReadList;
 import io.dataline.api.model.JobConfigType;
 import io.dataline.api.model.JobListRequestBody;
@@ -44,30 +45,25 @@ public class WebBackendConnectionsHandler {
   private final JobHistoryHandler jobHistoryHandler;
 
   public WebBackendConnectionsHandler(
-                                      ConnectionsHandler connectionsHandler,
-                                      SourceImplementationsHandler sourceImplementationsHandler,
-                                      JobHistoryHandler jobHistoryHandler) {
+      ConnectionsHandler connectionsHandler,
+      SourceImplementationsHandler sourceImplementationsHandler,
+      JobHistoryHandler jobHistoryHandler) {
     this.connectionsHandler = connectionsHandler;
     this.sourceImplementationsHandler = sourceImplementationsHandler;
     this.jobHistoryHandler = jobHistoryHandler;
   }
 
-  public WbConnectionReadList webBackendListConnectionsForWorkspace(
-                                                                    WorkspaceIdRequestBody workspaceIdRequestBody) {
-    final ConnectionReadList connectionReadList =
-        connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
+  public WbConnectionReadList webBackendListConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
+    final ConnectionReadList connectionReadList = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
 
     final List<WbConnectionRead> reads =
         connectionReadList.getConnections().stream()
             .map(
                 connectionRead -> {
-                  final SourceImplementationIdRequestBody sourceImplementationIdRequestBody =
-                      new SourceImplementationIdRequestBody();
-                  sourceImplementationIdRequestBody.setSourceImplementationId(
-                      connectionRead.getSourceImplementationId());
+                  final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody();
+                  sourceImplementationIdRequestBody.setSourceImplementationId(connectionRead.getSourceImplementationId());
                   final SourceImplementationRead sourceImplementation =
-                      sourceImplementationsHandler.getSourceImplementation(
-                          sourceImplementationIdRequestBody);
+                      sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
 
                   final JobListRequestBody jobListRequestBody = new JobListRequestBody();
                   jobListRequestBody.setConfigId(connectionRead.getConnectionId().toString());
@@ -76,20 +72,14 @@ public class WebBackendConnectionsHandler {
 
                   final WbConnectionRead wbConnectionRead = new WbConnectionRead();
                   wbConnectionRead.setConnectionId(connectionRead.getConnectionId());
-                  wbConnectionRead.setSourceImplementationId(
-                      connectionRead.getSourceImplementationId());
-                  wbConnectionRead.setDestinationImplementationId(
-                      connectionRead.getDestinationImplementationId());
+                  wbConnectionRead.setSourceImplementationId(connectionRead.getSourceImplementationId());
+                  wbConnectionRead.setDestinationImplementationId(connectionRead.getDestinationImplementationId());
                   wbConnectionRead.setName(connectionRead.getName());
                   wbConnectionRead.setSyncSchema(connectionRead.getSyncSchema());
                   wbConnectionRead.setStatus(connectionRead.getStatus());
-                  wbConnectionRead.setSyncMode(
-                      Enums.convertTo(
-                          connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class));
+                  wbConnectionRead.setSyncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class));
                   wbConnectionRead.setSchedule(connectionRead.getSchedule());
-                  jobReadList.getJobs().stream()
-                      .findFirst()
-                      .ifPresent(job -> wbConnectionRead.setLastSync(job.getCreatedAt()));
+                  jobReadList.getJobs().stream().findFirst().ifPresent(job -> wbConnectionRead.setLastSync(job.getCreatedAt()));
 
                   wbConnectionRead.setSource(sourceImplementation);
 
@@ -103,4 +93,7 @@ public class WebBackendConnectionsHandler {
     return readList;
   }
 
+  public WbConnectionRead webBackendGetConnection(ConnectionIdRequestBody connectionIdRequestBody) {
+    return null;
+  }
 }
