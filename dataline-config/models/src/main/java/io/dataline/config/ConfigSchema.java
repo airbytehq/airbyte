@@ -24,7 +24,6 @@
 
 package io.dataline.config;
 
-import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 import io.dataline.commons.io.IOs;
 import java.io.File;
@@ -36,33 +35,31 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public enum ConfigSchema {
 
   // workspace
-  STANDARD_WORKSPACE("StandardWorkspace.json", StandardWorkspace.class),
+  STANDARD_WORKSPACE("StandardWorkspace.json"),
 
   // source
-  STANDARD_SOURCE("StandardSource.json", StandardSource.class),
-  SOURCE_CONNECTION_SPECIFICATION("SourceConnectionSpecification.json", SourceConnectionSpecification.class),
-  SOURCE_CONNECTION_IMPLEMENTATION("SourceConnectionImplementation.json", SourceConnectionImplementation.class),
+  STANDARD_SOURCE("StandardSource.json"),
+  SOURCE_CONNECTION_SPECIFICATION("SourceConnectionSpecification.json"),
+  SOURCE_CONNECTION_IMPLEMENTATION("SourceConnectionImplementation.json"),
 
   // destination
-  STANDARD_DESTINATION("StandardDestination.json", StandardDestination.class),
-  DESTINATION_CONNECTION_SPECIFICATION("DestinationConnectionSpecification.json", DestinationConnectionSpecification.class),
-  DESTINATION_CONNECTION_IMPLEMENTATION("DestinationConnectionImplementation.json", DestinationConnectionImplementation.class),
+  STANDARD_DESTINATION("StandardDestination.json"),
+  DESTINATION_CONNECTION_SPECIFICATION("DestinationConnectionSpecification.json"),
+  DESTINATION_CONNECTION_IMPLEMENTATION("DestinationConnectionImplementation.json"),
 
   // sync
-  STANDARD_SYNC("StandardSync.json", StandardSync.class),
-  STANDARD_SYNC_SUMMARY("StandardSyncSummary.json", StandardSyncSummary.class),
-  STANDARD_SYNC_SCHEDULE("StandardSyncSchedule.json", StandardSyncSchedule.class),
+  STANDARD_SYNC("StandardSync.json"),
+  STANDARD_SYNC_SUMMARY("StandardSyncSummary.json"),
+  STANDARD_SYNC_SCHEDULE("StandardSyncSchedule.json"),
 
-  STATE("State.json", State.class);
+  STATE("State.json");
 
   static final Path KNOWN_SCHEMAS_ROOT = prepareSchemas();
   private static final String RESOURCE_DIR = "json";
@@ -103,29 +100,15 @@ public enum ConfigSchema {
     }
   }
 
-  public static ConfigSchema valueOf(final Class<?> klass) {
-    Optional<ConfigSchema> res = Arrays.stream(ConfigSchema.values())
-        .filter(v -> v.getKlass() == klass)
-        .findFirst();
-
-    Preconditions.checkArgument(res.isPresent());
-    return res.get();
-  }
-
   private final String schemaFilename;
   private final Class<?> klass;
 
-  ConfigSchema(final String schemaFilename, final Class<?> klass) {
+  ConfigSchema(final String schemaFilename) {
     this.schemaFilename = schemaFilename;
-    this.klass = klass;
   }
 
   public File getFile() {
     return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
-  }
-
-  public Class<?> getKlass() {
-    return klass;
   }
 
 }

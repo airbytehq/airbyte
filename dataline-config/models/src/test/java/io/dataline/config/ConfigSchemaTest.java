@@ -24,13 +24,12 @@
 
 package io.dataline.config;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfigSchemaTest {
 
@@ -38,11 +37,6 @@ class ConfigSchemaTest {
   void testFile() throws IOException {
     final String schema = Files.readString(ConfigSchema.STATE.getFile().toPath(), StandardCharsets.UTF_8);
     assertTrue(schema.contains("title"));
-  }
-
-  @Test
-  void testValueOfRead() {
-    assertEquals(ConfigSchema.STATE, ConfigSchema.valueOf(State.class));
   }
 
   @Test
