@@ -73,6 +73,7 @@ class DefaultSchedulerPersistenceTest {
   private static final DestinationConnectionImplementation destinationConnectionImplementation;
   private static final StandardSync standardSync;
   private static final Instant now;
+  private static final Supplier<Instant> timeSupplier;
 
   static {
     final UUID workspaceId = UUID.randomUUID();
@@ -125,8 +126,8 @@ class DefaultSchedulerPersistenceTest {
     standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
 
     now = Instant.now();
-    @SuppressWarnings("unchecked")
-    Supplier<Instant> timeSupplier = mock(Supplier.class);
+    // noinspection unchecked
+    timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(now);
 
   }
@@ -178,7 +179,7 @@ class DefaultSchedulerPersistenceTest {
 
   @Test
   public void testCreateSourceCheckConnectionJob() throws IOException, SQLException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
     final long jobId = schedulerPersistence.createSourceCheckConnectionJob(sourceConnectionImplementation);
 
     Record jobEntry = getJobRecord(jobId);
@@ -197,7 +198,7 @@ class DefaultSchedulerPersistenceTest {
 
   @Test
   public void testCreateDestinationCheckConnectionJob() throws IOException, SQLException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
     final long jobId = schedulerPersistence.createDestinationCheckConnectionJob(destinationConnectionImplementation);
 
     Record jobEntry = getJobRecord(jobId);
@@ -216,7 +217,7 @@ class DefaultSchedulerPersistenceTest {
 
   @Test
   public void testCreateDiscoverSchemaJob() throws IOException, SQLException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
     final long jobId = schedulerPersistence.createDiscoverSchemaJob(sourceConnectionImplementation);
 
     Record jobEntry = getJobRecord(jobId);
@@ -235,7 +236,7 @@ class DefaultSchedulerPersistenceTest {
 
   @Test
   public void testCreateSyncJob() throws IOException, SQLException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
     final long jobId = schedulerPersistence.createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync);
 
     Record jobEntry = getJobRecord(jobId);
@@ -258,7 +259,7 @@ class DefaultSchedulerPersistenceTest {
 
   @Test
   public void testGetJob() throws IOException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
     final long jobId = schedulerPersistence.createSourceCheckConnectionJob(sourceConnectionImplementation);
 
     final Job actual = schedulerPersistence.getJob(jobId);
@@ -270,7 +271,7 @@ class DefaultSchedulerPersistenceTest {
 
   @Test
   public void testListJobs() throws IOException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
     final long jobId = schedulerPersistence.createSourceCheckConnectionJob(sourceConnectionImplementation);
 
     final List<Job> actualList = schedulerPersistence
@@ -285,7 +286,7 @@ class DefaultSchedulerPersistenceTest {
 
   @Test
   public void testGetJobFromRecord() throws IOException, SQLException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
     final long jobId = schedulerPersistence.createSourceCheckConnectionJob(sourceConnectionImplementation);
     final Record jobRecord = getJobRecord(jobId);
 
