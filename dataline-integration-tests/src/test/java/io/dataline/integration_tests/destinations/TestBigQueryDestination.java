@@ -30,7 +30,6 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.FieldValue;
-import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
 import com.google.common.base.Charsets;
@@ -46,16 +45,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
-import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 class TestBigQueryDestination extends BaseIntegrationTestCase {
 
@@ -93,50 +91,23 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
 
   @Test
   public void runTest() throws IOException, InterruptedException {
+    List<String> expectedList =
+        Arrays.asList("2.13,0.12,null", "7.15,1.14,null", "7.99,1.99,10.99", "7.15,1.14,10.16");
+
     writeResourceToStdIn("singer-tap-output.txt", process);
 
-    await()
-        .atMost(10, SECONDS)
-        .until(
-            () -> {
-              try {
-                return getExchangeRateTable().getTotalRows() == 2L;
-              } catch (Exception e) {
-                return false;
-              }
-            });
+    process.waitFor();
 
-    TableResult results = getExchangeRateTable();
-    List<FieldValueList> actualList =
-        StreamSupport.stream(results.iterateAll().spliterator(), false).collect(toList());
-
-    List<FieldValueList> expectedList =
-        Arrays.asList(
-            FieldValueList.of(
-                Arrays.asList(fieldValue(1598918400.0), fieldValue("0.0"), fieldValue("2.0"))),
-            FieldValueList.of(
-                Arrays.asList(fieldValue(1598918400.0), fieldValue("1.0"), fieldValue("7.0"))));
-
-    for (int i = 0; i < expectedList.size(); i++) {
-      FieldValueList actual = actualList.get(i);
-      FieldValueList expected = expectedList.get(i);
-
-      System.out.println("actual = " + actual);
-      System.out.println("expected = " + expected);
-
-      // compare all except datetime
-      for (int j = 1; j < 3; j++) {
-        assertEquals(expected.get(j).getValue(), actual.get(j).getValue());
-      }
-    }
+    List<String> actualList = getExchangeRateTable();
+    assertLinesMatch(expectedList, actualList);
   }
 
   private Process startTarget() throws IOException {
     return pbf.create(
-        jobRoot,
-        "dataline/integration-singer-bigquery-destination",
-        "--config",
-        "rendered_bigquery.json")
+            jobRoot,
+            "dataline/integration-singer-bigquery-destination",
+            "--config",
+            "rendered_bigquery.json")
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
@@ -153,13 +124,10 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
     fullConfig.put("credentials_json", partialConfig.get("credentials_json").textValue());
     fullConfig.put("dataset_id", datasetName);
     fullConfig.put("disable_collection", true);
+    fullConfig.put("default_target_schema", datasetName);
 
     Files.writeString(
         Path.of(jobRoot.toString(), "rendered_bigquery.json"), Jsons.serialize(fullConfig));
-  }
-
-  private static FieldValue fieldValue(Object object) {
-    return FieldValue.of(FieldValue.Attribute.PRIMITIVE, object);
   }
 
   private void writeResourceToStdIn(String resourceName, Process process) throws IOException {
@@ -171,14 +139,30 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
 
     writer.write(text);
     writer.flush();
+
+    writer.close();
   }
 
-  private TableResult getExchangeRateTable() throws InterruptedException {
+  private List<String> getExchangeRateTable() throws InterruptedException {
     QueryJobConfiguration queryConfig =
-        QueryJobConfiguration.newBuilder("SELECT * FROM " + datasetName + ".exchange_rate;")
+        QueryJobConfiguration.newBuilder(
+                "SELECT * FROM " + datasetName + ".exchange_rate ORDER BY date ASC;")
+            .setUseQueryCache(false)
             .build();
 
-    return BQ.query(queryConfig);
-  }
+    TableResult results = BQ.query(queryConfig);
 
+    List<String> resultList =
+        StreamSupport.stream(results.iterateAll().spliterator(), false)
+            .map(
+                x ->
+                    x.stream()
+                        .skip(1)
+                        .map(FieldValue::getValue)
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(",")))
+            .collect(toList());
+
+    return resultList;
+  }
 }
