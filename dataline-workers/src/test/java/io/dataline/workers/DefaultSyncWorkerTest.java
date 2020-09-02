@@ -42,7 +42,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
 
-class DefaultSyncWorkerTest extends BaseWorkerTestCase {
+class DefaultSyncWorkerTest {
 
   private static final Path WORKSPACE_ROOT = Path.of("/workspaces/10");
   private static final String TABLE_NAME = "user_preferences";
