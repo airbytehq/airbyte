@@ -25,6 +25,7 @@
 package io.dataline.server.handlers;
 
 import io.dataline.api.model.ConnectionIdRequestBody;
+import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionReadList;
 import io.dataline.api.model.JobConfigType;
 import io.dataline.api.model.JobListRequestBody;
@@ -45,9 +46,9 @@ public class WebBackendConnectionsHandler {
   private final JobHistoryHandler jobHistoryHandler;
 
   public WebBackendConnectionsHandler(
-      ConnectionsHandler connectionsHandler,
-      SourceImplementationsHandler sourceImplementationsHandler,
-      JobHistoryHandler jobHistoryHandler) {
+                                      ConnectionsHandler connectionsHandler,
+                                      SourceImplementationsHandler sourceImplementationsHandler,
+                                      JobHistoryHandler jobHistoryHandler) {
     this.connectionsHandler = connectionsHandler;
     this.sourceImplementationsHandler = sourceImplementationsHandler;
     this.jobHistoryHandler = jobHistoryHandler;
@@ -56,36 +57,7 @@ public class WebBackendConnectionsHandler {
   public WbConnectionReadList webBackendListConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
     final ConnectionReadList connectionReadList = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
 
-    final List<WbConnectionRead> reads =
-        connectionReadList.getConnections().stream()
-            .map(
-                connectionRead -> {
-                  final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody();
-                  sourceImplementationIdRequestBody.setSourceImplementationId(connectionRead.getSourceImplementationId());
-                  final SourceImplementationRead sourceImplementation =
-                      sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
-
-                  final JobListRequestBody jobListRequestBody = new JobListRequestBody();
-                  jobListRequestBody.setConfigId(connectionRead.getConnectionId().toString());
-                  jobListRequestBody.setConfigType(JobConfigType.SYNC);
-                  final JobReadList jobReadList = jobHistoryHandler.listJobsFor(jobListRequestBody);
-
-                  final WbConnectionRead wbConnectionRead = new WbConnectionRead();
-                  wbConnectionRead.setConnectionId(connectionRead.getConnectionId());
-                  wbConnectionRead.setSourceImplementationId(connectionRead.getSourceImplementationId());
-                  wbConnectionRead.setDestinationImplementationId(connectionRead.getDestinationImplementationId());
-                  wbConnectionRead.setName(connectionRead.getName());
-                  wbConnectionRead.setSyncSchema(connectionRead.getSyncSchema());
-                  wbConnectionRead.setStatus(connectionRead.getStatus());
-                  wbConnectionRead.setSyncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class));
-                  wbConnectionRead.setSchedule(connectionRead.getSchedule());
-                  jobReadList.getJobs().stream().findFirst().ifPresent(job -> wbConnectionRead.setLastSync(job.getCreatedAt()));
-
-                  wbConnectionRead.setSource(sourceImplementation);
-
-                  return wbConnectionRead;
-                })
-            .collect(Collectors.toList());
+    final List<WbConnectionRead> reads = connectionReadList.getConnections().stream().map(this::getWbConnectionRead).collect(Collectors.toList());
 
     final WbConnectionReadList readList = new WbConnectionReadList();
     readList.setConnections(reads);
@@ -94,6 +66,36 @@ public class WebBackendConnectionsHandler {
   }
 
   public WbConnectionRead webBackendGetConnection(ConnectionIdRequestBody connectionIdRequestBody) {
-    return null;
+    final ConnectionRead connectionRead = connectionsHandler.getConnection(connectionIdRequestBody);
+
+    return getWbConnectionRead(connectionRead);
   }
+
+  private WbConnectionRead getWbConnectionRead(ConnectionRead connectionRead) {
+    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody();
+    sourceImplementationIdRequestBody.setSourceImplementationId(connectionRead.getSourceImplementationId());
+    final SourceImplementationRead sourceImplementation =
+        sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
+
+    final JobListRequestBody jobListRequestBody = new JobListRequestBody();
+    jobListRequestBody.setConfigId(connectionRead.getConnectionId().toString());
+    jobListRequestBody.setConfigType(JobConfigType.SYNC);
+    final JobReadList jobReadList = jobHistoryHandler.listJobsFor(jobListRequestBody);
+
+    final WbConnectionRead wbConnectionRead = new WbConnectionRead();
+    wbConnectionRead.setConnectionId(connectionRead.getConnectionId());
+    wbConnectionRead.setSourceImplementationId(connectionRead.getSourceImplementationId());
+    wbConnectionRead.setDestinationImplementationId(connectionRead.getDestinationImplementationId());
+    wbConnectionRead.setName(connectionRead.getName());
+    wbConnectionRead.setSyncSchema(connectionRead.getSyncSchema());
+    wbConnectionRead.setStatus(connectionRead.getStatus());
+    wbConnectionRead.setSyncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class));
+    wbConnectionRead.setSchedule(connectionRead.getSchedule());
+    jobReadList.getJobs().stream().findFirst().ifPresent(job -> wbConnectionRead.setLastSync(job.getCreatedAt()));
+
+    wbConnectionRead.setSource(sourceImplementation);
+
+    return wbConnectionRead;
+  }
+
 }
