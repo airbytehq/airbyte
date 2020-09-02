@@ -26,6 +26,27 @@ package io.dataline.api.client;
 
 import io.dataline.api.client.invoker.ApiClient;
 
+/**
+ * This class is meant to consolidate all our API endpoints into a fluent-ish client. Currently, all open API generators create a separate class per
+ * API "root-route". For example, if the OpenApiSpec.yml looks like:
+ *
+ * paths:
+ *   /v1/First/get:
+ *      # definition goes here...
+ *   /v1/Second/get:
+ *      # definition goes here
+ *
+ * OpenAPI generates (essentially) the following files:
+ *
+ * ApiClient.java
+ * FirstApi.java
+ * SecondApi.java
+ *
+ * To call the API type-safely, we'd do new FirstApi(new ApiClient()).get()  or new SecondApi(new ApiClient()).get(), which can get cumbersome
+ * if we're interacting with many pieces of the API.
+ *
+ * This is currently manually maintained. We could look into autogenerating it if needed. 
+ */
 public class DatalineApiClient {
 
   private final ConnectionApi connectionApi;
