@@ -56,31 +56,31 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getConfig(final ConfigSchema persistenceConfigType,
+  public <T> T getConfig(final ConfigSchema configType,
                          final String configId,
                          final Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     synchronized (lock) {
-      return getConfigInternal(persistenceConfigType, configId, clazz);
+      return getConfigInternal(configType, configId, clazz);
     }
   }
 
   @Override
-  public <T> List<T> listConfigs(ConfigSchema persistenceConfigType,
+  public <T> List<T> listConfigs(ConfigSchema configType,
                                  Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     synchronized (lock) {
-      return listConfigsInternal(persistenceConfigType, clazz);
+      return listConfigsInternal(configType, clazz);
     }
   }
 
   @Override
-  public <T> void writeConfig(ConfigSchema persistenceConfigType,
+  public <T> void writeConfig(ConfigSchema configType,
                               String configId,
                               T config)
       throws JsonValidationException, IOException {
     synchronized (lock) {
-      writeConfigInternal(persistenceConfigType, configId, config);
+      writeConfigInternal(configType, configId, config);
     }
   }
 
@@ -100,10 +100,10 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     return config;
   }
 
-  private <T> List<T> listConfigsInternal(ConfigSchema persistenceConfigType,
+  private <T> List<T> listConfigsInternal(ConfigSchema configType,
                                           Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
-    final Path configTypePath = buildTypePath(persistenceConfigType);
+    final Path configTypePath = buildTypePath(configType);
     if (!Files.exists(configTypePath)) {
       return Collections.emptyList();
     }
@@ -115,20 +115,20 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
     final List<T> configs = Lists.newArrayList();
     for (String id : ids) {
-      configs.add(getConfig(persistenceConfigType, id, clazz));
+      configs.add(getConfig(configType, id, clazz));
     }
 
     return configs;
   }
 
-  private <T> void writeConfigInternal(ConfigSchema persistenceConfigType,
+  private <T> void writeConfigInternal(ConfigSchema configType,
                                        String configId,
                                        T config)
       throws JsonValidationException, IOException {
     // validate config with schema
-    validateJson(Jsons.jsonNode(config), persistenceConfigType);
+    validateJson(Jsons.jsonNode(config), configType);
 
-    final Path configPath = buildConfigPath(persistenceConfigType, configId);
+    final Path configPath = buildConfigPath(configType, configId);
     Files.createDirectories(configPath.getParent());
 
     Files.writeString(configPath, Jsons.serialize(config));
@@ -142,8 +142,8 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     return storageRoot.resolve(type.toString());
   }
 
-  private <T> void validateJson(T config, ConfigSchema persistenceConfigType) throws JsonValidationException {
-    JsonNode schema = getSchema(persistenceConfigType);
+  private <T> void validateJson(T config, ConfigSchema configType) throws JsonValidationException {
+    JsonNode schema = getSchema(configType);
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
 
