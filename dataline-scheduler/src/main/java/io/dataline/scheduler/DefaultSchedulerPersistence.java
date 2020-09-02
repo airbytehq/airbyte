@@ -135,18 +135,13 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig();
     jobSyncConfig.setSourceConnectionImplementation(sourceImplementation);
-    jobSyncConfig.setSourceDockerImage(
-        Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId()).getSyncImage());
+    jobSyncConfig.setSourceDockerImage(Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId()).getSyncImage());
     jobSyncConfig.setDestinationConnectionImplementation(destinationImplementation);
-    jobSyncConfig.setDestinationDockerImage(
-        Integrations.findBySpecId(destinationImplementation.getDestinationImplementationId())
-            .getSyncImage());
+    jobSyncConfig.setDestinationDockerImage(Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId()).getSyncImage());
     jobSyncConfig.setStandardSync(standardSync);
 
-    final Optional<Job> previousJobOptional =
-        JobUtils.getLastSyncJobForConnectionId(connectionPool, connectionId);
-    final Optional<StandardSyncOutput> standardSyncOutput =
-        previousJobOptional.flatMap(Job::getOutput).map(JobOutput::getSync);
+    final Optional<Job> previousJobOptional = JobUtils.getLastSyncJobForConnectionId(connectionPool, connectionId);
+    final Optional<StandardSyncOutput> standardSyncOutput = previousJobOptional.flatMap(Job::getOutput).map(JobOutput::getSync);
 
     standardSyncOutput.map(StandardSyncOutput::getState).ifPresent(jobSyncConfig::setState);
 
@@ -222,8 +217,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   public static Job getJobFromRecord(Record jobEntry) {
-    final JobConfig jobConfig =
-        Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
+    final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
 
     final String outputDb = jobEntry.get("output", String.class);
     final JobOutput output = outputDb == null ? null : Jsons.deserialize(outputDb, JobOutput.class);
