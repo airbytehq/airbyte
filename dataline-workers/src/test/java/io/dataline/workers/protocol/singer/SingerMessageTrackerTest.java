@@ -24,14 +24,13 @@
 
 package io.dataline.workers.protocol.singer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.SingerMessage;
-import io.dataline.config.State;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class SingerMessageTrackerTest {
@@ -40,10 +39,8 @@ class SingerMessageTrackerTest {
   public void testIncrementsWhenRecord() {
     final SingerMessage singerMessage = new SingerMessage();
     singerMessage.setType(SingerMessage.Type.RECORD);
-    singerMessage.setRecord(Jsons.jsonNode(ImmutableMap.builder().put("like", "true").put("userId", "123").build()));
 
-    final UUID connectionId = UUID.randomUUID();
-    final SingerMessageTracker singerMessageTracker = new SingerMessageTracker(connectionId);
+    final SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
     singerMessageTracker.accept(singerMessage);
     singerMessageTracker.accept(singerMessage);
     singerMessageTracker.accept(singerMessage);
@@ -53,33 +50,27 @@ class SingerMessageTrackerTest {
   @Test
   public void testRetainsLatestState() {
     final JsonNode oldStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598900000").build());
-    final JsonNode newStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598993526").build());
     final SingerMessage oldSingerMessage = new SingerMessage();
     oldSingerMessage.setType(SingerMessage.Type.STATE);
     oldSingerMessage.setValue(oldStateValue);
 
+    final JsonNode newStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598993526").build());
     final SingerMessage newStateMessage = new SingerMessage();
     newStateMessage.setType(SingerMessage.Type.STATE);
     newStateMessage.setValue(newStateValue);
 
-    final UUID connectionId = UUID.randomUUID();
-    final SingerMessageTracker singerMessageTracker = new SingerMessageTracker(connectionId);
+    final SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
     singerMessageTracker.accept(oldSingerMessage);
     singerMessageTracker.accept(oldSingerMessage);
     singerMessageTracker.accept(newStateMessage);
 
-    final State expectedState = new State();
-    expectedState.setConnectionId(connectionId);
-    expectedState.setState(newStateValue);
-
     assertTrue(singerMessageTracker.getOutputState().isPresent());
-    assertEquals(expectedState, singerMessageTracker.getOutputState().get());
+    assertEquals(newStateValue, singerMessageTracker.getOutputState().get());
   }
 
   @Test
   public void testReturnEmptyStateIfNoneEverAccepted() {
-    final UUID connectionId = UUID.randomUUID();
-    final SingerMessageTracker singerMessageTracker = new SingerMessageTracker(connectionId);
+    final SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
     assertTrue(singerMessageTracker.getOutputState().isEmpty());
   }
 
