@@ -1,13 +1,13 @@
 plugins {
-    id "org.openapi.generator" version "4.3.0"
+    id "org.openapi.generator" version "4.3.1"
     id "java-library"
 }
 
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask;
 
 def specFile = "$projectDir/src/main/openapi/config.yaml".toString()
-
 openApiGenerate {
+
     generatorName = "jaxrs-spec"
     inputSpec = specFile
     outputDir = "$buildDir/generated"
@@ -48,7 +48,7 @@ task generateApiClient(type: GenerateTask) {
             'DestinationConfiguration': 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
-    library = "jersey2"
+    library = "native"
 
     generateApiDocumentation = false
 
@@ -57,6 +57,7 @@ task generateApiClient(type: GenerateTask) {
             generatePom  : "false",
             interfaceOnly: "true"
     ]
+
 }
 
 dependencies {
@@ -64,13 +65,10 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
 
-    // https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-client
-    implementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.31'
-    // https://mvnrepository.com/artifact/org.glassfish.jersey.media/jersey-media-json-jackson
-    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: '2.31'
-    // https://mvnrepository.com/artifact/org.glassfish.jersey.media/jersey-media-multipart
-    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-multipart', version: '2.31'
-
+    implementation group: 'org.glassfish.jersey.core', name: 'jersey-client'
+    implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2'
+    implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson'
+    implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-multipart'
 
     implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2'
 
@@ -84,7 +82,7 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDirs "$buildDir/generated/src/gen/java", "$buildDir/generated/src/main/java"
+            srcDirs "$buildDir/generated/src/gen/java", "$buildDir/generated/src/main/java", "$projectDir/src/main/java"
         }
         resources {
             srcDir "$projectDir/src/main/openapi/"

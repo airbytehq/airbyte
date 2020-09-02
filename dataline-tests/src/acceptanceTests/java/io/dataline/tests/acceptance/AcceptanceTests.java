@@ -26,48 +26,33 @@ package io.dataline.tests.acceptance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import io.dataline.api.client.DatalineApiClient;
+import io.dataline.api.client.invoker.ApiClient;
+import io.dataline.api.client.invoker.ApiException;
+import io.dataline.api.client.model.SourceIdRequestBody;
+import io.dataline.api.client.model.SourceImplementationCreate;
+import io.dataline.api.client.model.SourceImplementationRead;
+import io.dataline.api.client.model.SourceSpecificationRead;
+import io.dataline.commons.json.Jsons;
+import io.dataline.config.persistence.PersistenceConstants;
 import java.io.IOException;
 import java.util.UUID;
-
-import io.dataline.api.client.ConnectionApi;
-import io.dataline.api.client.SourceApi;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-
-import io.dataline.api.client.invoker.ApiClient;
-import io.dataline.api.client.invoker.Configuration;
-import io.dataline.api.model.SourceIdRequestBody;
-import io.dataline.api.model.SourceImplementationCreate;
-import io.dataline.api.model.SourceImplementationRead;
-import io.dataline.api.model.SourceReadList;
-import io.dataline.api.model.SourceSpecificationRead;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.persistence.PersistenceConstants;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 public class AcceptanceTests {
 
-  static final MediaType JSON_CONTENT = MediaType.get("application/json; charset=utf-8");
-  static final String SERVER_URL = "http://localhost:8001/api/v1/";
-  static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
-
-  static{
-    ApiClient apiClient;
-
-    Configuration.setDefaultApiClient(apiClient);
-  }
-  ConnectionApi connectionApi = new ConnectionApi();
-
-
   static PostgreSQLContainer PSQL_DB1;
+
+  ApiClient baseClient = new ApiClient()
+      .setScheme("http")
+      .setHost("localhost")
+      .setPort(8001)
+      .setBasePath("/api");
+  DatalineApiClient apiClient = new DatalineApiClient(baseClient);
 
   @BeforeAll
   public static void init() {
@@ -76,14 +61,11 @@ public class AcceptanceTests {
   }
 
   @Test
-  public void testCreateSourceImplementation() throws IOException {
-
-//    new SourceApi().getSource()
-
+  public void testCreateSourceImplementation() throws IOException, ApiException {
 
     UUID postgresSourceId = getPostgresSourceId();
     SourceSpecificationRead sourceSpecRead =
-        callApi("source_specifications/get", new SourceIdRequestBody().sourceId(postgresSourceId), SourceSpecificationRead.class);
+        apiClient.getSourceSpecificationApi().getSourceSpecification(new SourceIdRequestBody().sourceId(postgresSourceId));
 
     JsonNode dbConfiguration = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", PSQL_DB1.getHost())
@@ -101,30 +83,20 @@ public class AcceptanceTests {
         .workspaceId(defaultWorkspaceId)
         .connectionConfiguration(dbConfiguration);
 
-    SourceImplementationRead createResponse = callApi("source_implementations/create", sourceImplementationCreate, SourceImplementationRead.class);
+    SourceImplementationRead createResponse = apiClient.getSourceImplementationApi().createSourceImplementation(sourceImplementationCreate);
 
     assertEquals(defaultWorkspaceId, createResponse.getWorkspaceId());
     assertEquals(sourceSpecificationId, createResponse.getSourceSpecificationId());
     assertEquals(dbConfiguration, Jsons.jsonNode(createResponse.getConnectionConfiguration()));
   }
 
-  private UUID getPostgresSourceId() throws IOException {
-    return callApi("sources/list", "", SourceReadList.class).getSources()
+  private UUID getPostgresSourceId() throws IOException, ApiException {
+    return apiClient.getSourceApi().listSources().getSources()
         .stream()
         .filter(sourceRead -> sourceRead.getName().toLowerCase().equals("postgres"))
         .findFirst()
         .orElseThrow()
         .getSourceId();
-  }
-
-  private <Input, Output> Output callApi(String relativePath, Input requestBody, Class<Output> outputClass)
-      throws IOException {
-    RequestBody body = RequestBody.create(Jsons.serialize(requestBody), JSON_CONTENT);
-    Request request = new Request.Builder().post(body).url(SERVER_URL + relativePath).build();
-    try (Response response = HTTP_CLIENT.newCall(request).execute()) {
-      Output responseBody = Jsons.deserialize(response.body().string(), outputClass);
-      return responseBody;
-    }
   }
 
 }
