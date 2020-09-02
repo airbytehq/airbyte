@@ -3,6 +3,8 @@ plugins {
     id "java-library"
 }
 
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask;
+
 def specFile = "$projectDir/src/main/openapi/config.yaml".toString()
 
 openApiGenerate {
@@ -15,11 +17,38 @@ openApiGenerate {
     modelPackage = "io.dataline.api.model"
 
     importMappings = [
-        'SourceSpecification' : 'com.fasterxml.jackson.databind.JsonNode',
-        'SourceConfiguration' : 'com.fasterxml.jackson.databind.JsonNode',
-        'DestinationSpecification' : 'com.fasterxml.jackson.databind.JsonNode',
-        'DestinationConfiguration' : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceConfiguration'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationSpecification': 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationConfiguration': 'com.fasterxml.jackson.databind.JsonNode',
     ]
+
+    generateApiDocumentation = false
+
+    configOptions = [
+            dateLibrary  : "java8",
+            generatePom  : "false",
+            interfaceOnly: "true"
+    ]
+}
+
+task generateApiClient(type: GenerateTask) {
+    generatorName = "java"
+    inputSpec = specFile
+    outputDir = "$buildDir/generated"
+
+    apiPackage = "io.dataline.api.client"
+    invokerPackage = "io.dataline.api.client.invoker"
+    modelPackage = "io.dataline.api.client.model"
+
+    importMappings = [
+            'SourceSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceConfiguration'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationSpecification': 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationConfiguration': 'com.fasterxml.jackson.databind.JsonNode',
+    ]
+
+    library = "jersey2"
 
     generateApiDocumentation = false
 
@@ -33,18 +62,29 @@ openApiGenerate {
 dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
+
+    // https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-client
+    implementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.31'
+    // https://mvnrepository.com/artifact/org.glassfish.jersey.media/jersey-media-json-jackson
+    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: '2.31'
+    // https://mvnrepository.com/artifact/org.glassfish.jersey.media/jersey-media-multipart
+    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-multipart', version: '2.31'
+
 
     implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2'
 
     implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
     implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+
+    implementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.1'
 }
 
 sourceSets {
     main {
         java {
-            srcDir "$buildDir/generated/src/gen/java"
+            srcDirs "$buildDir/generated/src/gen/java", "$buildDir/generated/src/main/java"
         }
         resources {
             srcDir "$projectDir/src/main/openapi/"
@@ -52,4 +92,4 @@ sourceSets {
     }
 }
 
-compileJava.dependsOn tasks.openApiGenerate
+compileJava.dependsOn tasks.openApiGenerate, tasks.generateApiClient

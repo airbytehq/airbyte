@@ -26,8 +26,20 @@ package io.dataline.tests.acceptance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
+import java.util.UUID;
+
+import io.dataline.api.client.ConnectionApi;
+import io.dataline.api.client.SourceApi;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+
+import io.dataline.api.client.invoker.ApiClient;
+import io.dataline.api.client.invoker.Configuration;
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceImplementationCreate;
 import io.dataline.api.model.SourceImplementationRead;
@@ -35,22 +47,25 @@ import io.dataline.api.model.SourceReadList;
 import io.dataline.api.model.SourceSpecificationRead;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.persistence.PersistenceConstants;
-import java.io.IOException;
-import java.util.UUID;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 public class AcceptanceTests {
 
   static final MediaType JSON_CONTENT = MediaType.get("application/json; charset=utf-8");
   static final String SERVER_URL = "http://localhost:8001/api/v1/";
   static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
+
+  static{
+    ApiClient apiClient;
+
+    Configuration.setDefaultApiClient(apiClient);
+  }
+  ConnectionApi connectionApi = new ConnectionApi();
+
 
   static PostgreSQLContainer PSQL_DB1;
 
@@ -62,6 +77,10 @@ public class AcceptanceTests {
 
   @Test
   public void testCreateSourceImplementation() throws IOException {
+
+//    new SourceApi().getSource()
+
+
     UUID postgresSourceId = getPostgresSourceId();
     SourceSpecificationRead sourceSpecRead =
         callApi("source_specifications/get", new SourceIdRequestBody().sourceId(postgresSourceId), SourceSpecificationRead.class);
