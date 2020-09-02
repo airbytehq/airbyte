@@ -37,10 +37,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
 public abstract class BaseWorkerTestCase {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseWorkerTestCase.class);
 
   // TODO inject via env
   protected Path workspaceRoot;
@@ -53,7 +57,7 @@ public abstract class BaseWorkerTestCase {
     this.workspaceRoot = Files.createTempDirectory(testsPath, "dataline");
     this.pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
 
-    System.out.println("Workspace directory: " + workspaceRoot.toString());
+    LOGGER.info("Workspace directory: {}", workspaceRoot.toString());
   }
 
   protected Path createJobRoot(String jobId) throws IOException {

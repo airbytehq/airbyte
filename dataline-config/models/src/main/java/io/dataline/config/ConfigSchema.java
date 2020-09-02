@@ -78,8 +78,6 @@ public enum ConfigSchema {
       final String rootedResourceDir = String.format("/%s", RESOURCE_DIR);
       final URL url = ConfigSchema.class.getResource(rootedResourceDir);
 
-      System.out.println(url);
-
       Path searchPath;
       if (url.toString().startsWith("jar")) {
         final FileSystem fileSystem = FileSystems.newFileSystem(url.toURI(), Collections.emptyMap());
@@ -87,20 +85,6 @@ public enum ConfigSchema {
       } else {
         searchPath = Path.of(url.toURI());
       }
-
-      // if (!uri.startsWith("/")) {
-      // final FileSystem fileSystem = FileSystems.newFileSystem(new URI(uri), Collections.emptyMap());
-      // Path searchPath = fileSystem.getPath(rootedResourceDir);
-      // } else {
-      // searchPath = Path.of(uri);
-      // }
-      //
-      // Path searchPath;
-      // if (uri.getScheme().equals("file")) {
-      // searchPath = Path.of(uri);
-      // } else {
-
-      // }
 
       final List<String> filenames = Files.walk(searchPath, 1)
           .map(p -> p.getFileName().toString())
