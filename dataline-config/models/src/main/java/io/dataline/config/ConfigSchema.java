@@ -101,7 +101,6 @@ public enum ConfigSchema {
   }
 
   private final String schemaFilename;
-  private final Class<?> klass;
 
   ConfigSchema(final String schemaFilename) {
     this.schemaFilename = schemaFilename;
