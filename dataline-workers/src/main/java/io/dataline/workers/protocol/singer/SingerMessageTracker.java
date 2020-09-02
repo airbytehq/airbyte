@@ -24,10 +24,9 @@
 
 package io.dataline.workers.protocol.singer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.config.SingerMessage;
-import io.dataline.config.State;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -35,11 +34,9 @@ import java.util.function.Consumer;
 public class SingerMessageTracker implements Consumer<SingerMessage> {
 
   private final AtomicLong recordCount;
-  private final AtomicReference<State> outputState;
-  private final UUID connectionId;
+  private final AtomicReference<JsonNode> outputState;
 
-  public SingerMessageTracker(UUID connectionId) {
-    this.connectionId = connectionId;
+  public SingerMessageTracker() {
     this.recordCount = new AtomicLong();
     this.outputState = new AtomicReference<>();
   }
@@ -50,10 +47,7 @@ public class SingerMessageTracker implements Consumer<SingerMessage> {
       recordCount.incrementAndGet();
     }
     if (message.getType().equals(SingerMessage.Type.STATE)) {
-      final State state = new State();
-      state.setConnectionId(connectionId);
-      state.setState(message.getValue());
-      outputState.set(state);
+      outputState.set(message.getValue());
     }
   }
 
@@ -61,7 +55,7 @@ public class SingerMessageTracker implements Consumer<SingerMessage> {
     return recordCount.get();
   }
 
-  public Optional<State> getOutputState() {
+  public Optional<JsonNode> getOutputState() {
     return Optional.ofNullable(outputState.get());
   }
 
