@@ -26,28 +26,29 @@ package io.dataline.workers.singer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.dataline.commons.json.Jsons;
+import io.dataline.commons.resources.MoreResources;
 import io.dataline.config.Schema;
 import io.dataline.config.SingerCatalog;
 import io.dataline.config.SingerMetadataChild;
 import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.workers.BaseWorkerTestCase;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
-class SingerCatalogConvertersTest extends BaseWorkerTestCase {
+class SingerCatalogConvertersTest {
 
   @Test
   void applySchemaToDiscoveredCatalog() throws IOException {
     final SingerCatalog catalog =
-        readResource("simple_postgres_singer_catalog.json", SingerCatalog.class);
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
     final Schema datalineSchema =
-        readResource("simple_postgres_schema.json", StandardDiscoverSchemaOutput.class).getSchema();
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_schema.json"), StandardDiscoverSchemaOutput.class).getSchema();
 
     final SingerCatalog actualCatalog =
         SingerCatalogConverters.applySchemaToDiscoveredCatalog(catalog, datalineSchema);
 
     final SingerCatalog expectedCatalog =
-        readResource("simple_postgres_singer_catalog.json", SingerCatalog.class);
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
     expectedCatalog.getStreams().get(0).getMetadata().get(0).getMetadata().setSelected(true);
     expectedCatalog.getStreams().get(0).getMetadata().get(1).getMetadata().setSelected(true);
     expectedCatalog.getStreams().get(0).getMetadata().get(2).getMetadata().setSelected(true);
@@ -65,9 +66,9 @@ class SingerCatalogConvertersTest extends BaseWorkerTestCase {
   @Test
   void toDatalineSchemaWithUnselectedTable() throws IOException {
     final SingerCatalog catalog =
-        readResource("simple_postgres_singer_catalog.json", SingerCatalog.class);
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
     final Schema expectedSchema =
-        readResource("simple_postgres_schema.json", StandardDiscoverSchemaOutput.class).getSchema();
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_schema.json"), StandardDiscoverSchemaOutput.class).getSchema();
     expectedSchema.getTables().get(0).setSelected(false);
     expectedSchema.getTables().get(0).getColumns().get(0).setSelected(true);
     expectedSchema.getTables().get(0).getColumns().get(1).setSelected(true);
@@ -80,11 +81,11 @@ class SingerCatalogConvertersTest extends BaseWorkerTestCase {
   @Test
   void toDatalineSchemaWithSelectedTable() throws IOException {
     final SingerCatalog catalog =
-        readResource("simple_postgres_singer_catalog.json", SingerCatalog.class);
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
     catalog.getStreams().get(0).getMetadata().get(0).getMetadata().setSelected(true);
 
     final Schema expectedSchema =
-        readResource("simple_postgres_schema.json", StandardDiscoverSchemaOutput.class).getSchema();
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_schema.json"), StandardDiscoverSchemaOutput.class).getSchema();
     expectedSchema.getTables().get(0).setSelected(true);
     expectedSchema.getTables().get(0).getColumns().get(0).setSelected(true);
     expectedSchema.getTables().get(0).getColumns().get(1).setSelected(true);

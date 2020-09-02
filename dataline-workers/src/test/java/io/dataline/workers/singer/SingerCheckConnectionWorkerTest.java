@@ -38,7 +38,6 @@ import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.workers.BaseWorkerTestCase;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
@@ -50,7 +49,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
+public class SingerCheckConnectionWorkerTest {
 
   private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
 
