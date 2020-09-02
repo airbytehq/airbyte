@@ -27,14 +27,14 @@ package io.dataline.commons.resources;
 import com.google.common.io.Resources;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
-public class Resourzes {
+public class MoreResources {
 
   @SuppressWarnings("UnstableApiUsage")
   public static String readResource(String name) throws IOException {
     URL resource = Resources.getResource(name);
-    return Resources.toString(resource, Charset.defaultCharset());
+    return Resources.toString(resource, StandardCharsets.UTF_8);
   }
 
 }

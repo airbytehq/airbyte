@@ -108,7 +108,7 @@ public class SingerCheckConnectionWorkerTest extends BaseWorkerTestCase {
   @Test
   public void testCancel() throws InvalidCredentialsException, InvalidCatalogException {
     OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput =
-        new OutputAndStatus<>(JobStatus.SUCCESSFUL, mock(StandardDiscoverSchemaOutput.class));
+        new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverSchemaOutput());
     when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
     final SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(discoverSchemaWorker);

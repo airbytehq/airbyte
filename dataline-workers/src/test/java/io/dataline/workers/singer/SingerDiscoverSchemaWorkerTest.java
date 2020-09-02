@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
-import io.dataline.commons.resources.Resourzes;
+import io.dataline.commons.resources.MoreResources;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.InvalidCredentialsException;
@@ -76,18 +76,18 @@ public class SingerDiscoverSchemaWorkerTest {
     when(process.waitFor(1, TimeUnit.MINUTES)).thenReturn(true);
 
     // this would be written by the docker process.
-    IOs.writeFile(jobRoot, "catalog.json", Resourzes.readResource("simple_postgres_singer_catalog.json"));
+    IOs.writeFile(jobRoot, "catalog.json", MoreResources.readResource("simple_postgres_singer_catalog.json"));
   }
 
   @Test
-  public void testPostgresDiscovery() throws IOException, InterruptedException, InvalidCredentialsException {
+  public void testDiscoverSchema() throws IOException, InterruptedException, InvalidCredentialsException {
     SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
     OutputAndStatus<StandardDiscoverSchemaOutput> run = worker.run(input, jobRoot);
 
     assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
 
     final StandardDiscoverSchemaOutput expectedOutput =
-        Jsons.deserialize(Resourzes.readResource("simple_discovered_postgres_schema.json"), StandardDiscoverSchemaOutput.class);
+        Jsons.deserialize(MoreResources.readResource("simple_discovered_postgres_schema.json"), StandardDiscoverSchemaOutput.class);
     final StandardDiscoverSchemaOutput actualOutput = run.getOutput().get();
 
     assertTrue(run.getOutput().isPresent());
@@ -108,7 +108,7 @@ public class SingerDiscoverSchemaWorkerTest {
   }
 
   @Test
-  public void testCancellation() throws InvalidCredentialsException {
+  public void testCancel() throws InvalidCredentialsException {
     SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
     worker.run(input, jobRoot);
 
