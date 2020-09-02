@@ -45,7 +45,7 @@ import io.dataline.api.client.invoker.ApiClient;
  * To call the API type-safely, we'd do new FirstApi(new ApiClient()).get()  or new SecondApi(new ApiClient()).get(), which can get cumbersome
  * if we're interacting with many pieces of the API.
  *
- * This is currently manually maintained. We could look into autogenerating it if needed. 
+ * This is currently manually maintained. We could look into autogenerating it if needed.
  */
 public class DatalineApiClient {
 

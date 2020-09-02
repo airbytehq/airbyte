@@ -3,8 +3,6 @@ plugins {
     id "java-library"
 }
 
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask;
-
 def specFile = "$projectDir/src/main/openapi/config.yaml".toString()
 openApiGenerate {
 
@@ -32,6 +30,7 @@ openApiGenerate {
     ]
 }
 
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask;
 task generateApiClient(type: GenerateTask) {
     generatorName = "java"
     inputSpec = specFile
