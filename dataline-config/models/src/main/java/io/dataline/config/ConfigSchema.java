@@ -29,7 +29,6 @@ import com.google.common.io.Resources;
 import io.dataline.commons.io.IOs;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -42,7 +41,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.apache.commons.io.IOUtils;
 
 public enum ConfigSchema {
 
@@ -78,19 +76,41 @@ public enum ConfigSchema {
   private static Path prepareSchemas() {
     try {
       final String rootedResourceDir = String.format("/%s", RESOURCE_DIR);
-      final URI uri = ConfigSchema.class.getResource(rootedResourceDir).toURI();
+      final URL url = ConfigSchema.class.getResource(rootedResourceDir);
 
-      final FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
+      System.out.println(url);
 
-      final List<String> filenames = Files.walk(fileSystem.getPath(rootedResourceDir), 1)
+      Path searchPath;
+      if (url.toString().startsWith("jar")) {
+        final FileSystem fileSystem = FileSystems.newFileSystem(url.toURI(), Collections.emptyMap());
+        searchPath = fileSystem.getPath(rootedResourceDir);
+      } else {
+        searchPath = Path.of(url.toURI());
+      }
+
+      // if (!uri.startsWith("/")) {
+      // final FileSystem fileSystem = FileSystems.newFileSystem(new URI(uri), Collections.emptyMap());
+      // Path searchPath = fileSystem.getPath(rootedResourceDir);
+      // } else {
+      // searchPath = Path.of(uri);
+      // }
+      //
+      // Path searchPath;
+      // if (uri.getScheme().equals("file")) {
+      // searchPath = Path.of(uri);
+      // } else {
+
+      // }
+
+      final List<String> filenames = Files.walk(searchPath, 1)
           .map(p -> p.getFileName().toString())
           .filter(p -> p.endsWith(".json"))
           .collect(Collectors.toList());
 
       final Path configRoot = Files.createTempDirectory("schemas");
       for (String filename : filenames) {
-        final URL url = Resources.getResource(String.format("%s/%s", RESOURCE_DIR, filename));
-        IOs.writeFile(configRoot, filename, Resources.toString(url, StandardCharsets.UTF_8));
+        final URL resource = Resources.getResource(String.format("%s/%s", RESOURCE_DIR, filename));
+        IOs.writeFile(configRoot, filename, Resources.toString(resource, StandardCharsets.UTF_8));
       }
 
       return configRoot;
@@ -122,10 +142,6 @@ public enum ConfigSchema {
 
   public Class<?> getKlass() {
     return klass;
-  }
-
-  public static void main(String[] args) throws IOException {
-    System.out.println(IOUtils.readLines(ConfigSchema.class.getResourceAsStream("json/"), StandardCharsets.UTF_8));
   }
 
 }
