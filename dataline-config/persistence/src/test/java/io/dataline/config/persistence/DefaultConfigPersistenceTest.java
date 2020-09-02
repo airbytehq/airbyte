@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.dataline.config.Schema;
 import io.dataline.config.StandardSource;
 import io.dataline.config.StandardSync;
@@ -89,8 +89,8 @@ class DefaultConfigPersistenceTest {
     configPersistence.writeConfig(PersistenceConfigType.STANDARD_SOURCE, UUID_2.toString(), SOURCE_2);
 
     assertEquals(
-        Lists.newArrayList(SOURCE_1, SOURCE_2),
-        configPersistence.listConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class));
+        Sets.newHashSet(SOURCE_1, SOURCE_2),
+        Sets.newHashSet(configPersistence.listConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class)));
   }
 
   @Test
