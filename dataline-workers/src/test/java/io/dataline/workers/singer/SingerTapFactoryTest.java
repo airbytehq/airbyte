@@ -92,7 +92,7 @@ class SingerTapFactoryTest {
 
     final List<SingerMessage> expected = Lists.newArrayList(recordMessage1, recordMessage2);
 
-    StandardTapConfig tapConfig =
+    final StandardTapConfig tapConfig =
         WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
     StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
     discoverSchemaInput.setConnectionConfiguration(

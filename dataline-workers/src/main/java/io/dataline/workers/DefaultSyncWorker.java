@@ -69,8 +69,7 @@ public class DefaultSyncWorker implements SyncWorker {
     final SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
 
     try (Stream<SingerMessage> tap = singerTapFactory.create(tapConfig, jobRoot);
-        CloseableConsumer<SingerMessage> consumer =
-            singerTargetFactory.create(targetConfig, jobRoot)) {
+        CloseableConsumer<SingerMessage> consumer = singerTargetFactory.create(targetConfig, jobRoot)) {
 
       tap.takeWhile(record -> !cancelled.get()).peek(singerMessageTracker).forEach(consumer);
 
