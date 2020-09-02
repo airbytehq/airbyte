@@ -27,6 +27,7 @@ package io.dataline.scheduler;
 import io.dataline.config.Schedule;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
+import io.dataline.config.helpers.ScheduleHelpers;
 import io.dataline.config.persistence.ConfigPersistence;
 import java.io.IOException;
 import java.time.Instant;
@@ -111,26 +112,10 @@ public class JobScheduler implements Runnable {
     }
   }
 
-  // todo: Assert in test to catch at build time
-  private static Long getSecondsInUnit(Schedule.TimeUnit timeUnitEnum) {
-    switch (timeUnitEnum) {
-      case MINUTES:
-        return TimeUnit.MINUTES.toSeconds(1);
-      case HOURS:
-        return TimeUnit.HOURS.toSeconds(1);
-      case DAYS:
-        return TimeUnit.DAYS.toSeconds(1);
-      case WEEKS:
-        return TimeUnit.DAYS.toSeconds(1) * 7;
-      case MONTHS:
-        return TimeUnit.DAYS.toSeconds(1) * 30;
-      default:
-        throw new RuntimeException("Unhandled TimeUnitEnum: " + timeUnitEnum);
-    }
-  }
+
 
   private static Long getIntervalInSeconds(Schedule schedule) {
-    return getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
+    return ScheduleHelpers.getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
   }
 
   private List<StandardSync> getAllActiveConnections() {
