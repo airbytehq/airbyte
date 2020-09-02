@@ -31,11 +31,11 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.Lists;
 import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationSpecificationRead;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.helpers.DestinationSpecificationHelpers;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,7 +58,7 @@ class DestinationSpecificationsHandlerTest {
   @Test
   void testGetDestinationSpecification() throws JsonValidationException, IOException, ConfigNotFoundException {
     when(configPersistence.listConfigs(
-        PersistenceConfigType.DESTINATION_CONNECTION_SPECIFICATION,
+        ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
         DestinationConnectionSpecification.class))
             .thenReturn(Lists.newArrayList(destinationConnectionSpecification));
 

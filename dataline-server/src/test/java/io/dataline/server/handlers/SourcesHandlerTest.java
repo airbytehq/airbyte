@@ -33,11 +33,11 @@ import com.google.common.collect.Lists;
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceRead;
 import io.dataline.api.model.SourceReadList;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.StandardSource;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -71,9 +71,9 @@ class SourcesHandlerTest {
   void testListSources() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardSource source2 = generateSource();
     configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_SOURCE, source2.getSourceId().toString(), source2);
+        ConfigSchema.STANDARD_SOURCE, source2.getSourceId().toString(), source2);
 
-    when(configPersistence.listConfigs(PersistenceConfigType.STANDARD_SOURCE, StandardSource.class))
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE, StandardSource.class))
         .thenReturn(Lists.newArrayList(source, source2));
 
     SourceRead expectedSourceRead1 = new SourceRead();
@@ -104,7 +104,7 @@ class SourcesHandlerTest {
   @Test
   void testGetSource() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SOURCE,
+        ConfigSchema.STANDARD_SOURCE,
         source.getSourceId().toString(),
         StandardSource.class))
             .thenReturn(source);

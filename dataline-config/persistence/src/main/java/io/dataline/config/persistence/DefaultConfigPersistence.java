@@ -27,7 +27,6 @@ package io.dataline.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import io.dataline.commons.enums.Enums;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.ConfigSchema;
 import java.io.IOException;
@@ -57,7 +56,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getConfig(final PersistenceConfigType persistenceConfigType,
+  public <T> T getConfig(final ConfigSchema persistenceConfigType,
                          final String configId,
                          final Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
@@ -67,7 +66,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<T> listConfigs(PersistenceConfigType persistenceConfigType,
+  public <T> List<T> listConfigs(ConfigSchema persistenceConfigType,
                                  Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     synchronized (lock) {
@@ -76,7 +75,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void writeConfig(PersistenceConfigType persistenceConfigType,
+  public <T> void writeConfig(ConfigSchema persistenceConfigType,
                               String configId,
                               T config)
       throws JsonValidationException, IOException {
@@ -85,23 +84,23 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     }
   }
 
-  private <T> T getConfigInternal(PersistenceConfigType persistenceConfigType,
+  private <T> T getConfigInternal(ConfigSchema configType,
                                   String configId,
                                   Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     // validate file with schema
-    final Path configPath = buildConfigPath(persistenceConfigType, configId);
+    final Path configPath = buildConfigPath(configType, configId);
     if (!Files.exists(configPath)) {
-      throw new ConfigNotFoundException(persistenceConfigType, configId);
+      throw new ConfigNotFoundException(configType, configId);
     }
 
     final T config = Jsons.deserialize(Files.readString(configPath), clazz);
-    validateJson(config, persistenceConfigType);
+    validateJson(config, configType);
 
     return config;
   }
 
-  private <T> List<T> listConfigsInternal(PersistenceConfigType persistenceConfigType,
+  private <T> List<T> listConfigsInternal(ConfigSchema persistenceConfigType,
                                           Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     final Path configTypePath = buildTypePath(persistenceConfigType);
@@ -122,7 +121,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     return configs;
   }
 
-  private <T> void writeConfigInternal(PersistenceConfigType persistenceConfigType,
+  private <T> void writeConfigInternal(ConfigSchema persistenceConfigType,
                                        String configId,
                                        T config)
       throws JsonValidationException, IOException {
@@ -135,27 +134,27 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     Files.writeString(configPath, Jsons.serialize(config));
   }
 
-  private Path buildConfigPath(PersistenceConfigType type, String configId) {
+  private Path buildConfigPath(ConfigSchema type, String configId) {
     return buildTypePath(type).resolve(String.format("%s.json", configId));
   }
 
-  private Path buildTypePath(PersistenceConfigType type) {
+  private Path buildTypePath(ConfigSchema type) {
     return storageRoot.resolve(type.toString());
   }
 
-  private <T> void validateJson(T config, PersistenceConfigType persistenceConfigType) throws JsonValidationException {
+  private <T> void validateJson(T config, ConfigSchema persistenceConfigType) throws JsonValidationException {
     JsonNode schema = getSchema(persistenceConfigType);
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
 
   @VisibleForTesting
-  private JsonNode getSchema(PersistenceConfigType persistenceConfigType) {
+  private JsonNode getSchema(ConfigSchema configType) {
     try {
       // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
       // this.
       final JsonReferenceProcessor jsonReferenceProcessor = new JsonReferenceProcessor();
       jsonReferenceProcessor.setMaxDepth(-1); // no max.
-      return jsonReferenceProcessor.process(Enums.convertTo(persistenceConfigType, ConfigSchema.class).getFile());
+      return jsonReferenceProcessor.process(configType.getFile());
     } catch (IOException | JsonReferenceException e) {
       throw new RuntimeException(e);
     }
