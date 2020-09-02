@@ -281,7 +281,6 @@ class DefaultSchedulerPersistenceTest {
     final Job expected = getExpectedJob(jobId);
 
     assertEquals(expected, actual);
-
   }
 
   @Test
