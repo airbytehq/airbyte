@@ -27,7 +27,7 @@ const EditControls: React.FC<IProps> = ({
 }) => {
   return (
     <Controls>
-      <Button type="button" disabled={isSubmitting || !isValid || !dirty}>
+      <Button type="submit" disabled={isSubmitting || !isValid || !dirty}>
         <FormattedMessage id={`form.saveChanges`} />
       </Button>
       <ButtonContainer>

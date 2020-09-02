@@ -15,6 +15,7 @@ import LoadingPage from "../components/LoadingPage";
 import MainView from "../components/MainView";
 import config from "../config";
 import WorkspaceResource from "../core/resources/Workspace";
+import ConnectionResource from "../core/resources/Connection";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -58,8 +59,23 @@ const PreferencesRoutes = () => {
   );
 };
 
+const OnboardingsRoutes = () => {
+  return (
+    <Switch>
+      <Route path={Routes.Onboarding}>
+        <OnboardingPage />
+      </Route>
+      <Redirect to={Routes.Onboarding} />
+    </Switch>
+  );
+};
+
 export const Routing = () => {
   const workspace = useResource(WorkspaceResource.detailShape(), {
+    workspaceId: config.ui.workspaceId
+  });
+
+  const { connections } = useResource(ConnectionResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
 
@@ -68,15 +84,10 @@ export const Routing = () => {
       <Suspense fallback={<LoadingPage />}>
         {!workspace.initialSetupComplete ? (
           <PreferencesRoutes />
+        ) : !connections.length ? (
+          <OnboardingsRoutes />
         ) : (
-          <Switch>
-            <Route path={Routes.Onboarding}>
-              <OnboardingPage />
-            </Route>
-            <MainViewRoutes />
-
-            <Redirect to={Routes.Root} />
-          </Switch>
+          <MainViewRoutes />
         )}
       </Suspense>
     </Router>

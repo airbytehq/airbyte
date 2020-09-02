@@ -8,13 +8,17 @@ import LabeledDropDown from "../../LabeledDropDown";
 import { IDataItem } from "../../DropDown/components/ListItem";
 import Instruction from "./Instruction";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
+import { specification } from "../../../core/resources/SourceSpecification";
 
 type IProps = {
   isEditMode?: boolean;
   dropDownData: Array<IDataItem>;
   setFieldValue: (item: any, value: any) => void;
+  onDropDownSelect?: (id: string) => void;
   formType: "source" | "destination" | "connection";
   values: { name: string; serviceType: string; frequency?: string };
+  specifications?: specification;
+  properties?: Array<string>;
 };
 
 const FormItem = styled.div`
@@ -30,7 +34,10 @@ const FormContent: React.FC<IProps> = ({
   formType,
   setFieldValue,
   values,
-  isEditMode
+  isEditMode,
+  onDropDownSelect,
+  specifications,
+  properties
 }) => {
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
@@ -89,7 +96,12 @@ const FormContent: React.FC<IProps> = ({
                 id: "form.searchName"
               })}
               data={dropDownData}
-              onSelect={item => setFieldValue("serviceType", item.value)}
+              onSelect={item => {
+                setFieldValue("serviceType", item.value);
+                if (onDropDownSelect) {
+                  onDropDownSelect(item.value);
+                }
+              }}
             />
           )}
         </Field>
@@ -100,6 +112,32 @@ const FormContent: React.FC<IProps> = ({
           />
         )}
       </FormItem>
+
+      {properties?.map(item => {
+        const condition = specifications?.properties[item];
+
+        return (
+          <FormItem key={`form-field-${item}`}>
+            <Field name={item}>
+              {({ field }: FieldProps<string>) => (
+                <LabeledInput
+                  {...field}
+                  label={
+                    condition.title || (
+                      <FormattedMessage
+                        id={`form.${item}`}
+                        defaultMessage={item}
+                      />
+                    )
+                  }
+                  type={condition.type === "integer" ? "number" : "text"}
+                />
+              )}
+            </Field>
+          </FormItem>
+        );
+      })}
+
       {formType === "connection" && (
         <FormItem>
           <Field name="frequency">

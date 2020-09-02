@@ -7,9 +7,7 @@ import Spinner from "../../Spinner";
 import StatusIcon from "../../StatusIcon";
 
 type IProps = {
-  formType: "source" | "destination" | "connection";
   isSubmitting: boolean;
-  hasSuccess?: boolean;
   isValid: boolean;
   dirty: boolean;
   errorMessage?: React.ReactNode;
@@ -22,14 +20,6 @@ const ButtonContainer = styled.div`
   justify-content: space-between;
 `;
 
-const Success = styled(StatusIcon)`
-  width: 26px;
-  min-width: 26px;
-  height: 26px;
-  padding-top: 5px;
-  font-size: 17px;
-`;
-
 const LoadingContainer = styled(ButtonContainer)`
   font-weight: 600;
   font-size: 14px;
@@ -40,6 +30,14 @@ const LoadingContainer = styled(ButtonContainer)`
 
 const Loader = styled.div`
   margin-right: 10px;
+`;
+
+const Success = styled(StatusIcon)`
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  padding-top: 5px;
+  font-size: 17px;
 `;
 
 const Error = styled(Success)`
@@ -67,19 +65,8 @@ const BottomBlock: React.FC<IProps> = ({
   isSubmitting,
   isValid,
   dirty,
-  formType,
-  hasSuccess,
   errorMessage
 }) => {
-  if (hasSuccess) {
-    return (
-      <LoadingContainer>
-        <Success success />
-        <FormattedMessage id="form.successTests" />
-      </LoadingContainer>
-    );
-  }
-
   if (isSubmitting) {
     return (
       <LoadingContainer>
@@ -104,8 +91,8 @@ const BottomBlock: React.FC<IProps> = ({
       ) : (
         <div />
       )}
-      <Button type="submit" disabled={!isValid || !dirty}>
-        <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
+      <Button type="submit" disabled={isSubmitting || !isValid || !dirty}>
+        <FormattedMessage id="onboarding.setUpConnection" />
       </Button>
     </ButtonContainer>
   );
