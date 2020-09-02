@@ -14,4 +14,11 @@ dependencies {
     implementation project(':dataline-workers')
 
     testImplementation "org.testcontainers:postgresql:1.14.3"
+    testImplementation "org.awaitility:awaitility:3.1.6"
 }
+
+test {
+    environment "GOOGLE_CLOUD_PROJECT", "eco-hangar-279116" // todo: get this from the cred file
+    environment "GOOGLE_APPLICATION_CREDENTIALS", new File("$projectDir").absolutePath + "/config/bigquery_creds.json"
+}
+

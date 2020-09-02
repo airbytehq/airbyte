@@ -1,0 +1,5 @@
+{"type": "SCHEMA", "stream": "exchange_rate", "schema": {"type": "object", "properties": {"date": {"type": "string", "format": "date-time"}, "CAD": {"type": ["null", "number"]}, "HKD": {"type": ["null", "number"]}}}, "key_properties": ["date"]}
+{"type": "RECORD", "stream": "exchange_rate", "record": {"CAD": 0, "HKD": 2, "date": "2020-09-01T00:00:00Z"}}
+{"type": "STATE", "value": {"start_date": "2020-09-01"}}
+{"type": "RECORD", "stream": "exchange_rate", "record": {"CAD": 1, "HKD": 7, "date": "2020-09-02T00:00:00Z"}}
+{"type": "STATE", "value": {"start_date": "2020-09-02"}}
