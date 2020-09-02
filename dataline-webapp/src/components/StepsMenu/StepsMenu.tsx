@@ -10,7 +10,7 @@ type IProps = {
     name: string | React.ReactNode;
   }>;
   activeStep?: string;
-  onSelect: (id: string) => void;
+  onSelect?: (id: string) => void;
 };
 
 const Content = styled.div`

@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
+import { useResource } from "rest-hooks";
 
 import Table from "../../../../../components/Table";
 import FrequencyCell from "./FrequencyCell";
@@ -11,6 +12,8 @@ import ConnectorCell from "./ConnectorCell";
 import NameCell from "./NameCell";
 import { Routes } from "../../../../routes";
 import useRouter from "../../../../../components/hooks/useRouterHook";
+import ConnectionResource from "../../../../../core/resources/Connection";
+import config from "../../../../../config";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;
@@ -27,41 +30,20 @@ type ITableDataItem = {
 
 const SourcesTable: React.FC = () => {
   const { push } = useRouter();
+  const { connections } = useResource(ConnectionResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
 
-  const data = [
-    {
-      name: "Name 1",
-      connector: "Connector 1",
-      frequency: "manual",
-      date: 1597693584000,
-      enabled: true,
-      error: false
-    },
-    {
-      name: "Name 2",
-      connector: "Connector 2",
-      frequency: "5m",
-      date: 1597693584000,
-      enabled: false,
-      error: false
-    },
-    {
-      name: "Name 3",
-      connector: "Connector 3",
-      frequency: "1h",
-      date: 1597693584000,
-      enabled: true,
-      error: true
-    },
-    {
-      name: "Name 4",
-      connector: "Connector 4",
-      frequency: "24h",
-      date: 1597693584000,
-      enabled: true,
-      error: false
-    }
-  ];
+  // TODO: add real data for table
+  const data = connections.map(item => ({
+    connectionId: item.connectionId,
+    name: item.name,
+    connector: "TEST data",
+    frequency: "manual",
+    date: 1597693584000,
+    enabled: true,
+    error: false
+  }));
 
   const columns = React.useMemo(
     () => [
@@ -110,10 +92,8 @@ const SourcesTable: React.FC = () => {
     []
   );
 
-  // TODO: add real event
-  const clickRow = () => {
-    push(`${Routes.Source}/ID-SOURCE`);
-  };
+  const clickRow = (connection: any) =>
+    push(`${Routes.Source}/${connection.connectionId}`);
 
   return (
     <Content>
