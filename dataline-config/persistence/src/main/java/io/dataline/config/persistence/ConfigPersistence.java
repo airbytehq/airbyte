@@ -24,21 +24,22 @@
 
 package io.dataline.config.persistence;
 
+import io.dataline.config.ConfigSchema;
 import java.io.IOException;
 import java.util.List;
 
 public interface ConfigPersistence {
 
-  <T> T getConfig(PersistenceConfigType persistenceConfigType,
+  <T> T getConfig(ConfigSchema configType,
                   String configId,
                   Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException;
 
-  <T> List<T> listConfigs(PersistenceConfigType persistenceConfigType,
+  <T> List<T> listConfigs(ConfigSchema configType,
                           Class<T> clazz)
       throws JsonValidationException, IOException, ConfigNotFoundException;
 
-  <T> void writeConfig(PersistenceConfigType persistenceConfigType,
+  <T> void writeConfig(ConfigSchema configType,
                        String configId,
                        T config)
       throws JsonValidationException, IOException;

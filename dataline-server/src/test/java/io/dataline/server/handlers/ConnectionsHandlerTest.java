@@ -41,6 +41,7 @@ import io.dataline.api.model.ConnectionUpdate;
 import io.dataline.api.model.SourceSchema;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.enums.Enums;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.DataType;
 import io.dataline.config.Schedule;
 import io.dataline.config.Schema;
@@ -50,7 +51,6 @@ import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.helpers.ConnectionHelpers;
 import io.dataline.server.helpers.SourceImplementationHelpers;
 import java.io.IOException;
@@ -88,13 +88,13 @@ class ConnectionsHandlerTest {
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SYNC,
+        ConfigSchema.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         StandardSync.class))
             .thenReturn(standardSync);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+        ConfigSchema.STANDARD_SYNC_SCHEDULE,
         standardSyncSchedule.getConnectionId().toString(),
         StandardSyncSchedule.class))
             .thenReturn(standardSyncSchedule);
@@ -123,13 +123,13 @@ class ConnectionsHandlerTest {
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.STANDARD_SYNC,
+            ConfigSchema.STANDARD_SYNC,
             standardSync.getConnectionId().toString(),
             standardSync);
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+            ConfigSchema.STANDARD_SYNC_SCHEDULE,
             standardSyncSchedule.getConnectionId().toString(),
             standardSyncSchedule);
   }
@@ -163,14 +163,14 @@ class ConnectionsHandlerTest {
     updatedPersistenceSchedule.setManual(true);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SYNC,
+        ConfigSchema.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         StandardSync.class))
             .thenReturn(standardSync)
             .thenReturn(updatedStandardSync);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+        ConfigSchema.STANDARD_SYNC_SCHEDULE,
         standardSyncSchedule.getConnectionId().toString(),
         StandardSyncSchedule.class))
             .thenReturn(standardSyncSchedule)
@@ -193,13 +193,13 @@ class ConnectionsHandlerTest {
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.STANDARD_SYNC,
+            ConfigSchema.STANDARD_SYNC,
             standardSync.getConnectionId().toString(),
             updatedStandardSync);
 
     verify(configPersistence)
         .writeConfig(
-            PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+            ConfigSchema.STANDARD_SYNC_SCHEDULE,
             standardSyncSchedule.getConnectionId().toString(),
             updatedPersistenceSchedule);
   }
@@ -207,13 +207,13 @@ class ConnectionsHandlerTest {
   @Test
   void testGetConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SYNC,
+        ConfigSchema.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         StandardSync.class))
             .thenReturn(standardSync);
 
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+        ConfigSchema.STANDARD_SYNC_SCHEDULE,
         standardSync.getConnectionId().toString(),
         StandardSyncSchedule.class))
             .thenReturn(standardSyncSchedule);
@@ -230,20 +230,20 @@ class ConnectionsHandlerTest {
   @Test
   void testListConnectionsForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     // mock list off all syncs
-    when(configPersistence.listConfigs(PersistenceConfigType.STANDARD_SYNC, StandardSync.class))
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class))
         .thenReturn(Lists.newArrayList(standardSync));
 
     // mock get source connection impl (used to check that connection is associated with given
     // workspace)
     when(configPersistence.getConfig(
-        PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
             .thenReturn(sourceImplementation);
 
     // mock get schedule for the now verified connection
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+        ConfigSchema.STANDARD_SYNC_SCHEDULE,
         standardSync.getConnectionId().toString(),
         StandardSyncSchedule.class))
             .thenReturn(standardSyncSchedule);

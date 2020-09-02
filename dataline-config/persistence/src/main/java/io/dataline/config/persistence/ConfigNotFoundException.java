@@ -24,18 +24,20 @@
 
 package io.dataline.config.persistence;
 
+import io.dataline.config.ConfigSchema;
+
 public class ConfigNotFoundException extends Exception {
 
-  private PersistenceConfigType type;
+  private ConfigSchema type;
   private final String configId;
 
-  public ConfigNotFoundException(PersistenceConfigType type, String configId) {
+  public ConfigNotFoundException(ConfigSchema type, String configId) {
     super(String.format("config type: %s id: %s", type, configId));
     this.type = type;
     this.configId = configId;
   }
 
-  public PersistenceConfigType getType() {
+  public ConfigSchema getType() {
     return type;
   }
 

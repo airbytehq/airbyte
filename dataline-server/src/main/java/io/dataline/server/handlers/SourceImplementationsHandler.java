@@ -33,11 +33,11 @@ import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.api.model.SourceImplementationReadList;
 import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSource;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.server.errors.KnownException;
 import io.dataline.server.helpers.ConfigFetchers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
@@ -224,7 +224,7 @@ public class SourceImplementationsHandler {
 
     ConfigFetchers.writeConfig(
         configPersistence,
-        PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION,
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceImplementationId.toString(),
         sourceConnectionImplementation);
   }
