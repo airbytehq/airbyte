@@ -1,25 +1,21 @@
 import React from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 import { Field, FieldProps, Form, Formik } from "formik";
 
-import Button from "../Button";
 import LabeledDropDown from "../LabeledDropDown";
 import FrequencyConfig from "../../data/FrequencyConfig.json";
+import BottomBlock from "./components/BottomBlock";
 
 type IProps = {
   className?: string;
-  onSubmit: () => void;
+  errorMessage?: React.ReactNode;
+  onSubmit: (values: { frequency: string }) => void;
 };
 
 const SmallLabeledDropDown = styled(LabeledDropDown)`
   max-width: 202px;
-`;
-
-const ButtonContainer = styled.div`
-  margin-top: 34px;
-  text-align: right;
 `;
 
 const FormContainer = styled(Form)`
@@ -30,7 +26,11 @@ const connectionValidationSchema = yup.object().shape({
   frequency: yup.string().required("form.empty.error")
 });
 
-const FrequencyForm: React.FC<IProps> = ({ onSubmit, className }) => {
+const FrequencyForm: React.FC<IProps> = ({
+  onSubmit,
+  className,
+  errorMessage
+}) => {
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
     () =>
@@ -59,9 +59,9 @@ const FrequencyForm: React.FC<IProps> = ({ onSubmit, className }) => {
       validateOnBlur={true}
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
-      onSubmit={async (_, { setSubmitting }) => {
+      onSubmit={async (values, { setSubmitting }) => {
+        await onSubmit(values);
         setSubmitting(false);
-        onSubmit();
       }}
     >
       {({ isSubmitting, setFieldValue, isValid, dirty }) => (
@@ -85,11 +85,12 @@ const FrequencyForm: React.FC<IProps> = ({ onSubmit, className }) => {
               />
             )}
           </Field>
-          <ButtonContainer>
-            <Button type="submit" disabled={isSubmitting || !isValid || !dirty}>
-              <FormattedMessage id="onboarding.setUpConnection" />
-            </Button>
-          </ButtonContainer>
+          <BottomBlock
+            isSubmitting={isSubmitting}
+            isValid={isValid}
+            dirty={dirty}
+            errorMessage={errorMessage}
+          />
         </FormContainer>
       )}
     </Formik>
