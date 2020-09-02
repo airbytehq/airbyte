@@ -96,7 +96,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
 
   public ConfigurationApi(final Path dbRoot, BasicDataSource connectionPool) {
-    ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot, new JsonSchemaValidator());
+    ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot);
     final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation(configPersistence);
     workspacesHandler = new WorkspacesHandler(configPersistence);
     sourcesHandler = new SourcesHandler(configPersistence);

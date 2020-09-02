@@ -76,7 +76,7 @@ public class SchedulerApp {
   public void start() {
     final SchedulerPersistence schedulerPersistence =
         new DefaultSchedulerPersistence(connectionPool);
-    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot, new JsonSchemaValidator());
+    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
     final ExecutorService workerThreadPool =
         Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();

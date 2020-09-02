@@ -47,6 +47,10 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   private final JsonSchemaValidator jsonSchemaValidator;
   private final Path storageRoot;
 
+  public DefaultConfigPersistence(final Path storageRoot) {
+    this(storageRoot, new JsonSchemaValidator());
+  }
+
   public DefaultConfigPersistence(final Path storageRoot, final JsonSchemaValidator schemaValidator) {
     this.storageRoot = storageRoot;
     jsonSchemaValidator = schemaValidator;
