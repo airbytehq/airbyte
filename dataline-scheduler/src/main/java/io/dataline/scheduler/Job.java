@@ -26,6 +26,7 @@ package io.dataline.scheduler;
 
 import io.dataline.config.JobConfig;
 import io.dataline.config.JobOutput;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 
@@ -102,6 +103,30 @@ public class Job {
 
   public String getStderrPath() {
     return stderrPath;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    Job job = (Job) o;
+    return id == job.id &&
+        createdAt == job.createdAt &&
+        updatedAt == job.updatedAt &&
+        scope.equals(job.scope) &&
+        status == job.status &&
+        Objects.equals(startedAt, job.startedAt) &&
+        config.equals(job.config) &&
+        Objects.equals(output, job.output) &&
+        Objects.equals(stdoutPath, job.stdoutPath) &&
+        Objects.equals(stderrPath, job.stderrPath);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, scope, status, createdAt, startedAt, updatedAt, config, output, stdoutPath, stderrPath);
   }
 
   @Override

@@ -44,6 +44,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
@@ -54,9 +55,15 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSchedulerPersistence.class);
   private final BasicDataSource connectionPool;
+  private final Supplier<Instant> timeSupplier;
+
+  public DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
+    this.connectionPool = connectionPool;
+    this.timeSupplier = timeSupplier;
+  }
 
   public DefaultSchedulerPersistence(BasicDataSource connectionPool) {
-    this.connectionPool = connectionPool;
+    this(connectionPool, Instant::now);
   }
 
   @Override
@@ -110,11 +117,11 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             JobConfig.ConfigType.DISCOVER_SCHEMA,
             sourceImplementation.getSourceImplementationId().toString());
 
+    final String imageName = Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
+        .getDiscoverSchemaImage();
     final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig();
     jobDiscoverSchemaConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
-    jobDiscoverSchemaConfig.setDockerImage(
-        Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
-            .getDiscoverSchemaImage());
+    jobDiscoverSchemaConfig.setDockerImage(imageName);
 
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA);
@@ -133,11 +140,13 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final String scope =
         ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
 
+    final String sourceImageName = Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId()).getSyncImage();
+    final String destinationImageName = Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId()).getSyncImage();
     final JobSyncConfig jobSyncConfig = new JobSyncConfig();
     jobSyncConfig.setSourceConnectionImplementation(sourceImplementation);
-    jobSyncConfig.setSourceDockerImage(Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId()).getSyncImage());
+    jobSyncConfig.setSourceDockerImage(sourceImageName);
     jobSyncConfig.setDestinationConnectionImplementation(destinationImplementation);
-    jobSyncConfig.setDestinationDockerImage(Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId()).getSyncImage());
+    jobSyncConfig.setDestinationDockerImage(destinationImageName);
     jobSyncConfig.setStandardSync(standardSync);
 
     final Optional<Job> previousJobOptional = JobUtils.getLastSyncJobForConnectionId(connectionPool, connectionId);
@@ -152,9 +161,9 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   // configJson is a oneOf checkConnection, discoverSchema, sync
-  public long createPendingJob(String scope, JobConfig jobConfig) throws IOException {
+  private long createPendingJob(String scope, JobConfig jobConfig) throws IOException {
     LOGGER.info("creating pending job for scope: " + scope);
-    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+    LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
     final String configJson = Jsons.serialize(jobConfig);
 
