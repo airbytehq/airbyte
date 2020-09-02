@@ -22,32 +22,19 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.commons.resources;
 
-import io.dataline.workers.Worker;
-import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.common.io.Resources;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
-public abstract class BaseSingerWorker<InputType, OutputType> implements Worker<InputType, OutputType> {
+public class MoreResources {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
-
-  protected void cancelHelper(Process workerProcess) {
-    try {
-      workerProcess.destroy();
-      workerProcess.waitFor(10, TimeUnit.SECONDS);
-      if (workerProcess.isAlive()) {
-        workerProcess.destroyForcibly();
-      }
-    } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling job.", e);
-    }
-  }
-
-  protected static Path getFullPath(Path workspaceRoot, String fileName) {
-    return workspaceRoot.resolve(fileName);
+  @SuppressWarnings("UnstableApiUsage")
+  public static String readResource(String name) throws IOException {
+    URL resource = Resources.getResource(name);
+    return Resources.toString(resource, StandardCharsets.UTF_8);
   }
 
 }

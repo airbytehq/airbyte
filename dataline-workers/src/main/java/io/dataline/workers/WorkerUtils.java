@@ -27,7 +27,6 @@ package io.dataline.workers;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
-import io.dataline.workers.singer.BaseSingerWorker;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -38,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 public class WorkerUtils {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
 
   public static Path writeFile(Path path, String fileName, String contents) {
     try {

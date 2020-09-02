@@ -28,6 +28,7 @@ import static io.dataline.workers.JobStatus.FAILED;
 import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.Schema;
@@ -38,6 +39,7 @@ import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -45,16 +47,15 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerDiscoverSchemaWorker
-    extends BaseSingerWorker<StandardDiscoverSchemaInput, StandardDiscoverSchemaOutput>
-    implements DiscoverSchemaWorker {
+public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoverSchemaWorker.class);
 
   // TODO log errors to specified file locations
-  private static String CONFIG_JSON_FILENAME = "config.json";
-  private static String CATALOG_JSON_FILENAME = "catalog.json";
-  private static String ERROR_LOG_FILENAME = "err.log";
+  @VisibleForTesting
+  static final String CONFIG_JSON_FILENAME = "config.json";
+  static final String CATALOG_JSON_FILENAME = "catalog.json";
+  static final String ERROR_LOG_FILENAME = "err.log";
 
   private final String imageName;
   private final ProcessBuilderFactory pbf;
@@ -68,9 +69,7 @@ public class SingerDiscoverSchemaWorker
 
   // package private since package-local classes need direct access to singer catalog, and the
   // conversion from SingerSchema to Dataline schema is lossy
-  OutputAndStatus<SingerCatalog> runInternal(StandardDiscoverSchemaInput discoverSchemaInput,
-                                             Path jobRoot)
-      throws InvalidCredentialsException {
+  OutputAndStatus<SingerCatalog> runInternal(StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot) throws InvalidCredentialsException {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
     // reduced.
     final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
@@ -81,8 +80,8 @@ public class SingerDiscoverSchemaWorker
     try {
       workerProcess =
           pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME, "--discover")
-              .redirectError(getFullPath(jobRoot, ERROR_LOG_FILENAME).toFile())
-              .redirectOutput(getFullPath(jobRoot, CATALOG_JSON_FILENAME).toFile())
+              .redirectError(jobRoot.resolve(ERROR_LOG_FILENAME).toFile())
+              .redirectOutput(jobRoot.resolve(CATALOG_JSON_FILENAME).toFile())
               .start();
 
       while (!workerProcess.waitFor(1, TimeUnit.MINUTES)) {
@@ -107,8 +106,7 @@ public class SingerDiscoverSchemaWorker
   }
 
   @Override
-  public OutputAndStatus<StandardDiscoverSchemaOutput> run(StandardDiscoverSchemaInput discoverSchemaInput,
-                                                           Path jobRoot)
+  public OutputAndStatus<StandardDiscoverSchemaOutput> run(StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot)
       throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> output = runInternal(discoverSchemaInput, jobRoot);
     JobStatus status = output.getStatus();
@@ -130,7 +128,7 @@ public class SingerDiscoverSchemaWorker
 
   @Override
   public void cancel() {
-    cancelHelper(workerProcess);
+    WorkerUtils.cancelProcess(workerProcess);
   }
 
 }
