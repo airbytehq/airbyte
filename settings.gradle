@@ -1,3 +1,5 @@
+import groovy.io.FileType
+
 rootProject.name = 'dataline'
 
 include 'dataline-api'
@@ -11,5 +13,16 @@ include 'dataline-scheduler'
 include 'dataline-server'
 include 'dataline-webapp'
 include 'dataline-workers'
-include 'dataline-integration-tests'
 include 'dataline-tests'
+
+// include all integration subprojects
+def prefix = rootProject.projectDir.absolutePath
+def dir = new File(prefix + "/dataline-integrations")
+dir.eachFileRecurse(FileType.FILES) { file ->
+  if (file.absolutePath.endsWith("build.gradle") && file.length() != 0) {
+    def subproject = file.absolutePath.substring(prefix.length() + "/dataline-integrations/".length())
+    subproject = subproject.substring(0, subproject.length() - "/build.gradle".length())
+    subproject = ":dataline-integrations:" + subproject.split("/").join(":")
+    include subproject
+  }
+}

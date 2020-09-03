@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
  * appropriate worker for a given job.
  */
 public class WorkerRunner implements Runnable {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunner.class);
 
   private final long jobId;

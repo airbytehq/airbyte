@@ -24,6 +24,9 @@
 
 package io.dataline.integration_tests.destinations;
 
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -51,13 +54,13 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertLinesMatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class TestBigQueryDestination extends BaseIntegrationTestCase {
 
   private static final BigQuery BQ = BigQueryOptions.getDefaultInstance().getService();
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestBigQueryDestination.class);
 
   private String datasetName;
   private Dataset dataset;
@@ -68,7 +71,7 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
     datasetName = "dataline_tests_" + RandomStringUtils.randomAlphanumeric(8);
     DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetName).build();
     dataset = BQ.create(datasetInfo);
-    System.out.println("BQ Dataset " + datasetName + " created...");
+    LOGGER.info("BQ Dataset " + datasetName + " created...");
 
     writeConfigFileToJobRoot();
     process = startTarget();
@@ -83,9 +86,9 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
 
     boolean success = BQ.delete(dataset.getDatasetId(), option);
     if (success) {
-      System.out.println("BQ Dataset " + datasetName + " deleted...");
+      LOGGER.info("BQ Dataset " + datasetName + " deleted...");
     } else {
-      System.out.println("BQ Dataset cleanup for " + datasetName + " failed!");
+      LOGGER.info("BQ Dataset cleanup for " + datasetName + " failed!");
     }
   }
 
@@ -104,10 +107,10 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
 
   private Process startTarget() throws IOException {
     return pbf.create(
-            jobRoot,
-            "dataline/integration-singer-bigquery-destination",
-            "--config",
-            "rendered_bigquery.json")
+        jobRoot,
+        "dataline/integration-singer-bigquery-destination",
+        "--config",
+        "rendered_bigquery.json")
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
@@ -146,7 +149,7 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
   private List<String> getExchangeRateTable() throws InterruptedException {
     QueryJobConfiguration queryConfig =
         QueryJobConfiguration.newBuilder(
-                "SELECT * FROM " + datasetName + ".exchange_rate ORDER BY date ASC;")
+            "SELECT * FROM " + datasetName + ".exchange_rate ORDER BY date ASC;")
             .setUseQueryCache(false)
             .build();
 
@@ -155,14 +158,14 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
     List<String> resultList =
         StreamSupport.stream(results.iterateAll().spliterator(), false)
             .map(
-                x ->
-                    x.stream()
-                        .skip(1)
-                        .map(FieldValue::getValue)
-                        .map(String::valueOf)
-                        .collect(Collectors.joining(",")))
+                x -> x.stream()
+                    .skip(1)
+                    .map(FieldValue::getValue)
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")))
             .collect(toList());
 
     return resultList;
   }
+
 }
