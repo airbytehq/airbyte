@@ -56,7 +56,6 @@ task generateApiClient(type: GenerateTask) {
             generatePom  : "false",
             interfaceOnly: "true"
     ]
-
 }
 
 dependencies {
