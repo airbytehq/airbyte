@@ -39,12 +39,16 @@ import io.dataline.workers.singer.SingerTargetFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is a runnable that give a job id and db connection figures out how to run the
  * appropriate worker for a given job.
  */
 public class WorkerRunner implements Runnable {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunner.class);
 
   private final long jobId;
   private final BasicDataSource connectionPool;
@@ -73,6 +77,7 @@ public class WorkerRunner implements Runnable {
       throw new RuntimeException(e);
     }
 
+    LOGGER.info("job: {} {} {}", job.getId(), job.getScope(), job.getConfig().getConfigType());
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
 
     switch (job.getConfig().getConfigType()) {
