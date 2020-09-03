@@ -24,16 +24,21 @@
 
 package io.dataline.scheduler;
 
+import io.dataline.commons.functional.CheckedSupplier;
 import io.dataline.commons.json.Jsons;
+import io.dataline.commons.lang.Container;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
+import java.lang.ref.Reference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,29 +53,33 @@ import org.slf4j.LoggerFactory;
  * clarify it later. the main benefit is of this class is that it gives us some type safety when
  * working with workers. you can probably make an argument that this class should not have access to
  * the db.
- *
- * @param <InputType> - the type that the worker consumes.
- * @param <OutputType> - the type that the worker outputs.
  */
-public class WorkerRun<InputType, OutputType> implements Runnable {
+public class WorkerRun implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
+  public interface Factory {
+
+    <InputType> WorkerRun create(final long jobId,
+                                 final Path jobRoot,
+                                 final InputType input,
+                                 final Worker<InputType, ?> worker,
+                                 final BasicDataSource connectionPool);
+
+  }
 
   private final long jobId;
   private final Path jobRoot;
-  private final InputType input;
-  private final Worker<InputType, OutputType> worker;
+  private final CheckedSupplier<OutputAndStatus<?>, Exception> outputSupplier;
   private final BasicDataSource connectionPool;
 
-  public WorkerRun(long jobId,
-                   Path jobRoot,
-                   InputType input,
-                   Worker<InputType, OutputType> worker,
-                   BasicDataSource connectionPool) {
+  public <InputType> WorkerRun(final long jobId,
+                               final Path jobRoot,
+                               final InputType input,
+                               final Worker<InputType, ?> worker,
+                               final BasicDataSource connectionPool) {
     this.jobId = jobId;
     this.jobRoot = jobRoot;
-    this.input = input;
-    this.worker = worker;
+    this.outputSupplier = () -> worker.run(input, jobRoot);
     this.connectionPool = connectionPool;
   }
 
@@ -82,7 +91,7 @@ public class WorkerRun<InputType, OutputType> implements Runnable {
 
       Files.createDirectories(jobRoot);
 
-      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, jobRoot);
+      OutputAndStatus<?> outputAndStatus = outputSupplier.get();
 
       switch (outputAndStatus.getStatus()) {
         case FAILED:

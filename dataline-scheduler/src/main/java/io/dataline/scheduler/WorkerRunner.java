@@ -24,6 +24,8 @@
 
 package io.dataline.scheduler;
 
+import com.google.common.annotations.VisibleForTesting;
+import io.dataline.commons.concurrency.VoidCallable;
 import io.dataline.config.JobCheckConnectionConfig;
 import io.dataline.config.JobDiscoverSchemaConfig;
 import io.dataline.config.JobSyncConfig;
@@ -41,13 +43,12 @@ import java.nio.file.Path;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 /**
  * This class is a runnable that given a job id and db connection figures out how to run the
  * appropriate worker for a given job.
  */
-public class WorkerRunner implements Runnable {
+public class WorkerRunner implements VoidCallable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitter.class);
 
@@ -56,61 +57,62 @@ public class WorkerRunner implements Runnable {
   private final SchedulerPersistence persistence;
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
+  private final WorkerRun.Factory workerRunFactory;
 
-  public WorkerRunner(long jobId,
-                      BasicDataSource connectionPool,
-                      SchedulerPersistence persistence,
-                      Path workspaceRoot,
-                      ProcessBuilderFactory pbf) {
+  public WorkerRunner(final long jobId,
+                      final BasicDataSource connectionPool,
+                      final SchedulerPersistence persistence,
+                      final Path workspaceRoot,
+                      final ProcessBuilderFactory pbf) {
+    this(jobId, connectionPool, persistence, workspaceRoot, pbf, WorkerRun::new);
+  }
+
+  @VisibleForTesting
+  WorkerRunner(final long jobId,
+               final BasicDataSource connectionPool,
+               final SchedulerPersistence persistence,
+               final Path workspaceRoot,
+               final ProcessBuilderFactory pbf,
+               final WorkerRun.Factory workerRunFactory) {
     this.jobId = jobId;
     this.connectionPool = connectionPool;
     this.persistence = persistence;
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
-
-    // Prepare job partitioned logging
-    MDC.put("jobId", String.valueOf(jobId));
+    this.workerRunFactory = workerRunFactory;
   }
 
   @Override
-  public void run() {
-    final Job job;
-    try {
-      job = persistence.getJob(jobId);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
+  public void voidCall() throws IOException {
+    final Job job = persistence.getJob(jobId);
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
 
     switch (job.getConfig().getConfigType()) {
-      case CHECK_CONNECTION_SOURCE:
-      case CHECK_CONNECTION_DESTINATION:
-        final StandardCheckConnectionInput checkConnectionInput =
-            createCheckConnectionInput(job.getConfig().getCheckConnection());
-        new WorkerRun<>(
+      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> {
+        final StandardCheckConnectionInput checkConnectionInput = createCheckConnectionInput(job.getConfig().getCheckConnection());
+        workerRunFactory.create(
             jobId,
             jobRoot,
             checkConnectionInput,
             new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)),
             connectionPool)
             .run();
-        break;
-      case DISCOVER_SCHEMA:
+      }
+      case DISCOVER_SCHEMA -> {
         final StandardDiscoverSchemaInput discoverSchemaInput = createDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
-        new WorkerRun<>(
+        workerRunFactory.create(
             jobId,
             jobRoot,
             discoverSchemaInput,
             new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf),
             connectionPool)
             .run();
-        break;
-      case SYNC:
+      }
+      case SYNC -> {
         final StandardSyncInput syncInput = createSyncInput(job.getConfig().getSync());
         final SingerDiscoverSchemaWorker discoverSchemaWorker =
             new SingerDiscoverSchemaWorker(job.getConfig().getSync().getSourceDockerImage(), pbf);
-        new WorkerRun<>(
+        workerRunFactory.create(
             jobId,
             jobRoot,
             syncInput,
@@ -123,9 +125,8 @@ public class WorkerRunner implements Runnable {
                 new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf)),
             connectionPool)
             .run();
-        break;
-      default:
-        throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
+      }
+      default -> throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }
   }
 

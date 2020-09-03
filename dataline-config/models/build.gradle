@@ -12,4 +12,6 @@ jsonSchema2Pojo {
 
     targetPackage = 'io.dataline.config'
     useLongIntegers = true
+
+    removeOldOutput = true
 }
