@@ -46,30 +46,30 @@ public class ConnectionHelpers {
     final UUID connectionId = UUID.randomUUID();
 
     final StandardSync standardSync = new StandardSync();
-    standardSync.setConnectionId(connectionId);
-    standardSync.setName("presto to hudi");
-    standardSync.setStatus(StandardSync.Status.ACTIVE);
-    standardSync.setSchema(generateBasicPersistenceSchema());
-    standardSync.setSourceImplementationId(sourceImplementationId);
-    standardSync.setDestinationImplementationId(UUID.randomUUID());
-    standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
+    standardSync.withConnectionId(connectionId);
+    standardSync.withName("presto to hudi");
+    standardSync.withStatus(StandardSync.Status.ACTIVE);
+    standardSync.withSchema(generateBasicPersistenceSchema());
+    standardSync.withSourceImplementationId(sourceImplementationId);
+    standardSync.withDestinationImplementationId(UUID.randomUUID());
+    standardSync.withSyncMode(StandardSync.SyncMode.APPEND);
 
     return standardSync;
   }
 
   public static Schema generateBasicPersistenceSchema() {
     final Column column = new Column();
-    column.setDataType(DataType.STRING);
-    column.setName("id");
-    column.setSelected(true);
+    column.withDataType(DataType.STRING);
+    column.withName("id");
+    column.withSelected(true);
 
     final Table table = new Table();
-    table.setName("users");
-    table.setColumns(Lists.newArrayList(column));
-    table.setSelected(true);
+    table.withName("users");
+    table.withColumns(Lists.newArrayList(column));
+    table.withSelected(true);
 
     final Schema schema = new Schema();
-    schema.setTables(Lists.newArrayList(table));
+    schema.withTables(Lists.newArrayList(table));
 
     return schema;
   }
@@ -124,13 +124,13 @@ public class ConnectionHelpers {
 
   public static StandardSyncSchedule generateSchedule(UUID connectionId) {
     final Schedule schedule = new Schedule();
-    schedule.setTimeUnit(Schedule.TimeUnit.DAYS);
-    schedule.setUnits(1L);
+    schedule.withTimeUnit(Schedule.TimeUnit.DAYS);
+    schedule.withUnits(1L);
 
     final StandardSyncSchedule standardSchedule = new StandardSyncSchedule();
-    standardSchedule.setConnectionId(connectionId);
-    standardSchedule.setSchedule(schedule);
-    standardSchedule.setManual(false);
+    standardSchedule.withConnectionId(connectionId);
+    standardSchedule.withSchedule(schedule);
+    standardSchedule.withManual(false);
 
     return standardSchedule;
   }

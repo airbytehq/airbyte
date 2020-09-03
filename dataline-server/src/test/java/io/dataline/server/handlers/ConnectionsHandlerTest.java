@@ -146,21 +146,21 @@ class ConnectionsHandlerTest {
     connectionUpdate.setSyncSchema(newApiSchema);
 
     final Schema newPersistenceSchema = ConnectionHelpers.generateBasicPersistenceSchema();
-    newPersistenceSchema.getTables().get(0).setName("azkaban_users");
+    newPersistenceSchema.getTables().get(0).withName("azkaban_users");
 
     final StandardSync updatedStandardSync = new StandardSync();
-    updatedStandardSync.setConnectionId(standardSync.getConnectionId());
-    updatedStandardSync.setName("presto to hudi");
-    updatedStandardSync.setSourceImplementationId(standardSync.getSourceImplementationId());
-    updatedStandardSync.setDestinationImplementationId(
+    updatedStandardSync.withConnectionId(standardSync.getConnectionId());
+    updatedStandardSync.withName("presto to hudi");
+    updatedStandardSync.withSourceImplementationId(standardSync.getSourceImplementationId());
+    updatedStandardSync.withDestinationImplementationId(
         standardSync.getDestinationImplementationId());
-    updatedStandardSync.setSyncMode(standardSync.getSyncMode());
-    updatedStandardSync.setStatus(StandardSync.Status.INACTIVE);
-    updatedStandardSync.setSchema(newPersistenceSchema);
+    updatedStandardSync.withSyncMode(standardSync.getSyncMode());
+    updatedStandardSync.withStatus(StandardSync.Status.INACTIVE);
+    updatedStandardSync.withSchema(newPersistenceSchema);
 
     final StandardSyncSchedule updatedPersistenceSchedule = new StandardSyncSchedule();
-    updatedPersistenceSchedule.setConnectionId(standardSyncSchedule.getConnectionId());
-    updatedPersistenceSchedule.setManual(true);
+    updatedPersistenceSchedule.withConnectionId(standardSyncSchedule.getConnectionId());
+    updatedPersistenceSchedule.withManual(true);
 
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_SYNC,

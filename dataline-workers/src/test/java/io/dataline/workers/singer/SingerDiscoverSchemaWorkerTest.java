@@ -67,7 +67,7 @@ public class SingerDiscoverSchemaWorkerTest {
     process = mock(Process.class);
 
     input = new StandardDiscoverSchemaInput();
-    input.setConnectionConfiguration(CREDS);
+    input.withConnectionConfiguration(CREDS);
 
     when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover")).thenReturn(processBuilder);
     when(processBuilder.redirectError(jobRoot.resolve(SingerDiscoverSchemaWorker.ERROR_LOG_FILENAME).toFile())).thenReturn(processBuilder);

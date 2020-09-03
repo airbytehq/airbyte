@@ -69,52 +69,52 @@ public class TestConfigHelpers {
 
     final SourceConnectionImplementation sourceConnectionConfig =
         new SourceConnectionImplementation();
-    sourceConnectionConfig.setConfiguration(sourceConnection);
-    sourceConnectionConfig.setWorkspaceId(workspaceId);
-    sourceConnectionConfig.setSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionConfig.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionConfig.setTombstone(false);
+    sourceConnectionConfig.withConfiguration(sourceConnection);
+    sourceConnectionConfig.withWorkspaceId(workspaceId);
+    sourceConnectionConfig.withSourceSpecificationId(sourceSpecificationId);
+    sourceConnectionConfig.withSourceImplementationId(sourceImplementationId);
+    sourceConnectionConfig.withTombstone(false);
 
     final DestinationConnectionImplementation destinationConnectionConfig =
         new DestinationConnectionImplementation();
-    destinationConnectionConfig.setConfiguration(destinationConnection);
-    destinationConnectionConfig.setWorkspaceId(workspaceId);
-    destinationConnectionConfig.setDestinationSpecificationId(destinationSpecificationId);
-    destinationConnectionConfig.setDestinationImplementationId(destinationImplementationId);
+    destinationConnectionConfig.withConfiguration(destinationConnection);
+    destinationConnectionConfig.withWorkspaceId(workspaceId);
+    destinationConnectionConfig.withDestinationSpecificationId(destinationSpecificationId);
+    destinationConnectionConfig.withDestinationImplementationId(destinationImplementationId);
 
     final Column column = new Column();
-    column.setName(COLUMN_NAME);
-    column.setDataType(DataType.STRING);
-    column.setSelected(true);
+    column.withName(COLUMN_NAME);
+    column.withDataType(DataType.STRING);
+    column.withSelected(true);
 
     final Table table = new Table();
-    table.setName(TABLE_NAME);
-    table.setSelected(true);
-    table.setColumns(Collections.singletonList(column));
+    table.withName(TABLE_NAME);
+    table.withSelected(true);
+    table.withColumns(Collections.singletonList(column));
 
     final Schema schema = new Schema();
-    schema.setTables(Collections.singletonList(table));
+    schema.withTables(Collections.singletonList(table));
 
     StandardSync standardSync = new StandardSync();
-    standardSync.setConnectionId(connectionId);
-    standardSync.setDestinationImplementationId(destinationImplementationId);
-    standardSync.setSourceImplementationId(sourceImplementationId);
-    standardSync.setStatus(StandardSync.Status.ACTIVE);
-    standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
-    standardSync.setName(CONNECTION_NAME);
-    standardSync.setSchema(schema);
+    standardSync.withConnectionId(connectionId);
+    standardSync.withDestinationImplementationId(destinationImplementationId);
+    standardSync.withSourceImplementationId(sourceImplementationId);
+    standardSync.withStatus(StandardSync.Status.ACTIVE);
+    standardSync.withSyncMode(StandardSync.SyncMode.APPEND);
+    standardSync.withName(CONNECTION_NAME);
+    standardSync.withSchema(schema);
 
     final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
     State state = new State();
-    state.setConnectionId(connectionId);
-    state.setState(Jsons.jsonNode(stateValue));
+    state.withConnectionId(connectionId);
+    state.withState(Jsons.jsonNode(stateValue));
 
     StandardSyncInput syncInput = new StandardSyncInput();
-    syncInput.setDestinationConnectionImplementation(destinationConnectionConfig);
-    syncInput.setStandardSync(standardSync);
-    syncInput.setSourceConnectionImplementation(sourceConnectionConfig);
-    syncInput.setState(state);
+    syncInput.withDestinationConnectionImplementation(destinationConnectionConfig);
+    syncInput.withStandardSync(standardSync);
+    syncInput.withSourceConnectionImplementation(sourceConnectionConfig);
+    syncInput.withState(state);
 
     return new ImmutablePair<>(standardSync, syncInput);
   }

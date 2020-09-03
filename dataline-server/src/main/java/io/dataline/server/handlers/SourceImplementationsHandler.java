@@ -216,11 +216,11 @@ public class SourceImplementationsHandler {
                                                      JsonNode configurationJson) {
     final SourceConnectionImplementation sourceConnectionImplementation =
         new SourceConnectionImplementation();
-    sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionImplementation.setWorkspaceId(workspaceId);
-    sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setTombstone(tombstone);
-    sourceConnectionImplementation.setConfiguration(configurationJson);
+    sourceConnectionImplementation.withSourceSpecificationId(sourceSpecificationId);
+    sourceConnectionImplementation.withWorkspaceId(workspaceId);
+    sourceConnectionImplementation.withSourceImplementationId(sourceImplementationId);
+    sourceConnectionImplementation.withTombstone(tombstone);
+    sourceConnectionImplementation.withConfiguration(configurationJson);
 
     ConfigFetchers.writeConfig(
         configPersistence,

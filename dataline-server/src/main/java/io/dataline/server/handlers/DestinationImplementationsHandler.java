@@ -169,10 +169,10 @@ public class DestinationImplementationsHandler {
                                                           JsonNode configurationJson) {
     final DestinationConnectionImplementation destinationConnectionImplementation =
         new DestinationConnectionImplementation();
-    destinationConnectionImplementation.setDestinationSpecificationId(destinationSpecificationId);
-    destinationConnectionImplementation.setWorkspaceId(workspaceId);
-    destinationConnectionImplementation.setDestinationImplementationId(destinationImplementationId);
-    destinationConnectionImplementation.setConfiguration(configurationJson);
+    destinationConnectionImplementation.withDestinationSpecificationId(destinationSpecificationId);
+    destinationConnectionImplementation.withWorkspaceId(workspaceId);
+    destinationConnectionImplementation.withDestinationImplementationId(destinationImplementationId);
+    destinationConnectionImplementation.withConfiguration(configurationJson);
 
     ConfigFetchers.writeConfig(
         configPersistence,

@@ -95,7 +95,7 @@ class SingerTapFactoryTest {
     final StandardTapConfig tapConfig =
         WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
     StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfiguration(
+    discoverSchemaInput.withConnectionConfiguration(
         tapConfig.getSourceConnectionImplementation().getConfiguration());
     ProcessBuilderFactory pbf = mock(ProcessBuilderFactory.class);
     ProcessBuilder processBuilder = mock(ProcessBuilder.class);
@@ -104,23 +104,23 @@ class SingerTapFactoryTest {
     SingerDiscoverSchemaWorker discoverSchemaWorker = mock(SingerDiscoverSchemaWorker.class);
 
     final SingerColumn singerColumn = new SingerColumn();
-    singerColumn.setType(Lists.newArrayList(SingerType.NULL, SingerType.STRING));
+    singerColumn.withType(Lists.newArrayList(SingerType.NULL, SingerType.STRING));
 
     final SingerColumnMap singerColumnMap = new SingerColumnMap();
-    singerColumnMap.setAdditionalProperty(COLUMN_NAME, singerColumn);
+    singerColumnMap.withAdditionalProperty(COLUMN_NAME, singerColumn);
 
     final SingerTableSchema singerSchema = new SingerTableSchema();
-    singerSchema.setType("object");
-    singerSchema.setProperties(singerColumnMap);
+    singerSchema.withType("object");
+    singerSchema.withProperties(singerColumnMap);
 
     SingerStream singerStream = new SingerStream();
-    singerStream.setStream(TABLE_NAME);
-    singerStream.setTapStreamId(TABLE_NAME);
-    singerStream.setTableName(TABLE_NAME);
-    singerStream.setSchema(singerSchema);
+    singerStream.withStream(TABLE_NAME);
+    singerStream.withTapStreamId(TABLE_NAME);
+    singerStream.withTableName(TABLE_NAME);
+    singerStream.withSchema(singerSchema);
 
     final SingerCatalog singerCatalog = new SingerCatalog();
-    singerCatalog.setStreams(Collections.singletonList(singerStream));
+    singerCatalog.withStreams(Collections.singletonList(singerStream));
 
     final OutputAndStatus<SingerCatalog> discoverSchemaOutput =
         new OutputAndStatus<>(JobStatus.SUCCESSFUL, singerCatalog);

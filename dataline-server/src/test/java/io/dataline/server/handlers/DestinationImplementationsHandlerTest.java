@@ -98,10 +98,10 @@ class DestinationImplementationsHandlerTest {
 
     final DestinationConnectionImplementation destinationConnectionImplementation =
         new DestinationConnectionImplementation();
-    destinationConnectionImplementation.setWorkspaceId(workspaceId);
-    destinationConnectionImplementation.setDestinationSpecificationId(destinationSpecificationId);
-    destinationConnectionImplementation.setDestinationImplementationId(destinationImplementationId);
-    destinationConnectionImplementation.setConfiguration(implementationJson);
+    destinationConnectionImplementation.withWorkspaceId(workspaceId);
+    destinationConnectionImplementation.withDestinationSpecificationId(destinationSpecificationId);
+    destinationConnectionImplementation.withDestinationImplementationId(destinationImplementationId);
+    destinationConnectionImplementation.withConfiguration(implementationJson);
 
     return destinationConnectionImplementation;
   }
@@ -173,13 +173,13 @@ class DestinationImplementationsHandlerTest {
 
     final DestinationConnectionImplementation expectedDestinationConnectionImplementation =
         new DestinationConnectionImplementation();
-    expectedDestinationConnectionImplementation.setWorkspaceId(
+    expectedDestinationConnectionImplementation.withWorkspaceId(
         destinationConnectionImplementation.getWorkspaceId());
-    expectedDestinationConnectionImplementation.setDestinationSpecificationId(
+    expectedDestinationConnectionImplementation.withDestinationSpecificationId(
         destinationConnectionImplementation.getDestinationSpecificationId());
-    expectedDestinationConnectionImplementation.setDestinationImplementationId(
+    expectedDestinationConnectionImplementation.withDestinationImplementationId(
         destinationConnectionImplementation.getDestinationImplementationId());
-    expectedDestinationConnectionImplementation.setConfiguration(newConfiguration);
+    expectedDestinationConnectionImplementation.withConfiguration(newConfiguration);
 
     when(configPersistence.getConfig(
         ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,

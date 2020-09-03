@@ -61,8 +61,8 @@ class SourcesHandlerTest {
     final UUID sourceId = UUID.randomUUID();
 
     final StandardSource standardSource = new StandardSource();
-    standardSource.setSourceId(sourceId);
-    standardSource.setName("presto");
+    standardSource.withSourceId(sourceId);
+    standardSource.withName("presto");
 
     return standardSource;
   }

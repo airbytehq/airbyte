@@ -73,12 +73,12 @@ public class WorkspacesHandler {
         ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
 
     if (workspaceUpdate.getEmail() != null && !workspaceUpdate.getEmail().equals("")) {
-      persistedWorkspace.setEmail(workspaceUpdate.getEmail());
+      persistedWorkspace.withEmail(workspaceUpdate.getEmail());
     }
-    persistedWorkspace.setInitialSetupComplete(workspaceUpdate.getInitialSetupComplete());
-    persistedWorkspace.setAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection());
-    persistedWorkspace.setNews(workspaceUpdate.getNews());
-    persistedWorkspace.setSecurityUpdates(workspaceUpdate.getSecurityUpdates());
+    persistedWorkspace.withInitialSetupComplete(workspaceUpdate.getInitialSetupComplete());
+    persistedWorkspace.withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection());
+    persistedWorkspace.withNews(workspaceUpdate.getNews());
+    persistedWorkspace.withSecurityUpdates(workspaceUpdate.getSecurityUpdates());
     ConfigFetchers.writeConfig(
         configPersistence,
         ConfigSchema.STANDARD_WORKSPACE,

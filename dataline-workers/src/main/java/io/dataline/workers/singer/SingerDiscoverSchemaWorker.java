@@ -121,7 +121,7 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
   private static StandardDiscoverSchemaOutput toDiscoveryOutput(SingerCatalog catalog) {
     final Schema schema = SingerCatalogConverters.toDatalineSchema(catalog);
     final StandardDiscoverSchemaOutput output = new StandardDiscoverSchemaOutput();
-    output.setSchema(schema);
+    output.withSchema(schema);
 
     return output;
   }

@@ -142,7 +142,7 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path jobRoot)
       throws InvalidCredentialsException {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput();
-    discoveryInput.setConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
+    discoveryInput.withConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
     Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
     return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot);
   }

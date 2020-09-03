@@ -53,20 +53,20 @@ public class SingerCheckConnectionWorker implements CheckConnectionWorker {
       throws InvalidCredentialsException, InvalidCatalogException {
 
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfiguration(input.getConnectionConfiguration());
+    discoverSchemaInput.withConnectionConfiguration(input.getConnectionConfiguration());
 
     OutputAndStatus<StandardDiscoverSchemaOutput> outputAndStatus = discoverSchemaWorker.run(discoverSchemaInput, jobRoot);
     StandardCheckConnectionOutput output = new StandardCheckConnectionOutput();
     JobStatus jobStatus;
     if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL && outputAndStatus.getOutput().isPresent()) {
-      output.setStatus(StandardCheckConnectionOutput.Status.SUCCESS);
+      output.withStatus(StandardCheckConnectionOutput.Status.SUCCESS);
       jobStatus = JobStatus.SUCCESSFUL;
     } else {
       LOGGER.info("Connection check unsuccessful. Discovery output: {}", outputAndStatus);
       jobStatus = JobStatus.FAILED;
-      output.setStatus(StandardCheckConnectionOutput.Status.FAILURE);
+      output.withStatus(StandardCheckConnectionOutput.Status.FAILURE);
       // TODO add better error log parsing to specify the exact reason for failure as the message
-      output.setMessage("Failed to connect.");
+      output.withMessage("Failed to connect.");
     }
 
     return new OutputAndStatus<>(jobStatus, output);

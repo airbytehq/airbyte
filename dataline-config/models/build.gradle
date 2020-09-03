@@ -12,4 +12,11 @@ jsonSchema2Pojo {
 
     targetPackage = 'io.dataline.config'
     useLongIntegers = true
+
+    removeOldOutput = true
+
+//    generateBuilders = true
+    includeConstructors = false
+//    includeSetters = false
+    includeDynamicGetters = true
 }

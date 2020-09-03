@@ -47,18 +47,18 @@ public class SchemaConverter {
                           .map(
                               apiColumn -> {
                                 final Column persistenceColumn = new Column();
-                                persistenceColumn.setName(apiColumn.getName());
-                                persistenceColumn.setDataType(
+                                persistenceColumn.withName(apiColumn.getName());
+                                persistenceColumn.withDataType(
                                     toPersistenceDataType(apiColumn.getDataType()));
-                                persistenceColumn.setSelected(apiColumn.getSelected());
+                                persistenceColumn.withSelected(apiColumn.getSelected());
                                 return persistenceColumn;
                               })
                           .collect(Collectors.toList());
 
                   final Table persistenceTable = new Table();
-                  persistenceTable.setName(apiTable.getName());
-                  persistenceTable.setColumns(persistenceColumns);
-                  persistenceTable.setSelected(
+                  persistenceTable.withName(apiTable.getName());
+                  persistenceTable.withColumns(persistenceColumns);
+                  persistenceTable.withSelected(
                       persistenceColumns.stream().anyMatch(Column::getSelected));
 
                   return persistenceTable;
@@ -66,7 +66,7 @@ public class SchemaConverter {
             .collect(Collectors.toList());
 
     final Schema persistenceSchema = new Schema();
-    persistenceSchema.setTables(persistenceTables);
+    persistenceSchema.withTables(persistenceTables);
     return persistenceSchema;
   }
 

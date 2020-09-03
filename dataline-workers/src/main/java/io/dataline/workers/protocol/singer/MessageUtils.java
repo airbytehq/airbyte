@@ -45,13 +45,13 @@ public class MessageUtils {
                                                   JsonNode record,
                                                   Instant timeExtracted) {
     final SingerMessage singerMessage = new SingerMessage();
-    singerMessage.setType(SingerMessage.Type.RECORD);
-    singerMessage.setRecord(record);
-    singerMessage.setStream(tableName);
+    singerMessage.withType(SingerMessage.Type.RECORD);
+    singerMessage.withRecord(record);
+    singerMessage.withStream(tableName);
 
     Optional.ofNullable(timeExtracted)
         .ifPresent(
-            instant -> singerMessage.setTimeExtracted(SINGER_DATETIME_FORMATTER.format(instant)));
+            instant -> singerMessage.withTimeExtracted(SINGER_DATETIME_FORMATTER.format(instant)));
 
     return singerMessage;
   }

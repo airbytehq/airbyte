@@ -83,17 +83,17 @@ public class DefaultSyncWorker implements SyncWorker {
     }
 
     StandardSyncSummary summary = new StandardSyncSummary();
-    summary.setRecordsSynced(singerMessageTracker.getRecordCount());
-    summary.setStartTime(startTime);
-    summary.setEndTime(System.currentTimeMillis());
+    summary.withRecordsSynced(singerMessageTracker.getRecordCount());
+    summary.withStartTime(startTime);
+    summary.withEndTime(System.currentTimeMillis());
 
     final StandardSyncOutput output = new StandardSyncOutput();
-    output.setStandardSyncSummary(summary);
+    output.withStandardSyncSummary(summary);
     singerMessageTracker.getOutputState().ifPresent(singerState -> {
       final State state = new State();
-      state.setConnectionId(tapConfig.getStandardSync().getConnectionId());
-      state.setState(singerState);
-      output.setState(state);
+      state.withConnectionId(tapConfig.getStandardSync().getConnectionId());
+      state.withState(singerState);
+      output.withState(state);
     });
 
     return new OutputAndStatus<>(cancelled.get() ? JobStatus.FAILED : JobStatus.SUCCESSFUL, output);

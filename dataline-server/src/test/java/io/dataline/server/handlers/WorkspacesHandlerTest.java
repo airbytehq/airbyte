@@ -61,11 +61,11 @@ class WorkspacesHandlerTest {
     final UUID workspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
 
     final StandardWorkspace standardWorkspace = new StandardWorkspace();
-    standardWorkspace.setWorkspaceId(workspaceId);
-    standardWorkspace.setEmail("test@dataline.io");
-    standardWorkspace.setName("test workspace");
-    standardWorkspace.setSlug("default");
-    standardWorkspace.setInitialSetupComplete(false);
+    standardWorkspace.withWorkspaceId(workspaceId);
+    standardWorkspace.withEmail("test@dataline.io");
+    standardWorkspace.withName("test workspace");
+    standardWorkspace.withSlug("default");
+    standardWorkspace.withInitialSetupComplete(false);
 
     return standardWorkspace;
   }
@@ -121,14 +121,14 @@ class WorkspacesHandlerTest {
     workspaceUpdate.setInitialSetupComplete(true);
 
     final StandardWorkspace expectedWorkspace = new StandardWorkspace();
-    expectedWorkspace.setWorkspaceId(workspace.getWorkspaceId());
-    expectedWorkspace.setEmail("test@dataline.io");
-    expectedWorkspace.setName("test workspace");
-    expectedWorkspace.setSlug("default");
-    expectedWorkspace.setAnonymousDataCollection(true);
-    expectedWorkspace.setSecurityUpdates(false);
-    expectedWorkspace.setNews(false);
-    expectedWorkspace.setInitialSetupComplete(true);
+    expectedWorkspace.withWorkspaceId(workspace.getWorkspaceId());
+    expectedWorkspace.withEmail("test@dataline.io");
+    expectedWorkspace.withName("test workspace");
+    expectedWorkspace.withSlug("default");
+    expectedWorkspace.withAnonymousDataCollection(true);
+    expectedWorkspace.withSecurityUpdates(false);
+    expectedWorkspace.withNews(false);
+    expectedWorkspace.withInitialSetupComplete(true);
 
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_WORKSPACE,

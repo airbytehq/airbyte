@@ -46,11 +46,11 @@ public class SourceImplementationHelpers {
 
     final SourceConnectionImplementation sourceConnectionImplementation =
         new SourceConnectionImplementation();
-    sourceConnectionImplementation.setWorkspaceId(workspaceId);
-    sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setConfiguration(implementationJson);
-    sourceConnectionImplementation.setTombstone(false);
+    sourceConnectionImplementation.withWorkspaceId(workspaceId);
+    sourceConnectionImplementation.withSourceSpecificationId(sourceSpecificationId);
+    sourceConnectionImplementation.withSourceImplementationId(sourceImplementationId);
+    sourceConnectionImplementation.withConfiguration(implementationJson);
+    sourceConnectionImplementation.withTombstone(false);
 
     return sourceConnectionImplementation;
   }

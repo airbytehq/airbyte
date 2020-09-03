@@ -146,11 +146,11 @@ class SourceImplementationsHandlerTest {
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
         new SourceConnectionImplementation();
-    expectedSourceConnectionImplementation.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceConnectionImplementation.setSourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId());
-    expectedSourceConnectionImplementation.setSourceImplementationId(sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceConnectionImplementation.setConfiguration(newConfiguration);
-    expectedSourceConnectionImplementation.setTombstone(false);
+    expectedSourceConnectionImplementation.withWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
+    expectedSourceConnectionImplementation.withSourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId());
+    expectedSourceConnectionImplementation.withSourceImplementationId(sourceConnectionImplementation.getSourceImplementationId());
+    expectedSourceConnectionImplementation.withConfiguration(newConfiguration);
+    expectedSourceConnectionImplementation.withTombstone(false);
 
     when(configPersistence.getConfig(
         ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
@@ -262,11 +262,11 @@ class SourceImplementationsHandlerTest {
 
     final SourceConnectionImplementation expectedSourceConnectionImplementation =
         new SourceConnectionImplementation();
-    expectedSourceConnectionImplementation.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
-    expectedSourceConnectionImplementation.setSourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId());
-    expectedSourceConnectionImplementation.setSourceImplementationId(sourceConnectionImplementation.getSourceImplementationId());
-    expectedSourceConnectionImplementation.setConfiguration(sourceConnectionImplementation.getConfiguration());
-    expectedSourceConnectionImplementation.setTombstone(true);
+    expectedSourceConnectionImplementation.withWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
+    expectedSourceConnectionImplementation.withSourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId());
+    expectedSourceConnectionImplementation.withSourceImplementationId(sourceConnectionImplementation.getSourceImplementationId());
+    expectedSourceConnectionImplementation.withConfiguration(sourceConnectionImplementation.getConfiguration());
+    expectedSourceConnectionImplementation.withTombstone(true);
 
     when(configPersistence.getConfig(
         ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,

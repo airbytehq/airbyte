@@ -87,7 +87,7 @@ public class SingerCatalogConverters {
                                   }
                                   final Column column = columnNameToColumn.get(columnName);
 
-                                  newSingerMetadata.getMetadata().setSelected(column.getSelected());
+                                  newSingerMetadata.getMetadata().withSelected(column.getSelected());
                                 } else {
                                   // table metadata
                                   // TODO HACK set replication mode to full_refresh on every stream
@@ -95,31 +95,31 @@ public class SingerCatalogConverters {
                                   // is working on this.
                                   newSingerMetadata
                                       .getMetadata()
-                                      .setReplicationMethod(
+                                      .withReplicationMethod(
                                           SingerMetadataChild.ReplicationMethod.FULL_TABLE);
-                                  newSingerMetadata.getMetadata().setSelected(table.getSelected());
+                                  newSingerMetadata.getMetadata().withSelected(table.getSelected());
                                 }
                                 return newSingerMetadata;
                               })
                           .collect(Collectors.toList());
 
                   final SingerStream newSingerStream = new SingerStream();
-                  newSingerStream.setStream(stream.getStream());
-                  newSingerStream.setTableName(stream.getTableName());
-                  newSingerStream.setTapStreamId(stream.getTapStreamId());
+                  newSingerStream.withStream(stream.getStream());
+                  newSingerStream.withTableName(stream.getTableName());
+                  newSingerStream.withTapStreamId(stream.getTapStreamId());
                   // TODO
-                  newSingerStream.setMetadata(newMetadata);
+                  newSingerStream.withMetadata(newMetadata);
                   // todo (cgardens) - this will not work for legacy catalogs. want to handle this
                   // in a subsequent PR, because handling this is going to require doing another
                   // one of these monster map tasks.
-                  newSingerStream.setSchema(stream.getSchema());
+                  newSingerStream.withSchema(stream.getSchema());
 
                   return newSingerStream;
                 })
             .collect(Collectors.toList());
 
     final SingerCatalog outputCatalog = new SingerCatalog();
-    outputCatalog.setStreams(updatedStreams);
+    outputCatalog.withStreams(updatedStreams);
 
     return outputCatalog;
   }
@@ -141,9 +141,9 @@ public class SingerCatalogConverters {
                           .findFirst()
                           .orElseThrow(() -> new RuntimeException("Could not find table metadata"));
                   final Table table = new Table();
-                  table.setName(stream.getStream());
-                  table.setSelected(isSelected(tableMetadata.getMetadata()));
-                  table.setColumns(
+                  table.withName(stream.getStream());
+                  table.withSelected(isSelected(tableMetadata.getMetadata()));
+                  table.withColumns(
                       stream
                           .getSchema()
                           .getProperties()
@@ -158,11 +158,11 @@ public class SingerCatalogConverters {
                                     columnNameToMetadata.get(columnName);
 
                                 final Column column = new Column();
-                                column.setName(columnName);
-                                column.setDataType(singerTypesToDataType(singerColumn.getType()));
+                                column.withName(columnName);
+                                column.withDataType(singerTypesToDataType(singerColumn.getType()));
                                 // in discovery, you can find columns that are replicated by
                                 // default. we set those to selected. the rest are not.
-                                column.setSelected(isSelected(singerColumnMetadata));
+                                column.withSelected(isSelected(singerColumnMetadata));
                                 return column;
                               })
                           .collect(Collectors.toList()));
@@ -171,7 +171,7 @@ public class SingerCatalogConverters {
             .collect(Collectors.toList());
 
     final Schema schema = new Schema();
-    schema.setTables(tables);
+    schema.withTables(tables);
     return schema;
   }
 
@@ -271,24 +271,24 @@ public class SingerCatalogConverters {
     // bad variable name. tradeoff to keep stuff on one line.
     SingerMetadataChild toClone2 = toClone.getMetadata();
     final SingerMetadataChild singerMetadataChild = new SingerMetadataChild();
-    singerMetadataChild.setSelected(toClone2.getSelected());
-    singerMetadataChild.setReplicationMethod(toClone2.getReplicationMethod());
-    singerMetadataChild.setReplicationKey(toClone2.getReplicationKey());
-    singerMetadataChild.setViewKeyProperties(toClone2.getViewKeyProperties());
-    singerMetadataChild.setInclusion(toClone2.getInclusion());
-    singerMetadataChild.setSelectedByDefault(toClone2.getSelectedByDefault());
-    singerMetadataChild.setValidReplicationKeys(toClone2.getValidReplicationKeys());
-    singerMetadataChild.setForcedReplicationMethod(toClone2.getForcedReplicationMethod());
-    singerMetadataChild.setTableKeyProperties(toClone2.getTableKeyProperties());
-    singerMetadataChild.setSchemaName(toClone2.getSchemaName());
-    singerMetadataChild.setIsView(toClone2.getIsView());
-    singerMetadataChild.setRowCount(toClone2.getRowCount());
-    singerMetadataChild.setDatabaseName(toClone2.getDatabaseName());
-    singerMetadataChild.setSqlDatatype(toClone2.getSqlDatatype());
+    singerMetadataChild.withSelected(toClone2.getSelected());
+    singerMetadataChild.withReplicationMethod(toClone2.getReplicationMethod());
+    singerMetadataChild.withReplicationKey(toClone2.getReplicationKey());
+    singerMetadataChild.withViewKeyProperties(toClone2.getViewKeyProperties());
+    singerMetadataChild.withInclusion(toClone2.getInclusion());
+    singerMetadataChild.withSelectedByDefault(toClone2.getSelectedByDefault());
+    singerMetadataChild.withValidReplicationKeys(toClone2.getValidReplicationKeys());
+    singerMetadataChild.withForcedReplicationMethod(toClone2.getForcedReplicationMethod());
+    singerMetadataChild.withTableKeyProperties(toClone2.getTableKeyProperties());
+    singerMetadataChild.withSchemaName(toClone2.getSchemaName());
+    singerMetadataChild.withIsView(toClone2.getIsView());
+    singerMetadataChild.withRowCount(toClone2.getRowCount());
+    singerMetadataChild.withDatabaseName(toClone2.getDatabaseName());
+    singerMetadataChild.withSqlDatatype(toClone2.getSqlDatatype());
 
     final SingerMetadata singerMetadata = new SingerMetadata();
-    singerMetadata.setBreadcrumb(new ArrayList<>(toClone.getBreadcrumb()));
-    singerMetadata.setMetadata(singerMetadataChild);
+    singerMetadata.withBreadcrumb(new ArrayList<>(toClone.getBreadcrumb()));
+    singerMetadata.withMetadata(singerMetadataChild);
 
     return singerMetadata;
   }

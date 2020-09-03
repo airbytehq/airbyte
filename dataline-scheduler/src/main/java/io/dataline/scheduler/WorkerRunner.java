@@ -128,24 +128,24 @@ public class WorkerRunner implements Runnable {
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
     final StandardCheckConnectionInput checkConnectionInput = new StandardCheckConnectionInput();
-    checkConnectionInput.setConnectionConfiguration(config.getConnectionConfiguration());
+    checkConnectionInput.withConnectionConfiguration(config.getConnectionConfiguration());
 
     return checkConnectionInput;
   }
 
   private static StandardDiscoverSchemaInput getDiscoverSchemaInput(JobDiscoverSchemaConfig config) {
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfiguration(config.getConnectionConfiguration());
+    discoverSchemaInput.withConnectionConfiguration(config.getConnectionConfiguration());
 
     return discoverSchemaInput;
   }
 
   private static StandardSyncInput getSyncInput(JobSyncConfig config) {
     final StandardSyncInput syncInput = new StandardSyncInput();
-    syncInput.setSourceConnectionImplementation(config.getSourceConnectionImplementation());
-    syncInput.setDestinationConnectionImplementation(
+    syncInput.withSourceConnectionImplementation(config.getSourceConnectionImplementation());
+    syncInput.withDestinationConnectionImplementation(
         config.getDestinationConnectionImplementation());
-    syncInput.setStandardSync(config.getStandardSync());
+    syncInput.withStandardSync(config.getStandardSync());
 
     return syncInput;
   }

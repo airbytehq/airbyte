@@ -65,35 +65,34 @@ public class ConnectionsHandler {
     final UUID connectionId = uuidGenerator.get();
 
     // persist sync
-    final StandardSync standardSync = new StandardSync();
-    standardSync.setConnectionId(connectionId);
-    standardSync.setSourceImplementationId(connectionCreate.getSourceImplementationId());
-    standardSync.setDestinationImplementationId(connectionCreate.getDestinationImplementationId());
-    // todo (cgardens): for MVP we only support append.
-    standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
+    final StandardSync standardSync = new StandardSync()
+        .withConnectionId(connectionId)
+        .withSourceImplementationId(connectionCreate.getSourceImplementationId())
+        .withDestinationImplementationId(connectionCreate.getDestinationImplementationId())
+        // todo (cgardens): for MVP we only support append.
+        .withSyncMode(StandardSync.SyncMode.APPEND);
     if (connectionCreate.getSyncSchema() != null) {
-      standardSync.setSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
+      standardSync.withSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
     } else {
-      final Schema schema = new Schema();
-      schema.setTables(Collections.emptyList());
-      standardSync.setSchema(schema);
+      standardSync.withSchema(new Schema().withTables(Collections.emptyList()));
     }
-    standardSync.setName(
-        connectionCreate.getName() != null ? connectionCreate.getName() : "default");
-    standardSync.setStatus(toPersistenceStatus(connectionCreate.getStatus()));
+    standardSync
+        .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
+        .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
+
     writeStandardSync(standardSync);
 
     // persist schedule
-    final StandardSyncSchedule standardSyncSchedule = new StandardSyncSchedule();
-    standardSyncSchedule.setConnectionId(connectionId);
+    final StandardSyncSchedule standardSyncSchedule = new StandardSyncSchedule()
+        .withConnectionId(connectionId);
     if (connectionCreate.getSchedule() != null) {
       final Schedule schedule = new Schedule();
-      schedule.setTimeUnit(toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()));
-      schedule.setUnits(connectionCreate.getSchedule().getUnits());
-      standardSyncSchedule.setManual(false);
-      standardSyncSchedule.setSchedule(schedule);
+      schedule.withTimeUnit(toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()));
+      schedule.withUnits(connectionCreate.getSchedule().getUnits());
+      standardSyncSchedule.withManual(false);
+      standardSyncSchedule.withSchedule(schedule);
     } else {
-      standardSyncSchedule.setManual(true);
+      standardSyncSchedule.withManual(true);
     }
 
     writeSchedule(standardSyncSchedule);
@@ -123,22 +122,22 @@ public class ConnectionsHandler {
 
     // get existing sync
     final StandardSync persistedSync = getStandardSync(connectionId);
-    persistedSync.setSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()));
-    persistedSync.setStatus(toPersistenceStatus(connectionUpdate.getStatus()));
+    persistedSync.withSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()));
+    persistedSync.withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
     // get existing schedule
     final StandardSyncSchedule persistedSchedule = getSyncSchedule(connectionId);
     if (connectionUpdate.getSchedule() != null) {
       final Schedule schedule = new Schedule();
-      schedule.setTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()));
-      schedule.setUnits(connectionUpdate.getSchedule().getUnits());
+      schedule.withTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()));
+      schedule.withUnits(connectionUpdate.getSchedule().getUnits());
 
-      persistedSchedule.setSchedule(schedule);
+      persistedSchedule.withSchedule(schedule);
 
-      persistedSchedule.setManual(false);
+      persistedSchedule.withManual(false);
     } else {
-      persistedSchedule.setSchedule(null);
-      persistedSchedule.setManual(true);
+      persistedSchedule.withSchedule(null);
+      persistedSchedule.withManual(true);
     }
 
     // persist sync
@@ -205,7 +204,7 @@ public class ConnectionsHandler {
                                           StandardSyncSchedule standardSyncSchedule) {
     final ConnectionSchedule apiSchedule;
 
-    standardSyncSchedule.setConnectionId(standardSyncSchedule.getConnectionId());
+    standardSyncSchedule.withConnectionId(standardSyncSchedule.getConnectionId());
     if (!standardSyncSchedule.getManual()) {
       apiSchedule = new ConnectionSchedule();
       apiSchedule.setTimeUnit(toApiTimeUnit(standardSyncSchedule.getSchedule().getTimeUnit()));

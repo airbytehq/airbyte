@@ -31,8 +31,8 @@ public class SourceHelpers {
 
   public static StandardSource generateSource() {
     StandardSource source = new StandardSource();
-    source.setSourceId(UUID.randomUUID());
-    source.setName("marketo");
+    source.withSourceId(UUID.randomUUID());
+    source.withName("marketo");
 
     return source;
   }

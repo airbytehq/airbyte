@@ -58,20 +58,20 @@ class DefaultSyncWorkerTest {
     final StandardSyncInput syncInput = syncPair.getValue();
 
     final StandardSyncSummary syncSummary = new StandardSyncSummary();
-    syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
-    syncSummary.setRecordsSynced(10L);
-    syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
-    syncSummary.setStartTime(LAST_SYNC_TIME);
-    syncSummary.setEndTime(LAST_SYNC_TIME);
+    syncSummary.withStatus(StandardSyncSummary.Status.COMPLETED);
+    syncSummary.withRecordsSynced(10L);
+    syncSummary.withStatus(StandardSyncSummary.Status.COMPLETED);
+    syncSummary.withStartTime(LAST_SYNC_TIME);
+    syncSummary.withEndTime(LAST_SYNC_TIME);
 
     final StandardTapConfig tapConfig = new StandardTapConfig();
-    tapConfig.setStandardSync(standardSync);
-    tapConfig.setSourceConnectionImplementation(syncInput.getSourceConnectionImplementation());
-    tapConfig.setState(syncInput.getState());
+    tapConfig.withStandardSync(standardSync);
+    tapConfig.withSourceConnectionImplementation(syncInput.getSourceConnectionImplementation());
+    tapConfig.withState(syncInput.getState());
 
     final StandardTargetConfig targetConfig = new StandardTargetConfig();
-    targetConfig.setStandardSync(standardSync);
-    targetConfig.setDestinationConnectionImplementation(
+    targetConfig.withStandardSync(standardSync);
+    targetConfig.withDestinationConnectionImplementation(
         syncInput.getDestinationConnectionImplementation());
 
     final TapFactory<SingerMessage> tapFactory = (TapFactory<SingerMessage>) mock(TapFactory.class);

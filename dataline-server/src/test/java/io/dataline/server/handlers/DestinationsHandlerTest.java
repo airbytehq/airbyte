@@ -61,8 +61,8 @@ class DestinationsHandlerTest {
     final UUID destinationId = UUID.randomUUID();
 
     final StandardDestination standardDestination = new StandardDestination();
-    standardDestination.setDestinationId(destinationId);
-    standardDestination.setName("presto");
+    standardDestination.withDestinationId(destinationId);
+    standardDestination.withName("presto");
 
     return standardDestination;
   }

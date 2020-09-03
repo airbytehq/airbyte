@@ -38,7 +38,7 @@ class SingerMessageTrackerTest {
   @Test
   public void testIncrementsWhenRecord() {
     final SingerMessage singerMessage = new SingerMessage();
-    singerMessage.setType(SingerMessage.Type.RECORD);
+    singerMessage.withType(SingerMessage.Type.RECORD);
 
     final SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
     singerMessageTracker.accept(singerMessage);
@@ -51,13 +51,13 @@ class SingerMessageTrackerTest {
   public void testRetainsLatestState() {
     final JsonNode oldStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598900000").build());
     final SingerMessage oldSingerMessage = new SingerMessage();
-    oldSingerMessage.setType(SingerMessage.Type.STATE);
-    oldSingerMessage.setValue(oldStateValue);
+    oldSingerMessage.withType(SingerMessage.Type.STATE);
+    oldSingerMessage.withValue(oldStateValue);
 
     final JsonNode newStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598993526").build());
     final SingerMessage newStateMessage = new SingerMessage();
-    newStateMessage.setType(SingerMessage.Type.STATE);
-    newStateMessage.setValue(newStateValue);
+    newStateMessage.withType(SingerMessage.Type.STATE);
+    newStateMessage.withValue(newStateValue);
 
     final SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
     singerMessageTracker.accept(oldSingerMessage);

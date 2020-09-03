@@ -68,14 +68,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             sourceImplementation.getSourceImplementationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
-    jobCheckConnectionConfig.setDockerImage(
+    jobCheckConnectionConfig.withConnectionConfiguration(sourceImplementation.getConfiguration());
+    jobCheckConnectionConfig.withDockerImage(
         Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
             .getCheckConnectionImage());
 
     final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE);
-    jobConfig.setCheckConnection(jobCheckConnectionConfig);
+    jobConfig.withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE);
+    jobConfig.withCheckConnection(jobCheckConnectionConfig);
 
     return createPendingJob(scope, jobConfig);
   }
@@ -89,14 +89,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             destinationImplementation.getDestinationImplementationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfiguration(destinationImplementation.getConfiguration());
-    jobCheckConnectionConfig.setDockerImage(
+    jobCheckConnectionConfig.withConnectionConfiguration(destinationImplementation.getConfiguration());
+    jobCheckConnectionConfig.withDockerImage(
         Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId())
             .getCheckConnectionImage());
 
     final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION);
-    jobConfig.setCheckConnection(jobCheckConnectionConfig);
+    jobConfig.withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION);
+    jobConfig.withCheckConnection(jobCheckConnectionConfig);
 
     return createPendingJob(scope, jobConfig);
   }
@@ -111,14 +111,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             sourceImplementation.getSourceImplementationId().toString());
 
     final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig();
-    jobDiscoverSchemaConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
-    jobDiscoverSchemaConfig.setDockerImage(
+    jobDiscoverSchemaConfig.withConnectionConfiguration(sourceImplementation.getConfiguration());
+    jobDiscoverSchemaConfig.withDockerImage(
         Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
             .getDiscoverSchemaImage());
 
     final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA);
-    jobConfig.setDiscoverSchema(jobDiscoverSchemaConfig);
+    jobConfig.withConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA);
+    jobConfig.withDiscoverSchema(jobDiscoverSchemaConfig);
 
     return createPendingJob(scope, jobConfig);
   }
@@ -134,25 +134,25 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
         ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig();
-    jobSyncConfig.setSourceConnectionImplementation(sourceImplementation);
-    jobSyncConfig.setSourceDockerImage(
+    jobSyncConfig.withSourceConnectionImplementation(sourceImplementation);
+    jobSyncConfig.withSourceDockerImage(
         Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId()).getSyncImage());
-    jobSyncConfig.setDestinationConnectionImplementation(destinationImplementation);
-    jobSyncConfig.setDestinationDockerImage(
+    jobSyncConfig.withDestinationConnectionImplementation(destinationImplementation);
+    jobSyncConfig.withDestinationDockerImage(
         Integrations.findBySpecId(destinationImplementation.getDestinationImplementationId())
             .getSyncImage());
-    jobSyncConfig.setStandardSync(standardSync);
+    jobSyncConfig.withStandardSync(standardSync);
 
     final Optional<Job> previousJobOptional =
         JobUtils.getLastSyncJobForConnectionId(connectionPool, connectionId);
     final Optional<StandardSyncOutput> standardSyncOutput =
         previousJobOptional.flatMap(Job::getOutput).map(JobOutput::getSync);
 
-    standardSyncOutput.map(StandardSyncOutput::getState).ifPresent(jobSyncConfig::setState);
+    standardSyncOutput.map(StandardSyncOutput::getState).ifPresent(jobSyncConfig::withState);
 
     final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.SYNC);
-    jobConfig.setSync(jobSyncConfig);
+    jobConfig.withConfigType(JobConfig.ConfigType.SYNC);
+    jobConfig.withSync(jobSyncConfig);
     return createPendingJob(scope, jobConfig);
   }
 
