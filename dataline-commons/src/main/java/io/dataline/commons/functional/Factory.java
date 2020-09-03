@@ -24,8 +24,6 @@
 
 package io.dataline.commons.functional;
 
-public interface Factory<T, U> {
-
-  T create(U input);
-
+public interface Factory<O, I> {
+  O create(I input);
 }
