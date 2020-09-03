@@ -77,17 +77,14 @@ public class WorkerRunner implements Runnable {
       throw new RuntimeException(e);
     }
 
-    LOGGER.info(
-        "job: " + job.getId() + " " + job.getScope() + " " + job.getConfig().getConfigType());
+    LOGGER.info("job: {} {} {}", job.getId(), job.getScope(), job.getConfig().getConfigType());
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
 
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION_SOURCE:
       case CHECK_CONNECTION_DESTINATION:
-        LOGGER.info("check connection ");
         final StandardCheckConnectionInput checkConnectionInput =
             getCheckConnectionInput(job.getConfig().getCheckConnection());
-        LOGGER.info("check connection input " + checkConnectionInput);
         new WorkerRun<>(
             jobId,
             jobRoot,
