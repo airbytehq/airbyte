@@ -34,6 +34,8 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
 import io.dataline.commons.json.Jsons;
 import io.dataline.workers.WorkerUtils;
+import io.dataline.workers.process.DockerProcessBuilderFactory;
+import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -46,8 +48,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import io.dataline.workers.process.DockerProcessBuilderFactory;
-import io.dataline.workers.process.ProcessBuilderFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -151,10 +151,10 @@ class TestBigQueryDestination {
 
   private Process startTarget() throws IOException {
     return pbf.create(
-            jobRoot,
-            "dataline/integration-singer-bigquery-destination",
-            "--config",
-            "rendered_bigquery.json")
+        jobRoot,
+        "dataline/integration-singer-bigquery-destination",
+        "--config",
+        "rendered_bigquery.json")
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
@@ -185,7 +185,7 @@ class TestBigQueryDestination {
   private List<String> getExchangeRateTable() throws InterruptedException {
     QueryJobConfiguration queryConfig =
         QueryJobConfiguration.newBuilder(
-                "SELECT * FROM " + datasetName + ".exchange_rate ORDER BY date ASC;")
+            "SELECT * FROM " + datasetName + ".exchange_rate ORDER BY date ASC;")
             .setUseQueryCache(false)
             .build();
 
@@ -194,13 +194,13 @@ class TestBigQueryDestination {
     List<String> resultList =
         StreamSupport.stream(results.iterateAll().spliterator(), false)
             .map(
-                x ->
-                    x.stream()
-                        .map(FieldValue::getValue)
-                        .map(String::valueOf)
-                        .collect(Collectors.joining(",")))
+                x -> x.stream()
+                    .map(FieldValue::getValue)
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")))
             .collect(toList());
 
     return resultList;
   }
+
 }
