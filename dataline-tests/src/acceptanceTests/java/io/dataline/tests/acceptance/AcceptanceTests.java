@@ -117,7 +117,6 @@ public class AcceptanceTests {
     assertSourceAndTargetDbInSync(SOURCE_PSQL, TARGET_PSQL);
 
     // TODO test scheduled sync
-
   }
 
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb, PostgreSQLContainer targetDb) throws SQLException {
