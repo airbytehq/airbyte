@@ -30,13 +30,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.dataline.commons.functional.Factory;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -59,12 +59,12 @@ class SyncJobFactoryTest {
     final SourceConnectionImplementation sourceConnectionImplementation = new SourceConnectionImplementation();
     final DestinationConnectionImplementation destinationConnectionImplementation = new DestinationConnectionImplementation();
 
-    when(configPersistence.getConfig(PersistenceConfigType.STANDARD_SYNC, connectionId.toString(), StandardSync.class)).thenReturn(standardSync);
+    when(configPersistence.getConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString(), StandardSync.class)).thenReturn(standardSync);
     when(configPersistence
-        .getConfig(PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION, sourceImplId.toString(), SourceConnectionImplementation.class))
+        .getConfig(ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION, sourceImplId.toString(), SourceConnectionImplementation.class))
             .thenReturn(sourceConnectionImplementation);
     when(configPersistence
-        .getConfig(PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION, destinationImplId.toString(),
+        .getConfig(ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION, destinationImplId.toString(),
             DestinationConnectionImplementation.class))
                 .thenReturn(destinationConnectionImplementation);
     when(schedulerPersistence.createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync)).thenReturn(jobId);
@@ -73,11 +73,11 @@ class SyncJobFactoryTest {
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 
-    verify(configPersistence).getConfig(PersistenceConfigType.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
+    verify(configPersistence).getConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
     verify(configPersistence)
-        .getConfig(PersistenceConfigType.SOURCE_CONNECTION_IMPLEMENTATION, sourceImplId.toString(), SourceConnectionImplementation.class);
+        .getConfig(ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION, sourceImplId.toString(), SourceConnectionImplementation.class);
     verify(configPersistence)
-        .getConfig(PersistenceConfigType.DESTINATION_CONNECTION_IMPLEMENTATION, destinationImplId.toString(),
+        .getConfig(ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION, destinationImplId.toString(),
             DestinationConnectionImplementation.class);
     verify(schedulerPersistence).createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync);
   }

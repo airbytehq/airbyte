@@ -89,36 +89,6 @@ public class JobScheduler implements Runnable {
     }
   }
 
-  private void handleJob(UUID connectionId, Job previousJob) {
-    switch (previousJob.getStatus()) {
-      case CANCELLED:
-      case COMPLETED:
-        final StandardSyncSchedule standardSyncSchedule =
-            ConfigFetchers.getStandardSyncSchedule(configPersistence, connectionId);
-
-        if (standardSyncSchedule.getManual()) {
-          break;
-        }
-
-        long nextRunStart = previousJob.getUpdatedAt() + getIntervalInSeconds(standardSyncSchedule.getSchedule());
-        if (nextRunStart < Instant.now().getEpochSecond()) {
-          JobUtils.createSyncJobFromConnectionId(schedulerPersistence, configPersistence, connectionId);
-        }
-        break;
-      // todo (cgardens) - add max retry concept
-      case FAILED:
-        JobUtils.createSyncJobFromConnectionId(schedulerPersistence, configPersistence, connectionId);
-        break;
-      case PENDING:
-      case RUNNING:
-        break;
-    }
-  }
-
-  private static Long getIntervalInSeconds(Schedule schedule) {
-    return ScheduleHelpers.getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
-  }
-
   private List<StandardSync> getAllActiveConnections() {
     return ConfigFetchers.getStandardSyncs(configPersistence);
   }

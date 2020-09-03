@@ -35,6 +35,7 @@ import com.google.common.collect.Lists;
 import io.dataline.commons.functional.Factory;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.Column;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.DataType;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.Schema;
@@ -45,7 +46,6 @@ import io.dataline.config.Table;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
 import io.dataline.integrations.Integrations;
 import java.io.IOException;
 import java.util.Collections;
@@ -195,21 +195,21 @@ class JobSchedulerTest {
 
   // sets all mocks that are related to fetching configs. these are the same for all tests in this
   // test suite.
-  private void setConfigMocks() throws JsonValidationException, ConfigNotFoundException {
-    when(configPersistence.getConfigs(PersistenceConfigType.STANDARD_SYNC, StandardSync.class))
-        .thenReturn(Collections.singleton(standardSync));
+  private void setConfigMocks() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class))
+        .thenReturn(Collections.singletonList(standardSync));
     when(configPersistence.getConfig(
-        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+        ConfigSchema.STANDARD_SYNC_SCHEDULE,
         standardSync.getConnectionId().toString(),
         StandardSyncSchedule.class)).thenReturn(standardSyncSchedule);
   }
 
   // verify all mocks that are related to fetching configs are called. these are the same for all
   // tests in this test suite.
-  private void verifyConfigCalls() throws JsonValidationException, ConfigNotFoundException {
-    verify(configPersistence).getConfigs(PersistenceConfigType.STANDARD_SYNC, StandardSync.class);
+  private void verifyConfigCalls() throws ConfigNotFoundException, IOException, JsonValidationException {
+    verify(configPersistence).listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
     verify(configPersistence).getConfig(
-        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
+        ConfigSchema.STANDARD_SYNC_SCHEDULE,
         standardSync.getConnectionId().toString(),
         StandardSyncSchedule.class);
   }
