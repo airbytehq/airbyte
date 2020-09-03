@@ -108,7 +108,7 @@ public class AcceptanceTests {
     SourceSchema schema = testDiscoverSourceSchema(createdSourceImplId);
 
     // select all columns
-    schema.getTables().get(0).getColumns().forEach(c -> c.setSelected(true));
+    schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true)));
 
     ConnectionRead createdConnection = testCreateConnection(createdSourceImplId, createdDestinationImplId, schema);
 
