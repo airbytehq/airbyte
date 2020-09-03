@@ -32,12 +32,9 @@ import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
-import com.google.common.base.Charsets;
 import io.dataline.commons.json.Jsons;
 import io.dataline.workers.WorkerUtils;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,6 +42,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -116,6 +114,7 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
         Arrays.asList("1598659200.0,2.13,0.12,null", "1598745600.0,7.15,1.14,null", "1598832000.0,7.99,1.99,10.99", "1598918400.0,7.15,1.14,10.16");
 
     writeResourceToStdIn("singer-tap-output.txt", process);
+    process.getOutputStream().close();
 
     process.waitFor();
 
@@ -152,16 +151,8 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
   }
 
   private void writeResourceToStdIn(String resourceName, Process process) throws IOException {
-    BufferedWriter writer =
-        new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), Charsets.UTF_8));
-
-    String text =
-        new String(getClass().getClassLoader().getResourceAsStream(resourceName).readAllBytes());
-
-    writer.write(text);
-    writer.flush();
-
-    writer.close();
+    Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(resourceName))
+        .transferTo(process.getOutputStream());
   }
 
   private List<String> getExchangeRateTable() throws InterruptedException {
