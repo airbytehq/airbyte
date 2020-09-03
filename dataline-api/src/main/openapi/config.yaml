@@ -43,6 +43,8 @@ tags:
     description: Destination implementation related resources.
   - name: connection
     description: Connection between sources and destinations.
+  - name: web_backend
+    description: Connection between sources and destinations.
 
 paths:
   /v1/workspaces/get:
@@ -589,29 +591,6 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-  /v1/web_backend/connections/list:
-    post:
-      tags:
-        - connection
-      summary: Returns all connections for a workspace.
-      operationId: webBackendListConnectionsForWorkspace
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WbConnectionReadList"
-        "404":
-          description: Workspace not found
-        "422":
-          $ref: "#/components/responses/InvalidInput"
   /v1/connections/sync:
     post:
       tags:
@@ -631,6 +610,52 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ConnectionSyncRead"
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/connections/list:
+    post:
+      tags:
+        - web_backend
+      summary: Returns all connections for a workspace.
+      operationId: webBackendListConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WbConnectionReadList"
+        "404":
+          description: Workspace not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/connections/get:
+    post:
+      tags:
+        - web_backend
+      summary: Get a connection
+      operationId: webBackendGetConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WbConnectionRead"
         "404":
           description: Connection not found
         "422":
