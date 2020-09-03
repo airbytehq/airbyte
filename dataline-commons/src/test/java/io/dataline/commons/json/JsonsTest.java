@@ -127,6 +127,14 @@ class JsonsTest {
         Jsons.jsonNode(Jsons.jsonNode(new ToClass("abc", 999, 888L))));
   }
 
+  @Test
+  void testCopy() {
+    final ToClass expected = new ToClass("abc", 999, 888L);
+    final ToClass actual = Jsons.copy(expected);
+    Assertions.assertNotSame(expected, actual);
+    Assertions.assertEquals(expected, actual);
+  }
+
   private static class ToClass {
 
     @JsonProperty("str")

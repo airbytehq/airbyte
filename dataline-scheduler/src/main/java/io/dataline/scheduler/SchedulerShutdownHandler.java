@@ -32,9 +32,9 @@ import org.slf4j.LoggerFactory;
 public class SchedulerShutdownHandler extends Thread {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerShutdownHandler.class);
-  private ExecutorService[] threadPools;
+  private final ExecutorService[] threadPools;
 
-  public SchedulerShutdownHandler(ExecutorService... threadPools) {
+  public SchedulerShutdownHandler(final ExecutorService... threadPools) {
     this.threadPools = threadPools;
   }
 

@@ -10,6 +10,8 @@ dependencies {
     implementation project(':dataline-db')
     implementation project(':dataline-integrations')
     implementation project(':dataline-workers')
+
+    testImplementation "org.testcontainers:postgresql:1.14.3"
 }
 
 application {
