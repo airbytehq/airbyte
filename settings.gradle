@@ -16,11 +16,10 @@ include 'dataline-workers'
 include 'dataline-tests'
 
 // include all integration subprojects
-def prefix = rootProject.projectDir.absolutePath
-def dir = new File(prefix + "/dataline-integrations")
-dir.eachFileRecurse(FileType.FILES) { file ->
+def integrations = file(rootProject.projectDir.relativePath(file("dataline-integrations")))
+integrations.eachFileRecurse(FileType.FILES) { file ->
   if (file.absolutePath.endsWith("build.gradle") && file.length() != 0) {
-    def subproject = file.absolutePath.substring(prefix.length() + "/dataline-integrations/".length())
+    def subproject = file.absolutePath.substring(integrations.absolutePath.length() + 1)
     subproject = subproject.substring(0, subproject.length() - "/build.gradle".length())
     subproject = ":dataline-integrations:" + subproject.split("/").join(":")
     include subproject
