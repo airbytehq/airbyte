@@ -41,6 +41,7 @@ const SourcesTable: React.FC = () => {
     name: item.name,
     enabled: item.status === "active",
     sourceId: item.source?.sourceId,
+    sourceName: item.source?.sourceName,
     schedule: item.schedule,
     lastSync: item.lastSync
   }));
@@ -77,7 +78,7 @@ const SourcesTable: React.FC = () => {
       },
       {
         Header: <FormattedMessage id="sources.connector" />,
-        accessor: "sourceId",
+        accessor: "sourceName",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <ConnectorCell value={cell.value} enabled={row.original.enabled} />
         )

@@ -24,14 +24,6 @@ const SourceItemPage: React.FC = () => {
 
   // TODO: add redirect for connectionId with error
 
-  // TODO: change to real data
-  const sourceData = {
-    name: "Source Name",
-    source: "Source",
-    destination: "Destination",
-    frequency: "5m"
-  };
-
   const steps = [
     {
       id: "status",
@@ -82,7 +74,7 @@ const SourceItemPage: React.FC = () => {
       return <SchemaView />;
     }
 
-    return <SettingsView sourceData={sourceData} />;
+    return <SettingsView sourceData={connection} />;
   };
 
   return (

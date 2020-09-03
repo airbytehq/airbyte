@@ -6,6 +6,13 @@ export type ScheduleProperties = {
   timeUnit: string;
 };
 
+type SourceInformation = {
+  sourceId: string;
+  sourceName: string;
+  sourceImplementationId: string;
+  connectionConfiguration: any;
+};
+
 export interface Connection {
   connectionId: string;
   name: string;
@@ -15,7 +22,7 @@ export interface Connection {
   status: string;
   schedule: ScheduleProperties | null;
   syncSchema: any; // TODO: fix type
-  source?: { sourceId: string };
+  source?: SourceInformation;
   lastSync?: number | null;
 }
 
@@ -28,7 +35,7 @@ export default class ConnectionResource extends BaseResource
   readonly syncMode: string = "";
   readonly status: string = "";
   readonly schedule: ScheduleProperties | null = null;
-  readonly source: { sourceId: string } | undefined = undefined;
+  readonly source: SourceInformation | undefined = undefined;
   readonly lastSync: number | undefined | null = null;
   readonly syncSchema: any | null = null; // TODO: fix it
 
@@ -48,6 +55,16 @@ export default class ConnectionResource extends BaseResource
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
+      getFetchKey: (params: { connectionId: string }) =>
+        "POST /web_backend/get" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<any> =>
+        await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/connections/get`,
+          params
+        ),
       schema: this.asSchema()
     };
   }

@@ -89,7 +89,7 @@ const StatusMainInfo: React.FC<IProps> = ({ sourceData, onEnabledChange }) => {
       <Row>
         <SourceCell flex={2}>
           <Img />
-          {/*{sourceData.source}*/}
+          {sourceData.source?.sourceName}
         </SourceCell>
         <SourceCell flex={2}>
           <Img />
