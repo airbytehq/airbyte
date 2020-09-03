@@ -138,10 +138,9 @@ class DefaultSchedulerPersistenceTest {
         .withPassword("docker");
     container.start();
 
-      container.copyFileToContainer(MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
-      // execInContainer uses Docker's EXEC so it needs to be split up like this
-      container.execInContainer("psql", "-d", "dataline", "-U", "docker", "-a", "-f", "/etc/init.sql");
-
+    container.copyFileToContainer(MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
+    // execInContainer uses Docker's EXEC so it needs to be split up like this
+    container.execInContainer("psql", "-d", "dataline", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
     connectionPool =
         DatabaseHelper.getConnectionPool(
