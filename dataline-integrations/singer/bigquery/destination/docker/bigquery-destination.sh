@@ -4,7 +4,7 @@ set -e
 
 case "$1" in
   -c|--config)        CONFIG_FILE="$2"         ;;
-  --)                shift; break             ;;
+  *)                 shift; break             ;;
 esac
 
 cat $CONFIG_FILE | jq ".credentials_json | fromjson" > credentials.json
