@@ -27,7 +27,6 @@ dependencies {
     acceptanceTestsImplementation project(':dataline-api')
     acceptanceTestsImplementation project(':dataline-config:persistence')
 
-    acceptanceTestsImplementation "com.squareup.okhttp3:okhttp:4.8.1"
     acceptanceTestsImplementation "org.testcontainers:postgresql:1.14.3"
     acceptanceTestsImplementation "org.postgresql:postgresql:42.2.16"
     acceptanceTestsImplementation "com.fasterxml.jackson.core:jackson-databind"
