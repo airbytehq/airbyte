@@ -42,12 +42,17 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
 
   @Override
   public boolean test(Optional<Job> previousJobOptional, StandardSyncSchedule standardSyncSchedule) {
+    // if manual scheduler, then we never programmatically schedule.
+    if (standardSyncSchedule.getManual()) {
+      return false;
+    }
+
     final boolean timeForNewJob = isTimeForNewJob(previousJobOptional, standardSyncSchedule);
-    return safeToSchedule(previousJobOptional, timeForNewJob);
+    return shouldSchedule(previousJobOptional, timeForNewJob);
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private boolean safeToSchedule(Optional<Job> previousJobOptional, boolean timeForJobNewJob) {
+  private boolean shouldSchedule(Optional<Job> previousJobOptional, boolean timeForJobNewJob) {
     if (previousJobOptional.isEmpty()) {
       return true;
     }
@@ -70,23 +75,18 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private boolean isTimeForNewJob(Optional<Job> previousJobOptional, StandardSyncSchedule standardSyncSchedule) {
-    // if manual scheduler, then we never programmatically schedule.
-    if (standardSyncSchedule.getManual()) {
-      return false;
-    }
-
     // if non-manual scheduler, and there has never been a previous run, always schedule.
     if (previousJobOptional.isEmpty()) {
       return true;
     }
 
     final Job previousJob = previousJobOptional.get();
-    long nextRunStart = previousJob.getUpdatedAt() + getIntervalInSeconds(standardSyncSchedule.getSchedule());
-    return nextRunStart < timeSupplier.get().getEpochSecond();
+    long nextRunStart = previousJob.getUpdatedAt() + getIntervalInMillis(standardSyncSchedule.getSchedule());
+    return nextRunStart < timeSupplier.get().toEpochMilli();
   }
 
-  private static Long getIntervalInSeconds(Schedule schedule) {
-    return ScheduleHelpers.getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
+  private static Long getIntervalInMillis(Schedule schedule) {
+    return ScheduleHelpers.getSecondsInUnit(schedule.getTimeUnit()) * 1000 * schedule.getUnits();
   }
 
 }
