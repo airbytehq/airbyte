@@ -114,18 +114,19 @@ public class AcceptanceTests {
 
     testRunManualSync(createdConnection.getConnectionId());
 
-    assertSourceAndTargetDbInSync();
+    assertSourceAndTargetDbInSync(SOURCE_PSQL, TARGET_PSQL);
 
     // TODO test scheduled sync
+
   }
 
-  private void assertSourceAndTargetDbInSync() throws SQLException {
+  private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb, PostgreSQLContainer targetDb) throws SQLException {
     BasicDataSource sourceDbPool =
         DatabaseHelper.getConnectionPool(
-            SOURCE_PSQL.getUsername(), SOURCE_PSQL.getPassword(), SOURCE_PSQL.getJdbcUrl());
+            sourceDb.getUsername(), sourceDb.getPassword(), sourceDb.getJdbcUrl());
     BasicDataSource targetDbPool =
         DatabaseHelper.getConnectionPool(
-            TARGET_PSQL.getUsername(), TARGET_PSQL.getPassword(), TARGET_PSQL.getJdbcUrl());
+            targetDb.getUsername(), targetDb.getPassword(), targetDb.getJdbcUrl());
 
     Set<String> sourceTables = listTables(sourceDbPool);
     Set<String> targetTables = listTables(targetDbPool);
@@ -134,6 +135,19 @@ public class AcceptanceTests {
     for (String table : sourceTables) {
       assertTablesEquivalent(sourceDbPool, targetDbPool, table);
     }
+  }
+
+  private Set<String> listTables(BasicDataSource connectionPool) throws SQLException {
+    return DatabaseHelper.query(
+        connectionPool,
+        context -> {
+          Result<Record> fetch =
+              context.fetch(
+                  "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
+          return fetch.stream()
+              .map(record -> (String) record.get("tablename"))
+              .collect(Collectors.toSet());
+        });
   }
 
   private void assertTablesEquivalent(
@@ -171,19 +185,6 @@ public class AcceptanceTests {
     // TODO validate that the correct number of records exists? currently if the same record exists
     //  multiple times in the source but once in destination, this returns true.
     assertEquals(1, presentRecords.size());
-  }
-
-  private Set<String> listTables(BasicDataSource connectionPool) throws SQLException {
-    return DatabaseHelper.query(
-        connectionPool,
-        context -> {
-          Result<Record> fetch =
-              context.fetch(
-                  "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
-          return fetch.stream()
-              .map(record -> (String) record.get("tablename"))
-              .collect(Collectors.toSet());
-        });
   }
 
   private long getTableCount(BasicDataSource connectionPool, String tableName) throws SQLException {
@@ -334,5 +335,4 @@ public class AcceptanceTests {
         .orElseThrow()
         .getSourceId();
   }
-
 }
