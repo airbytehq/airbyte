@@ -30,6 +30,8 @@ import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface SchedulerPersistence {
 
@@ -56,5 +58,7 @@ public interface SchedulerPersistence {
    * @throws IOException - what you do when you IO
    */
   List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException;
+
+  Optional<Job> getLastSyncJobForConnectionId(UUID connectionId) throws IOException;
 
 }

@@ -24,6 +24,18 @@
 
 package io.dataline.scheduler;
 
+import static org.mockito.Mockito.mock;
+
+import io.dataline.config.persistence.ConfigPersistence;
+import org.junit.jupiter.api.Test;
+
 class JobSchedulerTest {
+
+  @Test
+  public void test() {
+    ConfigPersistence configPersistence = mock(ConfigPersistence.class);
+    SchedulerPersistence schedulerPersistence = mock(SchedulerPersistence.class);
+    final JobScheduler scheduler = new JobScheduler(schedulerPersistence, configPersistence);
+  }
 
 }

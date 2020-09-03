@@ -34,7 +34,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,14 +41,10 @@ public class JobScheduler implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobScheduler.class);
 
-  private final BasicDataSource connectionPool;
   private final SchedulerPersistence schedulerPersistence;
   private final ConfigPersistence configPersistence;
 
-  public JobScheduler(BasicDataSource connectionPool,
-                      SchedulerPersistence schedulerPersistence,
-                      ConfigPersistence configPersistence) {
-    this.connectionPool = connectionPool;
+  public JobScheduler(SchedulerPersistence schedulerPersistence, ConfigPersistence configPersistence) {
     this.schedulerPersistence = schedulerPersistence;
     this.configPersistence = configPersistence;
   }
@@ -68,13 +63,11 @@ public class JobScheduler implements Runnable {
 
   private void scheduleSyncJobs() throws IOException {
     for (StandardSync connection : getAllActiveConnections()) {
-      Optional<Job> lastJob =
-          JobUtils.getLastSyncJobForConnectionId(connectionPool, connection.getConnectionId());
+      Optional<Job> lastJob = schedulerPersistence.getLastSyncJobForConnectionId(connection.getConnectionId());
 
       if (lastJob.isEmpty()) {
         // pull configuration from connection.
-        JobUtils.createSyncJobFromConnectionId(
-            schedulerPersistence, configPersistence, connection.getConnectionId());
+        JobUtils.createSyncJobFromConnectionId(schedulerPersistence, configPersistence, connection.getConnectionId());
       } else {
         final Job job = lastJob.get();
         handleJob(connection.getConnectionId(), job);
@@ -96,14 +89,12 @@ public class JobScheduler implements Runnable {
         long nextRunStart =
             previousJob.getUpdatedAt() + getIntervalInSeconds(standardSyncSchedule.getSchedule());
         if (nextRunStart < Instant.now().getEpochSecond()) {
-          JobUtils.createSyncJobFromConnectionId(
-              schedulerPersistence, configPersistence, connectionId);
+          JobUtils.createSyncJobFromConnectionId(schedulerPersistence, configPersistence, connectionId);
         }
         break;
       // todo (cgardens) - add max retry concept
       case FAILED:
-        JobUtils.createSyncJobFromConnectionId(
-            schedulerPersistence, configPersistence, connectionId);
+        JobUtils.createSyncJobFromConnectionId(schedulerPersistence, configPersistence, connectionId);
         break;
       case PENDING:
       case RUNNING:

@@ -78,7 +78,7 @@ public class SchedulerApp {
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
 
     final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, connectionPool, schedulerPersistence, workspaceRoot, pbf);
-    final JobScheduler jobScheduler = new JobScheduler(connectionPool, schedulerPersistence, configPersistence);
+    final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, configPersistence);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {

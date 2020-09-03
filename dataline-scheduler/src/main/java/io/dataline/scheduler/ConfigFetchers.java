@@ -39,6 +39,7 @@ import java.util.UUID;
 // todo (cgardens) - deduplicate this with the ConfigFetchers in dataline-server. requires creating
 // a class that takes in an exception provider. also requires figuring out the dependency DAG to
 // avoid circular dependency issues.
+
 /**
  * These helpers catch exceptions thrown in the config persistence and throws them as
  * RuntimeExceptions

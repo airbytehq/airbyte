@@ -28,63 +28,25 @@ import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.db.DatabaseHelper;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Optional;
 import java.util.UUID;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
 
 public class JobUtils {
 
   public static long createSyncJobFromConnectionId(SchedulerPersistence schedulerPersistence,
                                                    ConfigPersistence configPersistence,
                                                    UUID connectionId) {
-    final StandardSync standardSync;
-    standardSync = ConfigFetchers.getStandardSync(configPersistence, connectionId);
+    final StandardSync standardSync = ConfigFetchers.getStandardSync(configPersistence, connectionId);
 
     final SourceConnectionImplementation sourceConnectionImplementation =
-        ConfigFetchers.getSourceConnectionImplementation(
-            configPersistence, standardSync.getSourceImplementationId());
+        ConfigFetchers.getSourceConnectionImplementation(configPersistence, standardSync.getSourceImplementationId());
     final DestinationConnectionImplementation destinationConnectionImplementation =
-        ConfigFetchers.getDestinationConnectionImplementation(
-            configPersistence, standardSync.getDestinationImplementationId());
+        ConfigFetchers.getDestinationConnectionImplementation(configPersistence, standardSync.getDestinationImplementationId());
 
     try {
-      return schedulerPersistence.createSyncJob(
-          sourceConnectionImplementation, destinationConnectionImplementation, standardSync);
+      return schedulerPersistence.createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync);
     } catch (IOException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  public static Optional<Job> getLastSyncJobForConnectionId(BasicDataSource connectionPool,
-                                                            UUID connectionId)
-      throws IOException {
-    try {
-      return DatabaseHelper.query(
-          connectionPool,
-          ctx -> {
-            Optional<Record> jobEntryOptional =
-                ctx
-                    .fetch(
-                        "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
-                        connectionId.toString(),
-                        JobStatus.CANCELLED.toString().toLowerCase())
-                    .stream()
-                    .findFirst();
-
-            if (jobEntryOptional.isPresent()) {
-              Record jobEntry = jobEntryOptional.get();
-              Job job = DefaultSchedulerPersistence.getJobFromRecord(jobEntry);
-              return Optional.of(job);
-            } else {
-              return Optional.empty();
-            }
-          });
-    } catch (SQLException throwables) {
-      throw new IOException(throwables);
     }
   }
 
