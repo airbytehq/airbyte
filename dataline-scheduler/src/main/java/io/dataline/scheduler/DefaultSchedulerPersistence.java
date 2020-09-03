@@ -256,9 +256,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   // todo (cgardens) - the location of this method is a little weird. right now all of our db (and
-  // record)
-  // interactions are confined to this class. would like to keep it that way for now, but once we have
-  // other classes that interact with the db, this can be moved out.
+  // record) interactions are confined to this class. would like to keep it that way for now, but
+  // once we have other classes that interact with the db, this can be moved out.
   public static Job getJobFromRecord(Record jobEntry) {
     final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
 

@@ -25,5 +25,7 @@
 package io.dataline.commons.functional;
 
 public interface Factory<O, I> {
+
   O create(I input);
+
 }
