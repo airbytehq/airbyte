@@ -24,9 +24,6 @@
 
 package io.dataline.integration_tests.destinations;
 
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertLinesMatch;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -56,6 +53,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 class TestBigQueryDestination extends BaseIntegrationTestCase {
 
@@ -113,7 +113,7 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
   @Test
   public void runTest() throws IOException, InterruptedException {
     List<String> expectedList =
-        Arrays.asList("2.13,0.12,null", "7.15,1.14,null", "7.99,1.99,10.99", "7.15,1.14,10.16");
+        Arrays.asList("1598659200.0,2.13,0.12,null", "1598745600.0,7.15,1.14,null", "1598832000.0,7.99,1.99,10.99", "1598918400.0,7.15,1.14,10.16");
 
     writeResourceToStdIn("singer-tap-output.txt", process);
 
@@ -177,7 +177,6 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
         StreamSupport.stream(results.iterateAll().spliterator(), false)
             .map(
                 x -> x.stream()
-                    .skip(1)
                     .map(FieldValue::getValue)
                     .map(String::valueOf)
                     .collect(Collectors.joining(",")))
