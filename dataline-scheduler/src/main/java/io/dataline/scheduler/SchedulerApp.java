@@ -54,7 +54,7 @@ public class SchedulerApp {
 
   private static final int MAX_WORKERS = 4;
   private static final long JOB_SUBMITTER_DELAY_MILLIS = 1000L;
-  private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("scheduler-%d").build();
+  private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
 
   private final BasicDataSource connectionPool;
   private final Path configRoot;

@@ -69,11 +69,12 @@ class DefaultSchedulerPersistenceTest {
   private static PostgreSQLContainer container;
   private static BasicDataSource connectionPool;
 
-  private static final SourceConnectionImplementation sourceConnectionImplementation;
-  private static final DestinationConnectionImplementation destinationConnectionImplementation;
-  private static final StandardSync standardSync;
-  private static final Instant now;
-  private static final Supplier<Instant> timeSupplier;
+  private static final SourceConnectionImplementation SOURCE_CONNECTION_IMPLEMENTATION;
+  private static final DestinationConnectionImplementation DESTINATION_CONNECTION_IMPLEMENTATION;
+  private static final StandardSync STANDARD_SYNC;
+  private static final Instant NOW;
+
+  private SchedulerPersistence schedulerPersistence;
 
   static {
     final UUID workspaceId = UUID.randomUUID();
@@ -85,21 +86,21 @@ class DefaultSchedulerPersistenceTest {
         .put("hostname", "dataline.io")
         .build());
 
-    sourceConnectionImplementation = new SourceConnectionImplementation();
-    sourceConnectionImplementation.setWorkspaceId(workspaceId);
-    sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setConfiguration(implementationJson);
-    sourceConnectionImplementation.setTombstone(false);
+    SOURCE_CONNECTION_IMPLEMENTATION = new SourceConnectionImplementation();
+    SOURCE_CONNECTION_IMPLEMENTATION.setWorkspaceId(workspaceId);
+    SOURCE_CONNECTION_IMPLEMENTATION.setSourceSpecificationId(sourceSpecificationId);
+    SOURCE_CONNECTION_IMPLEMENTATION.setSourceImplementationId(sourceImplementationId);
+    SOURCE_CONNECTION_IMPLEMENTATION.setConfiguration(implementationJson);
+    SOURCE_CONNECTION_IMPLEMENTATION.setTombstone(false);
 
     final UUID destinationImplementationId = UUID.randomUUID();
     final UUID destinationSpecificationId = Integrations.POSTGRES_TARGET.getSpecId();
 
-    destinationConnectionImplementation = new DestinationConnectionImplementation();
-    destinationConnectionImplementation.setWorkspaceId(workspaceId);
-    destinationConnectionImplementation.setDestinationSpecificationId(destinationSpecificationId);
-    destinationConnectionImplementation.setDestinationImplementationId(destinationImplementationId);
-    destinationConnectionImplementation.setConfiguration(implementationJson);
+    DESTINATION_CONNECTION_IMPLEMENTATION = new DestinationConnectionImplementation();
+    DESTINATION_CONNECTION_IMPLEMENTATION.setWorkspaceId(workspaceId);
+    DESTINATION_CONNECTION_IMPLEMENTATION.setDestinationSpecificationId(destinationSpecificationId);
+    DESTINATION_CONNECTION_IMPLEMENTATION.setDestinationImplementationId(destinationImplementationId);
+    DESTINATION_CONNECTION_IMPLEMENTATION.setConfiguration(implementationJson);
 
     final Column column = new Column();
     column.setDataType(DataType.STRING);
@@ -116,40 +117,31 @@ class DefaultSchedulerPersistenceTest {
 
     final UUID connectionId = UUID.randomUUID();
 
-    standardSync = new StandardSync();
-    standardSync.setConnectionId(connectionId);
-    standardSync.setName("presto to hudi");
-    standardSync.setStatus(StandardSync.Status.ACTIVE);
-    standardSync.setSchema(schema);
-    standardSync.setSourceImplementationId(sourceImplementationId);
-    standardSync.setDestinationImplementationId(UUID.randomUUID());
-    standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
+    STANDARD_SYNC = new StandardSync();
+    STANDARD_SYNC.setConnectionId(connectionId);
+    STANDARD_SYNC.setName("presto to hudi");
+    STANDARD_SYNC.setStatus(StandardSync.Status.ACTIVE);
+    STANDARD_SYNC.setSchema(schema);
+    STANDARD_SYNC.setSourceImplementationId(sourceImplementationId);
+    STANDARD_SYNC.setDestinationImplementationId(UUID.randomUUID());
+    STANDARD_SYNC.setSyncMode(StandardSync.SyncMode.APPEND);
 
-    now = Instant.now();
-    // noinspection unchecked
-    timeSupplier = mock(Supplier.class);
-    when(timeSupplier.get()).thenReturn(now);
-
+    NOW = Instant.now();
   }
 
   @SuppressWarnings("rawtypes")
   @BeforeAll
-  public static void dbSetup() {
+  public static void dbSetup() throws IOException, InterruptedException {
     container = new PostgreSQLContainer("postgres:13-alpine")
         .withDatabaseName("dataline")
         .withUsername("docker")
         .withPassword("docker");
     container.start();
 
-    try {
       container.copyFileToContainer(MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
       // execInContainer uses Docker's EXEC so it needs to be split up like this
-      container.execInContainer(
-          "psql", "-d", "dataline", "-U", "docker", "-a", "-f", "/etc/init.sql");
+      container.execInContainer("psql", "-d", "dataline", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
-    } catch (InterruptedException | IOException e) {
-      throw new RuntimeException(e);
-    }
 
     connectionPool =
         DatabaseHelper.getConnectionPool(
@@ -164,8 +156,13 @@ class DefaultSchedulerPersistenceTest {
   @BeforeEach
   public void setup() throws SQLException {
     // todo (cgardens) - truncate whole db.
-    DatabaseHelper.query(connectionPool, ctx -> ctx.truncate("jobs"));
+    DatabaseHelper.query(connectionPool, ctx -> ctx.execute("DELETE FROM jobs"));
 
+    // noinspection unchecked
+    Supplier<Instant> timeSupplier = mock(Supplier.class);
+    when(timeSupplier.get()).thenReturn(NOW);
+
+    schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
   }
 
   private Record getJobRecord(long jobId) throws SQLException {
@@ -179,88 +176,85 @@ class DefaultSchedulerPersistenceTest {
 
   @Test
   public void testCreateSourceCheckConnectionJob() throws IOException, SQLException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
-    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(sourceConnectionImplementation);
+    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(SOURCE_CONNECTION_IMPLEMENTATION);
 
-    Record jobEntry = getJobRecord(jobId);
+    final Record jobEntry = getJobRecord(jobId);
 
-    final String imageName = Integrations.findBySpecId(sourceConnectionImplementation.getSourceSpecificationId()).getDiscoverSchemaImage();
+    final String imageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getDiscoverSchemaImage();
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfiguration(sourceConnectionImplementation.getConfiguration());
+    jobCheckConnectionConfig.setConnectionConfiguration(SOURCE_CONNECTION_IMPLEMENTATION.getConfiguration());
     jobCheckConnectionConfig.setDockerImage(imageName);
 
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE);
     jobConfig.setCheckConnection(jobCheckConnectionConfig);
 
-    assertJobConfigEqualJobDbRecord(jobId, sourceConnectionImplementation.getSourceImplementationId().toString(), jobConfig, jobEntry);
+    assertJobConfigEqualJobDbRecord(jobId, SOURCE_CONNECTION_IMPLEMENTATION.getSourceImplementationId().toString(), jobConfig, jobEntry);
   }
 
   @Test
   public void testCreateDestinationCheckConnectionJob() throws IOException, SQLException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
-    final long jobId = schedulerPersistence.createDestinationCheckConnectionJob(destinationConnectionImplementation);
+    final long jobId = schedulerPersistence.createDestinationCheckConnectionJob(DESTINATION_CONNECTION_IMPLEMENTATION);
 
-    Record jobEntry = getJobRecord(jobId);
+    final Record jobEntry = getJobRecord(jobId);
 
-    final String imageName = Integrations.findBySpecId(destinationConnectionImplementation.getDestinationSpecificationId()).getDiscoverSchemaImage();
+    final String imageName =
+        Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId()).getDiscoverSchemaImage();
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfiguration(destinationConnectionImplementation.getConfiguration());
+    jobCheckConnectionConfig.setConnectionConfiguration(DESTINATION_CONNECTION_IMPLEMENTATION.getConfiguration());
     jobCheckConnectionConfig.setDockerImage(imageName);
 
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION);
     jobConfig.setCheckConnection(jobCheckConnectionConfig);
 
-    assertJobConfigEqualJobDbRecord(jobId, destinationConnectionImplementation.getDestinationImplementationId().toString(), jobConfig, jobEntry);
+    assertJobConfigEqualJobDbRecord(jobId, DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationImplementationId().toString(), jobConfig, jobEntry);
   }
 
   @Test
   public void testCreateDiscoverSchemaJob() throws IOException, SQLException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
-    final long jobId = schedulerPersistence.createDiscoverSchemaJob(sourceConnectionImplementation);
+    final long jobId = schedulerPersistence.createDiscoverSchemaJob(SOURCE_CONNECTION_IMPLEMENTATION);
 
-    Record jobEntry = getJobRecord(jobId);
+    final Record jobEntry = getJobRecord(jobId);
 
-    final String imageName = Integrations.findBySpecId(sourceConnectionImplementation.getSourceSpecificationId()).getDiscoverSchemaImage();
+    final String imageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getDiscoverSchemaImage();
     final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig();
-    jobDiscoverSchemaConfig.setConnectionConfiguration(sourceConnectionImplementation.getConfiguration());
+    jobDiscoverSchemaConfig.setConnectionConfiguration(SOURCE_CONNECTION_IMPLEMENTATION.getConfiguration());
     jobDiscoverSchemaConfig.setDockerImage(imageName);
 
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA);
     jobConfig.setDiscoverSchema(jobDiscoverSchemaConfig);
 
-    assertJobConfigEqualJobDbRecord(jobId, sourceConnectionImplementation.getSourceImplementationId().toString(), jobConfig, jobEntry);
+    assertJobConfigEqualJobDbRecord(jobId, SOURCE_CONNECTION_IMPLEMENTATION.getSourceImplementationId().toString(), jobConfig, jobEntry);
   }
 
   @Test
   public void testCreateSyncJob() throws IOException, SQLException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
-    final long jobId = schedulerPersistence.createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync);
+    final long jobId = schedulerPersistence.createSyncJob(SOURCE_CONNECTION_IMPLEMENTATION, DESTINATION_CONNECTION_IMPLEMENTATION, STANDARD_SYNC);
 
-    Record jobEntry = getJobRecord(jobId);
+    final Record jobEntry = getJobRecord(jobId);
 
-    final String sourceImageName = Integrations.findBySpecId(sourceConnectionImplementation.getSourceSpecificationId()).getSyncImage();
-    final String destinationImageName = Integrations.findBySpecId(destinationConnectionImplementation.getDestinationSpecificationId()).getSyncImage();
+    final String sourceImageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getSyncImage();
+    final String destinationImageName =
+        Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId()).getSyncImage();
     final JobSyncConfig jobSyncConfig = new JobSyncConfig();
-    jobSyncConfig.setSourceConnectionImplementation(sourceConnectionImplementation);
+    jobSyncConfig.setSourceConnectionImplementation(SOURCE_CONNECTION_IMPLEMENTATION);
     jobSyncConfig.setSourceDockerImage(sourceImageName);
-    jobSyncConfig.setDestinationConnectionImplementation(destinationConnectionImplementation);
+    jobSyncConfig.setDestinationConnectionImplementation(DESTINATION_CONNECTION_IMPLEMENTATION);
     jobSyncConfig.setDestinationDockerImage(destinationImageName);
-    jobSyncConfig.setStandardSync(standardSync);
+    jobSyncConfig.setStandardSync(STANDARD_SYNC);
 
     final JobConfig jobConfig = new JobConfig();
     jobConfig.setConfigType(JobConfig.ConfigType.SYNC);
     jobConfig.setSync(jobSyncConfig);
 
-    assertJobConfigEqualJobDbRecord(jobId, standardSync.getConnectionId().toString(), jobConfig, jobEntry);
+    assertJobConfigEqualJobDbRecord(jobId, STANDARD_SYNC.getConnectionId().toString(), jobConfig, jobEntry);
   }
 
   @Test
   public void testGetJob() throws IOException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
-    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(sourceConnectionImplementation);
+    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(SOURCE_CONNECTION_IMPLEMENTATION);
 
     final Job actual = schedulerPersistence.getJob(jobId);
 
@@ -271,11 +265,10 @@ class DefaultSchedulerPersistenceTest {
 
   @Test
   public void testListJobs() throws IOException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
-    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(sourceConnectionImplementation);
+    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(SOURCE_CONNECTION_IMPLEMENTATION);
 
     final List<Job> actualList = schedulerPersistence
-        .listJobs(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE, sourceConnectionImplementation.getSourceImplementationId().toString());
+        .listJobs(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE, SOURCE_CONNECTION_IMPLEMENTATION.getSourceImplementationId().toString());
 
     assertEquals(1, actualList.size());
     final Job actual = actualList.get(0);
@@ -286,8 +279,7 @@ class DefaultSchedulerPersistenceTest {
 
   @Test
   public void testGetJobFromRecord() throws IOException, SQLException {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
-    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(sourceConnectionImplementation);
+    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(SOURCE_CONNECTION_IMPLEMENTATION);
     final Record jobRecord = getJobRecord(jobId);
 
     final Job actual = DefaultSchedulerPersistence.getJobFromRecord(jobRecord);
@@ -303,17 +295,17 @@ class DefaultSchedulerPersistenceTest {
     assertEquals("pending", actual.get("status", String.class));
     assertEquals(JobLogs.getLogDirectory(scope), actual.get("stdout_path", String.class));
     assertEquals(JobLogs.getLogDirectory(scope), actual.get("stderr_path", String.class));
-    assertEquals(now.getEpochSecond(), actual.getValue("created_at", LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
+    assertEquals(NOW.getEpochSecond(), actual.getValue("created_at", LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
     assertNull(actual.getValue("started_at", LocalDateTime.class));
-    assertEquals(now.getEpochSecond(), actual.getValue("updated_at", LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
+    assertEquals(NOW.getEpochSecond(), actual.getValue("updated_at", LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
     assertNull(actual.get("output"));
     assertEquals(expected, Jsons.deserialize(actual.get("config", String.class), JobConfig.class));
   }
 
   private Job getExpectedJob(long jobId) {
-    final String imageName = Integrations.findBySpecId(sourceConnectionImplementation.getSourceSpecificationId()).getDiscoverSchemaImage();
+    final String imageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getDiscoverSchemaImage();
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfiguration(sourceConnectionImplementation.getConfiguration());
+    jobCheckConnectionConfig.setConnectionConfiguration(SOURCE_CONNECTION_IMPLEMENTATION.getConfiguration());
     jobCheckConnectionConfig.setDockerImage(imageName);
 
     final JobConfig jobConfig = new JobConfig();
@@ -321,7 +313,8 @@ class DefaultSchedulerPersistenceTest {
     jobConfig.setCheckConnection(jobCheckConnectionConfig);
 
     final String scope =
-        ScopeHelper.createScope(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE, sourceConnectionImplementation.getSourceImplementationId().toString());
+        ScopeHelper.createScope(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE,
+            SOURCE_CONNECTION_IMPLEMENTATION.getSourceImplementationId().toString());
 
     return new Job(
         jobId,
@@ -331,9 +324,9 @@ class DefaultSchedulerPersistenceTest {
         null,
         JobLogs.getLogDirectory(scope),
         JobLogs.getLogDirectory(scope),
-        now.getEpochSecond(),
+        NOW.getEpochSecond(),
         null,
-        now.getEpochSecond());
+        NOW.getEpochSecond());
   }
 
 }
