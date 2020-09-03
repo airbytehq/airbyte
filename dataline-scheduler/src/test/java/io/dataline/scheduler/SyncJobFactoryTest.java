@@ -59,14 +59,18 @@ class SyncJobFactoryTest {
     final SourceConnectionImplementation sourceConnectionImplementation = new SourceConnectionImplementation();
     final DestinationConnectionImplementation destinationConnectionImplementation = new DestinationConnectionImplementation();
 
-    when(configPersistence.getConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString(), StandardSync.class)).thenReturn(standardSync);
-    when(configPersistence
-        .getConfig(ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION, sourceImplId.toString(), SourceConnectionImplementation.class))
-            .thenReturn(sourceConnectionImplementation);
-    when(configPersistence
-        .getConfig(ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION, destinationImplId.toString(),
-            DestinationConnectionImplementation.class))
-                .thenReturn(destinationConnectionImplementation);
+    when(configPersistence.getConfig(
+        ConfigSchema.STANDARD_SYNC,
+        connectionId.toString(),
+        StandardSync.class)).thenReturn(standardSync);
+    when(configPersistence.getConfig(
+        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
+        sourceImplId.toString(),
+        SourceConnectionImplementation.class)).thenReturn(sourceConnectionImplementation);
+    when(configPersistence.getConfig(
+        ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
+        destinationImplId.toString(),
+        DestinationConnectionImplementation.class)).thenReturn(destinationConnectionImplementation);
     when(schedulerPersistence.createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync)).thenReturn(jobId);
 
     final Factory<Long, UUID> factory = new SyncJobFactory(schedulerPersistence, configPersistence);
@@ -75,9 +79,14 @@ class SyncJobFactoryTest {
 
     verify(configPersistence).getConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
     verify(configPersistence)
-        .getConfig(ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION, sourceImplId.toString(), SourceConnectionImplementation.class);
+        .getConfig(
+            ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
+            sourceImplId.toString(),
+            SourceConnectionImplementation.class);
     verify(configPersistence)
-        .getConfig(ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION, destinationImplId.toString(),
+        .getConfig(
+            ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
+            destinationImplId.toString(),
             DestinationConnectionImplementation.class);
     verify(schedulerPersistence).createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync);
   }
