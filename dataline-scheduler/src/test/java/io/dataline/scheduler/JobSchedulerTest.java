@@ -47,11 +47,11 @@ import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.integrations.Integrations;
 import io.dataline.scheduler.job_factory.SyncJobFactory;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

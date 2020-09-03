@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.scheduler.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -47,6 +47,10 @@ import io.dataline.config.StandardSync;
 import io.dataline.config.Table;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.integrations.Integrations;
+import io.dataline.scheduler.Job;
+import io.dataline.scheduler.JobLogs;
+import io.dataline.scheduler.JobStatus;
+import io.dataline.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -56,8 +60,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.junit.jupiter.api.AfterAll;
