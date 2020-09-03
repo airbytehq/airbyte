@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerMessage;
+import io.dataline.singer.SingerMessage;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;

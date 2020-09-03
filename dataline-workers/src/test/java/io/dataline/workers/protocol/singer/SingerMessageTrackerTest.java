@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerMessage;
+import io.dataline.singer.SingerMessage;
 import org.junit.jupiter.api.Test;
 
 class SingerMessageTrackerTest {

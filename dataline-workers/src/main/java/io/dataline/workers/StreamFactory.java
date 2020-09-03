@@ -24,7 +24,7 @@
 
 package io.dataline.workers;
 
-import io.dataline.config.SingerMessage;
+import io.dataline.singer.SingerMessage;
 import java.io.BufferedReader;
 import java.util.stream.Stream;
 

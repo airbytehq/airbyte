@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/JobSyncConfig.json",
+  "title": "JobSyncConfig",
+  "description": "job sync config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sourceConnectionImplementation",
+    "destinationConnectionImplementation",
+    "standardSync",
+    "sourceDockerImage",
+    "destinationDockerImage"
+  ],
+  "properties": {
+    "sourceConnectionImplementation": {
+      "$ref": "SourceConnectionImplementation.json"
+    },
+    "destinationConnectionImplementation": {
+      "$ref": "DestinationConnectionImplementation.json"
+    },
+    "standardSync": {
+      "$ref": "StandardSync.json"
+    },
+    "sourceDockerImage": {
+      "type": "string"
+    },
+    "destinationDockerImage": {
+      "type": "string"
+    },
+    "state": {
+      "description": "optional state of the previous run. this object is defined per integration.",
+      "$ref": "State.json"
+    }
+  }
+}

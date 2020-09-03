@@ -27,7 +27,7 @@ package io.dataline.workers.protocol.singer;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerMessage;
+import io.dataline.singer.SingerMessage;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;

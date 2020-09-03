@@ -26,13 +26,13 @@ package io.dataline.workers;
 
 import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.commons.io.IOs;
-import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.config.State;
+import io.dataline.singer.SingerMessage;
 import io.dataline.workers.protocol.singer.SingerMessageTracker;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;

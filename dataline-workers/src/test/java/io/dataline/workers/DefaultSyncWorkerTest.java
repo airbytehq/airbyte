@@ -30,12 +30,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.dataline.commons.functional.CloseableConsumer;
-import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
+import io.dataline.singer.SingerMessage;
 import io.dataline.workers.protocol.singer.MessageUtils;
 import java.nio.file.Path;
 import java.util.stream.Stream;
