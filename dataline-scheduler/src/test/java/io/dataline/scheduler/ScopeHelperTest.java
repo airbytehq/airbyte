@@ -24,28 +24,27 @@
 
 package io.dataline.scheduler;
 
-import com.google.common.base.Preconditions;
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.dataline.config.JobConfig;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
-public class ScopeHelper {
+class ScopeHelperTest {
 
-  private static final String SCOPE_DELIMITER = ":";
-
-  public static String createScope(JobConfig.ConfigType configType, String configId) {
-    Preconditions.checkNotNull(configType);
-    Preconditions.checkNotNull(configId);
-    return configType.value() + SCOPE_DELIMITER + configId;
+  @Test
+  public void testCreateScope() {
+    final String configId = UUID.randomUUID().toString();
+    final String actual = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, configId);
+    final String expected = "sync:" + configId;
+    assertEquals(expected, actual);
   }
 
-  public static String getConfigId(String scope) {
-    Preconditions.checkNotNull(scope);
-
-    final String[] split = scope.split(SCOPE_DELIMITER);
-    if (split.length <= 1) {
-      return "";
-    } else {
-      return split[1];
-    }
+  @Test
+  public void testGetConfig() {
+    final String configId = UUID.randomUUID().toString();
+    assertEquals("", ScopeHelper.getConfigId("sync:"));
+    assertEquals(configId, ScopeHelper.getConfigId("sync:" + configId));
   }
 
 }
