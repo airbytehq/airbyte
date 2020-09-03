@@ -127,7 +127,7 @@ class DefaultSchedulerPersistenceTest {
     STANDARD_SYNC.setStatus(StandardSync.Status.ACTIVE);
     STANDARD_SYNC.setSchema(schema);
     STANDARD_SYNC.setSourceImplementationId(sourceImplementationId);
-    STANDARD_SYNC.setDestinationImplementationId(UUID.randomUUID());
+    STANDARD_SYNC.setDestinationImplementationId(destinationImplementationId);
     STANDARD_SYNC.setSyncMode(StandardSync.SyncMode.APPEND);
 
     NOW = Instant.now();

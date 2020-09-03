@@ -29,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.dataline.commons.functional.Factory;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
@@ -40,7 +41,7 @@ import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-class JobUtilsTest {
+class SyncJobFactoryTest {
 
   @Test
   void createSyncJobFromConnectionId() throws JsonValidationException, ConfigNotFoundException, IOException {
@@ -68,8 +69,9 @@ class JobUtilsTest {
                 .thenReturn(destinationConnectionImplementation);
     when(schedulerPersistence.createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync)).thenReturn(jobId);
 
-    final long syncJobFromConnectionId = JobUtils.createSyncJobFromConnectionId(schedulerPersistence, configPersistence, connectionId);
-    assertEquals(jobId, syncJobFromConnectionId);
+    final Factory<Long, UUID> factory = new SyncJobFactory(schedulerPersistence, configPersistence);
+    final long actualJobId = factory.create(connectionId);
+    assertEquals(jobId, actualJobId);
 
     verify(configPersistence).getConfig(PersistenceConfigType.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
     verify(configPersistence)

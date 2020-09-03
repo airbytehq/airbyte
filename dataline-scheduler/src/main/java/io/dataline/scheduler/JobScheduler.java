@@ -24,16 +24,17 @@
 
 package io.dataline.scheduler;
 
-import io.dataline.config.Schedule;
+import com.google.common.annotations.VisibleForTesting;
+import io.dataline.commons.functional.Factory;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.helpers.ScheduleHelpers;
 import io.dataline.config.persistence.ConfigPersistence;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,10 +44,26 @@ public class JobScheduler implements Runnable {
 
   private final SchedulerPersistence schedulerPersistence;
   private final ConfigPersistence configPersistence;
+  private final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate;
+  private final Factory<Long, UUID> jobFactory;
 
-  public JobScheduler(SchedulerPersistence schedulerPersistence, ConfigPersistence configPersistence) {
+  @VisibleForTesting
+  JobScheduler(SchedulerPersistence schedulerPersistence,
+               ConfigPersistence configPersistence,
+               BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate,
+               Factory<Long, UUID> jobFactory) {
     this.schedulerPersistence = schedulerPersistence;
     this.configPersistence = configPersistence;
+    this.scheduleJobPredicate = scheduleJobPredicate;
+    this.jobFactory = jobFactory;
+  }
+
+  public JobScheduler(SchedulerPersistence schedulerPersistence, ConfigPersistence configPersistence) {
+    this(
+        schedulerPersistence,
+        configPersistence,
+        new ScheduleJobPredicate(Instant::now),
+        new SyncJobFactory(schedulerPersistence, configPersistence));
   }
 
   @Override
@@ -63,14 +80,11 @@ public class JobScheduler implements Runnable {
 
   private void scheduleSyncJobs() throws IOException {
     for (StandardSync connection : getAllActiveConnections()) {
-      Optional<Job> lastJob = schedulerPersistence.getLastSyncJobForConnectionId(connection.getConnectionId());
+      Optional<Job> previousJobOptional = schedulerPersistence.getLastSyncJobForConnectionId(connection.getConnectionId());
+      final StandardSyncSchedule standardSyncSchedule = ConfigFetchers.getStandardSyncSchedule(configPersistence, connection.getConnectionId());
 
-      if (lastJob.isEmpty()) {
-        // pull configuration from connection.
-        JobUtils.createSyncJobFromConnectionId(schedulerPersistence, configPersistence, connection.getConnectionId());
-      } else {
-        final Job job = lastJob.get();
-        handleJob(connection.getConnectionId(), job);
+      if (scheduleJobPredicate.test(previousJobOptional, standardSyncSchedule)) {
+        jobFactory.create(connection.getConnectionId());
       }
     }
   }
@@ -86,8 +100,7 @@ public class JobScheduler implements Runnable {
           break;
         }
 
-        long nextRunStart =
-            previousJob.getUpdatedAt() + getIntervalInSeconds(standardSyncSchedule.getSchedule());
+        long nextRunStart = previousJob.getUpdatedAt() + getIntervalInSeconds(standardSyncSchedule.getSchedule());
         if (nextRunStart < Instant.now().getEpochSecond()) {
           JobUtils.createSyncJobFromConnectionId(schedulerPersistence, configPersistence, connectionId);
         }

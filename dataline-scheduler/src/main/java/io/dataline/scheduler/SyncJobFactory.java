@@ -24,6 +24,7 @@
 
 package io.dataline.scheduler;
 
+import io.dataline.commons.functional.Factory;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
@@ -31,11 +32,18 @@ import io.dataline.config.persistence.ConfigPersistence;
 import java.io.IOException;
 import java.util.UUID;
 
-public class JobUtils {
+public class SyncJobFactory implements Factory<Long, UUID> {
 
-  public static long createSyncJobFromConnectionId(SchedulerPersistence schedulerPersistence,
-                                                   ConfigPersistence configPersistence,
-                                                   UUID connectionId) {
+  private final SchedulerPersistence schedulerPersistence;
+  private final ConfigPersistence configPersistence;
+
+  public SyncJobFactory(SchedulerPersistence schedulerPersistence, ConfigPersistence configPersistence) {
+
+    this.schedulerPersistence = schedulerPersistence;
+    this.configPersistence = configPersistence;
+  }
+
+  public Long create(UUID connectionId) {
     final StandardSync standardSync = ConfigFetchers.getStandardSync(configPersistence, connectionId);
 
     final SourceConnectionImplementation sourceConnectionImplementation =
