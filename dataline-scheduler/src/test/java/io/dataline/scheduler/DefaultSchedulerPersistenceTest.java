@@ -287,7 +287,7 @@ class DefaultSchedulerPersistenceTest {
     when(timeSupplier.get()).thenReturn(afterNow);
     final long jobId = schedulerPersistence.createSyncJob(SOURCE_CONNECTION_IMPLEMENTATION, DESTINATION_CONNECTION_IMPLEMENTATION, STANDARD_SYNC);
 
-    final Optional<Job> actual = schedulerPersistence.getLastSyncJobForConnectionId(STANDARD_SYNC.getConnectionId());
+    final Optional<Job> actual = schedulerPersistence.getLastSyncJob(STANDARD_SYNC.getConnectionId());
 
     final String sourceImageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getSyncImage();
     final String destinationImageName =
@@ -323,7 +323,7 @@ class DefaultSchedulerPersistenceTest {
 
   @Test
   public void testGetLastSyncJobForConnectionIdEmpty() throws IOException {
-    final Optional<Job> actual = schedulerPersistence.getLastSyncJobForConnectionId(STANDARD_SYNC.getConnectionId());
+    final Optional<Job> actual = schedulerPersistence.getLastSyncJob(STANDARD_SYNC.getConnectionId());
 
     assertTrue(actual.isEmpty());
   }

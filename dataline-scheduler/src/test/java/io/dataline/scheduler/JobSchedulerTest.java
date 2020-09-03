@@ -32,7 +32,6 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.dataline.commons.functional.Factory;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.Column;
 import io.dataline.config.ConfigSchema;
@@ -47,6 +46,7 @@ import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.integrations.Integrations;
+import io.dataline.scheduler.job_creation.SyncJobFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
@@ -132,23 +132,22 @@ class JobSchedulerTest {
   private ConfigPersistence configPersistence;
   private SchedulerPersistence schedulerPersistence;
   private ScheduleJobPredicate scheduleJobPredicate;
-  private Factory<Long, UUID> jobFactory;
+  private SyncJobFactory jobFactory;
   private JobScheduler scheduler;
 
-  @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() {
     configPersistence = mock(ConfigPersistence.class);
     schedulerPersistence = mock(SchedulerPersistence.class);
 
     scheduleJobPredicate = mock(ScheduleJobPredicate.class);
-    jobFactory = (Factory<Long, UUID>) mock(Factory.class);
+    jobFactory = mock(SyncJobFactory.class);
     scheduler = new JobScheduler(schedulerPersistence, configPersistence, scheduleJobPredicate, jobFactory);
   }
 
   @Test
   public void testScheduleJob() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(schedulerPersistence.getLastSyncJobForConnectionId(STANDARD_SYNC.getConnectionId()))
+    when(schedulerPersistence.getLastSyncJob(STANDARD_SYNC.getConnectionId()))
         .thenReturn(java.util.Optional.of(PREVIOUS_JOB));
     when(scheduleJobPredicate.test(Optional.of(JobSchedulerTest.PREVIOUS_JOB), STANDARD_SYNC_SCHEDULE)).thenReturn(true);
     when(jobFactory.create(STANDARD_SYNC.getConnectionId())).thenReturn(JOB_ID);
@@ -158,13 +157,13 @@ class JobSchedulerTest {
 
     verifyConfigCalls();
     verify(scheduleJobPredicate).test(Optional.of(JobSchedulerTest.PREVIOUS_JOB), STANDARD_SYNC_SCHEDULE);
-    verify(schedulerPersistence).getLastSyncJobForConnectionId(STANDARD_SYNC.getConnectionId());
+    verify(schedulerPersistence).getLastSyncJob(STANDARD_SYNC.getConnectionId());
     verify(jobFactory).create(STANDARD_SYNC.getConnectionId());
   }
 
   @Test
   public void testScheduleJobNoPreviousJob() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(schedulerPersistence.getLastSyncJobForConnectionId(STANDARD_SYNC.getConnectionId()))
+    when(schedulerPersistence.getLastSyncJob(STANDARD_SYNC.getConnectionId()))
         .thenReturn(java.util.Optional.empty());
     when(scheduleJobPredicate.test(Optional.empty(), STANDARD_SYNC_SCHEDULE)).thenReturn(true);
     when(jobFactory.create(STANDARD_SYNC.getConnectionId())).thenReturn(JOB_ID);
@@ -174,13 +173,13 @@ class JobSchedulerTest {
 
     verifyConfigCalls();
     verify(scheduleJobPredicate).test(Optional.empty(), STANDARD_SYNC_SCHEDULE);
-    verify(schedulerPersistence).getLastSyncJobForConnectionId(STANDARD_SYNC.getConnectionId());
+    verify(schedulerPersistence).getLastSyncJob(STANDARD_SYNC.getConnectionId());
     verify(jobFactory).create(STANDARD_SYNC.getConnectionId());
   }
 
   @Test
   public void testDoNotScheduleJob() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(schedulerPersistence.getLastSyncJobForConnectionId(STANDARD_SYNC.getConnectionId()))
+    when(schedulerPersistence.getLastSyncJob(STANDARD_SYNC.getConnectionId()))
         .thenReturn(java.util.Optional.of(PREVIOUS_JOB));
     when(scheduleJobPredicate.test(Optional.of(JobSchedulerTest.PREVIOUS_JOB), STANDARD_SYNC_SCHEDULE)).thenReturn(false);
     setConfigMocks();
@@ -189,7 +188,7 @@ class JobSchedulerTest {
 
     verifyConfigCalls();
     verify(scheduleJobPredicate).test(Optional.of(JobSchedulerTest.PREVIOUS_JOB), STANDARD_SYNC_SCHEDULE);
-    verify(schedulerPersistence).getLastSyncJobForConnectionId(STANDARD_SYNC.getConnectionId());
+    verify(schedulerPersistence).getLastSyncJob(STANDARD_SYNC.getConnectionId());
     verify(jobFactory, never()).create(STANDARD_SYNC.getConnectionId());
   }
 

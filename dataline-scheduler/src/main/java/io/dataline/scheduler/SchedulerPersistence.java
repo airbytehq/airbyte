@@ -59,6 +59,6 @@ public interface SchedulerPersistence {
    */
   List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException;
 
-  Optional<Job> getLastSyncJobForConnectionId(UUID connectionId) throws IOException;
+  Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
 
 }

@@ -151,7 +151,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     jobSyncConfig.setDestinationDockerImage(destinationImageName);
     jobSyncConfig.setStandardSync(standardSync);
 
-    final Optional<Job> previousJobOptional = getLastSyncJobForConnectionId(connectionId);
+    final Optional<Job> previousJobOptional = getLastSyncJob(connectionId);
     final Optional<StandardSyncOutput> standardSyncOutput = previousJobOptional.flatMap(Job::getOutput).map(JobOutput::getSync);
 
     standardSyncOutput.map(StandardSyncOutput::getState).ifPresent(jobSyncConfig::setState);
@@ -227,7 +227,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     }
   }
 
-  public Optional<Job> getLastSyncJobForConnectionId(UUID connectionId) throws IOException {
+  public Optional<Job> getLastSyncJob(UUID connectionId) throws IOException {
     final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
     try {
       return DatabaseHelper.query(

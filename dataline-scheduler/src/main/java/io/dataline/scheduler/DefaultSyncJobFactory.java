@@ -24,20 +24,20 @@
 
 package io.dataline.scheduler;
 
-import io.dataline.commons.functional.Factory;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.scheduler.job_creation.SyncJobFactory;
 import java.io.IOException;
 import java.util.UUID;
 
-public class SyncJobFactory implements Factory<Long, UUID> {
+public class DefaultSyncJobFactory implements SyncJobFactory {
 
   private final SchedulerPersistence schedulerPersistence;
   private final ConfigPersistence configPersistence;
 
-  public SyncJobFactory(SchedulerPersistence schedulerPersistence, ConfigPersistence configPersistence) {
+  public DefaultSyncJobFactory(SchedulerPersistence schedulerPersistence, ConfigPersistence configPersistence) {
 
     this.schedulerPersistence = schedulerPersistence;
     this.configPersistence = configPersistence;

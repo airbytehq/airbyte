@@ -25,15 +25,14 @@
 package io.dataline.scheduler;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.dataline.commons.functional.Factory;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.scheduler.job_creation.SyncJobFactory;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.BiPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,13 +44,13 @@ public class JobScheduler implements Runnable {
   private final SchedulerPersistence schedulerPersistence;
   private final ConfigPersistence configPersistence;
   private final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate;
-  private final Factory<Long, UUID> jobFactory;
+  private final SyncJobFactory jobFactory;
 
   @VisibleForTesting
   JobScheduler(SchedulerPersistence schedulerPersistence,
                ConfigPersistence configPersistence,
                BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate,
-               Factory<Long, UUID> jobFactory) {
+               SyncJobFactory jobFactory) {
     this.schedulerPersistence = schedulerPersistence;
     this.configPersistence = configPersistence;
     this.scheduleJobPredicate = scheduleJobPredicate;
@@ -63,7 +62,7 @@ public class JobScheduler implements Runnable {
         schedulerPersistence,
         configPersistence,
         new ScheduleJobPredicate(Instant::now),
-        new SyncJobFactory(schedulerPersistence, configPersistence));
+        new DefaultSyncJobFactory(schedulerPersistence, configPersistence));
   }
 
   @Override
@@ -80,7 +79,7 @@ public class JobScheduler implements Runnable {
 
   private void scheduleSyncJobs() throws IOException {
     for (StandardSync connection : getAllActiveConnections()) {
-      Optional<Job> previousJobOptional = schedulerPersistence.getLastSyncJobForConnectionId(connection.getConnectionId());
+      Optional<Job> previousJobOptional = schedulerPersistence.getLastSyncJob(connection.getConnectionId());
       final StandardSyncSchedule standardSyncSchedule = ConfigFetchers.getStandardSyncSchedule(configPersistence, connection.getConnectionId());
 
       if (scheduleJobPredicate.test(previousJobOptional, standardSyncSchedule)) {

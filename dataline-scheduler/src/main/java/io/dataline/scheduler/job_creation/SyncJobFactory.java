@@ -22,10 +22,12 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.functional;
+package io.dataline.scheduler.job_creation;
 
-public interface Factory<O, I> {
+import java.util.UUID;
 
-  O create(I input);
+public interface SyncJobFactory {
+
+  Long create(UUID connectionId);
 
 }
