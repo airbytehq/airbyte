@@ -93,8 +93,7 @@ public class JobSubmitter implements Runnable {
   }
 
   private void submitJob(Job job) {
-    threadPool.submit(
-        new WorkerRunner(job.getId(), connectionPool, persistence, workspaceRoot, pbf));
+    threadPool.submit(new WorkerRunner(job.getId(), connectionPool, persistence, workspaceRoot, pbf));
   }
 
 }

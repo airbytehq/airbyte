@@ -27,6 +27,8 @@ package io.dataline.workers.singer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
+import com.google.common.collect.Streams;
+import com.google.common.io.Files;
 import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
@@ -39,6 +41,7 @@ import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +65,7 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
     final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
 
     // write config.json to disk
-    Path configPath = IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    final Path configPath = IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
       final Process targetProcess =
