@@ -22,12 +22,13 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.scheduler.persistence;
 
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.JobConfig;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
+import io.dataline.scheduler.Job;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;

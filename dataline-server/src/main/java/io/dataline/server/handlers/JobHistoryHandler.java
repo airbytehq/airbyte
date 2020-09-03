@@ -35,7 +35,7 @@ import io.dataline.api.model.LogRead;
 import io.dataline.commons.enums.Enums;
 import io.dataline.config.JobConfig;
 import io.dataline.scheduler.Job;
-import io.dataline.scheduler.SchedulerPersistence;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.scheduler.ScopeHelper;
 import java.io.File;
 import java.io.IOException;

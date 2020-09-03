@@ -56,6 +56,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.junit.jupiter.api.AfterAll;

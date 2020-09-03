@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.scheduler.persistence;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.json.Jsons;
@@ -47,6 +47,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import io.dataline.scheduler.Job;
+import io.dataline.scheduler.JobLogs;
+import io.dataline.scheduler.JobStatus;
+import io.dataline.scheduler.ScopeHelper;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.slf4j.Logger;

@@ -28,12 +28,14 @@ import com.google.common.annotations.VisibleForTesting;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.scheduler.job_creation.SyncJobFactory;
+import io.dataline.scheduler.job_factory.DefaultSyncJobFactory;
+import io.dataline.scheduler.job_factory.SyncJobFactory;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

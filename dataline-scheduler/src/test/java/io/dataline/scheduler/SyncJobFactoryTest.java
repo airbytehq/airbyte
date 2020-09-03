@@ -36,9 +36,11 @@ import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.scheduler.job_creation.SyncJobFactory;
+import io.dataline.scheduler.job_factory.DefaultSyncJobFactory;
+import io.dataline.scheduler.job_factory.SyncJobFactory;
 import java.io.IOException;
 import java.util.UUID;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import org.junit.jupiter.api.Test;
 
 class SyncJobFactoryTest {
