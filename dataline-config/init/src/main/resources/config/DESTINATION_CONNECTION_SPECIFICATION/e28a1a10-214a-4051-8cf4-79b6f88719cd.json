@@ -5,10 +5,31 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
-    "required": ["serviceAccount"],
+    "required": [
+      "project_id",
+      "dataset_id",
+      "credentials_json",
+      "disable_collection",
+      "replication_method"
+    ],
     "additionalProperties": false,
     "properties": {
-      "serviceAccount": {
+      "project_id": {
+        "type": "string"
+      },
+      "dataset_id": {
+        "type": "string"
+      },
+      "validate_records": {
+        "type": "boolean"
+      },
+      "credentials_json": {
+        "type": "string"
+      },
+      "disable_collection": {
+        "type": "boolean"
+      },
+      "replication_method": {
         "type": "string"
       }
     }
