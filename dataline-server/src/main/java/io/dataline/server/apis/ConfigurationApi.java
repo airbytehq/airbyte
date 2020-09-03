@@ -55,6 +55,7 @@ import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.SourceRead;
 import io.dataline.api.model.SourceReadList;
 import io.dataline.api.model.SourceSpecificationRead;
+import io.dataline.api.model.WbConnectionRead;
 import io.dataline.api.model.WbConnectionReadList;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
@@ -280,8 +281,12 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
 
   @Override
   public WbConnectionReadList webBackendListConnectionsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(
-        workspaceIdRequestBody);
+    return webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
+  }
+
+  @Override
+  public WbConnectionRead webBackendGetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+    return webBackendConnectionsHandler.webBackendGetConnection(connectionIdRequestBody);
   }
 
 }

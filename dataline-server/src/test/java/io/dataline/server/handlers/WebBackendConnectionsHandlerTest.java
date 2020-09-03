@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.dataline.api.model.ConnectionIdRequestBody;
 import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionReadList;
 import io.dataline.api.model.JobConfigType;
@@ -56,18 +57,17 @@ import org.junit.jupiter.api.Test;
 class WebBackendConnectionsHandlerTest {
 
   private ConnectionsHandler connectionsHandler;
-  private SourceImplementationsHandler sourceImplementationsHandler;
-  private JobHistoryHandler jobHistoryHandler;
   private WebBackendConnectionsHandler wbHandler;
 
   private SourceImplementationRead sourceImplementationRead;
   private ConnectionRead connectionRead;
+  private WbConnectionRead expected;
 
   @BeforeEach
   public void setup() throws IOException {
     connectionsHandler = mock(ConnectionsHandler.class);
-    sourceImplementationsHandler = mock(SourceImplementationsHandler.class);
-    jobHistoryHandler = mock(JobHistoryHandler.class);
+    SourceImplementationsHandler sourceImplementationsHandler = mock(SourceImplementationsHandler.class);
+    JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
 
     final StandardSource standardSource = SourceHelpers.generateSource();
@@ -76,24 +76,10 @@ class WebBackendConnectionsHandlerTest {
 
     final StandardSync standardSync = ConnectionHelpers.generateSync(sourceImplementation.getSourceImplementationId());
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
-  }
 
-  @Test
-  public void testWebBackendListConnectionsForWorkspace() {
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
-    workspaceIdRequestBody.setWorkspaceId(sourceImplementationRead.getWorkspaceId());
-
-    final ConnectionReadList connectionReadList = new ConnectionReadList();
-    connectionReadList.setConnections(Collections.singletonList(connectionRead));
-    when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody))
-        .thenReturn(connectionReadList);
-
-    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody =
-        new SourceImplementationIdRequestBody();
-    sourceImplementationIdRequestBody.setSourceImplementationId(
-        connectionRead.getSourceImplementationId());
-    when(sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody))
-        .thenReturn(sourceImplementationRead);
+    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody();
+    sourceImplementationIdRequestBody.setSourceImplementationId(connectionRead.getSourceImplementationId());
+    when(sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody)).thenReturn(sourceImplementationRead);
 
     Instant now = Instant.now();
     final JobRead jobRead = new JobRead();
@@ -112,24 +98,43 @@ class WebBackendConnectionsHandlerTest {
     jobListRequestBody.setConfigId(connectionRead.getConnectionId().toString());
     when(jobHistoryHandler.listJobsFor(jobListRequestBody)).thenReturn(jobReadList);
 
-    final WbConnectionReadList wbConnectionReadList =
-        wbHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
-
-    WbConnectionRead expected = new WbConnectionRead();
+    expected = new WbConnectionRead();
     expected.setConnectionId(connectionRead.getConnectionId());
     expected.setSourceImplementationId(connectionRead.getSourceImplementationId());
     expected.setDestinationImplementationId(connectionRead.getDestinationImplementationId());
     expected.setName(connectionRead.getName());
     expected.setSyncSchema(connectionRead.getSyncSchema());
     expected.setStatus(connectionRead.getStatus());
-    expected.setSyncMode(
-        Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class));
+    expected.setSyncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class));
     expected.setSchedule(connectionRead.getSchedule());
     expected.setSource(this.sourceImplementationRead);
     expected.setLastSync(now.getEpochSecond());
+  }
 
+  @Test
+  public void testWebBackendListConnectionsForWorkspace() {
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
+    workspaceIdRequestBody.setWorkspaceId(sourceImplementationRead.getWorkspaceId());
+
+    final ConnectionReadList connectionReadList = new ConnectionReadList();
+    connectionReadList.setConnections(Collections.singletonList(connectionRead));
+    when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
+
+    final WbConnectionReadList wbConnectionReadList = wbHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
     assertEquals(1, wbConnectionReadList.getConnections().size());
     assertEquals(expected, wbConnectionReadList.getConnections().get(0));
+  }
+
+  @Test
+  public void testWebBackendGetConnection() {
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
+    connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
+
+    when(connectionsHandler.getConnection(connectionIdRequestBody)).thenReturn(connectionRead);
+
+    final WbConnectionRead wbConnectionRead = wbHandler.webBackendGetConnection(connectionIdRequestBody);
+
+    assertEquals(expected, wbConnectionRead);
   }
 
 }
