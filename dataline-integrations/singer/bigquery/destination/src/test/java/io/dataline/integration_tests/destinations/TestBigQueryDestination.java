@@ -66,6 +66,8 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
   private Dataset dataset;
   private Process process;
 
+  private boolean tornDown = true;
+
   @BeforeEach
   public void setUpBigQuery() throws IOException {
     datasetName = "dataline_tests_" + RandomStringUtils.randomAlphanumeric(8);
@@ -73,14 +75,28 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
     dataset = BQ.create(datasetInfo);
     LOGGER.info("BQ Dataset " + datasetName + " created...");
 
+    // make sure bq always get taken down
+    tornDown = false;
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  if (!tornDown) {
+                    tearDownBigQuery();
+                  }
+                }));
+
     writeConfigFileToJobRoot();
     process = startTarget();
   }
 
   @AfterEach
-  public void tearDownBigQuery() {
+  public void closeAndTearDown() {
     WorkerUtils.closeProcess(process);
+    tearDownBigQuery();
+  }
 
+  public void tearDownBigQuery() {
     // allows deletion of a dataset that has contents
     BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 
@@ -90,6 +106,8 @@ class TestBigQueryDestination extends BaseIntegrationTestCase {
     } else {
       LOGGER.info("BQ Dataset cleanup for " + datasetName + " failed!");
     }
+
+    tornDown = true;
   }
 
   @Test
