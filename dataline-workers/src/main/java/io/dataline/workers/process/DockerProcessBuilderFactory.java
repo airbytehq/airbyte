@@ -53,6 +53,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
         Lists.newArrayList(
             "docker",
             "run",
+            "-i",
             "-v",
             String.format("%s:%s", mountSource, MOUNT_DESTINATION),
             "-w",

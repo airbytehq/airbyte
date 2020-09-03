@@ -24,28 +24,23 @@
 
 package io.dataline.scheduler;
 
-import com.google.common.base.Preconditions;
-import io.dataline.config.JobConfig;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-public class ScopeHelper {
+import java.util.concurrent.ExecutorService;
+import org.junit.jupiter.api.Test;
 
-  private static final String SCOPE_DELIMITER = ":";
+class SchedulerShutdownHandlerTest {
 
-  public static String createScope(JobConfig.ConfigType configType, String configId) {
-    Preconditions.checkNotNull(configType);
-    Preconditions.checkNotNull(configId);
-    return configType.value() + SCOPE_DELIMITER + configId;
-  }
+  @Test
+  public void testRun() throws InterruptedException {
+    final ExecutorService executorService = mock(ExecutorService.class);
+    final SchedulerShutdownHandler schedulerShutdownHandler = new SchedulerShutdownHandler(executorService);
+    schedulerShutdownHandler.start();
+    schedulerShutdownHandler.join();
 
-  public static String getConfigId(String scope) {
-    Preconditions.checkNotNull(scope);
-
-    final String[] split = scope.split(SCOPE_DELIMITER);
-    if (split.length <= 1) {
-      return "";
-    } else {
-      return split[1];
-    }
+    verify(executorService).shutdown();
   }
 
 }

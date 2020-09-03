@@ -24,28 +24,17 @@
 
 package io.dataline.scheduler;
 
-import com.google.common.base.Preconditions;
-import io.dataline.config.JobConfig;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ScopeHelper {
+import org.junit.jupiter.api.Test;
 
-  private static final String SCOPE_DELIMITER = ":";
+class JobLogsTest {
 
-  public static String createScope(JobConfig.ConfigType configType, String configId) {
-    Preconditions.checkNotNull(configType);
-    Preconditions.checkNotNull(configId);
-    return configType.value() + SCOPE_DELIMITER + configId;
-  }
-
-  public static String getConfigId(String scope) {
-    Preconditions.checkNotNull(scope);
-
-    final String[] split = scope.split(SCOPE_DELIMITER);
-    if (split.length <= 1) {
-      return "";
-    } else {
-      return split[1];
-    }
+  @Test
+  public void testGetLogDirectory() {
+    final String actual = JobLogs.getLogDirectory("blah");
+    final String expected = "logs/jobs/blah";
+    assertEquals(expected, actual);
   }
 
 }
