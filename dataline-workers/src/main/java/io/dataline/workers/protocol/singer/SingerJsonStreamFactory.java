@@ -25,7 +25,7 @@
 package io.dataline.workers.protocol.singer;
 
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerMessage;
+import io.dataline.singer.SingerMessage;
 import io.dataline.workers.StreamFactory;
 import java.io.BufferedReader;
 import java.util.Objects;

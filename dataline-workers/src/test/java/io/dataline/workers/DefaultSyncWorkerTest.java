@@ -30,12 +30,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.dataline.commons.functional.CloseableConsumer;
-import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncInput;
-import io.dataline.config.StandardSyncSummary;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
+import io.dataline.singer.SingerMessage;
 import io.dataline.workers.protocol.singer.MessageUtils;
 import java.nio.file.Path;
 import java.util.stream.Stream;
@@ -57,22 +56,14 @@ class DefaultSyncWorkerTest {
     final StandardSync standardSync = syncPair.getKey();
     final StandardSyncInput syncInput = syncPair.getValue();
 
-    final StandardSyncSummary syncSummary = new StandardSyncSummary();
-    syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
-    syncSummary.setRecordsSynced(10L);
-    syncSummary.setStatus(StandardSyncSummary.Status.COMPLETED);
-    syncSummary.setStartTime(LAST_SYNC_TIME);
-    syncSummary.setEndTime(LAST_SYNC_TIME);
+    final StandardTapConfig tapConfig = new StandardTapConfig()
+        .withStandardSync(standardSync)
+        .withSourceConnectionImplementation(syncInput.getSourceConnectionImplementation())
+        .withState(syncInput.getState());
 
-    final StandardTapConfig tapConfig = new StandardTapConfig();
-    tapConfig.setStandardSync(standardSync);
-    tapConfig.setSourceConnectionImplementation(syncInput.getSourceConnectionImplementation());
-    tapConfig.setState(syncInput.getState());
-
-    final StandardTargetConfig targetConfig = new StandardTargetConfig();
-    targetConfig.setStandardSync(standardSync);
-    targetConfig.setDestinationConnectionImplementation(
-        syncInput.getDestinationConnectionImplementation());
+    final StandardTargetConfig targetConfig = new StandardTargetConfig()
+        .withStandardSync(standardSync)
+        .withDestinationConnectionImplementation(syncInput.getDestinationConnectionImplementation());
 
     final TapFactory<SingerMessage> tapFactory = (TapFactory<SingerMessage>) mock(TapFactory.class);
     final TargetFactory<SingerMessage> targetFactory =
@@ -80,10 +71,8 @@ class DefaultSyncWorkerTest {
     final CloseableConsumer<SingerMessage> consumer =
         (CloseableConsumer<SingerMessage>) mock(CloseableConsumer.class);
 
-    SingerMessage recordMessage1 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
-    SingerMessage recordMessage2 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+    SingerMessage recordMessage1 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
+    SingerMessage recordMessage2 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
     final Stream<SingerMessage> tapStream = spy(Stream.of(recordMessage1, recordMessage2));
 

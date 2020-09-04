@@ -25,7 +25,7 @@
 package io.dataline.workers.protocol.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.config.SingerMessage;
+import io.dataline.singer.SingerMessage;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;

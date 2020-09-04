@@ -30,6 +30,7 @@ import io.dataline.config.JobSyncConfig;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardSyncInput;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
@@ -39,12 +40,16 @@ import io.dataline.workers.singer.SingerTargetFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is a runnable that give a job id and db connection figures out how to run the
  * appropriate worker for a given job.
  */
 public class WorkerRunner implements Runnable {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunner.class);
 
   private final long jobId;
   private final BasicDataSource connectionPool;
@@ -73,6 +78,7 @@ public class WorkerRunner implements Runnable {
       throw new RuntimeException(e);
     }
 
+    LOGGER.info("job: {} {} {}", job.getId(), job.getScope(), job.getConfig().getConfigType());
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
 
     switch (job.getConfig().getConfigType()) {
@@ -122,25 +128,24 @@ public class WorkerRunner implements Runnable {
   }
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
-    final StandardCheckConnectionInput checkConnectionInput = new StandardCheckConnectionInput();
-    checkConnectionInput.setConnectionConfiguration(config.getConnectionConfiguration());
+    final StandardCheckConnectionInput checkConnectionInput = new StandardCheckConnectionInput()
+        .withConnectionConfiguration(config.getConnectionConfiguration());
 
     return checkConnectionInput;
   }
 
   private static StandardDiscoverSchemaInput getDiscoverSchemaInput(JobDiscoverSchemaConfig config) {
-    final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfiguration(config.getConnectionConfiguration());
+    final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput()
+        .withConnectionConfiguration(config.getConnectionConfiguration());
 
     return discoverSchemaInput;
   }
 
   private static StandardSyncInput getSyncInput(JobSyncConfig config) {
-    final StandardSyncInput syncInput = new StandardSyncInput();
-    syncInput.setSourceConnectionImplementation(config.getSourceConnectionImplementation());
-    syncInput.setDestinationConnectionImplementation(
-        config.getDestinationConnectionImplementation());
-    syncInput.setStandardSync(config.getStandardSync());
+    final StandardSyncInput syncInput = new StandardSyncInput()
+        .withSourceConnectionImplementation(config.getSourceConnectionImplementation())
+        .withDestinationConnectionImplementation(config.getDestinationConnectionImplementation())
+        .withStandardSync(config.getStandardSync());
 
     return syncInput;
   }

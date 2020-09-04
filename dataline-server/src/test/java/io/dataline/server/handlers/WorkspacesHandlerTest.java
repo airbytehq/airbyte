@@ -60,14 +60,12 @@ class WorkspacesHandlerTest {
   private StandardWorkspace generateWorkspace() {
     final UUID workspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
 
-    final StandardWorkspace standardWorkspace = new StandardWorkspace();
-    standardWorkspace.setWorkspaceId(workspaceId);
-    standardWorkspace.setEmail("test@dataline.io");
-    standardWorkspace.setName("test workspace");
-    standardWorkspace.setSlug("default");
-    standardWorkspace.setInitialSetupComplete(false);
-
-    return standardWorkspace;
+    return new StandardWorkspace()
+        .withWorkspaceId(workspaceId)
+        .withEmail("test@dataline.io")
+        .withName("test workspace")
+        .withSlug("default")
+        .withInitialSetupComplete(false);
   }
 
   @Test
@@ -78,14 +76,13 @@ class WorkspacesHandlerTest {
         StandardWorkspace.class))
             .thenReturn(workspace);
 
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
-    workspaceIdRequestBody.setWorkspaceId(workspace.getWorkspaceId());
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
 
-    final WorkspaceRead workspaceRead = new WorkspaceRead();
-    workspaceRead.setWorkspaceId(workspace.getWorkspaceId());
-    workspaceRead.setName("test workspace");
-    workspaceRead.setSlug("default");
-    workspaceRead.setInitialSetupComplete(false);
+    final WorkspaceRead workspaceRead = new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .name("test workspace")
+        .slug("default")
+        .initialSetupComplete(false);
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspace(workspaceIdRequestBody));
   }
@@ -98,14 +95,13 @@ class WorkspacesHandlerTest {
         StandardWorkspace.class))
             .thenReturn(workspace);
 
-    final SlugRequestBody slugRequestBody = new SlugRequestBody();
-    slugRequestBody.setSlug("default");
+    final SlugRequestBody slugRequestBody = new SlugRequestBody().slug("default");
 
-    final WorkspaceRead workspaceRead = new WorkspaceRead();
-    workspaceRead.setWorkspaceId(workspace.getWorkspaceId());
-    workspaceRead.setName("test workspace");
-    workspaceRead.setSlug("default");
-    workspaceRead.setInitialSetupComplete(false);
+    final WorkspaceRead workspaceRead = new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .name("test workspace")
+        .slug("default")
+        .initialSetupComplete(false);
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
@@ -113,22 +109,22 @@ class WorkspacesHandlerTest {
   @Test
   void testUpdateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
 
-    final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate();
-    workspaceUpdate.setWorkspaceId(workspace.getWorkspaceId());
-    workspaceUpdate.setAnonymousDataCollection(true);
-    workspaceUpdate.setSecurityUpdates(false);
-    workspaceUpdate.setNews(false);
-    workspaceUpdate.setInitialSetupComplete(true);
+    final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate()
+        .workspaceId(workspace.getWorkspaceId())
+        .anonymousDataCollection(true)
+        .securityUpdates(false)
+        .news(false)
+        .initialSetupComplete(true);
 
-    final StandardWorkspace expectedWorkspace = new StandardWorkspace();
-    expectedWorkspace.setWorkspaceId(workspace.getWorkspaceId());
-    expectedWorkspace.setEmail("test@dataline.io");
-    expectedWorkspace.setName("test workspace");
-    expectedWorkspace.setSlug("default");
-    expectedWorkspace.setAnonymousDataCollection(true);
-    expectedWorkspace.setSecurityUpdates(false);
-    expectedWorkspace.setNews(false);
-    expectedWorkspace.setInitialSetupComplete(true);
+    final StandardWorkspace expectedWorkspace = new StandardWorkspace()
+        .withWorkspaceId(workspace.getWorkspaceId())
+        .withEmail("test@dataline.io")
+        .withName("test workspace")
+        .withSlug("default")
+        .withAnonymousDataCollection(true)
+        .withSecurityUpdates(false)
+        .withNews(false)
+        .withInitialSetupComplete(true);
 
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_WORKSPACE,
@@ -139,11 +135,11 @@ class WorkspacesHandlerTest {
 
     final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
 
-    final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead();
-    expectedWorkspaceRead.setWorkspaceId(workspace.getWorkspaceId());
-    expectedWorkspaceRead.setName("test workspace");
-    expectedWorkspaceRead.setSlug("default");
-    expectedWorkspaceRead.setInitialSetupComplete(true);
+    final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .name("test workspace")
+        .slug("default")
+        .initialSetupComplete(true);
 
     verify(configPersistence)
         .writeConfig(

@@ -30,6 +30,8 @@ import io.dataline.config.EnvConfigs;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
@@ -54,8 +56,7 @@ public class SchedulerApp {
 
   private static final int MAX_WORKERS = 4;
   private static final long JOB_SUBMITTER_DELAY_MILLIS = 1000L;
-  private static final ThreadFactory THREAD_FACTORY =
-      new ThreadFactoryBuilder().setNameFormat("scheduler-%d").build();
+  private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
 
   private final BasicDataSource connectionPool;
   private final Path configRoot;
@@ -73,18 +74,13 @@ public class SchedulerApp {
   }
 
   public void start() {
-    final SchedulerPersistence schedulerPersistence =
-        new DefaultSchedulerPersistence(connectionPool);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
-    final ExecutorService workerThreadPool =
-        Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
+    final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
 
-    final JobSubmitter jobSubmitter =
-        new JobSubmitter(
-            workerThreadPool, connectionPool, schedulerPersistence, workspaceRoot, pbf);
-    final JobScheduler jobScheduler =
-        new JobScheduler(connectionPool, schedulerPersistence, configPersistence);
+    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, connectionPool, schedulerPersistence, workspaceRoot, pbf);
+    final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, configPersistence);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
@@ -95,8 +91,7 @@ public class SchedulerApp {
         JOB_SUBMITTER_DELAY_MILLIS,
         TimeUnit.MILLISECONDS);
 
-    Runtime.getRuntime()
-        .addShutdownHook(new SchedulerShutdownHandler(workerThreadPool, scheduledPool));
+    Runtime.getRuntime().addShutdownHook(new SchedulerShutdownHandler(workerThreadPool, scheduledPool));
   }
 
   public static void main(String[] args) {
@@ -111,9 +106,7 @@ public class SchedulerApp {
     LOGGER.info("Creating DB connection pool...");
     final BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
 
-    final ProcessBuilderFactory pbf =
-        new DockerProcessBuilderFactory(
-            workspaceRoot, configs.getWorkspaceDockerMount(), configs.getDockerNetwork());
+    final ProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, configs.getWorkspaceDockerMount(), configs.getDockerNetwork());
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(connectionPool, configRoot, workspaceRoot, pbf).start();

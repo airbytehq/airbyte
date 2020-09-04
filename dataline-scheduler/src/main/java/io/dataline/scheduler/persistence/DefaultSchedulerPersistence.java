@@ -22,8 +22,9 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.scheduler.persistence;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.JobCheckConnectionConfig;
@@ -36,6 +37,10 @@ import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.integrations.Integrations;
+import io.dataline.scheduler.Job;
+import io.dataline.scheduler.JobLogs;
+import io.dataline.scheduler.JobStatus;
+import io.dataline.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -44,6 +49,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
@@ -54,9 +60,16 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSchedulerPersistence.class);
   private final BasicDataSource connectionPool;
+  private final Supplier<Instant> timeSupplier;
+
+  @VisibleForTesting
+  DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
+    this.connectionPool = connectionPool;
+    this.timeSupplier = timeSupplier;
+  }
 
   public DefaultSchedulerPersistence(BasicDataSource connectionPool) {
-    this.connectionPool = connectionPool;
+    this(connectionPool, Instant::now);
   }
 
   @Override
@@ -67,15 +80,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             JobConfig.ConfigType.CHECK_CONNECTION_SOURCE,
             sourceImplementation.getSourceImplementationId().toString());
 
-    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
-    jobCheckConnectionConfig.setDockerImage(
-        Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
+    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
+        .withConnectionConfiguration(sourceImplementation.getConfiguration())
+        .withDockerImage(Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
             .getCheckConnectionImage());
 
-    final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE);
-    jobConfig.setCheckConnection(jobCheckConnectionConfig);
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE)
+        .withCheckConnection(jobCheckConnectionConfig);
 
     return createPendingJob(scope, jobConfig);
   }
@@ -88,15 +100,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION,
             destinationImplementation.getDestinationImplementationId().toString());
 
-    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfiguration(destinationImplementation.getConfiguration());
-    jobCheckConnectionConfig.setDockerImage(
-        Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId())
+    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
+        .withConnectionConfiguration(destinationImplementation.getConfiguration())
+        .withDockerImage(Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId())
             .getCheckConnectionImage());
 
-    final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION);
-    jobConfig.setCheckConnection(jobCheckConnectionConfig);
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION)
+        .withCheckConnection(jobCheckConnectionConfig);
 
     return createPendingJob(scope, jobConfig);
   }
@@ -110,15 +121,15 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             JobConfig.ConfigType.DISCOVER_SCHEMA,
             sourceImplementation.getSourceImplementationId().toString());
 
-    final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig();
-    jobDiscoverSchemaConfig.setConnectionConfiguration(sourceImplementation.getConfiguration());
-    jobDiscoverSchemaConfig.setDockerImage(
-        Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
-            .getDiscoverSchemaImage());
+    final String imageName = Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
+        .getDiscoverSchemaImage();
+    final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig()
+        .withConnectionConfiguration(sourceImplementation.getConfiguration())
+        .withDockerImage(imageName);
 
-    final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA);
-    jobConfig.setDiscoverSchema(jobDiscoverSchemaConfig);
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA)
+        .withDiscoverSchema(jobDiscoverSchemaConfig);
 
     return createPendingJob(scope, jobConfig);
   }
@@ -130,36 +141,32 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       throws IOException {
     final UUID connectionId = standardSync.getConnectionId();
 
-    final String scope =
-        ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
+    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
 
-    final JobSyncConfig jobSyncConfig = new JobSyncConfig();
-    jobSyncConfig.setSourceConnectionImplementation(sourceImplementation);
-    jobSyncConfig.setSourceDockerImage(
-        Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId()).getSyncImage());
-    jobSyncConfig.setDestinationConnectionImplementation(destinationImplementation);
-    jobSyncConfig.setDestinationDockerImage(
-        Integrations.findBySpecId(destinationImplementation.getDestinationImplementationId())
-            .getSyncImage());
-    jobSyncConfig.setStandardSync(standardSync);
+    final String sourceImageName = Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId()).getSyncImage();
+    final String destinationImageName = Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId()).getSyncImage();
+    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withSourceConnectionImplementation(sourceImplementation)
+        .withSourceDockerImage(sourceImageName)
+        .withDestinationConnectionImplementation(destinationImplementation)
+        .withDestinationDockerImage(destinationImageName)
+        .withStandardSync(standardSync);
 
-    final Optional<Job> previousJobOptional =
-        JobUtils.getLastSyncJobForConnectionId(connectionPool, connectionId);
-    final Optional<StandardSyncOutput> standardSyncOutput =
-        previousJobOptional.flatMap(Job::getOutput).map(JobOutput::getSync);
+    final Optional<Job> previousJobOptional = getLastSyncJob(connectionId);
+    final Optional<StandardSyncOutput> standardSyncOutput = previousJobOptional.flatMap(Job::getOutput).map(JobOutput::getSync);
 
-    standardSyncOutput.map(StandardSyncOutput::getState).ifPresent(jobSyncConfig::setState);
+    standardSyncOutput.map(StandardSyncOutput::getState).ifPresent(jobSyncConfig::withState);
 
-    final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.SYNC);
-    jobConfig.setSync(jobSyncConfig);
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withSync(jobSyncConfig);
     return createPendingJob(scope, jobConfig);
   }
 
   // configJson is a oneOf checkConnection, discoverSchema, sync
-  public long createPendingJob(String scope, JobConfig jobConfig) throws IOException {
+  private long createPendingJob(String scope, JobConfig jobConfig) throws IOException {
     LOGGER.info("creating pending job for scope: " + scope);
-    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+    LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
     final String configJson = Jsons.serialize(jobConfig);
 
@@ -221,9 +228,66 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     }
   }
 
+  @Override
+  public Optional<Job> getLastSyncJob(UUID connectionId) throws IOException {
+    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
+    try {
+      return DatabaseHelper.query(
+          connectionPool,
+          ctx -> {
+            Optional<Record> jobEntryOptional =
+                ctx
+                    .fetch(
+                        "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
+                        scope,
+                        JobStatus.CANCELLED.toString().toLowerCase())
+                    .stream()
+                    .findFirst();
+
+            if (jobEntryOptional.isPresent()) {
+              Record jobEntry = jobEntryOptional.get();
+              Job job = getJobFromRecord(jobEntry);
+              return Optional.of(job);
+            } else {
+              return Optional.empty();
+            }
+          });
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public Optional<Job> getOldestPendingJob() throws IOException {
+    try {
+      return DatabaseHelper.query(
+          connectionPool,
+          ctx -> {
+            Optional<Record> jobEntryOptional =
+                ctx
+                    .fetch(
+                        "SELECT * FROM jobs WHERE CAST(status AS VARCHAR) = 'pending' ORDER BY created_at ASC LIMIT 1")
+                    .stream()
+                    .findFirst();
+
+            if (jobEntryOptional.isPresent()) {
+              Record jobEntry = jobEntryOptional.get();
+              Job job = DefaultSchedulerPersistence.getJobFromRecord(jobEntry);
+              return Optional.of(job);
+            } else {
+              return Optional.empty();
+            }
+          });
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  // todo (cgardens) - the location of this method is a little weird. right now all of our db (and
+  // record) interactions are confined to this class. would like to keep it that way for now, but
+  // once we have other classes that interact with the db, this can be moved out.
   public static Job getJobFromRecord(Record jobEntry) {
-    final JobConfig jobConfig =
-        Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
+    final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
 
     final String outputDb = jobEntry.get("output", String.class);
     final JobOutput output = outputDb == null ? null : Jsons.deserialize(outputDb, JobOutput.class);
