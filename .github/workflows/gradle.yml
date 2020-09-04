@@ -47,7 +47,7 @@ jobs:
 
       - name: Run Integration Tests (Master branch only)
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
+        run: CI=true ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
 
       - name: Build Core Docker Images (Master branch only)
         if: success() && github.ref == 'refs/heads/master'
