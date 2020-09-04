@@ -31,7 +31,7 @@ type ITableDataItem = {
 
 const SourcesTable: React.FC = () => {
   const { push } = useRouter();
-  const { connections } = useResource(ConnectionResource.listWebShape(), {
+  const { connections } = useResource(ConnectionResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
   const updateConnection = useFetcher(ConnectionResource.updateShape());

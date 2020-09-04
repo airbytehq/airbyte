@@ -45,13 +45,6 @@ export default class ConnectionResource extends BaseResource
 
   static urlRoot = "connections";
 
-  static listShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.listShape(),
-      schema: { connections: [this.asSchema()] }
-    };
-  }
-
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
@@ -79,11 +72,22 @@ export default class ConnectionResource extends BaseResource
   static createShape<T extends typeof Resource>(this: T) {
     return {
       ...super.createShape(),
-      schema: this.asSchema()
+      schema: this.asSchema(),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>,
+        body: Readonly<object>
+      ): Promise<any> =>
+        await this.fetch("post", `${this.url(params)}/create`, body).then(
+          response => ({
+            ...response,
+            // will remove it if BE returns resource in /web_backend/get format
+            source: params
+          })
+        )
     };
   }
 
-  static listWebShape<T extends typeof Resource>(this: T) {
+  static listShape<T extends typeof Resource>(this: T) {
     return {
       ...super.listShape(),
       getFetchKey: (params: { workspaceId: string }) =>
