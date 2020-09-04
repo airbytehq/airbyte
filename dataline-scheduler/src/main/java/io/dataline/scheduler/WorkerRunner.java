@@ -81,6 +81,7 @@ public class WorkerRunner implements Runnable {
     LOGGER.info("job: {} {} {}", job.getId(), job.getScope(), job.getConfig().getConfigType());
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
     LOGGER.info("Job root = {}", jobRoot.toString());
+
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION_SOURCE:
       case CHECK_CONNECTION_DESTINATION:
@@ -91,8 +92,9 @@ public class WorkerRunner implements Runnable {
             jobId,
             jobRoot,
             checkConnectionInput,
-            new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)),
+            new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf)),
             connectionPool).run();
+
         break;
       case DISCOVER_SCHEMA:
         final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
@@ -102,7 +104,7 @@ public class WorkerRunner implements Runnable {
             discoverSchemaInput,
             new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf),
             connectionPool)
-                .run();
+            .run();
         break;
       case SYNC:
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
@@ -120,7 +122,7 @@ public class WorkerRunner implements Runnable {
                 new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
                 new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf)),
             connectionPool)
-                .run();
+            .run();
         break;
       default:
         throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
