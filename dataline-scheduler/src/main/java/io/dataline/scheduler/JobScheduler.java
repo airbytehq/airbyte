@@ -24,17 +24,18 @@
 
 package io.dataline.scheduler;
 
-import io.dataline.config.Schedule;
+import com.google.common.annotations.VisibleForTesting;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.scheduler.job_factory.DefaultSyncJobFactory;
+import io.dataline.scheduler.job_factory.SyncJobFactory;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import org.apache.commons.dbcp2.BasicDataSource;
+import java.util.function.BiPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,16 +43,28 @@ public class JobScheduler implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobScheduler.class);
 
-  private final BasicDataSource connectionPool;
   private final SchedulerPersistence schedulerPersistence;
   private final ConfigPersistence configPersistence;
+  private final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate;
+  private final SyncJobFactory jobFactory;
 
-  public JobScheduler(BasicDataSource connectionPool,
-                      SchedulerPersistence schedulerPersistence,
-                      ConfigPersistence configPersistence) {
-    this.connectionPool = connectionPool;
+  @VisibleForTesting
+  JobScheduler(SchedulerPersistence schedulerPersistence,
+               ConfigPersistence configPersistence,
+               BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate,
+               SyncJobFactory jobFactory) {
     this.schedulerPersistence = schedulerPersistence;
     this.configPersistence = configPersistence;
+    this.scheduleJobPredicate = scheduleJobPredicate;
+    this.jobFactory = jobFactory;
+  }
+
+  public JobScheduler(SchedulerPersistence schedulerPersistence, ConfigPersistence configPersistence) {
+    this(
+        schedulerPersistence,
+        configPersistence,
+        new ScheduleJobPredicate(Instant::now),
+        new DefaultSyncJobFactory(schedulerPersistence, configPersistence));
   }
 
   @Override
@@ -68,69 +81,13 @@ public class JobScheduler implements Runnable {
 
   private void scheduleSyncJobs() throws IOException {
     for (StandardSync connection : getAllActiveConnections()) {
-      Optional<Job> lastJob =
-          JobUtils.getLastSyncJobForConnectionId(connectionPool, connection.getConnectionId());
+      Optional<Job> previousJobOptional = schedulerPersistence.getLastSyncJob(connection.getConnectionId());
+      final StandardSyncSchedule standardSyncSchedule = ConfigFetchers.getStandardSyncSchedule(configPersistence, connection.getConnectionId());
 
-      if (lastJob.isEmpty()) {
-        // pull configuration from connection.
-        JobUtils.createSyncJobFromConnectionId(
-            schedulerPersistence, configPersistence, connection.getConnectionId());
-      } else {
-        final Job job = lastJob.get();
-        handleJob(connection.getConnectionId(), job);
+      if (scheduleJobPredicate.test(previousJobOptional, standardSyncSchedule)) {
+        jobFactory.create(connection.getConnectionId());
       }
     }
-  }
-
-  private void handleJob(UUID connectionId, Job previousJob) {
-    switch (previousJob.getStatus()) {
-      case CANCELLED:
-      case COMPLETED:
-        final StandardSyncSchedule standardSyncSchedule =
-            ConfigFetchers.getStandardSyncSchedule(configPersistence, connectionId);
-
-        if (standardSyncSchedule.getManual()) {
-          break;
-        }
-
-        long nextRunStart =
-            previousJob.getUpdatedAt() + getIntervalInSeconds(standardSyncSchedule.getSchedule());
-        if (nextRunStart < Instant.now().getEpochSecond()) {
-          JobUtils.createSyncJobFromConnectionId(
-              schedulerPersistence, configPersistence, connectionId);
-        }
-        break;
-      // todo (cgardens) - add max retry concept
-      case FAILED:
-        JobUtils.createSyncJobFromConnectionId(
-            schedulerPersistence, configPersistence, connectionId);
-        break;
-      case PENDING:
-      case RUNNING:
-        break;
-    }
-  }
-
-  // todo: Assert in test to catch at build time
-  private static Long getSecondsInUnit(Schedule.TimeUnit timeUnitEnum) {
-    switch (timeUnitEnum) {
-      case MINUTES:
-        return TimeUnit.MINUTES.toSeconds(1);
-      case HOURS:
-        return TimeUnit.HOURS.toSeconds(1);
-      case DAYS:
-        return TimeUnit.DAYS.toSeconds(1);
-      case WEEKS:
-        return TimeUnit.DAYS.toSeconds(1) * 7;
-      case MONTHS:
-        return TimeUnit.DAYS.toSeconds(1) * 30;
-      default:
-        throw new RuntimeException("Unhandled TimeUnitEnum: " + timeUnitEnum);
-    }
-  }
-
-  private static Long getIntervalInSeconds(Schedule schedule) {
-    return getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
   }
 
   private List<StandardSync> getAllActiveConnections() {
