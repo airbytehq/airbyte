@@ -68,12 +68,13 @@ public class WorkerRunner implements VoidCallable {
     this(jobId, connectionPool, persistence, workspaceRoot, pbf, WorkerRun::new);
   }
 
-  @VisibleForTesting WorkerRunner(final long jobId,
-                                  final BasicDataSource connectionPool,
-                                  final SchedulerPersistence persistence,
-                                  final Path workspaceRoot,
-                                  final ProcessBuilderFactory pbf,
-                                  final WorkerRun.Factory workerRunFactory) {
+  @VisibleForTesting
+  WorkerRunner(final long jobId,
+               final BasicDataSource connectionPool,
+               final SchedulerPersistence persistence,
+               final Path workspaceRoot,
+               final ProcessBuilderFactory pbf,
+               final WorkerRun.Factory workerRunFactory) {
     this.jobId = jobId;
     this.connectionPool = connectionPool;
     this.persistence = persistence;
@@ -90,7 +91,8 @@ public class WorkerRunner implements VoidCallable {
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
 
     switch (job.getConfig().getConfigType()) {
-      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> {
+      case CHECK_CONNECTION_SOURCE:
+      case CHECK_CONNECTION_DESTINATION:
         final StandardCheckConnectionInput checkConnectionInput = createCheckConnectionInput(job.getConfig().getCheckConnection());
         workerRunFactory.create(
             jobId,
@@ -99,8 +101,8 @@ public class WorkerRunner implements VoidCallable {
             new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)),
             connectionPool)
             .run();
-      }
-      case DISCOVER_SCHEMA -> {
+        break;
+      case DISCOVER_SCHEMA:
         final StandardDiscoverSchemaInput discoverSchemaInput = createDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
         workerRunFactory.create(
             jobId,
@@ -109,8 +111,8 @@ public class WorkerRunner implements VoidCallable {
             new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf),
             connectionPool)
             .run();
-      }
-      case SYNC -> {
+        break;
+      case SYNC:
         final StandardSyncInput syncInput = createSyncInput(job.getConfig().getSync());
         final SingerDiscoverSchemaWorker discoverSchemaWorker =
             new SingerDiscoverSchemaWorker(job.getConfig().getSync().getSourceDockerImage(), pbf);
@@ -127,8 +129,9 @@ public class WorkerRunner implements VoidCallable {
                 new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf)),
             connectionPool)
             .run();
-      }
-      default -> throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
+        break;
+      default:
+        throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }
   }
 

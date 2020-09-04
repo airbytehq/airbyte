@@ -26,19 +26,15 @@ package io.dataline.scheduler;
 
 import io.dataline.commons.functional.CheckedSupplier;
 import io.dataline.commons.json.Jsons;
-import io.dataline.commons.lang.Container;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
-import java.lang.ref.Reference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +53,7 @@ import org.slf4j.LoggerFactory;
 public class WorkerRun implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
+
   public interface Factory {
 
     <InputType> WorkerRun create(final long jobId,
