@@ -20,6 +20,8 @@ services:
       - WAIT_HOSTS=db:5432
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
       - CONFIG_ROOT=${CONFIG_ROOT}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - db
   server:
