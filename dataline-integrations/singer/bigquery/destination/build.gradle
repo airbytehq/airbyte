@@ -31,7 +31,13 @@ import groovy.json.JsonSlurper
 
 def credFile = new File(projectDir.absolutePath + "/config/credentials.json")
 def jsonSlurper = new JsonSlurper()
-def creds = jsonSlurper.parse(credFile)
+def creds = [:]
+
+try {
+    creds = jsonSlurper.parse(credFile)
+} catch(Exception e) {
+    // allow builds without credentials to work (integrationTest would still fail)
+}
 
 task integrationTest(type: Test) {
     environment "GOOGLE_CLOUD_PROJECT", creds["project_id"]
