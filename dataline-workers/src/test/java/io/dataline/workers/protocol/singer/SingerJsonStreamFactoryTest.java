@@ -27,7 +27,7 @@ package io.dataline.workers.protocol.singer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerMessage;
+import io.dataline.singer.SingerMessage;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

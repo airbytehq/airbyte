@@ -32,6 +32,7 @@ import io.dataline.config.JobSyncConfig;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardSyncInput;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
@@ -50,7 +51,7 @@ import org.slf4j.LoggerFactory;
  */
 public class WorkerRunner implements VoidCallable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunner.class);
 
   private final long jobId;
   private final BasicDataSource connectionPool;
@@ -67,13 +68,12 @@ public class WorkerRunner implements VoidCallable {
     this(jobId, connectionPool, persistence, workspaceRoot, pbf, WorkerRun::new);
   }
 
-  @VisibleForTesting
-  WorkerRunner(final long jobId,
-               final BasicDataSource connectionPool,
-               final SchedulerPersistence persistence,
-               final Path workspaceRoot,
-               final ProcessBuilderFactory pbf,
-               final WorkerRun.Factory workerRunFactory) {
+  @VisibleForTesting WorkerRunner(final long jobId,
+                                  final BasicDataSource connectionPool,
+                                  final SchedulerPersistence persistence,
+                                  final Path workspaceRoot,
+                                  final ProcessBuilderFactory pbf,
+                                  final WorkerRun.Factory workerRunFactory) {
     this.jobId = jobId;
     this.connectionPool = connectionPool;
     this.persistence = persistence;
@@ -85,6 +85,8 @@ public class WorkerRunner implements VoidCallable {
   @Override
   public void voidCall() throws IOException {
     final Job job = persistence.getJob(jobId);
+
+    LOGGER.info("job: {} {} {}", job.getId(), job.getScope(), job.getConfig().getConfigType());
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
 
     switch (job.getConfig().getConfigType()) {
@@ -131,26 +133,19 @@ public class WorkerRunner implements VoidCallable {
   }
 
   private static StandardCheckConnectionInput createCheckConnectionInput(JobCheckConnectionConfig config) {
-    final StandardCheckConnectionInput checkConnectionInput = new StandardCheckConnectionInput();
-    checkConnectionInput.setConnectionConfiguration(config.getConnectionConfiguration());
-
-    return checkConnectionInput;
+    return new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
   }
 
   private static StandardDiscoverSchemaInput createDiscoverSchemaInput(JobDiscoverSchemaConfig config) {
-    final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfiguration(config.getConnectionConfiguration());
-
-    return discoverSchemaInput;
+    return new StandardDiscoverSchemaInput()
+        .withConnectionConfiguration(config.getConnectionConfiguration());
   }
 
   private static StandardSyncInput createSyncInput(JobSyncConfig config) {
-    final StandardSyncInput syncInput = new StandardSyncInput();
-    syncInput.setSourceConnectionImplementation(config.getSourceConnectionImplementation());
-    syncInput.setDestinationConnectionImplementation(config.getDestinationConnectionImplementation());
-    syncInput.setStandardSync(config.getStandardSync());
-
-    return syncInput;
+    return new StandardSyncInput()
+        .withSourceConnectionImplementation(config.getSourceConnectionImplementation())
+        .withDestinationConnectionImplementation(config.getDestinationConnectionImplementation())
+        .withStandardSync(config.getStandardSync());
   }
 
 }

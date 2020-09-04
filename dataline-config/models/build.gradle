@@ -14,4 +14,8 @@ jsonSchema2Pojo {
     useLongIntegers = true
 
     removeOldOutput = true
+
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
 }

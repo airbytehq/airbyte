@@ -31,8 +31,8 @@ import static org.mockito.Mockito.when;
 
 import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardTargetConfig;
+import io.dataline.singer.SingerMessage;
 import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.TestConfigHelpers;
 import io.dataline.workers.WorkerUtils;

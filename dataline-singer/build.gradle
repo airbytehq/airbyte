@@ -1,0 +1,21 @@
+plugins {
+    id "com.github.eirnym.js2p" version "1.0"
+}
+
+dependencies {
+    implementation group: 'javax.validation', name: 'validation-api', version: '1.1.0.Final'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
+}
+
+jsonSchema2Pojo {
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+
+    targetPackage = 'io.dataline.singer'
+    useLongIntegers = true
+
+    removeOldOutput = true
+
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
+}

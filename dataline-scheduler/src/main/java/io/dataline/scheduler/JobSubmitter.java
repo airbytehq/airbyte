@@ -25,6 +25,8 @@
 package io.dataline.scheduler;
 
 import io.dataline.db.DatabaseHelper;
+import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
 import java.sql.SQLException;
