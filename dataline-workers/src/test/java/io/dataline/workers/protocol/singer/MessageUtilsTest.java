@@ -41,11 +41,11 @@ class MessageUtilsTest {
   @Test
   public void testCreateRecordMessageWithJsonNode() {
     final Instant now = Instant.now();
-    final SingerMessage expectedMessage = new SingerMessage();
-    expectedMessage.withType(SingerMessage.Type.RECORD);
-    expectedMessage.withStream(TABLE_NAME);
-    expectedMessage.withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
-    expectedMessage.withTimeExtracted(MessageUtils.SINGER_DATETIME_FORMATTER.format(now));
+    final SingerMessage expectedMessage = new SingerMessage()
+    .withType(SingerMessage.Type.RECORD)
+    .withStream(TABLE_NAME)
+    .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)))
+    .withTimeExtracted(MessageUtils.SINGER_DATETIME_FORMATTER.format(now));
 
     final SingerMessage actualMessage = MessageUtils.createRecordMessage(
         TABLE_NAME,
@@ -57,10 +57,10 @@ class MessageUtilsTest {
 
   @Test
   public void testCreateRecordMessageWithMap() {
-    final SingerMessage expectedMessage = new SingerMessage();
-    expectedMessage.withType(SingerMessage.Type.RECORD);
-    expectedMessage.withStream(TABLE_NAME);
-    expectedMessage.withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
+    final SingerMessage expectedMessage = new SingerMessage()
+    .withType(SingerMessage.Type.RECORD)
+    .withStream(TABLE_NAME)
+    .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
 
     final SingerMessage actualMessage = MessageUtils.createRecordMessage(TABLE_NAME, ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE));
 
@@ -69,10 +69,10 @@ class MessageUtilsTest {
 
   @Test
   public void testCreateRecordMessageWithSingleEntry() {
-    final SingerMessage expectedMessage = new SingerMessage();
-    expectedMessage.withType(SingerMessage.Type.RECORD);
-    expectedMessage.withStream(TABLE_NAME);
-    expectedMessage.withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
+    final SingerMessage expectedMessage = new SingerMessage()
+    .withType(SingerMessage.Type.RECORD)
+    .withStream(TABLE_NAME)
+    .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
 
     final SingerMessage actualMessage = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, COLUMN_VALUE);
 

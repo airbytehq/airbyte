@@ -165,11 +165,11 @@ public class SourceImplementationsHandler {
     connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections().stream()
         .filter(connectionRead -> connectionRead.getSourceImplementationId().equals(sourceImplementationIdRequestBody.getSourceImplementationId()))
         .forEach(connectionRead -> {
-          final ConnectionUpdate connectionUpdate = new ConnectionUpdate();
-          connectionUpdate.setConnectionId(connectionRead.getConnectionId());
-          connectionUpdate.setSyncSchema(connectionRead.getSyncSchema());
-          connectionUpdate.setSchedule(connectionRead.getSchedule());
-          connectionUpdate.setStatus(ConnectionStatus.DEPRECATED);
+          final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+              .connectionId(connectionRead.getConnectionId())
+              .syncSchema(connectionRead.getSyncSchema())
+              .schedule(connectionRead.getSchedule())
+              .status(ConnectionStatus.DEPRECATED);
 
           connectionsHandler.updateConnection(connectionUpdate);
         });
@@ -214,13 +214,12 @@ public class SourceImplementationsHandler {
                                                      UUID sourceImplementationId,
                                                      boolean tombstone,
                                                      JsonNode configurationJson) {
-    final SourceConnectionImplementation sourceConnectionImplementation =
-        new SourceConnectionImplementation();
-    sourceConnectionImplementation.withSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionImplementation.withWorkspaceId(workspaceId);
-    sourceConnectionImplementation.withSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.withTombstone(tombstone);
-    sourceConnectionImplementation.withConfiguration(configurationJson);
+    final SourceConnectionImplementation sourceConnectionImplementation = new SourceConnectionImplementation()
+        .withSourceSpecificationId(sourceSpecificationId)
+        .withWorkspaceId(workspaceId)
+        .withSourceImplementationId(sourceImplementationId)
+        .withTombstone(tombstone)
+        .withConfiguration(configurationJson);
 
     ConfigFetchers.writeConfig(
         configPersistence,
@@ -231,17 +230,13 @@ public class SourceImplementationsHandler {
 
   private SourceImplementationRead toSourceImplementationRead(SourceConnectionImplementation sourceConnectionImplementation,
                                                               StandardSource standardSource) {
-    final SourceImplementationRead sourceImplementationRead = new SourceImplementationRead();
-    sourceImplementationRead.setSourceId(standardSource.getSourceId());
-    sourceImplementationRead.setSourceImplementationId(
-        sourceConnectionImplementation.getSourceImplementationId());
-    sourceImplementationRead.setWorkspaceId(sourceConnectionImplementation.getWorkspaceId());
-    sourceImplementationRead.setSourceSpecificationId(
-        sourceConnectionImplementation.getSourceSpecificationId());
-    sourceImplementationRead.setConnectionConfiguration(sourceConnectionImplementation.getConfiguration());
-    sourceImplementationRead.setSourceName(standardSource.getName());
-
-    return sourceImplementationRead;
+    return new SourceImplementationRead()
+        .sourceId(standardSource.getSourceId())
+        .sourceImplementationId(sourceConnectionImplementation.getSourceImplementationId())
+        .workspaceId(sourceConnectionImplementation.getWorkspaceId())
+        .sourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId())
+        .connectionConfiguration(sourceConnectionImplementation.getConfiguration())
+        .sourceName(standardSource.getName());
   }
 
 }

@@ -24,11 +24,6 @@
 
 package io.dataline.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.Lists;
 import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationRead;
@@ -43,6 +38,11 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DestinationsHandlerTest {
 
@@ -60,11 +60,9 @@ class DestinationsHandlerTest {
   private StandardDestination generateDestination() {
     final UUID destinationId = UUID.randomUUID();
 
-    final StandardDestination standardDestination = new StandardDestination();
-    standardDestination.withDestinationId(destinationId);
-    standardDestination.withName("presto");
-
-    return standardDestination;
+    return new StandardDestination()
+    .withDestinationId(destinationId)
+    .withName("presto");
   }
 
   @Test
@@ -79,23 +77,23 @@ class DestinationsHandlerTest {
         ConfigSchema.STANDARD_DESTINATION, StandardDestination.class))
             .thenReturn(Lists.newArrayList(destination, destination2));
 
-    DestinationRead expectedDestinationRead1 = new DestinationRead();
-    expectedDestinationRead1.setDestinationId(destination.getDestinationId());
-    expectedDestinationRead1.setName(destination.getName());
+    DestinationRead expectedDestinationRead1 = new DestinationRead()
+    .destinationId(destination.getDestinationId())
+    .name(destination.getName());
 
-    DestinationRead expectedDestinationRead2 = new DestinationRead();
-    expectedDestinationRead2.setDestinationId(destination2.getDestinationId());
-    expectedDestinationRead2.setName(destination2.getName());
+    DestinationRead expectedDestinationRead2 = new DestinationRead()
+    .destinationId(destination2.getDestinationId())
+    .name(destination2.getName());
 
     final DestinationReadList actualDestinationReadList = destinationHandler.listDestinations();
 
-    final Optional<DestinationRead> actualDestinationRead1 =
-        actualDestinationReadList.getDestinations().stream()
+    final Optional<DestinationRead> actualDestinationRead1 =        actualDestinationReadList.getDestinations()
+        .stream()
             .filter(
                 destinationRead -> destinationRead.getDestinationId().equals(destination.getDestinationId()))
             .findFirst();
-    final Optional<DestinationRead> actualDestinationRead2 =
-        actualDestinationReadList.getDestinations().stream()
+    final Optional<DestinationRead> actualDestinationRead2 =        actualDestinationReadList.getDestinations()
+        .stream()
             .filter(
                 destinationRead -> destinationRead.getDestinationId().equals(destination2.getDestinationId()))
             .findFirst();
@@ -114,15 +112,14 @@ class DestinationsHandlerTest {
         StandardDestination.class))
             .thenReturn(destination);
 
-    DestinationRead expectedDestinationRead = new DestinationRead();
-    expectedDestinationRead.setDestinationId(destination.getDestinationId());
-    expectedDestinationRead.setName(destination.getName());
+    DestinationRead expectedDestinationRead = new DestinationRead()
+    .destinationId(destination.getDestinationId())
+    .name(destination.getName());
 
-    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody();
-    destinationIdRequestBody.setDestinationId(destination.getDestinationId());
+    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody()
+    .destinationId(destination.getDestinationId());
 
-    final DestinationRead actualDestinationRead =
-        destinationHandler.getDestination(destinationIdRequestBody);
+    final DestinationRead actualDestinationRead =        destinationHandler.getDestination(destinationIdRequestBody);
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
   }

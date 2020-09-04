@@ -57,28 +57,26 @@ public class WorkspacesHandler {
     final StandardWorkspace workspace =
         ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
 
-    final WorkspaceRead workspaceRead = new WorkspaceRead();
-    workspaceRead.setWorkspaceId(workspace.getWorkspaceId());
-    workspaceRead.setName(workspace.getName());
-    workspaceRead.setSlug(workspace.getSlug());
-    workspaceRead.setInitialSetupComplete(workspace.getInitialSetupComplete());
-
-    return workspaceRead;
+    return new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .name(workspace.getName())
+        .slug(workspace.getSlug())
+        .initialSetupComplete(workspace.getInitialSetupComplete());
   }
 
   public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate) {
     final UUID workspaceId = workspaceUpdate.getWorkspaceId();
 
-    final StandardWorkspace persistedWorkspace =
-        ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
+    final StandardWorkspace persistedWorkspace = ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
 
     if (workspaceUpdate.getEmail() != null && !workspaceUpdate.getEmail().equals("")) {
       persistedWorkspace.withEmail(workspaceUpdate.getEmail());
     }
-    persistedWorkspace.withInitialSetupComplete(workspaceUpdate.getInitialSetupComplete());
-    persistedWorkspace.withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection());
-    persistedWorkspace.withNews(workspaceUpdate.getNews());
-    persistedWorkspace.withSecurityUpdates(workspaceUpdate.getSecurityUpdates());
+    persistedWorkspace.withInitialSetupComplete(workspaceUpdate.getInitialSetupComplete())
+        .withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection())
+        .withNews(workspaceUpdate.getNews())
+        .withSecurityUpdates(workspaceUpdate.getSecurityUpdates());
+
     ConfigFetchers.writeConfig(
         configPersistence,
         ConfigSchema.STANDARD_WORKSPACE,

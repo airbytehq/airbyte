@@ -44,10 +44,10 @@ public class MessageUtils {
   public static SingerMessage createRecordMessage(String tableName,
                                                   JsonNode record,
                                                   Instant timeExtracted) {
-    final SingerMessage singerMessage = new SingerMessage();
-    singerMessage.withType(SingerMessage.Type.RECORD);
-    singerMessage.withRecord(record);
-    singerMessage.withStream(tableName);
+    final SingerMessage singerMessage = new SingerMessage()
+    .withType(SingerMessage.Type.RECORD)
+    .withRecord(record)
+    .withStream(tableName);
 
     Optional.ofNullable(timeExtracted)
         .ifPresent(

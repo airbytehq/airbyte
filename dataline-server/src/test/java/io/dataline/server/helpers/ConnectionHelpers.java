@@ -45,74 +45,63 @@ public class ConnectionHelpers {
   public static StandardSync generateSync(UUID sourceImplementationId) {
     final UUID connectionId = UUID.randomUUID();
 
-    final StandardSync standardSync = new StandardSync();
-    standardSync.withConnectionId(connectionId);
-    standardSync.withName("presto to hudi");
-    standardSync.withStatus(StandardSync.Status.ACTIVE);
-    standardSync.withSchema(generateBasicPersistenceSchema());
-    standardSync.withSourceImplementationId(sourceImplementationId);
-    standardSync.withDestinationImplementationId(UUID.randomUUID());
-    standardSync.withSyncMode(StandardSync.SyncMode.APPEND);
-
-    return standardSync;
+    return new StandardSync()
+        .withConnectionId(connectionId)
+        .withName("presto to hudi")
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withSchema(generateBasicPersistenceSchema())
+        .withSourceImplementationId(sourceImplementationId)
+        .withDestinationImplementationId(UUID.randomUUID())
+        .withSyncMode(StandardSync.SyncMode.APPEND);
   }
 
   public static Schema generateBasicPersistenceSchema() {
-    final Column column = new Column();
-    column.withDataType(DataType.STRING);
-    column.withName("id");
-    column.withSelected(true);
+    final Column column = new Column()
+        .withDataType(DataType.STRING)
+        .withName("id")
+        .withSelected(true);
 
-    final Table table = new Table();
-    table.withName("users");
-    table.withColumns(Lists.newArrayList(column));
-    table.withSelected(true);
+    final Table table = new Table()
+        .withName("users")
+        .withColumns(Lists.newArrayList(column))
+        .withSelected(true);
 
-    final Schema schema = new Schema();
-    schema.withTables(Lists.newArrayList(table));
-
-    return schema;
+    return new Schema()
+        .withTables(Lists.newArrayList(table));
   }
 
   public static SourceSchema generateBasicApiSchema() {
-    final SourceSchemaColumn column = new SourceSchemaColumn();
-    column.setDataType(io.dataline.api.model.DataType.STRING);
-    column.setName("id");
-    column.setSelected(true);
+    final SourceSchemaColumn column = new SourceSchemaColumn()
+        .dataType(io.dataline.api.model.DataType.STRING)
+        .name("id")
+        .selected(true);
 
-    final SourceSchemaTable table = new SourceSchemaTable();
-    table.setName("users");
-    table.setColumns(Lists.newArrayList(column));
+    final SourceSchemaTable table = new SourceSchemaTable()
+        .name("users")
+        .columns(Lists.newArrayList(column));
 
-    final SourceSchema schema = new SourceSchema();
-    schema.setTables(Lists.newArrayList(table));
-
-    return schema;
+    return new SourceSchema().tables(Lists.newArrayList(table));
   }
 
   public static ConnectionSchedule generateBasicSchedule() {
-    final ConnectionSchedule connectionSchedule = new ConnectionSchedule();
-    connectionSchedule.setTimeUnit(ConnectionSchedule.TimeUnitEnum.DAYS);
-    connectionSchedule.setUnits(1L);
-
-    return connectionSchedule;
+    return new ConnectionSchedule()
+        .timeUnit(ConnectionSchedule.TimeUnitEnum.DAYS)
+        .units(1L);
   }
 
-  public static ConnectionRead generateExpectedConnectionRead(
-                                                              UUID connectionId,
+  public static ConnectionRead generateExpectedConnectionRead(UUID connectionId,
                                                               UUID sourceImplementationId,
                                                               UUID destinationImplementationId) {
-    final ConnectionRead expectedConnectionRead = new ConnectionRead();
-    expectedConnectionRead.setConnectionId(connectionId);
-    expectedConnectionRead.setSourceImplementationId(sourceImplementationId);
-    expectedConnectionRead.setDestinationImplementationId(destinationImplementationId);
-    expectedConnectionRead.setName("presto to hudi");
-    expectedConnectionRead.setStatus(ConnectionStatus.ACTIVE);
-    expectedConnectionRead.setSyncMode(ConnectionRead.SyncModeEnum.APPEND);
-    expectedConnectionRead.setSchedule(generateBasicSchedule());
-    expectedConnectionRead.setSyncSchema(ConnectionHelpers.generateBasicApiSchema());
 
-    return expectedConnectionRead;
+    return new ConnectionRead()
+        .connectionId(connectionId)
+        .sourceImplementationId(sourceImplementationId)
+        .destinationImplementationId(destinationImplementationId)
+        .name("presto to hudi")
+        .status(ConnectionStatus.ACTIVE)
+        .syncMode(ConnectionRead.SyncModeEnum.APPEND)
+        .schedule(generateBasicSchedule())
+        .syncSchema(ConnectionHelpers.generateBasicApiSchema());
   }
 
   public static ConnectionRead generateExpectedConnectionRead(StandardSync standardSync) {
@@ -123,16 +112,14 @@ public class ConnectionHelpers {
   }
 
   public static StandardSyncSchedule generateSchedule(UUID connectionId) {
-    final Schedule schedule = new Schedule();
-    schedule.withTimeUnit(Schedule.TimeUnit.DAYS);
-    schedule.withUnits(1L);
+    final Schedule schedule = new Schedule()
+        .withTimeUnit(Schedule.TimeUnit.DAYS)
+        .withUnits(1L);
 
-    final StandardSyncSchedule standardSchedule = new StandardSyncSchedule();
-    standardSchedule.withConnectionId(connectionId);
-    standardSchedule.withSchedule(schedule);
-    standardSchedule.withManual(false);
-
-    return standardSchedule;
+    return new StandardSyncSchedule()
+        .withConnectionId(connectionId)
+        .withSchedule(schedule)
+        .withManual(false);
   }
 
 }

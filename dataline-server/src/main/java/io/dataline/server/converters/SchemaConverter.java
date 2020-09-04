@@ -45,29 +45,20 @@ public class SchemaConverter {
                   final List<Column> persistenceColumns =
                       apiTable.getColumns().stream()
                           .map(
-                              apiColumn -> {
-                                final Column persistenceColumn = new Column();
-                                persistenceColumn.withName(apiColumn.getName());
-                                persistenceColumn.withDataType(
-                                    toPersistenceDataType(apiColumn.getDataType()));
-                                persistenceColumn.withSelected(apiColumn.getSelected());
-                                return persistenceColumn;
-                              })
+                              apiColumn -> new Column()
+                                  .withName(apiColumn.getName())
+                                  .withDataType(toPersistenceDataType(apiColumn.getDataType()))
+                                  .withSelected(apiColumn.getSelected()))
                           .collect(Collectors.toList());
 
-                  final Table persistenceTable = new Table();
-                  persistenceTable.withName(apiTable.getName());
-                  persistenceTable.withColumns(persistenceColumns);
-                  persistenceTable.withSelected(
-                      persistenceColumns.stream().anyMatch(Column::getSelected));
-
-                  return persistenceTable;
+                  return new Table()
+                      .withName(apiTable.getName())
+                      .withColumns(persistenceColumns)
+                      .withSelected(persistenceColumns.stream().anyMatch(Column::getSelected));
                 })
             .collect(Collectors.toList());
 
-    final Schema persistenceSchema = new Schema();
-    persistenceSchema.withTables(persistenceTables);
-    return persistenceSchema;
+    return new Schema().withTables(persistenceTables);
   }
 
   public static SourceSchema toApiSchema(Schema persistenceSchema) {
@@ -79,27 +70,19 @@ public class SchemaConverter {
                   final List<SourceSchemaColumn> apiColumns =
                       persistenceTable.getColumns().stream()
                           .map(
-                              persistenceColumn -> {
-                                final SourceSchemaColumn apiColumn = new SourceSchemaColumn();
-                                apiColumn.setName(persistenceColumn.getName());
-                                apiColumn.setDataType(
-                                    toApiDataType(persistenceColumn.getDataType()));
-                                apiColumn.setSelected(persistenceColumn.getSelected());
-                                return apiColumn;
-                              })
+                              persistenceColumn -> new SourceSchemaColumn()
+                                  .name(persistenceColumn.getName())
+                                  .dataType(toApiDataType(persistenceColumn.getDataType()))
+                                  .selected(persistenceColumn.getSelected()))
                           .collect(Collectors.toList());
 
-                  final SourceSchemaTable apiTable = new SourceSchemaTable();
-                  apiTable.setName(persistenceTable.getName());
-                  apiTable.setColumns(apiColumns);
-
-                  return apiTable;
+                  return new SourceSchemaTable()
+                      .name(persistenceTable.getName())
+                      .columns(apiColumns);
                 })
             .collect(Collectors.toList());
 
-    final SourceSchema apiSchema = new SourceSchema();
-    apiSchema.setTables(persistenceTables);
-    return apiSchema;
+    return new SourceSchema().tables(persistenceTables);
   }
 
   public static DataType toPersistenceDataType(io.dataline.api.model.DataType apiDataType) {

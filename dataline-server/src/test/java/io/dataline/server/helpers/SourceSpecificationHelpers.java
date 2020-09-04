@@ -43,12 +43,10 @@ public class SourceSpecificationHelpers {
 
     final Path path = Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
 
-    final SourceConnectionSpecification sourceConnectionSpecification = new SourceConnectionSpecification();
-    sourceConnectionSpecification.withSourceId(sourceId);
-    sourceConnectionSpecification.withSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionSpecification.withSpecification(Jsons.deserialize(Files.readString(path)));
-
-    return sourceConnectionSpecification;
+    return new SourceConnectionSpecification()
+    .withSourceId(sourceId)
+    .withSourceSpecificationId(sourceSpecificationId)
+    .withSpecification(Jsons.deserialize(Files.readString(path)));
   }
 
 }

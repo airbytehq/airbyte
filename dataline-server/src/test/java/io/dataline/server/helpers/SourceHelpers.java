@@ -30,11 +30,9 @@ import java.util.UUID;
 public class SourceHelpers {
 
   public static StandardSource generateSource() {
-    StandardSource source = new StandardSource();
-    source.withSourceId(UUID.randomUUID());
-    source.withName("marketo");
-
-    return source;
+    return new StandardSource()
+    .withSourceId(UUID.randomUUID())
+    .withName("marketo");
   }
 
 }

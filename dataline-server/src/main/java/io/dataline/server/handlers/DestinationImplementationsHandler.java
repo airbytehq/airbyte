@@ -167,12 +167,11 @@ public class DestinationImplementationsHandler {
                                                           UUID workspaceId,
                                                           UUID destinationImplementationId,
                                                           JsonNode configurationJson) {
-    final DestinationConnectionImplementation destinationConnectionImplementation =
-        new DestinationConnectionImplementation();
-    destinationConnectionImplementation.withDestinationSpecificationId(destinationSpecificationId);
-    destinationConnectionImplementation.withWorkspaceId(workspaceId);
-    destinationConnectionImplementation.withDestinationImplementationId(destinationImplementationId);
-    destinationConnectionImplementation.withConfiguration(configurationJson);
+    final DestinationConnectionImplementation destinationConnectionImplementation = new DestinationConnectionImplementation()
+        .withDestinationSpecificationId(destinationSpecificationId)
+        .withWorkspaceId(workspaceId)
+        .withDestinationImplementationId(destinationImplementationId)
+        .withConfiguration(configurationJson);
 
     ConfigFetchers.writeConfig(
         configPersistence,
@@ -183,18 +182,13 @@ public class DestinationImplementationsHandler {
 
   private DestinationImplementationRead toDestinationImplementationRead(DestinationConnectionImplementation destinationConnectionImplementation,
                                                                         UUID destinationId) {
-    final DestinationImplementationRead destinationImplementationRead =
-        new DestinationImplementationRead();
-    destinationImplementationRead.setDestinationId(destinationId);
-    destinationImplementationRead.setDestinationImplementationId(
-        destinationConnectionImplementation.getDestinationImplementationId());
-    destinationImplementationRead.setWorkspaceId(
-        destinationConnectionImplementation.getWorkspaceId());
-    destinationImplementationRead.setDestinationSpecificationId(
-        destinationConnectionImplementation.getDestinationSpecificationId());
-    destinationImplementationRead.setConnectionConfiguration(destinationConnectionImplementation.getConfiguration());
 
-    return destinationImplementationRead;
+    return new DestinationImplementationRead()
+        .destinationId(destinationId)
+        .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId())
+        .workspaceId(destinationConnectionImplementation.getWorkspaceId())
+        .destinationSpecificationId(destinationConnectionImplementation.getDestinationSpecificationId())
+        .connectionConfiguration(destinationConnectionImplementation.getConfiguration());
   }
 
 }

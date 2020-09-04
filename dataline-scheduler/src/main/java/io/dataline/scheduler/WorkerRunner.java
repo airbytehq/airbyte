@@ -91,7 +91,7 @@ public class WorkerRunner implements Runnable {
             checkConnectionInput,
             new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)),
             connectionPool)
-                .run();
+            .run();
         break;
       case DISCOVER_SCHEMA:
         final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
@@ -101,7 +101,7 @@ public class WorkerRunner implements Runnable {
             discoverSchemaInput,
             new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf),
             connectionPool)
-                .run();
+            .run();
         break;
       case SYNC:
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
@@ -119,7 +119,7 @@ public class WorkerRunner implements Runnable {
                 new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
                 new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf)),
             connectionPool)
-                .run();
+            .run();
         break;
       default:
         throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
@@ -127,25 +127,24 @@ public class WorkerRunner implements Runnable {
   }
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
-    final StandardCheckConnectionInput checkConnectionInput = new StandardCheckConnectionInput();
-    checkConnectionInput.withConnectionConfiguration(config.getConnectionConfiguration());
+    final StandardCheckConnectionInput checkConnectionInput = new StandardCheckConnectionInput()
+        .withConnectionConfiguration(config.getConnectionConfiguration());
 
     return checkConnectionInput;
   }
 
   private static StandardDiscoverSchemaInput getDiscoverSchemaInput(JobDiscoverSchemaConfig config) {
-    final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.withConnectionConfiguration(config.getConnectionConfiguration());
+    final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput()
+        .withConnectionConfiguration(config.getConnectionConfiguration());
 
     return discoverSchemaInput;
   }
 
   private static StandardSyncInput getSyncInput(JobSyncConfig config) {
-    final StandardSyncInput syncInput = new StandardSyncInput();
-    syncInput.withSourceConnectionImplementation(config.getSourceConnectionImplementation());
-    syncInput.withDestinationConnectionImplementation(
-        config.getDestinationConnectionImplementation());
-    syncInput.withStandardSync(config.getStandardSync());
+    final StandardSyncInput syncInput = new StandardSyncInput()
+        .withSourceConnectionImplementation(config.getSourceConnectionImplementation())
+        .withDestinationConnectionImplementation(config.getDestinationConnectionImplementation())
+        .withStandardSync(config.getStandardSync());
 
     return syncInput;
   }

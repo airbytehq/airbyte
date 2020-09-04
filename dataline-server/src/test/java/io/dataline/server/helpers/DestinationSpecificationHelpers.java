@@ -42,13 +42,10 @@ public class DestinationSpecificationHelpers {
     final Path path =
         Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
 
-    final DestinationConnectionSpecification destinationConnectionSpecification =
-        new DestinationConnectionSpecification();
-    destinationConnectionSpecification.withDestinationId(destinationId);
-    destinationConnectionSpecification.withDestinationSpecificationId(destinationSpecificationId);
-    destinationConnectionSpecification.withSpecification(Jsons.deserialize(Files.readString(path)));
-
-    return destinationConnectionSpecification;
+    return new DestinationConnectionSpecification()
+    .withDestinationId(destinationId)
+    .withDestinationSpecificationId(destinationSpecificationId)
+    .withSpecification(Jsons.deserialize(Files.readString(path)));
   }
 
 }

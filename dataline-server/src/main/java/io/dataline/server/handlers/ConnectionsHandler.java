@@ -86,11 +86,12 @@ public class ConnectionsHandler {
     final StandardSyncSchedule standardSyncSchedule = new StandardSyncSchedule()
         .withConnectionId(connectionId);
     if (connectionCreate.getSchedule() != null) {
-      final Schedule schedule = new Schedule();
-      schedule.withTimeUnit(toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()));
-      schedule.withUnits(connectionCreate.getSchedule().getUnits());
-      standardSyncSchedule.withManual(false);
-      standardSyncSchedule.withSchedule(schedule);
+      final Schedule schedule = new Schedule()
+          .withTimeUnit(toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
+          .withUnits(connectionCreate.getSchedule().getUnits());
+      standardSyncSchedule
+          .withManual(false)
+          .withSchedule(schedule);
     } else {
       standardSyncSchedule.withManual(true);
     }
@@ -121,23 +122,24 @@ public class ConnectionsHandler {
     final UUID connectionId = connectionUpdate.getConnectionId();
 
     // get existing sync
-    final StandardSync persistedSync = getStandardSync(connectionId);
-    persistedSync.withSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()));
-    persistedSync.withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
+    final StandardSync persistedSync = getStandardSync(connectionId)
+        .withSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()))
+        .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
     // get existing schedule
     final StandardSyncSchedule persistedSchedule = getSyncSchedule(connectionId);
     if (connectionUpdate.getSchedule() != null) {
-      final Schedule schedule = new Schedule();
-      schedule.withTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()));
-      schedule.withUnits(connectionUpdate.getSchedule().getUnits());
+      final Schedule schedule = new Schedule()
+          .withTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()))
+          .withUnits(connectionUpdate.getSchedule().getUnits());
 
-      persistedSchedule.withSchedule(schedule);
-
-      persistedSchedule.withManual(false);
+      persistedSchedule
+          .withSchedule(schedule)
+          .withManual(false);
     } else {
-      persistedSchedule.withSchedule(null);
-      persistedSchedule.withManual(true);
+      persistedSchedule
+          .withSchedule(null)
+          .withManual(true);
     }
 
     // persist sync
@@ -202,28 +204,23 @@ public class ConnectionsHandler {
 
   private ConnectionRead toConnectionRead(StandardSync standardSync,
                                           StandardSyncSchedule standardSyncSchedule) {
-    final ConnectionSchedule apiSchedule;
+    ConnectionSchedule apiSchedule = null;
 
-    standardSyncSchedule.withConnectionId(standardSyncSchedule.getConnectionId());
     if (!standardSyncSchedule.getManual()) {
-      apiSchedule = new ConnectionSchedule();
-      apiSchedule.setTimeUnit(toApiTimeUnit(standardSyncSchedule.getSchedule().getTimeUnit()));
-      apiSchedule.setUnits(standardSyncSchedule.getSchedule().getUnits());
-    } else {
-      apiSchedule = null;
+      apiSchedule = new ConnectionSchedule()
+          .timeUnit(toApiTimeUnit(standardSyncSchedule.getSchedule().getTimeUnit()))
+          .units(standardSyncSchedule.getSchedule().getUnits());
     }
 
-    final ConnectionRead connectionRead = new ConnectionRead();
-    connectionRead.setConnectionId(standardSync.getConnectionId());
-    connectionRead.setSourceImplementationId(standardSync.getSourceImplementationId());
-    connectionRead.setDestinationImplementationId(standardSync.getDestinationImplementationId());
-    connectionRead.setStatus(toApiStatus(standardSync.getStatus()));
-    connectionRead.setSchedule(apiSchedule);
-    connectionRead.setSyncMode(toApiSyncMode(standardSync.getSyncMode()));
-    connectionRead.setName(standardSync.getName());
-    connectionRead.setSyncSchema(SchemaConverter.toApiSchema(standardSync.getSchema()));
-
-    return connectionRead;
+    return new ConnectionRead()
+        .connectionId(standardSync.getConnectionId())
+        .sourceImplementationId(standardSync.getSourceImplementationId())
+        .destinationImplementationId(standardSync.getDestinationImplementationId())
+        .status(toApiStatus(standardSync.getStatus()))
+        .schedule(apiSchedule)
+        .syncMode(toApiSyncMode(standardSync.getSyncMode()))
+        .name(standardSync.getName())
+        .syncSchema(SchemaConverter.toApiSchema(standardSync.getSchema()));
   }
 
   private StandardSync.Status toPersistenceStatus(ConnectionStatus apiStatus) {
