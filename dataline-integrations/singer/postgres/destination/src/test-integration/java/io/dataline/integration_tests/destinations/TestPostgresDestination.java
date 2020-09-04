@@ -24,9 +24,6 @@
 
 package io.dataline.integration_tests.destinations;
 
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertLinesMatch;
-
 import io.dataline.commons.json.Jsons;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.WorkerUtils;
@@ -49,6 +46,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
+
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 class TestPostgresDestination {
 
@@ -90,10 +90,10 @@ class TestPostgresDestination {
   public void runTest() throws IOException, InterruptedException, SQLException {
     List<String> expectedList =
         Arrays.asList(
-            "('2020-08-28 17:00:00-07', '2.12999999999999989', '0.119999999999999996', null)",
-            "('2020-08-29 17:00:00-07', '7.15000000000000036', '1.1399999999999999', null)",
-            "('2020-08-30 17:00:00-07', '7.15000000000000036', '1.1399999999999999', '10.1600000000000001')",
-            "('2020-08-31 17:00:00-07', '7.15000000000000036', '1.1399999999999999', '10.1600000000000001')");
+            "('1598659200', '2.12999999999999989', '0.119999999999999996', null)",
+            "('1598745600', '7.15000000000000036', '1.1399999999999999', null)",
+            "('1598832000', '7.15000000000000036', '1.1399999999999999', '10.1600000000000001')",
+            "('1598918400', '7.15000000000000036', '1.1399999999999999', '10.1600000000000001')");
 
     writeResourceToStdIn("singer-tap-output.txt", process);
     process.getOutputStream().close();
@@ -136,7 +136,7 @@ class TestPostgresDestination {
     return DatabaseHelper.query(
         pool,
         ctx -> ctx
-            .fetch("SELECT (date, hkd, nzd, usd) FROM public.exchange_rate ORDER BY date ASC;")
+            .fetch("SELECT (extract(epoch from date), hkd, nzd, usd) FROM public.exchange_rate ORDER BY date ASC;")
             .stream()
             .map(nestedRecords -> ((Record) nestedRecords.get(0)))
             .map(Record::valuesRow)
