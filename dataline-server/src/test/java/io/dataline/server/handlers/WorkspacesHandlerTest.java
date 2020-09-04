@@ -24,6 +24,11 @@
 
 package io.dataline.server.handlers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.dataline.api.model.SlugRequestBody;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
@@ -38,11 +43,6 @@ import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class WorkspacesHandlerTest {
 
@@ -74,7 +74,7 @@ class WorkspacesHandlerTest {
         ConfigSchema.STANDARD_WORKSPACE,
         workspace.getWorkspaceId().toString(),
         StandardWorkspace.class))
-        .thenReturn(workspace);
+            .thenReturn(workspace);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
 
@@ -93,7 +93,7 @@ class WorkspacesHandlerTest {
         ConfigSchema.STANDARD_WORKSPACE,
         workspace.getWorkspaceId().toString(),
         StandardWorkspace.class))
-        .thenReturn(workspace);
+            .thenReturn(workspace);
 
     final SlugRequestBody slugRequestBody = new SlugRequestBody().slug("default");
 
@@ -130,8 +130,8 @@ class WorkspacesHandlerTest {
         ConfigSchema.STANDARD_WORKSPACE,
         workspace.getWorkspaceId().toString(),
         StandardWorkspace.class))
-        .thenReturn(workspace)
-        .thenReturn(expectedWorkspace);
+            .thenReturn(workspace)
+            .thenReturn(expectedWorkspace);
 
     final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
 

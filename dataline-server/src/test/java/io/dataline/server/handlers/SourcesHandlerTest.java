@@ -24,6 +24,11 @@
 
 package io.dataline.server.handlers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.Lists;
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceRead;
@@ -38,11 +43,6 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class SourcesHandlerTest {
 
@@ -104,7 +104,7 @@ class SourcesHandlerTest {
         ConfigSchema.STANDARD_SOURCE,
         source.getSourceId().toString(),
         StandardSource.class))
-        .thenReturn(source);
+            .thenReturn(source);
 
     SourceRead expectedSourceRead = new SourceRead()
         .sourceId(source.getSourceId())

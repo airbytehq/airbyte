@@ -24,6 +24,11 @@
 
 package io.dataline.server.handlers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
@@ -56,11 +61,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class SourceImplementationsHandlerTest {
 
@@ -99,19 +99,19 @@ class SourceImplementationsHandlerTest {
         ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
-        .thenReturn(sourceConnectionImplementation);
+            .thenReturn(sourceConnectionImplementation);
 
     when(configPersistence.getConfig(
         ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
-        .thenReturn(sourceConnectionSpecification);
+            .thenReturn(sourceConnectionSpecification);
 
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_SOURCE,
         sourceConnectionSpecification.getSourceId().toString(),
         StandardSource.class))
-        .thenReturn(standardSource);
+            .thenReturn(standardSource);
 
     final SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate()
         .workspaceId(sourceConnectionImplementation.getWorkspaceId())
@@ -155,20 +155,20 @@ class SourceImplementationsHandlerTest {
         ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
-        .thenReturn(sourceConnectionImplementation)
-        .thenReturn(expectedSourceConnectionImplementation);
+            .thenReturn(sourceConnectionImplementation)
+            .thenReturn(expectedSourceConnectionImplementation);
 
     when(configPersistence.getConfig(
         ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
-        .thenReturn(sourceConnectionSpecification);
+            .thenReturn(sourceConnectionSpecification);
 
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_SOURCE,
         sourceConnectionSpecification.getSourceId().toString(),
         StandardSource.class))
-        .thenReturn(standardSource);
+            .thenReturn(standardSource);
 
     final SourceImplementationUpdate sourceImplementationUpdate = new SourceImplementationUpdate()
         .sourceImplementationId(sourceConnectionImplementation.getSourceImplementationId())
@@ -196,19 +196,19 @@ class SourceImplementationsHandlerTest {
         ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
-        .thenReturn(sourceConnectionImplementation);
+            .thenReturn(sourceConnectionImplementation);
 
     when(configPersistence.getConfig(
         ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
-        .thenReturn(sourceConnectionSpecification);
+            .thenReturn(sourceConnectionSpecification);
 
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_SOURCE,
         sourceConnectionSpecification.getSourceId().toString(),
         StandardSource.class))
-        .thenReturn(standardSource);
+            .thenReturn(standardSource);
 
     SourceImplementationRead expectedSourceImplementationRead =
         SourceImplementationHelpers.getSourceImplementationRead(sourceConnectionImplementation, standardSource);
@@ -228,19 +228,19 @@ class SourceImplementationsHandlerTest {
     when(configPersistence.listConfigs(
         ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         SourceConnectionImplementation.class))
-        .thenReturn(Lists.newArrayList(sourceConnectionImplementation));
+            .thenReturn(Lists.newArrayList(sourceConnectionImplementation));
 
     when(configPersistence.getConfig(
         ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
-        .thenReturn(sourceConnectionSpecification);
+            .thenReturn(sourceConnectionSpecification);
 
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_SOURCE,
         sourceConnectionSpecification.getSourceId().toString(),
         StandardSource.class))
-        .thenReturn(standardSource);
+            .thenReturn(standardSource);
 
     SourceImplementationRead expectedSourceImplementationRead =
         SourceImplementationHelpers.getSourceImplementationRead(sourceConnectionImplementation, standardSource);
@@ -270,20 +270,20 @@ class SourceImplementationsHandlerTest {
         ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceConnectionImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
-        .thenReturn(sourceConnectionImplementation)
-        .thenReturn(expectedSourceConnectionImplementation);
+            .thenReturn(sourceConnectionImplementation)
+            .thenReturn(expectedSourceConnectionImplementation);
 
     when(configPersistence.getConfig(
         ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         sourceConnectionSpecification.getSourceSpecificationId().toString(),
         SourceConnectionSpecification.class))
-        .thenReturn(sourceConnectionSpecification);
+            .thenReturn(sourceConnectionSpecification);
 
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_SOURCE,
         sourceConnectionSpecification.getSourceId().toString(),
         StandardSource.class))
-        .thenReturn(standardSource);
+            .thenReturn(standardSource);
 
     final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody()
         .sourceImplementationId(sourceConnectionImplementation.getSourceImplementationId());

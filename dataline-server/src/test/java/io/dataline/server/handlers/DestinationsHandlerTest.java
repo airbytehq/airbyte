@@ -24,6 +24,11 @@
 
 package io.dataline.server.handlers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.Lists;
 import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationRead;
@@ -38,11 +43,6 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class DestinationsHandlerTest {
 
@@ -61,8 +61,8 @@ class DestinationsHandlerTest {
     final UUID destinationId = UUID.randomUUID();
 
     return new StandardDestination()
-    .withDestinationId(destinationId)
-    .withName("presto");
+        .withDestinationId(destinationId)
+        .withName("presto");
   }
 
   @Test
@@ -78,25 +78,25 @@ class DestinationsHandlerTest {
             .thenReturn(Lists.newArrayList(destination, destination2));
 
     DestinationRead expectedDestinationRead1 = new DestinationRead()
-    .destinationId(destination.getDestinationId())
-    .name(destination.getName());
+        .destinationId(destination.getDestinationId())
+        .name(destination.getName());
 
     DestinationRead expectedDestinationRead2 = new DestinationRead()
-    .destinationId(destination2.getDestinationId())
-    .name(destination2.getName());
+        .destinationId(destination2.getDestinationId())
+        .name(destination2.getName());
 
     final DestinationReadList actualDestinationReadList = destinationHandler.listDestinations();
 
-    final Optional<DestinationRead> actualDestinationRead1 =        actualDestinationReadList.getDestinations()
+    final Optional<DestinationRead> actualDestinationRead1 = actualDestinationReadList.getDestinations()
         .stream()
-            .filter(
-                destinationRead -> destinationRead.getDestinationId().equals(destination.getDestinationId()))
-            .findFirst();
-    final Optional<DestinationRead> actualDestinationRead2 =        actualDestinationReadList.getDestinations()
+        .filter(
+            destinationRead -> destinationRead.getDestinationId().equals(destination.getDestinationId()))
+        .findFirst();
+    final Optional<DestinationRead> actualDestinationRead2 = actualDestinationReadList.getDestinations()
         .stream()
-            .filter(
-                destinationRead -> destinationRead.getDestinationId().equals(destination2.getDestinationId()))
-            .findFirst();
+        .filter(
+            destinationRead -> destinationRead.getDestinationId().equals(destination2.getDestinationId()))
+        .findFirst();
 
     assertTrue(actualDestinationRead1.isPresent());
     assertEquals(expectedDestinationRead1, actualDestinationRead1.get());
@@ -113,13 +113,13 @@ class DestinationsHandlerTest {
             .thenReturn(destination);
 
     DestinationRead expectedDestinationRead = new DestinationRead()
-    .destinationId(destination.getDestinationId())
-    .name(destination.getName());
+        .destinationId(destination.getDestinationId())
+        .name(destination.getName());
 
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody()
-    .destinationId(destination.getDestinationId());
+        .destinationId(destination.getDestinationId());
 
-    final DestinationRead actualDestinationRead =        destinationHandler.getDestination(destinationIdRequestBody);
+    final DestinationRead actualDestinationRead = destinationHandler.getDestination(destinationIdRequestBody);
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
   }

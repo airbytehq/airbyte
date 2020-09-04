@@ -24,6 +24,11 @@
 
 package io.dataline.server.handlers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
@@ -50,11 +55,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class DestinationImplementationsHandlerTest {
 
@@ -110,13 +110,13 @@ class DestinationImplementationsHandlerTest {
         ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
         destinationConnectionImplementation.getDestinationImplementationId().toString(),
         DestinationConnectionImplementation.class))
-        .thenReturn(destinationConnectionImplementation);
+            .thenReturn(destinationConnectionImplementation);
 
     when(configPersistence.getConfig(
         ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
         destinationConnectionImplementation.getDestinationSpecificationId().toString(),
         DestinationConnectionSpecification.class))
-        .thenReturn(destinationConnectionSpecification);
+            .thenReturn(destinationConnectionSpecification);
 
     final DestinationImplementationCreate destinationImplementationCreate = new DestinationImplementationCreate()
         .workspaceId(destinationConnectionImplementation.getWorkspaceId())
@@ -164,14 +164,14 @@ class DestinationImplementationsHandlerTest {
         ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
         destinationConnectionImplementation.getDestinationImplementationId().toString(),
         DestinationConnectionImplementation.class))
-        .thenReturn(destinationConnectionImplementation)
-        .thenReturn(expectedDestinationConnectionImplementation);
+            .thenReturn(destinationConnectionImplementation)
+            .thenReturn(expectedDestinationConnectionImplementation);
 
     when(configPersistence.getConfig(
         ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
         destinationConnectionImplementation.getDestinationSpecificationId().toString(),
         DestinationConnectionSpecification.class))
-        .thenReturn(destinationConnectionSpecification);
+            .thenReturn(destinationConnectionSpecification);
 
     final DestinationImplementationUpdate destinationImplementationUpdate = new DestinationImplementationUpdate()
         .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId())
@@ -202,13 +202,13 @@ class DestinationImplementationsHandlerTest {
         ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
         destinationConnectionImplementation.getDestinationImplementationId().toString(),
         DestinationConnectionImplementation.class))
-        .thenReturn(destinationConnectionImplementation);
+            .thenReturn(destinationConnectionImplementation);
 
     when(configPersistence.getConfig(
         ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
         destinationConnectionImplementation.getDestinationSpecificationId().toString(),
         DestinationConnectionSpecification.class))
-        .thenReturn(destinationConnectionSpecification);
+            .thenReturn(destinationConnectionSpecification);
 
     DestinationImplementationRead expectedDestinationImplementationRead = new DestinationImplementationRead()
         .destinationId(destinationConnectionSpecification.getDestinationId())
@@ -232,13 +232,13 @@ class DestinationImplementationsHandlerTest {
     when(configPersistence.listConfigs(
         ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
         DestinationConnectionImplementation.class))
-        .thenReturn(Lists.newArrayList(destinationConnectionImplementation));
+            .thenReturn(Lists.newArrayList(destinationConnectionImplementation));
 
     when(configPersistence.getConfig(
         ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
         destinationConnectionImplementation.getDestinationSpecificationId().toString(),
         DestinationConnectionSpecification.class))
-        .thenReturn(destinationConnectionSpecification);
+            .thenReturn(destinationConnectionSpecification);
 
     DestinationImplementationRead expectedDestinationImplementationRead = new DestinationImplementationRead()
         .destinationId(destinationConnectionSpecification.getDestinationId())

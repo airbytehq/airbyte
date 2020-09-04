@@ -48,7 +48,7 @@ class DefaultConfigPersistenceTest {
 
   static {
     SOURCE_1.withSourceId(UUID_1)
-    .withName("apache storm");
+        .withName("apache storm");
   }
 
   public static final UUID UUID_2 = new UUID(0, 2);
@@ -56,7 +56,7 @@ class DefaultConfigPersistenceTest {
 
   static {
     SOURCE_2.withSourceId(UUID_2)
-    .withName("apache storm");
+        .withName("apache storm");
   }
 
   private Path rootPath;
@@ -99,13 +99,13 @@ class DefaultConfigPersistenceTest {
     final Schema schema = new Schema();
 
     final StandardSync standardSync = new StandardSync()
-    .withName("sync")
-    .withConnectionId(UUID_1)
-    .withSourceImplementationId(UUID.randomUUID())
-    .withDestinationImplementationId(UUID.randomUUID())
-    .withSyncMode(StandardSync.SyncMode.FULL_REFRESH)
-    .withStatus(StandardSync.Status.ACTIVE)
-    .withSchema(schema);
+        .withName("sync")
+        .withConnectionId(UUID_1)
+        .withSourceImplementationId(UUID.randomUUID())
+        .withDestinationImplementationId(UUID.randomUUID())
+        .withSyncMode(StandardSync.SyncMode.FULL_REFRESH)
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withSchema(schema);
 
     configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), standardSync);
 

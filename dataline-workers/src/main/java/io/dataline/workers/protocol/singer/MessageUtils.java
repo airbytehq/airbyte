@@ -45,9 +45,9 @@ public class MessageUtils {
                                                   JsonNode record,
                                                   Instant timeExtracted) {
     final SingerMessage singerMessage = new SingerMessage()
-    .withType(SingerMessage.Type.RECORD)
-    .withRecord(record)
-    .withStream(tableName);
+        .withType(SingerMessage.Type.RECORD)
+        .withRecord(record)
+        .withStream(tableName);
 
     Optional.ofNullable(timeExtracted)
         .ifPresent(

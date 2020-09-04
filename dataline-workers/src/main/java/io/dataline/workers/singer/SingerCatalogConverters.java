@@ -24,6 +24,7 @@
 
 package io.dataline.workers.singer;
 
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.Column;
 import io.dataline.config.DataType;
 import io.dataline.config.Schema;
@@ -48,12 +49,13 @@ public class SingerCatalogConverters {
    * contains configurations stored in dataline.
    *
    * @param catalog - singer catalog
-   * @param schema - dataline schema
+   * @param schema  - dataline schema
    * @return singer catalog with dataline schema applied to it.
    */
   public static SingerCatalog applySchemaToDiscoveredCatalog(SingerCatalog catalog, Schema schema) {
-    Map<String, Table> tableNameToTable =
-        schema.getTables().stream().collect(Collectors.toMap(Table::getName, table -> table));
+    Map<String, Table> tableNameToTable = schema.getTables()
+        .stream()
+        .collect(Collectors.toMap(Table::getName, table -> table));
 
     final List<SingerStream> updatedStreams =
         catalog.getStreams().stream()
@@ -67,15 +69,15 @@ public class SingerCatalogConverters {
                   }
                   final Table table = tableNameToTable.get(stream.getStream());
                   final Map<String, Column> columnNameToColumn =
-                      table.getColumns().stream()
+                      table.getColumns()
+                          .stream()
                           .collect(Collectors.toMap(Column::getName, column -> column));
 
                   final List<SingerMetadata> newMetadata =
                       stream.getMetadata().stream()
                           .map(
                               metadata -> {
-                                final SingerMetadata newSingerMetadata =
-                                    cloneSingerMetadata(metadata);
+                                final SingerMetadata newSingerMetadata = Jsons.clone(metadata);
                                 if (isColumnMetadata(metadata)) {
                                   // column metadata
                                   final String columnName = getColumnName(metadata);
@@ -87,41 +89,34 @@ public class SingerCatalogConverters {
                                   }
                                   final Column column = columnNameToColumn.get(columnName);
 
-                                  newSingerMetadata.getMetadata().withSelected(column.getSelected());
+                                  newSingerMetadata.getMetadata().setSelected(column.getSelected());
                                 } else {
                                   // table metadata
                                   // TODO HACK set replication mode to full_refresh on every stream
                                   // to unblock some other dev work. Needs to be fixed ASAP. Sherif
                                   // is working on this.
-                                  newSingerMetadata
-                                      .getMetadata()
-                                      .withReplicationMethod(
-                                          SingerMetadataChild.ReplicationMethod.FULL_TABLE);
-                                  newSingerMetadata.getMetadata().withSelected(table.getSelected());
+                                  newSingerMetadata.getMetadata()
+                                      .withReplicationMethod(SingerMetadataChild.ReplicationMethod.FULL_TABLE)
+                                      .withSelected(table.getSelected());
                                 }
                                 return newSingerMetadata;
                               })
                           .collect(Collectors.toList());
 
-                  final SingerStream newSingerStream = new SingerStream();
-                  newSingerStream.withStream(stream.getStream());
-                  newSingerStream.withTableName(stream.getTableName());
-                  newSingerStream.withTapStreamId(stream.getTapStreamId());
-                  // TODO
-                  newSingerStream.withMetadata(newMetadata);
-                  // todo (cgardens) - this will not work for legacy catalogs. want to handle this
-                  // in a subsequent PR, because handling this is going to require doing another
-                  // one of these monster map tasks.
-                  newSingerStream.withSchema(stream.getSchema());
-
-                  return newSingerStream;
+                  return new SingerStream()
+                      .withStream(stream.getStream())
+                      .withTableName(stream.getTableName())
+                      .withTapStreamId(stream.getTapStreamId())
+                      // TODO
+                      .withMetadata(newMetadata)
+                      // todo (cgardens) - this will not work for legacy catalogs. want to handle this
+                      // in a subsequent PR, because handling this is going to require doing another
+                      // one of these monster map tasks.
+                      .withSchema(stream.getSchema());
                 })
             .collect(Collectors.toList());
 
-    final SingerCatalog outputCatalog = new SingerCatalog();
-    outputCatalog.withStreams(updatedStreams);
-
-    return outputCatalog;
+    return new SingerCatalog().withStreams(updatedStreams);
   }
 
   // assumes discoverable input only.
@@ -129,21 +124,21 @@ public class SingerCatalogConverters {
     Map<String, List<SingerMetadata>> tableNameToMetadata =
         getTableNameToMetadataList(catalog.getStreams());
 
-    List<Table> tables =
-        catalog.getStreams().stream()
-            .map(
-                stream -> {
-                  final Map<String, SingerMetadataChild> columnNameToMetadata =
-                      getColumnMetadataForTable(tableNameToMetadata, stream.getStream());
-                  final SingerMetadata tableMetadata =
-                      tableNameToMetadata.get(stream.getStream()).stream()
-                          .filter(metadata -> metadata.getBreadcrumb().equals(new ArrayList<>()))
-                          .findFirst()
-                          .orElseThrow(() -> new RuntimeException("Could not find table metadata"));
-                  final Table table = new Table();
-                  table.withName(stream.getStream());
-                  table.withSelected(isSelected(tableMetadata.getMetadata()));
-                  table.withColumns(
+    List<Table> tables = catalog.getStreams()
+        .stream()
+        .map(
+            stream -> {
+              final Map<String, SingerMetadataChild> columnNameToMetadata =
+                  getColumnMetadataForTable(tableNameToMetadata, stream.getStream());
+              final SingerMetadata tableMetadata = tableNameToMetadata.get(stream.getStream())
+                  .stream()
+                  .filter(metadata -> metadata.getBreadcrumb().equals(new ArrayList<>()))
+                  .findFirst()
+                  .orElseThrow(() -> new RuntimeException("Could not find table metadata"));
+              return new Table()
+                  .withName(stream.getStream())
+                  .withSelected(isSelected(tableMetadata.getMetadata()))
+                  .withColumns(
                       stream
                           .getSchema()
                           .getProperties()
@@ -166,13 +161,10 @@ public class SingerCatalogConverters {
                                 return column;
                               })
                           .collect(Collectors.toList()));
-                  return table;
-                })
-            .collect(Collectors.toList());
+            })
+        .collect(Collectors.toList());
 
-    final Schema schema = new Schema();
-    schema.withTables(tables);
-    return schema;
+    return new Schema().withTables(tables);
   }
 
   private static boolean isSelected(SingerMetadataChild metadataChild) {
@@ -251,46 +243,14 @@ public class SingerCatalogConverters {
    * @return best match for our own data type
    */
   private static DataType singerTypeToDataType(SingerType singerType) {
-    switch (singerType) {
-      case STRING:
-        return DataType.STRING;
-      case INTEGER:
-        return DataType.NUMBER;
-      case NULL:
-        // noinspection DuplicateBranchesInSwitch
-        return DataType.STRING; // todo (cgardens) - hackasaurus rex
-      case BOOLEAN:
-        return DataType.BOOLEAN;
-      default:
-        throw new RuntimeException(
-            String.format("could not map SingerType: %s to DataType", singerType));
-    }
-  }
-
-  private static SingerMetadata cloneSingerMetadata(SingerMetadata toClone) {
-    // bad variable name. tradeoff to keep stuff on one line.
-    SingerMetadataChild toClone2 = toClone.getMetadata();
-    final SingerMetadataChild singerMetadataChild = new SingerMetadataChild();
-    singerMetadataChild.withSelected(toClone2.getSelected());
-    singerMetadataChild.withReplicationMethod(toClone2.getReplicationMethod());
-    singerMetadataChild.withReplicationKey(toClone2.getReplicationKey());
-    singerMetadataChild.withViewKeyProperties(toClone2.getViewKeyProperties());
-    singerMetadataChild.withInclusion(toClone2.getInclusion());
-    singerMetadataChild.withSelectedByDefault(toClone2.getSelectedByDefault());
-    singerMetadataChild.withValidReplicationKeys(toClone2.getValidReplicationKeys());
-    singerMetadataChild.withForcedReplicationMethod(toClone2.getForcedReplicationMethod());
-    singerMetadataChild.withTableKeyProperties(toClone2.getTableKeyProperties());
-    singerMetadataChild.withSchemaName(toClone2.getSchemaName());
-    singerMetadataChild.withIsView(toClone2.getIsView());
-    singerMetadataChild.withRowCount(toClone2.getRowCount());
-    singerMetadataChild.withDatabaseName(toClone2.getDatabaseName());
-    singerMetadataChild.withSqlDatatype(toClone2.getSqlDatatype());
-
-    final SingerMetadata singerMetadata = new SingerMetadata();
-    singerMetadata.withBreadcrumb(new ArrayList<>(toClone.getBreadcrumb()));
-    singerMetadata.withMetadata(singerMetadataChild);
-
-    return singerMetadata;
+    return switch (singerType) {
+      case STRING -> DataType.STRING;
+      case INTEGER -> DataType.NUMBER;
+      // todo (cgardens) - hackasaurus rex
+      case NULL -> DataType.STRING;
+      case BOOLEAN -> DataType.BOOLEAN;
+      default -> throw new RuntimeException(String.format("could not map SingerType: %s to DataType", singerType));
+    };
   }
 
 }

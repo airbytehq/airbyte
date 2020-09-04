@@ -43,9 +43,9 @@ public class DestinationSpecificationHelpers {
         Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
 
     return new DestinationConnectionSpecification()
-    .withDestinationId(destinationId)
-    .withDestinationSpecificationId(destinationSpecificationId)
-    .withSpecification(Jsons.deserialize(Files.readString(path)));
+        .withDestinationId(destinationId)
+        .withDestinationSpecificationId(destinationSpecificationId)
+        .withSpecification(Jsons.deserialize(Files.readString(path)));
   }
 
 }

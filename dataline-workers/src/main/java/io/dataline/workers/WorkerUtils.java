@@ -63,11 +63,10 @@ public class WorkerUtils {
    * StandardSyncInput.
    */
   public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
-    final StandardTapConfig tapConfig = new StandardTapConfig();
-    tapConfig.withSourceConnectionImplementation(sync.getSourceConnectionImplementation());
-    tapConfig.withStandardSync(sync.getStandardSync());
-    tapConfig.withState(sync.getState());
-    return tapConfig;
+    return new StandardTapConfig()
+    .withSourceConnectionImplementation(sync.getSourceConnectionImplementation())
+    .withStandardSync(sync.getStandardSync())
+    .withState(sync.getState());
   }
 
   /**
@@ -75,10 +74,9 @@ public class WorkerUtils {
    * StandardSyncInput.
    */
   public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
-    final StandardTargetConfig targetConfig = new StandardTargetConfig();
-    targetConfig.withDestinationConnectionImplementation(sync.getDestinationConnectionImplementation());
-    targetConfig.withStandardSync(sync.getStandardSync());
-    return targetConfig;
+    return new StandardTargetConfig()
+    .withDestinationConnectionImplementation(sync.getDestinationConnectionImplementation())
+    .withStandardSync(sync.getStandardSync());
   }
 
 }

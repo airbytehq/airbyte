@@ -79,4 +79,9 @@ public class Jsons {
     return OBJECT_MAPPER.valueToTree(object);
   }
 
+  @SuppressWarnings("unchecked")
+  public static <T> T clone(final T object) {
+    return (T) deserialize(serialize(object));
+  }
+
 }

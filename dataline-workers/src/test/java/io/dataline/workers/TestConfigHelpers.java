@@ -67,54 +67,51 @@ public class TestConfigHelpers {
                 "username", "dataline",
                 "token", "anau81b"));
 
-    final SourceConnectionImplementation sourceConnectionConfig =
-        new SourceConnectionImplementation();
-    sourceConnectionConfig.withConfiguration(sourceConnection);
-    sourceConnectionConfig.withWorkspaceId(workspaceId);
-    sourceConnectionConfig.withSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionConfig.withSourceImplementationId(sourceImplementationId);
-    sourceConnectionConfig.withTombstone(false);
+    final SourceConnectionImplementation sourceConnectionConfig = new SourceConnectionImplementation()
+        .withConfiguration(sourceConnection)
+        .withWorkspaceId(workspaceId)
+        .withSourceSpecificationId(sourceSpecificationId)
+        .withSourceImplementationId(sourceImplementationId)
+        .withTombstone(false);
 
-    final DestinationConnectionImplementation destinationConnectionConfig =
-        new DestinationConnectionImplementation();
-    destinationConnectionConfig.withConfiguration(destinationConnection);
-    destinationConnectionConfig.withWorkspaceId(workspaceId);
-    destinationConnectionConfig.withDestinationSpecificationId(destinationSpecificationId);
-    destinationConnectionConfig.withDestinationImplementationId(destinationImplementationId);
+    final DestinationConnectionImplementation destinationConnectionConfig = new DestinationConnectionImplementation()
+        .withConfiguration(destinationConnection)
+        .withWorkspaceId(workspaceId)
+        .withDestinationSpecificationId(destinationSpecificationId)
+        .withDestinationImplementationId(destinationImplementationId);
 
-    final Column column = new Column();
-    column.withName(COLUMN_NAME);
-    column.withDataType(DataType.STRING);
-    column.withSelected(true);
+    final Column column = new Column()
+        .withName(COLUMN_NAME)
+        .withDataType(DataType.STRING)
+        .withSelected(true);
 
-    final Table table = new Table();
-    table.withName(TABLE_NAME);
-    table.withSelected(true);
-    table.withColumns(Collections.singletonList(column));
+    final Table table = new Table()
+        .withName(TABLE_NAME)
+        .withSelected(true)
+        .withColumns(Collections.singletonList(column));
 
-    final Schema schema = new Schema();
-    schema.withTables(Collections.singletonList(table));
+    final Schema schema = new Schema().withTables(Collections.singletonList(table));
 
-    StandardSync standardSync = new StandardSync();
-    standardSync.withConnectionId(connectionId);
-    standardSync.withDestinationImplementationId(destinationImplementationId);
-    standardSync.withSourceImplementationId(sourceImplementationId);
-    standardSync.withStatus(StandardSync.Status.ACTIVE);
-    standardSync.withSyncMode(StandardSync.SyncMode.APPEND);
-    standardSync.withName(CONNECTION_NAME);
-    standardSync.withSchema(schema);
+    StandardSync standardSync = new StandardSync()
+        .withConnectionId(connectionId)
+        .withDestinationImplementationId(destinationImplementationId)
+        .withSourceImplementationId(sourceImplementationId)
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withSyncMode(StandardSync.SyncMode.APPEND)
+        .withName(CONNECTION_NAME)
+        .withSchema(schema);
 
     final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
-    State state = new State();
-    state.withConnectionId(connectionId);
-    state.withState(Jsons.jsonNode(stateValue));
+    State state = new State()
+        .withConnectionId(connectionId)
+        .withState(Jsons.jsonNode(stateValue));
 
-    StandardSyncInput syncInput = new StandardSyncInput();
-    syncInput.withDestinationConnectionImplementation(destinationConnectionConfig);
-    syncInput.withStandardSync(standardSync);
-    syncInput.withSourceConnectionImplementation(sourceConnectionConfig);
-    syncInput.withState(state);
+    StandardSyncInput syncInput = new StandardSyncInput()
+        .withDestinationConnectionImplementation(destinationConnectionConfig)
+        .withStandardSync(standardSync)
+        .withSourceConnectionImplementation(sourceConnectionConfig)
+        .withState(state);
 
     return new ImmutablePair<>(standardSync, syncInput);
   }

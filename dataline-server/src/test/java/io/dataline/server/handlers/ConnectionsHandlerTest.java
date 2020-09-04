@@ -24,6 +24,12 @@
 
 package io.dataline.server.handlers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.Lists;
 import io.dataline.api.model.ConnectionCreate;
 import io.dataline.api.model.ConnectionIdRequestBody;
@@ -52,12 +58,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class ConnectionsHandlerTest {
 
@@ -90,13 +90,13 @@ class ConnectionsHandlerTest {
         ConfigSchema.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         StandardSync.class))
-        .thenReturn(standardSync);
+            .thenReturn(standardSync);
 
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_SYNC_SCHEDULE,
         standardSyncSchedule.getConnectionId().toString(),
         StandardSyncSchedule.class))
-        .thenReturn(standardSyncSchedule);
+            .thenReturn(standardSyncSchedule);
 
     final ConnectionCreate connectionCreate = new ConnectionCreate()
         .sourceImplementationId(standardSync.getSourceImplementationId())
@@ -163,15 +163,15 @@ class ConnectionsHandlerTest {
         ConfigSchema.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         StandardSync.class))
-        .thenReturn(standardSync)
-        .thenReturn(updatedStandardSync);
+            .thenReturn(standardSync)
+            .thenReturn(updatedStandardSync);
 
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_SYNC_SCHEDULE,
         standardSyncSchedule.getConnectionId().toString(),
         StandardSyncSchedule.class))
-        .thenReturn(standardSyncSchedule)
-        .thenReturn(updatedPersistenceSchedule);
+            .thenReturn(standardSyncSchedule)
+            .thenReturn(updatedPersistenceSchedule);
 
     final ConnectionRead actualConnectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
@@ -205,13 +205,13 @@ class ConnectionsHandlerTest {
         ConfigSchema.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         StandardSync.class))
-        .thenReturn(standardSync);
+            .thenReturn(standardSync);
 
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_SYNC_SCHEDULE,
         standardSync.getConnectionId().toString(),
         StandardSyncSchedule.class))
-        .thenReturn(standardSyncSchedule);
+            .thenReturn(standardSyncSchedule);
 
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(standardSync.getConnectionId());
@@ -232,14 +232,14 @@ class ConnectionsHandlerTest {
         ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
         sourceImplementation.getSourceImplementationId().toString(),
         SourceConnectionImplementation.class))
-        .thenReturn(sourceImplementation);
+            .thenReturn(sourceImplementation);
 
     // mock get schedule for the now verified connection
     when(configPersistence.getConfig(
         ConfigSchema.STANDARD_SYNC_SCHEDULE,
         standardSync.getConnectionId().toString(),
         StandardSyncSchedule.class))
-        .thenReturn(standardSyncSchedule);
+            .thenReturn(standardSyncSchedule);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(sourceImplementation.getWorkspaceId());
     final ConnectionReadList actualConnectionReadList =
