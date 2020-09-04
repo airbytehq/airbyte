@@ -32,9 +32,9 @@ import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.Schema;
-import io.dataline.config.SingerCatalog;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
+import io.dataline.singer.SingerCatalog;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
@@ -120,10 +120,8 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
   private static StandardDiscoverSchemaOutput toDiscoveryOutput(SingerCatalog catalog) {
     final Schema schema = SingerCatalogConverters.toDatalineSchema(catalog);
-    final StandardDiscoverSchemaOutput output = new StandardDiscoverSchemaOutput();
-    output.setSchema(schema);
 
-    return output;
+    return new StandardDiscoverSchemaOutput().withSchema(schema);
   }
 
   @Override

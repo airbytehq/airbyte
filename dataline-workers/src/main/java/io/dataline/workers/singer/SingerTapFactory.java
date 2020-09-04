@@ -28,10 +28,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerCatalog;
-import io.dataline.config.SingerMessage;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardTapConfig;
+import io.dataline.singer.SingerCatalog;
+import io.dataline.singer.SingerMessage;
 import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
@@ -141,8 +141,8 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
 
   private OutputAndStatus<SingerCatalog> runDiscovery(StandardTapConfig input, Path jobRoot)
       throws InvalidCredentialsException {
-    StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput();
-    discoveryInput.setConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
+    StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput()
+        .withConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
     Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
     return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot);
   }

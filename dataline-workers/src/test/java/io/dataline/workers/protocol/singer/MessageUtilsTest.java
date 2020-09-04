@@ -27,7 +27,7 @@ package io.dataline.workers.protocol.singer;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerMessage;
+import io.dataline.singer.SingerMessage;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
@@ -41,11 +41,11 @@ class MessageUtilsTest {
   @Test
   public void testCreateRecordMessageWithJsonNode() {
     final Instant now = Instant.now();
-    final SingerMessage expectedMessage = new SingerMessage();
-    expectedMessage.setType(SingerMessage.Type.RECORD);
-    expectedMessage.setStream(TABLE_NAME);
-    expectedMessage.setRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
-    expectedMessage.setTimeExtracted(MessageUtils.SINGER_DATETIME_FORMATTER.format(now));
+    final SingerMessage expectedMessage = new SingerMessage()
+        .withType(SingerMessage.Type.RECORD)
+        .withStream(TABLE_NAME)
+        .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)))
+        .withTimeExtracted(MessageUtils.SINGER_DATETIME_FORMATTER.format(now));
 
     final SingerMessage actualMessage = MessageUtils.createRecordMessage(
         TABLE_NAME,
@@ -57,10 +57,10 @@ class MessageUtilsTest {
 
   @Test
   public void testCreateRecordMessageWithMap() {
-    final SingerMessage expectedMessage = new SingerMessage();
-    expectedMessage.setType(SingerMessage.Type.RECORD);
-    expectedMessage.setStream(TABLE_NAME);
-    expectedMessage.setRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
+    final SingerMessage expectedMessage = new SingerMessage()
+        .withType(SingerMessage.Type.RECORD)
+        .withStream(TABLE_NAME)
+        .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
 
     final SingerMessage actualMessage = MessageUtils.createRecordMessage(TABLE_NAME, ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE));
 
@@ -69,10 +69,10 @@ class MessageUtilsTest {
 
   @Test
   public void testCreateRecordMessageWithSingleEntry() {
-    final SingerMessage expectedMessage = new SingerMessage();
-    expectedMessage.setType(SingerMessage.Type.RECORD);
-    expectedMessage.setStream(TABLE_NAME);
-    expectedMessage.setRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
+    final SingerMessage expectedMessage = new SingerMessage()
+        .withType(SingerMessage.Type.RECORD)
+        .withStream(TABLE_NAME)
+        .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
 
     final SingerMessage actualMessage = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, COLUMN_VALUE);
 

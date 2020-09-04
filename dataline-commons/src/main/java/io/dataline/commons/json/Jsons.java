@@ -80,7 +80,7 @@ public class Jsons {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T copy(final T object) {
+  public static <T> T clone(final T object) {
     return (T) deserialize(serialize(object), object.getClass());
   }
 

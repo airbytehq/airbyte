@@ -25,7 +25,7 @@
 package io.dataline.workers.singer;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -35,15 +35,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerCatalog;
-import io.dataline.config.SingerColumn;
-import io.dataline.config.SingerColumnMap;
-import io.dataline.config.SingerMessage;
-import io.dataline.config.SingerStream;
-import io.dataline.config.SingerTableSchema;
-import io.dataline.config.SingerType;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardTapConfig;
+import io.dataline.singer.SingerCatalog;
+import io.dataline.singer.SingerColumn;
+import io.dataline.singer.SingerColumnMap;
+import io.dataline.singer.SingerMessage;
+import io.dataline.singer.SingerStream;
+import io.dataline.singer.SingerTableSchema;
+import io.dataline.singer.SingerType;
 import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
@@ -85,45 +85,40 @@ class SingerTapFactoryTest {
   @Test
   public void test() throws InvalidCredentialsException, IOException {
     StreamFactory streamFactory = mock(StreamFactory.class);
-    SingerMessage recordMessage1 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
-    SingerMessage recordMessage2 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+    SingerMessage recordMessage1 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
+    SingerMessage recordMessage2 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
     final List<SingerMessage> expected = Lists.newArrayList(recordMessage1, recordMessage2);
 
-    final StandardTapConfig tapConfig =
-        WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
-    StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput();
-    discoverSchemaInput.setConnectionConfiguration(
-        tapConfig.getSourceConnectionImplementation().getConfiguration());
-    ProcessBuilderFactory pbf = mock(ProcessBuilderFactory.class);
-    ProcessBuilder processBuilder = mock(ProcessBuilder.class);
-    Process process = mock(Process.class);
-    InputStream inputStream = mock(InputStream.class);
-    SingerDiscoverSchemaWorker discoverSchemaWorker = mock(SingerDiscoverSchemaWorker.class);
+    final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
+    final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput()
+        .withConnectionConfiguration(tapConfig.getSourceConnectionImplementation().getConfiguration());
+    final ProcessBuilderFactory pbf = mock(ProcessBuilderFactory.class);
+    final ProcessBuilder processBuilder = mock(ProcessBuilder.class);
+    final Process process = mock(Process.class);
+    final InputStream inputStream = mock(InputStream.class);
+    final SingerDiscoverSchemaWorker discoverSchemaWorker = mock(SingerDiscoverSchemaWorker.class);
 
-    final SingerColumn singerColumn = new SingerColumn();
-    singerColumn.setType(Lists.newArrayList(SingerType.NULL, SingerType.STRING));
+    final SingerColumn singerColumn = new SingerColumn()
+        .withType(Lists.newArrayList(SingerType.NULL, SingerType.STRING));
 
-    final SingerColumnMap singerColumnMap = new SingerColumnMap();
-    singerColumnMap.setAdditionalProperty(COLUMN_NAME, singerColumn);
+    final SingerColumnMap singerColumnMap = new SingerColumnMap()
+        .withAdditionalProperty(COLUMN_NAME, singerColumn);
 
-    final SingerTableSchema singerSchema = new SingerTableSchema();
-    singerSchema.setType("object");
-    singerSchema.setProperties(singerColumnMap);
+    final SingerTableSchema singerSchema = new SingerTableSchema()
+        .withType("object")
+        .withProperties(singerColumnMap);
 
-    SingerStream singerStream = new SingerStream();
-    singerStream.setStream(TABLE_NAME);
-    singerStream.setTapStreamId(TABLE_NAME);
-    singerStream.setTableName(TABLE_NAME);
-    singerStream.setSchema(singerSchema);
+    final SingerStream singerStream = new SingerStream()
+        .withStream(TABLE_NAME)
+        .withTapStreamId(TABLE_NAME)
+        .withTableName(TABLE_NAME)
+        .withSchema(singerSchema);
 
-    final SingerCatalog singerCatalog = new SingerCatalog();
-    singerCatalog.setStreams(Collections.singletonList(singerStream));
+    final SingerCatalog singerCatalog = new SingerCatalog()
+        .withStreams(Collections.singletonList(singerStream));
 
-    final OutputAndStatus<SingerCatalog> discoverSchemaOutput =
-        new OutputAndStatus<>(JobStatus.SUCCESSFUL, singerCatalog);
+    final OutputAndStatus<SingerCatalog> discoverSchemaOutput = new OutputAndStatus<>(JobStatus.SUCCESSFUL, singerCatalog);
 
     when(discoverSchemaWorker.runInternal(discoverSchemaInput, discoverSchemaJobRoot))
         .thenReturn(discoverSchemaOutput);
@@ -144,8 +139,7 @@ class SingerTapFactoryTest {
 
     when(streamFactory.create(any())).thenReturn(expected.stream());
 
-    final SingerTapFactory tapFactory =
-        new SingerTapFactory(IMAGE_NAME, pbf, streamFactory, discoverSchemaWorker);
+    final SingerTapFactory tapFactory = new SingerTapFactory(IMAGE_NAME, pbf, streamFactory, discoverSchemaWorker);
     final Stream<SingerMessage> actual = tapFactory.create(tapConfig, jobRoot);
 
     assertTrue(Files.exists(jobRoot));

@@ -57,28 +57,26 @@ public class WorkspacesHandler {
     final StandardWorkspace workspace =
         ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
 
-    final WorkspaceRead workspaceRead = new WorkspaceRead();
-    workspaceRead.setWorkspaceId(workspace.getWorkspaceId());
-    workspaceRead.setName(workspace.getName());
-    workspaceRead.setSlug(workspace.getSlug());
-    workspaceRead.setInitialSetupComplete(workspace.getInitialSetupComplete());
-
-    return workspaceRead;
+    return new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .name(workspace.getName())
+        .slug(workspace.getSlug())
+        .initialSetupComplete(workspace.getInitialSetupComplete());
   }
 
   public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate) {
     final UUID workspaceId = workspaceUpdate.getWorkspaceId();
 
-    final StandardWorkspace persistedWorkspace =
-        ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
+    final StandardWorkspace persistedWorkspace = ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
 
     if (workspaceUpdate.getEmail() != null && !workspaceUpdate.getEmail().equals("")) {
-      persistedWorkspace.setEmail(workspaceUpdate.getEmail());
+      persistedWorkspace.withEmail(workspaceUpdate.getEmail());
     }
-    persistedWorkspace.setInitialSetupComplete(workspaceUpdate.getInitialSetupComplete());
-    persistedWorkspace.setAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection());
-    persistedWorkspace.setNews(workspaceUpdate.getNews());
-    persistedWorkspace.setSecurityUpdates(workspaceUpdate.getSecurityUpdates());
+    persistedWorkspace.withInitialSetupComplete(workspaceUpdate.getInitialSetupComplete())
+        .withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection())
+        .withNews(workspaceUpdate.getNews())
+        .withSecurityUpdates(workspaceUpdate.getSecurityUpdates());
+
     ConfigFetchers.writeConfig(
         configPersistence,
         ConfigSchema.STANDARD_WORKSPACE,

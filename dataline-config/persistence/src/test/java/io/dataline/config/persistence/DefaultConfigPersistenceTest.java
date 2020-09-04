@@ -47,16 +47,16 @@ class DefaultConfigPersistenceTest {
   public static final StandardSource SOURCE_1 = new StandardSource();
 
   static {
-    SOURCE_1.setSourceId(UUID_1);
-    SOURCE_1.setName("apache storm");
+    SOURCE_1.withSourceId(UUID_1)
+        .withName("apache storm");
   }
 
   public static final UUID UUID_2 = new UUID(0, 2);
   public static final StandardSource SOURCE_2 = new StandardSource();
 
   static {
-    SOURCE_2.setSourceId(UUID_2);
-    SOURCE_2.setName("apache storm");
+    SOURCE_2.withSourceId(UUID_2)
+        .withName("apache storm");
   }
 
   private Path rootPath;
@@ -98,14 +98,14 @@ class DefaultConfigPersistenceTest {
   void writeConfigWithJsonSchemaRef() throws JsonValidationException, IOException, ConfigNotFoundException {
     final Schema schema = new Schema();
 
-    final StandardSync standardSync = new StandardSync();
-    standardSync.setName("sync");
-    standardSync.setConnectionId(UUID_1);
-    standardSync.setSourceImplementationId(UUID.randomUUID());
-    standardSync.setDestinationImplementationId(UUID.randomUUID());
-    standardSync.setSyncMode(StandardSync.SyncMode.FULL_REFRESH);
-    standardSync.setStatus(StandardSync.Status.ACTIVE);
-    standardSync.setSchema(schema);
+    final StandardSync standardSync = new StandardSync()
+        .withName("sync")
+        .withConnectionId(UUID_1)
+        .withSourceImplementationId(UUID.randomUUID())
+        .withDestinationImplementationId(UUID.randomUUID())
+        .withSyncMode(StandardSync.SyncMode.FULL_REFRESH)
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withSchema(schema);
 
     configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), standardSync);
 
@@ -116,8 +116,7 @@ class DefaultConfigPersistenceTest {
 
   @Test
   void writeConfigInvalidConfig() throws JsonValidationException {
-    StandardSource standardSource = SOURCE_1;
-    standardSource.setName(null);
+    StandardSource standardSource = SOURCE_1.withName(null);
 
     doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
 
