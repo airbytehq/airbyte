@@ -5,27 +5,27 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Postgres Destination Spec",
     "type": "object",
-    "required": ["host", "port", "user", "password", "dbname", "schema"],
+    "required": ["postgres_host", "postgres_port", "postgres_username", "postgres_password", "postgres_database"],
     "additionalProperties": false,
     "properties": {
-      "host": {
+      "postgres_host": {
         "type": "string"
       },
-      "port": {
+      "postgres_port": {
         "type": "integer",
         "minimum": 0,
         "maximum": 65536
       },
-      "user": {
+      "postgres_username": {
         "type": "string"
       },
-      "password": {
+      "postgres_password": {
         "type": "string"
       },
-      "dbname": {
+      "postgres_database": {
         "type": "string"
       },
-      "schema": {
+      "postgres_schema": {
         "type": "string"
       }
     }
