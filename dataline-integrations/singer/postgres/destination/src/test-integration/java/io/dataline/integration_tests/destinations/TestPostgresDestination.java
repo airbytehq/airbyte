@@ -24,6 +24,9 @@
 
 package io.dataline.integration_tests.destinations;
 
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
+
 import io.dataline.commons.json.Jsons;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.WorkerUtils;
@@ -46,9 +49,6 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
-
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 class TestPostgresDestination {
 
