@@ -78,6 +78,7 @@ public class SourceImplementationsHandler {
     // persist
     final UUID sourceImplementationId = uuidGenerator.get();
     persistSourceConnectionImplementation(
+        sourceImplementationCreate.getName() != null ? sourceImplementationCreate.getName() : "default",
         sourceImplementationCreate.getSourceSpecificationId(),
         sourceImplementationCreate.getWorkspaceId(),
         sourceImplementationId,
@@ -101,6 +102,7 @@ public class SourceImplementationsHandler {
 
     // persist
     persistSourceConnectionImplementation(
+        sourceImplementationUpdate.getName(),
         persistedSourceImplementation.getSourceSpecificationId(),
         persistedSourceImplementation.getWorkspaceId(),
         sourceImplementationUpdate.getSourceImplementationId(),
@@ -153,6 +155,7 @@ public class SourceImplementationsHandler {
 
     // persist
     persistSourceConnectionImplementation(
+        persistedSourceImplementation.getName(),
         persistedSourceImplementation.getSourceSpecificationId(),
         persistedSourceImplementation.getWorkspaceId(),
         persistedSourceImplementation.getSourceImplementationId(),
@@ -209,12 +212,14 @@ public class SourceImplementationsHandler {
     }
   }
 
-  private void persistSourceConnectionImplementation(UUID sourceSpecificationId,
+  private void persistSourceConnectionImplementation(String name,
+                                                     UUID sourceSpecificationId,
                                                      UUID workspaceId,
                                                      UUID sourceImplementationId,
                                                      boolean tombstone,
                                                      JsonNode configurationJson) {
     final SourceConnectionImplementation sourceConnectionImplementation = new SourceConnectionImplementation()
+        .withName(name)
         .withSourceSpecificationId(sourceSpecificationId)
         .withWorkspaceId(workspaceId)
         .withSourceImplementationId(sourceImplementationId)
@@ -236,6 +241,7 @@ public class SourceImplementationsHandler {
         .workspaceId(sourceConnectionImplementation.getWorkspaceId())
         .sourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId())
         .connectionConfiguration(sourceConnectionImplementation.getConfiguration())
+        .name(sourceConnectionImplementation.getName())
         .sourceName(standardSource.getName());
   }
 

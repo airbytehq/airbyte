@@ -846,6 +846,7 @@ components:
         - workspaceId
         - sourceSpecificationId
         - connectionConfiguration
+        - name
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -853,16 +854,21 @@ components:
           $ref: "#/components/schemas/SourceSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
     SourceImplementationUpdate:
       type: object
       required:
         - sourceImplementationId
         - connectionConfiguration
+        - name
       properties:
         sourceImplementationId:
           $ref: "#/components/schemas/SourceImplementationId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
     SourceImplementationRead:
       type: object
       required:
@@ -871,6 +877,7 @@ components:
         - workspaceId
         - sourceSpecificationId
         - connectionConfiguration
+        - name
         - sourceName
       properties:
         sourceId:
@@ -883,6 +890,8 @@ components:
           $ref: "#/components/schemas/SourceSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
         sourceName:
           type: string
     SourceImplementationReadList:
@@ -978,16 +987,21 @@ components:
           $ref: "#/components/schemas/DestinationSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
+        name:
+          type: string
     DestinationImplementationUpdate:
       type: object
       required:
         - destinationImplementationId
         - connectionConfiguration
+        - name
       properties:
         destinationImplementationId:
           $ref: "#/components/schemas/DestinationImplementationId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
+        name:
+          type: string
     DestinationImplementationRead:
       type: object
       required:
@@ -996,6 +1010,8 @@ components:
         - workspaceId
         - destinationSpecificationId
         - connectionConfiguration
+        - name
+        - destionationName
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
@@ -1007,6 +1023,10 @@ components:
           $ref: "#/components/schemas/DestinationSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
+        name:
+          type: string
+        destinationName:
+          type: string
     DestinationImplementationReadList:
       type: object
       required:
