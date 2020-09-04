@@ -45,7 +45,7 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./gradlew buildImage --no-daemon -g ${{ env.GRADLE_PATH }}
 
-      - name: Write BigQuery Integration Test Credentials
+      - name: Write BigQuery Integration Test Credentials (Master branch only)
         if: success() && github.ref == 'refs/heads/master'
         run: 'mkdir dataline-integrations/singer/bigquery/destination/config && echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > dataline-integrations/singer/bigquery/destination/config/credentials.json'
         env:
