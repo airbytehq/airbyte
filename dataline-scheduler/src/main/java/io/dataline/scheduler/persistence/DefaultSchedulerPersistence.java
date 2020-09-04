@@ -63,7 +63,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private final Supplier<Instant> timeSupplier;
 
   @VisibleForTesting
-  DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
+  public DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
     this.connectionPool = connectionPool;
     this.timeSupplier = timeSupplier;
   }
@@ -231,6 +231,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     }
   }
 
+  @Override
   public Optional<Job> getLastSyncJob(UUID connectionId) throws IOException {
     final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
     try {
@@ -249,6 +250,32 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             if (jobEntryOptional.isPresent()) {
               Record jobEntry = jobEntryOptional.get();
               Job job = getJobFromRecord(jobEntry);
+              return Optional.of(job);
+            } else {
+              return Optional.empty();
+            }
+          });
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public Optional<Job> getOldestPendingJob() throws IOException {
+    try {
+      return DatabaseHelper.query(
+          connectionPool,
+          ctx -> {
+            Optional<Record> jobEntryOptional =
+                ctx
+                    .fetch(
+                        "SELECT * FROM jobs WHERE CAST(status AS VARCHAR) = 'pending' ORDER BY created_at ASC LIMIT 1")
+                    .stream()
+                    .findFirst();
+
+            if (jobEntryOptional.isPresent()) {
+              Record jobEntry = jobEntryOptional.get();
+              Job job = DefaultSchedulerPersistence.getJobFromRecord(jobEntry);
               return Optional.of(job);
             } else {
               return Optional.empty();
