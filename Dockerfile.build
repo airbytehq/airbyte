@@ -81,7 +81,6 @@ FROM openjdk:14.0.2-slim AS scheduler
 
 # Install Docker to launch worker images. Eventually should be replaced with Docker-java.
 # See https://gitter.im/docker-java/docker-java?at=5f3eb87ba8c1780176603f4e for more information on why we are not currently using Docker-java
-RUN apt-get update && apt-get install -y curl
 RUN apt-get update && apt-get install -y \
                           apt-transport-https \
                           ca-certificates \
@@ -93,7 +92,7 @@ RUN add-apt-repository \
        "deb [arch=amd64] https://download.docker.com/linux/debian \
        $(lsb_release -cs) \
        stable"
-RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io
+RUN apt-get update && apt-get install -y docker-ce-cli
 
 ENV WAIT_VERSION=2.7.2
 ENV APPLICATION dataline-scheduler
