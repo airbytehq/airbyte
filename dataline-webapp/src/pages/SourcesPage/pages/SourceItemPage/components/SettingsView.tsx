@@ -104,7 +104,10 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
           specifications={sourceSpecification?.connectionSpecification}
         />
       </ContentCard>
-      <DeleteSource />
+      <DeleteSource
+        sourceImplementationId={sourceData.source?.sourceImplementationId}
+        connectionId={sourceData.connectionId}
+      />
     </Content>
   );
 };
