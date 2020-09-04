@@ -62,4 +62,6 @@ public interface SchedulerPersistence {
 
   Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
 
+  Optional<Job> getOldestPendingJob() throws IOException;
+
 }
