@@ -24,16 +24,12 @@
 
 package io.dataline.scheduler;
 
-import io.dataline.db.DatabaseHelper;
-import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,34 +60,12 @@ public class JobSubmitter implements Runnable {
     try {
       LOGGER.info("Running job-submitter...");
 
-      Optional<Job> oldestPendingJob = getOldestPendingJob();
+      Optional<Job> oldestPendingJob = persistence.getOldestPendingJob();
 
       oldestPendingJob.ifPresent(this::submitJob);
     } catch (Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
-  }
-
-  // todo: DRY this up
-  private Optional<Job> getOldestPendingJob() throws SQLException {
-    return DatabaseHelper.query(
-        connectionPool,
-        ctx -> {
-          Optional<Record> jobEntryOptional =
-              ctx
-                  .fetch(
-                      "SELECT * FROM jobs WHERE CAST(status AS VARCHAR) = 'pending' ORDER BY created_at ASC LIMIT 1")
-                  .stream()
-                  .findFirst();
-
-          if (jobEntryOptional.isPresent()) {
-            Record jobEntry = jobEntryOptional.get();
-            Job job = DefaultSchedulerPersistence.getJobFromRecord(jobEntry);
-            return Optional.of(job);
-          } else {
-            return Optional.empty();
-          }
-        });
   }
 
   private void submitJob(Job job) {
