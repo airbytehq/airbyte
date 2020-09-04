@@ -24,9 +24,6 @@
 
 package io.dataline.integration_tests.destinations;
 
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertLinesMatch;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -58,6 +55,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 class TestBigQueryDestination {
 
@@ -161,14 +161,13 @@ class TestBigQueryDestination {
   }
 
   private void writeConfigFileToJobRoot() throws IOException {
-
-    String partialConfigString = new String(Files.readAllBytes(Paths.get("config/bigquery.json")));
-    JsonNode partialConfig = Jsons.deserialize(partialConfigString);
+    String credentialsJsonString = new String(Files.readAllBytes(Paths.get("config/credentials.json")));
+    JsonNode credentials = Jsons.deserialize(credentialsJsonString);
 
     Map<String, Object> fullConfig = new HashMap<>();
 
-    fullConfig.put("project_id", partialConfig.get("project_id").textValue());
-    fullConfig.put("credentials_json", partialConfig.get("credentials_json").textValue());
+    fullConfig.put("project_id", credentials.get("project_id").textValue());
+    fullConfig.put("credentials_json", credentialsJsonString);
     fullConfig.put("dataset_id", datasetName);
     fullConfig.put("disable_collection", true);
     fullConfig.put("default_target_schema", datasetName);

@@ -27,9 +27,15 @@ dependencies {
     integrationTestImplementation project(':dataline-workers')
 }
 
+import groovy.json.JsonSlurper
+
+def credFile = new File(projectDir.absolutePath + "/config/credentials.json")
+def jsonSlurper = new JsonSlurper()
+def creds = jsonSlurper.parse(credFile)
+
 task integrationTest(type: Test) {
-    environment "GOOGLE_CLOUD_PROJECT", "eco-hangar-279116" // todo: get this from the cred file
-    environment "GOOGLE_APPLICATION_CREDENTIALS", new File("$projectDir").absolutePath + "/config/bigquery_creds.json"
+    environment "GOOGLE_CLOUD_PROJECT", creds["project_id"]
+    environment "GOOGLE_APPLICATION_CREDENTIALS", credFile.absolutePath
 
     testClassesDirs += sourceSets.integrationTest.output.classesDirs
     classpath += sourceSets.integrationTest.runtimeClasspath
