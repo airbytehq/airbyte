@@ -22,10 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.scheduler.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -46,12 +47,17 @@ import io.dataline.config.StandardSync;
 import io.dataline.config.Table;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.integrations.Integrations;
+import io.dataline.scheduler.Job;
+import io.dataline.scheduler.JobLogs;
+import io.dataline.scheduler.JobStatus;
+import io.dataline.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -75,6 +81,8 @@ class DefaultSchedulerPersistenceTest {
   private static final Instant NOW;
 
   private SchedulerPersistence schedulerPersistence;
+
+  private Supplier<Instant> timeSupplier;
 
   static {
     final UUID workspaceId = UUID.randomUUID();
@@ -123,7 +131,7 @@ class DefaultSchedulerPersistenceTest {
     STANDARD_SYNC.setStatus(StandardSync.Status.ACTIVE);
     STANDARD_SYNC.setSchema(schema);
     STANDARD_SYNC.setSourceImplementationId(sourceImplementationId);
-    STANDARD_SYNC.setDestinationImplementationId(UUID.randomUUID());
+    STANDARD_SYNC.setDestinationImplementationId(destinationImplementationId);
     STANDARD_SYNC.setSyncMode(StandardSync.SyncMode.APPEND);
 
     NOW = Instant.now();
@@ -158,7 +166,7 @@ class DefaultSchedulerPersistenceTest {
     DatabaseHelper.query(connectionPool, ctx -> ctx.execute("DELETE FROM jobs"));
 
     // noinspection unchecked
-    Supplier<Instant> timeSupplier = mock(Supplier.class);
+    timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(NOW);
 
     schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
@@ -269,11 +277,59 @@ class DefaultSchedulerPersistenceTest {
     final List<Job> actualList = schedulerPersistence
         .listJobs(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE, SOURCE_CONNECTION_IMPLEMENTATION.getSourceImplementationId().toString());
 
-    assertEquals(1, actualList.size());
     final Job actual = actualList.get(0);
     final Job expected = getExpectedJob(jobId);
 
+    assertEquals(1, actualList.size());
     assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testGetLastSyncJobForConnectionId() throws IOException {
+    schedulerPersistence.createSyncJob(SOURCE_CONNECTION_IMPLEMENTATION, DESTINATION_CONNECTION_IMPLEMENTATION, STANDARD_SYNC);
+    final Instant afterNow = NOW.plusSeconds(1000);
+    when(timeSupplier.get()).thenReturn(afterNow);
+    final long jobId = schedulerPersistence.createSyncJob(SOURCE_CONNECTION_IMPLEMENTATION, DESTINATION_CONNECTION_IMPLEMENTATION, STANDARD_SYNC);
+
+    final Optional<Job> actual = schedulerPersistence.getLastSyncJob(STANDARD_SYNC.getConnectionId());
+
+    final String sourceImageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getSyncImage();
+    final String destinationImageName =
+        Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId()).getSyncImage();
+    final JobSyncConfig jobSyncConfig = new JobSyncConfig();
+    jobSyncConfig.setSourceConnectionImplementation(SOURCE_CONNECTION_IMPLEMENTATION);
+    jobSyncConfig.setSourceDockerImage(sourceImageName);
+    jobSyncConfig.setDestinationConnectionImplementation(DESTINATION_CONNECTION_IMPLEMENTATION);
+    jobSyncConfig.setDestinationDockerImage(destinationImageName);
+    jobSyncConfig.setStandardSync(STANDARD_SYNC);
+
+    final JobConfig jobConfig = new JobConfig();
+    jobConfig.setConfigType(JobConfig.ConfigType.SYNC);
+    jobConfig.setSync(jobSyncConfig);
+
+    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
+
+    final Job expected = new Job(
+        jobId,
+        scope,
+        JobStatus.PENDING,
+        jobConfig,
+        null,
+        JobLogs.getLogDirectory(scope),
+        JobLogs.getLogDirectory(scope),
+        afterNow.getEpochSecond(),
+        null,
+        afterNow.getEpochSecond());
+
+    assertTrue(actual.isPresent());
+    assertEquals(expected, actual.get());
+  }
+
+  @Test
+  public void testGetLastSyncJobForConnectionIdEmpty() throws IOException {
+    final Optional<Job> actual = schedulerPersistence.getLastSyncJob(STANDARD_SYNC.getConnectionId());
+
+    assertTrue(actual.isEmpty());
   }
 
   @Test

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.scheduler.persistence;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.json.Jsons;
@@ -37,6 +37,10 @@ import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.integrations.Integrations;
+import io.dataline.scheduler.Job;
+import io.dataline.scheduler.JobLogs;
+import io.dataline.scheduler.JobStatus;
+import io.dataline.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -151,7 +155,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     jobSyncConfig.setDestinationDockerImage(destinationImageName);
     jobSyncConfig.setStandardSync(standardSync);
 
-    final Optional<Job> previousJobOptional = JobUtils.getLastSyncJobForConnectionId(connectionPool, connectionId);
+    final Optional<Job> previousJobOptional = getLastSyncJob(connectionId);
     final Optional<StandardSyncOutput> standardSyncOutput = previousJobOptional.flatMap(Job::getOutput).map(JobOutput::getSync);
 
     standardSyncOutput.map(StandardSyncOutput::getState).ifPresent(jobSyncConfig::setState);
@@ -227,6 +231,37 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     }
   }
 
+  public Optional<Job> getLastSyncJob(UUID connectionId) throws IOException {
+    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
+    try {
+      return DatabaseHelper.query(
+          connectionPool,
+          ctx -> {
+            Optional<Record> jobEntryOptional =
+                ctx
+                    .fetch(
+                        "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
+                        scope,
+                        JobStatus.CANCELLED.toString().toLowerCase())
+                    .stream()
+                    .findFirst();
+
+            if (jobEntryOptional.isPresent()) {
+              Record jobEntry = jobEntryOptional.get();
+              Job job = getJobFromRecord(jobEntry);
+              return Optional.of(job);
+            } else {
+              return Optional.empty();
+            }
+          });
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  // todo (cgardens) - the location of this method is a little weird. right now all of our db (and
+  // record) interactions are confined to this class. would like to keep it that way for now, but
+  // once we have other classes that interact with the db, this can be moved out.
   public static Job getJobFromRecord(Record jobEntry) {
     final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
 
