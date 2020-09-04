@@ -63,7 +63,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private final Supplier<Instant> timeSupplier;
 
   @VisibleForTesting
-  public DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
+  DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
     this.connectionPool = connectionPool;
     this.timeSupplier = timeSupplier;
   }
