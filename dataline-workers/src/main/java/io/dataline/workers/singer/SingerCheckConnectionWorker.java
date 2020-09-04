@@ -67,7 +67,7 @@ public class SingerCheckConnectionWorker implements CheckConnectionWorker {
       jobStatus = JobStatus.FAILED;
       output.withStatus(StandardCheckConnectionOutput.Status.FAILURE)
           // TODO add better error log parsing to specify the exact reason for failure as the message
-      .withMessage("Failed to connect.");
+          .withMessage("Failed to connect.");
     }
 
     return new OutputAndStatus<>(jobStatus, output);

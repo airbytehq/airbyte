@@ -49,7 +49,7 @@ public class SingerCatalogConverters {
    * contains configurations stored in dataline.
    *
    * @param catalog - singer catalog
-   * @param schema  - dataline schema
+   * @param schema - dataline schema
    * @return singer catalog with dataline schema applied to it.
    */
   public static SingerCatalog applySchemaToDiscoveredCatalog(SingerCatalog catalog, Schema schema) {
@@ -243,14 +243,20 @@ public class SingerCatalogConverters {
    * @return best match for our own data type
    */
   private static DataType singerTypeToDataType(SingerType singerType) {
-    return switch (singerType) {
-      case STRING -> DataType.STRING;
-      case INTEGER -> DataType.NUMBER;
-      // todo (cgardens) - hackasaurus rex
-      case NULL -> DataType.STRING;
-      case BOOLEAN -> DataType.BOOLEAN;
-      default -> throw new RuntimeException(String.format("could not map SingerType: %s to DataType", singerType));
-    };
+    switch (singerType) {
+      case STRING:
+        return DataType.STRING;
+      case INTEGER:
+        return DataType.NUMBER;
+      case NULL:
+        // noinspection DuplicateBranchesInSwitch
+        return DataType.STRING; // todo (cgardens) - hackasaurus rex
+      case BOOLEAN:
+        return DataType.BOOLEAN;
+      default:
+        throw new RuntimeException(
+            String.format("could not map SingerType: %s to DataType", singerType));
+    }
   }
 
 }

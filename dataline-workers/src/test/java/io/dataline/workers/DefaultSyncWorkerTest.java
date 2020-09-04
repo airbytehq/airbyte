@@ -24,6 +24,11 @@
 
 package io.dataline.workers;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncInput;
@@ -35,11 +40,6 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class DefaultSyncWorkerTest {
 

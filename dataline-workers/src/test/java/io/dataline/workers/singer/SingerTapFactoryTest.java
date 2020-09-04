@@ -24,6 +24,13 @@
 
 package io.dataline.workers.singer;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.dataline.commons.io.IOs;
@@ -56,13 +63,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class SingerTapFactoryTest {
 
@@ -132,7 +132,7 @@ class SingerTapFactoryTest {
         SingerTapFactory.CATALOG_JSON_FILENAME,
         "--state",
         SingerTapFactory.STATE_JSON_FILENAME))
-        .thenReturn(processBuilder);
+            .thenReturn(processBuilder);
     when(processBuilder.redirectError(errorLogPath.toFile())).thenReturn(processBuilder);
     when(processBuilder.start()).thenReturn(process);
     when(process.getInputStream()).thenReturn(inputStream);
