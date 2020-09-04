@@ -46,13 +46,13 @@ class ScheduleJobPredicateTest {
   private Instant now;
 
   static {
-    final Schedule schedule = new Schedule();
-    schedule.setTimeUnit(Schedule.TimeUnit.DAYS);
-    schedule.setUnits(1L);
+    final Schedule schedule = new Schedule()
+        .withTimeUnit(Schedule.TimeUnit.DAYS)
+        .withUnits(1L);
 
-    SCHEDULE = new StandardSyncSchedule();
-    SCHEDULE.setManual(false);
-    SCHEDULE.setSchedule(schedule);
+    SCHEDULE = new StandardSyncSchedule()
+        .withManual(false)
+        .withSchedule(schedule);
   }
 
   @SuppressWarnings("unchecked")
@@ -81,8 +81,7 @@ class ScheduleJobPredicateTest {
 
   @Test
   public void testManualSchedule() {
-    final StandardSyncSchedule standardSyncSchedule = new StandardSyncSchedule();
-    standardSyncSchedule.setManual(true);
+    final StandardSyncSchedule standardSyncSchedule = new StandardSyncSchedule().withManual(true);
     assertFalse(scheduleJobPredicate.test(Optional.empty(), standardSyncSchedule));
   }
 

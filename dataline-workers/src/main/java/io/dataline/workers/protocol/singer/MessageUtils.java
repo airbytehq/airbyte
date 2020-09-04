@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerMessage;
+import io.dataline.singer.SingerMessage;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -44,14 +44,14 @@ public class MessageUtils {
   public static SingerMessage createRecordMessage(String tableName,
                                                   JsonNode record,
                                                   Instant timeExtracted) {
-    final SingerMessage singerMessage = new SingerMessage();
-    singerMessage.setType(SingerMessage.Type.RECORD);
-    singerMessage.setRecord(record);
-    singerMessage.setStream(tableName);
+    final SingerMessage singerMessage = new SingerMessage()
+        .withType(SingerMessage.Type.RECORD)
+        .withRecord(record)
+        .withStream(tableName);
 
     Optional.ofNullable(timeExtracted)
         .ifPresent(
-            instant -> singerMessage.setTimeExtracted(SINGER_DATETIME_FORMATTER.format(instant)));
+            instant -> singerMessage.withTimeExtracted(SINGER_DATETIME_FORMATTER.format(instant)));
 
     return singerMessage;
   }

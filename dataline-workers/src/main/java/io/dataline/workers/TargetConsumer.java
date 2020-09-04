@@ -26,7 +26,7 @@ package io.dataline.workers;
 
 import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerMessage;
+import io.dataline.singer.SingerMessage;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import org.slf4j.Logger;
