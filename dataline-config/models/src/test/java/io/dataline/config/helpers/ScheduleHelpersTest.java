@@ -22,30 +22,29 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.config.helpers;
 
-import com.google.common.base.Preconditions;
-import io.dataline.config.JobConfig;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ScopeHelper {
+import io.dataline.config.Schedule;
+import java.util.Arrays;
+import org.junit.jupiter.api.Test;
 
-  private static final String SCOPE_DELIMITER = ":";
+class ScheduleHelpersTest {
 
-  public static String createScope(JobConfig.ConfigType configType, String configId) {
-    Preconditions.checkNotNull(configType);
-    Preconditions.checkNotNull(configId);
-    return configType.value() + SCOPE_DELIMITER + configId;
+  @Test
+  public void testGetSecondsInUnit() {
+    assertEquals(60, ScheduleHelpers.getSecondsInUnit(Schedule.TimeUnit.MINUTES));
+    assertEquals(3600, ScheduleHelpers.getSecondsInUnit(Schedule.TimeUnit.HOURS));
+    assertEquals(86_400, ScheduleHelpers.getSecondsInUnit(Schedule.TimeUnit.DAYS));
+    assertEquals(604_800, ScheduleHelpers.getSecondsInUnit(Schedule.TimeUnit.WEEKS));
+    assertEquals(2_592_000, ScheduleHelpers.getSecondsInUnit(Schedule.TimeUnit.MONTHS));
   }
 
-  public static String getConfigId(String scope) {
-    Preconditions.checkNotNull(scope);
-
-    final String[] split = scope.split(SCOPE_DELIMITER);
-    if (split.length <= 1) {
-      return "";
-    } else {
-      return split[1];
-    }
+  // Will throw if a new TimeUnit is added but an appropriate mapping is not included in this method.
+  @Test
+  public void testAllOfTimeUnitEnumValues() {
+    Arrays.stream(Schedule.TimeUnit.values()).forEach(ScheduleHelpers::getSecondsInUnit);
   }
 
 }

@@ -22,30 +22,12 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.scheduler.job_factory;
 
-import com.google.common.base.Preconditions;
-import io.dataline.config.JobConfig;
+import java.util.UUID;
 
-public class ScopeHelper {
+public interface SyncJobFactory {
 
-  private static final String SCOPE_DELIMITER = ":";
-
-  public static String createScope(JobConfig.ConfigType configType, String configId) {
-    Preconditions.checkNotNull(configType);
-    Preconditions.checkNotNull(configId);
-    return configType.value() + SCOPE_DELIMITER + configId;
-  }
-
-  public static String getConfigId(String scope) {
-    Preconditions.checkNotNull(scope);
-
-    final String[] split = scope.split(SCOPE_DELIMITER);
-    if (split.length <= 1) {
-      return "";
-    } else {
-      return split[1];
-    }
-  }
+  Long create(UUID connectionId);
 
 }

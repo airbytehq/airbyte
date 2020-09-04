@@ -22,29 +22,27 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.config.helpers;
 
-import com.google.common.base.Preconditions;
-import io.dataline.config.JobConfig;
+import io.dataline.config.Schedule;
+import java.util.concurrent.TimeUnit;
 
-public class ScopeHelper {
+public class ScheduleHelpers {
 
-  private static final String SCOPE_DELIMITER = ":";
-
-  public static String createScope(JobConfig.ConfigType configType, String configId) {
-    Preconditions.checkNotNull(configType);
-    Preconditions.checkNotNull(configId);
-    return configType.value() + SCOPE_DELIMITER + configId;
-  }
-
-  public static String getConfigId(String scope) {
-    Preconditions.checkNotNull(scope);
-
-    final String[] split = scope.split(SCOPE_DELIMITER);
-    if (split.length <= 1) {
-      return "";
-    } else {
-      return split[1];
+  public static Long getSecondsInUnit(Schedule.TimeUnit timeUnitEnum) {
+    switch (timeUnitEnum) {
+      case MINUTES:
+        return TimeUnit.MINUTES.toSeconds(1);
+      case HOURS:
+        return TimeUnit.HOURS.toSeconds(1);
+      case DAYS:
+        return TimeUnit.DAYS.toSeconds(1);
+      case WEEKS:
+        return TimeUnit.DAYS.toSeconds(1) * 7;
+      case MONTHS:
+        return TimeUnit.DAYS.toSeconds(1) * 30;
+      default:
+        throw new RuntimeException("Unhandled TimeUnitEnum: " + timeUnitEnum);
     }
   }
 
