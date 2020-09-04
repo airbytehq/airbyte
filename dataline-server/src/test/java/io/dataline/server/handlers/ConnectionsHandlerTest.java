@@ -103,8 +103,6 @@ class ConnectionsHandlerTest {
         .destinationImplementationId(standardSync.getDestinationImplementationId())
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
-        // todo (cgardens) - the codegen auto-nests enums as subclasses. this won't work. we expect
-        // these enums to be reusable in create, update, read.
         .syncMode(ConnectionCreate.SyncModeEnum.APPEND)
         .schedule(ConnectionHelpers.generateBasicSchedule())
         .syncSchema(ConnectionHelpers.generateBasicApiSchema());

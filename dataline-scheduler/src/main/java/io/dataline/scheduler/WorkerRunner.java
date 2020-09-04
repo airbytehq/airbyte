@@ -24,8 +24,6 @@
 
 package io.dataline.scheduler;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.dataline.commons.concurrency.VoidCallable;
 import io.dataline.config.JobCheckConnectionConfig;
 import io.dataline.config.JobDiscoverSchemaConfig;
 import io.dataline.config.JobSyncConfig;
@@ -46,10 +44,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is a runnable that given a job id and db connection figures out how to run the
+ * This class is a runnable that give a job id and db connection figures out how to run the
  * appropriate worker for a given job.
  */
-public class WorkerRunner implements VoidCallable {
+public class WorkerRunner implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunner.class);
 
@@ -58,34 +56,27 @@ public class WorkerRunner implements VoidCallable {
   private final SchedulerPersistence persistence;
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
-  private final WorkerRun.Factory workerRunFactory;
 
-  public WorkerRunner(final long jobId,
-                      final BasicDataSource connectionPool,
-                      final SchedulerPersistence persistence,
-                      final Path workspaceRoot,
-                      final ProcessBuilderFactory pbf) {
-    this(jobId, connectionPool, persistence, workspaceRoot, pbf, WorkerRun::new);
-  }
-
-  @VisibleForTesting
-  WorkerRunner(final long jobId,
-               final BasicDataSource connectionPool,
-               final SchedulerPersistence persistence,
-               final Path workspaceRoot,
-               final ProcessBuilderFactory pbf,
-               final WorkerRun.Factory workerRunFactory) {
+  public WorkerRunner(long jobId,
+                      BasicDataSource connectionPool,
+                      SchedulerPersistence persistence,
+                      Path workspaceRoot,
+                      ProcessBuilderFactory pbf) {
     this.jobId = jobId;
     this.connectionPool = connectionPool;
     this.persistence = persistence;
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
-    this.workerRunFactory = workerRunFactory;
   }
 
   @Override
-  public void voidCall() throws IOException {
-    final Job job = persistence.getJob(jobId);
+  public void run() {
+    final Job job;
+    try {
+      job = persistence.getJob(jobId);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
     LOGGER.info("job: {} {} {}", job.getId(), job.getScope(), job.getConfig().getConfigType());
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId));
@@ -93,30 +84,31 @@ public class WorkerRunner implements VoidCallable {
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION_SOURCE:
       case CHECK_CONNECTION_DESTINATION:
-        final StandardCheckConnectionInput checkConnectionInput = createCheckConnectionInput(job.getConfig().getCheckConnection());
-        workerRunFactory.create(
+        final StandardCheckConnectionInput checkConnectionInput =
+            getCheckConnectionInput(job.getConfig().getCheckConnection());
+        new WorkerRun<>(
             jobId,
             jobRoot,
             checkConnectionInput,
             new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)),
             connectionPool)
-            .run();
+                .run();
         break;
       case DISCOVER_SCHEMA:
-        final StandardDiscoverSchemaInput discoverSchemaInput = createDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
-        workerRunFactory.create(
+        final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
+        new WorkerRun<>(
             jobId,
             jobRoot,
             discoverSchemaInput,
             new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf),
             connectionPool)
-            .run();
+                .run();
         break;
       case SYNC:
-        final StandardSyncInput syncInput = createSyncInput(job.getConfig().getSync());
+        final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         final SingerDiscoverSchemaWorker discoverSchemaWorker =
             new SingerDiscoverSchemaWorker(job.getConfig().getSync().getSourceDockerImage(), pbf);
-        workerRunFactory.create(
+        new WorkerRun<>(
             jobId,
             jobRoot,
             syncInput,
@@ -128,27 +120,34 @@ public class WorkerRunner implements VoidCallable {
                 new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
                 new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf)),
             connectionPool)
-            .run();
+                .run();
         break;
       default:
         throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }
   }
 
-  private static StandardCheckConnectionInput createCheckConnectionInput(JobCheckConnectionConfig config) {
-    return new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
-  }
-
-  private static StandardDiscoverSchemaInput createDiscoverSchemaInput(JobDiscoverSchemaConfig config) {
-    return new StandardDiscoverSchemaInput()
+  private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
+    final StandardCheckConnectionInput checkConnectionInput = new StandardCheckConnectionInput()
         .withConnectionConfiguration(config.getConnectionConfiguration());
+
+    return checkConnectionInput;
   }
 
-  private static StandardSyncInput createSyncInput(JobSyncConfig config) {
-    return new StandardSyncInput()
+  private static StandardDiscoverSchemaInput getDiscoverSchemaInput(JobDiscoverSchemaConfig config) {
+    final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput()
+        .withConnectionConfiguration(config.getConnectionConfiguration());
+
+    return discoverSchemaInput;
+  }
+
+  private static StandardSyncInput getSyncInput(JobSyncConfig config) {
+    final StandardSyncInput syncInput = new StandardSyncInput()
         .withSourceConnectionImplementation(config.getSourceConnectionImplementation())
         .withDestinationConnectionImplementation(config.getDestinationConnectionImplementation())
         .withStandardSync(config.getStandardSync());
+
+    return syncInput;
   }
 
 }
