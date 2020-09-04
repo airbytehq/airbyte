@@ -24,8 +24,16 @@
 
 package io.dataline.server;
 
+import io.dataline.analytics.TrackingClientSingleton;
+import io.dataline.config.ConfigSchema;
 import io.dataline.config.Configs;
 import io.dataline.config.EnvConfigs;
+import io.dataline.config.StandardWorkspace;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.DefaultConfigPersistence;
+import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
@@ -33,7 +41,9 @@ import io.dataline.server.errors.InvalidJsonExceptionMapper;
 import io.dataline.server.errors.InvalidJsonInputExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
 import io.dataline.server.errors.UncaughtExceptionMapper;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.UUID;
 import java.util.logging.Level;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
@@ -59,6 +69,12 @@ public class ServerApp {
   }
 
   public void start() throws Exception {
+    // hack: upon installation we need to assign a random customerId so that when
+    // tracking we can associate all action with the correct anonymous id.
+    setCustomerIdIfNotSet(configRoot);
+
+    TrackingClientSingleton.get().identify();
+
     BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
 
     Server server = new Server(8001);
@@ -113,6 +129,32 @@ public class ServerApp {
 
     server.start();
     server.join();
+  }
+
+  private void setCustomerIdIfNotSet(final Path configRoot) {
+    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
+    final StandardWorkspace workspace;
+    try {
+      workspace = configPersistence.getConfig(
+          ConfigSchema.STANDARD_WORKSPACE,
+          PersistenceConstants.DEFAULT_WORKSPACE_ID.toString(),
+          StandardWorkspace.class);
+
+      if (workspace.getCustomerId() == null) {
+        final UUID customerId = UUID.randomUUID();
+        LOGGER.info("customerId not set for workspace. Setting it to " + customerId);
+        workspace.setCustomerId(customerId);
+
+        configPersistence.writeConfig(
+            ConfigSchema.STANDARD_WORKSPACE,
+            workspace.getWorkspaceId().toString(),
+            workspace);
+      }
+    } catch (ConfigNotFoundException e) {
+      throw new RuntimeException("could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
+    } catch (JsonValidationException | IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static void main(String[] args) throws Exception {

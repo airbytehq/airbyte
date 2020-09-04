@@ -24,8 +24,11 @@
 
 package io.dataline.server.handlers;
 
+import com.google.common.collect.ImmutableMap;
+import io.dataline.analytics.TrackingClientSingleton;
 import io.dataline.api.model.CheckConnectionRead;
 import io.dataline.api.model.ConnectionIdRequestBody;
+import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionSyncRead;
 import io.dataline.api.model.DestinationImplementationIdRequestBody;
 import io.dataline.api.model.SourceImplementationDiscoverSchemaRead;
@@ -69,7 +72,16 @@ public class SchedulerHandler {
 
     final long jobId = schedulerPersistence.createSourceCheckConnectionJob(connectionImplementation);
     LOGGER.debug("jobId = " + jobId);
-    return reportConnectionStatus(waitUntilJobIsTerminalOrTimeout(jobId));
+    final CheckConnectionRead checkConnectionRead = reportConnectionStatus(waitUntilJobIsTerminalOrTimeout(jobId));
+
+    TrackingClientSingleton.get().track("check_connection", ImmutableMap.<String, Object>builder()
+        .put("source_specification_id", connectionImplementation.getSourceSpecificationId())
+        .put("source_implementation_id", connectionImplementation.getSourceImplementationId())
+        .put("check_connection_result", checkConnectionRead.getStatus())
+        .put("job_id", jobId)
+        .build());
+
+    return checkConnectionRead;
   }
 
   public CheckConnectionRead checkDestinationImplementationConnection(DestinationImplementationIdRequestBody destinationImplementationIdRequestBody)

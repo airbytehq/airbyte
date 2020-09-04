@@ -22,25 +22,16 @@
  * SOFTWARE.
  */
 
-package io.dataline.config;
+package io.dataline.analytics;
 
-import java.nio.file.Path;
+import java.util.Map;
 
-public interface Configs {
+public interface TrackingClient {
 
-  Path getConfigRoot();
+  void identify();
 
-  Path getWorkspaceRoot();
+  void track(String action);
 
-  String getWorkspaceDockerMount();
-
-  String getDockerNetwork();
-
-  TrackingStrategy getTrackingStrategy();
-
-  enum TrackingStrategy {
-    SEGMENT,
-    LOGGING
-  }
+  void track(String action, Map<String, Object> metadata);
 
 }

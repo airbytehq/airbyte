@@ -22,25 +22,44 @@
  * SOFTWARE.
  */
 
-package io.dataline.config;
+package io.dataline.analytics;
 
-import java.nio.file.Path;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
-public interface Configs {
+public class TrackingIdentity {
 
-  Path getConfigRoot();
+  private final UUID customerId;
+  private final String email;
 
-  Path getWorkspaceRoot();
+  public TrackingIdentity(UUID customerId, String email) {
+    this.customerId = customerId;
+    this.email = email;
+  }
 
-  String getWorkspaceDockerMount();
+  public UUID getCustomerId() {
+    return customerId;
+  }
 
-  String getDockerNetwork();
+  public Optional<String> getEmail() {
+    return Optional.ofNullable(email);
+  }
 
-  TrackingStrategy getTrackingStrategy();
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    TrackingIdentity that = (TrackingIdentity) o;
+    return customerId.equals(that.customerId) &&
+        Objects.equals(email, that.email);
+  }
 
-  enum TrackingStrategy {
-    SEGMENT,
-    LOGGING
+  @Override
+  public int hashCode() {
+    return Objects.hash(customerId, email);
   }
 
 }

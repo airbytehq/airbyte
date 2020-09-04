@@ -723,6 +723,9 @@ components:
     WorkspaceId:
       type: string
       format: uuid
+    CustomerId:
+      type: string
+      format: uuid
     WorkspaceIdRequestBody:
       type: object
       required:
@@ -734,6 +737,7 @@ components:
       type: object
       required:
         - workspaceId
+        - customerId
         - name
         - slug
         - initialSetupComplete
@@ -757,6 +761,8 @@ components:
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        customerId:
+          $ref: "#/components/schemas/CustomerId"
         email:
           type: string
           format: email

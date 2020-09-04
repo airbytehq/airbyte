@@ -2,6 +2,7 @@ import groovy.io.FileType
 
 rootProject.name = 'dataline'
 
+include 'dataline-analytics'
 include 'dataline-api'
 include 'dataline-commons'
 include ':dataline-config:models'

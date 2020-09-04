@@ -11,6 +11,10 @@
       "type": "string",
       "format": "uuid"
     },
+    "customerId": {
+      "type": "string",
+      "format": "uuid"
+    },
     "name": {
       "type": "string"
     },

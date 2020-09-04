@@ -22,25 +22,36 @@
  * SOFTWARE.
  */
 
-package io.dataline.config;
+package io.dataline.analytics;
 
-import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public interface Configs {
+public class LoggingTrackingClient implements TrackingClient {
 
-  Path getConfigRoot();
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingTrackingClient.class);
 
-  Path getWorkspaceRoot();
+  private final TrackingIdentity identity;
 
-  String getWorkspaceDockerMount();
+  public LoggingTrackingClient(TrackingIdentity identity) {
+    this.identity = identity;
+  }
 
-  String getDockerNetwork();
+  @Override
+  public void identify() {
+    LOGGER.info("identify. userId: {}", identity.getCustomerId());
+  }
 
-  TrackingStrategy getTrackingStrategy();
+  @Override
+  public void track(String action) {
+    track(action, Collections.emptyMap());
+  }
 
-  enum TrackingStrategy {
-    SEGMENT,
-    LOGGING
+  @Override
+  public void track(String action, Map<String, Object> metadata) {
+    LOGGER.info("track. userId: {} action: {}, metadata: {}", identity.getCustomerId(), action, metadata);
   }
 
 }
