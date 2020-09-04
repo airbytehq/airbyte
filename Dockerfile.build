@@ -43,11 +43,11 @@ RUN ./gradlew clean distTar build -x test --no-daemon -g /home/gradle/.gradle
 ######################
 # Build webapp image #
 ######################
-#FROM nginx:1.19-alpine as webapp
+FROM nginx:1.19-alpine as webapp
 
-#EXPOSE 80
+EXPOSE 80
 
-#COPY --from=build /code/dataline-webapp/build /usr/share/nginx/html
+COPY --from=build /code/dataline-webapp/build /usr/share/nginx/html
 
 ######################
 # Build server image #
