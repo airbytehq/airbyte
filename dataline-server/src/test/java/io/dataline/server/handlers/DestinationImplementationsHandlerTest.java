@@ -72,14 +72,11 @@ class DestinationImplementationsHandlerTest {
     validator = mock(IntegrationSchemaValidation.class);
     uuidGenerator = mock(Supplier.class);
 
-    destinationConnectionSpecification =
-        DestinationSpecificationHelpers.generateDestinationSpecification();
-    destinationConnectionImplementation =
-        generateDestinationImplementation(
-            destinationConnectionSpecification.getDestinationSpecificationId());
+    destinationConnectionSpecification = DestinationSpecificationHelpers.generateDestinationSpecification();
+    destinationConnectionImplementation = generateDestinationImplementation(
+        destinationConnectionSpecification.getDestinationSpecificationId());
 
-    destinationImplementationsHandler =
-        new DestinationImplementationsHandler(configPersistence, validator, uuidGenerator);
+    destinationImplementationsHandler = new DestinationImplementationsHandler(configPersistence, validator, uuidGenerator);
   }
 
   private JsonNode getTestImplementationJson() throws IOException {
@@ -96,14 +93,11 @@ class DestinationImplementationsHandlerTest {
 
     JsonNode implementationJson = getTestImplementationJson();
 
-    final DestinationConnectionImplementation destinationConnectionImplementation =
-        new DestinationConnectionImplementation();
-    destinationConnectionImplementation.setWorkspaceId(workspaceId);
-    destinationConnectionImplementation.setDestinationSpecificationId(destinationSpecificationId);
-    destinationConnectionImplementation.setDestinationImplementationId(destinationImplementationId);
-    destinationConnectionImplementation.setConfiguration(implementationJson);
-
-    return destinationConnectionImplementation;
+    return new DestinationConnectionImplementation()
+        .withWorkspaceId(workspaceId)
+        .withDestinationSpecificationId(destinationSpecificationId)
+        .withDestinationImplementationId(destinationImplementationId)
+        .withConfiguration(implementationJson);
   }
 
   @Test
@@ -124,31 +118,20 @@ class DestinationImplementationsHandlerTest {
         DestinationConnectionSpecification.class))
             .thenReturn(destinationConnectionSpecification);
 
-    final DestinationImplementationCreate destinationImplementationCreate =
-        new DestinationImplementationCreate();
-    destinationImplementationCreate.setWorkspaceId(
-        destinationConnectionImplementation.getWorkspaceId());
-    destinationImplementationCreate.setDestinationSpecificationId(
-        destinationConnectionSpecification.getDestinationSpecificationId());
-    destinationImplementationCreate.setConnectionConfiguration(
-        getTestImplementationJson());
+    final DestinationImplementationCreate destinationImplementationCreate = new DestinationImplementationCreate()
+        .workspaceId(destinationConnectionImplementation.getWorkspaceId())
+        .destinationSpecificationId(destinationConnectionSpecification.getDestinationSpecificationId())
+        .connectionConfiguration(getTestImplementationJson());
 
     final DestinationImplementationRead actualDestinationImplementationRead =
-        destinationImplementationsHandler.createDestinationImplementation(
-            destinationImplementationCreate);
+        destinationImplementationsHandler.createDestinationImplementation(destinationImplementationCreate);
 
-    DestinationImplementationRead expectedDestinationImplementationRead =
-        new DestinationImplementationRead();
-    expectedDestinationImplementationRead.setDestinationId(
-        destinationConnectionSpecification.getDestinationId());
-    expectedDestinationImplementationRead.setDestinationSpecificationId(
-        destinationConnectionSpecification.getDestinationSpecificationId());
-    expectedDestinationImplementationRead.setWorkspaceId(
-        destinationConnectionImplementation.getWorkspaceId());
-    expectedDestinationImplementationRead.setDestinationImplementationId(
-        destinationConnectionImplementation.getDestinationImplementationId());
-    expectedDestinationImplementationRead.setConnectionConfiguration(
-        getTestImplementationJson());
+    DestinationImplementationRead expectedDestinationImplementationRead = new DestinationImplementationRead()
+        .destinationId(destinationConnectionSpecification.getDestinationId())
+        .destinationSpecificationId(destinationConnectionSpecification.getDestinationSpecificationId())
+        .workspaceId(destinationConnectionImplementation.getWorkspaceId())
+        .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId())
+        .connectionConfiguration(getTestImplementationJson());
 
     assertEquals(expectedDestinationImplementationRead, actualDestinationImplementationRead);
 
@@ -171,15 +154,11 @@ class DestinationImplementationsHandlerTest {
 
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
-    final DestinationConnectionImplementation expectedDestinationConnectionImplementation =
-        new DestinationConnectionImplementation();
-    expectedDestinationConnectionImplementation.setWorkspaceId(
-        destinationConnectionImplementation.getWorkspaceId());
-    expectedDestinationConnectionImplementation.setDestinationSpecificationId(
-        destinationConnectionImplementation.getDestinationSpecificationId());
-    expectedDestinationConnectionImplementation.setDestinationImplementationId(
-        destinationConnectionImplementation.getDestinationImplementationId());
-    expectedDestinationConnectionImplementation.setConfiguration(newConfiguration);
+    final DestinationConnectionImplementation expectedDestinationConnectionImplementation = new DestinationConnectionImplementation()
+        .withWorkspaceId(destinationConnectionImplementation.getWorkspaceId())
+        .withDestinationSpecificationId(destinationConnectionImplementation.getDestinationSpecificationId())
+        .withDestinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId())
+        .withConfiguration(newConfiguration);
 
     when(configPersistence.getConfig(
         ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
@@ -194,26 +173,19 @@ class DestinationImplementationsHandlerTest {
         DestinationConnectionSpecification.class))
             .thenReturn(destinationConnectionSpecification);
 
-    final DestinationImplementationUpdate destinationImplementationUpdate =
-        new DestinationImplementationUpdate();
-    destinationImplementationUpdate.setDestinationImplementationId(
-        destinationConnectionImplementation.getDestinationImplementationId());
-    destinationImplementationUpdate.setConnectionConfiguration(newConfiguration);
-    final DestinationImplementationRead actualDestinationImplementationRead =
-        destinationImplementationsHandler.updateDestinationImplementation(
-            destinationImplementationUpdate);
+    final DestinationImplementationUpdate destinationImplementationUpdate = new DestinationImplementationUpdate()
+        .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId())
+        .connectionConfiguration(newConfiguration);
 
-    DestinationImplementationRead expectedDestinationImplementationRead =
-        new DestinationImplementationRead();
-    expectedDestinationImplementationRead.setDestinationId(
-        destinationConnectionSpecification.getDestinationId());
-    expectedDestinationImplementationRead.setDestinationSpecificationId(
-        destinationConnectionSpecification.getDestinationSpecificationId());
-    expectedDestinationImplementationRead.setWorkspaceId(
-        destinationConnectionImplementation.getWorkspaceId());
-    expectedDestinationImplementationRead.setDestinationImplementationId(
-        destinationConnectionImplementation.getDestinationImplementationId());
-    expectedDestinationImplementationRead.setConnectionConfiguration(newConfiguration);
+    final DestinationImplementationRead actualDestinationImplementationRead =
+        destinationImplementationsHandler.updateDestinationImplementation(destinationImplementationUpdate);
+
+    DestinationImplementationRead expectedDestinationImplementationRead = new DestinationImplementationRead()
+        .destinationId(destinationConnectionSpecification.getDestinationId())
+        .destinationSpecificationId(destinationConnectionSpecification.getDestinationSpecificationId())
+        .workspaceId(destinationConnectionImplementation.getWorkspaceId())
+        .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId())
+        .connectionConfiguration(newConfiguration);
 
     assertEquals(expectedDestinationImplementationRead, actualDestinationImplementationRead);
 
@@ -238,27 +210,18 @@ class DestinationImplementationsHandlerTest {
         DestinationConnectionSpecification.class))
             .thenReturn(destinationConnectionSpecification);
 
-    DestinationImplementationRead expectedDestinationImplementationRead =
-        new DestinationImplementationRead();
-    expectedDestinationImplementationRead.setDestinationId(
-        destinationConnectionSpecification.getDestinationId());
-    expectedDestinationImplementationRead.setDestinationSpecificationId(
-        destinationConnectionImplementation.getDestinationSpecificationId());
-    expectedDestinationImplementationRead.setWorkspaceId(
-        destinationConnectionImplementation.getWorkspaceId());
-    expectedDestinationImplementationRead.setDestinationImplementationId(
-        destinationConnectionImplementation.getDestinationImplementationId());
-    expectedDestinationImplementationRead.setConnectionConfiguration(
-        destinationConnectionImplementation.getConfiguration());
+    DestinationImplementationRead expectedDestinationImplementationRead = new DestinationImplementationRead()
+        .destinationId(destinationConnectionSpecification.getDestinationId())
+        .destinationSpecificationId(destinationConnectionImplementation.getDestinationSpecificationId())
+        .workspaceId(destinationConnectionImplementation.getWorkspaceId())
+        .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId())
+        .connectionConfiguration(destinationConnectionImplementation.getConfiguration());
 
-    final DestinationImplementationIdRequestBody destinationImplementationIdRequestBody =
-        new DestinationImplementationIdRequestBody();
-    destinationImplementationIdRequestBody.setDestinationImplementationId(
-        expectedDestinationImplementationRead.getDestinationImplementationId());
+    final DestinationImplementationIdRequestBody destinationImplementationIdRequestBody = new DestinationImplementationIdRequestBody()
+        .destinationImplementationId(expectedDestinationImplementationRead.getDestinationImplementationId());
 
     final DestinationImplementationRead actualDestinationImplementationRead =
-        destinationImplementationsHandler.getDestinationImplementation(
-            destinationImplementationIdRequestBody);
+        destinationImplementationsHandler.getDestinationImplementation(destinationImplementationIdRequestBody);
 
     assertEquals(expectedDestinationImplementationRead, actualDestinationImplementationRead);
   }
@@ -277,25 +240,18 @@ class DestinationImplementationsHandlerTest {
         DestinationConnectionSpecification.class))
             .thenReturn(destinationConnectionSpecification);
 
-    DestinationImplementationRead expectedDestinationImplementationRead =
-        new DestinationImplementationRead();
-    expectedDestinationImplementationRead.setDestinationId(
-        destinationConnectionSpecification.getDestinationId());
-    expectedDestinationImplementationRead.setDestinationSpecificationId(
-        destinationConnectionImplementation.getDestinationSpecificationId());
-    expectedDestinationImplementationRead.setWorkspaceId(
-        destinationConnectionImplementation.getWorkspaceId());
-    expectedDestinationImplementationRead.setDestinationImplementationId(
-        destinationConnectionImplementation.getDestinationImplementationId());
-    expectedDestinationImplementationRead.setConnectionConfiguration(
-        destinationConnectionImplementation.getConfiguration());
+    DestinationImplementationRead expectedDestinationImplementationRead = new DestinationImplementationRead()
+        .destinationId(destinationConnectionSpecification.getDestinationId())
+        .destinationSpecificationId(destinationConnectionImplementation.getDestinationSpecificationId())
+        .workspaceId(destinationConnectionImplementation.getWorkspaceId())
+        .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId())
+        .connectionConfiguration(destinationConnectionImplementation.getConfiguration());
 
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
-    workspaceIdRequestBody.setWorkspaceId(destinationConnectionImplementation.getWorkspaceId());
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody()
+        .workspaceId(destinationConnectionImplementation.getWorkspaceId());
 
     final DestinationImplementationReadList actualDestinationImplementationRead =
-        destinationImplementationsHandler.listDestinationImplementationsForWorkspace(
-            workspaceIdRequestBody);
+        destinationImplementationsHandler.listDestinationImplementationsForWorkspace(workspaceIdRequestBody);
 
     assertEquals(
         expectedDestinationImplementationRead,

@@ -74,45 +74,44 @@ class JobSchedulerTest {
         .put("hostname", "dataline.io")
         .build());
 
-    SOURCE_CONNECTION_IMPLEMENTATION = new SourceConnectionImplementation();
-    SOURCE_CONNECTION_IMPLEMENTATION.setWorkspaceId(workspaceId);
-    SOURCE_CONNECTION_IMPLEMENTATION.setSourceSpecificationId(sourceSpecificationId);
-    SOURCE_CONNECTION_IMPLEMENTATION.setSourceImplementationId(sourceImplementationId);
-    SOURCE_CONNECTION_IMPLEMENTATION.setConfiguration(implementationJson);
-    SOURCE_CONNECTION_IMPLEMENTATION.setTombstone(false);
+    SOURCE_CONNECTION_IMPLEMENTATION = new SourceConnectionImplementation()
+        .withWorkspaceId(workspaceId)
+        .withSourceSpecificationId(sourceSpecificationId)
+        .withSourceImplementationId(sourceImplementationId)
+        .withConfiguration(implementationJson)
+        .withTombstone(false);
 
     final UUID destinationImplementationId = UUID.randomUUID();
     final UUID destinationSpecificationId = Integrations.POSTGRES_TARGET.getSpecId();
 
-    DESTINATION_CONNECTION_IMPLEMENTATION = new DestinationConnectionImplementation();
-    DESTINATION_CONNECTION_IMPLEMENTATION.setWorkspaceId(workspaceId);
-    DESTINATION_CONNECTION_IMPLEMENTATION.setDestinationSpecificationId(destinationSpecificationId);
-    DESTINATION_CONNECTION_IMPLEMENTATION.setDestinationImplementationId(destinationImplementationId);
-    DESTINATION_CONNECTION_IMPLEMENTATION.setConfiguration(implementationJson);
+    DESTINATION_CONNECTION_IMPLEMENTATION = new DestinationConnectionImplementation()
+        .withWorkspaceId(workspaceId)
+        .withDestinationSpecificationId(destinationSpecificationId)
+        .withDestinationImplementationId(destinationImplementationId)
+        .withConfiguration(implementationJson);
 
-    final Column column = new Column();
-    column.setDataType(DataType.STRING);
-    column.setName("id");
-    column.setSelected(true);
+    final Column column = new Column()
+        .withDataType(DataType.STRING)
+        .withName("id")
+        .withSelected(true);
 
-    final Table table = new Table();
-    table.setName("users");
-    table.setColumns(Lists.newArrayList(column));
-    table.setSelected(true);
+    final Table table = new Table()
+        .withName("users")
+        .withColumns(Lists.newArrayList(column))
+        .withSelected(true);
 
-    final Schema schema = new Schema();
-    schema.setTables(Lists.newArrayList(table));
+    final Schema schema = new Schema().withTables(Lists.newArrayList(table));
 
     final UUID connectionId = UUID.randomUUID();
 
-    STANDARD_SYNC = new StandardSync();
-    STANDARD_SYNC.setConnectionId(connectionId);
-    STANDARD_SYNC.setName("presto to hudi");
-    STANDARD_SYNC.setStatus(StandardSync.Status.ACTIVE);
-    STANDARD_SYNC.setSchema(schema);
-    STANDARD_SYNC.setSourceImplementationId(sourceImplementationId);
-    STANDARD_SYNC.setDestinationImplementationId(destinationImplementationId);
-    STANDARD_SYNC.setSyncMode(StandardSync.SyncMode.APPEND);
+    STANDARD_SYNC = new StandardSync()
+        .withConnectionId(connectionId)
+        .withName("presto to hudi")
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withSchema(schema)
+        .withSourceImplementationId(sourceImplementationId)
+        .withDestinationImplementationId(destinationImplementationId)
+        .withSyncMode(StandardSync.SyncMode.APPEND);
 
     // empty. contents not needed for any of these unit tests.
     STANDARD_SYNC_SCHEDULE = new StandardSyncSchedule();

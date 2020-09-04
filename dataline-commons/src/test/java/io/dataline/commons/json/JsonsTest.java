@@ -130,7 +130,7 @@ class JsonsTest {
   @Test
   void testCopy() {
     final ToClass expected = new ToClass("abc", 999, 888L);
-    final ToClass actual = Jsons.copy(expected);
+    final ToClass actual = Jsons.clone(expected);
     Assertions.assertNotSame(expected, actual);
     Assertions.assertEquals(expected, actual);
   }

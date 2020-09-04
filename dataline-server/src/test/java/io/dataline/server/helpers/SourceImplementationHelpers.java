@@ -44,34 +44,29 @@ public class SourceImplementationHelpers {
 
     JsonNode implementationJson = getTestImplementationJson();
 
-    final SourceConnectionImplementation sourceConnectionImplementation =
-        new SourceConnectionImplementation();
-    sourceConnectionImplementation.setWorkspaceId(workspaceId);
-    sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setConfiguration(implementationJson);
-    sourceConnectionImplementation.setTombstone(false);
-
-    return sourceConnectionImplementation;
+    return new SourceConnectionImplementation()
+        .withWorkspaceId(workspaceId)
+        .withSourceSpecificationId(sourceSpecificationId)
+        .withSourceImplementationId(sourceImplementationId)
+        .withConfiguration(implementationJson)
+        .withTombstone(false);
   }
 
   public static JsonNode getTestImplementationJson() throws IOException {
-    final Path path =
-        Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
+    final Path path = Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
     return Jsons.deserialize(Files.readString(path));
   }
 
   public static SourceImplementationRead getSourceImplementationRead(SourceConnectionImplementation sourceImplementation,
                                                                      StandardSource standardSource) {
-    SourceImplementationRead sourceImplementationRead = new SourceImplementationRead();
-    sourceImplementationRead.setSourceId(standardSource.getSourceId());
-    sourceImplementationRead.setWorkspaceId(sourceImplementation.getWorkspaceId());
-    sourceImplementationRead.setSourceSpecificationId(sourceImplementation.getSourceSpecificationId());
-    sourceImplementationRead.setSourceImplementationId(sourceImplementation.getSourceImplementationId());
-    sourceImplementationRead.setConnectionConfiguration(sourceImplementation.getConfiguration());
-    sourceImplementationRead.setSourceName(standardSource.getName());
 
-    return sourceImplementationRead;
+    return new SourceImplementationRead()
+        .sourceId(standardSource.getSourceId())
+        .workspaceId(sourceImplementation.getWorkspaceId())
+        .sourceSpecificationId(sourceImplementation.getSourceSpecificationId())
+        .sourceImplementationId(sourceImplementation.getSourceImplementationId())
+        .connectionConfiguration(sourceImplementation.getConfiguration())
+        .sourceName(standardSource.getName());
   }
 
 }
