@@ -29,7 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.SingerMessage;
+import io.dataline.singer.SingerMessage;
 import io.dataline.workers.protocol.singer.MessageUtils;
 import java.io.BufferedWriter;
 import java.io.IOException;

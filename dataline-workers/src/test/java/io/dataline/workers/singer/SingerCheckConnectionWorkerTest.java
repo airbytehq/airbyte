@@ -62,11 +62,9 @@ public class SingerCheckConnectionWorkerTest {
   public void setup() throws IOException {
     jobRoot = Files.createTempDirectory("");
 
-    input = new StandardCheckConnectionInput();
-    input.setConnectionConfiguration(CREDS);
+    input = new StandardCheckConnectionInput().withConnectionConfiguration(CREDS);
 
-    discoverInput = new StandardDiscoverSchemaInput();
-    discoverInput.setConnectionConfiguration(CREDS);
+    discoverInput = new StandardDiscoverSchemaInput().withConnectionConfiguration(CREDS);
 
     discoverSchemaWorker = mock(DiscoverSchemaWorker.class);
   }

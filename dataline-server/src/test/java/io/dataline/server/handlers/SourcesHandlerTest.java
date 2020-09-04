@@ -60,40 +60,37 @@ class SourcesHandlerTest {
   private StandardSource generateSource() {
     final UUID sourceId = UUID.randomUUID();
 
-    final StandardSource standardSource = new StandardSource();
-    standardSource.setSourceId(sourceId);
-    standardSource.setName("presto");
-
-    return standardSource;
+    return new StandardSource()
+        .withSourceId(sourceId)
+        .withName("presto");
   }
 
   @Test
   void testListSources() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardSource source2 = generateSource();
-    configPersistence.writeConfig(
-        ConfigSchema.STANDARD_SOURCE, source2.getSourceId().toString(), source2);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE, source2.getSourceId().toString(), source2);
 
     when(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE, StandardSource.class))
         .thenReturn(Lists.newArrayList(source, source2));
 
-    SourceRead expectedSourceRead1 = new SourceRead();
-    expectedSourceRead1.setSourceId(source.getSourceId());
-    expectedSourceRead1.setName(source.getName());
+    SourceRead expectedSourceRead1 = new SourceRead()
+        .sourceId(source.getSourceId())
+        .name(source.getName());
 
-    SourceRead expectedSourceRead2 = new SourceRead();
-    expectedSourceRead2.setSourceId(source2.getSourceId());
-    expectedSourceRead2.setName(source2.getName());
+    SourceRead expectedSourceRead2 = new SourceRead()
+        .sourceId(source2.getSourceId())
+        .name(source2.getName());
 
     final SourceReadList actualSourceReadList = sourceHandler.listSources();
 
-    final Optional<SourceRead> actualSourceRead1 =
-        actualSourceReadList.getSources().stream()
-            .filter(sourceRead -> sourceRead.getSourceId().equals(source.getSourceId()))
-            .findFirst();
-    final Optional<SourceRead> actualSourceRead2 =
-        actualSourceReadList.getSources().stream()
-            .filter(sourceRead -> sourceRead.getSourceId().equals(source2.getSourceId()))
-            .findFirst();
+    final Optional<SourceRead> actualSourceRead1 = actualSourceReadList.getSources()
+        .stream()
+        .filter(sourceRead -> sourceRead.getSourceId().equals(source.getSourceId()))
+        .findFirst();
+    final Optional<SourceRead> actualSourceRead2 = actualSourceReadList.getSources()
+        .stream()
+        .filter(sourceRead -> sourceRead.getSourceId().equals(source2.getSourceId()))
+        .findFirst();
 
     assertTrue(actualSourceRead1.isPresent());
     assertEquals(expectedSourceRead1, actualSourceRead1.get());
@@ -109,12 +106,11 @@ class SourcesHandlerTest {
         StandardSource.class))
             .thenReturn(source);
 
-    SourceRead expectedSourceRead = new SourceRead();
-    expectedSourceRead.setSourceId(source.getSourceId());
-    expectedSourceRead.setName(source.getName());
+    SourceRead expectedSourceRead = new SourceRead()
+        .sourceId(source.getSourceId())
+        .name(source.getName());
 
-    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
-    sourceIdRequestBody.setSourceId(source.getSourceId());
+    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(source.getSourceId());
 
     final SourceRead actualSourceRead = sourceHandler.getSource(sourceIdRequestBody);
 

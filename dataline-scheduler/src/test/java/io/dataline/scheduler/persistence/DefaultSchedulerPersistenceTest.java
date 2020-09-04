@@ -94,45 +94,45 @@ class DefaultSchedulerPersistenceTest {
         .put("hostname", "dataline.io")
         .build());
 
-    SOURCE_CONNECTION_IMPLEMENTATION = new SourceConnectionImplementation();
-    SOURCE_CONNECTION_IMPLEMENTATION.setWorkspaceId(workspaceId);
-    SOURCE_CONNECTION_IMPLEMENTATION.setSourceSpecificationId(sourceSpecificationId);
-    SOURCE_CONNECTION_IMPLEMENTATION.setSourceImplementationId(sourceImplementationId);
-    SOURCE_CONNECTION_IMPLEMENTATION.setConfiguration(implementationJson);
-    SOURCE_CONNECTION_IMPLEMENTATION.setTombstone(false);
+    SOURCE_CONNECTION_IMPLEMENTATION = new SourceConnectionImplementation()
+        .withWorkspaceId(workspaceId)
+        .withSourceSpecificationId(sourceSpecificationId)
+        .withSourceImplementationId(sourceImplementationId)
+        .withConfiguration(implementationJson)
+        .withTombstone(false);
 
     final UUID destinationImplementationId = UUID.randomUUID();
     final UUID destinationSpecificationId = Integrations.POSTGRES_TARGET.getSpecId();
 
-    DESTINATION_CONNECTION_IMPLEMENTATION = new DestinationConnectionImplementation();
-    DESTINATION_CONNECTION_IMPLEMENTATION.setWorkspaceId(workspaceId);
-    DESTINATION_CONNECTION_IMPLEMENTATION.setDestinationSpecificationId(destinationSpecificationId);
-    DESTINATION_CONNECTION_IMPLEMENTATION.setDestinationImplementationId(destinationImplementationId);
-    DESTINATION_CONNECTION_IMPLEMENTATION.setConfiguration(implementationJson);
+    DESTINATION_CONNECTION_IMPLEMENTATION = new DestinationConnectionImplementation()
+        .withWorkspaceId(workspaceId)
+        .withDestinationSpecificationId(destinationSpecificationId)
+        .withDestinationImplementationId(destinationImplementationId)
+        .withConfiguration(implementationJson);
 
-    final Column column = new Column();
-    column.setDataType(DataType.STRING);
-    column.setName("id");
-    column.setSelected(true);
+    final Column column = new Column()
+        .withDataType(DataType.STRING)
+        .withName("id")
+        .withSelected(true);
 
-    final Table table = new Table();
-    table.setName("users");
-    table.setColumns(Lists.newArrayList(column));
-    table.setSelected(true);
+    final Table table = new Table()
+        .withName("users")
+        .withColumns(Lists.newArrayList(column))
+        .withSelected(true);
 
-    final Schema schema = new Schema();
-    schema.setTables(Lists.newArrayList(table));
+    final Schema schema = new Schema()
+        .withTables(Lists.newArrayList(table));
 
     final UUID connectionId = UUID.randomUUID();
 
-    STANDARD_SYNC = new StandardSync();
-    STANDARD_SYNC.setConnectionId(connectionId);
-    STANDARD_SYNC.setName("presto to hudi");
-    STANDARD_SYNC.setStatus(StandardSync.Status.ACTIVE);
-    STANDARD_SYNC.setSchema(schema);
-    STANDARD_SYNC.setSourceImplementationId(sourceImplementationId);
-    STANDARD_SYNC.setDestinationImplementationId(destinationImplementationId);
-    STANDARD_SYNC.setSyncMode(StandardSync.SyncMode.APPEND);
+    STANDARD_SYNC = new StandardSync()
+        .withConnectionId(connectionId)
+        .withName("presto to hudi")
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withSchema(schema)
+        .withSourceImplementationId(sourceImplementationId)
+        .withDestinationImplementationId(destinationImplementationId)
+        .withSyncMode(StandardSync.SyncMode.APPEND);
 
     NOW = Instant.now();
   }
@@ -188,13 +188,13 @@ class DefaultSchedulerPersistenceTest {
     final Record jobEntry = getJobRecord(jobId);
 
     final String imageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getDiscoverSchemaImage();
-    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfiguration(SOURCE_CONNECTION_IMPLEMENTATION.getConfiguration());
-    jobCheckConnectionConfig.setDockerImage(imageName);
+    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
+        .withConnectionConfiguration(SOURCE_CONNECTION_IMPLEMENTATION.getConfiguration())
+        .withDockerImage(imageName);
 
-    final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE);
-    jobConfig.setCheckConnection(jobCheckConnectionConfig);
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE)
+        .withCheckConnection(jobCheckConnectionConfig);
 
     assertJobConfigEqualJobDbRecord(jobId, SOURCE_CONNECTION_IMPLEMENTATION.getSourceImplementationId().toString(), jobConfig, jobEntry);
   }
@@ -205,15 +205,15 @@ class DefaultSchedulerPersistenceTest {
 
     final Record jobEntry = getJobRecord(jobId);
 
-    final String imageName =
-        Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId()).getDiscoverSchemaImage();
-    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig();
-    jobCheckConnectionConfig.setConnectionConfiguration(DESTINATION_CONNECTION_IMPLEMENTATION.getConfiguration());
-    jobCheckConnectionConfig.setDockerImage(imageName);
+    final String imageName = Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId())
+        .getDiscoverSchemaImage();
+    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
+        .withConnectionConfiguration(DESTINATION_CONNECTION_IMPLEMENTATION.getConfiguration())
+        .withDockerImage(imageName);
 
-    final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION);
-    jobConfig.setCheckConnection(jobCheckConnectionConfig);
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION)
+        .withCheckConnection(jobCheckConnectionConfig);
 
     assertJobConfigEqualJobDbRecord(jobId, DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationImplementationId().toString(), jobConfig, jobEntry);
   }
@@ -225,13 +225,13 @@ class DefaultSchedulerPersistenceTest {
     final Record jobEntry = getJobRecord(jobId);
 
     final String imageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getDiscoverSchemaImage();
-    final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig();
-    jobDiscoverSchemaConfig.setConnectionConfiguration(SOURCE_CONNECTION_IMPLEMENTATION.getConfiguration());
-    jobDiscoverSchemaConfig.setDockerImage(imageName);
+    final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig()
+        .withConnectionConfiguration(SOURCE_CONNECTION_IMPLEMENTATION.getConfiguration())
+        .withDockerImage(imageName);
 
-    final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA);
-    jobConfig.setDiscoverSchema(jobDiscoverSchemaConfig);
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA)
+        .withDiscoverSchema(jobDiscoverSchemaConfig);
 
     assertJobConfigEqualJobDbRecord(jobId, SOURCE_CONNECTION_IMPLEMENTATION.getSourceImplementationId().toString(), jobConfig, jobEntry);
   }
@@ -246,18 +246,18 @@ class DefaultSchedulerPersistenceTest {
     final Record jobEntry = getJobRecord(jobId);
 
     final String sourceImageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getSyncImage();
-    final String destinationImageName =
-        Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId()).getSyncImage();
-    final JobSyncConfig jobSyncConfig = new JobSyncConfig();
-    jobSyncConfig.setSourceConnectionImplementation(SOURCE_CONNECTION_IMPLEMENTATION);
-    jobSyncConfig.setSourceDockerImage(sourceImageName);
-    jobSyncConfig.setDestinationConnectionImplementation(DESTINATION_CONNECTION_IMPLEMENTATION);
-    jobSyncConfig.setDestinationDockerImage(destinationImageName);
-    jobSyncConfig.setStandardSync(STANDARD_SYNC);
+    final String destinationImageName = Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId())
+        .getSyncImage();
+    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withSourceConnectionImplementation(SOURCE_CONNECTION_IMPLEMENTATION)
+        .withSourceDockerImage(sourceImageName)
+        .withDestinationConnectionImplementation(DESTINATION_CONNECTION_IMPLEMENTATION)
+        .withDestinationDockerImage(destinationImageName)
+        .withStandardSync(STANDARD_SYNC);
 
-    final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.SYNC);
-    jobConfig.setSync(jobSyncConfig);
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withSync(jobSyncConfig);
 
     assertJobConfigEqualJobDbRecord(jobId, STANDARD_SYNC.getConnectionId().toString(), jobConfig, jobEntry);
   }
@@ -305,16 +305,16 @@ class DefaultSchedulerPersistenceTest {
     final String sourceImageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getSyncImage();
     final String destinationImageName =
         Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId()).getSyncImage();
-    final JobSyncConfig jobSyncConfig = new JobSyncConfig();
-    jobSyncConfig.setSourceConnectionImplementation(SOURCE_CONNECTION_IMPLEMENTATION);
-    jobSyncConfig.setSourceDockerImage(sourceImageName);
-    jobSyncConfig.setDestinationConnectionImplementation(DESTINATION_CONNECTION_IMPLEMENTATION);
-    jobSyncConfig.setDestinationDockerImage(destinationImageName);
-    jobSyncConfig.setStandardSync(STANDARD_SYNC);
+    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withSourceConnectionImplementation(SOURCE_CONNECTION_IMPLEMENTATION)
+        .withSourceDockerImage(sourceImageName)
+        .withDestinationConnectionImplementation(DESTINATION_CONNECTION_IMPLEMENTATION)
+        .withDestinationDockerImage(destinationImageName)
+        .withStandardSync(STANDARD_SYNC);
 
-    final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.SYNC);
-    jobConfig.setSync(jobSyncConfig);
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withSync(jobSyncConfig);
 
     final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
 
@@ -406,17 +406,18 @@ class DefaultSchedulerPersistenceTest {
         .getDiscoverSchemaImage();
     final String destinationImageName = Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId())
         .getDiscoverSchemaImage();
-    final JobSyncConfig jobSyncConfig = new JobSyncConfig();
-    jobSyncConfig.setSourceDockerImage(sourceImageName);
-    jobSyncConfig.setDestinationDockerImage(destinationImageName);
-    jobSyncConfig.setSourceConnectionImplementation(SOURCE_CONNECTION_IMPLEMENTATION);
-    jobSyncConfig.setDestinationConnectionImplementation(DESTINATION_CONNECTION_IMPLEMENTATION);
-    jobSyncConfig.setState(null);
-    jobSyncConfig.setStandardSync(STANDARD_SYNC);
 
-    final JobConfig jobConfig = new JobConfig();
-    jobConfig.setConfigType(JobConfig.ConfigType.SYNC);
-    jobConfig.setSync(jobSyncConfig);
+    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withSourceDockerImage(sourceImageName)
+        .withDestinationDockerImage(destinationImageName)
+        .withSourceConnectionImplementation(SOURCE_CONNECTION_IMPLEMENTATION)
+        .withDestinationConnectionImplementation(DESTINATION_CONNECTION_IMPLEMENTATION)
+        .withState(null)
+        .withStandardSync(STANDARD_SYNC);
+
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withSync(jobSyncConfig);
 
     final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
 
