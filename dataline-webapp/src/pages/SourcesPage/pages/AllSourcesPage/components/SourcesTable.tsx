@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
@@ -46,21 +46,24 @@ const SourcesTable: React.FC = () => {
     lastSync: item.lastSync
   }));
 
-  const onChangeStatus = async (connectionId: string) => {
-    const connection = connections.find(
-      item => item.connectionId === connectionId
-    );
+  const onChangeStatus = useCallback(
+    async (connectionId: string) => {
+      const connection = connections.find(
+        item => item.connectionId === connectionId
+      );
 
-    await updateConnection(
-      {},
-      {
-        connectionId,
-        syncSchema: connection?.syncSchema,
-        schedule: connection?.schedule,
-        status: connection?.status === "active" ? "inactive" : "active"
-      }
-    );
-  };
+      await updateConnection(
+        {},
+        {
+          connectionId,
+          syncSchema: connection?.syncSchema,
+          schedule: connection?.schedule,
+          status: connection?.status === "active" ? "inactive" : "active"
+        }
+      );
+    },
+    [connections, updateConnection]
+  );
 
   const columns = React.useMemo(
     () => [
