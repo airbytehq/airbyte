@@ -39,7 +39,7 @@ import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.JobStatus;
-import io.dataline.scheduler.SchedulerPersistence;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.server.converters.SchemaConverter;
 import io.dataline.server.helpers.ConfigFetchers;
 import java.io.IOException;
