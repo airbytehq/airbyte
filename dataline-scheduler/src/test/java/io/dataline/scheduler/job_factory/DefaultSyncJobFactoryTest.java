@@ -52,9 +52,9 @@ class DefaultSyncJobFactoryTest {
     final ConfigPersistence configPersistence = mock(ConfigPersistence.class);
     final long jobId = 11L;
 
-    final StandardSync standardSync = new StandardSync();
-    standardSync.setSourceImplementationId(sourceImplId);
-    standardSync.setDestinationImplementationId(destinationImplId);
+    final StandardSync standardSync = new StandardSync()
+        .withSourceImplementationId(sourceImplId)
+        .withDestinationImplementationId(destinationImplId);
 
     final SourceConnectionImplementation sourceConnectionImplementation = new SourceConnectionImplementation();
     final DestinationConnectionImplementation destinationConnectionImplementation = new DestinationConnectionImplementation();
