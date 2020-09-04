@@ -1,0 +1,17 @@
+{
+  "tables": [
+    {
+      "name": "id_and_name",
+      "columns": [
+        {
+          "name": "id",
+          "dataType": "string"
+        },
+        {
+          "name": "name",
+          "dataType": "string"
+        }
+      ]
+    }
+  ]
+}
