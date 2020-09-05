@@ -1011,7 +1011,7 @@ components:
         - destinationSpecificationId
         - connectionConfiguration
         - name
-        - destionationName
+        - destinationName
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
