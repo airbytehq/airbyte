@@ -25,7 +25,6 @@
 package io.dataline.scheduler;
 
 import io.dataline.commons.concurrency.LifecycledCallable;
-import io.dataline.commons.json.Jsons;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.OutputAndStatus;
 import java.util.Optional;
@@ -67,7 +66,7 @@ public class JobSubmitter implements Runnable {
         .setOnStart(() -> persistence.updateStatus(job.getId(), JobStatus.RUNNING))
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {
-            persistence.writeOutput(job.getId(), Jsons.jsonNode(output.getOutput().get()));
+            persistence.writeOutput(job.getId(), output.getOutput().get());
           }
           persistence.updateStatus(job.getId(), getStatus(output));
         })

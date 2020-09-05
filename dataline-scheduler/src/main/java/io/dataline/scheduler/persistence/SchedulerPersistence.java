@@ -24,7 +24,6 @@
 
 package io.dataline.scheduler.persistence;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.JobConfig;
 import io.dataline.config.SourceConnectionImplementation;
@@ -56,7 +55,7 @@ public interface SchedulerPersistence {
 
   void updateStatus(long jobId, JobStatus status) throws IOException;
 
-  void writeOutput(long jobId, JsonNode outputJson) throws IOException;
+  <T> void writeOutput(long jobId, T output) throws IOException;
 
   /**
    * @param configType - type of config, e.g. sync

@@ -34,7 +34,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import io.dataline.commons.json.Jsons;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
@@ -89,7 +88,7 @@ public class JobSubmitterTest {
 
     InOrder inOrder = inOrder(persistence);
     inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
-    inOrder.verify(persistence).writeOutput(1L, Jsons.jsonNode(1));
+    inOrder.verify(persistence).writeOutput(1L, 1);
     inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.COMPLETED);
     inOrder.verifyNoMoreInteractions();
   }

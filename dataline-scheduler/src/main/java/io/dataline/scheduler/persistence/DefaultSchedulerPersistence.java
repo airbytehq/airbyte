@@ -24,7 +24,6 @@
 
 package io.dataline.scheduler.persistence;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.DestinationConnectionImplementation;
@@ -209,7 +208,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public void writeOutput(long jobId, JsonNode outputJson) throws IOException {
+  public <T> void writeOutput(long jobId, T output) throws IOException {
     LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
     try {
@@ -217,7 +216,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
           connectionPool,
           ctx -> ctx.execute(
               "UPDATE jobs SET output = CAST(? as JSONB), updated_at = ? WHERE id = ?",
-              Jsons.serialize(outputJson),
+              Jsons.serialize(output),
               now,
               jobId));
     } catch (SQLException e) {

@@ -307,7 +307,7 @@ class DefaultSchedulerPersistenceTest {
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
     final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA);
-    schedulerPersistence.writeOutput(jobId, Jsons.jsonNode(jobOutput));
+    schedulerPersistence.writeOutput(jobId, jobOutput);
 
     final Job updated = schedulerPersistence.getJob(jobId);
 
