@@ -31,6 +31,7 @@ import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.workers.DefaultSyncWorker;
+import io.dataline.workers.Worker;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
@@ -50,11 +51,19 @@ public class WorkerRunFactory {
 
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
+  private final Creator creator;
 
   public WorkerRunFactory(final Path workspaceRoot,
                           final ProcessBuilderFactory pbf) {
+    this(workspaceRoot, pbf, WorkerRun::new);
+  }
+
+  WorkerRunFactory(final Path workspaceRoot,
+                   final ProcessBuilderFactory pbf,
+                   final Creator creator) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
+    this.creator = creator;
   }
 
   public WorkerRun create(final Job job) {
@@ -66,20 +75,20 @@ public class WorkerRunFactory {
       case CHECK_CONNECTION_SOURCE:
       case CHECK_CONNECTION_DESTINATION:
         final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(job.getConfig().getCheckConnection());
-        return new WorkerRun(
+        return creator.create(
             jobRoot,
             checkConnectionInput,
             new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)));
       case DISCOVER_SCHEMA:
         final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
-        return new WorkerRun(
+        return creator.create(
             jobRoot,
             discoverSchemaInput,
             new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf));
       case SYNC:
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         final SingerDiscoverSchemaWorker discoverSchemaWorker = new SingerDiscoverSchemaWorker(job.getConfig().getSync().getSourceDockerImage(), pbf);
-        return new WorkerRun(
+        return creator.create(
             jobRoot,
             syncInput,
             // todo (cgardens) - still locked into only using SingerTaps and Targets. Next step
@@ -96,13 +105,11 @@ public class WorkerRunFactory {
   }
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
-    return new StandardCheckConnectionInput()
-        .withConnectionConfiguration(config.getConnectionConfiguration());
+    return new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
   }
 
   private static StandardDiscoverSchemaInput getDiscoverSchemaInput(JobDiscoverSchemaConfig config) {
-    return new StandardDiscoverSchemaInput()
-        .withConnectionConfiguration(config.getConnectionConfiguration());
+    return new StandardDiscoverSchemaInput().withConnectionConfiguration(config.getConnectionConfiguration());
   }
 
   private static StandardSyncInput getSyncInput(JobSyncConfig config) {
@@ -110,6 +117,13 @@ public class WorkerRunFactory {
         .withSourceConnectionImplementation(config.getSourceConnectionImplementation())
         .withDestinationConnectionImplementation(config.getDestinationConnectionImplementation())
         .withStandardSync(config.getStandardSync());
+  }
+
+  @FunctionalInterface
+  interface Creator {
+
+    <T> WorkerRun create(Path jobRoot, T input, Worker<T, ?> worker);
+
   }
 
 }
