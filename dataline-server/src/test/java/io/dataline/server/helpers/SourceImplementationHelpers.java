@@ -45,6 +45,7 @@ public class SourceImplementationHelpers {
     JsonNode implementationJson = getTestImplementationJson();
 
     return new SourceConnectionImplementation()
+        .withName("my postgres db")
         .withWorkspaceId(workspaceId)
         .withSourceSpecificationId(sourceSpecificationId)
         .withSourceImplementationId(sourceImplementationId)
@@ -66,6 +67,7 @@ public class SourceImplementationHelpers {
         .sourceSpecificationId(sourceImplementation.getSourceSpecificationId())
         .sourceImplementationId(sourceImplementation.getSourceImplementationId())
         .connectionConfiguration(sourceImplementation.getConfiguration())
+        .name(sourceImplementation.getName())
         .sourceName(standardSource.getName());
   }
 
