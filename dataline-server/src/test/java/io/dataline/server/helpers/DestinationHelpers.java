@@ -24,31 +24,15 @@
 
 package io.dataline.server.helpers;
 
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.DestinationConnectionSpecification;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import io.dataline.config.StandardDestination;
 import java.util.UUID;
 
-public class DestinationSpecificationHelpers {
+public class DestinationHelpers {
 
-  public static DestinationConnectionSpecification generateDestinationSpecification() throws IOException {
-    return generateDestinationSpecification(UUID.randomUUID());
-  }
-
-  public static DestinationConnectionSpecification generateDestinationSpecification(UUID destinationId)
-      throws IOException {
-    final UUID destinationSpecificationId = UUID.randomUUID();
-
-    final Path path =
-        Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
-
-    return new DestinationConnectionSpecification()
-        .withDestinationId(destinationId)
-        .withDestinationSpecificationId(destinationSpecificationId)
-        .withSpecification(Jsons.deserialize(Files.readString(path)));
+  public static StandardDestination generateDestination() {
+    return new StandardDestination()
+        .withDestinationId(UUID.randomUUID())
+        .withName("db2");
   }
 
 }
