@@ -22,15 +22,36 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.functional;
+package io.dataline.scheduler;
 
-@FunctionalInterface
-public interface CheckedFunction<T, R, E extends Throwable> {
+import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.dataline.workers.process.ProcessBuilderFactory;
+import java.io.IOException;
+import java.nio.file.Path;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 
-  R apply(T t) throws E;
+@RunWith(MockitoJUnitRunner.class)
+class WorkerRunFactoryTest {
 
-  static <T, E extends Throwable> CheckedFunction<T, T, E> identity() {
-    return e -> e;
+  private BasicDataSource connectionPool;
+  private SchedulerPersistence persistence;
+  private Path root;
+  ProcessBuilderFactory pbf;
+  private WorkerRunFactory runFactory;
+
+  @BeforeEach
+  void setUp() {}
+
+  @Test
+  void testSimple() throws IOException {
+    // WorkerRunFactory runner = new WorkerRunFactory(1L, connectionPool, persistence, root, pbf,
+    // runFactory);
+    //
+    // runner.voidCall();
   }
 
 }

@@ -25,17 +25,11 @@
 package io.dataline.scheduler;
 
 import io.dataline.commons.functional.CheckedSupplier;
-import io.dataline.commons.json.Jsons;
-import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import org.apache.commons.dbcp2.BasicDataSource;
+import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,105 +44,26 @@ import org.slf4j.LoggerFactory;
  * working with workers. you can probably make an argument that this class should not have access to
  * the db.
  */
-public class WorkerRun implements Runnable {
+public class WorkerRun implements Callable<OutputAndStatus<?>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
 
-  public interface Factory {
-
-    <InputType> WorkerRun create(final long jobId,
-                                 final Path jobRoot,
-                                 final InputType input,
-                                 final Worker<InputType, ?> worker,
-                                 final BasicDataSource connectionPool);
-
-  }
-
-  private final long jobId;
   private final Path jobRoot;
   private final CheckedSupplier<OutputAndStatus<?>, Exception> outputSupplier;
-  private final BasicDataSource connectionPool;
 
-  public <InputType> WorkerRun(final long jobId,
-                               final Path jobRoot,
+  public <InputType> WorkerRun(final Path jobRoot,
                                final InputType input,
-                               final Worker<InputType, ?> worker,
-                               final BasicDataSource connectionPool) {
-    this.jobId = jobId;
+                               final Worker<InputType, ?> worker) {
     this.jobRoot = jobRoot;
     this.outputSupplier = () -> worker.run(input, jobRoot);
-    this.connectionPool = connectionPool;
   }
 
   @Override
-  public void run() {
+  public OutputAndStatus<?> call() throws Exception {
     LOGGER.info("Executing worker wrapper...");
-    try {
-      setJobStatus(connectionPool, jobId, JobStatus.RUNNING);
+    Files.createDirectories(jobRoot);
 
-      Files.createDirectories(jobRoot);
-
-      OutputAndStatus<?> outputAndStatus = outputSupplier.get();
-
-      switch (outputAndStatus.getStatus()) {
-        case FAILED:
-          setJobStatus(connectionPool, jobId, JobStatus.FAILED);
-          break;
-        case SUCCESSFUL:
-          setJobStatus(connectionPool, jobId, JobStatus.COMPLETED);
-          break;
-      }
-
-      if (outputAndStatus.getOutput().isPresent()) {
-        outputAndStatus
-            .getOutput()
-            .ifPresentOrElse(
-                output -> {
-                  LOGGER.info("Set job output for job " + jobId);
-                  final String json = Jsons.serialize(output);
-                  setJobOutput(connectionPool, jobId, json);
-                },
-                () -> LOGGER.info("No output present for job " + jobId));
-      }
-    } catch (Exception e) {
-      LOGGER.error("Worker Error", e);
-      setJobStatus(connectionPool, jobId, JobStatus.FAILED);
-    }
-  }
-
-  private static void setJobStatus(BasicDataSource connectionPool, long jobId, JobStatus status) {
-    LOGGER.info("Setting job status to " + status + " for job " + jobId);
-    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
-
-    try {
-      DatabaseHelper.query(
-          connectionPool,
-          ctx -> ctx.execute(
-              "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
-              status.toString().toLowerCase(),
-              now,
-              jobId));
-    } catch (SQLException e) {
-      LOGGER.error("SQL Error", e);
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static void setJobOutput(BasicDataSource connectionPool, long jobId, String outputJson) {
-    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
-
-    try {
-      DatabaseHelper.query(
-          connectionPool,
-          ctx -> ctx.execute(
-              "UPDATE jobs SET output = CAST(? as JSONB), updated_at = ? WHERE id = ?",
-              outputJson,
-              now,
-              jobId));
-    } catch (SQLException e) {
-      LOGGER.error("SQL Error", e);
-      throw new RuntimeException(e);
-    }
+    return outputSupplier.get();
   }
 
 }

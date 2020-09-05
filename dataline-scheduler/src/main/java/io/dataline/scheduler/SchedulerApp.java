@@ -32,7 +32,6 @@ import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
-import io.dataline.workers.Worker;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
@@ -80,18 +79,9 @@ public class SchedulerApp {
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
 
-    final WorkerRun.Factory workerRunFactory = new WorkerRun.Factory() {
+    final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
 
-      Path jobRoot;
-      BasicDataSource connectionPool;
-
-      @Override public <InputType> WorkerRun create(long jobId,
-                                                    InputType input,
-                                                    Worker<InputType, ?> worker) {
-        return null;
-      }
-    }
-    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, connectionPool, schedulerPersistence, workspaceRoot, pbf);
+    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, schedulerPersistence, workerRunFactory);
     final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, configPersistence);
 
     scheduledPool.scheduleWithFixedDelay(

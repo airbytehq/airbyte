@@ -22,41 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.commons.functional;
 
-import io.dataline.scheduler.persistence.SchedulerPersistence;
-import io.dataline.workers.process.ProcessBuilderFactory;
-import java.io.IOException;
-import java.nio.file.Path;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+@FunctionalInterface
+public interface CheckedConsumer<T, E extends Throwable> {
 
-@RunWith(MockitoJUnitRunner.class)
-class WorkerRunnerTest {
-
-  @Mock
-  private BasicDataSource connectionPool;
-  @Mock
-  private SchedulerPersistence persistence;
-  @Mock
-  private Path root;
-  @Mock
-  ProcessBuilderFactory pbf;
-  @Mock
-  private WorkerRun.Factory runFactory;
-
-  @BeforeEach
-  void setUp() {}
-
-  @Test
-  void testSimple() throws IOException {
-    WorkerRunner runner = new WorkerRunner(1L, connectionPool, persistence, root, pbf, runFactory);
-
-    runner.voidCall();
-  }
+  void accept(T t) throws E;
 
 }

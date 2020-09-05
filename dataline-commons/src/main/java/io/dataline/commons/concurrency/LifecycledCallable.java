@@ -24,9 +24,8 @@
 
 package io.dataline.commons.concurrency;
 
-import io.dataline.commons.functional.CheckedFunction;
+import io.dataline.commons.functional.CheckedConsumer;
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
 public class LifecycledCallable<T> implements Callable<T> {
 
@@ -35,15 +34,15 @@ public class LifecycledCallable<T> implements Callable<T> {
     private final Callable<T> callable;
 
     private VoidCallable onStart;
-    private CheckedFunction<T, T, Exception> onSuccess;
-    private Consumer<Exception> onException;
+    private CheckedConsumer<T, Exception> onSuccess;
+    private CheckedConsumer<Exception, Exception> onException;
     private VoidCallable onFinish;
 
     public Builder(final Callable<T> callable) {
       this.callable = callable;
 
       this.onStart = () -> {};
-      this.onSuccess = e -> e;
+      this.onSuccess = e -> {};
       this.onException = noop -> {};
       this.onFinish = () -> {};
     }
@@ -53,12 +52,12 @@ public class LifecycledCallable<T> implements Callable<T> {
       return this;
     }
 
-    public Builder<T> setOnSuccess(CheckedFunction<T, T, Exception> onSuccess) {
+    public Builder<T> setOnSuccess(CheckedConsumer<T, Exception> onSuccess) {
       this.onSuccess = onSuccess;
       return this;
     }
 
-    public Builder<T> setOnException(Consumer<Exception> onException) {
+    public Builder<T> setOnException(CheckedConsumer<Exception, Exception> onException) {
       this.onException = onException;
       return this;
     }
@@ -76,14 +75,14 @@ public class LifecycledCallable<T> implements Callable<T> {
 
   private final VoidCallable onStart;
   private final Callable<T> decoratedCallable;
-  private final CheckedFunction<T, T, Exception> onSuccess;
-  private final Consumer<Exception> onException;
+  private final CheckedConsumer<T, Exception> onSuccess;
+  private final CheckedConsumer<Exception, Exception> onException;
   private final VoidCallable onFinish;
 
   private LifecycledCallable(final VoidCallable onStart,
                              final Callable<T> decoratedCallable,
-                             final CheckedFunction<T, T, Exception> onSuccess,
-                             final Consumer<Exception> onException,
+                             final CheckedConsumer<T, Exception> onSuccess,
+                             final CheckedConsumer<Exception, Exception> onException,
                              final VoidCallable onFinish) {
     this.onStart = onStart;
     this.decoratedCallable = decoratedCallable;
@@ -96,7 +95,9 @@ public class LifecycledCallable<T> implements Callable<T> {
   public T call() throws Exception {
     try {
       onStart();
-      return onSuccess(execute());
+      final T result = execute();
+      onSuccess(result);
+      return result;
     } catch (Exception e) {
       onException(e);
       throw e;
@@ -114,11 +115,11 @@ public class LifecycledCallable<T> implements Callable<T> {
 
   }
 
-  private T onSuccess(T value) throws Exception {
-    return this.onSuccess.apply(value);
+  private void onSuccess(T value) throws Exception {
+    this.onSuccess.accept(value);
   }
 
-  private void onException(Exception e) {
+  private void onException(Exception e) throws Exception {
     this.onException.accept(e);
   }
 

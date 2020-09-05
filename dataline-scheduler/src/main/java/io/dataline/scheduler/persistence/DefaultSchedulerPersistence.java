@@ -24,6 +24,7 @@
 
 package io.dataline.scheduler.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.DestinationConnectionImplementation;
@@ -189,10 +190,44 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
               .findFirst()
               .orElseThrow(() -> new RuntimeException("This should not happen"));
     } catch (SQLException e) {
-      LOGGER.error("sql", e);
       throw new IOException(e);
     }
     return record.getValue("id", Long.class);
+  }
+
+  @Override
+  public void updateStatus(long jobId, JobStatus status) throws IOException {
+    LOGGER.info("Setting job status to " + status + " for job " + jobId);
+    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+
+    try {
+      DatabaseHelper.query(
+          connectionPool,
+          ctx -> ctx.execute(
+              "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
+              status.toString().toLowerCase(),
+              now,
+              jobId));
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public void writeOutput(long jobId, JsonNode outputJson) throws IOException {
+    LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+
+    try {
+      DatabaseHelper.query(
+          connectionPool,
+          ctx -> ctx.execute(
+              "UPDATE jobs SET output = CAST(? as JSONB), updated_at = ? WHERE id = ?",
+              Jsons.serialize(outputJson),
+              now,
+              jobId));
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
   }
 
   @Override
@@ -204,8 +239,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             Record jobEntry =
                 ctx.fetch("SELECT * FROM jobs WHERE id = ?", jobId).stream()
                     .findFirst()
-                    .orElseThrow(
-                        () -> new RuntimeException("Could not find job with id: " + jobId));
+                    .orElseThrow(() -> new RuntimeException("Could not find job with id: " + jobId));
 
             return getJobFromRecord(jobEntry);
           });

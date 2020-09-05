@@ -24,12 +24,12 @@
 
 package io.dataline.scheduler;
 
+import io.dataline.commons.concurrency.LifecycledCallable;
+import io.dataline.commons.json.Jsons;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
-import io.dataline.workers.process.ProcessBuilderFactory;
-import java.nio.file.Path;
+import io.dataline.workers.OutputAndStatus;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,21 +38,15 @@ public class JobSubmitter implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitter.class);
 
   private final ExecutorService threadPool;
-  private final BasicDataSource connectionPool;
   private final SchedulerPersistence persistence;
-  private final Path workspaceRoot;
-  private final ProcessBuilderFactory pbf;
+  private final WorkerRunFactory workerRunFactory;
 
   public JobSubmitter(final ExecutorService threadPool,
-                      final BasicDataSource connectionPool,
                       final SchedulerPersistence persistence,
-                      final Path workspaceRoot,
-                      final ProcessBuilderFactory pbf) {
+                      final WorkerRunFactory workerRunFactory) {
     this.threadPool = threadPool;
-    this.connectionPool = connectionPool;
     this.persistence = persistence;
-    this.workspaceRoot = workspaceRoot;
-    this.pbf = pbf;
+    this.workerRunFactory = workerRunFactory;
   }
 
   @Override
@@ -69,7 +63,26 @@ public class JobSubmitter implements Runnable {
   }
 
   private void submitJob(Job job) {
-    threadPool.submit(new WorkerRunner(job.getId(), connectionPool, persistence, workspaceRoot, pbf));
+    threadPool.submit(new LifecycledCallable.Builder<>(workerRunFactory.create(job))
+        .setOnStart(() -> persistence.updateStatus(job.getId(), JobStatus.RUNNING))
+        .setOnSuccess(output -> {
+          persistence.updateStatus(job.getId(), getStatus(output));
+          if (output.getOutput().isPresent()) {
+            persistence.writeOutput(job.getId(), Jsons.jsonNode(output.getOutput().get()));
+          }
+        })
+        .setOnException(noop -> persistence.updateStatus(job.getId(), JobStatus.FAILED)).build());
+  }
+
+  private JobStatus getStatus(OutputAndStatus<?> output) {
+    switch (output.getStatus()) {
+      case SUCCESSFUL:
+        return JobStatus.COMPLETED;
+      case FAILED:
+        return JobStatus.FAILED;
+      default:
+        throw new RuntimeException("Unknown state " + output.getStatus());
+    }
   }
 
 }
