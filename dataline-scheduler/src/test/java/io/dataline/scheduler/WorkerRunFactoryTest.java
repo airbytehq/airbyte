@@ -24,6 +24,12 @@
 
 package io.dataline.scheduler;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.JobConfig;
@@ -44,12 +50,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
-
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class WorkerRunFactoryTest {
 
@@ -75,7 +75,7 @@ class WorkerRunFactoryTest {
   @SuppressWarnings("unchecked")
   @ParameterizedTest
   @EnumSource(value = JobConfig.ConfigType.class,
-      names = {"CHECK_CONNECTION_SOURCE", "CHECK_CONNECTION_DESTINATION"})
+              names = {"CHECK_CONNECTION_SOURCE", "CHECK_CONNECTION_DESTINATION"})
   void testConnection(JobConfig.ConfigType value) {
     when(job.getConfig().getConfigType()).thenReturn(value);
     when(job.getConfig().getCheckConnection().getConnectionConfiguration()).thenReturn(CONFIG);

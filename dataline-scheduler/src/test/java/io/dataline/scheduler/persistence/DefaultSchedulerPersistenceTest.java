@@ -160,12 +160,12 @@ class DefaultSchedulerPersistenceTest {
     container.stop();
   }
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() throws SQLException {
     // todo (cgardens) - truncate whole db.
     DatabaseHelper.query(connectionPool, ctx -> ctx.execute("DELETE FROM jobs"));
 
-    // noinspection unchecked
     timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(NOW);
 
