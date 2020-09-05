@@ -42,7 +42,7 @@ public class LifecycledCallable<T> implements Callable<T> {
       this.callable = callable;
 
       this.onStart = () -> {};
-      this.onSuccess = e -> {};
+      this.onSuccess = noop -> {};
       this.onException = noop -> {};
       this.onFinish = () -> {};
     }
