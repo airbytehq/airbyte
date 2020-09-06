@@ -40,11 +40,11 @@ services:
       - 8001:8001
     depends_on:
       - db
-#  webapp:
-#    image: dataline/webapp:${VERSION}
-#    container_name: dataline-webapp
-#    ports:
-#      - 8000:80
-#    depends_on:
-#      - server
+  webapp:
+    image: dataline/webapp:${VERSION}
+    container_name: dataline-webapp
+    ports:
+      - 8000:80
+    depends_on:
+      - server
 
