@@ -79,12 +79,14 @@ public class AcceptanceTests {
     UUID sourceSpecificationId = sourceSpecRead.getSourceSpecificationId();
 
     SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate()
+        .name("rldb")
         .sourceSpecificationId(sourceSpecificationId)
         .workspaceId(defaultWorkspaceId)
         .connectionConfiguration(dbConfiguration);
 
     SourceImplementationRead createResponse = apiClient.getSourceImplementationApi().createSourceImplementation(sourceImplementationCreate);
 
+    assertEquals("rldb", createResponse.getName());
     assertEquals(defaultWorkspaceId, createResponse.getWorkspaceId());
     assertEquals(sourceSpecificationId, createResponse.getSourceSpecificationId());
     assertEquals(dbConfiguration, Jsons.jsonNode(createResponse.getConnectionConfiguration()));
