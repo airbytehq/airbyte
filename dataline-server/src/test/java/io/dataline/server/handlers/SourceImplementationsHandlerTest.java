@@ -42,6 +42,7 @@ import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.api.model.SourceImplementationReadList;
 import io.dataline.api.model.SourceImplementationUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.ConfigSchema;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.SourceConnectionSpecification;
@@ -114,6 +115,7 @@ class SourceImplementationsHandlerTest {
             .thenReturn(standardSource);
 
     final SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate()
+        .name(sourceConnectionImplementation.getName())
         .workspaceId(sourceConnectionImplementation.getWorkspaceId())
         .sourceSpecificationId(sourceConnectionSpecification.getSourceSpecificationId())
         .connectionConfiguration(SourceImplementationHelpers.getTestImplementationJson());
@@ -144,10 +146,7 @@ class SourceImplementationsHandlerTest {
     final JsonNode newConfiguration = sourceConnectionImplementation.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
-    final SourceConnectionImplementation expectedSourceConnectionImplementation = new SourceConnectionImplementation()
-        .withWorkspaceId(sourceConnectionImplementation.getWorkspaceId())
-        .withSourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId())
-        .withSourceImplementationId(sourceConnectionImplementation.getSourceImplementationId())
+    final SourceConnectionImplementation expectedSourceConnectionImplementation = Jsons.clone(sourceConnectionImplementation)
         .withConfiguration(newConfiguration)
         .withTombstone(false);
 
@@ -171,6 +170,7 @@ class SourceImplementationsHandlerTest {
             .thenReturn(standardSource);
 
     final SourceImplementationUpdate sourceImplementationUpdate = new SourceImplementationUpdate()
+        .name(sourceConnectionImplementation.getName())
         .sourceImplementationId(sourceConnectionImplementation.getSourceImplementationId())
         .connectionConfiguration(newConfiguration);
 
@@ -259,11 +259,7 @@ class SourceImplementationsHandlerTest {
     final JsonNode newConfiguration = sourceConnectionImplementation.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
-    final SourceConnectionImplementation expectedSourceConnectionImplementation = new SourceConnectionImplementation()
-        .withWorkspaceId(sourceConnectionImplementation.getWorkspaceId())
-        .withSourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId())
-        .withSourceImplementationId(sourceConnectionImplementation.getSourceImplementationId())
-        .withConfiguration(sourceConnectionImplementation.getConfiguration())
+    final SourceConnectionImplementation expectedSourceConnectionImplementation = Jsons.clone(sourceConnectionImplementation)
         .withTombstone(true);
 
     when(configPersistence.getConfig(

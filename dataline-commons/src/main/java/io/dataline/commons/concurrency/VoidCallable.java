@@ -22,13 +22,17 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.commons.concurrency;
 
-/**
- * Indicates whether the worker's underlying process was successful. E.g this should return
- * SUCCESSFUL if a connection check succeeds, FAILED otherwise.
- */
-public enum JobStatus {
-  FAILED,
-  SUCCESSFUL
+import java.util.concurrent.Callable;
+
+public interface VoidCallable extends Callable<Void> {
+
+  default @Override Void call() throws Exception {
+    voidCall();
+    return null;
+  }
+
+  void voidCall() throws Exception;
+
 }
