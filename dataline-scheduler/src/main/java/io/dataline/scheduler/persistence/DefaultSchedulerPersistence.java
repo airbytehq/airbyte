@@ -33,6 +33,8 @@ import io.dataline.config.JobDiscoverSchemaConfig;
 import io.dataline.config.JobOutput;
 import io.dataline.config.JobSyncConfig;
 import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.StandardCheckConnectionOutput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.db.DatabaseHelper;
@@ -62,8 +64,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private final BasicDataSource connectionPool;
   private final Supplier<Instant> timeSupplier;
 
-  @VisibleForTesting
-  DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
+  @VisibleForTesting DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
     this.connectionPool = connectionPool;
     this.timeSupplier = timeSupplier;
   }
@@ -314,14 +315,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
 
     final String outputDb = jobEntry.get("output", String.class);
-    final JobOutput output = outputDb == null ? null : Jsons.deserialize(outputDb, JobOutput.class);
+    final JobOutput jobOutput = toJobOutput(outputDb, jobConfig);
 
     return new Job(
         jobEntry.get("id", Long.class),
         jobEntry.getValue("scope", String.class),
         JobStatus.valueOf(jobEntry.getValue("status", String.class).toUpperCase()),
         jobConfig,
-        output,
+        jobOutput,
         jobEntry.get("stdout_path", String.class),
         jobEntry.get("stderr_path", String.class),
         getEpoch(jobEntry, "created_at"),
@@ -335,4 +336,27 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     return record.getValue(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
   }
 
+  private static JobOutput toJobOutput(String outputDb, JobConfig jobConfig) {
+    if (outputDb == null) {
+      return null;
+    }
+
+    switch (jobConfig.getConfigType()) {
+      case CHECK_CONNECTION_SOURCE:
+      case CHECK_CONNECTION_DESTINATION:
+        return new JobOutput()
+            .withOutputType(JobOutput.OutputType.CHECK_CONNECTION)
+            .withCheckConnection(Jsons.deserialize(outputDb, StandardCheckConnectionOutput.class));
+      case DISCOVER_SCHEMA:
+        return new JobOutput()
+            .withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA)
+            .withDiscoverSchema(Jsons.deserialize(outputDb, StandardDiscoverSchemaOutput.class));
+      case SYNC:
+        return new JobOutput()
+            .withOutputType(JobOutput.OutputType.SYNC)
+            .withSync(Jsons.deserialize(outputDb, StandardSyncOutput.class));
+      default:
+        throw new IllegalArgumentException("Unexpected value: " + jobConfig.getConfigType());
+    }
+  }
 }
