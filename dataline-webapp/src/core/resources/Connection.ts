@@ -6,6 +6,21 @@ export type ScheduleProperties = {
   timeUnit: string;
 };
 
+export type SyncSchemaColumn = {
+  name: string;
+  selected: string;
+  type: string;
+};
+
+export type SyncSchema = {
+  tables: [
+    {
+      name: string;
+      columns: [SyncSchemaColumn];
+    }
+  ];
+};
+
 type SourceInformation = {
   sourceId: string;
   sourceName: string;
@@ -21,7 +36,7 @@ export interface Connection {
   syncMode: string;
   status: string;
   schedule: ScheduleProperties | null;
-  syncSchema: any; // TODO: fix type
+  syncSchema: SyncSchema | any;
   source?: SourceInformation;
   lastSync?: number | null;
 }
@@ -37,7 +52,7 @@ export default class ConnectionResource extends BaseResource
   readonly schedule: ScheduleProperties | null = null;
   readonly source: SourceInformation | undefined = undefined;
   readonly lastSync: number | undefined | null = null;
-  readonly syncSchema: any | null = null; // TODO: fix it
+  readonly syncSchema: SyncSchema | any = { tables: [] };
 
   pk() {
     return this.connectionId?.toString();
