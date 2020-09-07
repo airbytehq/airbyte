@@ -116,10 +116,9 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   public long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation)
       throws IOException {
 
-    final String scope =
-        ScopeHelper.createScope(
-            JobConfig.ConfigType.DISCOVER_SCHEMA,
-            sourceImplementation.getSourceImplementationId().toString());
+    final String scope = ScopeHelper.createScope(
+        JobConfig.ConfigType.DISCOVER_SCHEMA,
+        sourceImplementation.getSourceImplementationId().toString());
 
     final String imageName = Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
         .getDiscoverSchemaImage();
@@ -168,31 +167,61 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     LOGGER.info("creating pending job for scope: " + scope);
     LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
-    final String configJson = Jsons.serialize(jobConfig);
-
-    final Record record;
     try {
-      record =
-          DatabaseHelper.query(
-              connectionPool,
-              ctx -> ctx.fetch(
-                  "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?) RETURNING id",
-                  scope,
-                  now,
-                  now,
-                  JobStatus.PENDING.toString().toLowerCase(),
-                  configJson,
-                  null,
-                  JobLogs.getLogDirectory(scope),
-                  JobLogs.getLogDirectory(scope)))
-              .stream()
-              .findFirst()
-              .orElseThrow(() -> new RuntimeException("This should not happen"));
+      final Record record = DatabaseHelper.query(
+          connectionPool,
+          ctx -> ctx.fetch(
+              "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?) RETURNING id",
+              scope,
+              now,
+              now,
+              JobStatus.PENDING.toString().toLowerCase(),
+              Jsons.serialize(jobConfig),
+              null,
+              JobLogs.getLogDirectory(scope),
+              JobLogs.getLogDirectory(scope)))
+          .stream()
+          .findFirst()
+          .orElseThrow(() -> new RuntimeException("This should not happen"));
+      return record.getValue("id", Long.class);
     } catch (SQLException e) {
-      LOGGER.error("sql", e);
       throw new IOException(e);
     }
-    return record.getValue("id", Long.class);
+  }
+
+  @Override
+  public void updateStatus(long jobId, JobStatus status) throws IOException {
+    LOGGER.info("Setting job status to " + status + " for job " + jobId);
+    LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+
+    try {
+      DatabaseHelper.query(
+          connectionPool,
+          ctx -> ctx.execute(
+              "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
+              status.toString().toLowerCase(),
+              now,
+              jobId));
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public <T> void writeOutput(long jobId, T output) throws IOException {
+    LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+
+    try {
+      DatabaseHelper.query(
+          connectionPool,
+          ctx -> ctx.execute(
+              "UPDATE jobs SET output = CAST(? as JSONB), updated_at = ? WHERE id = ?",
+              Jsons.serialize(output),
+              now,
+              jobId));
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
   }
 
   @Override
@@ -204,8 +233,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
             Record jobEntry =
                 ctx.fetch("SELECT * FROM jobs WHERE id = ?", jobId).stream()
                     .findFirst()
-                    .orElseThrow(
-                        () -> new RuntimeException("Could not find job with id: " + jobId));
+                    .orElseThrow(() -> new RuntimeException("Could not find job with id: " + jobId));
 
             return getJobFromRecord(jobEntry);
           });
@@ -230,16 +258,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
   @Override
   public Optional<Job> getLastSyncJob(UUID connectionId) throws IOException {
-    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
     try {
       return DatabaseHelper.query(
           connectionPool,
           ctx -> {
             Optional<Record> jobEntryOptional =
                 ctx
-                    .fetch(
-                        "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
-                        scope,
+                    .fetch("SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) <> ? ORDER BY created_at DESC LIMIT 1",
+                        ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString()),
                         JobStatus.CANCELLED.toString().toLowerCase())
                     .stream()
                     .findFirst();
@@ -263,12 +289,10 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       return DatabaseHelper.query(
           connectionPool,
           ctx -> {
-            Optional<Record> jobEntryOptional =
-                ctx
-                    .fetch(
-                        "SELECT * FROM jobs WHERE CAST(status AS VARCHAR) = 'pending' ORDER BY created_at ASC LIMIT 1")
-                    .stream()
-                    .findFirst();
+            Optional<Record> jobEntryOptional = ctx
+                .fetch("SELECT * FROM jobs WHERE CAST(status AS VARCHAR) = 'pending' ORDER BY created_at ASC LIMIT 1")
+                .stream()
+                .findFirst();
 
             if (jobEntryOptional.isPresent()) {
               Record jobEntry = jobEntryOptional.get();
