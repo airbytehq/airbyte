@@ -42,41 +42,30 @@ public class TestServerUuid {
   private static BasicDataSource connectionPool;
 
   @BeforeAll
-  public static void dbSetup() {
+  public static void dbSetup() throws IOException, InterruptedException {
     container =
         new PostgreSQLContainer("postgres:13-alpine")
             .withDatabaseName("dataline")
             .withUsername("docker")
-            .withPassword("docker");;
+            .withPassword("docker");
     container.start();
 
-    try {
-      container.copyFileToContainer(
-          MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
-      // execInContainer uses Docker's EXEC so it needs to be split up like this
-      container.execInContainer(
-          "psql", "-d", "dataline", "-U", "docker", "-a", "-f", "/etc/init.sql");
+    container.copyFileToContainer(MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
+    // execInContainer uses Docker's EXEC so it needs to be split up like this
+    container.execInContainer("psql", "-d", "dataline", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
-    } catch (InterruptedException | IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    connectionPool =
-        DatabaseHelper.getConnectionPool(
-            container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    connectionPool = DatabaseHelper.getConnectionPool(container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }
 
   @Test
-  void testUuidFormat() throws SQLException, IOException {
+  void testUuidFormat() throws SQLException {
     Optional<String> uuid = ServerUuid.get(connectionPool);
-    assertTrue(
-        uuid.get()
-            .matches(
-                "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
+
+    assertTrue(uuid.get().matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
   }
 
   @Test
-  void testSameUuidOverInitializations() throws SQLException, IOException {
+  void testSameUuidOverInitializations() throws SQLException {
     Optional<String> uuid1 = ServerUuid.get(connectionPool);
     Optional<String> uuid2 = ServerUuid.get(connectionPool);
 

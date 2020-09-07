@@ -24,12 +24,15 @@
 
 package io.dataline.scheduler;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -38,10 +41,13 @@ import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
+import org.slf4j.MDC;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 public class JobSubmitterTest {
 
@@ -62,6 +68,7 @@ public class JobSubmitterTest {
     when(persistence.getOldestPendingJob()).thenReturn(Optional.of(job));
 
     workerRun = mock(WorkerRun.class);
+    when(workerRun.getJobRoot()).thenReturn(Files.createTempDirectory("test"));
     workerRunFactory = mock(WorkerRunFactory.class);
     when(workerRunFactory.create(job)).thenReturn(workerRun);
 
@@ -139,6 +146,24 @@ public class JobSubmitterTest {
     inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
     inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  void testMDC() throws Exception {
+    when(workerRun.call()).then(invocation -> {
+      assertEquals(
+          ImmutableMap.of(
+              "context", "worker",
+              "job_id", "1",
+              "job_root", workerRun.getJobRoot().toString()),
+          MDC.getCopyOfContextMap());
+      return SUCCESS_OUTPUT;
+    });
+
+    jobSubmitter.run();
+
+    verify(workerRun).call();
+    assertTrue(MDC.getCopyOfContextMap().isEmpty());
   }
 
 }

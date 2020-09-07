@@ -1,32 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO">
+    <Properties>
+        <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %m%n</Property>
+    </Properties>
 
   <Appenders>
-    <Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+    <Console name="Default" target="SYSTEM_OUT">
+      <PatternLayout pattern="${default-pattern}"/>
     </Console>
+    <Routing name="Context">
+        <Routes pattern="${ctx:context}">
+            <Route key="worker">
+                <File name="Worker-${ctx:job_id}" fileName="${ctx:job_root}/logs.log">
+                    <PatternLayout pattern="${default-pattern}"/>
+                </File>
+            </Route>
+        </Routes>
+        <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
+    </Routing>
   </Appenders>
 
   <Loggers>
     <Root level="TRACE">
-      <AppenderRef ref="Console"/>
+      <AppenderRef ref="Default"/>
+      <AppenderRef ref="Context"/>
     </Root>
 
-    <Logger name="org.eclipse.jetty" level="INFO" additivity="false">
-      <AppenderRef ref="Console"/>
-    </Logger>
-    <Logger name="com.github.dockerjava" level="INFO" additivity="false">
-      <AppenderRef ref="Console"/>
-    </Logger>
-    <Logger name="org.apache.hc" level="INFO" additivity="false">
-      <AppenderRef ref="Console"/>
-    </Logger>
-    <Logger name="org.jooq.tools.LoggerListener" level="INFO">
-      <AppenderRef ref="Console"/>
-    </Logger>
-    <Logger name="org.jooq" level="INFO">
-      <AppenderRef ref="Console"/>
-    </Logger>
+    <Logger name="org.eclipse.jetty" level="INFO" />
+    <Logger name="com.github.dockerjava" level="INFO" />
+    <Logger name="org.apache.hc" level="INFO" />
+    <Logger name="org.jooq" level="INFO" />
 
   </Loggers>
 
