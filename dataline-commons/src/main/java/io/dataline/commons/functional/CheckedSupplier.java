@@ -22,13 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.commons.functional;
 
-/**
- * Indicates whether the worker's underlying process was successful. E.g this should return
- * SUCCESSFUL if a connection check succeeds, FAILED otherwise.
- */
-public enum JobStatus {
-  FAILED,
-  SUCCESSFUL
+@FunctionalInterface
+public interface CheckedSupplier<T, E extends Throwable> {
+
+  T get() throws E;
+
 }

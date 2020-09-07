@@ -25,6 +25,7 @@
 package io.dataline.scheduler.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -40,6 +41,7 @@ import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.JobCheckConnectionConfig;
 import io.dataline.config.JobConfig;
 import io.dataline.config.JobDiscoverSchemaConfig;
+import io.dataline.config.JobOutput;
 import io.dataline.config.JobSyncConfig;
 import io.dataline.config.Schema;
 import io.dataline.config.SourceConnectionImplementation;
@@ -160,12 +162,12 @@ class DefaultSchedulerPersistenceTest {
     container.stop();
   }
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() throws SQLException {
     // todo (cgardens) - truncate whole db.
     DatabaseHelper.query(connectionPool, ctx -> ctx.execute("DELETE FROM jobs"));
 
-    // noinspection unchecked
     timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(NOW);
 
@@ -269,11 +271,47 @@ class DefaultSchedulerPersistenceTest {
         DESTINATION_CONNECTION_IMPLEMENTATION,
         STANDARD_SYNC);
 
+    when(timeSupplier.get()).thenReturn(NOW);
+
     final Job actual = schedulerPersistence.getJob(jobId);
 
     final Job expected = getExpectedJob(jobId);
 
     assertEquals(expected, actual);
+  }
+
+  @Test
+  void testUpdateStatus() throws IOException {
+    final long jobId = schedulerPersistence.createSyncJob(
+        SOURCE_CONNECTION_IMPLEMENTATION,
+        DESTINATION_CONNECTION_IMPLEMENTATION,
+        STANDARD_SYNC);
+
+    final Job created = schedulerPersistence.getJob(jobId);
+
+    when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
+    schedulerPersistence.updateStatus(jobId, JobStatus.FAILED);
+
+    final Job updated = schedulerPersistence.getJob(jobId);
+
+    assertEquals(JobStatus.FAILED, updated.getStatus());
+    assertNotEquals(created.getUpdatedAt(), updated.getUpdatedAt());
+  }
+
+  @Test
+  void testWriteOutput() throws IOException {
+    final long jobId = schedulerPersistence.createSyncJob(
+        SOURCE_CONNECTION_IMPLEMENTATION,
+        DESTINATION_CONNECTION_IMPLEMENTATION,
+        STANDARD_SYNC);
+
+    when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
+    final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA);
+    schedulerPersistence.writeOutput(jobId, jobOutput);
+
+    final Job updated = schedulerPersistence.getJob(jobId);
+
+    assertEquals(Optional.of(jobOutput), updated.getOutput());
   }
 
   @Test
