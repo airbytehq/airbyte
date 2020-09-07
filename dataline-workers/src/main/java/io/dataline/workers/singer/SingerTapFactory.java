@@ -69,15 +69,13 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
   private Process tapProcess = null;
   private BufferedReader bufferedReader = null;
 
-  public SingerTapFactory(
-                          final String imageName,
+  public SingerTapFactory(final String imageName,
                           final ProcessBuilderFactory pbf,
                           final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this(imageName, pbf, new SingerJsonStreamFactory(), discoverSchemaWorker);
   }
 
-  public SingerTapFactory(
-                          final String imageName,
+  public SingerTapFactory(final String imageName,
                           final ProcessBuilderFactory pbf,
                           final StreamFactory streamFactory,
                           final SingerDiscoverSchemaWorker discoverSchemaWorker) {
