@@ -120,7 +120,7 @@ class SingerTapFactoryTest {
 
     final OutputAndStatus<SingerCatalog> discoverSchemaOutput = new OutputAndStatus<>(JobStatus.SUCCESSFUL, singerCatalog);
 
-    when(discoverSchemaWorker.runInternal(discoverSchemaInput, discoverSchemaJobRoot))
+    when(discoverSchemaWorker.discoverInternal(discoverSchemaInput, discoverSchemaJobRoot))
         .thenReturn(discoverSchemaOutput);
 
     when(pbf.create(
@@ -161,7 +161,7 @@ class SingerTapFactoryTest {
 
     assertEquals(expected, actual.collect(Collectors.toList()));
 
-    verify(discoverSchemaWorker).runInternal(discoverSchemaInput, discoverSchemaJobRoot);
+    verify(discoverSchemaWorker).discoverInternal(discoverSchemaInput, discoverSchemaJobRoot);
   }
 
 }

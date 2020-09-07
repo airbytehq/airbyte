@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultSyncWorker implements SyncWorker {
+public class DefaultSyncWorker extends BaseSyncWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSyncWorker.class);
 
@@ -60,7 +60,7 @@ public class DefaultSyncWorker implements SyncWorker {
   }
 
   @Override
-  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path jobRoot) {
+  public OutputAndStatus<StandardSyncOutput> runInternal(StandardSyncInput syncInput, Path jobRoot) {
     long startTime = System.currentTimeMillis();
 
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);

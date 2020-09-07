@@ -83,7 +83,7 @@ class WorkerRunFactoryTest {
     factory.create(job);
 
     StandardCheckConnectionInput expectedInput = new StandardCheckConnectionInput().withConnectionConfiguration(CONFIG);
-    ArgumentCaptor<Worker<StandardCheckConnectionInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
+    ArgumentCaptor<Worker<StandardCheckConnectionInput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof CheckConnectionWorker);
   }
@@ -97,7 +97,7 @@ class WorkerRunFactoryTest {
     factory.create(job);
 
     StandardDiscoverSchemaInput expectedInput = new StandardDiscoverSchemaInput().withConnectionConfiguration(CONFIG);
-    ArgumentCaptor<Worker<StandardDiscoverSchemaInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
+    ArgumentCaptor<Worker<StandardDiscoverSchemaInput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof DiscoverSchemaWorker);
   }
@@ -114,7 +114,7 @@ class WorkerRunFactoryTest {
         .withDestinationConnectionImplementation(job.getConfig().getSync().getDestinationConnectionImplementation())
         .withStandardSync(job.getConfig().getSync().getStandardSync());
 
-    ArgumentCaptor<Worker<StandardSyncInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
+    ArgumentCaptor<Worker<StandardSyncInput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof SyncWorker);
   }

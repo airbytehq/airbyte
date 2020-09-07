@@ -142,7 +142,7 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput()
         .withConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
     Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
-    return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot);
+    return discoverSchemaWorker.discoverInternal(discoveryInput, discoverJobRoot);
   }
 
 }

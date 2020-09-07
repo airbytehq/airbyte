@@ -24,11 +24,12 @@
 
 package io.dataline.workers.singer;
 
+import io.dataline.config.JobOutput;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.workers.CheckConnectionWorker;
+import io.dataline.workers.BaseCheckConnectionWorker;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
@@ -38,7 +39,7 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerCheckConnectionWorker implements CheckConnectionWorker {
+public class SingerCheckConnectionWorker extends BaseCheckConnectionWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerCheckConnectionWorker.class);
 
@@ -49,13 +50,13 @@ public class SingerCheckConnectionWorker implements CheckConnectionWorker {
   }
 
   @Override
-  public OutputAndStatus<StandardCheckConnectionOutput> run(StandardCheckConnectionInput input, Path jobRoot)
+  protected OutputAndStatus<StandardCheckConnectionOutput> runInternal(StandardCheckConnectionInput input, Path jobRoot)
       throws InvalidCredentialsException, InvalidCatalogException {
 
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput()
         .withConnectionConfiguration(input.getConnectionConfiguration());
 
-    final OutputAndStatus<StandardDiscoverSchemaOutput> outputAndStatus = discoverSchemaWorker.run(discoverSchemaInput, jobRoot);
+    final OutputAndStatus<JobOutput> outputAndStatus = discoverSchemaWorker.run(discoverSchemaInput, jobRoot);
 
     final JobStatus jobStatus;
     final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput();

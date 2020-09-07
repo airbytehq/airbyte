@@ -47,7 +47,7 @@ public class WorkerRun implements Callable<OutputAndStatus<?>> {
 
   public <InputType> WorkerRun(final Path jobRoot,
                                final InputType input,
-                               final Worker<InputType, ?> worker) {
+                               final Worker<InputType> worker) {
     this.jobRoot = jobRoot;
     this.workerRun = () -> worker.run(input, jobRoot);
   }

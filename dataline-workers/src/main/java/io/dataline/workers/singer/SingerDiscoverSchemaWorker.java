@@ -35,7 +35,7 @@ import io.dataline.config.Schema;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.singer.SingerCatalog;
-import io.dataline.workers.DiscoverSchemaWorker;
+import io.dataline.workers.BaseDiscoverSchemaWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
+public class SingerDiscoverSchemaWorker extends BaseDiscoverSchemaWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoverSchemaWorker.class);
 
@@ -69,7 +69,7 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
   // package private since package-local classes need direct access to singer catalog, and the
   // conversion from SingerSchema to Dataline schema is lossy
-  OutputAndStatus<SingerCatalog> runInternal(StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot) throws InvalidCredentialsException {
+  OutputAndStatus<SingerCatalog> discoverInternal(StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot) throws InvalidCredentialsException {
     // todo (cgardens) - just getting original impl to line up with new iface for now. this can be
     // reduced.
     final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
@@ -106,9 +106,9 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
   }
 
   @Override
-  public OutputAndStatus<StandardDiscoverSchemaOutput> run(StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot)
+  public OutputAndStatus<StandardDiscoverSchemaOutput> runInternal(StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot)
       throws InvalidCredentialsException {
-    OutputAndStatus<SingerCatalog> output = runInternal(discoverSchemaInput, jobRoot);
+    OutputAndStatus<SingerCatalog> output = discoverInternal(discoverSchemaInput, jobRoot);
     JobStatus status = output.getStatus();
 
     if (output.getOutput().isPresent()) {

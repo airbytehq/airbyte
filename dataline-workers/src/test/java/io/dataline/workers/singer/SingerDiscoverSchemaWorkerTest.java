@@ -81,7 +81,7 @@ public class SingerDiscoverSchemaWorkerTest {
   @Test
   public void testDiscoverSchema() throws IOException, InterruptedException, InvalidCredentialsException {
     SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
-    OutputAndStatus<StandardDiscoverSchemaOutput> run = worker.run(input, jobRoot);
+    OutputAndStatus<StandardDiscoverSchemaOutput> run = worker.runInternal(input, jobRoot);
 
     assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
 
@@ -109,7 +109,7 @@ public class SingerDiscoverSchemaWorkerTest {
   @Test
   public void testCancel() throws InvalidCredentialsException {
     SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
-    worker.run(input, jobRoot);
+    worker.runInternal(input, jobRoot);
 
     worker.cancel();
 

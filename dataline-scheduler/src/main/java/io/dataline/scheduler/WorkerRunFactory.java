@@ -79,7 +79,8 @@ public class WorkerRunFactory {
         return creator.create(
             jobRoot,
             checkConnectionInput,
-            new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf)));
+            new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf))
+        );
       case DISCOVER_SCHEMA:
         final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
         return creator.create(
@@ -99,7 +100,8 @@ public class WorkerRunFactory {
             // mediated in DefaultSyncWorker.
             new DefaultSyncWorker(
                 new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
-                new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf)));
+                new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf))
+        );
       default:
         throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }
@@ -127,7 +129,7 @@ public class WorkerRunFactory {
   @FunctionalInterface
   interface Creator {
 
-    <T> WorkerRun create(Path jobRoot, T input, Worker<T, ?> worker);
+    <T> WorkerRun create(Path jobRoot, T input, Worker<T> worker);
 
   }
 

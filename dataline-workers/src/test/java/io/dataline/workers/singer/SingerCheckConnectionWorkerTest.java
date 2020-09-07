@@ -24,20 +24,13 @@
 
 package io.dataline.workers.singer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.json.Jsons;
+import io.dataline.config.JobOutput;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
@@ -48,6 +41,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class SingerCheckConnectionWorkerTest {
 
@@ -71,12 +71,12 @@ public class SingerCheckConnectionWorkerTest {
 
   @Test
   public void testSuccessfulConnection() throws InvalidCredentialsException, InvalidCatalogException {
-    OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput =
-        new OutputAndStatus<>(JobStatus.SUCCESSFUL, mock(StandardDiscoverSchemaOutput.class));
+    OutputAndStatus<JobOutput> discoverOutput =
+        new OutputAndStatus<>(JobStatus.SUCCESSFUL, mock(JobOutput.class));
     when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
     final SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(discoverSchemaWorker);
-    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
+    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.runInternal(input, jobRoot);
 
     assertEquals(JobStatus.SUCCESSFUL, output.getStatus());
     assertTrue(output.getOutput().isPresent());
@@ -88,11 +88,11 @@ public class SingerCheckConnectionWorkerTest {
 
   @Test
   public void testFailedConnection() throws InvalidCredentialsException, InvalidCatalogException {
-    OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput = new OutputAndStatus<>(JobStatus.FAILED, null);
+    OutputAndStatus<JobOutput> discoverOutput = new OutputAndStatus<>(JobStatus.FAILED, null);
     when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
     final SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(discoverSchemaWorker);
-    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
+    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.runInternal(input, jobRoot);
 
     assertEquals(JobStatus.FAILED, output.getStatus());
     assertTrue(output.getOutput().isPresent());
@@ -104,8 +104,8 @@ public class SingerCheckConnectionWorkerTest {
 
   @Test
   public void testCancel() throws InvalidCredentialsException, InvalidCatalogException {
-    OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput =
-        new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverSchemaOutput());
+    OutputAndStatus<JobOutput> discoverOutput =
+        new OutputAndStatus<>(JobStatus.SUCCESSFUL, new JobOutput());
     when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
     final SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(discoverSchemaWorker);

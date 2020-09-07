@@ -38,7 +38,7 @@ import org.mockito.Mockito;
 class WorkerRunTest {
 
   private Path path;
-  private Worker<Integer, ?> worker;
+  private Worker<Integer> worker;
 
   @SuppressWarnings("unchecked")
   @BeforeEach

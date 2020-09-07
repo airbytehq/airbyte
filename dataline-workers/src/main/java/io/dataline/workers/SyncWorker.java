@@ -27,4 +27,4 @@ package io.dataline.workers;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
 
-public interface SyncWorker extends Worker<StandardSyncInput, StandardSyncOutput> {}
+public interface SyncWorker extends Worker<StandardSyncInput> {}
