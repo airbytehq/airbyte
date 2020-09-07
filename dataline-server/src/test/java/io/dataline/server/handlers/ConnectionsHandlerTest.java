@@ -41,7 +41,6 @@ import io.dataline.api.model.ConnectionUpdate;
 import io.dataline.api.model.SourceSchema;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.enums.Enums;
-import io.dataline.config.ConfigSchema;
 import io.dataline.config.DataType;
 import io.dataline.config.Schedule;
 import io.dataline.config.Schema;
@@ -49,7 +48,7 @@ import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.server.helpers.ConnectionHelpers;
 import io.dataline.server.helpers.SourceImplementationHelpers;
@@ -61,7 +60,7 @@ import org.junit.jupiter.api.Test;
 
 class ConnectionsHandlerTest {
 
-  private ConfigPersistence configPersistence;
+  private ConfigRepository configRepository;
   private Supplier<UUID> uuidGenerator;
 
   private StandardSync standardSync;
@@ -72,31 +71,25 @@ class ConnectionsHandlerTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() throws IOException {
-    configPersistence = mock(ConfigPersistence.class);
+    configRepository = mock(ConfigRepository.class);
     uuidGenerator = mock(Supplier.class);
 
     sourceImplementation = SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID());
     standardSync = ConnectionHelpers.generateSync(sourceImplementation.getSourceImplementationId());
     standardSyncSchedule = ConnectionHelpers.generateSchedule(standardSync.getConnectionId());
 
-    connectionsHandler = new ConnectionsHandler(configPersistence, uuidGenerator);
+    connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator);
   }
 
   @Test
   void testCreateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
 
-    when(configPersistence.getConfig(
-        ConfigSchema.STANDARD_SYNC,
-        standardSync.getConnectionId().toString(),
-        StandardSync.class))
-            .thenReturn(standardSync);
+    when(configRepository.getStandardSync(standardSync.getConnectionId()))
+        .thenReturn(standardSync);
 
-    when(configPersistence.getConfig(
-        ConfigSchema.STANDARD_SYNC_SCHEDULE,
-        standardSyncSchedule.getConnectionId().toString(),
-        StandardSyncSchedule.class))
-            .thenReturn(standardSyncSchedule);
+    when(configRepository.getStandardSyncSchedule(standardSyncSchedule.getConnectionId()))
+        .thenReturn(standardSyncSchedule);
 
     final ConnectionCreate connectionCreate = new ConnectionCreate()
         .sourceImplementationId(standardSync.getSourceImplementationId())
@@ -117,17 +110,9 @@ class ConnectionsHandlerTest {
 
     assertEquals(expectedConnectionRead, actualConnectionRead);
 
-    verify(configPersistence)
-        .writeConfig(
-            ConfigSchema.STANDARD_SYNC,
-            standardSync.getConnectionId().toString(),
-            standardSync);
+    verify(configRepository).writeStandardSync(standardSync);
 
-    verify(configPersistence)
-        .writeConfig(
-            ConfigSchema.STANDARD_SYNC_SCHEDULE,
-            standardSyncSchedule.getConnectionId().toString(),
-            standardSyncSchedule);
+    verify(configRepository).writeStandardSchedule(standardSyncSchedule);
   }
 
   @Test
@@ -157,19 +142,13 @@ class ConnectionsHandlerTest {
         .withConnectionId(standardSyncSchedule.getConnectionId())
         .withManual(true);
 
-    when(configPersistence.getConfig(
-        ConfigSchema.STANDARD_SYNC,
-        standardSync.getConnectionId().toString(),
-        StandardSync.class))
-            .thenReturn(standardSync)
-            .thenReturn(updatedStandardSync);
+    when(configRepository.getStandardSync(standardSync.getConnectionId()))
+        .thenReturn(standardSync)
+        .thenReturn(updatedStandardSync);
 
-    when(configPersistence.getConfig(
-        ConfigSchema.STANDARD_SYNC_SCHEDULE,
-        standardSyncSchedule.getConnectionId().toString(),
-        StandardSyncSchedule.class))
-            .thenReturn(standardSyncSchedule)
-            .thenReturn(updatedPersistenceSchedule);
+    when(configRepository.getStandardSyncSchedule(standardSyncSchedule.getConnectionId()))
+        .thenReturn(standardSyncSchedule)
+        .thenReturn(updatedPersistenceSchedule);
 
     final ConnectionRead actualConnectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
@@ -184,32 +163,17 @@ class ConnectionsHandlerTest {
 
     assertEquals(expectedConnectionRead, actualConnectionRead);
 
-    verify(configPersistence)
-        .writeConfig(
-            ConfigSchema.STANDARD_SYNC,
-            standardSync.getConnectionId().toString(),
-            updatedStandardSync);
-
-    verify(configPersistence)
-        .writeConfig(
-            ConfigSchema.STANDARD_SYNC_SCHEDULE,
-            standardSyncSchedule.getConnectionId().toString(),
-            updatedPersistenceSchedule);
+    verify(configRepository).writeStandardSync(updatedStandardSync);
+    verify(configRepository).writeStandardSchedule(updatedPersistenceSchedule);
   }
 
   @Test
   void testGetConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configPersistence.getConfig(
-        ConfigSchema.STANDARD_SYNC,
-        standardSync.getConnectionId().toString(),
-        StandardSync.class))
-            .thenReturn(standardSync);
+    when(configRepository.getStandardSync(standardSync.getConnectionId()))
+        .thenReturn(standardSync);
 
-    when(configPersistence.getConfig(
-        ConfigSchema.STANDARD_SYNC_SCHEDULE,
-        standardSync.getConnectionId().toString(),
-        StandardSyncSchedule.class))
-            .thenReturn(standardSyncSchedule);
+    when(configRepository.getStandardSyncSchedule(standardSync.getConnectionId()))
+        .thenReturn(standardSyncSchedule);
 
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(standardSync.getConnectionId());
@@ -220,28 +184,17 @@ class ConnectionsHandlerTest {
 
   @Test
   void testListConnectionsForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    // mock list off all syncs
-    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class))
+    when(configRepository.listStandardSyncs())
         .thenReturn(Lists.newArrayList(standardSync));
-
-    // mock get source connection impl (used to check that connection is associated with given
-    // workspace)
-    when(configPersistence.getConfig(
-        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
-        sourceImplementation.getSourceImplementationId().toString(),
-        SourceConnectionImplementation.class))
-            .thenReturn(sourceImplementation);
-
-    // mock get schedule for the now verified connection
-    when(configPersistence.getConfig(
-        ConfigSchema.STANDARD_SYNC_SCHEDULE,
-        standardSync.getConnectionId().toString(),
-        StandardSyncSchedule.class))
-            .thenReturn(standardSyncSchedule);
+    when(configRepository.getSourceConnectionImplementation(sourceImplementation.getSourceImplementationId()))
+        .thenReturn(sourceImplementation);
+    when(configRepository.getStandardSync(standardSync.getConnectionId()))
+        .thenReturn(standardSync);
+    when(configRepository.getStandardSyncSchedule(standardSync.getConnectionId()))
+        .thenReturn(standardSyncSchedule);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(sourceImplementation.getWorkspaceId());
-    final ConnectionReadList actualConnectionReadList =
-        connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
+    final ConnectionReadList actualConnectionReadList = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
 
     assertEquals(
         ConnectionHelpers.generateExpectedConnectionRead(standardSync),

@@ -83,6 +83,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import javax.validation.Valid;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.eclipse.jetty.http.HttpStatus;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.dataline.api.V1Api {
@@ -100,8 +101,8 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
 
   public ConfigurationApi(final Path dbRoot, BasicDataSource connectionPool) {
-    ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(dbRoot));
-    final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation(configRepository);
+    final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(dbRoot));
+    final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation();
     workspacesHandler = new WorkspacesHandler(configRepository);
     sourcesHandler = new SourcesHandler(configRepository);
     sourceSpecificationsHandler = new SourceSpecificationsHandler(configRepository);
@@ -120,185 +121,191 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
 
   @Override
   public WorkspaceRead getWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return workspacesHandler.getWorkspace(workspaceIdRequestBody);
+    return execute(() -> workspacesHandler.getWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   public WorkspaceRead getWorkspaceBySlug(@Valid SlugRequestBody slugRequestBody) {
-    return workspacesHandler.getWorkspaceBySlug(slugRequestBody);
+    return execute(() -> workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
 
   @Override
   public WorkspaceRead updateWorkspace(@Valid WorkspaceUpdate workspaceUpdate) {
-    return workspacesHandler.updateWorkspace(workspaceUpdate);
+    return execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
   }
 
   // SOURCE
 
   @Override
   public SourceReadList listSources() {
-    return sourcesHandler.listSources();
+    return execute(sourcesHandler::listSources);
   }
 
   @Override
   public SourceRead getSource(@Valid SourceIdRequestBody sourceIdRequestBody) {
-    return sourcesHandler.getSource(sourceIdRequestBody);
+    return execute(() -> sourcesHandler.getSource(sourceIdRequestBody));
   }
 
   // SOURCE SPECIFICATION
 
   @Override
   public SourceSpecificationRead getSourceSpecification(@Valid SourceIdRequestBody sourceIdRequestBody) {
-    return sourceSpecificationsHandler.getSourceSpecification(sourceIdRequestBody);
+    return execute(() -> sourceSpecificationsHandler.getSourceSpecification(sourceIdRequestBody));
   }
 
   // SOURCE IMPLEMENTATION
 
   @Override
   public SourceImplementationRead createSourceImplementation(@Valid SourceImplementationCreate sourceImplementationCreate) {
-    return sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate);
+    return execute(() -> sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate));
   }
 
   @Override
   public SourceImplementationRead updateSourceImplementation(@Valid SourceImplementationUpdate sourceImplementationUpdate) {
-    return sourceImplementationsHandler.updateSourceImplementation(sourceImplementationUpdate);
+    return execute(() -> sourceImplementationsHandler.updateSourceImplementation(sourceImplementationUpdate));
   }
 
   @Override
   public SourceImplementationReadList listSourceImplementationsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return sourceImplementationsHandler.listSourceImplementationsForWorkspace(workspaceIdRequestBody);
+    return execute(() -> sourceImplementationsHandler.listSourceImplementationsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   public SourceImplementationRead getSourceImplementation(@Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    return sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
+    return execute(() -> sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody));
   }
 
   @Override
   public void deleteSourceImplementation(@Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
+    execute(() -> {
+      sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
+      return null;
+    });
   }
 
   @Override
   public CheckConnectionRead checkConnectionToSourceImplementation(@Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    return schedulerHandler.checkSourceImplementationConnection(sourceImplementationIdRequestBody);
+    return execute(() -> schedulerHandler.checkSourceImplementationConnection(sourceImplementationIdRequestBody));
   }
 
   @Override
   public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(@Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    return schedulerHandler.discoverSchemaForSourceImplementation(sourceImplementationIdRequestBody);
+    return execute(() -> schedulerHandler.discoverSchemaForSourceImplementation(sourceImplementationIdRequestBody));
   }
 
   // DESTINATION
 
   @Override
   public DestinationReadList listDestinations() {
-    return destinationsHandler.listDestinations();
+    return execute(destinationsHandler::listDestinations);
   }
 
   @Override
   public DestinationRead getDestination(@Valid DestinationIdRequestBody destinationIdRequestBody) {
-    return destinationsHandler.getDestination(destinationIdRequestBody);
+    return execute(() -> destinationsHandler.getDestination(destinationIdRequestBody));
   }
 
   // DESTINATION SPECIFICATION
 
   @Override
   public DestinationSpecificationRead getDestinationSpecification(@Valid DestinationIdRequestBody destinationIdRequestBody) {
-    return destinationSpecificationsHandler.getDestinationSpecification(destinationIdRequestBody);
+    return execute(() -> destinationSpecificationsHandler.getDestinationSpecification(destinationIdRequestBody));
   }
 
   // DESTINATION IMPLEMENTATION
   @Override
   public DestinationImplementationRead createDestinationImplementation(@Valid DestinationImplementationCreate destinationImplementationCreate) {
-    return destinationImplementationsHandler.createDestinationImplementation(destinationImplementationCreate);
+    return execute(() -> destinationImplementationsHandler.createDestinationImplementation(destinationImplementationCreate));
   }
 
   @Override
   public DestinationImplementationRead updateDestinationImplementation(@Valid DestinationImplementationUpdate destinationImplementationUpdate) {
-    return destinationImplementationsHandler.updateDestinationImplementation(destinationImplementationUpdate);
+    return execute(() -> destinationImplementationsHandler.updateDestinationImplementation(destinationImplementationUpdate));
   }
 
   @Override
   public DestinationImplementationReadList listDestinationImplementationsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return destinationImplementationsHandler.listDestinationImplementationsForWorkspace(workspaceIdRequestBody);
+    return execute(() -> destinationImplementationsHandler.listDestinationImplementationsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
-  public DestinationImplementationRead getDestinationImplementation(
-      @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
-    return destinationImplementationsHandler.getDestinationImplementation(destinationImplementationIdRequestBody);
+  public DestinationImplementationRead getDestinationImplementation(@Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+    return execute(() -> destinationImplementationsHandler.getDestinationImplementation(destinationImplementationIdRequestBody));
   }
 
   @Override
   public CheckConnectionRead checkConnectionToDestinationImplementation(@Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
-    return schedulerHandler.checkDestinationImplementationConnection(destinationImplementationIdRequestBody);
+    return execute(() -> schedulerHandler.checkDestinationImplementationConnection(destinationImplementationIdRequestBody));
   }
 
   // CONNECTION
 
   @Override
   public ConnectionRead createConnection(@Valid ConnectionCreate connectionCreate) {
-    return connectionsHandler.createConnection(connectionCreate);
+    return execute(() -> connectionsHandler.createConnection(connectionCreate));
   }
 
   @Override
   public ConnectionRead updateConnection(@Valid ConnectionUpdate connectionUpdate) {
-    return connectionsHandler.updateConnection(connectionUpdate);
+    return execute(() -> connectionsHandler.updateConnection(connectionUpdate));
   }
 
   @Override
   public ConnectionReadList listConnectionsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
+    return execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   public ConnectionRead getConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    return connectionsHandler.getConnection(connectionIdRequestBody);
+    return execute(() -> connectionsHandler.getConnection(connectionIdRequestBody));
   }
 
   @Override
   public ConnectionSyncRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    return schedulerHandler.syncConnection(connectionIdRequestBody);
+    return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
 
   // JOB HISTORY
 
   @Override
   public JobReadList listJobsFor(@Valid JobListRequestBody jobListRequestBody) {
-    return jobHistoryHandler.listJobsFor(jobListRequestBody);
+    return execute(() -> jobHistoryHandler.listJobsFor(jobListRequestBody));
   }
 
   @Override
   public JobInfoRead getJobInfo(@Valid JobIdRequestBody jobIdRequestBody) {
-    return jobHistoryHandler.getJobInfo(jobIdRequestBody);
+    return execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
   }
 
   // WEB BACKEND
 
   @Override
   public WbConnectionReadList webBackendListConnectionsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
+    return execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   public WbConnectionRead webBackendGetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    return webBackendConnectionsHandler.webBackendGetConnection(connectionIdRequestBody);
+    return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(connectionIdRequestBody));
   }
 
   private <T> T execute(HandlerCall<T> call) {
     try {
       return call.call();
     } catch (ConfigNotFoundException e) {
-      throw new KnownException()
-    } catch (IOException e) {
-      e.printStackTrace();
+      throw new KnownException(
+          HttpStatus.NOT_FOUND_404,
+          String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()), e);
     } catch (JsonValidationException e) {
-      e.printStackTrace();
+      throw new KnownException(
+          HttpStatus.UNPROCESSABLE_ENTITY_422,
+          String.format("The provided configuration does not fulfill the specification. Errors: %s", e.getMessage()), e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  private static interface HandlerCall<T> {
+  private interface HandlerCall<T> {
 
     T call() throws ConfigNotFoundException, IOException, JsonValidationException;
 
