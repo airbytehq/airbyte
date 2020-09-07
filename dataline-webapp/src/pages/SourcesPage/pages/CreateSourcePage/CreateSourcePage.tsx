@@ -107,10 +107,16 @@ const CreateSourcePage: React.FC = () => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
+    const sourceInfo = sources.find(
+      item => item.sourceId === currentSourceImplementation?.sourceId
+    );
     setErrorStatusRequest(0);
     try {
       await createConnection(
-        {},
+        {
+          sourceId: sourceInfo?.sourceId || "",
+          sourceName: sourceInfo?.name || ""
+        },
         {
           sourceImplementationId:
             currentSourceImplementation?.sourceImplementationId,

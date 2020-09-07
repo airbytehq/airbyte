@@ -8,9 +8,10 @@ import ContentCard from "../../../../../components/ContentCard";
 import Button from "../../../../../components/Button";
 import StatusMainInfo from "./StatusMainInfo";
 import EmptySyncHistory from "./EmptySyncHistory";
+import { Connection } from "../../../../../core/resources/Connection";
 
 type IProps = {
-  sourceData: any;
+  sourceData: Connection;
   onEnabledChange: () => void;
 };
 

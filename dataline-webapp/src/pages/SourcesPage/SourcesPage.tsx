@@ -1,11 +1,14 @@
 import React, { Suspense } from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
+import { NetworkErrorBoundary as ErrorBoundary } from "rest-hooks";
 
 import { Routes } from "../routes";
 import LoadingPage from "../../components/LoadingPage";
 import AllSourcesPage from "./pages/AllSourcesPage";
 import CreateSourcePage from "./pages/CreateSourcePage";
 import SourceItemPage from "./pages/SourceItemPage";
+
+const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
 
 const SourcesPage: React.FC = () => {
   return (
@@ -15,7 +18,9 @@ const SourcesPage: React.FC = () => {
           <CreateSourcePage />
         </Route>
         <Route path={`${Routes.Source}/:id`}>
-          <SourceItemPage />
+          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
+            <SourceItemPage />
+          </ErrorBoundary>
         </Route>
         <Route path={Routes.Root} exact>
           <AllSourcesPage />
