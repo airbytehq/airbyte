@@ -28,40 +28,37 @@ import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationRead;
 import io.dataline.api.model.DestinationReadList;
 import io.dataline.config.StandardDestination;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.server.helpers.ConfigFetchers;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
+import io.dataline.config.persistence.JsonValidationException;
+import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class DestinationsHandler {
 
-  private final ConfigPersistence configPersistence;
+  private final ConfigRepository configRepository;
 
-  public DestinationsHandler(ConfigPersistence configPersistence) {
-    this.configPersistence = configPersistence;
+  public DestinationsHandler(final ConfigRepository configRepository) {
+    this.configRepository = configRepository;
   }
 
-  public DestinationReadList listDestinations() {
-    final List<DestinationRead> destinationReads;
-    destinationReads =
-        ConfigFetchers.getStandardDestinations(configPersistence).stream()
-            .map(DestinationsHandler::toDestinationRead)
-            .collect(Collectors.toList());
+  public DestinationReadList listDestinations()
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final List<DestinationRead> reads = configRepository.listStandardDestinations()
+        .stream()
+        .map(DestinationsHandler::buildDestinationRead)
+        .collect(Collectors.toList());
 
-    final DestinationReadList destinationReadList = new DestinationReadList();
-    destinationReadList.setDestinations(destinationReads);
-    return destinationReadList;
+    return new DestinationReadList().destinations(reads);
   }
 
-  public DestinationRead getDestination(DestinationIdRequestBody destinationIdRequestBody) {
-    final UUID destinationId = destinationIdRequestBody.getDestinationId();
-    final StandardDestination standardDestination =
-        ConfigFetchers.getStandardDestination(configPersistence, destinationId);
-    return toDestinationRead(standardDestination);
+  public DestinationRead getDestination(DestinationIdRequestBody destinationIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    return buildDestinationRead(configRepository.getStandardDestination(destinationIdRequestBody.getDestinationId()));
   }
 
-  private static DestinationRead toDestinationRead(StandardDestination standardDestination) {
+  private static DestinationRead buildDestinationRead(StandardDestination standardDestination) {
     final DestinationRead destinationRead = new DestinationRead();
     destinationRead.setDestinationId(standardDestination.getDestinationId());
     destinationRead.setName(standardDestination.getName());

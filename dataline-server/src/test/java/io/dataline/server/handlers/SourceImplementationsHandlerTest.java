@@ -130,7 +130,7 @@ class SourceImplementationsHandlerTest {
     assertEquals(expectedSourceImplementationRead, actualSourceImplementationRead);
 
     verify(validator)
-        .validateSourceConnectionConfiguration(
+        .validateConfig(
             sourceConnectionSpecification.getSourceSpecificationId(),
             sourceConnectionImplementation.getConfiguration());
 

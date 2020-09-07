@@ -29,12 +29,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.dataline.config.ConfigSchema;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
@@ -60,7 +58,7 @@ class DefaultSyncJobFactoryTest {
     final SourceConnectionImplementation sourceConnectionImplementation = new SourceConnectionImplementation();
     final DestinationConnectionImplementation destinationConnectionImplementation = new DestinationConnectionImplementation();
 
-    when(configRepository.getStandardSync(        connectionId)).thenReturn(standardSync);
+    when(configRepository.getStandardSync(connectionId)).thenReturn(standardSync);
     when(configRepository.getSourceConnectionImplementation(sourceImplId)).thenReturn(sourceConnectionImplementation);
     when(configRepository.getDestinationConnectionImplementation(destinationImplId)).thenReturn(destinationConnectionImplementation);
     when(schedulerPersistence.createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync)).thenReturn(jobId);

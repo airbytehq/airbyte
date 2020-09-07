@@ -50,10 +50,11 @@ public class JobScheduler implements Runnable {
   private final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate;
   private final SyncJobFactory jobFactory;
 
-  @VisibleForTesting JobScheduler(final SchedulerPersistence schedulerPersistence,
-                                  final ConfigRepository configRepository,
-                                  final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate,
-                                  final SyncJobFactory jobFactory) {
+  @VisibleForTesting
+  JobScheduler(final SchedulerPersistence schedulerPersistence,
+               final ConfigRepository configRepository,
+               final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate,
+               final SyncJobFactory jobFactory) {
     this.schedulerPersistence = schedulerPersistence;
     this.configRepository = configRepository;
     this.scheduleJobPredicate = scheduleJobPredicate;
@@ -92,7 +93,7 @@ public class JobScheduler implements Runnable {
     }
   }
 
-  private StandardSyncSchedule getStandardSyncSchedule(StandardSync connection)  {
+  private StandardSyncSchedule getStandardSyncSchedule(StandardSync connection) {
     try {
       return configRepository.getStandardSyncSchedule(connection.getConnectionId());
     } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
@@ -102,7 +103,7 @@ public class JobScheduler implements Runnable {
 
   private List<StandardSync> getAllActiveConnections() {
     try {
-      return configRepository.getStandardSyncs();
+      return configRepository.listStandardSyncs();
     } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }

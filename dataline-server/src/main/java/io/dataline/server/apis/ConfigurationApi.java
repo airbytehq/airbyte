@@ -60,10 +60,13 @@ import io.dataline.api.model.WbConnectionReadList;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.DefaultConfigPersistence;
+import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.dataline.server.errors.KnownException;
 import io.dataline.server.handlers.ConnectionsHandler;
 import io.dataline.server.handlers.DestinationImplementationsHandler;
 import io.dataline.server.handlers.DestinationSpecificationsHandler;
@@ -76,6 +79,7 @@ import io.dataline.server.handlers.SourcesHandler;
 import io.dataline.server.handlers.WebBackendConnectionsHandler;
 import io.dataline.server.handlers.WorkspacesHandler;
 import io.dataline.server.validation.IntegrationSchemaValidation;
+import java.io.IOException;
 import java.nio.file.Path;
 import javax.validation.Valid;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -96,18 +100,18 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
 
   public ConfigurationApi(final Path dbRoot, BasicDataSource connectionPool) {
-    ConfigPersistence configPersistence = new DefaultConfigPersistence(dbRoot);
-    final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation(configPersistence);
-    workspacesHandler = new WorkspacesHandler(configPersistence);
-    sourcesHandler = new SourcesHandler(configPersistence);
-    sourceSpecificationsHandler = new SourceSpecificationsHandler(configPersistence);
-    connectionsHandler = new ConnectionsHandler(configPersistence);
-    sourceImplementationsHandler = new SourceImplementationsHandler(configPersistence, integrationSchemaValidation, connectionsHandler);
-    destinationsHandler = new DestinationsHandler(configPersistence);
-    destinationSpecificationsHandler = new DestinationSpecificationsHandler(configPersistence);
-    destinationImplementationsHandler = new DestinationImplementationsHandler(configPersistence, integrationSchemaValidation);
+    ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(dbRoot));
+    final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation(configRepository);
+    workspacesHandler = new WorkspacesHandler(configRepository);
+    sourcesHandler = new SourcesHandler(configRepository);
+    sourceSpecificationsHandler = new SourceSpecificationsHandler(configRepository);
+    connectionsHandler = new ConnectionsHandler(configRepository);
+    sourceImplementationsHandler = new SourceImplementationsHandler(configRepository, integrationSchemaValidation, connectionsHandler);
+    destinationsHandler = new DestinationsHandler(configRepository);
+    destinationSpecificationsHandler = new DestinationSpecificationsHandler(configRepository);
+    destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, integrationSchemaValidation);
     final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
-    schedulerHandler = new SchedulerHandler(configPersistence, schedulerPersistence);
+    schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
   }
@@ -162,8 +166,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
 
   @Override
   public SourceImplementationReadList listSourceImplementationsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return sourceImplementationsHandler.listSourceImplementationsForWorkspace(
-        workspaceIdRequestBody);
+    return sourceImplementationsHandler.listSourceImplementationsForWorkspace(workspaceIdRequestBody);
   }
 
   @Override
@@ -183,8 +186,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
 
   @Override
   public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(@Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
-    return schedulerHandler.discoverSchemaForSourceImplementation(
-        sourceImplementationIdRequestBody);
+    return schedulerHandler.discoverSchemaForSourceImplementation(sourceImplementationIdRequestBody);
   }
 
   // DESTINATION
@@ -209,33 +211,28 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   // DESTINATION IMPLEMENTATION
   @Override
   public DestinationImplementationRead createDestinationImplementation(@Valid DestinationImplementationCreate destinationImplementationCreate) {
-    return destinationImplementationsHandler.createDestinationImplementation(
-        destinationImplementationCreate);
+    return destinationImplementationsHandler.createDestinationImplementation(destinationImplementationCreate);
   }
 
   @Override
   public DestinationImplementationRead updateDestinationImplementation(@Valid DestinationImplementationUpdate destinationImplementationUpdate) {
-    return destinationImplementationsHandler.updateDestinationImplementation(
-        destinationImplementationUpdate);
+    return destinationImplementationsHandler.updateDestinationImplementation(destinationImplementationUpdate);
   }
 
   @Override
   public DestinationImplementationReadList listDestinationImplementationsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return destinationImplementationsHandler.listDestinationImplementationsForWorkspace(
-        workspaceIdRequestBody);
+    return destinationImplementationsHandler.listDestinationImplementationsForWorkspace(workspaceIdRequestBody);
   }
 
   @Override
   public DestinationImplementationRead getDestinationImplementation(
-                                                                    @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
-    return destinationImplementationsHandler.getDestinationImplementation(
-        destinationImplementationIdRequestBody);
+      @Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+    return destinationImplementationsHandler.getDestinationImplementation(destinationImplementationIdRequestBody);
   }
 
   @Override
   public CheckConnectionRead checkConnectionToDestinationImplementation(@Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
-    return schedulerHandler.checkDestinationImplementationConnection(
-        destinationImplementationIdRequestBody);
+    return schedulerHandler.checkDestinationImplementationConnection(destinationImplementationIdRequestBody);
   }
 
   // CONNECTION
@@ -287,6 +284,24 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   @Override
   public WbConnectionRead webBackendGetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return webBackendConnectionsHandler.webBackendGetConnection(connectionIdRequestBody);
+  }
+
+  private <T> T execute(HandlerCall<T> call) {
+    try {
+      return call.call();
+    } catch (ConfigNotFoundException e) {
+      throw new KnownException()
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (JsonValidationException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private static interface HandlerCall<T> {
+
+    T call() throws ConfigNotFoundException, IOException, JsonValidationException;
+
   }
 
 }

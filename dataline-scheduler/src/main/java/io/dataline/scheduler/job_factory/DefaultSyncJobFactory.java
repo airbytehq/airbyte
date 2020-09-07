@@ -24,8 +24,6 @@
 
 package io.dataline.scheduler.job_factory;
 
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;

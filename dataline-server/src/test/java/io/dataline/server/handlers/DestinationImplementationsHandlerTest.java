@@ -150,7 +150,7 @@ class DestinationImplementationsHandlerTest {
     assertEquals(expectedDestinationImplementationRead, actualDestinationImplementationRead);
 
     verify(validator)
-        .validateDestinationConnectionConfiguration(
+        .validateConfig(
             destinationConnectionSpecification.getDestinationSpecificationId(),
             destinationConnectionImplementation.getConfiguration());
 
