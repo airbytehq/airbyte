@@ -17,6 +17,7 @@ import PrepareDropDownLists from "./components/PrepareDropDownLists";
 import FrequencyConfig from "../../data/FrequencyConfig.json";
 import { Routes } from "../routes";
 import useRouter from "../../components/hooks/useRouterHook";
+import { Source } from "../../core/resources/Source";
 
 const Content = styled.div`
   width: 100%;
@@ -166,14 +167,20 @@ const OnboardingPage: React.FC = () => {
     }
   };
 
-  const onSubmitConnectionStep = async (values: { frequency: string }) => {
+  const onSubmitConnectionStep = async (values: {
+    frequency: string;
+    source?: Source;
+  }) => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
     setErrorStatusRequest(0);
     try {
       await createConnection(
-        {},
+        {
+          sourceId: values.source?.sourceId || "",
+          sourceName: values.source?.name || ""
+        },
         {
           sourceImplementationId: sources[0].sourceImplementationId,
           destinationImplementationId:

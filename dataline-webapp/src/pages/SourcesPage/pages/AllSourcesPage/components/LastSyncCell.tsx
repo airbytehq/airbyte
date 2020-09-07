@@ -20,14 +20,20 @@ type IProps = {
   enabled?: boolean;
 };
 
-const LastSyncCell: React.FC<IProps> = ({ value, enabled }) => (
-  <Content enabled={enabled}>
-    <CalendarIcon icon={faCalendarAlt} />
-    <FormattedRelativeTime
-      value={(value - Date.now()) / 1000}
-      updateIntervalInSeconds={60}
-    />
-  </Content>
-);
+const LastSyncCell: React.FC<IProps> = ({ value, enabled }) => {
+  if (!value) {
+    return null;
+  }
+
+  return (
+    <Content enabled={enabled}>
+      <CalendarIcon icon={faCalendarAlt} />
+      <FormattedRelativeTime
+        value={(value - Date.now()) / 1000}
+        updateIntervalInSeconds={60}
+      />
+    </Content>
+  );
+};
 
 export default LastSyncCell;
