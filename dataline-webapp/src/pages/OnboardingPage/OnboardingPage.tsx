@@ -94,6 +94,7 @@ const OnboardingPage: React.FC = () => {
       await createSourcesImplementation(
         {},
         {
+          name: values.name,
           workspaceId: config.ui.workspaceId,
           sourceSpecificationId: values.specificationId,
           connectionConfiguration: values.connectionConfiguration
@@ -136,6 +137,7 @@ const OnboardingPage: React.FC = () => {
       await createDestinationsImplementation(
         {},
         {
+          name: values.name,
           workspaceId: config.ui.workspaceId,
           destinationSpecificationId: values.specificationId,
           connectionConfiguration: values.connectionConfiguration

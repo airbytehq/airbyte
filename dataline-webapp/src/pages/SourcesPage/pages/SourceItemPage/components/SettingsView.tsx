@@ -76,6 +76,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
     await updateSourceImplementation(
       {},
       {
+        name: values.name,
         sourceImplementationId: sourceData.source?.sourceImplementationId,
         connectionConfiguration: values.connectionConfiguration
       }
@@ -97,7 +98,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
           ]}
           formValues={{
             ...sourceImplementation?.connectionConfiguration,
-            name: sourceData.name,
+            name: sourceImplementation?.name,
             serviceType: sourceData.source?.sourceId || "",
             frequency: schedule?.value || ""
           }}
