@@ -28,7 +28,6 @@ import io.dataline.config.JobOutput;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.BaseCheckConnectionWorker;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.InvalidCatalogException;

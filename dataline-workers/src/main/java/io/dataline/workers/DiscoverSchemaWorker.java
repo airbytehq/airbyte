@@ -25,6 +25,5 @@
 package io.dataline.workers;
 
 import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
 
 public interface DiscoverSchemaWorker extends Worker<StandardDiscoverSchemaInput> {}
