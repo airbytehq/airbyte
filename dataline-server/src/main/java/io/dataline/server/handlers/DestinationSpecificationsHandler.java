@@ -32,6 +32,7 @@ import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.server.errors.KnownException;
 import java.io.IOException;
+import org.eclipse.jetty.http.HttpStatus;
 
 public class DestinationSpecificationsHandler {
 
@@ -51,7 +52,7 @@ public class DestinationSpecificationsHandler {
         .findFirst()
         .orElseThrow(
             () -> new KnownException(
-                404,
+                HttpStatus.NOT_FOUND_404,
                 String.format(
                     "Could not find a destination specification for destination: %s",
                     destinationIdRequestBody.getDestinationId())));
