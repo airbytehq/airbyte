@@ -38,7 +38,7 @@ import org.mockito.Mockito;
 class WorkerRunTest {
 
   private Path path;
-  private Worker<Integer, ?> worker;
+  private Worker<Integer, String> worker;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -49,7 +49,7 @@ class WorkerRunTest {
 
   @Test
   void name() throws Exception {
-    new WorkerRun(path, 1, worker).call();
+    new WorkerRun<>(path, 1, worker, Mockito.mock(WorkerRunFactory.OutputConverter.class)).call();
 
     assertTrue(Files.exists(path));
     verify(worker).run(1, path);

@@ -25,9 +25,11 @@
 package io.dataline.scheduler;
 
 import io.dataline.commons.concurrency.LifecycledCallable;
+import io.dataline.config.JobOutput;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.OutputAndStatus;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +64,7 @@ public class JobSubmitter implements Runnable {
   }
 
   private void submitJob(Job job) {
-    threadPool.submit(new LifecycledCallable.Builder<>(workerRunFactory.create(job))
+    threadPool.submit(new LifecycledCallable.Builder<>((Callable<OutputAndStatus<JobOutput>>) workerRunFactory.create(job))
         .setOnStart(() -> persistence.updateStatus(job.getId(), JobStatus.RUNNING))
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {

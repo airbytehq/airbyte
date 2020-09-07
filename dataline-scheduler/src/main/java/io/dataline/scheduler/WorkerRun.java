@@ -25,6 +25,7 @@
 package io.dataline.scheduler;
 
 import io.dataline.commons.functional.CheckedSupplier;
+import io.dataline.config.JobOutput;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
 import java.nio.file.Files;
@@ -38,26 +39,28 @@ import org.slf4j.LoggerFactory;
  * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
  * persisted to the db.
  */
-public class WorkerRun implements Callable<OutputAndStatus<?>> {
+public class WorkerRun<OutputType> implements Callable<OutputAndStatus<JobOutput>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
 
   private final Path jobRoot;
-  private final CheckedSupplier<OutputAndStatus<?>, Exception> workerRun;
+  private final WorkerRunFactory.OutputConverter<OutputType> toJobOutput;
+  private final CheckedSupplier<OutputAndStatus<OutputType>, Exception> workerRun;
 
   public <InputType> WorkerRun(final Path jobRoot,
                                final InputType input,
-                               final Worker<InputType, ?> worker) {
+                               final Worker<InputType, OutputType> worker,
+                               final WorkerRunFactory.OutputConverter<OutputType> toJobOutput) {
     this.jobRoot = jobRoot;
+    this.toJobOutput = toJobOutput;
     this.workerRun = () -> worker.run(input, jobRoot);
   }
 
   @Override
-  public OutputAndStatus<?> call() throws Exception {
+  public OutputAndStatus<JobOutput> call() throws Exception {
     LOGGER.info("Executing worker wrapper...");
     Files.createDirectories(jobRoot);
-
-    return workerRun.get();
+    return toJobOutput.apply(workerRun.get());
   }
 
 }

@@ -26,11 +26,13 @@ package io.dataline.scheduler;
 
 import io.dataline.config.JobCheckConnectionConfig;
 import io.dataline.config.JobDiscoverSchemaConfig;
+import io.dataline.config.JobOutput;
 import io.dataline.config.JobSyncConfig;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.workers.DefaultSyncWorker;
+import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
@@ -38,6 +40,8 @@ import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerTapFactory;
 import io.dataline.workers.singer.SingerTargetFactory;
 import java.nio.file.Path;
+import java.util.function.Function;
+import javax.swing.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +73,6 @@ public class WorkerRunFactory {
   public WorkerRun create(final Job job) {
     LOGGER.info("job: {} {} {}", job.getId(), job.getScope(), job.getConfig().getConfigType());
 
-
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(job.getId()));
 
     switch (job.getConfig().getConfigType()) {
@@ -80,13 +83,15 @@ public class WorkerRunFactory {
         return creator.create(
             jobRoot,
             checkConnectionInput,
-            new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)));
+            new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)),
+            output -> new JobOutput().withOutputType(JobOutput.OutputType.CHECK_CONNECTION).withCheckConnection(output));
       case DISCOVER_SCHEMA:
         final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
         return creator.create(
             jobRoot,
             discoverSchemaInput,
-            new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf));
+            new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf),
+            output -> new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA).withDiscoverSchema(output));
       case SYNC:
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         final SingerDiscoverSchemaWorker discoverSchemaWorker = new SingerDiscoverSchemaWorker(job.getConfig().getSync().getSourceDockerImage(), pbf);
@@ -99,8 +104,8 @@ public class WorkerRunFactory {
             // mediated in DefaultSyncWorker.
             new DefaultSyncWorker(
                 new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
-
-                new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf)));
+                new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf)),
+            output -> new JobOutput().withOutputType(JobOutput.OutputType.SYNC).withSync(output));
       default:
         throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }
@@ -128,7 +133,25 @@ public class WorkerRunFactory {
   @FunctionalInterface
   interface Creator {
 
-    <T> WorkerRun create(Path jobRoot, T input, Worker<T, ?> worker);
+    <InputType, OutputType> WorkerRun<OutputType> create(Path jobRoot,
+                                                         InputType input,
+                                                         Worker<InputType, OutputType> worker,
+                                                         OutputConverter<OutputType> outputTypeToJobOutput);
+
+  }
+
+  interface OutputConverter<OutputType> extends Function<OutputAndStatus<OutputType>, OutputAndStatus<JobOutput>> {
+
+    @Override
+    default OutputAndStatus<JobOutput> apply(OutputAndStatus<OutputType> output) {
+      if (output.getOutput().isPresent()) {
+        return new OutputAndStatus<>(output.getStatus(), toJobOutput(output.getOutput().get()));
+      } else {
+        return new OutputAndStatus<>(output.getStatus());
+      }
+    }
+
+    JobOutput toJobOutput(OutputType output);
 
   }
 

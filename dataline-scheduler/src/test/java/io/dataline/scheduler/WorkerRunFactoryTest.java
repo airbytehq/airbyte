@@ -24,6 +24,8 @@
 
 package io.dataline.scheduler;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -44,7 +46,6 @@ import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -84,8 +85,8 @@ class WorkerRunFactoryTest {
 
     StandardCheckConnectionInput expectedInput = new StandardCheckConnectionInput().withConnectionConfiguration(CONFIG);
     ArgumentCaptor<Worker<StandardCheckConnectionInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
-    verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
-    Assertions.assertTrue(argument.getValue() instanceof CheckConnectionWorker);
+    verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture(), any());
+    assertTrue(argument.getValue() instanceof CheckConnectionWorker);
   }
 
   @SuppressWarnings("unchecked")
@@ -97,9 +98,9 @@ class WorkerRunFactoryTest {
     factory.create(job);
 
     StandardDiscoverSchemaInput expectedInput = new StandardDiscoverSchemaInput().withConnectionConfiguration(CONFIG);
-    ArgumentCaptor<Worker<StandardDiscoverSchemaInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
-    verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
-    Assertions.assertTrue(argument.getValue() instanceof DiscoverSchemaWorker);
+    ArgumentCaptor<Worker<StandardDiscoverSchemaInput, ?>> workerArg = ArgumentCaptor.forClass(Worker.class);
+    verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), workerArg.capture(), any());
+    assertTrue(workerArg.getValue() instanceof DiscoverSchemaWorker);
   }
 
   @SuppressWarnings("unchecked")
@@ -115,8 +116,8 @@ class WorkerRunFactoryTest {
         .withStandardSync(job.getConfig().getSync().getStandardSync());
 
     ArgumentCaptor<Worker<StandardSyncInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
-    verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
-    Assertions.assertTrue(argument.getValue() instanceof SyncWorker);
+    verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture(), any());
+    assertTrue(argument.getValue() instanceof SyncWorker);
   }
 
 }
