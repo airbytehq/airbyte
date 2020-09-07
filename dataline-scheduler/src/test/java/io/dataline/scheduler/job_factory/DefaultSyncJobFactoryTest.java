@@ -35,6 +35,7 @@ import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
@@ -49,7 +50,7 @@ class DefaultSyncJobFactoryTest {
     final UUID sourceImplId = UUID.randomUUID();
     final UUID destinationImplId = UUID.randomUUID();
     final SchedulerPersistence schedulerPersistence = mock(SchedulerPersistence.class);
-    final ConfigPersistence configPersistence = mock(ConfigPersistence.class);
+    final ConfigRepository configRepository = mock(ConfigRepository.class);
     final long jobId = 11L;
 
     final StandardSync standardSync = new StandardSync()
@@ -59,35 +60,15 @@ class DefaultSyncJobFactoryTest {
     final SourceConnectionImplementation sourceConnectionImplementation = new SourceConnectionImplementation();
     final DestinationConnectionImplementation destinationConnectionImplementation = new DestinationConnectionImplementation();
 
-    when(configPersistence.getConfig(
-        ConfigSchema.STANDARD_SYNC,
-        connectionId.toString(),
-        StandardSync.class)).thenReturn(standardSync);
-    when(configPersistence.getConfig(
-        ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
-        sourceImplId.toString(),
-        SourceConnectionImplementation.class)).thenReturn(sourceConnectionImplementation);
-    when(configPersistence.getConfig(
-        ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
-        destinationImplId.toString(),
-        DestinationConnectionImplementation.class)).thenReturn(destinationConnectionImplementation);
+    when(configRepository.getStandardSync(        connectionId)).thenReturn(standardSync);
+    when(configRepository.getSourceConnectionImplementation(sourceImplId)).thenReturn(sourceConnectionImplementation);
+    when(configRepository.getDestinationConnectionImplementation(destinationImplId)).thenReturn(destinationConnectionImplementation);
     when(schedulerPersistence.createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync)).thenReturn(jobId);
 
-    final SyncJobFactory factory = new DefaultSyncJobFactory(schedulerPersistence, configPersistence);
+    final SyncJobFactory factory = new DefaultSyncJobFactory(schedulerPersistence, configRepository);
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 
-    verify(configPersistence).getConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
-    verify(configPersistence)
-        .getConfig(
-            ConfigSchema.SOURCE_CONNECTION_IMPLEMENTATION,
-            sourceImplId.toString(),
-            SourceConnectionImplementation.class);
-    verify(configPersistence)
-        .getConfig(
-            ConfigSchema.DESTINATION_CONNECTION_IMPLEMENTATION,
-            destinationImplId.toString(),
-            DestinationConnectionImplementation.class);
     verify(schedulerPersistence).createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync);
   }
 

@@ -27,7 +27,9 @@ package io.dataline.scheduler;
 import com.google.common.annotations.VisibleForTesting;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
+import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.scheduler.job_factory.DefaultSyncJobFactory;
 import io.dataline.scheduler.job_factory.SyncJobFactory;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
@@ -44,27 +46,27 @@ public class JobScheduler implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobScheduler.class);
 
   private final SchedulerPersistence schedulerPersistence;
-  private final ConfigPersistence configPersistence;
+  private final ConfigRepository configRepository;
   private final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate;
   private final SyncJobFactory jobFactory;
 
-  @VisibleForTesting
-  JobScheduler(SchedulerPersistence schedulerPersistence,
-               ConfigPersistence configPersistence,
-               BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate,
-               SyncJobFactory jobFactory) {
+  @VisibleForTesting JobScheduler(final SchedulerPersistence schedulerPersistence,
+                                  final ConfigRepository configRepository,
+                                  final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate,
+                                  final SyncJobFactory jobFactory) {
     this.schedulerPersistence = schedulerPersistence;
-    this.configPersistence = configPersistence;
+    this.configRepository = configRepository;
     this.scheduleJobPredicate = scheduleJobPredicate;
     this.jobFactory = jobFactory;
   }
 
-  public JobScheduler(SchedulerPersistence schedulerPersistence, ConfigPersistence configPersistence) {
+  public JobScheduler(final SchedulerPersistence schedulerPersistence,
+                      final ConfigRepository configRepository) {
     this(
         schedulerPersistence,
-        configPersistence,
+        configRepository,
         new ScheduleJobPredicate(Instant::now),
-        new DefaultSyncJobFactory(schedulerPersistence, configPersistence));
+        new DefaultSyncJobFactory(schedulerPersistence, configRepository));
   }
 
   @Override
@@ -82,7 +84,7 @@ public class JobScheduler implements Runnable {
   private void scheduleSyncJobs() throws IOException {
     for (StandardSync connection : getAllActiveConnections()) {
       Optional<Job> previousJobOptional = schedulerPersistence.getLastSyncJob(connection.getConnectionId());
-      final StandardSyncSchedule standardSyncSchedule = ConfigFetchers.getStandardSyncSchedule(configPersistence, connection.getConnectionId());
+      final StandardSyncSchedule standardSyncSchedule = getStandardSyncSchedule(connection);
 
       if (scheduleJobPredicate.test(previousJobOptional, standardSyncSchedule)) {
         jobFactory.create(connection.getConnectionId());
@@ -90,8 +92,20 @@ public class JobScheduler implements Runnable {
     }
   }
 
+  private StandardSyncSchedule getStandardSyncSchedule(StandardSync connection)  {
+    try {
+      return configRepository.getStandardSyncSchedule(connection.getConnectionId());
+    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
   private List<StandardSync> getAllActiveConnections() {
-    return ConfigFetchers.getStandardSyncs(configPersistence);
+    try {
+      return configRepository.getStandardSyncs();
+    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
   }
 
 }

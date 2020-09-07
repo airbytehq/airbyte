@@ -24,6 +24,7 @@
 
 package io.dataline.config.helpers;
 
+import io.dataline.commons.enums.Enums;
 import io.dataline.config.Schedule;
 import java.util.concurrent.TimeUnit;
 
