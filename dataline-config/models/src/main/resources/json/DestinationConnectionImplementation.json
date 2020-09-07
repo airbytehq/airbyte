@@ -5,6 +5,7 @@
   "description": "information required for connection to a destination.",
   "type": "object",
   "required": [
+    "name",
     "destinationSpecificationId",
     "workspaceId",
     "destinationImplementationId",
@@ -12,6 +13,9 @@
   ],
   "additionalProperties": false,
   "properties": {
+    "name": {
+      "type": "string"
+    },
     "destinationSpecificationId": {
       "type": "string",
       "format": "uuid"

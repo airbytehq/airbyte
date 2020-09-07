@@ -34,9 +34,12 @@ import java.util.UUID;
 
 public class DestinationSpecificationHelpers {
 
-  public static DestinationConnectionSpecification generateDestinationSpecification()
+  public static DestinationConnectionSpecification generateDestinationSpecification() throws IOException {
+    return generateDestinationSpecification(UUID.randomUUID());
+  }
+
+  public static DestinationConnectionSpecification generateDestinationSpecification(UUID destinationId)
       throws IOException {
-    final UUID destinationId = UUID.randomUUID();
     final UUID destinationSpecificationId = UUID.randomUUID();
 
     final Path path =

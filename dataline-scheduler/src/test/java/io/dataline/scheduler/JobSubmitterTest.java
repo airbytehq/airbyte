@@ -25,65 +25,120 @@
 package io.dataline.scheduler;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.dataline.workers.JobStatus;
+import io.dataline.workers.OutputAndStatus;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 public class JobSubmitterTest {
 
-  private static final Job JOB = new Job(
-      1L,
-      "",
-      JobStatus.PENDING,
-      null,
-      null,
-      null,
-      null,
-      1L,
-      null,
-      1L);
+  public static final OutputAndStatus<Integer> SUCCESS_OUTPUT = new OutputAndStatus<>(JobStatus.SUCCESSFUL, 1);
+  public static final OutputAndStatus<Integer> FAILED_OUTPUT = new OutputAndStatus<>(JobStatus.FAILED);
 
-  private ExecutorService executorService;
   private SchedulerPersistence persistence;
+  private WorkerRunFactory workerRunFactory;
+  private WorkerRun workerRun;
+
   private JobSubmitter jobSubmitter;
 
   @BeforeEach
-  public void setup() {
-    executorService = mock(ExecutorService.class);
+  public void setup() throws IOException {
+    Job job = mock(Job.class);
+    when(job.getId()).thenReturn(1L);
     persistence = mock(SchedulerPersistence.class);
+    when(persistence.getOldestPendingJob()).thenReturn(Optional.of(job));
+
+    workerRun = mock(WorkerRun.class);
+    workerRunFactory = mock(WorkerRunFactory.class);
+    when(workerRunFactory.create(job)).thenReturn(workerRun);
 
     jobSubmitter = new JobSubmitter(
-        executorService,
-        null,
+        MoreExecutors.newDirectExecutorService(),
         persistence,
-        null,
-        null);
+        workerRunFactory);
   }
 
   @Test
-  public void testSubmitsPendingJob() throws IOException {
-    when(persistence.getOldestPendingJob()).thenReturn(Optional.of(JOB));
+  public void testPersistenceNoJob() throws Exception {
+    doReturn(Optional.empty()).when(persistence).getOldestPendingJob();
 
     jobSubmitter.run();
 
-    verify(executorService).submit(any(WorkerRunner.class));
+    verifyNoInteractions(workerRunFactory);
   }
 
   @Test
-  public void testNoPendingJob() throws IOException {
-    when(persistence.getOldestPendingJob()).thenReturn(Optional.empty());
+  public void testSuccess() throws Exception {
+    doReturn(SUCCESS_OUTPUT).when(workerRun).call();
 
     jobSubmitter.run();
 
-    verify(executorService, never()).submit(any(WorkerRunner.class));
+    InOrder inOrder = inOrder(persistence);
+    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
+    inOrder.verify(persistence).writeOutput(1L, 1);
+    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.COMPLETED);
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  public void testFailure() throws Exception {
+    doReturn(FAILED_OUTPUT).when(workerRun).call();
+
+    jobSubmitter.run();
+
+    InOrder inOrder = inOrder(persistence);
+    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
+    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.FAILED);
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  public void testException() throws Exception {
+    doThrow(new RuntimeException()).when(workerRun).call();
+
+    jobSubmitter.run();
+
+    InOrder inOrder = inOrder(persistence);
+    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
+    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.FAILED);
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  public void testPersistenceExceptionStart() throws Exception {
+    doThrow(new RuntimeException()).when(persistence).updateStatus(anyLong(), any());
+
+    jobSubmitter.run();
+
+    InOrder inOrder = inOrder(persistence);
+    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.FAILED);
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  public void testPersistenceExceptionOutput() throws Exception {
+    doReturn(SUCCESS_OUTPUT).when(workerRun).call();
+    doThrow(new RuntimeException()).when(persistence).writeOutput(anyLong(), any());
+
+    jobSubmitter.run();
+
+    InOrder inOrder = inOrder(persistence);
+    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
+    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.FAILED);
+    inOrder.verifyNoMoreInteractions();
   }
 
 }

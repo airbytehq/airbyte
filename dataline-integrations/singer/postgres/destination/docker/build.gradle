@@ -1,0 +1,10 @@
+plugins {
+    id 'com.bmuschko.docker-remote-api' version '6.6.1'
+}
+
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+task buildImage(type: DockerBuildImage) {
+    inputDir = file('.')
+    images.add('dataline/integration-singer-postgres-destination:latest')
+}

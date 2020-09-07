@@ -29,6 +29,7 @@ import io.dataline.config.JobConfig;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.scheduler.Job;
+import io.dataline.scheduler.JobStatus;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +52,10 @@ public interface SchedulerPersistence {
       throws IOException;
 
   Job getJob(long jobId) throws IOException;
+
+  void updateStatus(long jobId, JobStatus status) throws IOException;
+
+  <T> void writeOutput(long jobId, T output) throws IOException;
 
   /**
    * @param configType - type of config, e.g. sync
