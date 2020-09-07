@@ -79,12 +79,7 @@ public class WorkerRunFactory {
         return creator.create(
             jobRoot,
             checkConnectionInput,
-<<<<<<< Updated upstream
             new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf)));
-=======
-            new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf)),
-            output -> new JobOutput().withOutputType(JobOutput.OutputType.CHECK_CONNECTION).withCheckConnection(output));
->>>>>>> Stashed changes
       case DISCOVER_SCHEMA:
         final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
         return creator.create(
