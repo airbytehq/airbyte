@@ -85,19 +85,10 @@ public class JobScheduler implements Runnable {
   private void scheduleSyncJobs() throws IOException {
     for (StandardSync connection : getAllActiveConnections()) {
       Optional<Job> previousJobOptional = schedulerPersistence.getLastSyncJob(connection.getConnectionId());
-      final StandardSyncSchedule standardSyncSchedule = getStandardSyncSchedule(connection);
 
-      if (scheduleJobPredicate.test(previousJobOptional, standardSyncSchedule)) {
+      if (scheduleJobPredicate.test(previousJobOptional, connection.getSyncSchedule())) {
         jobFactory.create(connection.getConnectionId());
       }
-    }
-  }
-
-  private StandardSyncSchedule getStandardSyncSchedule(StandardSync connection) {
-    try {
-      return configRepository.getStandardSyncSchedule(connection.getConnectionId());
-    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
-      throw new RuntimeException(e.getMessage(), e);
     }
   }
 

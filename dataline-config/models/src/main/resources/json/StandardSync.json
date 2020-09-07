@@ -32,6 +32,9 @@
       "type": "string",
       "enum": ["full_refresh", "append"]
     },
+    "syncSchedule": {
+      "$ref": "StandardSyncSchedule.json"
+    },
     "schema": {
       "$ref": "StandardDataSchema.json#/definitions/schema"
     },

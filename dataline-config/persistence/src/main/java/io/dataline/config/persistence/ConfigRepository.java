@@ -32,7 +32,6 @@ import io.dataline.config.SourceConnectionSpecification;
 import io.dataline.config.StandardDestination;
 import io.dataline.config.StandardSource;
 import io.dataline.config.StandardSync;
-import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.StandardWorkspace;
 import java.io.IOException;
 import java.util.List;
@@ -185,23 +184,6 @@ public class ConfigRepository {
   public List<StandardSync> listStandardSyncs()
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
-  }
-
-  public StandardSyncSchedule getStandardSyncSchedule(final UUID connectionId)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.STANDARD_SYNC_SCHEDULE,
-        connectionId.toString(),
-        StandardSyncSchedule.class);
-  }
-
-  public void writeStandardSchedule(final StandardSyncSchedule schedule)
-      throws JsonValidationException, IOException {
-    // todo (cgardens) - stored on sync id (there is no schedule id concept). this is non-intuitive.
-    persistence.writeConfig(
-        ConfigSchema.STANDARD_SYNC_SCHEDULE,
-        schedule.getConnectionId().toString(),
-        schedule);
   }
 
 }

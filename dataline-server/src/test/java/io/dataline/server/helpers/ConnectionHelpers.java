@@ -45,11 +45,16 @@ public class ConnectionHelpers {
   public static StandardSync generateSync(UUID sourceImplementationId) {
     final UUID connectionId = UUID.randomUUID();
 
+    final Schedule schedule = new Schedule()
+        .withTimeUnit(Schedule.TimeUnit.DAYS)
+        .withUnits(1L);
+
     return new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withSchema(generateBasicPersistenceSchema())
+        .withSyncSchedule(new StandardSyncSchedule().withSchedule(schedule).withManual(false))
         .withSourceImplementationId(sourceImplementationId)
         .withDestinationImplementationId(UUID.randomUUID())
         .withSyncMode(StandardSync.SyncMode.APPEND);
@@ -109,17 +114,6 @@ public class ConnectionHelpers {
         standardSync.getConnectionId(),
         standardSync.getSourceImplementationId(),
         standardSync.getDestinationImplementationId());
-  }
-
-  public static StandardSyncSchedule generateSchedule(UUID connectionId) {
-    final Schedule schedule = new Schedule()
-        .withTimeUnit(Schedule.TimeUnit.DAYS)
-        .withUnits(1L);
-
-    return new StandardSyncSchedule()
-        .withConnectionId(connectionId)
-        .withSchedule(schedule)
-        .withManual(false);
   }
 
 }

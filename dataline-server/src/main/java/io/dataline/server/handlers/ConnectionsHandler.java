@@ -84,22 +84,19 @@ public class ConnectionsHandler {
       standardSync.withSchema(new Schema().withTables(Collections.emptyList()));
     }
 
-    configRepository.writeStandardSync(standardSync);
-
-    // persist schedule
-    final StandardSyncSchedule standardSyncSchedule = new StandardSyncSchedule().withConnectionId(connectionId);
+    standardSync.setSyncSchedule(new StandardSyncSchedule());
     if (connectionCreate.getSchedule() != null) {
       final Schedule schedule = new Schedule()
           .withTimeUnit(toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
           .withUnits(connectionCreate.getSchedule().getUnits());
-      standardSyncSchedule
+      standardSync.getSyncSchedule()
           .withManual(false)
           .withSchedule(schedule);
     } else {
-      standardSyncSchedule.withManual(true);
+      standardSync.getSyncSchedule().withManual(true);
     }
 
-    configRepository.writeStandardSchedule(standardSyncSchedule);
+    configRepository.writeStandardSync(standardSync);
 
     return buildConnectionRead(connectionId);
   }
@@ -113,8 +110,7 @@ public class ConnectionsHandler {
         .withSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
-    // get retrieve schedule
-    final StandardSyncSchedule persistedSchedule = configRepository.getStandardSyncSchedule(connectionId);
+    final StandardSyncSchedule persistedSchedule = persistedSync.getSyncSchedule();
     if (connectionUpdate.getSchedule() != null) {
       final Schedule schedule = new Schedule()
           .withTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()))
@@ -130,7 +126,6 @@ public class ConnectionsHandler {
     }
 
     configRepository.writeStandardSync(persistedSync);
-    configRepository.writeStandardSchedule(persistedSchedule);
 
     return buildConnectionRead(connectionId);
   }
@@ -169,19 +164,16 @@ public class ConnectionsHandler {
     // read sync from db
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
-    // read schedule from db
-    final StandardSyncSchedule standardSyncSchedule = configRepository.getStandardSyncSchedule(connectionId);
-    return buildConnectionRead(standardSync, standardSyncSchedule);
+    return buildConnectionRead(standardSync);
   }
 
-  private ConnectionRead buildConnectionRead(final StandardSync standardSync,
-                                             final StandardSyncSchedule standardSyncSchedule) {
+  private ConnectionRead buildConnectionRead(final StandardSync standardSync) {
     ConnectionSchedule apiSchedule = null;
 
-    if (!standardSyncSchedule.getManual()) {
+    if (!standardSync.getSyncSchedule().getManual()) {
       apiSchedule = new ConnectionSchedule()
-          .timeUnit(toApiTimeUnit(standardSyncSchedule.getSchedule().getTimeUnit()))
-          .units(standardSyncSchedule.getSchedule().getUnits());
+          .timeUnit(toApiTimeUnit(standardSync.getSyncSchedule().getSchedule().getTimeUnit()))
+          .units(standardSync.getSyncSchedule().getSchedule().getUnits());
     }
 
     return new ConnectionRead()
