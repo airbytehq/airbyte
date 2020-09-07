@@ -24,8 +24,6 @@
 
 package io.dataline.commons.logging;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import io.dataline.commons.io.IOs;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,6 +33,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Log4j2ConfigTest {
 

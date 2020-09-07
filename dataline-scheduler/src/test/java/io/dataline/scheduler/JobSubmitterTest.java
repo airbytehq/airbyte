@@ -36,6 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.JobStatus;
@@ -47,7 +48,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.slf4j.MDC;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 public class JobSubmitterTest {
 
