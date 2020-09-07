@@ -32,16 +32,16 @@ const DeleteModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
   return (
     <Modal
       onClose={onClose}
-      title={<FormattedMessage id={"sources.deleteConfirm"} />}
+      title={<FormattedMessage id="sources.deleteConfirm" />}
     >
       <Content>
-        <FormattedMessage id={"sources.deleteModalText"} />
+        <FormattedMessage id="sources.deleteModalText" />
         <ButtonContent>
           <ButtonWithMargin onClick={onClose} type="button" secondary>
-            <FormattedMessage id={"form.cancel"} />
+            <FormattedMessage id="form.cancel" />
           </ButtonWithMargin>
           <Button type="button" danger onClick={onSubmit}>
-            <FormattedMessage id={"form.delete"} />
+            <FormattedMessage id="form.delete" />
           </Button>
         </ButtonContent>
       </Content>
