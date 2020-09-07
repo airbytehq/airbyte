@@ -6,6 +6,13 @@ export type ScheduleProperties = {
   timeUnit: string;
 };
 
+type SourceInformation = {
+  sourceId: string;
+  sourceName: string;
+  sourceImplementationId: string;
+  connectionConfiguration: any;
+};
+
 export interface Connection {
   connectionId: string;
   name: string;
@@ -15,6 +22,8 @@ export interface Connection {
   status: string;
   schedule: ScheduleProperties | null;
   syncSchema: any; // TODO: fix type
+  source?: SourceInformation;
+  lastSync?: number | null;
 }
 
 export default class ConnectionResource extends BaseResource
@@ -26,6 +35,8 @@ export default class ConnectionResource extends BaseResource
   readonly syncMode: string = "";
   readonly status: string = "";
   readonly schedule: ScheduleProperties | null = null;
+  readonly source: SourceInformation | undefined = undefined;
+  readonly lastSync: number | undefined | null = null;
   readonly syncSchema: any | null = null; // TODO: fix it
 
   pk() {
@@ -34,16 +45,19 @@ export default class ConnectionResource extends BaseResource
 
   static urlRoot = "connections";
 
-  static listShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.listShape(),
-      schema: { connections: [this.asSchema()] }
-    };
-  }
-
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
+      getFetchKey: (params: { connectionId: string }) =>
+        "POST /web_backend/get" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<any> =>
+        await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/connections/get`,
+          params
+        ),
       schema: this.asSchema()
     };
   }
@@ -58,7 +72,46 @@ export default class ConnectionResource extends BaseResource
   static createShape<T extends typeof Resource>(this: T) {
     return {
       ...super.createShape(),
-      schema: this.asSchema()
+      schema: this.asSchema(),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>,
+        body: Readonly<object>
+      ): Promise<any> =>
+        await this.fetch("post", `${this.url(params)}/create`, body).then(
+          response => ({
+            ...response,
+            // will remove it if BE returns resource in /web_backend/get format
+            source: params
+          })
+        )
+    };
+  }
+
+  static listShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.listShape(),
+      getFetchKey: (params: { workspaceId: string }) =>
+        "POST /web_backend/list" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<any> =>
+        await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/connections/list`,
+          params
+        ),
+      schema: { connections: [this.asSchema()] }
+    };
+  }
+
+  static deleteShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.deleteShape(),
+      getFetchKey: (params: { connectionId: string }) =>
+        "POST /web_backend/delete" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<any> => params
     };
   }
 }

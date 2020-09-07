@@ -1,10 +1,20 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
+import { useFetcher } from "rest-hooks";
 
 import ContentCard from "../../../../../components/ContentCard";
 import Button from "../../../../../components/Button";
 import DeleteModal from "./DeleteModal";
+import SourceImplementationResource from "../../../../../core/resources/SourceImplementation";
+import useRouter from "../../../../../components/hooks/useRouterHook";
+import { Routes } from "../../../../routes";
+import ConnectionResource from "../../../../../core/resources/Connection";
+
+type IProps = {
+  sourceImplementationId?: string;
+  connectionId: string;
+};
 
 const DeleteBlock = styled(ContentCard)`
   margin-top: 12px;
@@ -20,8 +30,28 @@ const Text = styled.div`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-const DeleteSource: React.FC = () => {
+const DeleteSource: React.FC<IProps> = ({
+  sourceImplementationId,
+  connectionId
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { push } = useRouter();
+
+  const sourceImplementationDelete = useFetcher(
+    SourceImplementationResource.deleteShape()
+  );
+  const connectionDelete = useFetcher(ConnectionResource.deleteShape());
+
+  const onDelete = async () => {
+    await sourceImplementationDelete({
+      sourceImplementationId: sourceImplementationId || ""
+    });
+    push(Routes.Root);
+
+    await connectionDelete({
+      connectionId
+    });
+  };
 
   return (
     <>
@@ -36,7 +66,7 @@ const DeleteSource: React.FC = () => {
       {isModalOpen && (
         <DeleteModal
           onClose={() => setIsModalOpen(false)}
-          onSubmit={() => setIsModalOpen(false)}
+          onSubmit={onDelete}
         />
       )}
     </>

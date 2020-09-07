@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useFetcher, useResource } from "rest-hooks";
 
 import PageTitle from "../../../../components/PageTitle";
 import Breadcrumbs from "../../../../components/Breadcrumbs";
@@ -9,17 +10,19 @@ import StepsMenu from "../../../../components/StepsMenu";
 import StatusView from "./components/StatusView";
 import SettingsView from "./components/SettingsView";
 import SchemaView from "./components/SchemaView";
+import ConnectionResource from "../../../../core/resources/Connection";
 
 const SourceItemPage: React.FC = () => {
-  const [isEnabledSource, setIsEnabledSource] = useState(true);
-  // TODO: change to real data
-  const sourceData = {
-    name: "Source Name",
-    source: "Source",
-    destination: "Destination",
-    frequency: "5m",
-    enabled: isEnabledSource
-  };
+  const { query, push, history } = useRouter();
+
+  const updateConnection = useFetcher(ConnectionResource.updateShape());
+
+  const connection = useResource(ConnectionResource.detailShape(), {
+    // @ts-ignore
+    connectionId: query.id
+  });
+
+  // TODO: add redirect for connectionId with error
 
   const steps = [
     {
@@ -38,7 +41,6 @@ const SourceItemPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState("status");
   const onSelectStep = (id: string) => setCurrentStep(id);
 
-  const { push, history } = useRouter();
   const onClickBack = () =>
     history.length > 2 ? history.goBack() : push(Routes.Source);
 
@@ -47,23 +49,32 @@ const SourceItemPage: React.FC = () => {
       name: <FormattedMessage id="sidebar.sources" />,
       onClick: onClickBack
     },
-    { name: sourceData.name }
+    { name: connection.name }
   ];
+
+  const onChangeStatus = async () => {
+    await updateConnection(
+      {},
+      {
+        connectionId: connection.connectionId,
+        syncSchema: connection.syncSchema,
+        schedule: connection.schedule,
+        status: connection.status === "active" ? "inactive" : "active"
+      }
+    );
+  };
 
   const renderStep = () => {
     if (currentStep === "status") {
       return (
-        <StatusView
-          sourceData={sourceData}
-          onEnabledChange={() => setIsEnabledSource(!isEnabledSource)}
-        />
+        <StatusView sourceData={connection} onEnabledChange={onChangeStatus} />
       );
     }
     if (currentStep === "schema") {
       return <SchemaView />;
     }
 
-    return <SettingsView sourceData={sourceData} />;
+    return <SettingsView sourceData={connection} />;
   };
 
   return (
