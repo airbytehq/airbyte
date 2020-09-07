@@ -69,7 +69,6 @@ public class WorkerRunFactory {
   public WorkerRun create(final Job job) {
     LOGGER.info("job: {} {} {}", job.getId(), job.getScope(), job.getConfig().getConfigType());
 
-
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(job.getId()));
 
     switch (job.getConfig().getConfigType()) {
@@ -80,13 +79,14 @@ public class WorkerRunFactory {
         return creator.create(
             jobRoot,
             checkConnectionInput,
-            new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)));
+            new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf)));
       case DISCOVER_SCHEMA:
         final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
         return creator.create(
             jobRoot,
             discoverSchemaInput,
             new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf));
+
       case SYNC:
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         final SingerDiscoverSchemaWorker discoverSchemaWorker = new SingerDiscoverSchemaWorker(job.getConfig().getSync().getSourceDockerImage(), pbf);
@@ -99,7 +99,6 @@ public class WorkerRunFactory {
             // mediated in DefaultSyncWorker.
             new DefaultSyncWorker(
                 new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
-
                 new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf)));
       default:
         throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
