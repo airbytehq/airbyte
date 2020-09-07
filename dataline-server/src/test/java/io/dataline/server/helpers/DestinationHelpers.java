@@ -22,13 +22,17 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.server.helpers;
 
-/**
- * Indicates whether the worker's underlying process was successful. E.g this should return
- * SUCCESSFUL if a connection check succeeds, FAILED otherwise.
- */
-public enum JobStatus {
-  FAILED,
-  SUCCESSFUL
+import io.dataline.config.StandardDestination;
+import java.util.UUID;
+
+public class DestinationHelpers {
+
+  public static StandardDestination generateDestination() {
+    return new StandardDestination()
+        .withDestinationId(UUID.randomUUID())
+        .withName("db2");
+  }
+
 }

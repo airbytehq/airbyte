@@ -24,40 +24,35 @@
 
 package io.dataline.scheduler;
 
-import io.dataline.commons.functional.CheckedSupplier;
-import io.dataline.workers.OutputAndStatus;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
+
 import io.dataline.workers.Worker;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-/*
- * This class represents a single run of a worker. It handles making sure the correct inputs and
- * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
- * persisted to the db.
- */
-public class WorkerRun implements Callable<OutputAndStatus<?>> {
+class WorkerRunTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
+  private Path path;
+  private Worker<Integer, ?> worker;
 
-  private final Path jobRoot;
-  private final CheckedSupplier<OutputAndStatus<?>, Exception> workerRun;
-
-  public <InputType> WorkerRun(final Path jobRoot,
-                               final InputType input,
-                               final Worker<InputType, ?> worker) {
-    this.jobRoot = jobRoot;
-    this.workerRun = () -> worker.run(input, jobRoot);
+  @SuppressWarnings("unchecked")
+  @BeforeEach
+  void setUp() throws IOException {
+    path = Files.createTempDirectory("test").resolve("sub").resolve("sub");
+    worker = Mockito.mock(Worker.class);
   }
 
-  @Override
-  public OutputAndStatus<?> call() throws Exception {
-    LOGGER.info("Executing worker wrapper...");
-    Files.createDirectories(jobRoot);
+  @Test
+  void name() throws Exception {
+    new WorkerRun(path, 1, worker).call();
 
-    return workerRun.get();
+    assertTrue(Files.exists(path));
+    verify(worker).run(1, path);
   }
 
 }
