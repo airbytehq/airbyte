@@ -12,7 +12,7 @@ include 'dataline-integrations'
 include 'dataline-scheduler'
 include 'dataline-server'
 include 'dataline-singer'
-include 'dataline-webapp'
+//include 'dataline-webapp'
 include 'dataline-workers'
 include 'dataline-tests'
 

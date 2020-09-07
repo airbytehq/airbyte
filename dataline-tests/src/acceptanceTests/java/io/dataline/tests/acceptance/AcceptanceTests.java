@@ -234,7 +234,6 @@ public class AcceptanceTests {
       LOGGER.info("{}", e.getResponseBody());
       throw e;
     }
-
   }
 
   private ConnectionRead testCreateConnection(UUID sourceImplId, UUID destinationImplId, SourceSchema schema)
@@ -320,16 +319,17 @@ public class AcceptanceTests {
 
     UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
     UUID sourceSpecificationId = sourceSpecRead.getSourceSpecificationId();
+    String sourceImplName = "dataline-db";
 
     SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate()
-        .name("rldb")
+        .name(sourceImplName)
         .sourceSpecificationId(sourceSpecificationId)
         .workspaceId(defaultWorkspaceId)
         .connectionConfiguration(dbConfiguration);
 
     SourceImplementationRead createResponse = apiClient.getSourceImplementationApi().createSourceImplementation(sourceImplementationCreate);
 
-    assertEquals("rldb", createResponse.getName());
+    assertEquals(sourceImplName, createResponse.getName());
     assertEquals(defaultWorkspaceId, createResponse.getWorkspaceId());
     assertEquals(sourceSpecificationId, createResponse.getSourceSpecificationId());
     assertEquals(dbConfiguration, Jsons.jsonNode(createResponse.getConnectionConfiguration()));
