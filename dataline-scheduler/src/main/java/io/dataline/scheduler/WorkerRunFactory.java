@@ -119,6 +119,9 @@ public class WorkerRunFactory {
         .withStandardSync(config.getStandardSync());
   }
 
+  /*
+   * This class is here to help with the testing
+   */
   @FunctionalInterface
   interface Creator {
 

@@ -33,29 +33,23 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
+/*
  * This class represents a single run of a worker. It handles making sure the correct inputs and
  * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
  * persisted to the db.
- *
- * <p>
- * todo (cgardens) - this line between this abstraction and WorkerRunner is a little blurry. we can
- * clarify it later. the main benefit is of this class is that it gives us some type safety when
- * working with workers. you can probably make an argument that this class should not have access to
- * the db.
  */
 public class WorkerRun implements Callable<OutputAndStatus<?>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
 
   private final Path jobRoot;
-  private final CheckedSupplier<OutputAndStatus<?>, Exception> outputSupplier;
+  private final CheckedSupplier<OutputAndStatus<?>, Exception> workerRun;
 
   public <InputType> WorkerRun(final Path jobRoot,
                                final InputType input,
                                final Worker<InputType, ?> worker) {
     this.jobRoot = jobRoot;
-    this.outputSupplier = () -> worker.run(input, jobRoot);
+    this.workerRun = () -> worker.run(input, jobRoot);
   }
 
   @Override
@@ -63,7 +57,7 @@ public class WorkerRun implements Callable<OutputAndStatus<?>> {
     LOGGER.info("Executing worker wrapper...");
     Files.createDirectories(jobRoot);
 
-    return outputSupplier.get();
+    return workerRun.get();
   }
 
 }
