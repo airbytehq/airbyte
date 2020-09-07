@@ -32,7 +32,7 @@ public enum Integrations {
       UUID.fromString("2168516a-5c9a-4582-90dc-5e3a01e3f607"),
       new IntegrationMapping("dataline/integration-singer-postgres-source")),
   POSTGRES_TARGET(
-      UUID.fromString("71cb2b91-1b2f-4c42-8f4d-f1ab2bd72080"),
+      UUID.fromString("a6655e6a-838c-4ecb-a28f-ffdcd27ec710"),
       new IntegrationMapping("dataline/integration-singer-postgres-destination")),
   BIGQUERY_TARGET(
       UUID.fromString("e28a1a10-214a-4051-8cf4-79b6f88719cd"),
