@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.JobConfig;
+import io.dataline.config.JobOutput;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardSyncInput;
@@ -86,7 +87,7 @@ class WorkerRunFactoryTest {
     factory.create(job);
 
     StandardCheckConnectionInput expectedInput = new StandardCheckConnectionInput().withConnectionConfiguration(CONFIG);
-    ArgumentCaptor<Worker<StandardCheckConnectionInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
+    ArgumentCaptor<Worker<StandardCheckConnectionInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputCheckConnectionWorker);
   }
@@ -100,7 +101,7 @@ class WorkerRunFactoryTest {
     factory.create(job);
 
     StandardDiscoverSchemaInput expectedInput = new StandardDiscoverSchemaInput().withConnectionConfiguration(CONFIG);
-    ArgumentCaptor<Worker<StandardDiscoverSchemaInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
+    ArgumentCaptor<Worker<StandardDiscoverSchemaInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputDiscoverSchemaWorker);
   }
@@ -117,7 +118,7 @@ class WorkerRunFactoryTest {
         .withDestinationConnectionImplementation(job.getConfig().getSync().getDestinationConnectionImplementation())
         .withStandardSync(job.getConfig().getSync().getStandardSync());
 
-    ArgumentCaptor<Worker<StandardSyncInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
+    ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputSyncWorker);
   }

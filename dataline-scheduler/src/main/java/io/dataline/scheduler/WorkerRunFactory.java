@@ -26,6 +26,7 @@ package io.dataline.scheduler;
 
 import io.dataline.config.JobCheckConnectionConfig;
 import io.dataline.config.JobDiscoverSchemaConfig;
+import io.dataline.config.JobOutput;
 import io.dataline.config.JobSyncConfig;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
@@ -133,7 +134,7 @@ public class WorkerRunFactory {
   @FunctionalInterface
   interface Creator {
 
-    <T> WorkerRun create(Path jobRoot, T input, Worker<T, ?> worker);
+    <T> WorkerRun create(Path jobRoot, T input, Worker<T, JobOutput> worker);
 
   }
 
