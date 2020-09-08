@@ -108,12 +108,12 @@ public class ConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID connectionId = connectionUpdate.getConnectionId();
 
-    // retrieve existing sync
+    // retrieve sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionId)
         .withSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
-    // get retrieve schedule
+    // retrieve schedule
     final StandardSyncSchedule persistedSchedule = configRepository.getStandardSyncSchedule(connectionId);
     if (connectionUpdate.getSchedule() != null) {
       final Schedule schedule = new Schedule()
