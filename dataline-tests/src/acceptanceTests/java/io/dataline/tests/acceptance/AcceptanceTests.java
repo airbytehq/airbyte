@@ -94,7 +94,7 @@ public class AcceptanceTests {
   }
 
   @AfterAll
-  public static void tearDown(){
+  public static void tearDown() {
     SOURCE_PSQL.stop();
     TARGET_PSQL.stop();
   }

@@ -27,6 +27,7 @@ package io.dataline.scheduler;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 
+import io.dataline.config.JobOutput;
 import io.dataline.workers.Worker;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,7 +39,7 @@ import org.mockito.Mockito;
 class WorkerRunTest {
 
   private Path path;
-  private Worker<Integer, ?> worker;
+  private Worker<Integer, JobOutput> worker;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
