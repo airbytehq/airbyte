@@ -47,14 +47,7 @@ public class OutputConvertingWorkerTest {
     Path path = Path.of("fakepath");
     when(worker.run(inputConfig, path)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, String.valueOf(expectedOutput)));
 
-    OutputAndStatus<Integer> output = new OutputConvertingWorker<String, String, Integer>(worker) {
-
-      @Override
-      protected Integer convert(String output) {
-        return Integer.valueOf(output);
-      }
-
-    }.run(inputConfig, path);
+    OutputAndStatus<Integer> output = new OutputConvertingWorker<String, String, Integer>(worker, Integer::valueOf).run(inputConfig, path);
     assertTrue(output.getOutput().isPresent());
     assertEquals(expectedOutput, output.getOutput().get());
   }

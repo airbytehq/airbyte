@@ -31,7 +31,7 @@ import io.dataline.workers.Worker;
 import java.nio.file.Path;
 import java.util.function.Function;
 
-abstract class OutputConvertingWorker<InputType, OriginalOutputType, FinalOutputType> implements Worker<InputType, FinalOutputType> {
+class OutputConvertingWorker<InputType, OriginalOutputType, FinalOutputType> implements Worker<InputType, FinalOutputType> {
 
   private final Worker<InputType, OriginalOutputType> innerWorker;
   private Function<OriginalOutputType, FinalOutputType> convertFn;
