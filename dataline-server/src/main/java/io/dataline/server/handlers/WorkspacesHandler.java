@@ -28,46 +28,39 @@ import io.dataline.api.model.SlugRequestBody;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
-import io.dataline.config.ConfigSchema;
 import io.dataline.config.StandardWorkspace;
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
+import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConstants;
-import io.dataline.server.helpers.ConfigFetchers;
+import java.io.IOException;
 import java.util.UUID;
 
 public class WorkspacesHandler {
 
-  private final ConfigPersistence configPersistence;
+  private final ConfigRepository configRepository;
 
-  public WorkspacesHandler(ConfigPersistence configPersistence) {
-    this.configPersistence = configPersistence;
+  public WorkspacesHandler(final ConfigRepository configRepository) {
+    this.configRepository = configRepository;
   }
 
-  public WorkspaceRead getWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return getWorkspaceFromId(workspaceIdRequestBody.getWorkspaceId());
+  public WorkspaceRead getWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return buildWorkspaceReadFromId(workspaceIdRequestBody.getWorkspaceId());
   }
 
   @SuppressWarnings("unused")
-  public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody) {
+  public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     // for now we assume there is one workspace and it has a default uuid.
-    return getWorkspaceFromId(PersistenceConstants.DEFAULT_WORKSPACE_ID);
+    return buildWorkspaceReadFromId(PersistenceConstants.DEFAULT_WORKSPACE_ID);
   }
 
-  private WorkspaceRead getWorkspaceFromId(UUID workspaceId) {
-    final StandardWorkspace workspace =
-        ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
-
-    return new WorkspaceRead()
-        .workspaceId(workspace.getWorkspaceId())
-        .name(workspace.getName())
-        .slug(workspace.getSlug())
-        .initialSetupComplete(workspace.getInitialSetupComplete());
-  }
-
-  public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate) {
+  public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = workspaceUpdate.getWorkspaceId();
 
-    final StandardWorkspace persistedWorkspace = ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
+    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceId);
 
     if (workspaceUpdate.getEmail() != null && !workspaceUpdate.getEmail().equals("")) {
       persistedWorkspace.withEmail(workspaceUpdate.getEmail());
@@ -77,13 +70,20 @@ public class WorkspacesHandler {
         .withNews(workspaceUpdate.getNews())
         .withSecurityUpdates(workspaceUpdate.getSecurityUpdates());
 
-    ConfigFetchers.writeConfig(
-        configPersistence,
-        ConfigSchema.STANDARD_WORKSPACE,
-        workspaceId.toString(),
-        persistedWorkspace);
+    configRepository.writeStandardWorkspace(persistedWorkspace);
 
-    return getWorkspaceFromId(workspaceUpdate.getWorkspaceId());
+    return buildWorkspaceReadFromId(workspaceUpdate.getWorkspaceId());
+  }
+
+  private WorkspaceRead buildWorkspaceReadFromId(UUID workspaceId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId);
+
+    return new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .name(workspace.getName())
+        .slug(workspace.getSlug())
+        .initialSetupComplete(workspace.getInitialSetupComplete());
   }
 
 }

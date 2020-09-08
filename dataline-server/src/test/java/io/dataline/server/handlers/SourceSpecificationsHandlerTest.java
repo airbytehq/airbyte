@@ -31,10 +31,9 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.Lists;
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceSpecificationRead;
-import io.dataline.config.ConfigSchema;
 import io.dataline.config.SourceConnectionSpecification;
 import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.server.helpers.SourceSpecificationHelpers;
 import java.io.IOException;
@@ -43,36 +42,30 @@ import org.junit.jupiter.api.Test;
 
 class SourceSpecificationsHandlerTest {
 
-  private ConfigPersistence configPersistence;
+  private ConfigRepository configRepository;
   private SourceConnectionSpecification sourceConnectionSpecification;
   private SourceSpecificationsHandler sourceSpecificationHandler;
 
   @BeforeEach
   void setUp() throws IOException {
-    configPersistence = mock(ConfigPersistence.class);
+    configRepository = mock(ConfigRepository.class);
     sourceConnectionSpecification = SourceSpecificationHelpers.generateSourceSpecification();
-    sourceSpecificationHandler = new SourceSpecificationsHandler(configPersistence);
+    sourceSpecificationHandler = new SourceSpecificationsHandler(configRepository);
   }
 
   @Test
   void testGetSourceSpecification() throws JsonValidationException, IOException, ConfigNotFoundException {
-    when(configPersistence.listConfigs(
-        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
-        SourceConnectionSpecification.class))
-            .thenReturn(Lists.newArrayList(sourceConnectionSpecification));
+    when(configRepository.listSourceConnectionSpecifications())
+        .thenReturn(Lists.newArrayList(sourceConnectionSpecification));
 
-    SourceSpecificationRead expectedSourceSpecificationRead = new SourceSpecificationRead();
-    expectedSourceSpecificationRead.setSourceId(sourceConnectionSpecification.getSourceId());
-    expectedSourceSpecificationRead.setSourceSpecificationId(
-        sourceConnectionSpecification.getSourceSpecificationId());
-    expectedSourceSpecificationRead.setConnectionSpecification(
-        sourceConnectionSpecification.getSpecification());
+    SourceSpecificationRead expectedSourceSpecificationRead = new SourceSpecificationRead()
+        .sourceId(sourceConnectionSpecification.getSourceId())
+        .sourceSpecificationId(sourceConnectionSpecification.getSourceSpecificationId())
+        .connectionSpecification(sourceConnectionSpecification.getSpecification());
 
-    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
-    sourceIdRequestBody.setSourceId(expectedSourceSpecificationRead.getSourceId());
+    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(expectedSourceSpecificationRead.getSourceId());
 
-    final SourceSpecificationRead actualSourceSpecificationRead =
-        sourceSpecificationHandler.getSourceSpecification(sourceIdRequestBody);
+    final SourceSpecificationRead actualSourceSpecificationRead = sourceSpecificationHandler.getSourceSpecification(sourceIdRequestBody);
 
     assertEquals(expectedSourceSpecificationRead, actualSourceSpecificationRead);
   }
