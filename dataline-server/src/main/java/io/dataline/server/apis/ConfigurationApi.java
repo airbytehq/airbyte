@@ -294,7 +294,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
       return call.call();
     } catch (ConfigNotFoundException e) {
       throw new KnownException(
-          HttpStatus.NOT_FOUND_404,
+          HttpStatus.UNPROCESSABLE_ENTITY_422,
           String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()), e);
     } catch (JsonValidationException e) {
       throw new KnownException(
