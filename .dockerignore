@@ -6,3 +6,5 @@
 **/node_modules
 Dockerfile.*
 docker-compose*.yaml
+dataline-db/pg_data/*
+data
