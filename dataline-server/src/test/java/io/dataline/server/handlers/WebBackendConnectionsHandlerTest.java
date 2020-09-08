@@ -44,6 +44,8 @@ import io.dataline.commons.enums.Enums;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSource;
 import io.dataline.config.StandardSync;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.server.helpers.ConnectionHelpers;
 import io.dataline.server.helpers.SourceHelpers;
 import io.dataline.server.helpers.SourceImplementationHelpers;
@@ -64,7 +66,7 @@ class WebBackendConnectionsHandlerTest {
   private WbConnectionRead expected;
 
   @BeforeEach
-  public void setup() throws IOException {
+  public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     connectionsHandler = mock(ConnectionsHandler.class);
     SourceImplementationsHandler sourceImplementationsHandler = mock(SourceImplementationsHandler.class);
     JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
@@ -112,7 +114,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testWebBackendListConnectionsForWorkspace() {
+  public void testWebBackendListConnectionsForWorkspace() throws ConfigNotFoundException, IOException, JsonValidationException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceImplementationRead.getWorkspaceId());
 
@@ -126,7 +128,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testWebBackendGetConnection() {
+  public void testWebBackendGetConnection() throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
 

@@ -27,41 +27,28 @@ package io.dataline.server.validation;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.SourceConnectionSpecification;
-import io.dataline.config.persistence.ConfigPersistence;
 import io.dataline.config.persistence.JsonSchemaValidator;
 import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.server.helpers.ConfigFetchers;
-import java.util.UUID;
 
 public class IntegrationSchemaValidation {
 
-  private final ConfigPersistence configPersistence;
-
   private final JsonSchemaValidator jsonSchemaValidator;
 
-  public IntegrationSchemaValidation(ConfigPersistence configPersistence) {
-    this.configPersistence = configPersistence;
-
+  public IntegrationSchemaValidation() {
     this.jsonSchemaValidator = new JsonSchemaValidator();
   }
 
-  public void validateSourceConnectionConfiguration(UUID sourceConnectionSpecificationId, JsonNode configJson)
+  public void validateConfig(final SourceConnectionSpecification sourceConnectionSpecification,
+                             final JsonNode configJson)
       throws JsonValidationException {
-    final SourceConnectionSpecification sourceConnectionSpecification =
-        ConfigFetchers.getSourceConnectionSpecification(
-            configPersistence, sourceConnectionSpecificationId);
-
     final JsonNode schemaJson = sourceConnectionSpecification.getSpecification();
 
     jsonSchemaValidator.ensure(schemaJson, configJson);
   }
 
-  public void validateDestinationConnectionConfiguration(UUID destinationConnectionSpecificationId, JsonNode configJson)
+  public void validateConfig(final DestinationConnectionSpecification destinationConnectionSpecification,
+                             final JsonNode configJson)
       throws JsonValidationException {
-    final DestinationConnectionSpecification destinationConnectionSpecification =
-        ConfigFetchers.getDestinationConnectionSpecification(
-            configPersistence, destinationConnectionSpecificationId);
-
     final JsonNode schemaJson = destinationConnectionSpecification.getSpecification();
 
     jsonSchemaValidator.ensure(schemaJson, configJson);
