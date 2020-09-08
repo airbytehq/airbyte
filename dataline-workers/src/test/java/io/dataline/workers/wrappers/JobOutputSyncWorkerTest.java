@@ -24,35 +24,41 @@
 
 package io.dataline.workers.wrappers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import io.dataline.config.JobOutput;
+import io.dataline.config.StandardSyncInput;
+import io.dataline.config.StandardSyncOutput;
+import io.dataline.config.State;
 import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
+import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.Worker;
+import io.dataline.workers.SyncWorker;
 import java.nio.file.Path;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
-abstract class OutputConvertingWorker<InputType, OriginalOutputType, FinalOutputType> implements Worker<InputType, FinalOutputType> {
+public class JobOutputSyncWorkerTest {
 
-  private final Worker<InputType, OriginalOutputType> innerWorker;
+  @Test
+  public void test() throws InvalidCredentialsException, InvalidCatalogException {
+    StandardSyncInput input = mock(StandardSyncInput.class);
+    Path jobRoot = Path.of("fakeroot");
+    SyncWorker syncWorker = mock(SyncWorker.class);
 
-  public OutputConvertingWorker(Worker<InputType, OriginalOutputType> innerWorker) {
-    this.innerWorker = innerWorker;
+    StandardSyncOutput output = new StandardSyncOutput().withState(new State().withConnectionId(UUID.randomUUID()));
+
+    when(syncWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, output));
+    OutputAndStatus<JobOutput> run = new JobOutputSyncWorker(syncWorker).run(input, jobRoot);
+
+    JobOutput expected = new JobOutput().withOutputType(JobOutput.OutputType.SYNC).withSync(output);
+    assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
+    assertTrue(run.getOutput().isPresent());
+    assertEquals(expected, run.getOutput().get());
   }
-
-  @Override
-  public OutputAndStatus<FinalOutputType> run(InputType config, Path jobRoot) throws InvalidCredentialsException, InvalidCatalogException {
-    OutputAndStatus<OriginalOutputType> run = innerWorker.run(config, jobRoot);
-    if (run.getOutput().isPresent()) {
-      return new OutputAndStatus<FinalOutputType>(run.getStatus(), convert(run.getOutput().get()));
-    } else {
-      return new OutputAndStatus<>(run.getStatus());
-    }
-  }
-
-  @Override
-  public void cancel() {
-    innerWorker.cancel();
-  }
-
-  protected abstract FinalOutputType convert(OriginalOutputType output);
 
 }

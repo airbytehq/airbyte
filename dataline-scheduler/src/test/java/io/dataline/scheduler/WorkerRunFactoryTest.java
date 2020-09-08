@@ -44,6 +44,9 @@ import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import io.dataline.workers.wrappers.JobOutputCheckConnectionWorker;
+import io.dataline.workers.wrappers.JobOutputDiscoverSchemaWorker;
+import io.dataline.workers.wrappers.JobOutputSyncWorker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,7 +88,7 @@ class WorkerRunFactoryTest {
     StandardCheckConnectionInput expectedInput = new StandardCheckConnectionInput().withConnectionConfiguration(CONFIG);
     ArgumentCaptor<Worker<StandardCheckConnectionInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
-    Assertions.assertTrue(argument.getValue() instanceof CheckConnectionWorker);
+    Assertions.assertTrue(argument.getValue() instanceof JobOutputCheckConnectionWorker);
   }
 
   @SuppressWarnings("unchecked")
@@ -99,7 +102,7 @@ class WorkerRunFactoryTest {
     StandardDiscoverSchemaInput expectedInput = new StandardDiscoverSchemaInput().withConnectionConfiguration(CONFIG);
     ArgumentCaptor<Worker<StandardDiscoverSchemaInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
-    Assertions.assertTrue(argument.getValue() instanceof DiscoverSchemaWorker);
+    Assertions.assertTrue(argument.getValue() instanceof JobOutputDiscoverSchemaWorker);
   }
 
   @SuppressWarnings("unchecked")
@@ -116,7 +119,7 @@ class WorkerRunFactoryTest {
 
     ArgumentCaptor<Worker<StandardSyncInput, ?>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1")), eq(expectedInput), argument.capture());
-    Assertions.assertTrue(argument.getValue() instanceof SyncWorker);
+    Assertions.assertTrue(argument.getValue() instanceof JobOutputSyncWorker);
   }
 
 }

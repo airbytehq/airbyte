@@ -37,10 +37,10 @@ import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerTapFactory;
 import io.dataline.workers.singer.SingerTargetFactory;
-import java.nio.file.Path;
 import io.dataline.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.dataline.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.dataline.workers.wrappers.JobOutputSyncWorker;
+import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,8 +83,7 @@ public class WorkerRunFactory {
             jobRoot,
             checkConnectionInput,
             new JobOutputCheckConnectionWorker(
-                new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf)))
-        );
+                new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf))));
       case DISCOVER_SCHEMA:
         final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
         return creator.create(
