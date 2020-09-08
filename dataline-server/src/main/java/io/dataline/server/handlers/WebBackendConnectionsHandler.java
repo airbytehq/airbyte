@@ -24,9 +24,9 @@
 
 package io.dataline.server.handlers;
 
+import com.google.common.collect.Lists;
 import io.dataline.api.model.ConnectionIdRequestBody;
 import io.dataline.api.model.ConnectionRead;
-import io.dataline.api.model.ConnectionReadList;
 import io.dataline.api.model.JobConfigType;
 import io.dataline.api.model.JobListRequestBody;
 import io.dataline.api.model.JobReadList;
@@ -36,8 +36,10 @@ import io.dataline.api.model.WbConnectionRead;
 import io.dataline.api.model.WbConnectionReadList;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.enums.Enums;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.JsonValidationException;
+import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class WebBackendConnectionsHandler {
 
@@ -45,55 +47,51 @@ public class WebBackendConnectionsHandler {
   private final SourceImplementationsHandler sourceImplementationsHandler;
   private final JobHistoryHandler jobHistoryHandler;
 
-  public WebBackendConnectionsHandler(
-                                      ConnectionsHandler connectionsHandler,
-                                      SourceImplementationsHandler sourceImplementationsHandler,
-                                      JobHistoryHandler jobHistoryHandler) {
+  public WebBackendConnectionsHandler(final ConnectionsHandler connectionsHandler,
+                                      final SourceImplementationsHandler sourceImplementationsHandler,
+                                      final JobHistoryHandler jobHistoryHandler) {
     this.connectionsHandler = connectionsHandler;
     this.sourceImplementationsHandler = sourceImplementationsHandler;
     this.jobHistoryHandler = jobHistoryHandler;
   }
 
-  public WbConnectionReadList webBackendListConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
-    final ConnectionReadList connectionReadList = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
+  public WbConnectionReadList webBackendListConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
 
-    final List<WbConnectionRead> reads = connectionReadList.getConnections().stream().map(this::getWbConnectionRead).collect(Collectors.toList());
-
-    final WbConnectionReadList readList = new WbConnectionReadList();
-    readList.setConnections(reads);
-
-    return readList;
+    final List<WbConnectionRead> reads = Lists.newArrayList();
+    for (ConnectionRead connection : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
+      reads.add(buildWbConnectionRead(connection));
+    }
+    return new WbConnectionReadList().connections(reads);
   }
 
-  public WbConnectionRead webBackendGetConnection(ConnectionIdRequestBody connectionIdRequestBody) {
-    final ConnectionRead connectionRead = connectionsHandler.getConnection(connectionIdRequestBody);
-
-    return getWbConnectionRead(connectionRead);
+  public WbConnectionRead webBackendGetConnection(ConnectionIdRequestBody connectionIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    return buildWbConnectionRead(connectionsHandler.getConnection(connectionIdRequestBody));
   }
 
-  private WbConnectionRead getWbConnectionRead(ConnectionRead connectionRead) {
-    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody();
-    sourceImplementationIdRequestBody.setSourceImplementationId(connectionRead.getSourceImplementationId());
-    final SourceImplementationRead sourceImplementation =
-        sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
+  private WbConnectionRead buildWbConnectionRead(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
+    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody()
+        .sourceImplementationId(connectionRead.getSourceImplementationId());
+    final SourceImplementationRead sourceImplementation = sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
 
-    final JobListRequestBody jobListRequestBody = new JobListRequestBody();
-    jobListRequestBody.setConfigId(connectionRead.getConnectionId().toString());
-    jobListRequestBody.setConfigType(JobConfigType.SYNC);
+    final JobListRequestBody jobListRequestBody = new JobListRequestBody()
+        .configId(connectionRead.getConnectionId().toString())
+        .configType(JobConfigType.SYNC);
+
+    final WbConnectionRead wbConnectionRead = new WbConnectionRead()
+        .connectionId(connectionRead.getConnectionId())
+        .sourceImplementationId(connectionRead.getSourceImplementationId())
+        .destinationImplementationId(connectionRead.getDestinationImplementationId())
+        .name(connectionRead.getName())
+        .syncSchema(connectionRead.getSyncSchema())
+        .status(connectionRead.getStatus())
+        .syncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class))
+        .schedule(connectionRead.getSchedule())
+        .source(sourceImplementation);
+
     final JobReadList jobReadList = jobHistoryHandler.listJobsFor(jobListRequestBody);
-
-    final WbConnectionRead wbConnectionRead = new WbConnectionRead();
-    wbConnectionRead.setConnectionId(connectionRead.getConnectionId());
-    wbConnectionRead.setSourceImplementationId(connectionRead.getSourceImplementationId());
-    wbConnectionRead.setDestinationImplementationId(connectionRead.getDestinationImplementationId());
-    wbConnectionRead.setName(connectionRead.getName());
-    wbConnectionRead.setSyncSchema(connectionRead.getSyncSchema());
-    wbConnectionRead.setStatus(connectionRead.getStatus());
-    wbConnectionRead.setSyncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class));
-    wbConnectionRead.setSchedule(connectionRead.getSchedule());
     jobReadList.getJobs().stream().findFirst().ifPresent(job -> wbConnectionRead.setLastSync(job.getCreatedAt()));
-
-    wbConnectionRead.setSource(sourceImplementation);
 
     return wbConnectionRead;
   }
