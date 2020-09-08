@@ -38,6 +38,9 @@ import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerTapFactory;
 import io.dataline.workers.singer.SingerTargetFactory;
 import java.nio.file.Path;
+import io.dataline.workers.wrappers.JobOutputCheckConnectionWorker;
+import io.dataline.workers.wrappers.JobOutputDiscoverSchemaWorker;
+import io.dataline.workers.wrappers.JobOutputSyncWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,13 +82,16 @@ public class WorkerRunFactory {
         return creator.create(
             jobRoot,
             checkConnectionInput,
-            new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf)));
+            new JobOutputCheckConnectionWorker(
+                new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf)))
+        );
       case DISCOVER_SCHEMA:
         final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
         return creator.create(
             jobRoot,
             discoverSchemaInput,
-            new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf));
+            new JobOutputDiscoverSchemaWorker(
+                new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)));
 
       case SYNC:
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
@@ -97,9 +103,10 @@ public class WorkerRunFactory {
             // here is to create DefaultTap and DefaultTarget which will be able to
             // interoperate with SingerTap and SingerTarget now that they are split and
             // mediated in DefaultSyncWorker.
-            new DefaultSyncWorker(
-                new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
-                new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf)));
+            new JobOutputSyncWorker(
+                new DefaultSyncWorker(
+                    new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
+                    new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf))));
       default:
         throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }
