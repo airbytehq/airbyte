@@ -26,6 +26,7 @@ package io.dataline.workers.wrappers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.dataline.workers.InvalidCatalogException;
@@ -40,7 +41,7 @@ import org.mockito.Mockito;
 public class OutputConvertingWorkerTest {
 
   @Test
-  public void test() throws InvalidCredentialsException, InvalidCatalogException {
+  public void testRun() throws InvalidCredentialsException, InvalidCatalogException {
     Worker<String, String> worker = Mockito.mock(Worker.class);
     String inputConfig = "input";
     int expectedOutput = 123;
@@ -52,4 +53,10 @@ public class OutputConvertingWorkerTest {
     assertEquals(expectedOutput, output.getOutput().get());
   }
 
+  @Test
+  public void testCancel(){
+    Worker<String, String> worker = Mockito.mock(Worker.class);
+    new OutputConvertingWorker<>(worker, Integer::valueOf).cancel();
+    verify(worker).cancel();
+  }
 }
