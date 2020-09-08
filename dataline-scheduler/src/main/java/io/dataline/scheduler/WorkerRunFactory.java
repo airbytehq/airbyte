@@ -127,7 +127,7 @@ public class WorkerRunFactory {
   @FunctionalInterface
   interface Creator {
 
-    <T> WorkerRun create(Path jobRoot, T input, Worker<T, ?> worker);
+    <T> WorkerRun create(Path jobRoot, T input, Worker<T> worker);
 
   }
 

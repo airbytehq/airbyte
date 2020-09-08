@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
+import io.dataline.config.JobOutput;
 import io.dataline.config.Schema;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
@@ -106,13 +107,17 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
   }
 
   @Override
-  public OutputAndStatus<StandardDiscoverSchemaOutput> run(StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot)
+  public OutputAndStatus<JobOutput> run(StandardDiscoverSchemaInput discoverSchemaInput, Path jobRoot)
       throws InvalidCredentialsException {
     OutputAndStatus<SingerCatalog> output = runInternal(discoverSchemaInput, jobRoot);
     JobStatus status = output.getStatus();
 
     if (output.getOutput().isPresent()) {
-      return new OutputAndStatus<>(status, toDiscoveryOutput(output.getOutput().get()));
+      return new OutputAndStatus<>(
+          status,
+          new JobOutput()
+              .withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA)
+              .withDiscoverSchema(toDiscoveryOutput(output.getOutput().get())));
     } else {
       return new OutputAndStatus<>(status);
     }

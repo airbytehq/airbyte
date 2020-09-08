@@ -24,10 +24,10 @@
 
 package io.dataline.workers.singer;
 
+import io.dataline.config.JobOutput;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.CheckConnectionWorker;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.InvalidCatalogException;
@@ -49,13 +49,13 @@ public class SingerCheckConnectionWorker implements CheckConnectionWorker {
   }
 
   @Override
-  public OutputAndStatus<StandardCheckConnectionOutput> run(StandardCheckConnectionInput input, Path jobRoot)
+  public OutputAndStatus<JobOutput> run(StandardCheckConnectionInput input, Path jobRoot)
       throws InvalidCredentialsException, InvalidCatalogException {
 
     final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput()
         .withConnectionConfiguration(input.getConnectionConfiguration());
 
-    final OutputAndStatus<StandardDiscoverSchemaOutput> outputAndStatus = discoverSchemaWorker.run(discoverSchemaInput, jobRoot);
+    final OutputAndStatus<JobOutput> outputAndStatus = discoverSchemaWorker.run(discoverSchemaInput, jobRoot);
 
     final JobStatus jobStatus;
     final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput();
@@ -70,7 +70,9 @@ public class SingerCheckConnectionWorker implements CheckConnectionWorker {
           .withMessage("Failed to connect.");
     }
 
-    return new OutputAndStatus<>(jobStatus, output);
+    return new OutputAndStatus<>(
+        jobStatus,
+        new JobOutput().withOutputType(JobOutput.OutputType.CHECK_CONNECTION).withCheckConnection(output));
   }
 
   @Override

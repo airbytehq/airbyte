@@ -26,6 +26,7 @@ package io.dataline.workers;
 
 import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.commons.io.IOs;
+import io.dataline.config.JobOutput;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.StandardSyncSummary;
@@ -60,7 +61,7 @@ public class DefaultSyncWorker implements SyncWorker {
   }
 
   @Override
-  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path jobRoot) {
+  public OutputAndStatus<JobOutput> run(StandardSyncInput syncInput, Path jobRoot) {
     long startTime = System.currentTimeMillis();
 
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
@@ -95,7 +96,9 @@ public class DefaultSyncWorker implements SyncWorker {
       output.withState(state);
     });
 
-    return new OutputAndStatus<>(cancelled.get() ? JobStatus.FAILED : JobStatus.SUCCESSFUL, output);
+    return new OutputAndStatus<>(
+        cancelled.get() ? JobStatus.FAILED : JobStatus.SUCCESSFUL,
+        new JobOutput().withOutputType(JobOutput.OutputType.SYNC).withSync(output));
   }
 
   @Override
