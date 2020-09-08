@@ -32,12 +32,9 @@ import io.dataline.workers.CheckConnectionWorker;
 public class JobOutputCheckConnectionWorker extends OutputConvertingWorker<StandardCheckConnectionInput, StandardCheckConnectionOutput, JobOutput> {
 
   public JobOutputCheckConnectionWorker(CheckConnectionWorker innerWorker) {
-    super(innerWorker);
-  }
-
-  @Override
-  protected JobOutput convert(StandardCheckConnectionOutput output) {
-    return new JobOutput().withOutputType(JobOutput.OutputType.CHECK_CONNECTION).withCheckConnection(output);
+    super(
+        innerWorker,
+        output -> new JobOutput().withOutputType(JobOutput.OutputType.CHECK_CONNECTION).withCheckConnection(output));
   }
 
 }

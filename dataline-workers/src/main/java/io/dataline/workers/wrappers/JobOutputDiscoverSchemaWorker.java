@@ -32,12 +32,9 @@ import io.dataline.workers.DiscoverSchemaWorker;
 public class JobOutputDiscoverSchemaWorker extends OutputConvertingWorker<StandardDiscoverSchemaInput, StandardDiscoverSchemaOutput, JobOutput> {
 
   public JobOutputDiscoverSchemaWorker(DiscoverSchemaWorker innerWorker) {
-    super(innerWorker);
-  }
-
-  @Override
-  protected JobOutput convert(StandardDiscoverSchemaOutput output) {
-    return new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA).withDiscoverSchema(output);
+    super(
+        innerWorker,
+        output -> new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA).withDiscoverSchema(output));
   }
 
 }
