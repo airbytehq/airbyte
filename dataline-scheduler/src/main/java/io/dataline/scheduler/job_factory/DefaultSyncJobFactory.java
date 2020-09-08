@@ -24,11 +24,10 @@
 
 package io.dataline.scheduler.job_factory;
 
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.scheduler.ConfigFetchers;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
+import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
 import java.util.UUID;
@@ -36,25 +35,24 @@ import java.util.UUID;
 public class DefaultSyncJobFactory implements SyncJobFactory {
 
   private final SchedulerPersistence schedulerPersistence;
-  private final ConfigPersistence configPersistence;
+  private final ConfigRepository configRepository;
 
-  public DefaultSyncJobFactory(SchedulerPersistence schedulerPersistence, ConfigPersistence configPersistence) {
+  public DefaultSyncJobFactory(final SchedulerPersistence schedulerPersistence,
+                               final ConfigRepository configRepository) {
 
     this.schedulerPersistence = schedulerPersistence;
-    this.configPersistence = configPersistence;
+    this.configRepository = configRepository;
   }
 
-  public Long create(UUID connectionId) {
-    final StandardSync standardSync = ConfigFetchers.getStandardSync(configPersistence, connectionId);
-
-    final SourceConnectionImplementation sourceConnectionImplementation =
-        ConfigFetchers.getSourceConnectionImplementation(configPersistence, standardSync.getSourceImplementationId());
-    final DestinationConnectionImplementation destinationConnectionImplementation =
-        ConfigFetchers.getDestinationConnectionImplementation(configPersistence, standardSync.getDestinationImplementationId());
-
+  public Long create(final UUID connectionId) {
     try {
-      return schedulerPersistence.createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync);
-    } catch (IOException e) {
+      final StandardSync standardSync = configRepository.getStandardSync(connectionId);
+
+      return schedulerPersistence.createSyncJob(
+          configRepository.getSourceConnectionImplementation(standardSync.getSourceImplementationId()),
+          configRepository.getDestinationConnectionImplementation(standardSync.getDestinationImplementationId()),
+          standardSync);
+    } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
       throw new RuntimeException(e);
     }
   }

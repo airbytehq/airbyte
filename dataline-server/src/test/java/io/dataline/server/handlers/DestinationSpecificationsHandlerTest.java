@@ -31,10 +31,9 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.Lists;
 import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationSpecificationRead;
-import io.dataline.config.ConfigSchema;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.server.helpers.DestinationSpecificationHelpers;
 import java.io.IOException;
@@ -43,37 +42,29 @@ import org.junit.jupiter.api.Test;
 
 class DestinationSpecificationsHandlerTest {
 
-  private ConfigPersistence configPersistence;
+  private ConfigRepository configRepository;
   private DestinationConnectionSpecification destinationConnectionSpecification;
   private DestinationSpecificationsHandler destinationSpecificationHandler;
 
   @BeforeEach
   void setUp() throws IOException {
-    configPersistence = mock(ConfigPersistence.class);
-    destinationConnectionSpecification =
-        DestinationSpecificationHelpers.generateDestinationSpecification();
-    destinationSpecificationHandler = new DestinationSpecificationsHandler(configPersistence);
+    configRepository = mock(ConfigRepository.class);
+    destinationConnectionSpecification = DestinationSpecificationHelpers.generateDestinationSpecification();
+    destinationSpecificationHandler = new DestinationSpecificationsHandler(configRepository);
   }
 
   @Test
   void testGetDestinationSpecification() throws JsonValidationException, IOException, ConfigNotFoundException {
-    when(configPersistence.listConfigs(
-        ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
-        DestinationConnectionSpecification.class))
-            .thenReturn(Lists.newArrayList(destinationConnectionSpecification));
+    when(configRepository.listDestinationConnectionSpecifications())
+        .thenReturn(Lists.newArrayList(destinationConnectionSpecification));
 
-    DestinationSpecificationRead expectedDestinationSpecificationRead =
-        new DestinationSpecificationRead();
-    expectedDestinationSpecificationRead.setDestinationId(
-        destinationConnectionSpecification.getDestinationId());
-    expectedDestinationSpecificationRead.setDestinationSpecificationId(
-        destinationConnectionSpecification.getDestinationSpecificationId());
-    expectedDestinationSpecificationRead.setConnectionSpecification(
-        destinationConnectionSpecification.getSpecification());
+    DestinationSpecificationRead expectedDestinationSpecificationRead = new DestinationSpecificationRead();
+    expectedDestinationSpecificationRead.setDestinationId(destinationConnectionSpecification.getDestinationId());
+    expectedDestinationSpecificationRead.setDestinationSpecificationId(destinationConnectionSpecification.getDestinationSpecificationId());
+    expectedDestinationSpecificationRead.setConnectionSpecification(destinationConnectionSpecification.getSpecification());
 
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody();
-    destinationIdRequestBody.setDestinationId(
-        expectedDestinationSpecificationRead.getDestinationId());
+    destinationIdRequestBody.setDestinationId(expectedDestinationSpecificationRead.getDestinationId());
 
     final DestinationSpecificationRead actualDestinationSpecificationRead =
         destinationSpecificationHandler.getDestinationSpecification(destinationIdRequestBody);

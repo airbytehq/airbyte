@@ -28,6 +28,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.dataline.config.Configs;
 import io.dataline.config.EnvConfigs;
 import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
@@ -82,7 +83,7 @@ public class SchedulerApp {
     final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
 
     final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, schedulerPersistence, workerRunFactory);
-    final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, configPersistence);
+    final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, new ConfigRepository(configPersistence));
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
