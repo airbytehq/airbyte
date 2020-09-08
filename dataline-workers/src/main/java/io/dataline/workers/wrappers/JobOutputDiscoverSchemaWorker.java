@@ -22,38 +22,19 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
+package io.dataline.workers.wrappers;
 
 import io.dataline.config.JobOutput;
-import io.dataline.workers.Worker;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import io.dataline.config.StandardDiscoverSchemaInput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
+import io.dataline.workers.DiscoverSchemaWorker;
 
-class WorkerRunTest {
+public class JobOutputDiscoverSchemaWorker extends OutputConvertingWorker<StandardDiscoverSchemaInput, StandardDiscoverSchemaOutput, JobOutput> {
 
-  private Path path;
-  private Worker<Integer, JobOutput> worker;
-
-  @SuppressWarnings("unchecked")
-  @BeforeEach
-  void setUp() throws IOException {
-    path = Files.createTempDirectory("test").resolve("sub").resolve("sub");
-    worker = Mockito.mock(Worker.class);
-  }
-
-  @Test
-  void name() throws Exception {
-    new WorkerRun(path, 1, worker).call();
-
-    assertTrue(Files.exists(path));
-    verify(worker).run(1, path);
+  public JobOutputDiscoverSchemaWorker(DiscoverSchemaWorker innerWorker) {
+    super(
+        innerWorker,
+        output -> new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA).withDiscoverSchema(output));
   }
 
 }

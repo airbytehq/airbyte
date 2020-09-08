@@ -62,6 +62,7 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -90,6 +91,12 @@ public class AcceptanceTests {
     TARGET_PSQL.start();
 
     runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), SOURCE_PSQL);
+  }
+
+  @AfterAll
+  public static void tearDown() {
+    SOURCE_PSQL.stop();
+    TARGET_PSQL.stop();
   }
 
   private static void runSqlScript(MountableFile file, PostgreSQLContainer db)
