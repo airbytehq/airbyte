@@ -72,7 +72,6 @@ public class JobSubmitter implements Runnable {
           MDC.put("job_id", String.valueOf(job.getId()));
         })
         .setOnSuccess(output -> {
-          LOGGER.warn("test");
           if (output.getOutput().isPresent()) {
             persistence.writeOutput(job.getId(), output.getOutput().get());
           }
