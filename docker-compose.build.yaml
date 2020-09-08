@@ -24,12 +24,12 @@ services:
       dockerfile: Dockerfile.build
       target: server
       context: .
-#  webapp:
-#    image: dataline/webapp:dev
-#    build:
-#      dockerfile: Dockerfile.build
-#      target: webapp
-#      context: .
+  webapp:
+    image: dataline/webapp:dev
+    build:
+      dockerfile: Dockerfile.build
+      target: webapp
+      context: .
 
 networks:
   dataline:
