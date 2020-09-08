@@ -37,7 +37,7 @@ public interface ConfigPersistence {
 
   <T> List<T> listConfigs(ConfigSchema configType,
                           Class<T> clazz)
-      throws JsonValidationException, IOException, ConfigNotFoundException;
+      throws ConfigNotFoundException, JsonValidationException, IOException;
 
   <T> void writeConfig(ConfigSchema configType,
                        String configId,

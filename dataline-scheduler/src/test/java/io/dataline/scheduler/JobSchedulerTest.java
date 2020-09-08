@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.Column;
-import io.dataline.config.ConfigSchema;
 import io.dataline.config.DataType;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.Schema;
@@ -43,7 +42,7 @@ import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.Table;
 import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.integrations.Integrations;
 import io.dataline.scheduler.job_factory.SyncJobFactory;
@@ -129,7 +128,7 @@ class JobSchedulerTest {
         1L);
   }
 
-  private ConfigPersistence configPersistence;
+  private ConfigRepository configRepository;
   private SchedulerPersistence schedulerPersistence;
   private ScheduleJobPredicate scheduleJobPredicate;
   private SyncJobFactory jobFactory;
@@ -137,12 +136,12 @@ class JobSchedulerTest {
 
   @BeforeEach
   public void setup() {
-    configPersistence = mock(ConfigPersistence.class);
+    configRepository = mock(ConfigRepository.class);
     schedulerPersistence = mock(SchedulerPersistence.class);
 
     scheduleJobPredicate = mock(ScheduleJobPredicate.class);
     jobFactory = mock(SyncJobFactory.class);
-    scheduler = new JobScheduler(schedulerPersistence, configPersistence, scheduleJobPredicate, jobFactory);
+    scheduler = new JobScheduler(schedulerPersistence, configRepository, scheduleJobPredicate, jobFactory);
   }
 
   @Test
@@ -195,22 +194,15 @@ class JobSchedulerTest {
   // sets all mocks that are related to fetching configs. these are the same for all tests in this
   // test suite.
   private void setConfigMocks() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class))
-        .thenReturn(Collections.singletonList(STANDARD_SYNC));
-    when(configPersistence.getConfig(
-        ConfigSchema.STANDARD_SYNC_SCHEDULE,
-        STANDARD_SYNC.getConnectionId().toString(),
-        StandardSyncSchedule.class)).thenReturn(STANDARD_SYNC_SCHEDULE);
+    when(configRepository.listStandardSyncs()).thenReturn(Collections.singletonList(STANDARD_SYNC));
+    when(configRepository.getStandardSyncSchedule(STANDARD_SYNC.getConnectionId())).thenReturn(STANDARD_SYNC_SCHEDULE);
   }
 
   // verify all mocks that are related to fetching configs are called. these are the same for all
   // tests in this test suite.
   private void verifyConfigCalls() throws ConfigNotFoundException, IOException, JsonValidationException {
-    verify(configPersistence).listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
-    verify(configPersistence).getConfig(
-        ConfigSchema.STANDARD_SYNC_SCHEDULE,
-        STANDARD_SYNC.getConnectionId().toString(),
-        StandardSyncSchedule.class);
+    verify(configRepository).listStandardSyncs();
+    verify(configRepository).getStandardSyncSchedule(STANDARD_SYNC.getConnectionId());
   }
 
 }

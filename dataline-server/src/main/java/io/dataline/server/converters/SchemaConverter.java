@@ -37,9 +37,9 @@ import java.util.stream.Collectors;
 
 public class SchemaConverter {
 
-  public static Schema toPersistenceSchema(SourceSchema api) {
+  public static Schema toPersistenceSchema(SourceSchema sourceSchema) {
     final List<Table> persistenceTables =
-        api.getTables().stream()
+        sourceSchema.getTables().stream()
             .map(
                 apiTable -> {
                   final List<Column> persistenceColumns =
@@ -62,7 +62,6 @@ public class SchemaConverter {
   }
 
   public static SourceSchema toApiSchema(Schema persistenceSchema) {
-
     final List<SourceSchemaTable> persistenceTables =
         persistenceSchema.getTables().stream()
             .map(

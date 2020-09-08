@@ -27,49 +27,44 @@ package io.dataline.server.handlers;
 import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationSpecificationRead;
 import io.dataline.config.DestinationConnectionSpecification;
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
+import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.server.errors.KnownException;
-import io.dataline.server.helpers.ConfigFetchers;
+import java.io.IOException;
+import org.eclipse.jetty.http.HttpStatus;
 
 public class DestinationSpecificationsHandler {
 
-  private final ConfigPersistence configPersistence;
+  private final ConfigRepository configRepository;
 
-  public DestinationSpecificationsHandler(ConfigPersistence configPersistence) {
-    this.configPersistence = configPersistence;
+  public DestinationSpecificationsHandler(final ConfigRepository configRepository) {
+    this.configRepository = configRepository;
   }
 
-  public DestinationSpecificationRead getDestinationSpecification(DestinationIdRequestBody destinationIdRequestBody) {
-    final DestinationConnectionSpecification destinationConnection;
+  public DestinationSpecificationRead getDestinationSpecification(DestinationIdRequestBody destinationIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     // todo (cgardens) - this is a shortcoming of rolling our own disk storage. since we are not
     // querying on a the primary key, we have to list all of the specification objects and then
     // filter.
-    destinationConnection =
-        ConfigFetchers.getDestinationConnectionSpecifications(configPersistence).stream()
-            .filter(
-                destinationSpecification -> destinationSpecification
-                    .getDestinationId()
-                    .equals(destinationIdRequestBody.getDestinationId()))
-            .findFirst()
-            .orElseThrow(
-                () -> new KnownException(
-                    404,
-                    String.format(
-                        "Could not find a destination specification for destination: %s",
-                        destinationIdRequestBody.getDestinationId())));
+    final DestinationConnectionSpecification destinationConnection = configRepository.listDestinationConnectionSpecifications().stream()
+        .filter(ds -> ds.getDestinationId().equals(destinationIdRequestBody.getDestinationId()))
+        .findFirst()
+        .orElseThrow(
+            () -> new KnownException(
+                HttpStatus.NOT_FOUND_404,
+                String.format(
+                    "Could not find a destination specification for destination: %s",
+                    destinationIdRequestBody.getDestinationId())));
 
-    return toDestinationSpecificationRead(destinationConnection);
+    return buildDestinationSpecificationRead(destinationConnection);
   }
 
-  private static DestinationSpecificationRead toDestinationSpecificationRead(DestinationConnectionSpecification destinationConnectionSpecification) {
-    final DestinationSpecificationRead destinationSpecificationRead = new DestinationSpecificationRead();
-    destinationSpecificationRead.setDestinationId(
-        destinationConnectionSpecification.getDestinationId());
-    destinationSpecificationRead.setDestinationSpecificationId(
-        destinationConnectionSpecification.getDestinationSpecificationId());
-    destinationSpecificationRead.setConnectionSpecification(destinationConnectionSpecification.getSpecification());
-
-    return destinationSpecificationRead;
+  private static DestinationSpecificationRead buildDestinationSpecificationRead(DestinationConnectionSpecification dcs) {
+    return new DestinationSpecificationRead()
+        .destinationId(dcs.getDestinationId())
+        .destinationSpecificationId(dcs.getDestinationSpecificationId())
+        .connectionSpecification(dcs.getSpecification());
   }
 
 }

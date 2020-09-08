@@ -25,7 +25,6 @@
 package io.dataline.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -33,28 +32,26 @@ import com.google.common.collect.Lists;
 import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationRead;
 import io.dataline.api.model.DestinationReadList;
-import io.dataline.config.ConfigSchema;
 import io.dataline.config.StandardDestination;
 import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.JsonValidationException;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DestinationsHandlerTest {
 
-  private ConfigPersistence configPersistence;
+  private ConfigRepository configRepository;
   private StandardDestination destination;
   private DestinationsHandler destinationHandler;
 
   @BeforeEach
   void setUp() {
-    configPersistence = mock(ConfigPersistence.class);
+    configRepository = mock(ConfigRepository.class);
     destination = generateDestination();
-    destinationHandler = new DestinationsHandler(configPersistence);
+    destinationHandler = new DestinationsHandler(configRepository);
   }
 
   private StandardDestination generateDestination() {
@@ -68,14 +65,9 @@ class DestinationsHandlerTest {
   @Test
   void testListDestinations() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardDestination destination2 = generateDestination();
-    configPersistence.writeConfig(
-        ConfigSchema.STANDARD_DESTINATION,
-        destination2.getDestinationId().toString(),
-        destination2);
 
-    when(configPersistence.listConfigs(
-        ConfigSchema.STANDARD_DESTINATION, StandardDestination.class))
-            .thenReturn(Lists.newArrayList(destination, destination2));
+    when(configRepository.listStandardDestinations())
+        .thenReturn(Lists.newArrayList(destination, destination2));
 
     DestinationRead expectedDestinationRead1 = new DestinationRead()
         .destinationId(destination.getDestinationId())
@@ -87,30 +79,15 @@ class DestinationsHandlerTest {
 
     final DestinationReadList actualDestinationReadList = destinationHandler.listDestinations();
 
-    final Optional<DestinationRead> actualDestinationRead1 = actualDestinationReadList.getDestinations()
-        .stream()
-        .filter(
-            destinationRead -> destinationRead.getDestinationId().equals(destination.getDestinationId()))
-        .findFirst();
-    final Optional<DestinationRead> actualDestinationRead2 = actualDestinationReadList.getDestinations()
-        .stream()
-        .filter(
-            destinationRead -> destinationRead.getDestinationId().equals(destination2.getDestinationId()))
-        .findFirst();
-
-    assertTrue(actualDestinationRead1.isPresent());
-    assertEquals(expectedDestinationRead1, actualDestinationRead1.get());
-    assertTrue(actualDestinationRead2.isPresent());
-    assertEquals(expectedDestinationRead2, actualDestinationRead2.get());
+    assertEquals(
+        Lists.newArrayList(expectedDestinationRead1, expectedDestinationRead2),
+        actualDestinationReadList.getDestinations());
   }
 
   @Test
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configPersistence.getConfig(
-        ConfigSchema.STANDARD_DESTINATION,
-        destination.getDestinationId().toString(),
-        StandardDestination.class))
-            .thenReturn(destination);
+    when(configRepository.getStandardDestination(destination.getDestinationId()))
+        .thenReturn(destination);
 
     DestinationRead expectedDestinationRead = new DestinationRead()
         .destinationId(destination.getDestinationId())
