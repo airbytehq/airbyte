@@ -51,7 +51,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   public DefaultConfigPersistence(final Path storageRoot, final JsonSchemaValidator schemaValidator) {
-    this.storageRoot = storageRoot;
+    this.storageRoot = storageRoot.resolve("config");
     jsonSchemaValidator = schemaValidator;
   }
 

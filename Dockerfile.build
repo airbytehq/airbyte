@@ -53,7 +53,7 @@ COPY --from=build /code/dataline-webapp/build /usr/share/nginx/html
 ####################
 # Build seed image #
 ####################
-FROM ubuntu:20.04 AS seed
+FROM alpine:3.4 AS seed
 
 WORKDIR /app
 

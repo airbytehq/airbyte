@@ -41,7 +41,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - "${WORKSPACE_DOCKER_MOUNT}:${WORKSPACE_ROOT}"
-      - "data:/data"
+      - "data:${CONFIG_ROOT}"
     depends_on:
       - db
       - seed
@@ -59,7 +59,7 @@ services:
     ports:
       - 8001:8001
     volumes:
-      - "data:/data"
+      - "data:${CONFIG_ROOT}"
     depends_on:
       - db
   webapp:
