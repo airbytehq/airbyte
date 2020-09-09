@@ -48,11 +48,6 @@ public class TrackingClientSingleton {
     }
   }
 
-  // fallback on a logging client with an empty identity.
-  private static void initialize() {
-    initialize(new LoggingTrackingClient(TrackingIdentity::empty));
-  }
-
   @VisibleForTesting
   static void initialize(TrackingClient trackingClient) {
     synchronized (lock) {
@@ -62,6 +57,11 @@ public class TrackingClientSingleton {
 
   public static void initialize(Configs.TrackingStrategy trackingStrategy, ConfigRepository configRepository) {
     initialize(createTrackingClient(trackingStrategy, () -> getTrackingIdentity(configRepository)));
+  }
+
+  // fallback on a logging client with an empty identity.
+  private static void initialize() {
+    initialize(new LoggingTrackingClient(TrackingIdentity::empty));
   }
 
   @VisibleForTesting
@@ -90,7 +90,8 @@ public class TrackingClientSingleton {
    *
    * @param trackingStrategy - what type of tracker we want to use.
    * @param trackingIdentitySupplier - how we get the identity of the user. we have a supplier,
-   *        because we if updates over time, we always want the most recent info.
+   *        because we if the identity updates over time (which happens during initial setup), we
+   *        always want the most recent info.
    * @return tracking client
    */
   @VisibleForTesting
