@@ -1211,9 +1211,9 @@ components:
     JobConfigType:
       type: string
       enum:
-        - checkConnectionSource
-        - checkConnectionDestination
-        - discoverSchema
+        - check_connection_source
+        - check_connection_destination
+        - discover_schema
         - sync
     JobListRequestBody:
       type: object
