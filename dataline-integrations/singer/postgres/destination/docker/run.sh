@@ -20,13 +20,17 @@ function check_connection() {
   done
 }
 
+function echo_err(){
+  >&2 echo "$@"
+}
+
 function main() {
   # Singer's discovery is what we currently use to check connection
   if [[ "$*" =~ .*"--discover".* ]]; then
-    echo "Checking connection..."
+   echo_err "Checking connection..."
     check_connection "$@"
   else
-    echo "Running sync..."
+    echo_err "Running sync..."
     target-postgres "$@"
   fi
 }
