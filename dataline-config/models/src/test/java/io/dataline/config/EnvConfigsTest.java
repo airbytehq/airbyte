@@ -91,4 +91,22 @@ class EnvConfigsTest {
     Assertions.assertEquals("abc", config.getDockerNetwork());
   }
 
+  @Test
+  void testTrackingStrategy() {
+    when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn(null);
+    Assertions.assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
+
+    when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn("abc");
+    Assertions.assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
+
+    when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn("logging");
+    Assertions.assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
+
+    when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn("segment");
+    Assertions.assertEquals(Configs.TrackingStrategy.SEGMENT, config.getTrackingStrategy());
+
+    when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn("LOGGING");
+    Assertions.assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
+  }
+
 }
