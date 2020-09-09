@@ -50,6 +50,17 @@ EXPOSE 80
 
 COPY --from=build /code/dataline-webapp/build /usr/share/nginx/html
 
+####################
+# Build seed image #
+####################
+FROM alpine:3.4 AS seed
+
+WORKDIR /app
+
+# the sole purpose of this image is to seed the data volume with the default data
+# that the app should have when it is first installed.
+COPY --from=build /code/dataline-config/init/src/main/resources/config seed/config
+
 ######################
 # Build server image #
 ######################
@@ -66,7 +77,6 @@ WORKDIR /app
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/${WAIT_VERSION}/wait wait
 RUN chmod +x wait
 
-COPY --from=build /code/dataline-config/init/src/main/resources/config data/config
 COPY --from=build /code/${APPLICATION}/build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
@@ -88,7 +98,6 @@ WORKDIR /app
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/${WAIT_VERSION}/wait wait
 RUN chmod +x wait
 
-COPY --from=build /code/dataline-config/init/src/main/resources/config data/config
 COPY --from=build /code/${APPLICATION}/build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1

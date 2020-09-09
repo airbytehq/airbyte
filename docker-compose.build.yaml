@@ -6,6 +6,12 @@ services:
     build:
       dockerfile: Dockerfile.database
       context: .
+  seed:
+    image: dataline/seed:dev
+    build:
+      dockerfile: Dockerfile.build
+      target: seed
+      context: .
   scheduler:
     image: dataline/scheduler:dev
     build:
@@ -24,9 +30,6 @@ services:
       dockerfile: Dockerfile.build
       target: webapp
       context: .
-
-volumes:
-  workspace:
 
 networks:
   dataline:
