@@ -32,6 +32,7 @@ import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConstants;
 import java.io.IOException;
+import java.util.function.Supplier;
 
 public class TrackingClientSingleton {
 
@@ -49,7 +50,7 @@ public class TrackingClientSingleton {
 
   // fallback on a logging client with an empty identity.
   private static void initialize() {
-    initialize(new LoggingTrackingClient(new TrackingIdentity(null, null)));
+    initialize(new LoggingTrackingClient(() -> new TrackingIdentity(null, null)));
   }
 
   @VisibleForTesting
@@ -62,7 +63,7 @@ public class TrackingClientSingleton {
   public static void initialize(Configs.TrackingStrategy trackingStrategy, ConfigRepository configRepository) {
     final TrackingIdentity trackingIdentity = getTrackingIdentity(configRepository);
 
-    initialize(createTrackingClient(trackingStrategy, trackingIdentity));
+    initialize(createTrackingClient(trackingStrategy, () -> trackingIdentity));
   }
 
   @VisibleForTesting
@@ -82,7 +83,7 @@ public class TrackingClientSingleton {
   }
 
   @VisibleForTesting
-  static TrackingClient createTrackingClient(Configs.TrackingStrategy trackingStrategy, TrackingIdentity trackingIdentity) {
+  static TrackingClient createTrackingClient(Configs.TrackingStrategy trackingStrategy, Supplier<TrackingIdentity> trackingIdentity) {
 
     switch (trackingStrategy) {
       case SEGMENT:

@@ -24,33 +24,41 @@
 
 package io.dataline.analytics;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class SegmentTrackingClient implements TrackingClient {
 
   private static final String SEGMENT_WRITE_KEY = "7UDdp5K55CyiGgsauOr2pNNujGvmhaeu";
 
+  // Analytics is threadsafe.
   private final Analytics analytics;
-  private final TrackingIdentity identity;
+  private final Supplier<TrackingIdentity> identitySupplier;
 
-  public SegmentTrackingClient(TrackingIdentity identity) {
-    // Analytics is threadsafe.
-    this.analytics = Analytics.builder(SEGMENT_WRITE_KEY).build();
-    this.identity = identity;
+  @VisibleForTesting
+  SegmentTrackingClient(Supplier<TrackingIdentity> identitySupplier, Analytics analytics) {
+    this.identitySupplier = identitySupplier;
+    this.analytics = analytics;
+  }
+
+  public SegmentTrackingClient(Supplier<TrackingIdentity> identitySupplier) {
+    this(identitySupplier, Analytics.builder(SEGMENT_WRITE_KEY).build());
   }
 
   @Override
   public void identify() {
+    final TrackingIdentity trackingIdentity = identitySupplier.get();
     final ImmutableMap.Builder<String, Object> identityMetadataBuilder = ImmutableMap.builder();
-    identity.getEmail().ifPresent(email -> identityMetadataBuilder.put("email", email));
+    trackingIdentity.getEmail().ifPresent(email -> identityMetadataBuilder.put("email", email));
 
     analytics.enqueue(IdentifyMessage.builder()
-        .userId(identity.getCustomerId().toString())
+        .userId(trackingIdentity.getCustomerId().toString())
         .traits(identityMetadataBuilder.build()));
   }
 
@@ -62,7 +70,7 @@ public class SegmentTrackingClient implements TrackingClient {
   @Override
   public void track(String action, Map<String, Object> metadata) {
     analytics.enqueue(TrackMessage.builder(action)
-        .userId(identity.getCustomerId().toString())
+        .userId(identitySupplier.get().getCustomerId().toString())
         .properties(metadata));
   }
 

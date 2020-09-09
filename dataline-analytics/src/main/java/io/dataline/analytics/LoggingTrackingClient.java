@@ -26,6 +26,7 @@ package io.dataline.analytics;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,15 +34,15 @@ public class LoggingTrackingClient implements TrackingClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LoggingTrackingClient.class);
 
-  private final TrackingIdentity identity;
+  private final Supplier<TrackingIdentity> identitySupplier;
 
-  public LoggingTrackingClient(TrackingIdentity identity) {
-    this.identity = identity;
+  public LoggingTrackingClient(Supplier<TrackingIdentity> identitySupplier) {
+    this.identitySupplier = identitySupplier;
   }
 
   @Override
   public void identify() {
-    LOGGER.info("identify. userId: {}", identity.getCustomerId());
+    LOGGER.info("identify. userId: {}", identitySupplier.get().getCustomerId());
   }
 
   @Override
@@ -51,7 +52,7 @@ public class LoggingTrackingClient implements TrackingClient {
 
   @Override
   public void track(String action, Map<String, Object> metadata) {
-    LOGGER.info("track. userId: {} action: {}, metadata: {}", identity.getCustomerId(), action, metadata);
+    LOGGER.info("track. userId: {} action: {}, metadata: {}", identitySupplier.get().getCustomerId(), action, metadata);
   }
 
 }
