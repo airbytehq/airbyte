@@ -12,7 +12,7 @@ function check_connection() {
         exit 1
       else
         # If connection check is successful write a fake catalog for the discovery worker to find
-        echo '{"streams":[]}' > catalog.json
+        echo '{"streams":[]}' >catalog.json
       fi
       ;;
     esac
@@ -20,14 +20,14 @@ function check_connection() {
   done
 }
 
-function echo_err(){
-  >&2 echo "$@"
+function echo_err() {
+  echo >&2 "$@"
 }
 
 function main() {
   # Singer's discovery is what we currently use to check connection
   if [[ "$*" =~ .*"--discover".* ]]; then
-   echo_err "Checking connection..."
+    echo_err "Checking connection..."
     check_connection "$@"
   else
     echo_err "Running sync..."
