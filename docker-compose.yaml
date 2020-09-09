@@ -8,6 +8,23 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=db-${DATABASE_DB}
+  seed:
+    image: dataline/seed:${VERSION}
+    container_name: dataline-data-seed
+    environment:
+      - ENV=${ENV}
+    # When the volume is created for the first time it will be populated with the contents of /app/seed,
+    # which is prepopulated with the configs that we want config persistence to have access to upon
+    # installation. On subsequent compose up / down, this will get mounted, but not copy any data.
+    # Effectively it'll be a no-op on subsequent runs, though we may be able to use it to add new data
+    # to the volume if we need to as we release updates.
+    # reference:
+    # https://docs.docker.com/storage/volumes/#populate-a-volume-using-a-container
+    # https://docs.docker.com/compose/compose-file/#long-syntax-3
+    volumes:
+      - type: volume
+        source: data
+        target: /app/seed
   scheduler:
     image: dataline/scheduler:${VERSION}
     container_name: dataline-scheduler
@@ -24,8 +41,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - "${WORKSPACE_DOCKER_MOUNT}:${WORKSPACE_ROOT}"
+      - "data:${CONFIG_ROOT}"
     depends_on:
       - db
+      - seed
   server:
     image: dataline/server:${VERSION}
     container_name: dataline-server
@@ -39,6 +58,8 @@ services:
       - CONFIG_ROOT=${CONFIG_ROOT}
     ports:
       - 8001:8001
+    volumes:
+      - "data:${CONFIG_ROOT}"
     depends_on:
       - db
   webapp:
@@ -52,3 +73,5 @@ services:
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
+  data:
+    name: data
