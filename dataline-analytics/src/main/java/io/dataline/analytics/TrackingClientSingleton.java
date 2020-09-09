@@ -50,7 +50,7 @@ public class TrackingClientSingleton {
 
   // fallback on a logging client with an empty identity.
   private static void initialize() {
-    initialize(new LoggingTrackingClient(() -> new TrackingIdentity(null, null)));
+    initialize(new LoggingTrackingClient(TrackingIdentity::empty));
   }
 
   @VisibleForTesting
@@ -61,9 +61,7 @@ public class TrackingClientSingleton {
   }
 
   public static void initialize(Configs.TrackingStrategy trackingStrategy, ConfigRepository configRepository) {
-    final TrackingIdentity trackingIdentity = getTrackingIdentity(configRepository);
-
-    initialize(createTrackingClient(trackingStrategy, () -> trackingIdentity));
+    initialize(createTrackingClient(trackingStrategy, () -> getTrackingIdentity(configRepository)));
   }
 
   @VisibleForTesting
@@ -71,10 +69,15 @@ public class TrackingClientSingleton {
     try {
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
       String email = null;
-      if (workspace.getAnonymousDataCollection() != null && !workspace.getAnonymousDataCollection()) {
+      if (workspace.getEmail() != null && workspace.getAnonymousDataCollection() != null && !workspace.getAnonymousDataCollection()) {
         email = workspace.getEmail();
       }
-      return new TrackingIdentity(workspace.getCustomerId(), email);
+      return new TrackingIdentity(
+          workspace.getCustomerId(),
+          email,
+          workspace.getAnonymousDataCollection(),
+          workspace.getNews(),
+          workspace.getSecurityUpdates());
     } catch (ConfigNotFoundException e) {
       throw new RuntimeException("could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
     } catch (JsonValidationException | IOException e) {
@@ -82,14 +85,22 @@ public class TrackingClientSingleton {
     }
   }
 
+  /**
+   * Creates a tracking client that uses the appropriate strategy from an identity supplier.
+   *
+   * @param trackingStrategy - what type of tracker we want to use.
+   * @param trackingIdentitySupplier - how we get the identity of the user. we have a supplier,
+   *        because we if updates over time, we always want the most recent info.
+   * @return tracking client
+   */
   @VisibleForTesting
-  static TrackingClient createTrackingClient(Configs.TrackingStrategy trackingStrategy, Supplier<TrackingIdentity> trackingIdentity) {
+  static TrackingClient createTrackingClient(Configs.TrackingStrategy trackingStrategy, Supplier<TrackingIdentity> trackingIdentitySupplier) {
 
     switch (trackingStrategy) {
       case SEGMENT:
-        return new SegmentTrackingClient(trackingIdentity);
+        return new SegmentTrackingClient(trackingIdentitySupplier);
       case LOGGING:
-        return new LoggingTrackingClient(trackingIdentity);
+        return new LoggingTrackingClient(trackingIdentitySupplier);
       default:
         throw new RuntimeException("unrecognized tracking strategy");
     }

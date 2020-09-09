@@ -44,8 +44,6 @@ class TrackingClientSingletonTest {
 
   private ConfigRepository configRepository;
 
-  private static final TrackingIdentity identity = new TrackingIdentity(UUID.randomUUID(), null);
-
   @BeforeEach
   void setup() {
     configRepository = mock(ConfigRepository.class);
@@ -55,12 +53,14 @@ class TrackingClientSingletonTest {
 
   @Test
   void testCreateTrackingClientLogging() {
-    assertTrue(TrackingClientSingleton.createTrackingClient(Configs.TrackingStrategy.LOGGING, () -> identity) instanceof LoggingTrackingClient);
+    assertTrue(
+        TrackingClientSingleton.createTrackingClient(Configs.TrackingStrategy.LOGGING, TrackingIdentity::empty) instanceof LoggingTrackingClient);
   }
 
   @Test
   void testCreateTrackingClientSegment() {
-    assertTrue(TrackingClientSingleton.createTrackingClient(Configs.TrackingStrategy.SEGMENT, () -> identity) instanceof SegmentTrackingClient);
+    assertTrue(
+        TrackingClientSingleton.createTrackingClient(Configs.TrackingStrategy.SEGMENT, TrackingIdentity::empty) instanceof SegmentTrackingClient);
   }
 
   @Test
@@ -82,7 +82,7 @@ class TrackingClientSingletonTest {
     when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
 
     final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository);
-    final TrackingIdentity expected = new TrackingIdentity(workspace.getCustomerId(), null);
+    final TrackingIdentity expected = new TrackingIdentity(workspace.getCustomerId(), null, null, null, null);
 
     assertEquals(expected, actual);
   }
@@ -92,12 +92,14 @@ class TrackingClientSingletonTest {
     final StandardWorkspace workspace = new StandardWorkspace()
         .withCustomerId(UUID.randomUUID())
         .withEmail("a@dataline.io")
-        .withAnonymousDataCollection(false);
+        .withAnonymousDataCollection(false)
+        .withNews(true)
+        .withSecurityUpdates(true);
 
     when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
 
     final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository);
-    final TrackingIdentity expected = new TrackingIdentity(workspace.getCustomerId(), workspace.getEmail());
+    final TrackingIdentity expected = new TrackingIdentity(workspace.getCustomerId(), workspace.getEmail(), false, true, true);
 
     assertEquals(expected, actual);
   }
@@ -107,12 +109,14 @@ class TrackingClientSingletonTest {
     final StandardWorkspace workspace = new StandardWorkspace()
         .withCustomerId(UUID.randomUUID())
         .withEmail("a@dataline.io")
-        .withAnonymousDataCollection(true);
+        .withAnonymousDataCollection(true)
+        .withNews(true)
+        .withSecurityUpdates(true);
 
     when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
 
     final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository);
-    final TrackingIdentity expected = new TrackingIdentity(workspace.getCustomerId(), null);
+    final TrackingIdentity expected = new TrackingIdentity(workspace.getCustomerId(), null, true, true, true);
 
     assertEquals(expected, actual);
   }

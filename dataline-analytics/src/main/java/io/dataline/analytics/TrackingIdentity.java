@@ -32,10 +32,20 @@ public class TrackingIdentity {
 
   private final UUID customerId;
   private final String email;
+  private final Boolean anonymousDataCollection;
+  private final Boolean news;
+  private final Boolean securityUpdates;
 
-  public TrackingIdentity(UUID customerId, String email) {
+  public static TrackingIdentity empty() {
+    return new TrackingIdentity(null, null, null, null, null);
+  }
+
+  public TrackingIdentity(UUID customerId, String email, Boolean anonymousDataCollection, Boolean news, Boolean securityUpdates) {
     this.customerId = customerId;
     this.email = email;
+    this.anonymousDataCollection = anonymousDataCollection;
+    this.news = news;
+    this.securityUpdates = securityUpdates;
   }
 
   public UUID getCustomerId() {
@@ -46,20 +56,37 @@ public class TrackingIdentity {
     return Optional.ofNullable(email);
   }
 
+  public boolean isAnonymousDataCollection() {
+    return anonymousDataCollection != null && anonymousDataCollection;
+  }
+
+  public boolean isNews() {
+    return news != null && news;
+  }
+
+  public boolean isSecurityUpdates() {
+    return securityUpdates != null && securityUpdates;
+  }
+
   @Override
   public boolean equals(Object o) {
-    if (this == o)
+    if (this == o) {
       return true;
-    if (o == null || getClass() != o.getClass())
+    }
+    if (o == null || getClass() != o.getClass()) {
       return false;
+    }
     TrackingIdentity that = (TrackingIdentity) o;
-    return Objects.equals(customerId, that.customerId) &&
+    return anonymousDataCollection == that.anonymousDataCollection &&
+        news == that.news &&
+        securityUpdates == that.securityUpdates &&
+        Objects.equals(customerId, that.customerId) &&
         Objects.equals(email, that.email);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(customerId, email);
+    return Objects.hash(customerId, email, anonymousDataCollection, news, securityUpdates);
   }
 
 }

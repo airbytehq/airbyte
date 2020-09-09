@@ -48,13 +48,17 @@ public class SegmentTrackingClient implements TrackingClient {
   }
 
   public SegmentTrackingClient(Supplier<TrackingIdentity> identitySupplier) {
-    this(identitySupplier, Analytics.builder(SEGMENT_WRITE_KEY).build());
+    this.analytics = Analytics.builder(SEGMENT_WRITE_KEY).build();
+    this.identitySupplier = identitySupplier;
   }
 
   @Override
   public void identify() {
     final TrackingIdentity trackingIdentity = identitySupplier.get();
-    final ImmutableMap.Builder<String, Object> identityMetadataBuilder = ImmutableMap.builder();
+    final ImmutableMap.Builder<String, Object> identityMetadataBuilder = ImmutableMap.<String, Object>builder()
+        .put("anonymized", trackingIdentity.isAnonymousDataCollection())
+        .put("subscribed_newsletter", trackingIdentity.isNews())
+        .put("subscribed_security", trackingIdentity.isSecurityUpdates());
     trackingIdentity.getEmail().ifPresent(email -> identityMetadataBuilder.put("email", email));
 
     analytics.enqueue(IdentifyMessage.builder()

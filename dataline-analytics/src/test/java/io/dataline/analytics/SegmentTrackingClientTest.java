@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,8 @@ import org.mockito.ArgumentCaptor;
 
 class SegmentTrackingClientTest {
 
-  private static final TrackingIdentity identity = new TrackingIdentity(UUID.randomUUID(), "a@dataline.io");
+  private static final TrackingIdentity identity = new TrackingIdentity(UUID.randomUUID(), "a@dataline.io", false, false, true);
+
   private Analytics analytics;
   private SegmentTrackingClient segmentTrackingClient;
 
@@ -49,6 +51,7 @@ class SegmentTrackingClientTest {
     segmentTrackingClient = new SegmentTrackingClient(() -> identity, analytics);
   }
 
+  @SuppressWarnings("OptionalGetWithoutIsPresent")
   @Test
   void testIdentify() {
     ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
@@ -57,8 +60,14 @@ class SegmentTrackingClientTest {
 
     verify(analytics).enqueue(mockBuilder.capture());
     final IdentifyMessage actual = mockBuilder.getValue().build();
+    final Map<String, Object> expectedTraits = ImmutableMap.<String, Object>builder()
+        .put("email", identity.getEmail().get())
+        .put("anonymized", identity.isAnonymousDataCollection())
+        .put("subscribed_newsletter", identity.isNews())
+        .put("subscribed_security", identity.isSecurityUpdates())
+        .build();
     assertEquals(identity.getCustomerId().toString(), actual.userId());
-    assertEquals(ImmutableMap.of("email", identity.getEmail().get()), actual.traits());
+    assertEquals(expectedTraits, actual.traits());
   }
 
   @Test
@@ -68,7 +77,7 @@ class SegmentTrackingClientTest {
     segmentTrackingClient.track("jump");
 
     verify(analytics).enqueue(mockBuilder.capture());
-    TrackMessage actual = (TrackMessage) mockBuilder.getValue().build();
+    TrackMessage actual = mockBuilder.getValue().build();
     assertEquals("jump", actual.event());
     assertEquals(identity.getCustomerId().toString(), actual.userId());
   }
@@ -81,7 +90,7 @@ class SegmentTrackingClientTest {
     segmentTrackingClient.track("jump", metadata);
 
     verify(analytics).enqueue(mockBuilder.capture());
-    TrackMessage actual = (TrackMessage) mockBuilder.getValue().build();
+    TrackMessage actual = mockBuilder.getValue().build();
     assertEquals("jump", actual.event());
     assertEquals(identity.getCustomerId().toString(), actual.userId());
     assertEquals(metadata, actual.properties());
