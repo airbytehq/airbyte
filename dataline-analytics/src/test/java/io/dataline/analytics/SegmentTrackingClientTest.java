@@ -54,7 +54,8 @@ class SegmentTrackingClientTest {
   @SuppressWarnings("OptionalGetWithoutIsPresent")
   @Test
   void testIdentify() {
-    // equals is not defined on MessageBuilder, so we need to use ArgumentCaptor to inspect each field manually.
+    // equals is not defined on MessageBuilder, so we need to use ArgumentCaptor to inspect each field
+    // manually.
     ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
 
     segmentTrackingClient.identify();
