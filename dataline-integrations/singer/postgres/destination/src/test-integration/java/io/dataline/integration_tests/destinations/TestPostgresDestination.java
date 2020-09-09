@@ -65,7 +65,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 class TestPostgresDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestPostgresDestination.class);
-  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-destination-docker";
+  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-destination";
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
   private static final String CONFIG_FILENAME = "config.json";
 
