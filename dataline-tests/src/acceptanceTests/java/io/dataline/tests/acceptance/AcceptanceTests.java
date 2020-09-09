@@ -24,6 +24,8 @@
 
 package io.dataline.tests.acceptance;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.api.client.DatalineApiClient;
@@ -48,26 +50,29 @@ import io.dataline.api.client.model.SourceSpecificationRead;
 import io.dataline.commons.json.Jsons;
 import io.dataline.commons.resources.MoreResources;
 import io.dataline.config.persistence.PersistenceConstants;
+import io.dataline.db.DatabaseHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import io.dataline.db.DatabaseHelper;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class AcceptanceTests {
+
+  static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
 
   static PostgreSQLContainer SOURCE_PSQL;
   static PostgreSQLContainer TARGET_PSQL;
@@ -76,8 +81,7 @@ public class AcceptanceTests {
       new ApiClient().setScheme("http")
           .setHost("localhost")
           .setPort(8001)
-          .setBasePath("/api")
-  );
+          .setBasePath("/api"));
 
   @BeforeAll
   public static void init() throws IOException, InterruptedException {
@@ -87,6 +91,12 @@ public class AcceptanceTests {
     TARGET_PSQL.start();
 
     runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), SOURCE_PSQL);
+  }
+
+  @AfterAll
+  public static void tearDown() {
+    SOURCE_PSQL.stop();
+    TARGET_PSQL.stop();
   }
 
   private static void runSqlScript(MountableFile file, PostgreSQLContainer db)
@@ -150,7 +160,9 @@ public class AcceptanceTests {
   }
 
   private void assertTablesEquivalent(
-      BasicDataSource sourceDbPool, BasicDataSource targetDbPool, String table)
+                                      BasicDataSource sourceDbPool,
+                                      BasicDataSource targetDbPool,
+                                      String table)
       throws SQLException {
     long sourceTableCount = getTableCount(sourceDbPool, table);
     long targetTableCount = getTableCount(targetDbPool, table);
@@ -182,7 +194,7 @@ public class AcceptanceTests {
             connectionPool, context -> context.select().from(tableName).where(conditions).fetch());
 
     // TODO validate that the correct number of records exists? currently if the same record exists
-    //  multiple times in the source but once in destination, this returns true.
+    // multiple times in the source but once in destination, this returns true.
     assertEquals(1, presentRecords.size());
   }
 
@@ -198,8 +210,7 @@ public class AcceptanceTests {
 
   private SourceSchema testDiscoverSourceSchema(UUID sourceImplementationId) throws ApiException, IOException {
     SourceSchema actualSchema = apiClient.getSourceImplementationApi().discoverSchemaForSourceImplementation(
-        new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplementationId)
-    ).getSchema();
+        new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplementationId)).getSchema();
 
     SourceSchema expectedSchema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), SourceSchema.class);
 
@@ -215,17 +226,22 @@ public class AcceptanceTests {
   private void testCheckDestinationConnection(UUID destinationImplementationId) throws ApiException {
     CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationImplementationApi()
         .checkConnectionToDestinationImplementation(
-            new DestinationImplementationIdRequestBody().destinationImplementationId(destinationImplementationId)
-        ).getStatus();
+            new DestinationImplementationIdRequestBody().destinationImplementationId(destinationImplementationId))
+        .getStatus();
 
     assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkOperationStatus);
   }
 
   private void testCheckSourceConnection(UUID sourceImplementationId) throws ApiException {
-    CheckConnectionRead checkConnectionRead = apiClient.getSourceImplementationApi()
-        .checkConnectionToSourceImplementation(new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplementationId));
+    try {
+      CheckConnectionRead checkConnectionRead = apiClient.getSourceImplementationApi()
+          .checkConnectionToSourceImplementation(new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplementationId));
+      assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkConnectionRead.getStatus());
+    } catch (ApiException e) {
+      LOGGER.info("{}", e.getResponseBody());
+      throw e;
+    }
 
-    assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkConnectionRead.getStatus());
   }
 
   private ConnectionRead testCreateConnection(UUID sourceImplId, UUID destinationImplId, SourceSchema schema)
@@ -240,12 +256,11 @@ public class AcceptanceTests {
             .syncMode(syncMode)
             .syncSchema(schema)
             .schedule(schedule)
-            .name(name)
-    ).getConnectionId();
+            .name(name))
+        .getConnectionId();
 
     ConnectionRead readConnection = apiClient.getConnectionApi().getConnection(
-        new ConnectionIdRequestBody().connectionId(createdConnectionId)
-    );
+        new ConnectionIdRequestBody().connectionId(createdConnectionId));
 
     assertEquals(sourceImplId, readConnection.getSourceImplementationId());
     assertEquals(destinationImplId, readConnection.getDestinationImplementationId());
@@ -328,7 +343,7 @@ public class AcceptanceTests {
     return createResponse;
   }
 
-  private UUID getPostgresSourceId() throws IOException, ApiException {
+  private UUID getPostgresSourceId() throws ApiException {
     return apiClient.getSourceApi().listSources().getSources()
         .stream()
         .filter(sourceRead -> sourceRead.getName().toLowerCase().equals("postgres"))
@@ -336,4 +351,5 @@ public class AcceptanceTests {
         .orElseThrow()
         .getSourceId();
   }
+
 }
