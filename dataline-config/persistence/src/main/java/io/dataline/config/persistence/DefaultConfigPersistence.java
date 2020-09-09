@@ -40,6 +40,7 @@ import me.andrz.jackson.JsonReferenceProcessor;
 
 // we force all interaction with disk storage to be effectively single threaded.
 public class DefaultConfigPersistence implements ConfigPersistence {
+
   private static final String CONFIG_DIR = "config";
 
   private static final Object lock = new Object();
