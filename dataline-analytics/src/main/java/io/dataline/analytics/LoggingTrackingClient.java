@@ -22,34 +22,37 @@
  * SOFTWARE.
  */
 
-package io.dataline.server;
+package io.dataline.analytics;
 
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.server.apis.ConfigurationApi;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.glassfish.hk2.api.Factory;
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
+public class LoggingTrackingClient implements TrackingClient {
 
-  private static ConfigRepository configRepository;
-  private static BasicDataSource connectionPool;
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingTrackingClient.class);
 
-  public static void setConfigRepository(final ConfigRepository configRepository) {
-    ConfigurationApiFactory.configRepository = configRepository;
-  }
+  private final Supplier<TrackingIdentity> identitySupplier;
 
-  public static void setDbConnectionPool(final BasicDataSource connectionPool) {
-    ConfigurationApiFactory.connectionPool = connectionPool;
-  }
-
-  @Override
-  public ConfigurationApi provide() {
-    return new ConfigurationApi(ConfigurationApiFactory.configRepository, ConfigurationApiFactory.connectionPool);
+  public LoggingTrackingClient(Supplier<TrackingIdentity> identitySupplier) {
+    this.identitySupplier = identitySupplier;
   }
 
   @Override
-  public void dispose(ConfigurationApi service) {
-    /* noop */
+  public void identify() {
+    LOGGER.info("identify. userId: {}", identitySupplier.get().getCustomerId());
+  }
+
+  @Override
+  public void track(String action) {
+    track(action, Collections.emptyMap());
+  }
+
+  @Override
+  public void track(String action, Map<String, Object> metadata) {
+    LOGGER.info("track. userId: {} action: {}, metadata: {}", identitySupplier.get().getCustomerId(), action, metadata);
   }
 
 }
