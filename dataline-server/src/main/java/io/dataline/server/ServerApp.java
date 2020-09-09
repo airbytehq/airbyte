@@ -24,8 +24,15 @@
 
 package io.dataline.server;
 
+import io.dataline.analytics.TrackingClientSingleton;
 import io.dataline.config.Configs;
 import io.dataline.config.EnvConfigs;
+import io.dataline.config.StandardWorkspace;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
+import io.dataline.config.persistence.DefaultConfigPersistence;
+import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
@@ -33,7 +40,9 @@ import io.dataline.server.errors.InvalidJsonExceptionMapper;
 import io.dataline.server.errors.InvalidJsonInputExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
 import io.dataline.server.errors.UncaughtExceptionMapper;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.UUID;
 import java.util.logging.Level;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
@@ -52,20 +61,23 @@ public class ServerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
-  private final Path configRoot;
+  private final ConfigRepository configRepository;
+  private final BasicDataSource connectionPool;
 
-  public ServerApp(final Path configRoot) {
-    this.configRoot = configRoot;
+  public ServerApp(ConfigRepository configRepository, BasicDataSource connectionPool) {
+
+    this.configRepository = configRepository;
+    this.connectionPool = connectionPool;
   }
 
   public void start() throws Exception {
-    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+    TrackingClientSingleton.get().identify();
 
     Server server = new Server(8001);
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    ConfigurationApiFactory.setConfigPersistenceRoot(configRoot);
+    ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setDbConnectionPool(connectionPool);
 
     ResourceConfig rc =
@@ -115,14 +127,43 @@ public class ServerApp {
     server.join();
   }
 
+  private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) {
+    final StandardWorkspace workspace;
+    try {
+      workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
+
+      if (workspace.getCustomerId() == null) {
+        final UUID customerId = UUID.randomUUID();
+        LOGGER.info("customerId not set for workspace. Setting it to " + customerId);
+        workspace.setCustomerId(customerId);
+
+        configRepository.writeStandardWorkspace(workspace);
+      }
+    } catch (ConfigNotFoundException e) {
+      throw new RuntimeException("could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
+    } catch (JsonValidationException | IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static void main(String[] args) throws Exception {
     final Configs configs = new EnvConfigs();
 
     final Path configRoot = configs.getConfigRoot();
     LOGGER.info("configRoot = " + configRoot);
 
+    final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(configRoot));
+
+    // hack: upon installation we need to assign a random customerId so that when
+    // tracking we can associate all action with the correct anonymous id.
+    setCustomerIdIfNotSet(configRepository);
+
+    TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configRepository);
+
+    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+
     LOGGER.info("Starting server...");
-    new ServerApp(configRoot).start();
+    new ServerApp(configRepository, connectionPool).start();
   }
 
 }
