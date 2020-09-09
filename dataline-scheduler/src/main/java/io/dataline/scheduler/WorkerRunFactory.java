@@ -78,7 +78,6 @@ public class WorkerRunFactory {
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION_SOURCE:
       case CHECK_CONNECTION_DESTINATION:
-
         final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(job.getConfig().getCheckConnection());
         return creator.create(
             jobRoot,
