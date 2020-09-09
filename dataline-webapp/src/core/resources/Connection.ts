@@ -13,12 +13,10 @@ export type SyncSchemaColumn = {
 };
 
 export type SyncSchema = {
-  tables: [
-    {
-      name: string;
-      columns: [SyncSchemaColumn];
-    }
-  ];
+  tables: {
+    name: string;
+    columns: SyncSchemaColumn[];
+  }[];
 };
 
 type SourceInformation = {
@@ -37,7 +35,7 @@ export interface Connection {
   syncMode: string;
   status: string;
   schedule: ScheduleProperties | null;
-  syncSchema: SyncSchema | any;
+  syncSchema: SyncSchema;
   source?: SourceInformation;
   lastSync?: number | null;
 }
@@ -53,7 +51,7 @@ export default class ConnectionResource extends BaseResource
   readonly schedule: ScheduleProperties | null = null;
   readonly source: SourceInformation | undefined = undefined;
   readonly lastSync: number | undefined | null = null;
-  readonly syncSchema: SyncSchema | any = { tables: [] };
+  readonly syncSchema: SyncSchema = { tables: [] };
 
   pk() {
     return this.connectionId?.toString();
