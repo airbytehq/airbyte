@@ -5,11 +5,13 @@
       "columns": [
         {
           "name": "id",
-          "dataType": "string"
+          "dataType": "string",
+          "selected": true
         },
         {
           "name": "name",
-          "dataType": "string"
+          "dataType": "string",
+          "selected": true
         }
       ]
     }
