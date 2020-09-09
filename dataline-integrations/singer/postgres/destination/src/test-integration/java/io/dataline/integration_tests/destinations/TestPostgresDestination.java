@@ -120,7 +120,7 @@ class TestPostgresDestination {
   @Test
   public void testConnectionSuccessful() throws InvalidCredentialsException, InvalidCatalogException {
     SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
-    StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(getDbConfig());
+    StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig()));
     OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
     assertEquals(SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
@@ -130,9 +130,9 @@ class TestPostgresDestination {
   @Test
   public void testConnectionUnsuccessfulInvalidCreds() throws InvalidCredentialsException, InvalidCatalogException {
     SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
-    ObjectNode dbConfig = getDbConfig();
+    Map<String, Object> dbConfig = getDbConfig();
     dbConfig.put("postgres_password", "superfakepassword_nowaythisworks");
-    StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(dbConfig);
+    StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(dbConfig));
 
     OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
     assertEquals(FAILED, run.getStatus());
@@ -147,7 +147,7 @@ class TestPostgresDestination {
         .start();
   }
 
-  private ObjectNode getDbConfig() {
+  private Map<String, Object> getDbConfig() {
     Map<String, Object> fullConfig = new HashMap<>();
 
     fullConfig.put("postgres_host", PSQL.getHost());
@@ -155,7 +155,7 @@ class TestPostgresDestination {
     fullConfig.put("postgres_username", PSQL.getUsername());
     fullConfig.put("postgres_password", PSQL.getPassword());
     fullConfig.put("postgres_database", PSQL.getDatabaseName());
-    return (ObjectNode) Jsons.jsonNode(fullConfig);
+    return fullConfig;
   }
 
   private void writeConfigFileToJobRoot(String fileContent) throws IOException {
