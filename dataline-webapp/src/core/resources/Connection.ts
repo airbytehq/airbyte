@@ -25,6 +25,7 @@ type SourceInformation = {
   sourceId: string;
   sourceName: string;
   sourceImplementationId: string;
+  name: string;
   connectionConfiguration: any;
 };
 
@@ -127,6 +128,20 @@ export default class ConnectionResource extends BaseResource
       fetch: async (
         params: Readonly<Record<string, string | number>>
       ): Promise<any> => params
+    };
+  }
+
+  static updateStateShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.partialUpdateShape(),
+      getFetchKey: (params: { connectionId: string }) =>
+        "POST /web_backend/update" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>,
+        body: any
+      ): Promise<any> => {
+        return { ...params, ...body };
+      }
     };
   }
 }

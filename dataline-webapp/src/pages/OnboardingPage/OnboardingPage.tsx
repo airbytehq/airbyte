@@ -181,7 +181,8 @@ const OnboardingPage: React.FC = () => {
       await createConnection(
         {
           sourceId: values.source?.sourceId || "",
-          sourceName: values.source?.name || ""
+          sourceName: values.source?.name || "",
+          name: sources[0].name || ""
         },
         {
           sourceImplementationId: sources[0].sourceImplementationId,

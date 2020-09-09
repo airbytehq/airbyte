@@ -116,7 +116,8 @@ const CreateSourcePage: React.FC = () => {
       await createConnection(
         {
           sourceId: sourceInfo?.sourceId || "",
-          sourceName: sourceInfo?.name || ""
+          sourceName: sourceInfo?.name || "",
+          name: currentSourceImplementation?.name || ""
         },
         {
           sourceImplementationId:
