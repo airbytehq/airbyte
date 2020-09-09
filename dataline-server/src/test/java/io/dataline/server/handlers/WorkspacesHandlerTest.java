@@ -61,6 +61,7 @@ class WorkspacesHandlerTest {
 
     return new StandardWorkspace()
         .withWorkspaceId(workspaceId)
+        .withCustomerId(UUID.randomUUID())
         .withEmail("test@dataline.io")
         .withName("test workspace")
         .withSlug("default")
@@ -76,6 +77,7 @@ class WorkspacesHandlerTest {
 
     final WorkspaceRead workspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
         .name("test workspace")
         .slug("default")
         .initialSetupComplete(false);
@@ -92,6 +94,7 @@ class WorkspacesHandlerTest {
 
     final WorkspaceRead workspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
         .name("test workspace")
         .slug("default")
         .initialSetupComplete(false);
@@ -111,6 +114,7 @@ class WorkspacesHandlerTest {
 
     final StandardWorkspace expectedWorkspace = new StandardWorkspace()
         .withWorkspaceId(workspace.getWorkspaceId())
+        .withCustomerId(workspace.getCustomerId())
         .withEmail("test@dataline.io")
         .withName("test workspace")
         .withSlug("default")
@@ -127,6 +131,7 @@ class WorkspacesHandlerTest {
 
     final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
         .name("test workspace")
         .slug("default")
         .initialSetupComplete(true);

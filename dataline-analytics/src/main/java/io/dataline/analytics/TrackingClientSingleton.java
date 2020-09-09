@@ -26,45 +26,69 @@ package io.dataline.analytics;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.dataline.config.Configs;
-import io.dataline.config.EnvConfigs;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.DefaultConfigPersistence;
-import java.nio.file.Path;
+import io.dataline.config.StandardWorkspace;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
+import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.config.persistence.PersistenceConstants;
+import java.io.IOException;
 
 public class TrackingClientSingleton {
 
+  private static final Object lock = new Object();
   private static TrackingClient trackingClient;
 
   public static TrackingClient get() {
-    if (trackingClient == null) {
-      setFromEnv();
+    synchronized (lock) {
+      if (trackingClient == null) {
+        initialize();
+      }
+      return trackingClient;
     }
-    return trackingClient;
   }
 
-  public static void setFromEnv() {
-    final Configs configs = new EnvConfigs();
-    final Path configRoot = configs.getConfigRoot();
-    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
-
-    set(new EnvConfigs().getTrackingStrategy(), new TrackingIdentitySupplier(configPersistence));
-  }
-
-  public static void set(TrackingClient trackingClient) {
-    TrackingClientSingleton.trackingClient = trackingClient;
+  // fallback on a logging client with an empty identity.
+  private static void initialize() {
+    initialize(new LoggingTrackingClient(new TrackingIdentity(null, null)));
   }
 
   @VisibleForTesting
-  static void set(Configs.TrackingStrategy trackingStrategy, TrackingIdentitySupplier trackingIdentitySupplier) {
-    final TrackingIdentity trackingIdentity = trackingIdentitySupplier.get();
+  static void initialize(TrackingClient trackingClient) {
+    synchronized (lock) {
+      TrackingClientSingleton.trackingClient = trackingClient;
+    }
+  }
+
+  public static void initialize(Configs.TrackingStrategy trackingStrategy, ConfigRepository configRepository) {
+    final TrackingIdentity trackingIdentity = getTrackingIdentity(configRepository);
+
+    initialize(createTrackingClient(trackingStrategy, trackingIdentity));
+  }
+
+  @VisibleForTesting
+  static TrackingIdentity getTrackingIdentity(ConfigRepository configRepository) {
+    try {
+      final StandardWorkspace workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
+      String email = null;
+      if (workspace.getAnonymousDataCollection() != null && !workspace.getAnonymousDataCollection()) {
+        email = workspace.getEmail();
+      }
+      return new TrackingIdentity(workspace.getCustomerId(), email);
+    } catch (ConfigNotFoundException e) {
+      throw new RuntimeException("could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
+    } catch (JsonValidationException | IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @VisibleForTesting
+  static TrackingClient createTrackingClient(Configs.TrackingStrategy trackingStrategy, TrackingIdentity trackingIdentity) {
 
     switch (trackingStrategy) {
       case SEGMENT:
-        set(new SegmentTrackingClient(trackingIdentity));
-        break;
+        return new SegmentTrackingClient(trackingIdentity);
       case LOGGING:
-        set(new LoggingTrackingClient(trackingIdentity));
-        break;
+        return new LoggingTrackingClient(trackingIdentity);
       default:
         throw new RuntimeException("unrecognized tracking strategy");
     }

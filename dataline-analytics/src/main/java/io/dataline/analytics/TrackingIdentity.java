@@ -53,7 +53,7 @@ public class TrackingIdentity {
     if (o == null || getClass() != o.getClass())
       return false;
     TrackingIdentity that = (TrackingIdentity) o;
-    return customerId.equals(that.customerId) &&
+    return Objects.equals(customerId, that.customerId) &&
         Objects.equals(email, that.email);
   }
 

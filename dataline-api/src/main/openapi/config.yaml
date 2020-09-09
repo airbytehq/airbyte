@@ -744,6 +744,8 @@ components:
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        customerId:
+          $ref: "#/components/schemas/CustomerId"
         name:
           type: string
         slug:
@@ -761,8 +763,6 @@ components:
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        customerId:
-          $ref: "#/components/schemas/CustomerId"
         email:
           type: string
           format: email

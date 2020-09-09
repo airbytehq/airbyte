@@ -39,6 +39,7 @@ public class SegmentTrackingClient implements TrackingClient {
   private final TrackingIdentity identity;
 
   public SegmentTrackingClient(TrackingIdentity identity) {
+    // Analytics is threadsafe.
     this.analytics = Analytics.builder(SEGMENT_WRITE_KEY).build();
     this.identity = identity;
   }

@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableMap;
 import io.dataline.analytics.TrackingClientSingleton;
 import io.dataline.api.model.CheckConnectionRead;
 import io.dataline.api.model.ConnectionIdRequestBody;
-import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionSyncRead;
 import io.dataline.api.model.DestinationImplementationIdRequestBody;
 import io.dataline.api.model.SourceImplementationDiscoverSchemaRead;
@@ -75,6 +74,8 @@ public class SchedulerHandler {
     final CheckConnectionRead checkConnectionRead = reportConnectionStatus(waitUntilJobIsTerminalOrTimeout(jobId));
 
     TrackingClientSingleton.get().track("check_connection", ImmutableMap.<String, Object>builder()
+        .put("type", "source")
+        .put("name", connectionImplementation.getName())
         .put("source_specification_id", connectionImplementation.getSourceSpecificationId())
         .put("source_implementation_id", connectionImplementation.getSourceImplementationId())
         .put("check_connection_result", checkConnectionRead.getStatus())
@@ -91,7 +92,18 @@ public class SchedulerHandler {
 
     final long jobId = schedulerPersistence.createDestinationCheckConnectionJob(connectionImplementation);
     LOGGER.debug("jobId = " + jobId);
-    return reportConnectionStatus(waitUntilJobIsTerminalOrTimeout(jobId));
+    final CheckConnectionRead checkConnectionRead = reportConnectionStatus(waitUntilJobIsTerminalOrTimeout(jobId));
+
+    TrackingClientSingleton.get().track("check_connection", ImmutableMap.<String, Object>builder()
+        .put("type", "destination")
+        .put("name", connectionImplementation.getName())
+        .put("destination_specification_id", connectionImplementation.getDestinationSpecificationId())
+        .put("destination_implementation_id", connectionImplementation.getDestinationImplementationId())
+        .put("check_connection_result", checkConnectionRead.getStatus())
+        .put("job_id", jobId)
+        .build());
+
+    return checkConnectionRead;
   }
 
   public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(SourceImplementationIdRequestBody sourceImplementationIdRequestBody)
@@ -110,8 +122,14 @@ public class SchedulerHandler {
 
     LOGGER.debug("output = " + output);
 
-    return new SourceImplementationDiscoverSchemaRead()
-        .schema(SchemaConverter.toApiSchema(output.getSchema()));
+    TrackingClientSingleton.get().track("discover_schema", ImmutableMap.<String, Object>builder()
+        .put("name", connectionImplementation.getName())
+        .put("source_specification_id", connectionImplementation.getSourceSpecificationId())
+        .put("source_implementation_id", connectionImplementation.getSourceImplementationId())
+        .put("job_id", jobId)
+        .build());
+
+    return new SourceImplementationDiscoverSchemaRead().schema(SchemaConverter.toApiSchema(output.getSchema()));
   }
 
   public ConnectionSyncRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
@@ -126,6 +144,17 @@ public class SchedulerHandler {
 
     final long jobId = schedulerPersistence.createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
+
+    TrackingClientSingleton.get().track("sync", ImmutableMap.<String, Object>builder()
+        .put("name", standardSync.getName())
+        .put("connection_id", standardSync.getConnectionId())
+        .put("sync_mode", standardSync.getSyncMode())
+        .put("source_specification_id", sourceConnectionImplementation.getSourceSpecificationId())
+        .put("source_implementation_id", sourceConnectionImplementation.getSourceImplementationId())
+        .put("destination_specification_id", destinationConnectionImplementation.getDestinationSpecificationId())
+        .put("destination_implementation_id", destinationConnectionImplementation.getDestinationImplementationId())
+        .put("job_id", jobId)
+        .build());
 
     return new ConnectionSyncRead()
         .status(job.getStatus().equals(JobStatus.COMPLETED) ? ConnectionSyncRead.StatusEnum.SUCCESS : ConnectionSyncRead.StatusEnum.FAIL);

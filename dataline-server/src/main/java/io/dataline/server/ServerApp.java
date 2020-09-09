@@ -25,12 +25,11 @@
 package io.dataline.server;
 
 import io.dataline.analytics.TrackingClientSingleton;
-import io.dataline.config.ConfigSchema;
 import io.dataline.config.Configs;
 import io.dataline.config.EnvConfigs;
 import io.dataline.config.StandardWorkspace;
 import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConstants;
@@ -62,26 +61,23 @@ public class ServerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
-  private final Path configRoot;
+  private final ConfigRepository configRepository;
+  private final BasicDataSource connectionPool;
 
-  public ServerApp(final Path configRoot) {
-    this.configRoot = configRoot;
+  public ServerApp(ConfigRepository configRepository, BasicDataSource connectionPool) {
+
+    this.configRepository = configRepository;
+    this.connectionPool = connectionPool;
   }
 
   public void start() throws Exception {
-    // hack: upon installation we need to assign a random customerId so that when
-    // tracking we can associate all action with the correct anonymous id.
-    setCustomerIdIfNotSet(configRoot);
-
     TrackingClientSingleton.get().identify();
-
-    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
 
     Server server = new Server(8001);
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    ConfigurationApiFactory.setConfigPersistenceRoot(configRoot);
+    ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setDbConnectionPool(connectionPool);
 
     ResourceConfig rc =
@@ -131,24 +127,17 @@ public class ServerApp {
     server.join();
   }
 
-  private void setCustomerIdIfNotSet(final Path configRoot) {
-    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
+  private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) {
     final StandardWorkspace workspace;
     try {
-      workspace = configPersistence.getConfig(
-          ConfigSchema.STANDARD_WORKSPACE,
-          PersistenceConstants.DEFAULT_WORKSPACE_ID.toString(),
-          StandardWorkspace.class);
+      workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
 
       if (workspace.getCustomerId() == null) {
         final UUID customerId = UUID.randomUUID();
         LOGGER.info("customerId not set for workspace. Setting it to " + customerId);
         workspace.setCustomerId(customerId);
 
-        configPersistence.writeConfig(
-            ConfigSchema.STANDARD_WORKSPACE,
-            workspace.getWorkspaceId().toString(),
-            workspace);
+        configRepository.writeStandardWorkspace(workspace);
       }
     } catch (ConfigNotFoundException e) {
       throw new RuntimeException("could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
@@ -163,8 +152,18 @@ public class ServerApp {
     final Path configRoot = configs.getConfigRoot();
     LOGGER.info("configRoot = " + configRoot);
 
+    final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(configRoot));
+
+    // hack: upon installation we need to assign a random customerId so that when
+    // tracking we can associate all action with the correct anonymous id.
+    setCustomerIdIfNotSet(configRepository);
+
+    TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configRepository);
+
+    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+
     LOGGER.info("Starting server...");
-    new ServerApp(configRoot).start();
+    new ServerApp(configRepository, connectionPool).start();
   }
 
 }
