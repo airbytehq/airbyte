@@ -54,9 +54,10 @@ public class OutputConvertingWorkerTest {
   }
 
   @Test
-  public void testCancel(){
+  public void testCancel() {
     Worker<String, String> worker = Mockito.mock(Worker.class);
     new OutputConvertingWorker<>(worker, Integer::valueOf).cancel();
     verify(worker).cancel();
   }
+
 }
