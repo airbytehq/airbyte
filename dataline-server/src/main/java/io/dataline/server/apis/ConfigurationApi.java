@@ -62,7 +62,6 @@ import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
@@ -80,7 +79,6 @@ import io.dataline.server.handlers.WebBackendConnectionsHandler;
 import io.dataline.server.handlers.WorkspacesHandler;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
-import java.nio.file.Path;
 import javax.validation.Valid;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.http.HttpStatus;
@@ -100,8 +98,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
 
-  public ConfigurationApi(final Path dbRoot, BasicDataSource connectionPool) {
-    final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(dbRoot));
+  public ConfigurationApi(final ConfigRepository configRepository, BasicDataSource connectionPool) {
     final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation();
     workspacesHandler = new WorkspacesHandler(configRepository);
     sourcesHandler = new SourcesHandler(configRepository);

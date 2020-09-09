@@ -22,34 +22,16 @@
  * SOFTWARE.
  */
 
-package io.dataline.server;
+package io.dataline.analytics;
 
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.server.apis.ConfigurationApi;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.glassfish.hk2.api.Factory;
+import java.util.Map;
 
-public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
+public interface TrackingClient {
 
-  private static ConfigRepository configRepository;
-  private static BasicDataSource connectionPool;
+  void identify();
 
-  public static void setConfigRepository(final ConfigRepository configRepository) {
-    ConfigurationApiFactory.configRepository = configRepository;
-  }
+  void track(String action);
 
-  public static void setDbConnectionPool(final BasicDataSource connectionPool) {
-    ConfigurationApiFactory.connectionPool = connectionPool;
-  }
-
-  @Override
-  public ConfigurationApi provide() {
-    return new ConfigurationApi(ConfigurationApiFactory.configRepository, ConfigurationApiFactory.connectionPool);
-  }
-
-  @Override
-  public void dispose(ConfigurationApi service) {
-    /* noop */
-  }
+  void track(String action, Map<String, Object> metadata);
 
 }

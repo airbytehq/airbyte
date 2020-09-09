@@ -16,6 +16,7 @@ dependencies {
     implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.42'
 
 
+    implementation project(':dataline-analytics')
     implementation project(':dataline-api')
     implementation project(':dataline-config:models')
     implementation project(':dataline-config:persistence')
@@ -30,7 +31,7 @@ application {
 
 run {
     // default for running on local machine.
-    environment "CONFIG_ROOT", rootProject.file('data/config')
+    environment "CONFIG_ROOT", rootProject.file('data')
     environment "VERSION", "0.1.0"
     environment "DATABASE_USER", "postgres"
     environment "DATABASE_PASSWORD", ""

@@ -24,6 +24,7 @@
 
 package io.dataline.server.handlers;
 
+import io.dataline.analytics.TrackingClientSingleton;
 import io.dataline.api.model.SlugRequestBody;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
@@ -72,6 +73,9 @@ public class WorkspacesHandler {
 
     configRepository.writeStandardWorkspace(persistedWorkspace);
 
+    // after updating email or tracking info, we need to re-identify the instance.
+    TrackingClientSingleton.get().identify();
+
     return buildWorkspaceReadFromId(workspaceUpdate.getWorkspaceId());
   }
 
@@ -81,6 +85,7 @@ public class WorkspacesHandler {
 
     return new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
         .name(workspace.getName())
         .slug(workspace.getSlug())
         .initialSetupComplete(workspace.getInitialSetupComplete());
