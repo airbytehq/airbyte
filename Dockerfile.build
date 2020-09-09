@@ -61,9 +61,6 @@ WORKDIR /app
 # that the app should have when it is first installed.
 COPY --from=build /code/dataline-config/init/src/main/resources/config seed/config
 
-# uncomment, if you need to explore this container for some reason.
-# ENTRYPOINT sleep 86400
-
 ######################
 # Build server image #
 ######################
