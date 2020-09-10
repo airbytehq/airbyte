@@ -5,11 +5,7 @@
   "description": "StandardTapConfig",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "sourceConnectionImplementation",
-    "destinationConnectionImplementation",
-    "standardSync"
-  ],
+  "required": ["sourceConnectionImplementation", "standardSync"],
   "properties": {
     "sourceConnectionImplementation": {
       "$ref": "SourceConnectionImplementation.json"
@@ -19,10 +15,6 @@
     },
     "state": {
       "$ref": "State.json"
-    },
-    "standardSyncSummary": {
-      "description": "optional state of the previous run. this object is standard for any sync run.",
-      "$ref": "StandardSyncSummary.json"
     }
   }
 }
