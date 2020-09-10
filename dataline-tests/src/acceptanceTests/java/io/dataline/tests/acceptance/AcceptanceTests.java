@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import io.dataline.db.PostgreSQLContainerHelper;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -90,21 +91,13 @@ public class AcceptanceTests {
     SOURCE_PSQL.start();
     TARGET_PSQL.start();
 
-    runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), SOURCE_PSQL);
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), SOURCE_PSQL);
   }
 
   @AfterAll
   public static void tearDown() {
     SOURCE_PSQL.stop();
     TARGET_PSQL.stop();
-  }
-
-  private static void runSqlScript(MountableFile file, PostgreSQLContainer db)
-      throws IOException, InterruptedException {
-    String scriptPath = "/etc/" + UUID.randomUUID().toString() + ".sql";
-    db.copyFileToContainer(file, scriptPath);
-    db.execInContainer(
-        "psql", "-d", db.getDatabaseName(), "-U", db.getUsername(), "-a", "-f", scriptPath);
   }
 
   @Test

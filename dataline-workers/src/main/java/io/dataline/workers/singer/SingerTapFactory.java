@@ -75,7 +75,8 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     this(imageName, pbf, new SingerJsonStreamFactory(), discoverSchemaWorker);
   }
 
-  public SingerTapFactory(final String imageName,
+  @VisibleForTesting
+  SingerTapFactory(final String imageName,
                           final ProcessBuilderFactory pbf,
                           final StreamFactory streamFactory,
                           final SingerDiscoverSchemaWorker discoverSchemaWorker) {
