@@ -57,7 +57,7 @@ jobs:
 
       - name: Build Core Docker Images (Master branch only)
         if: success() #&& github.ref == 'refs/heads/master'
-        run: docker-compose -f docker-compose.build.yaml build
+        run: docker-compose -e GIT_REVISION=${{ github.sha }} -f docker-compose.build.yaml build
 
 #      - name: Run End-to-End Acceptance Tests (Master branch only)
 #        if: success() && github.ref == 'refs/heads/master'
