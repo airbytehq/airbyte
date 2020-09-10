@@ -59,7 +59,6 @@ task generateApiClient(type: GenerateTask) {
 }
 
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.11.2'
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
 
     implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2'

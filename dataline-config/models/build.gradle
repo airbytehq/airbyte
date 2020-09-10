@@ -2,10 +2,6 @@ plugins {
     id "com.github.eirnym.js2p" version "1.0"
 }
 
-dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.11.2'
-}
-
 jsonSchema2Pojo {
     targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
 
