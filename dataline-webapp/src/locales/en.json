@@ -99,6 +99,9 @@
   "sources.dataDelete": "No data will be deleted from your source.",
   "sources.deleteSource": "Delete this source",
   "sources.deleteConfirm": "Confirm source deletion",
+  "sources.fail": "Failed",
+  "sources.success": "Completed",
+  "sources.pending": "Pending",
   "sources.deleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All past logs and configurations will be deleted\n  - Updates of new data will stop\n  - No existing data in the destination will be altered",
 
   "destination.destinationSettings": "Destination Settings"

@@ -41,9 +41,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
   );
 
   const schedule = FrequencyConfig.find(
-    item =>
-      item.config.units === sourceData.schedule?.units &&
-      item.config.timeUnit === sourceData.schedule?.timeUnit
+    item => JSON.stringify(item.config) === JSON.stringify(sourceData.schedule)
   );
 
   const onSubmit = async (values: {
