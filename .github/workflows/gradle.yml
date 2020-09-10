@@ -59,7 +59,7 @@ jobs:
         if: success() #&& github.ref == 'refs/heads/master'
         run: docker-compose -e GIT_REVISION=${GIT_REVISION} -f docker-compose.build.yaml build
         env:
-          - GIT_REVISION: ${{ github.sha }}
+          GIT_REVISION: ${{ github.sha }}
 
 #      - name: Run End-to-End Acceptance Tests (Master branch only)
 #        if: success() && github.ref == 'refs/heads/master'
@@ -71,7 +71,7 @@ jobs:
           docker login -u datalinebot -p ${DOCKER_PASSWORD}
           docker-compose -f docker-compose.build.yaml push
         env:
-          - DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Slack Notification (Master branch only)
         if: failure() && github.ref == 'refs/heads/master'
