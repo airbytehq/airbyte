@@ -1224,12 +1224,12 @@ components:
     JobListRequestBody:
       type: object
       required:
-        - config_type
-        - config_id
+        - configType
+        - configId
       properties:
-        config_type:
+        configType:
           $ref: "#/components/schemas/JobConfigType"
-        config_id:
+        configId:
           type: string
     JobIdRequestBody:
       type: object
@@ -1242,25 +1242,25 @@ components:
       type: object
       required:
         - id
-        - config_type
-        - config_id
-        - created_at
-        - updated_at
+        - configType
+        - configId
+        - createdAt
+        - updatedAt
         - status
       properties:
         id:
           $ref: "#/components/schemas/JobId"
-        config_type:
+        configType:
           $ref: "#/components/schemas/JobConfigType"
-        config_id:
+        configId:
           type: string
-        created_at:
+        createdAt:
           type: integer
           format: int64
-        started_at:
+        startedAt:
           type: integer
           format: int64
-        updated_at:
+        updatedAt:
           type: integer
           format: int64
         status:
