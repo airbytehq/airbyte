@@ -1,14 +1,13 @@
 plugins {
-    id "org.openapi.generator" version "4.3.1"
+    id "org.openapi.generator" version "5.0.0-beta2"
     id "java-library"
 }
 
 def specFile = "$projectDir/src/main/openapi/config.yaml".toString()
 openApiGenerate {
-
     generatorName = "jaxrs-spec"
     inputSpec = specFile
-    outputDir = "$buildDir/generated"
+    outputDir = "$buildDir/generated/api/server"
 
     apiPackage = "io.dataline.api"
     invokerPackage = "io.dataline.api.invoker"
@@ -34,7 +33,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask;
 task generateApiClient(type: GenerateTask) {
     generatorName = "java"
     inputSpec = specFile
-    outputDir = "$buildDir/generated"
+    outputDir = "$buildDir/generated/api/client"
 
     apiPackage = "io.dataline.api.client"
     invokerPackage = "io.dataline.api.client.invoker"
@@ -73,7 +72,7 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDirs "$buildDir/generated/src/gen/java", "$buildDir/generated/src/main/java", "$projectDir/src/main/java"
+            srcDirs "$buildDir/generated/api/server/src/gen/java", "$buildDir/generated/api/client/src/main/java", "$projectDir/src/main/java"
         }
         resources {
             srcDir "$projectDir/src/main/openapi/"
