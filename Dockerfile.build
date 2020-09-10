@@ -1,25 +1,7 @@
-#####################
-# Setup build image #
-#####################
-FROM ubuntu:20.04 AS build-base
-
-WORKDIR /code
-
-ENV DEBIAN_FRONTEND noninteractive
-
-# Install tools
-RUN apt-get update && apt-get -y install curl
-
-# Setup Node & Java
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
-RUN apt-get update && apt-get -y install \
-  nodejs \
-  openjdk-14-jdk
-
 #######################
 # Prepare project env #
 #######################
-FROM build-base AS build-project
+FROM dataline/build-base:1.0.0 AS build-project
 
 WORKDIR /code
 
