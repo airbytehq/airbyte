@@ -3,14 +3,13 @@
 ## Develop with Docker
 
 ```text
-$ git clone git@github.com:datalineio/dataline.git
-$ cd dataline
-$ docker-compose -f docker-compose.dev.yaml up --build
+git clone git@github.com:datalineio/dataline.git
+cd dataline
+docker-compose -f docker-compose.build.yaml build
+docker-compose up
 ```
 
-The first build will take a few minutes, next ones will go faster.
-
-Once it completes, Dataline will be running in your environment.
+The build will take a few minutes. Once it completes, Dataline will be running in your environment.
 
 ## Develop with Gradle
 
@@ -39,7 +38,7 @@ This section will describe how to run the API using Gradle. It is geared towards
 1. First we need to setup up local version of the Scheduler Store. We'll run it it in a docker a container using the following command:
 
 ```text
-VERSION=dev docker-compose up -d db
+docker-compose up -d db
 ```
 
 2. Now we'll set up the Config Store and seed it with some data. We're just going to throw this in your tmp dir.
