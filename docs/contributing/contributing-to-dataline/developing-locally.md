@@ -10,15 +10,20 @@ $ docker-compose -f docker-compose.dev.yaml up --build
 
 The first build will take a few minutes, next ones will go faster. 
 
-Once it completes, Dataline will be running your environment.
+Once it completes, Dataline will be running in your environment.
 
 ## Develop with Gradle
 
 Dataline uses `java 14` and `node 14`
 
+To compile the code and run unit tests: 
 ```text
-$ cd dataline
 $ ./gradlew clean build
+```
+
+To run acceptance (end-to-end) tests: 
+```
+$ ./gradlew clean build :dataline-tests:acceptanceTests
 ```
 
 > For this part we can be smart and leverage docker compose to start dependencies while the module we want to work on runs on the host system.

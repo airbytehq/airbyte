@@ -32,13 +32,18 @@ cmd_publish() {
   cmd_push "$path"
 }
 
+USAGE="
+
+Usage: $(basename $0) <build|push|publish> <integration_root_path | all> 
+"
+
 main() {
   assert_root
 
   local cmd=$1
-  shift || error "Missing cmd"
+  shift || error "Missing cmd $USAGE"
   local path=$1
-  shift || error "Missing target (root path of integration or 'all')"
+  shift || error "Missing target (root path of integration or 'all') $USAGE"
 
   if [ "$path" == "all" ]; then
     for path in $(find dataline-integrations -iname "Dockerfile" -type f); do

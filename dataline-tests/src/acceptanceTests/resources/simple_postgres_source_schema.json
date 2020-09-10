@@ -1,0 +1,19 @@
+{
+  "tables": [
+    {
+      "name": "id_and_name",
+      "columns": [
+        {
+          "name": "name",
+          "dataType": "string",
+          "selected": true
+        },
+        {
+          "name": "id",
+          "dataType": "number",
+          "selected": true
+        }
+      ]
+    }
+  ]
+}
