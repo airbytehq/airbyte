@@ -55,7 +55,15 @@ const ServiceForm: React.FC<IProps> = ({
   );
   const additionalFields = properties
     ? Object.fromEntries([
-        ...properties.map(item => [item, formValues ? formValues[item] : ""])
+        ...properties.map(item => {
+          const condition = specifications?.properties[item];
+          const value = formValues
+            ? formValues[item]
+            : condition.type === "boolean"
+            ? false
+            : "";
+          return [item, value];
+        })
       ])
     : null;
 
@@ -77,7 +85,10 @@ const ServiceForm: React.FC<IProps> = ({
           serviceType: values.serviceType,
           frequency: values.frequency,
           connectionConfiguration: Object.fromEntries([
-            ...properties.map(item => [item, values[item]])
+            ...properties.map(item => [
+              item,
+              values[item] || additionalFields[item]
+            ])
           ])
         });
         setSubmitting(false);

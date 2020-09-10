@@ -2,6 +2,10 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
+type IProps = {
+  text?: React.ReactNode;
+};
+
 const Content = styled.div`
   padding: 74px 0 111px;
   text-align: center;
@@ -20,12 +24,12 @@ const ImgBlock = styled.div`
   padding: 20px 0;
 `;
 
-const EmptySyncHistory: React.FC = () => (
+const EmptySyncHistory: React.FC<IProps> = ({ text }) => (
   <Content>
     <ImgBlock>
       <img src="/cactus.png" height={40} alt={"cactus"} />
     </ImgBlock>
-    <FormattedMessage id="sources.noSync" />
+    {text || <FormattedMessage id="sources.noSync" />}
   </Content>
 );
 

@@ -38,7 +38,7 @@ const SourcesTable: React.FC = () => {
 
   const data = connections.map(item => ({
     connectionId: item.connectionId,
-    name: item.name,
+    name: item.source?.name,
     enabled: item.status === "active",
     sourceId: item.source?.sourceId,
     sourceName: item.source?.sourceName,
