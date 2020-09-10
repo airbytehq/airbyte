@@ -65,7 +65,7 @@ class TestBigQueryDestination {
   private static final Logger LOGGER = LoggerFactory.getLogger(TestBigQueryDestination.class);
 
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
-  private static final String IMAGE = "dataline/integration-singer-bigquery-destination:dev";
+  private static final String IMAGE_NAME = "dataline/integration-singer-bigquery-destination:dev";
 
   protected Path jobRoot;
   protected Path workspaceRoot;
@@ -153,7 +153,7 @@ class TestBigQueryDestination {
   private Process startTarget() throws IOException {
     return pbf.create(
         jobRoot,
-        IMAGE,
+        IMAGE_NAME,
         "--config",
         "rendered_bigquery.json")
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
