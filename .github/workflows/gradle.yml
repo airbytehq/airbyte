@@ -57,7 +57,7 @@ jobs:
 
       - name: Build Core Docker Images (Master branch only)
         if: success() #&& github.ref == 'refs/heads/master'
-        run: docker-compose -e GIT_REVISION=${GIT_REVISION} -f docker-compose.build.yaml build
+        run: docker-compose -f docker-compose.build.yaml build
         env:
           GIT_REVISION: ${{ github.sha }}
 
