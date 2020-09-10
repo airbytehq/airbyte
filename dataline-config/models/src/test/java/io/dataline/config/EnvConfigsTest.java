@@ -38,6 +38,7 @@ class EnvConfigsTest {
   private Function<String, String> function;
   private EnvConfigs config;
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
     function = Mockito.mock(Function.class);
