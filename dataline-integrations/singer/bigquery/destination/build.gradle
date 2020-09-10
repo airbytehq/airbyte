@@ -11,15 +11,13 @@ task imageName {
     }
 }
 
-
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import groovy.json.JsonSlurper
-
 task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
 }
 
+import groovy.json.JsonSlurper
 task integrationTest(type: Test) {
     def credFile = project.file("config/credentials.json")
     def creds = [:]
