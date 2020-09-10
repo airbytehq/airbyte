@@ -6,10 +6,24 @@ export type ScheduleProperties = {
   timeUnit: string;
 };
 
+export type SyncSchemaColumn = {
+  name: string;
+  selected: string;
+  type: string;
+};
+
+export type SyncSchema = {
+  tables: {
+    name: string;
+    columns: SyncSchemaColumn[];
+  }[];
+};
+
 type SourceInformation = {
   sourceId: string;
   sourceName: string;
   sourceImplementationId: string;
+  name: string;
   connectionConfiguration: any;
 };
 
@@ -21,7 +35,7 @@ export interface Connection {
   syncMode: string;
   status: string;
   schedule: ScheduleProperties | null;
-  syncSchema: any; // TODO: fix type
+  syncSchema: SyncSchema;
   source?: SourceInformation;
   lastSync?: number | null;
 }
@@ -37,7 +51,7 @@ export default class ConnectionResource extends BaseResource
   readonly schedule: ScheduleProperties | null = null;
   readonly source: SourceInformation | undefined = undefined;
   readonly lastSync: number | undefined | null = null;
-  readonly syncSchema: any | null = null; // TODO: fix it
+  readonly syncSchema: SyncSchema = { tables: [] };
 
   pk() {
     return this.connectionId?.toString();
@@ -112,6 +126,20 @@ export default class ConnectionResource extends BaseResource
       fetch: async (
         params: Readonly<Record<string, string | number>>
       ): Promise<any> => params
+    };
+  }
+
+  static updateStateShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.partialUpdateShape(),
+      getFetchKey: (params: { connectionId: string }) =>
+        "POST /web_backend/update" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>,
+        body: any
+      ): Promise<any> => {
+        return { ...params, ...body };
+      }
     };
   }
 }
