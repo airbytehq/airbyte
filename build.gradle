@@ -109,6 +109,7 @@ subprojects {
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.10.4"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
 
+        implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.2'
 
         implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
