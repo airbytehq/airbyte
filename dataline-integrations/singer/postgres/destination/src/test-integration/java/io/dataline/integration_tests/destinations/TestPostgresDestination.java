@@ -57,14 +57,11 @@ import org.jooq.Record;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 class TestPostgresDestination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TestPostgresDestination.class);
-  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-destination";
+  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-destination:dev";
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
   private static final String CONFIG_FILENAME = "config.json";
 

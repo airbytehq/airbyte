@@ -3,7 +3,7 @@
 #####################
 FROM ubuntu:20.04
 
-LABEL io.dataline.image=datalineio/build-base
+LABEL io.dataline.image=dataline/build-base
 LABEL io.dataline.version=1.0.0
 
 WORKDIR /code
