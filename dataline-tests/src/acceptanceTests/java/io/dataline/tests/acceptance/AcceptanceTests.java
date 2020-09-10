@@ -24,8 +24,6 @@
 
 package io.dataline.tests.acceptance;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.api.client.DatalineApiClient;
@@ -36,6 +34,7 @@ import io.dataline.api.client.model.ConnectionCreate;
 import io.dataline.api.client.model.ConnectionIdRequestBody;
 import io.dataline.api.client.model.ConnectionRead;
 import io.dataline.api.client.model.ConnectionSchedule;
+import io.dataline.api.client.model.ConnectionStatus;
 import io.dataline.api.client.model.ConnectionSyncRead;
 import io.dataline.api.client.model.DestinationIdRequestBody;
 import io.dataline.api.client.model.DestinationImplementationCreate;
@@ -69,6 +68,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("rawtypes")
 public class AcceptanceTests {
@@ -122,8 +123,8 @@ public class AcceptanceTests {
     schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true)));
 
     // TODO
-    // ConnectionRead createdConnection = testCreateConnection(createdSourceImplId,
-    // createdDestinationImplId, schema);
+    ConnectionRead createdConnection = testCreateConnection(createdSourceImplId,
+        createdDestinationImplId, schema);
     //
     // testRunManualSync(createdConnection.getConnectionId());
     //
@@ -251,10 +252,11 @@ public class AcceptanceTests {
   private ConnectionRead testCreateConnection(UUID sourceImplId, UUID destinationImplId, SourceSchema schema)
       throws ApiException {
     ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES).units(3L);
-    ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
+    ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.APPEND;
     String name = "AccTest-PG2PG-" + UUID.randomUUID().toString();
     UUID createdConnectionId = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
+            .status(ConnectionStatus.ACTIVE)
             .sourceImplementationId(sourceImplId)
             .destinationImplementationId(destinationImplId)
             .syncMode(syncMode)
@@ -268,7 +270,7 @@ public class AcceptanceTests {
 
     assertEquals(sourceImplId, readConnection.getSourceImplementationId());
     assertEquals(destinationImplId, readConnection.getDestinationImplementationId());
-    assertEquals(ConnectionRead.SyncModeEnum.FULL_REFRESH, readConnection.getSyncMode());
+    assertEquals(ConnectionRead.SyncModeEnum.APPEND, readConnection.getSyncMode());
     assertEquals(schema, readConnection.getSyncSchema());
     assertEquals(schedule, readConnection.getSchedule());
     assertEquals(name, readConnection.getName());

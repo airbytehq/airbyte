@@ -69,13 +69,18 @@ public class ConnectionsHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID connectionId = uuidGenerator.get();
 
+    // todo (cgardens): for MVP we only support append.
+    if(connectionCreate.getSyncMode() != ConnectionCreate.SyncModeEnum.APPEND) {
+      throw new RuntimeException("Only APPEND is currently supported!");
+    }
+
     // persist sync
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
         .withSourceImplementationId(connectionCreate.getSourceImplementationId())
         .withDestinationImplementationId(connectionCreate.getDestinationImplementationId())
-        .withSyncMode(StandardSync.SyncMode.APPEND) // todo (cgardens): for MVP we only support append.
+        .withSyncMode(Enums.convertTo(connectionCreate.getSyncMode(), StandardSync.SyncMode.class))
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
 
     if (connectionCreate.getSyncSchema() != null) {
