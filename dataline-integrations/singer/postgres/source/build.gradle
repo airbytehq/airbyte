@@ -29,6 +29,7 @@ dependencies {
     integrationTestImplementation project(':dataline-config:models')
     integrationTestImplementation project(':dataline-workers')
     integrationTestImplementation project(':dataline-db')
+    integrationTestImplementation project(':dataline-singer')
 }
 
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage

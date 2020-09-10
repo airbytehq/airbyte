@@ -1,0 +1,51 @@
+{
+  "messages": [
+    {
+      "type": "SCHEMA",
+      "stream": "id_and_name"
+    },
+    {
+      "type": "STATE"
+    },
+    {
+      "type": "RECORD",
+      "stream": "id_and_name",
+      "record": {
+        "id": 1,
+        "name": "sherif"
+      }
+    },
+    {
+      "type": "RECORD",
+      "stream": "id_and_name",
+      "record": {
+        "id": 2,
+        "name": "charles"
+      }
+    },
+    {
+      "type": "RECORD",
+      "stream": "id_and_name",
+      "record": {
+        "id": 3,
+        "name": "jared"
+      }
+    },
+    {
+      "type": "RECORD",
+      "stream": "id_and_name",
+      "record": {
+        "id": 4,
+        "name": "michel"
+      }
+    },
+    {
+      "type": "RECORD",
+      "stream": "id_and_name",
+      "record": {
+        "id": 5,
+        "name": "john"
+      }
+    }
+  ]
+}

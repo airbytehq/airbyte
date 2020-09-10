@@ -4,13 +4,13 @@
   "title": "SingerMessage",
   "description": "This is a compromise. Java codegen doesn't support union types. So we need to just make a flat json schema that looks like at of the possible permutations of a singer message. See the description for each field to see which message type that field belongs to.",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": ["type"],
   "properties": {
     "type": {
       "description": "record, schema, and state message: used to determine record type. used in all singer messages.",
       "type": "string",
-      "enum": ["RECORD", "SCHEMA", "STATE"]
+      "enum": ["RECORD", "SCHEMA", "STATE", "ACTIVATE_VERSION"]
     },
     "stream": {
       "description": "record AND schema message: name of stream",
@@ -21,13 +21,14 @@
       "type": "string"
     },
     "record": {
-      "description": "record message: must me a JSON object",
+      "description": "record message: must be a JSON object",
       "type": "object",
       "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
     },
     "schema": {
       "description": "schema message: the schema",
-      "$ref": "SingerCatalog.json#/definitions/SingerColumnMap"
+      "type": "object",
+      "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
     },
     "key_properties": {
       "description": "schema message: names of keys",
@@ -43,8 +44,12 @@
         "type": "string"
       }
     },
+    "version": {
+      "description": "Version number in RECORD and ACTIVATE_VERSION messages",
+      "type": "integer"
+    },
     "value": {
-      "description": "value message: must me a JSON object",
+      "description": "value message: must be a JSON object",
       "type": "object",
       "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
     }
