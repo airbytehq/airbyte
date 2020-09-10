@@ -1,5 +1,10 @@
 package io.dataline.integrations.io.dataline.integration_tests.sources;
 
+import io.dataline.commons.json.Jsons;
+import io.dataline.commons.resources.MoreResources;
+import io.dataline.config.Schema;
+import io.dataline.config.SourceConnectionImplementation;
+import io.dataline.config.StandardSync;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.db.PostgreSQLContainerHelper;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
@@ -45,11 +50,19 @@ public class SingerPostgresSourceTest {
   }
 
   @Test
-  public void testRead() {
+  public void testReadFirstTime() throws IOException {
     SingerTapFactory singerTapFactory = new SingerTapFactory(IMAGE_NAME, pbf, new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
 
-    StandardTapConfig tapConfig = new StandardTapConfig().with
+    Schema schema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), Schema.class);
+    StandardSync syncConfig = new StandardSync().withSyncMode(StandardSync.SyncMode.FULL_REFRESH).withSchema(schema);
+
+    StandardTapConfig tapConfig = new StandardTapConfig().withStandardSync(syncConfig).withSourceConnectionImplementation(
+        new SourceConnectionImplementation().withConfiguration(Jsons.jsonNode()));
     singerTapFactory.create()
+  }
+
+  @Test
+  public void testReadWithState() {
   }
 
   @Test
@@ -66,4 +79,6 @@ public class SingerPostgresSourceTest {
   public void testInvalidCredsFailedConnectionCheck() {
 
   }
+
+  
 }
