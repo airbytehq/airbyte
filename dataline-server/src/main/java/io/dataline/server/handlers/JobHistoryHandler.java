@@ -24,6 +24,7 @@
 
 package io.dataline.server.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import io.dataline.api.model.JobConfigType;
 import io.dataline.api.model.JobIdRequestBody;
@@ -58,7 +59,6 @@ public class JobHistoryHandler {
     JobConfig.ConfigType configType = Enums.convertTo(request.getConfigType(), JobConfig.ConfigType.class);
     String configId = request.getConfigId();
 
-    // todo: use functions for scope scoping
     List<JobRead> jobReads = schedulerPersistence.listJobs(configType, configId)
         .stream()
         .map(JobHistoryHandler::getJobRead)
@@ -79,23 +79,30 @@ public class JobHistoryHandler {
         .logs(logRead);
   }
 
-  private static List<String> getTail(int numLines, String path) throws IOException {
+  @VisibleForTesting
+  protected static List<String> getTail(int numLines, String path) throws IOException {
     File file = new File(path);
-    try (ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
-      List<String> lines = new ArrayList<>();
 
-      String line;
-      while ((line = fileReader.readLine()) != null && lines.size() < numLines) {
-        lines.add(line);
+    if (file.exists()) {
+      try (ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
+        List<String> lines = new ArrayList<>();
+
+        String line;
+        while ((line = fileReader.readLine()) != null && lines.size() < numLines) {
+          lines.add(line);
+        }
+
+        Collections.reverse(lines);
+
+        return lines;
       }
-
-      Collections.reverse(lines);
-
-      return lines;
+    } else {
+      return Collections.emptyList();
     }
   }
 
-  private static JobRead getJobRead(Job job) {
+  @VisibleForTesting
+  protected static JobRead getJobRead(Job job) {
     String configId = ScopeHelper.getConfigId(job.getScope());
     JobConfigType configType = Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
 
