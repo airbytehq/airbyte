@@ -1,0 +1,21 @@
+plugins {
+    id 'com.bmuschko.docker-remote-api' version '6.6.1'
+}
+
+def image = 'dataline/integration-singer-exchangerateapi_io-source:dev'
+
+task imageName {
+    doLast {
+        println "IMAGE $image"
+    }
+}
+
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+task buildImage(type: DockerBuildImage) {
+    inputDir = projectDir
+    images.add(image)
+}
+
+task integrationTest {
+}
+integrationTest.dependsOn(buildImage)

@@ -3,11 +3,35 @@ plugins {
     id 'com.bmuschko.docker-remote-api' version '6.6.1'
 }
 
+def image = 'dataline/integration-singer-bigquery-destination:dev'
+
+task imageName {
+    doLast {
+        println "IMAGE $image"
+    }
+}
+
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
-    images.add('dataline/integration-singer-bigquery-destination:dev')
+    images.add(image)
 }
+
+import groovy.json.JsonSlurper
+def credFile = project.file("config/credentials.json")
+def creds = new JsonSlurper().parse(credFile)
+
+task integrationTest(type: Test) {
+    environment "GOOGLE_CLOUD_PROJECT", creds["project_id"]
+    environment "GOOGLE_APPLICATION_CREDENTIALS", credFile.absolutePath
+
+    useJUnitPlatform()
+    testLogging() {
+        events "passed", "failed"
+        exceptionFormat "full"
+    }
+}
+integrationTest.dependsOn(buildImage)
 
 sourceSets {
     integrationTest {
@@ -33,30 +57,3 @@ dependencies {
 
     integrationTestImplementation project(':dataline-workers')
 }
-
-import groovy.json.JsonSlurper
-
-def credFile = project.file("config/credentials.json")
-def jsonSlurper = new JsonSlurper()
-def creds = [:]
-
-try {
-    creds = jsonSlurper.parse(credFile)
-} catch(Exception e) {
-    // allow builds without credentials to work (integrationTest would still fail)
-}
-
-task integrationTest(type: Test) {
-    environment "GOOGLE_CLOUD_PROJECT", creds["project_id"]
-    environment "GOOGLE_APPLICATION_CREDENTIALS", credFile.absolutePath
-
-    testClassesDirs += sourceSets.integrationTest.output.classesDirs
-    classpath += sourceSets.integrationTest.runtimeClasspath
-    useJUnitPlatform()
-    testLogging() {
-        events "passed", "failed"
-        exceptionFormat "full"
-    }
-    mustRunAfter test
-}
-integrationTest.dependsOn(buildImage)

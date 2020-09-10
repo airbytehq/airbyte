@@ -79,6 +79,7 @@ class TestBigQueryDestination {
 
   @BeforeEach
   public void setUpBigQuery() throws IOException {
+
     Files.createDirectories(TESTS_PATH);
     workspaceRoot = Files.createTempDirectory(TESTS_PATH, "dataline-integration");
     jobRoot = Path.of(workspaceRoot.toString(), "job");

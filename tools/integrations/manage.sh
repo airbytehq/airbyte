@@ -4,37 +4,52 @@ set -e
 
 . tools/lib/lib.sh
 
-DOCKER_ORG=${DOCKER_ORG:-dataline}
+_get_rule_base() {
+  local rule=$(echo "$1" | tr -s / :)
+  echo ":$rule"
+}
 
-get_name() {
-  local name=$(dirname $1 | sed "s/^dataline-integrations/integration/" | tr / -)
-  echo "${DOCKER_ORG}/$name"
+_get_image() {
+  local path=$1
+  ./gradlew "$(_get_rule_base "$path"):imageName" | grep IMAGE | cut -d ' ' -f 2
+}
+
+_check_tag_exists() {
+  DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect "$1" > /dev/null
 }
 
 cmd_build() {
   local path=$1
 
   echo "Building $path"
-  docker build -f "$path" -t "$(get_name $path)" "$(dirname "$path")" | grep "Successfully tagged"
-}
-
-cmd_push() {
-  local name=$(get_name "$1")
-
-  echo "Pushing $name"
-  docker push "$name"
+  ./gradlew "$(_get_rule_base "$path"):clean"
+  ./gradlew "$(_get_rule_base "$path"):integrationTest"
 }
 
 cmd_publish() {
   local path=$1
 
   cmd_build "$path"
-  cmd_push "$path"
+
+  local dev_image=$(_get_image "$path")
+  local versioned_image=${dev_image%:*}:$(_get_docker_version "$path"/Dockerfile)
+  local latest_image=${dev_image%:*}:latest
+
+  docker tag $dev_image $versioned_image
+  docker tag $dev_image $latest_image
+
+  if _check_tag_exists $versioned_image; then
+    error "You're trying to push an version that was already released ($versioned_image). Make sure you bump it up."
+  fi
+
+  echo "Publishing new version ($versioned_image)"
+  docker push $versioned_image
+  docker push $latest_image
 }
 
 USAGE="
 
-Usage: $(basename $0) <build|push|publish> <integration_root_path | all> 
+Usage: $(basename $0) <build|publish> <integration_root_path>
 "
 
 main() {
@@ -43,16 +58,11 @@ main() {
   local cmd=$1
   shift || error "Missing cmd $USAGE"
   local path=$1
-  shift || error "Missing target (root path of integration or 'all') $USAGE"
+  shift || error "Missing target (root path of integration) $USAGE"
 
-  if [ "$path" == "all" ]; then
-    for path in $(find dataline-integrations -iname "Dockerfile" -type f); do
-      echo "Executing $cmd in $path"
-      cmd_$cmd $path
-    done
-  else
-    cmd_$cmd $path
-  fi
+  [ -d "$path" ] || error "Path must be the root path of the integration"
+
+  cmd_"$cmd" "$path"
 }
 
 main "$@"
