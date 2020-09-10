@@ -13,8 +13,9 @@ As a community contributor, you will need access to a GCP project and BigQuery t
 1. Add the `BigQuery User` role
 1. Go back to the `Service Accounts` page and use the actions modal to `Create Key`
 1. Download this key as a JSON file
-1. Move and rename this file to `$DATALINE_PROJECT_ROOT/dataline-integrations/singer/bigquery/destination/config/credentials.json`
+1. Move and rename this file to `config/credentials.json`
 
 ## Dataline Employee
+
 1. Access the `BigQuery Integration Test User` secret on Rippling under the `Engineering` folder
-1. Create a file with the contents at `$DATALINE_PROJECT_ROOT/dataline-integrations/singer/bigquery/destination/config/credentials.json`
+1. Create a file with the contents at `config/credentials.json`
