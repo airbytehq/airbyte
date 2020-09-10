@@ -71,7 +71,7 @@ jobs:
           docker login -u datalinebot -p ${DOCKER_PASSWORD}
           docker-compose -f docker-compose.build.yaml push
         env:
-          - DOCKER_PASSWORD: ${{ secret.DOCKER_PASSWORD }}
+          - DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Slack Notification (Master branch only)
         if: failure() && github.ref == 'refs/heads/master'
