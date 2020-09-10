@@ -34,6 +34,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import io.dataline.config.JobOutput;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
@@ -45,8 +46,8 @@ import org.mockito.InOrder;
 
 public class JobSubmitterTest {
 
-  public static final OutputAndStatus<Integer> SUCCESS_OUTPUT = new OutputAndStatus<>(JobStatus.SUCCESSFUL, 1);
-  public static final OutputAndStatus<Integer> FAILED_OUTPUT = new OutputAndStatus<>(JobStatus.FAILED);
+  public static final OutputAndStatus<JobOutput> SUCCESS_OUTPUT = new OutputAndStatus<>(JobStatus.SUCCESSFUL, new JobOutput());
+  public static final OutputAndStatus<JobOutput> FAILED_OUTPUT = new OutputAndStatus<>(JobStatus.FAILED);
 
   private SchedulerPersistence persistence;
   private WorkerRunFactory workerRunFactory;
@@ -88,7 +89,7 @@ public class JobSubmitterTest {
 
     InOrder inOrder = inOrder(persistence);
     inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
-    inOrder.verify(persistence).writeOutput(1L, 1);
+    inOrder.verify(persistence).writeOutput(1L, new JobOutput());
     inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.COMPLETED);
     inOrder.verifyNoMoreInteractions();
   }

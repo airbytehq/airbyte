@@ -22,38 +22,42 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.workers.wrappers;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import io.dataline.config.JobOutput;
+import io.dataline.workers.InvalidCatalogException;
+import io.dataline.workers.InvalidCredentialsException;
+import io.dataline.workers.JobStatus;
+import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class WorkerRunTest {
+public class OutputConvertingWorkerTest {
 
-  private Path path;
-  private Worker<Integer, JobOutput> worker;
+  @Test
+  public void testRun() throws InvalidCredentialsException, InvalidCatalogException {
+    Worker<String, String> worker = Mockito.mock(Worker.class);
+    String inputConfig = "input";
+    int expectedOutput = 123;
+    Path path = Path.of("fakepath");
+    when(worker.run(inputConfig, path)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, String.valueOf(expectedOutput)));
 
-  @SuppressWarnings("unchecked")
-  @BeforeEach
-  void setUp() throws IOException {
-    path = Files.createTempDirectory("test").resolve("sub").resolve("sub");
-    worker = Mockito.mock(Worker.class);
+    OutputAndStatus<Integer> output = new OutputConvertingWorker<String, String, Integer>(worker, Integer::valueOf).run(inputConfig, path);
+    assertTrue(output.getOutput().isPresent());
+    assertEquals(expectedOutput, output.getOutput().get());
   }
 
   @Test
-  void name() throws Exception {
-    new WorkerRun(path, 1, worker).call();
-
-    assertTrue(Files.exists(path));
-    verify(worker).run(1, path);
+  public void testCancel() {
+    Worker<String, String> worker = Mockito.mock(Worker.class);
+    new OutputConvertingWorker<>(worker, Integer::valueOf).cancel();
+    verify(worker).cancel();
   }
 
 }
