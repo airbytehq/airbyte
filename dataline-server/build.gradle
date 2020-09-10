@@ -12,10 +12,6 @@ dependencies {
     implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson'
     implementation group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation'
 
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
-    implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.42'
-
-
     implementation project(':dataline-analytics')
     implementation project(':dataline-api')
     implementation project(':dataline-config:models')
