@@ -36,7 +36,7 @@ dependencies {
 
 import groovy.json.JsonSlurper
 
-def credFile = new File(projectDir.absolutePath + "/config/credentials.json")
+def credFile = project.file("config/credentials.json")
 def jsonSlurper = new JsonSlurper()
 def creds = [:]
 
@@ -58,6 +58,5 @@ task integrationTest(type: Test) {
         exceptionFormat "full"
     }
     mustRunAfter test
-    mustRunAfter buildImage
 }
-
+integrationTest.dependsOn(buildImage)
