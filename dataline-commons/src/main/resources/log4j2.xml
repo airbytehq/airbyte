@@ -27,6 +27,15 @@
     <Logger name="org.jooq" level="INFO">
       <AppenderRef ref="Console"/>
     </Logger>
+    <Logger name="me.andrz.jackson" level="INFO" >
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Logger name="com.networknt.schema" level="INFO" >
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Logger name="org.hibernate.validator" level="INFO" >
+      <AppenderRef ref="Console"/>
+    </Logger>
 
   </Loggers>
 
