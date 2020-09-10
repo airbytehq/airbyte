@@ -70,7 +70,7 @@ public class ConnectionsHandler {
     final UUID connectionId = uuidGenerator.get();
 
     // todo (cgardens): for MVP we only support append.
-    if(connectionCreate.getSyncMode() != ConnectionCreate.SyncModeEnum.APPEND) {
+    if (connectionCreate.getSyncMode() != ConnectionCreate.SyncModeEnum.APPEND) {
       throw new RuntimeException("Only APPEND is currently supported!");
     }
 
