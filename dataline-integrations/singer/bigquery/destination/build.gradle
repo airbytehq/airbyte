@@ -11,17 +11,23 @@ task imageName {
     }
 }
 
+
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import groovy.json.JsonSlurper
+
 task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
 }
 
-import groovy.json.JsonSlurper
-def credFile = project.file("config/credentials.json")
-def creds = new JsonSlurper().parse(credFile)
-
 task integrationTest(type: Test) {
+    def credFile = project.file("config/credentials.json")
+    def creds = [:]
+    try {
+        creds = new JsonSlurper().parse(credFile)
+    } catch (Exception ignored) {
+    }
+
     environment "GOOGLE_CLOUD_PROJECT", creds["project_id"]
     environment "GOOGLE_APPLICATION_CREDENTIALS", credFile.absolutePath
 
