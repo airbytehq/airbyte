@@ -88,6 +88,7 @@ const CreateSourcePage: React.FC = () => {
       const result = await createSourcesImplementation(
         {},
         {
+          name: values.name,
           workspaceId: config.ui.workspaceId,
           sourceSpecificationId: values.specificationId,
           connectionConfiguration: values.connectionConfiguration
@@ -115,7 +116,8 @@ const CreateSourcePage: React.FC = () => {
       await createConnection(
         {
           sourceId: sourceInfo?.sourceId || "",
-          sourceName: sourceInfo?.name || ""
+          sourceName: sourceInfo?.name || "",
+          name: currentSourceImplementation?.name || ""
         },
         {
           sourceImplementationId:

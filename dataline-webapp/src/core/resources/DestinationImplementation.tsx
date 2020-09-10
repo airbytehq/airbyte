@@ -3,6 +3,7 @@ import BaseResource from "./BaseResource";
 
 export interface DestinationImplementation {
   destinationImplementationId: string;
+  name: string;
   workspaceId: string;
   destinationSpecificationId: string;
   destinationId: string;
@@ -12,6 +13,7 @@ export interface DestinationImplementation {
 export default class DestinationImplementationResource extends BaseResource
   implements DestinationImplementation {
   readonly destinationImplementationId: string = "";
+  readonly name: string = "";
   readonly workspaceId: string = "";
   readonly destinationId: string = "";
   readonly destinationSpecificationId: string = "";

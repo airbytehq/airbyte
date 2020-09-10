@@ -46,6 +46,7 @@ const DestinationPage: React.FC = () => {
     await updateDestination(
       {},
       {
+        name: values.name,
         destinationImplementationId:
           currentDestination.destinationImplementationId,
         connectionConfiguration: values.connectionConfiguration
@@ -75,7 +76,7 @@ const DestinationPage: React.FC = () => {
             ]}
             formValues={{
               ...currentDestination.connectionConfiguration,
-              name: "Test",
+              name: currentDestination.name,
               serviceType: destination.destinationId
             }}
             specifications={destinationSpecification.connectionSpecification}

@@ -24,16 +24,11 @@ const Content = styled.div`
 
 const SettingsView: React.FC<IProps> = ({ sourceData }) => {
   const updateConnection = useFetcher(ConnectionResource.updateShape());
+  const updateStateConnection = useFetcher(
+    ConnectionResource.updateStateShape()
+  );
   const updateSourceImplementation = useFetcher(
     SourceImplementationResource.updateShape()
-  );
-  const sourceImplementation = useResource(
-    SourceImplementationResource.detailShape(),
-    sourceData.source
-      ? {
-          sourceImplementationId: sourceData.source?.sourceImplementationId
-        }
-      : null
   );
 
   const sourceSpecification = useResource(
@@ -76,8 +71,21 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
     await updateSourceImplementation(
       {},
       {
+        name: values.name,
         sourceImplementationId: sourceData.source?.sourceImplementationId,
         connectionConfiguration: values.connectionConfiguration
+      }
+    );
+
+    await updateStateConnection(
+      {},
+      {
+        ...sourceData,
+        source: {
+          ...sourceData.source,
+          name: values.name,
+          connectionConfiguration: values.connectionConfiguration
+        }
       }
     );
   };
@@ -96,8 +104,8 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
             }
           ]}
           formValues={{
-            ...sourceImplementation?.connectionConfiguration,
-            name: sourceData.name,
+            ...sourceData.source?.connectionConfiguration,
+            name: sourceData.source?.name,
             serviceType: sourceData.source?.sourceId || "",
             frequency: schedule?.value || ""
           }}

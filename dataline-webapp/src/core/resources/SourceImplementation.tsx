@@ -3,6 +3,7 @@ import BaseResource from "./BaseResource";
 
 export interface SourceImplementation {
   sourceImplementationId: string;
+  name: string;
   workspaceId: string;
   sourceSpecificationId: string;
   sourceId: string;
@@ -12,6 +13,7 @@ export interface SourceImplementation {
 export default class SourceImplementationResource extends BaseResource
   implements SourceImplementation {
   readonly sourceImplementationId: string = "";
+  readonly name: string = "";
   readonly sourceId: string = "";
   readonly workspaceId: string = "";
   readonly sourceSpecificationId: string = "";
