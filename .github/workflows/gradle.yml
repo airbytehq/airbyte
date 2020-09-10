@@ -35,33 +35,37 @@ jobs:
         with:
           node-version: '14.7'
 
-      - name: Build
-        run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
+#      - name: Build
+#        run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
 
-      - name: Ensure no file change
-        run: git diff-index --quiet HEAD
+#      - name: Ensure no file change
+#        run: git diff-index --quiet HEAD
 
-      - name: Build Integration Docker Images (Master branch only)
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew buildImage --no-daemon -g ${{ env.GRADLE_PATH }}
-
-      - name: Write BigQuery Integration Test Credentials (Master branch only)
-        if: success() && github.ref == 'refs/heads/master'
-        run: 'mkdir dataline-integrations/singer/bigquery/destination/config && echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > dataline-integrations/singer/bigquery/destination/config/credentials.json'
-        env:
-          BIGQUERY_INTEGRATION_TEST_CREDS: ${{secrets.BIGQUERY_INTEGRATION_TEST_CREDS}}
-
-      - name: Run Integration Tests (Master branch only)
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
+#      - name: Build Integration Docker Images (Master branch only)
+#        if: success() && github.ref == 'refs/heads/master'
+#        run: ./gradlew buildImage --no-daemon -g ${{ env.GRADLE_PATH }}
+#
+#      - name: Write BigQuery Integration Test Credentials (Master branch only)
+#        if: success() && github.ref == 'refs/heads/master'
+#        run: 'mkdir dataline-integrations/singer/bigquery/destination/config && echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > dataline-integrations/singer/bigquery/destination/config/credentials.json'
+#        env:
+#          BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
+#
+#      - name: Run Integration Tests (Master branch only)
+#        if: success() && github.ref == 'refs/heads/master'
+#        run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
 
       - name: Build Core Docker Images (Master branch only)
-        if: success() && github.ref == 'refs/heads/master'
+        if: success() #&& github.ref == 'refs/heads/master'
         run: docker-compose -f docker-compose.build.yaml build
 
-      - name: Run End-to-End Acceptance Tests (Master branch only)
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./tools/bin/acceptance_test.sh
+#      - name: Run End-to-End Acceptance Tests (Master branch only)
+#        if: success() && github.ref == 'refs/heads/master'
+#        run: ./tools/bin/acceptance_test.sh
+
+      - name: Push Dev Images (Master branch only)
+        if: success() #&& github.ref == 'refs/heads/master'
+        run: docker-compose -f docker-compose.build.yaml push
 
       - name: Slack Notification (Master branch only)
         if: failure() && github.ref == 'refs/heads/master'
