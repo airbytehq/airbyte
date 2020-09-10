@@ -57,7 +57,9 @@ jobs:
 
       - name: Build Core Docker Images (Master branch only)
         if: success() #&& github.ref == 'refs/heads/master'
-        run: docker-compose -e GIT_REVISION=${{ github.sha }} -f docker-compose.build.yaml build
+        run: docker-compose -e GIT_REVISION=${GIT_REVISION} -f docker-compose.build.yaml build
+        env:
+          - GIT_REVISION: ${{ github.sha }}
 
 #      - name: Run End-to-End Acceptance Tests (Master branch only)
 #        if: success() && github.ref == 'refs/heads/master'
@@ -66,8 +68,10 @@ jobs:
       - name: Push Dev Images (Master branch only)
         if: success() #&& github.ref == 'refs/heads/master'
         run: |
-          docker login -u datalinebot -p ${{ secret.DOCKER_PASSWORD }}
+          docker login -u datalinebot -p ${DOCKER_PASSWORD}
           docker-compose -f docker-compose.build.yaml push
+        env:
+          - DOCKER_PASSWORD: ${{ secret.DOCKER_PASSWORD }}
 
       - name: Slack Notification (Master branch only)
         if: failure() && github.ref == 'refs/heads/master'
