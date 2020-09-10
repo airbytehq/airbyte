@@ -109,6 +109,7 @@ subprojects {
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.10.4"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
 
+        // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
         implementation 'com.fasterxml.jackson.core:jackson-databind'
         implementation 'com.fasterxml.jackson.core:jackson-annotations'
 
