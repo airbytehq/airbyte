@@ -65,9 +65,9 @@ jobs:
 
       - name: Push Dev Images (Master branch only)
         if: success() #&& github.ref == 'refs/heads/master'
-        run:
-          - docker login -u datalinebot -p ${{ secret.DOCKER_PASSWORD }}
-          - docker-compose -f docker-compose.build.yaml push
+        run: |
+          docker login -u datalinebot -p ${{ secret.DOCKER_PASSWORD }}
+          docker-compose -f docker-compose.build.yaml push
 
       - name: Slack Notification (Master branch only)
         if: failure() && github.ref == 'refs/heads/master'
