@@ -121,11 +121,12 @@ public class AcceptanceTests {
     schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true)));
 
     // TODO
-//    ConnectionRead createdConnection = testCreateConnection(createdSourceImplId, createdDestinationImplId, schema);
-//
-//    testRunManualSync(createdConnection.getConnectionId());
-//
-//    assertSourceAndTargetDbInSync(SOURCE_PSQL, TARGET_PSQL);
+    // ConnectionRead createdConnection = testCreateConnection(createdSourceImplId,
+    // createdDestinationImplId, schema);
+    //
+    // testRunManualSync(createdConnection.getConnectionId());
+    //
+    // assertSourceAndTargetDbInSync(SOURCE_PSQL, TARGET_PSQL);
 
     // TODO test scheduled sync
   }
