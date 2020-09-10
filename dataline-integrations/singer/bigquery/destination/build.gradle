@@ -1,5 +1,12 @@
 plugins {
     id 'java'
+    id 'com.bmuschko.docker-remote-api' version '6.6.1'
+}
+
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+task buildImage(type: DockerBuildImage) {
+    inputDir = projectDir
+    images.add('dataline/integration-singer-bigquery-destination:dev')
 }
 
 sourceSets {
@@ -51,4 +58,6 @@ task integrationTest(type: Test) {
         exceptionFormat "full"
     }
     mustRunAfter test
+    mustRunAfter buildImage
 }
+
