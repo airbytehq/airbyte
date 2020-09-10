@@ -38,7 +38,7 @@ WORKDIR /code
 # Copy code, etc.
 COPY . /code
 
-RUN ./gradlew clean distTar build -x test --no-daemon -g /home/gradle/.gradle || cat /home/gradle/.gradle
+RUN ./gradlew clean distTar build -x test --no-daemon -g /home/gradle/.gradle
 
 ######################
 # Build webapp image #

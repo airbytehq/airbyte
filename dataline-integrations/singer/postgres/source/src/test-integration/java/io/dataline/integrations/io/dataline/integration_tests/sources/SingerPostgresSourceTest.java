@@ -129,7 +129,7 @@ public class SingerPostgresSourceTest {
 
     // test incremental: insert a few more records then run another sync
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_update.sql"), psqlDb);
-    
+
   }
 
   @Test
