@@ -5,10 +5,7 @@
   "description": "StandardTapConfig",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "sourceConnectionImplementation",
-    "standardSync"
-  ],
+  "required": ["sourceConnectionImplementation", "standardSync"],
   "properties": {
     "sourceConnectionImplementation": {
       "$ref": "SourceConnectionImplementation.json"
