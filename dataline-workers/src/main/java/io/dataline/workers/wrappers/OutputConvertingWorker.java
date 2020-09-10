@@ -22,43 +22,38 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.workers.wrappers;
 
-import io.dataline.commons.functional.CheckedSupplier;
-import io.dataline.config.JobOutput;
+import io.dataline.workers.InvalidCatalogException;
+import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.function.Function;
 
-/*
- * This class represents a single run of a worker. It handles making sure the correct inputs and
- * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
- * persisted to the db.
- */
-public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
+class OutputConvertingWorker<InputType, OriginalOutputType, FinalOutputType> implements Worker<InputType, FinalOutputType> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
+  private final Worker<InputType, OriginalOutputType> innerWorker;
+  private Function<OriginalOutputType, FinalOutputType> convertFn;
 
-  private final Path jobRoot;
-  private final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun;
-
-  public <InputType> WorkerRun(final Path jobRoot,
-                               final InputType input,
-                               final Worker<InputType, JobOutput> worker) {
-    this.jobRoot = jobRoot;
-    this.workerRun = () -> worker.run(input, jobRoot);
+  public OutputConvertingWorker(Worker<InputType, OriginalOutputType> innerWorker, Function<OriginalOutputType, FinalOutputType> convertFn) {
+    this.innerWorker = innerWorker;
+    this.convertFn = convertFn;
   }
 
   @Override
-  public OutputAndStatus<JobOutput> call() throws Exception {
-    LOGGER.info("Executing worker wrapper...");
-    Files.createDirectories(jobRoot);
+  public OutputAndStatus<FinalOutputType> run(InputType config, Path jobRoot) throws InvalidCredentialsException, InvalidCatalogException {
+    OutputAndStatus<OriginalOutputType> run = innerWorker.run(config, jobRoot);
+    if (run.getOutput().isPresent()) {
+      return new OutputAndStatus<FinalOutputType>(run.getStatus(), convertFn.apply(run.getOutput().get()));
+    } else {
+      return new OutputAndStatus<>(run.getStatus());
+    }
+  }
 
-    return workerRun.get();
+  @Override
+  public void cancel() {
+    innerWorker.cancel();
   }
 
 }

@@ -25,6 +25,7 @@ dependencies {
     integrationTestImplementation "org.testcontainers:postgresql:1.14.3"
     integrationTestImplementation "org.postgresql:postgresql:42.2.16"
 
+    integrationTestImplementation project(':dataline-config:models')
     integrationTestImplementation project(':dataline-workers')
     integrationTestImplementation project(':dataline-db')
 }

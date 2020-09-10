@@ -26,6 +26,7 @@ configurations {
 dependencies {
     acceptanceTestsImplementation project(':dataline-api')
     acceptanceTestsImplementation project(':dataline-config:persistence')
+    acceptanceTestsImplementation project(':dataline-db')
 
     acceptanceTestsImplementation "org.testcontainers:postgresql:1.14.3"
     acceptanceTestsImplementation "org.postgresql:postgresql:42.2.16"
