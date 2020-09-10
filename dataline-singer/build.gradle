@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     implementation group: 'javax.validation', name: 'validation-api', version: '1.1.0.Final'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
 }
 
 jsonSchema2Pojo {
