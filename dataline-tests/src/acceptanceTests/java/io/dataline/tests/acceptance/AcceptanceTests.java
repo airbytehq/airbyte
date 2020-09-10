@@ -70,6 +70,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+@SuppressWarnings("rawtypes")
 public class AcceptanceTests {
 
   static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
@@ -181,6 +182,7 @@ public class AcceptanceTests {
    * Verifies that a record in the target table and database exists with the same (and potentially
    * more) fields.
    */
+  @SuppressWarnings("unchecked")
   private void assertRecordInTable(Record record, BasicDataSource connectionPool, String tableName)
       throws SQLException {
 

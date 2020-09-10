@@ -40,6 +40,7 @@ import org.mockito.Mockito;
 
 public class OutputConvertingWorkerTest {
 
+  @SuppressWarnings("unchecked")
   @Test
   public void testRun() throws InvalidCredentialsException, InvalidCatalogException {
     Worker<String, String> worker = Mockito.mock(Worker.class);
@@ -53,6 +54,7 @@ public class OutputConvertingWorkerTest {
     assertEquals(expectedOutput, output.getOutput().get());
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void testCancel() {
     Worker<String, String> worker = Mockito.mock(Worker.class);
