@@ -4,13 +4,13 @@
       "name": "id_and_name",
       "columns": [
         {
-          "name": "id",
+          "name": "name",
           "dataType": "string",
           "selected": true
         },
         {
-          "name": "name",
-          "dataType": "string",
+          "name": "id",
+          "dataType": "number",
           "selected": true
         }
       ]
