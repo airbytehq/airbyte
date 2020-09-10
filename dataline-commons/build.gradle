@@ -1,7 +1,3 @@
 plugins {
     id "java-library"
 }
-
-dependencies {
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
-}
