@@ -85,7 +85,7 @@ subprojects {
             dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
         }
         format 'styling', {
-            target '**/*.json', '**/*.yaml', '**/*.yml'
+            target '**/*.json', '**/*.yaml'
 
             prettier()
         }
