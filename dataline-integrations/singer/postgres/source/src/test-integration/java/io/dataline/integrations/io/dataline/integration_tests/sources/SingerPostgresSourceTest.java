@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.util.BeanUtil;
 import io.dataline.commons.json.Jsons;
 import io.dataline.commons.resources.MoreResources;
 import io.dataline.config.Schema;
@@ -50,6 +51,9 @@ import io.dataline.workers.protocol.singer.SingerMessageTracker;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerTapFactory;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.MethodDescriptor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -155,7 +159,6 @@ public class SingerPostgresSourceTest {
     for (SingerMessage expectedMessage : expected) {
       assertTrue(isMessageContained(expectedMessage, actual), expectedMessage + " was not found in actual messages: " + actual);
     }
-
   }
 
   private static boolean isMessageContained(SingerMessage message, Collection<SingerMessage> collection) {
@@ -174,8 +177,7 @@ public class SingerPostgresSourceTest {
           !isEqualIfSet(message.getSchema(), containedMessage.getSchema()) ||
           !isEqualIfSet(message.getStream(), containedMessage.getStream()) ||
           !isEqualIfSet(message.getTimeExtracted(), containedMessage.getTimeExtracted()) ||
-          !isEqualIfSet(message.getValue(), containedMessage.getValue()) ||
-          !isEqualIfSet(message.getVersion(), containedMessage.getVersion())) {
+          !isEqualIfSet(message.getValue(), containedMessage.getValue())) {
         continue;
       }
       return true;
