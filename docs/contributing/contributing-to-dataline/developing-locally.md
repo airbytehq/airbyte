@@ -6,10 +6,10 @@
 git clone git@github.com:datalineio/dataline.git
 cd dataline
 docker-compose -f docker-compose.build.yaml build
-docker-compose up
+VERSION=dev docker-compose up
 ```
 
-The build will take a few minutes. Once it completes, Dataline will be running in your environment.
+The build will take a few minutes. Once it completes, Dataline compiled at current git revision will be running in your environment.
 
 ## Running Acceptance Tests
 
