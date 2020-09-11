@@ -32,6 +32,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -137,10 +138,10 @@ class SingerJsonStreamFactoryTest {
 
     final String inputString =
         new StringBuilder()
-            .append(Jsons.serialize(record1))
-            .append('\n')
+             .append(Jsons.serialize(record1))
+             .append('\n')
             .append("{ \"fish\": \"tuna\"}")
-            .append(Jsons.serialize(record2))
+             .append(Jsons.serialize(record2))
             .toString();
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
