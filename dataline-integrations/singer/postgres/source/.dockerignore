@@ -1,2 +1,3 @@
-build
-build.gradle
+*
+!Dockerfile
+!requirements.txt
