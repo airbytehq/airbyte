@@ -99,9 +99,7 @@ w$ ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 ## Connect to Dataline
 
 {% hint style="danger" %}
-For security reason we strongly recommend to not expose Dataline on Internet available ports.
-
-In the future versions we will add support for SSL & Authentication
+For security reason we strongly recommend to not expose Dataline on Internet available ports. Future versions will add support for SSL & Authentication
 {% endhint %}
 
 * Create ssh tunnel
