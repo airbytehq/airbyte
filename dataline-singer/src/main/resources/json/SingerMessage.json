@@ -4,7 +4,7 @@
   "title": "SingerMessage",
   "description": "This is a compromise. Java codegen doesn't support union types. So we need to just make a flat json schema that looks like at of the possible permutations of a singer message. See the description for each field to see which message type that field belongs to.",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": ["type"],
   "properties": {
     "type": {
@@ -21,13 +21,13 @@
       "type": "string"
     },
     "record": {
-      "description": "record message: must me a JSON object",
+      "description": "record message: must be a JSON object",
       "type": "object",
       "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
     },
     "schema": {
       "description": "schema message: the schema",
-      "$ref": "SingerCatalog.json#/definitions/SingerColumnMap"
+      "$ref": "SingerCatalog.json#/definitions/SingerTableSchema"
     },
     "key_properties": {
       "description": "schema message: names of keys",
@@ -44,7 +44,7 @@
       }
     },
     "value": {
-      "description": "value message: must me a JSON object",
+      "description": "value message: must be a JSON object",
       "type": "object",
       "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
     }

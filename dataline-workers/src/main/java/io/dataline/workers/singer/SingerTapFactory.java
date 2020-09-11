@@ -43,8 +43,10 @@ import io.dataline.workers.protocol.singer.SingerJsonStreamFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,10 +77,11 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     this(imageName, pbf, new SingerJsonStreamFactory(), discoverSchemaWorker);
   }
 
-  public SingerTapFactory(final String imageName,
-                          final ProcessBuilderFactory pbf,
-                          final StreamFactory streamFactory,
-                          final SingerDiscoverSchemaWorker discoverSchemaWorker) {
+  @VisibleForTesting
+  SingerTapFactory(final String imageName,
+                   final ProcessBuilderFactory pbf,
+                   final StreamFactory streamFactory,
+                   final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this.imageName = imageName;
     this.pbf = pbf;
     this.streamFactory = streamFactory;
@@ -100,18 +103,24 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     IOs.writeFile(jobRoot, CATALOG_JSON_FILENAME, catalogDotJson);
     IOs.writeFile(jobRoot, STATE_JSON_FILENAME, stateDotJson);
 
+    String[] cmd = {
+      "--config",
+      CONFIG_JSON_FILENAME,
+      // TODO support both --properties and --catalog depending on integration
+      "--properties",
+      CATALOG_JSON_FILENAME
+    };
+
+    if (input.getState() != null) {
+      cmd = ArrayUtils.addAll(cmd, "--state", STATE_JSON_FILENAME);
+    }
+
     try {
       tapProcess =
           pbf.create(
               jobRoot,
               imageName,
-              "--config",
-              CONFIG_JSON_FILENAME,
-              // TODO support both --properties and --catalog depending on integration
-              "--properties",
-              CATALOG_JSON_FILENAME,
-              "--state",
-              STATE_JSON_FILENAME)
+              cmd)
               .redirectError(jobRoot.resolve(DefaultSyncWorker.TAP_ERR_LOG).toFile())
               .start();
     } catch (IOException e) {
@@ -142,6 +151,11 @@ public class SingerTapFactory implements TapFactory<SingerMessage> {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput()
         .withConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
     Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
+    try {
+      Files.createDirectory(discoverJobRoot);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot);
   }
 

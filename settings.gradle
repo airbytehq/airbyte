@@ -16,14 +16,16 @@ include 'dataline-singer'
 include 'dataline-webapp'
 include 'dataline-workers'
 include 'dataline-tests'
+include 'dataline-test-utils'
 
 // include all integration subprojects
 def integrations = file(rootProject.projectDir.relativePath(file("dataline-integrations")))
 integrations.eachFileRecurse(FileType.FILES) { file ->
-  if (file.absolutePath.endsWith("build.gradle") && file.length() != 0 && !file.absolutePath.contains("/build/")) {
-    def subproject = file.absolutePath.substring(integrations.absolutePath.length() + 1)
-    subproject = subproject.substring(0, subproject.length() - "/build.gradle".length())
-    subproject = ":dataline-integrations:" + subproject.split("/").join(":")
-    include subproject
+    if (file.absolutePath.endsWith("build.gradle") && file.length() != 0 && !file.absolutePath.contains("/build/")) {
+      def subproject = file.absolutePath.substring(integrations.absolutePath.length() + 1)
+      subproject = subproject.substring(0, subproject.length() - "/build.gradle".length())
+      subproject = ":dataline-integrations:" + subproject.split("/").join(":")
+      include subproject
   }
 }
+

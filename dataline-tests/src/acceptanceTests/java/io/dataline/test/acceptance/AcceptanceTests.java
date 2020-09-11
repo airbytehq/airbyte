@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.tests.acceptance;
+package io.dataline.test.acceptance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -52,6 +52,7 @@ import io.dataline.commons.json.Jsons;
 import io.dataline.commons.resources.MoreResources;
 import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -92,21 +93,13 @@ public class AcceptanceTests {
     SOURCE_PSQL.start();
     TARGET_PSQL.start();
 
-    runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), SOURCE_PSQL);
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), SOURCE_PSQL);
   }
 
   @AfterAll
   public static void tearDown() {
     SOURCE_PSQL.stop();
     TARGET_PSQL.stop();
-  }
-
-  private static void runSqlScript(MountableFile file, PostgreSQLContainer db)
-      throws IOException, InterruptedException {
-    String scriptPath = "/etc/" + UUID.randomUUID().toString() + ".sql";
-    db.copyFileToContainer(file, scriptPath);
-    db.execInContainer(
-        "psql", "-d", db.getDatabaseName(), "-U", db.getUsername(), "-a", "-f", scriptPath);
   }
 
   @Test
