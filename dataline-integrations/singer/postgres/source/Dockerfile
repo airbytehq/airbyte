@@ -1,7 +1,5 @@
 FROM python:3.7-slim
 
-LABEL io.dataline.version=0.1.0
-
 WORKDIR /singer
 
 ENV VIRTUAL_ENV=/singer/env
@@ -20,3 +18,5 @@ RUN python -m pip install --upgrade pip && \
 RUN apt-get autoremove -y gcc
 
 ENTRYPOINT ["tap-postgres"]
+
+LABEL io.dataline.version=0.1.0
