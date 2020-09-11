@@ -38,6 +38,7 @@ import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardTapConfig;
+import io.dataline.config.State;
 import io.dataline.db.PostgreSQLContainerHelper;
 import io.dataline.singer.SingerMessage;
 import io.dataline.workers.InvalidCatalogException;
@@ -46,6 +47,7 @@ import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
 import io.dataline.workers.process.ProcessBuilderFactory;
+import io.dataline.workers.protocol.singer.SingerMessageTracker;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerTapFactory;
@@ -108,14 +110,17 @@ public class SingerPostgresSourceTest {
     schema.getTables().forEach(t -> t.getColumns().forEach(c -> c.setSelected(true)));
 
     StandardSync syncConfig = new StandardSync().withSyncMode(StandardSync.SyncMode.FULL_REFRESH).withSchema(schema);
+    SourceConnectionImplementation sourceImpl =
+        new SourceConnectionImplementation().withConfiguration(Jsons.jsonNode(getDbConfig()));
 
     StandardTapConfig tapConfig = new StandardTapConfig()
         .withStandardSync(syncConfig)
-        .withSourceConnectionImplementation(new SourceConnectionImplementation().withConfiguration(Jsons.jsonNode(getDbConfig())));
+        .withSourceConnectionImplementation(sourceImpl);
 
     Stream<SingerMessage> singerMessageStream = singerTapFactory.create(tapConfig, jobRoot);
 
-    List<SingerMessage> actualMessages = singerMessageStream.collect(Collectors.toList());
+    SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
+    List<SingerMessage> actualMessages = singerMessageStream.peek(singerMessageTracker).collect(Collectors.toList());
     for (SingerMessage singerMessage : actualMessages) {
       LOGGER.info("{}", singerMessage);
     }
@@ -128,8 +133,13 @@ public class SingerPostgresSourceTest {
     assertMessagesEquivalent(expectedMessages, actualMessages);
 
     // test incremental: insert a few more records then run another sync
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_update.sql"), psqlDb);
-
+//    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_update.sql"), psqlDb);
+//
+//    StandardSync incrementalStandardSync = new StandardSync().withSyncMode(StandardSync.SyncMode.APPEND).withSchema(schema).;
+//    StandardTapConfig incrementalTapConfig = new StandardTapConfig()
+//        .withStandardSync(incrementalStandardSync)
+//        .withState(new State().withState(singerMessageTracker.getOutputState().get()))
+//        .withSourceConnectionImplementation(sourceImpl);
   }
 
   @Test
@@ -137,9 +147,10 @@ public class SingerPostgresSourceTest {
     // run an initial read, get the state from it
     // add a few more records to the DB
     // pass the state into a second read and make sure the messages are what we expect
+    // TODO 
   }
 
-  private void assertMessagesEquivalent(Collection<SingerMessage> expected, Collection<SingerMessage> actual){
+  private void assertMessagesEquivalent(Collection<SingerMessage> expected, Collection<SingerMessage> actual) {
     for (SingerMessage expectedMessage : expected) {
       assertTrue(isMessageContained(expectedMessage, actual), expectedMessage + " was not found in actual messages: " + actual);
     }
