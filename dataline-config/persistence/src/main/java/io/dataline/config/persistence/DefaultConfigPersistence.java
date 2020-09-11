@@ -25,8 +25,9 @@
 package io.dataline.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import io.dataline.commons.json.JsonSchemaValidator;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.ConfigSchema;
 import java.io.IOException;
@@ -35,8 +36,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import me.andrz.jackson.JsonReferenceException;
-import me.andrz.jackson.JsonReferenceProcessor;
 
 // we force all interaction with disk storage to be effectively single threaded.
 public class DefaultConfigPersistence implements ConfigPersistence {
@@ -145,21 +144,8 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   private <T> void validateJson(T config, ConfigSchema configType) throws JsonValidationException {
-    JsonNode schema = getSchema(configType);
+    JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
-  }
-
-  @VisibleForTesting
-  private JsonNode getSchema(ConfigSchema configType) {
-    try {
-      // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
-      // this.
-      final JsonReferenceProcessor jsonReferenceProcessor = new JsonReferenceProcessor();
-      jsonReferenceProcessor.setMaxDepth(-1); // no max.
-      return jsonReferenceProcessor.process(configType.getFile());
-    } catch (IOException | JsonReferenceException e) {
-      throw new RuntimeException(e);
-    }
   }
 
 }

@@ -30,6 +30,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.google.common.collect.Sets;
+import io.dataline.commons.json.JsonSchemaValidator;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.ConfigSchema;
 import io.dataline.config.Schema;
 import io.dataline.config.StandardSource;

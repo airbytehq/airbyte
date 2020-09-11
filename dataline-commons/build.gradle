@@ -3,5 +3,9 @@ plugins {
 }
 
 dependencies {
+    implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.42'
+    // needed so that we can follow $ref when parsing json. jackson does not support this natively.
+    implementation 'me.andrz.jackson:jackson-json-reference-core:0.3.2'
+
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 }
