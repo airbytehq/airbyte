@@ -32,11 +32,23 @@ INSTANCE_NAME=dataline # or anyother name that you've used
 
 * Install `gcloud`
 
+{% tabs %}
+{% tab title="MacOS" %}
 ```bash
 # In your workstation terminal
-# For MacOS with brew
 brew cask install google-cloud-sdk
 gcloud init # Follow instructions
+```
+{% endtab %}
+
+{% tab title="Ubuntu" %}
+```bash
+# FIXME
+```
+{% endtab %}
+{% endtabs %}
+
+```bash
 # Verify you can see your instance
 gcloud --project $PROJECT_ID compute instances list
 [...] # You should see the dataline instance you just created
