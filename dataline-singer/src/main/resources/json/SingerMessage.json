@@ -27,7 +27,7 @@
     },
     "schema": {
       "description": "schema message: the schema",
-      "$ref": "SingerCatalog.json#/definitions/SingerColumnMap"
+      "$ref": "SingerCatalog.json#/definitions/SingerTableSchema"
     },
     "key_properties": {
       "description": "schema message: names of keys",
