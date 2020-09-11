@@ -4,39 +4,35 @@ services:
   db:
     image: dataline/db:dev
     build:
-      dockerfile: Dockerfile.database
-      context: .
+      dockerfile: Dockerfile
+      context: dataline-db
       labels:
         io.dataline.git-revision: ${GIT_REVISION}
   seed:
     image: dataline/seed:dev
     build:
-      dockerfile: Dockerfile.build
-      target: seed
-      context: .
+      dockerfile: Dockerfile
+      context: dataline-config/init
       labels:
         io.dataline.git-revision: ${GIT_REVISION}
   scheduler:
     image: dataline/scheduler:dev
     build:
-      dockerfile: Dockerfile.build
-      target: scheduler
-      context: .
+      dockerfile: Dockerfile
+      context: dataline-scheduler
       labels:
         io.dataline.git-revision: ${GIT_REVISION}
   server:
     image: dataline/server:dev
     build:
-      dockerfile: Dockerfile.build
-      target: server
-      context: .
+      dockerfile: Dockerfile
+      context: dataline-server
       labels:
         io.dataline.git-revision: ${GIT_REVISION}
   webapp:
     image: dataline/webapp:dev
     build:
-      dockerfile: Dockerfile.build
-      target: webapp
-      context: .
+      dockerfile: Dockerfile
+      context: dataline-webapp
       labels:
         io.dataline.git-revision: ${GIT_REVISION}

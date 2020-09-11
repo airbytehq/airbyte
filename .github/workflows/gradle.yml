@@ -53,11 +53,11 @@ jobs:
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
-        run: docker-compose -f docker-compose.build.yaml build
+        run: ./gradlew composeBuild --no-daemon -g ${{ env.GRADLE_PATH }}
         env:
           GIT_REVISION: ${{ github.sha }}
 
-      - name: Run End-to-End Acceptance Tests (Master branch only)
+      - name: Run End-to-End Acceptance Tests
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/acceptance_test.sh
 
