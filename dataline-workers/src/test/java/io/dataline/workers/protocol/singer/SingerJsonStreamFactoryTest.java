@@ -63,8 +63,10 @@ class SingerJsonStreamFactoryTest {
         expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
   }
 
-  // TODO these test cases are commented out because jsonschema2pojo does not generate annotations that allow us to validate records correctly.
-  //   Until we add validation, deserializing invalid records (e.g: ones missing required fields) will succeed, so we temporarily comment these cases out.
+  // TODO these test cases are commented out because jsonschema2pojo does not generate annotations
+  // that allow us to validate records correctly.
+  // Until we add validation, deserializing invalid records (e.g: ones missing required fields) will
+  // succeed, so we temporarily comment these cases out.
   // @Test
   // public void testInvalid() {
   // final SingerMessage record1 =

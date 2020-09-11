@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.util.BeanUtil;
 import io.dataline.commons.json.Jsons;
 import io.dataline.commons.resources.MoreResources;
 import io.dataline.config.Schema;
@@ -51,9 +50,6 @@ import io.dataline.workers.protocol.singer.SingerMessageTracker;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import io.dataline.workers.singer.SingerTapFactory;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.MethodDescriptor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -157,36 +153,29 @@ public class SingerPostgresSourceTest {
 
   private void assertMessagesEquivalent(Collection<SingerMessage> expected, Collection<SingerMessage> actual) {
     for (SingerMessage expectedMessage : expected) {
-      assertTrue(isMessageContained(expectedMessage, actual), expectedMessage + " was not found in actual messages: " + actual);
+      assertTrue(isMessagePartiallyContained(expectedMessage, actual), expectedMessage + " was not found in actual messages: " + actual);
     }
   }
 
-  private static boolean isMessageContained(SingerMessage message, Collection<SingerMessage> collection) {
+  private static boolean isMessagePartiallyContained(SingerMessage message, Collection<SingerMessage> collection) {
     for (SingerMessage containedMessage : collection) {
       if (!message.getType().equals(containedMessage.getType())) {
         continue;
       }
-
       // We might not want to check that all fields are the same to pass a test e.g: time_extracted isn't
       // something we want a test to fail over.
-      // So we check for equality of a field only if the provided message has that field set. Only
-      // exception is a message type since it's a required field.
-      if (!isEqualIfSet(message.getBookmarkProperties(), containedMessage.getBookmarkProperties()) ||
-          !isEqualIfSet(message.getKeyProperties(), containedMessage.getKeyProperties()) ||
-          !isEqualIfSet(message.getRecord(), containedMessage.getRecord()) ||
-          !isEqualIfSet(message.getSchema(), containedMessage.getSchema()) ||
-          !isEqualIfSet(message.getStream(), containedMessage.getStream()) ||
-          !isEqualIfSet(message.getTimeExtracted(), containedMessage.getTimeExtracted()) ||
-          !isEqualIfSet(message.getValue(), containedMessage.getValue())) {
-        continue;
+      // So we copy those "irrelevant" fields to the message before checking for equality
+      message.setTimeExtracted(containedMessage.getTimeExtracted());
+      // the value field is used for state messages -- no need to compare the exact state messages
+      message.setValue(containedMessage.getValue());
+      // additional props are not part of the spec
+      containedMessage.getAdditionalProperties().forEach(message::setAdditionalProperty);
+
+      if (message.equals(containedMessage)) {
+        return true;
       }
-      return true;
     }
     return false;
-  }
-
-  private static boolean isEqualIfSet(Object thiz, Object that) {
-    return thiz == null || thiz.equals(that);
   }
 
   @Test
