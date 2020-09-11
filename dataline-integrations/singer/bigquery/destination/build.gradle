@@ -59,5 +59,4 @@ dependencies {
     integrationTestImplementation 'org.apache.commons:commons-text:1.9'
 
     integrationTestImplementation project(':dataline-workers')
-    integrationTestImplementation project(':dataline-workers')
 }
