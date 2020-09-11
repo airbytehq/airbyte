@@ -32,10 +32,17 @@ dependencies {
     integrationTestImplementation project(':dataline-singer')
 }
 
+def image = "dataline/integration-singer-postgres-source:latest"
+task imageName {
+    doLast {
+        println "IMAGE $image"
+    }
+}
+
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 task buildImage(type: DockerBuildImage) {
     inputDir = file('.')
-    images.add('dataline/integration-singer-postgres-source:latest')
+    images.add(image)
 }
 
 task integrationTest(type: Test) {
