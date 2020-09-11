@@ -24,11 +24,18 @@
 
 package io.dataline.commons.io;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.google.common.collect.Iterables;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 
 class IOsTest {
@@ -43,6 +50,40 @@ class IOsTest {
     assertEquals(
         "abc",
         IOs.readFile(path, "file"));
+  }
+
+  @Test
+  public void testGetTailDoesNotExist() throws IOException {
+    List<String> tail = IOs.getTail(100, RandomStringUtils.random(100));
+    assertEquals(Collections.emptyList(), tail);
+  }
+
+  @Test
+  public void testGetTailExists() throws IOException {
+    Path stdoutFile = Files.createTempFile("job-history-handler-test", "stdout");
+
+    List<String> head = List.of(
+        "line1",
+        "line2",
+        "line3",
+        "line4");
+
+    List<String> expectedTail = List.of(
+        "line5",
+        "line6",
+        "line7",
+        "line8");
+
+    Writer writer = new BufferedWriter(new FileWriter(stdoutFile.toString(), true));
+
+    for (String line : Iterables.concat(head, expectedTail)) {
+      writer.write(line + "\n");
+    }
+
+    writer.close();
+
+    List<String> tail = IOs.getTail(expectedTail.size(), stdoutFile.toString());
+    assertEquals(expectedTail, tail);
   }
 
 }
