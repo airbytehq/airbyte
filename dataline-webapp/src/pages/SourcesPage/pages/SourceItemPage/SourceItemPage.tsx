@@ -22,8 +22,6 @@ const SourceItemPage: React.FC = () => {
     connectionId: query.id
   });
 
-  // TODO: add redirect for connectionId with error
-
   const steps = [
     {
       id: "status",
@@ -71,7 +69,13 @@ const SourceItemPage: React.FC = () => {
       );
     }
     if (currentStep === "schema") {
-      return <SchemaView />;
+      return (
+        <SchemaView
+          syncSchema={connection.syncSchema}
+          connectionId={connection.connectionId}
+          connectionStatus={connection.status}
+        />
+      );
     }
 
     return <SettingsView sourceData={connection} />;

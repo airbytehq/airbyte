@@ -1,6 +1,7 @@
 .gradle
 .idea
 build
+!tools/build
 .DS_Store
 dataline-db/pg_data/*
 data

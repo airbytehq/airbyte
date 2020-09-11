@@ -1,10 +1,21 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
+import { useFetcher } from "rest-hooks";
 
 import ContentCard from "../../../../../components/ContentCard";
 import Button from "../../../../../components/Button";
 import TreeView from "../../../../../components/TreeView";
+import ConnectionResource, {
+  SyncSchema
+} from "../../../../../core/resources/Connection";
+import EmptySyncHistory from "./EmptySyncHistory";
+
+type IProps = {
+  connectionId: string;
+  connectionStatus: string;
+  syncSchema: SyncSchema;
+};
 
 const Content = styled.div`
   max-width: 806px;
@@ -20,56 +31,88 @@ const SaveButton = styled(Button)`
   margin-left: 11px;
 `;
 
-const SchemaView: React.FC = () => {
+const SchemaView: React.FC<IProps> = ({
+  syncSchema,
+  connectionId,
+  connectionStatus
+}) => {
+  const updateConnection = useFetcher(ConnectionResource.updateShape());
   const initialChecked: Array<string> = [];
+  syncSchema.tables.map(item =>
+    item.columns.forEach(column =>
+      column.selected ? initialChecked.push(column.name) : null
+    )
+  );
 
   const [disabledButtons, setDisabledButtons] = useState(true);
-  const [checkedState, setChekedState] = useState(initialChecked);
+  const [checkedState, setCheckedState] = useState(initialChecked);
 
-  const nodes = [
-    {
-      value: "table",
-      label: "Table 1",
-      children: [
-        { value: "c1", label: "Column 1" },
-        { value: "c2", label: "Column 2" },
-        { value: "c3", label: "Column 3" },
-        { value: "c4", label: "Column 4" }
-      ]
-    },
-    {
-      value: "table 2",
-      label: "Table 2",
-      children: [
-        { value: "c5", label: "Column 5" },
-        { value: "c6", label: "Column 6" }
-      ]
-    }
-  ];
+  const formSyncSchema = useMemo(
+    () =>
+      syncSchema.tables.map((item: any) => ({
+        value: item.name,
+        label: item.name,
+        children: item.columns.map((column: any) => ({
+          value: column.name,
+          label: column.name
+        }))
+      })),
+    [syncSchema.tables]
+  );
 
   const onCheckAction = (data: Array<string>) => {
     setDisabledButtons(JSON.stringify(data) === JSON.stringify(initialChecked));
-    setChekedState(data);
+    setCheckedState(data);
   };
 
-  const onCancel = () => setChekedState(initialChecked);
+  const onCancel = () => {
+    setDisabledButtons(true);
+    setCheckedState(initialChecked);
+  };
+  const onSubmit = async () => {
+    setDisabledButtons(true);
+    const newSyncSchema = {
+      tables: syncSchema.tables.map(item => ({
+        ...item,
+        columns: item.columns.map(column => ({
+          ...column,
+          selected: checkedState.includes(column.name)
+        }))
+      }))
+    };
+
+    await updateConnection(
+      {},
+      {
+        connectionId,
+        status: connectionStatus,
+        syncSchema: newSyncSchema
+      }
+    );
+  };
 
   return (
     <Content>
       <ButtonsContainer>
         <Button secondary disabled={disabledButtons} onClick={onCancel}>
-          <FormattedMessage id={"form.discardChanges"} />
+          <FormattedMessage id="form.discardChanges" />
         </Button>
-        <SaveButton disabled={disabledButtons}>
-          <FormattedMessage id={"form.saveChanges"} />
+        <SaveButton disabled={disabledButtons} onClick={onSubmit}>
+          <FormattedMessage id="form.saveChanges" />
         </SaveButton>
       </ButtonsContainer>
       <ContentCard>
-        <TreeView
-          nodes={nodes}
-          checked={checkedState}
-          onCheck={onCheckAction}
-        />
+        {!syncSchema.tables.length ? (
+          <EmptySyncHistory
+            text={<FormattedMessage id="sources.emptySchema" />}
+          />
+        ) : (
+          <TreeView
+            nodes={formSyncSchema}
+            checked={checkedState}
+            onCheck={onCheckAction}
+          />
+        )}
       </ContentCard>
     </Content>
   );
