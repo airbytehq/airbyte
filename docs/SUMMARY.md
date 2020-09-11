@@ -36,6 +36,7 @@
 * [High Level Overview](architecture/high-level-overview.md)
 * [Configuration Data Model](architecture/configuration-data-model.md)
 * [API](architecture/api.md)
+* [API2](api/io/dataline/api/client/ConnectionApi.md)
 
 ## Handbook <a id="company-handbook"></a>
 
