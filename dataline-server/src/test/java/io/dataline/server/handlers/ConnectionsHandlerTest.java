@@ -24,12 +24,6 @@
 
 package io.dataline.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.Lists;
 import io.dataline.api.model.ConnectionCreate;
 import io.dataline.api.model.ConnectionIdRequestBody;
@@ -57,6 +51,12 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ConnectionsHandlerTest {
 
@@ -96,7 +96,7 @@ class ConnectionsHandlerTest {
         .destinationImplementationId(standardSync.getDestinationImplementationId())
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
-        .syncMode(ConnectionCreate.SyncModeEnum.APPEND)
+        .syncMode(ConnectionCreate.SyncModeEnum.FULL_REFRESH)
         .schedule(ConnectionHelpers.generateBasicSchedule())
         .syncSchema(ConnectionHelpers.generateBasicApiSchema());
 
