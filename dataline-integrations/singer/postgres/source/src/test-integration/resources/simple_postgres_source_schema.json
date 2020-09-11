@@ -2,7 +2,7 @@
   "tables": [
     {
       "name": "id_and_name",
-      "selected": true,
+      "selected": false,
       "columns": [
         {
           "name": "name",

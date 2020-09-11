@@ -69,7 +69,7 @@
     },
     "SingerColumn": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["type"],
       "properties": {
         "type": {
