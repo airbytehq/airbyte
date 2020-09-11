@@ -119,7 +119,7 @@ public class SchedulerHandler {
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
     final StandardDiscoverSchemaOutput output = job.getOutput().map(JobOutput::getDiscoverSchema)
-        // the job should always produce an output, but if does not we fall back on an empty schema.
+        // the job should always produce an output, but if does not, we fall back on an empty schema.
         .orElse(new StandardDiscoverSchemaOutput().withSchema(new Schema().withTables(Collections.emptyList())));
 
     LOGGER.debug("output = " + output);
@@ -182,7 +182,7 @@ public class SchedulerHandler {
 
   private CheckConnectionRead reportConnectionStatus(final Job job) {
     final StandardCheckConnectionOutput output = job.getOutput().map(JobOutput::getCheckConnection)
-        // the job should always produce an output, but if does not we assume a failure.
+        // the job should always produce an output, but if it does not, we assume a failure.
         .orElse(new StandardCheckConnectionOutput().withStatus(StandardCheckConnectionOutput.Status.FAILURE));
 
     return new CheckConnectionRead()
