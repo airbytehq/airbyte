@@ -58,7 +58,7 @@ We love contributions to Dataline, big or small. See our [Contributing Guide](ht
 
 For general help using Dataline, please refer to the official Dataline documentation. For additional help, you can use one of these channels to ask a question:
 
-* [Slack](https://join.slack.com/t/datalineusers/shared_invite/zt-gj10ijyq-ZcUVTnUJWpD4eKICy0RU2A) \(For live discussion with the Community and Dataline team\)
+* [Slack](https://join.slack.com/t/datalinehq/shared_invite/zt-h5m88w3a-twQ_6AF9e8SnAzOIkHu2VQ) \(For live discussion with the Community and Dataline team\)
 * [GitHub](https://github.com/datalineio/dataline) \(Bug reports, Contributions\)
 * [Twitter](https://twitter.com/datalinehq) \(Get the news fast\)
 

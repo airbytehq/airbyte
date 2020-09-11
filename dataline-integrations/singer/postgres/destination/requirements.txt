@@ -1,0 +1,2 @@
+psycopg2-binary == 2.8.5
+singer-target-postgres == 0.2.4

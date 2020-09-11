@@ -24,14 +24,25 @@
 
 package io.dataline.integration_tests.destinations;
 
+import static io.dataline.workers.JobStatus.FAILED;
+import static io.dataline.workers.JobStatus.SUCCESSFUL;
 import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.dataline.commons.json.Jsons;
+import io.dataline.config.StandardCheckConnectionInput;
+import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.workers.InvalidCatalogException;
+import io.dataline.workers.InvalidCredentialsException;
+import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
 import io.dataline.workers.process.ProcessBuilderFactory;
+import io.dataline.workers.singer.SingerCheckConnectionWorker;
+import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,15 +57,13 @@ import org.jooq.Record;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 class TestPostgresDestination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TestPostgresDestination.class);
-
+  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-destination:dev";
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
+  private static final String CONFIG_FILENAME = "config.json";
 
   protected Path jobRoot;
   protected Path workspaceRoot;
@@ -75,9 +84,6 @@ class TestPostgresDestination {
     Files.createDirectories(jobRoot);
 
     pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
-
-    writeConfigFileToJobRoot();
-    process = startTarget();
   }
 
   @AfterEach
@@ -88,6 +94,9 @@ class TestPostgresDestination {
 
   @Test
   public void runTest() throws IOException, InterruptedException, SQLException {
+    writeConfigFileToJobRoot(Jsons.serialize(getDbConfig()));
+    process = startTarget();
+
     List<String> expectedList =
         Arrays.asList(
             "('1598659200', '2.12999999999999989', '0.119999999999999996', null)",
@@ -104,15 +113,37 @@ class TestPostgresDestination {
     assertLinesMatch(expectedList, actualList);
   }
 
+  @Test
+  public void testConnectionSuccessful() throws InvalidCredentialsException, InvalidCatalogException {
+    SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
+    StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig()));
+    OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
+    assertEquals(SUCCESSFUL, run.getStatus());
+    assertTrue(run.getOutput().isPresent());
+    assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, run.getOutput().get().getStatus());
+  }
+
+  @Test
+  public void testConnectionUnsuccessfulInvalidCreds() throws InvalidCredentialsException, InvalidCatalogException {
+    SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
+    Map<String, Object> dbConfig = getDbConfig();
+    dbConfig.put("postgres_password", "superfakepassword_nowaythisworks");
+    StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(dbConfig));
+
+    OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
+    assertEquals(FAILED, run.getStatus());
+    assertTrue(run.getOutput().isPresent());
+    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
+  }
+
   private Process startTarget() throws IOException {
-    return pbf.create(
-        jobRoot, "dataline/integration-singer-postgres-destination", "--config", "config.json")
+    return pbf.create(jobRoot, IMAGE_NAME, "--config", CONFIG_FILENAME)
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
   }
 
-  private void writeConfigFileToJobRoot() throws IOException {
+  private Map<String, Object> getDbConfig() {
     Map<String, Object> fullConfig = new HashMap<>();
 
     fullConfig.put("postgres_host", PSQL.getHost());
@@ -120,8 +151,11 @@ class TestPostgresDestination {
     fullConfig.put("postgres_username", PSQL.getUsername());
     fullConfig.put("postgres_password", PSQL.getPassword());
     fullConfig.put("postgres_database", PSQL.getDatabaseName());
+    return fullConfig;
+  }
 
-    Files.writeString(Path.of(jobRoot.toString(), "config.json"), Jsons.serialize(fullConfig));
+  private void writeConfigFileToJobRoot(String fileContent) throws IOException {
+    Files.writeString(Path.of(jobRoot.toString(), "config.json"), fileContent);
   }
 
   private void writeResourceToStdIn(String resourceName, Process process) throws IOException {

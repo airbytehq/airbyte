@@ -37,6 +37,7 @@ public class EnvConfigs implements Configs {
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
   public static final String CONFIG_ROOT = "CONFIG_ROOT";
   public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
+  public static final String TRACKING_STRATEGY = "TRACKING_STRATEGY";
 
   public static final String DEFAULT_NETWORK = "host";
 
@@ -81,6 +82,22 @@ public class EnvConfigs implements Configs {
 
     LOGGER.info(DOCKER_NETWORK + " not found, defaulting to " + DEFAULT_NETWORK);
     return DEFAULT_NETWORK;
+  }
+
+  @Override
+  public TrackingStrategy getTrackingStrategy() {
+    final String trackingStrategy = getEnv.apply(TRACKING_STRATEGY);
+    if (trackingStrategy == null) {
+      LOGGER.info("TRACKING_STRATEGY not set, defaulting to " + TrackingStrategy.LOGGING);
+      return TrackingStrategy.LOGGING;
+    }
+
+    try {
+      return TrackingStrategy.valueOf(trackingStrategy.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      LOGGER.info(trackingStrategy + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
+      return TrackingStrategy.LOGGING;
+    }
   }
 
   private Path getPath(final String name) {

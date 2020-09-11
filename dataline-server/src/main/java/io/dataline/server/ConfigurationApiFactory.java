@@ -24,18 +24,18 @@
 
 package io.dataline.server;
 
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.server.apis.ConfigurationApi;
-import java.nio.file.Path;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.glassfish.hk2.api.Factory;
 
 public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
 
-  private static Path dbRoot;
+  private static ConfigRepository configRepository;
   private static BasicDataSource connectionPool;
 
-  public static void setConfigPersistenceRoot(final Path dbRoot) {
-    ConfigurationApiFactory.dbRoot = dbRoot;
+  public static void setConfigRepository(final ConfigRepository configRepository) {
+    ConfigurationApiFactory.configRepository = configRepository;
   }
 
   public static void setDbConnectionPool(final BasicDataSource connectionPool) {
@@ -44,8 +44,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
 
   @Override
   public ConfigurationApi provide() {
-    return new ConfigurationApi(
-        ConfigurationApiFactory.dbRoot, ConfigurationApiFactory.connectionPool);
+    return new ConfigurationApi(ConfigurationApiFactory.configRepository, ConfigurationApiFactory.connectionPool);
   }
 
   @Override

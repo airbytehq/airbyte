@@ -1,5 +1,7 @@
 FROM python:3.7-alpine
 
+LABEL io.dataline.version=1.0.0
+
 WORKDIR /singer
 
 ENV VIRTUAL_ENV=/singer/env

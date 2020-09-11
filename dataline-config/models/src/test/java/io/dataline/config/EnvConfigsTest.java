@@ -38,6 +38,7 @@ class EnvConfigsTest {
   private Function<String, String> function;
   private EnvConfigs config;
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
     function = Mockito.mock(Function.class);
@@ -89,6 +90,24 @@ class EnvConfigsTest {
 
     when(function.apply(EnvConfigs.DOCKER_NETWORK)).thenReturn("abc");
     Assertions.assertEquals("abc", config.getDockerNetwork());
+  }
+
+  @Test
+  void testTrackingStrategy() {
+    when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn(null);
+    Assertions.assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
+
+    when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn("abc");
+    Assertions.assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
+
+    when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn("logging");
+    Assertions.assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
+
+    when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn("segment");
+    Assertions.assertEquals(Configs.TrackingStrategy.SEGMENT, config.getTrackingStrategy());
+
+    when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn("LOGGING");
+    Assertions.assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
   }
 
 }

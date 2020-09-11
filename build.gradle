@@ -68,6 +68,8 @@ subprojects {
 
     spotless {
         java {
+            targetExclude "build/generated/**/*.*"
+
             importOrder()
 
             eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
@@ -86,6 +88,7 @@ subprojects {
         }
         format 'styling', {
             target '**/*.json', '**/*.yaml'
+            targetExclude "build/generated/**/*.*"
 
             prettier()
         }
@@ -109,6 +112,9 @@ subprojects {
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.10.4"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
 
+        // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
+        implementation 'com.fasterxml.jackson.core:jackson-databind'
+        implementation 'com.fasterxml.jackson.core:jackson-annotations'
 
         implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 

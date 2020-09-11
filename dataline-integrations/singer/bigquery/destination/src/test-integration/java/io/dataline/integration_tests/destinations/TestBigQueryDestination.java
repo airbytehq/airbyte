@@ -65,6 +65,7 @@ class TestBigQueryDestination {
   private static final Logger LOGGER = LoggerFactory.getLogger(TestBigQueryDestination.class);
 
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
+  private static final String IMAGE_NAME = "dataline/integration-singer-bigquery-destination:dev";
 
   protected Path jobRoot;
   protected Path workspaceRoot;
@@ -78,6 +79,7 @@ class TestBigQueryDestination {
 
   @BeforeEach
   public void setUpBigQuery() throws IOException {
+
     Files.createDirectories(TESTS_PATH);
     workspaceRoot = Files.createTempDirectory(TESTS_PATH, "dataline-integration");
     jobRoot = Path.of(workspaceRoot.toString(), "job");
@@ -152,7 +154,7 @@ class TestBigQueryDestination {
   private Process startTarget() throws IOException {
     return pbf.create(
         jobRoot,
-        "dataline/integration-singer-bigquery-destination",
+        IMAGE_NAME,
         "--config",
         "rendered_bigquery.json")
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
@@ -167,9 +169,8 @@ class TestBigQueryDestination {
     Map<String, Object> fullConfig = new HashMap<>();
 
     fullConfig.put("project_id", credentials.get("project_id").textValue());
-    fullConfig.put("credentials_json", credentialsJsonString);
     fullConfig.put("dataset_id", datasetName);
-    fullConfig.put("disable_collection", true);
+    fullConfig.put("credentials_json", credentialsJsonString);
     fullConfig.put("default_target_schema", datasetName);
 
     Files.writeString(

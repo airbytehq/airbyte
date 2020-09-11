@@ -9,6 +9,7 @@ import { IDataItem } from "../../DropDown/components/ListItem";
 import Instruction from "./Instruction";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
 import { specification } from "../../../core/resources/SourceSpecification";
+import LabeledToggle from "../../LabeledToggle";
 
 type IProps = {
   isEditMode?: boolean;
@@ -115,6 +116,28 @@ const FormContent: React.FC<IProps> = ({
 
       {properties?.map(item => {
         const condition = specifications?.properties[item];
+
+        if (condition.type === "boolean") {
+          return (
+            <FormItem key={`form-field-${item}`}>
+              <Field name={item}>
+                {({ field }: FieldProps<string>) => (
+                  <LabeledToggle
+                    {...field}
+                    label={
+                      condition.title || (
+                        <FormattedMessage
+                          id={`form.${item}`}
+                          defaultMessage={item}
+                        />
+                      )
+                    }
+                  />
+                )}
+              </Field>
+            </FormItem>
+          );
+        }
 
         return (
           <FormItem key={`form-field-${item}`}>

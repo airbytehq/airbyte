@@ -36,4 +36,11 @@ public interface Configs {
 
   String getDockerNetwork();
 
+  TrackingStrategy getTrackingStrategy();
+
+  enum TrackingStrategy {
+    SEGMENT,
+    LOGGING
+  }
+
 }

@@ -1,2 +1,0 @@
-# With Kubernetes
-
