@@ -1,6 +1,6 @@
 FROM python:3.7-alpine
 
-LABEL io.dataline.version=1.0.0
+LABEL io.dataline.version=0.1.1
 
 WORKDIR /singer
 
