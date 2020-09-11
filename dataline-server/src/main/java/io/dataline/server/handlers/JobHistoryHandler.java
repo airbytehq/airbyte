@@ -33,7 +33,7 @@ import io.dataline.api.model.JobRead;
 import io.dataline.api.model.JobReadList;
 import io.dataline.api.model.LogRead;
 import io.dataline.commons.enums.Enums;
-import io.dataline.commons.io.TailHelper;
+import io.dataline.commons.io.IOs;
 import io.dataline.config.JobConfig;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.ScopeHelper;
@@ -67,8 +67,8 @@ public class JobHistoryHandler {
     Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
 
     LogRead logRead = new LogRead()
-        .stdout(TailHelper.getTail(LOG_TAIL_SIZE, job.getStdoutPath()))
-        .stderr(TailHelper.getTail(LOG_TAIL_SIZE, job.getStderrPath()));
+        .stdout(IOs.getTail(LOG_TAIL_SIZE, job.getStdoutPath()))
+        .stderr(IOs.getTail(LOG_TAIL_SIZE, job.getStderrPath()));
 
     return new JobInfoRead()
         .job(getJobRead(job))

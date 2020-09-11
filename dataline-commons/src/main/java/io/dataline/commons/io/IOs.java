@@ -24,10 +24,16 @@
 
 package io.dataline.commons.io;
 
+import com.google.common.base.Charsets;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.apache.commons.io.input.ReversedLinesFileReader;
 
 public class IOs {
 
@@ -46,6 +52,27 @@ public class IOs {
       return Files.readString(path.resolve(fileName), StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public static List<String> getTail(int numLines, String path) throws IOException {
+    File file = new File(path);
+
+    if (file.exists()) {
+      try (ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
+        List<String> lines = new ArrayList<>();
+
+        String line;
+        while ((line = fileReader.readLine()) != null && lines.size() < numLines) {
+          lines.add(line);
+        }
+
+        Collections.reverse(lines);
+
+        return lines;
+      }
+    } else {
+      return Collections.emptyList();
     }
   }
 
