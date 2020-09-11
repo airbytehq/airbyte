@@ -6,7 +6,7 @@
 ## Deployment
 
 * [Deploying Dataline](deployment/deploying-dataline/README.md)
-  * [With Docker](deployment/deploying-dataline/with-docker.md)
+  * [On your workstation](deployment/deploying-dataline/with-docker.md)
   * [On AWS \(EC2\)](deployment/deploying-dataline/on-aws-ec2.md)
   * [On GCP \(Compute Engine\)](deployment/deploying-dataline/on-gcp-compute-engine.md)
   * [From Sources](deployment/deploying-dataline/from-sources.md)
