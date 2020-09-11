@@ -24,7 +24,7 @@
 
 package io.dataline.server.handlers;
 
-import com.google.common.base.Charsets;
+import com.google.common.annotations.VisibleForTesting;
 import io.dataline.api.model.JobConfigType;
 import io.dataline.api.model.JobIdRequestBody;
 import io.dataline.api.model.JobInfoRead;
@@ -33,17 +33,14 @@ import io.dataline.api.model.JobRead;
 import io.dataline.api.model.JobReadList;
 import io.dataline.api.model.LogRead;
 import io.dataline.commons.enums.Enums;
+import io.dataline.commons.io.IOs;
 import io.dataline.config.JobConfig;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.ScopeHelper;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.io.input.ReversedLinesFileReader;
 
 public class JobHistoryHandler {
 
@@ -58,7 +55,6 @@ public class JobHistoryHandler {
     JobConfig.ConfigType configType = Enums.convertTo(request.getConfigType(), JobConfig.ConfigType.class);
     String configId = request.getConfigId();
 
-    // todo: use functions for scope scoping
     List<JobRead> jobReads = schedulerPersistence.listJobs(configType, configId)
         .stream()
         .map(JobHistoryHandler::getJobRead)
@@ -71,31 +67,16 @@ public class JobHistoryHandler {
     Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
 
     LogRead logRead = new LogRead()
-        .stdout(getTail(LOG_TAIL_SIZE, job.getStdoutPath()))
-        .stderr(getTail(LOG_TAIL_SIZE, job.getStderrPath()));
+        .stdout(IOs.getTail(LOG_TAIL_SIZE, job.getStdoutPath()))
+        .stderr(IOs.getTail(LOG_TAIL_SIZE, job.getStderrPath()));
 
     return new JobInfoRead()
         .job(getJobRead(job))
         .logs(logRead);
   }
 
-  private static List<String> getTail(int numLines, String path) throws IOException {
-    File file = new File(path);
-    try (ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
-      List<String> lines = new ArrayList<>();
-
-      String line;
-      while ((line = fileReader.readLine()) != null && lines.size() < numLines) {
-        lines.add(line);
-      }
-
-      Collections.reverse(lines);
-
-      return lines;
-    }
-  }
-
-  private static JobRead getJobRead(Job job) {
+  @VisibleForTesting
+  protected static JobRead getJobRead(Job job) {
     String configId = ScopeHelper.getConfigId(job.getScope());
     JobConfigType configType = Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
 
