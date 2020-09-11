@@ -24,9 +24,6 @@
 
 package io.dataline.integrations.io.dataline.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.json.Jsons;
 import io.dataline.commons.resources.MoreResources;
@@ -38,8 +35,8 @@ import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardTapConfig;
-import io.dataline.db.PostgreSQLContainerHelper;
 import io.dataline.singer.SingerMessage;
+import io.dataline.test.utils.PostgreSQLContainerHelper;
 import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
@@ -67,6 +64,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SingerPostgresSourceTest {
 
@@ -132,7 +132,7 @@ public class SingerPostgresSourceTest {
     assertMessagesEquivalent(expectedMessages, actualMessages);
 
     // test incremental: insert a few more records then run another sync
-    // PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_update.sql"),
+    // io.dataline.test.utils.PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_update.sql"),
     // psqlDb);
     //
     // StandardSync incrementalStandardSync = new

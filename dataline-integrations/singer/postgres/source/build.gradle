@@ -28,7 +28,7 @@ dependencies {
 
     integrationTestImplementation project(':dataline-config:models')
     integrationTestImplementation project(':dataline-workers')
-    integrationTestImplementation project(':dataline-db')
+    integrationTestImplementation project(':dataline-test-utils')
     integrationTestImplementation project(':dataline-singer')
 }
 
