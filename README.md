@@ -22,22 +22,15 @@ Dataline is on a mission to make data integration pipelines a commodity.
 
 The new open-source standard for data integration engine that syncs data from applications & databases to warehouses.
 
-## Getting Started
-
-### Quick start
+## Quick start
 
 ```bash
+git clone git@github.com:datalineio/dataline.git
+cd dataline
 docker-compose up
 ```
 
 Now go to [http://localhost:8000](http://localhost:8000)
-
-### Update images
-
-```bash
-docker-compose -f docker-compose.build.yaml build
-docker-compose -f docker-compose.build.yaml push
-```
 
 ## Features
 
