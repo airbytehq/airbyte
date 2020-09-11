@@ -9,28 +9,25 @@
       "project_id",
       "dataset_id",
       "credentials_json",
-      "disable_collection",
-      "replication_method"
+      "default_target_schema"
     ],
     "additionalProperties": false,
     "properties": {
       "project_id": {
-        "type": "string"
+        "type": "string",
+        "description": "The GCP project ID for the project containing the target BigQuery dataset."
       },
       "dataset_id": {
-        "type": "string"
-      },
-      "validate_records": {
-        "type": "boolean"
+        "type": "string",
+        "description": "The BigQuery dataset id that will house replicated tables."
       },
       "credentials_json": {
-        "type": "string"
+        "type": "string",
+        "description": "The contents of the JSON service account key. This is the contents of the file path usually specified in GOOGLE_APPLICATION_CREDENTIALS. The service account for this key must have BigQuery User access to the specified project and dataset."
       },
-      "disable_collection": {
-        "type": "boolean"
-      },
-      "replication_method": {
-        "type": "string"
+      "default_target_schema": {
+        "type": "string",
+        "description": "Name of the schema where the tables will be created. In most cases this should match the dataset_id."
       }
     }
   }
