@@ -1,7 +1,5 @@
 FROM python:3.7-slim
 
-LABEL io.dataline.version=0.1.1
-
 WORKDIR /singer
 
 ENV VIRTUAL_ENV=/singer/env
@@ -14,3 +12,5 @@ RUN python -m pip install --upgrade pip && \
   pip install -r requirements.txt
 
 ENTRYPOINT ["target-csv"]
+
+LABEL io.dataline.version=0.1.1

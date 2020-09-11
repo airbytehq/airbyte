@@ -3,9 +3,6 @@
 #####################
 FROM ubuntu:20.04
 
-LABEL io.dataline.image=dataline/build-base
-LABEL io.dataline.version=1.0.0
-
 WORKDIR /code
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -18,3 +15,7 @@ RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get update && apt-get -y install \
   nodejs \
   openjdk-14-jdk
+
+
+LABEL io.dataline.image=dataline/build-base
+LABEL io.dataline.version=1.0.0
