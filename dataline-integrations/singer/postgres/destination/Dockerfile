@@ -1,7 +1,5 @@
 FROM python:3.7-slim
 
-LABEL io.dataline.version=1.0.0
-
 WORKDIR /singer
 
 ENV VIRTUAL_ENV=/singer/env
@@ -22,3 +20,5 @@ RUN apt-get update && \
   pip install -r requirements.txt
 
 ENTRYPOINT ["/run.sh"]
+
+LABEL io.dataline.version=0.1.1

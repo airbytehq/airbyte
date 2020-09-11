@@ -1,7 +1,5 @@
 FROM python:3.7-alpine
 
-LABEL io.dataline.version=1.0.0
-
 WORKDIR /singer
 
 ENV VIRTUAL_ENV=/singer/env
@@ -18,3 +16,5 @@ RUN python -m pip install --upgrade pip && \
 COPY bigquery-destination.sh /singer/bigquery-destination.sh
 
 ENTRYPOINT ["sh", "/singer/bigquery-destination.sh"]
+
+LABEL io.dataline.version=0.1.1

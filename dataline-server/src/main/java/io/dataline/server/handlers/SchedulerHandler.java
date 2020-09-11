@@ -34,6 +34,8 @@ import io.dataline.api.model.SourceImplementationDiscoverSchemaRead;
 import io.dataline.api.model.SourceImplementationIdRequestBody;
 import io.dataline.commons.enums.Enums;
 import io.dataline.config.DestinationConnectionImplementation;
+import io.dataline.config.JobOutput;
+import io.dataline.config.Schema;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
@@ -46,6 +48,7 @@ import io.dataline.scheduler.JobStatus;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.server.converters.SchemaConverter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,10 +118,9 @@ public class SchedulerHandler {
     LOGGER.debug("jobId = " + jobId);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
-    final StandardDiscoverSchemaOutput output =
-        job.getOutput()
-            .orElseThrow(() -> new RuntimeException("Terminal job does not have an output"))
-            .getDiscoverSchema();
+    final StandardDiscoverSchemaOutput output = job.getOutput().map(JobOutput::getDiscoverSchema)
+        // the job should always produce an output, but if does not, we fall back on an empty schema.
+        .orElse(new StandardDiscoverSchemaOutput().withSchema(new Schema().withTables(Collections.emptyList())));
 
     LOGGER.debug("output = " + output);
 
@@ -179,9 +181,9 @@ public class SchedulerHandler {
   }
 
   private CheckConnectionRead reportConnectionStatus(final Job job) {
-    final StandardCheckConnectionOutput output = job.getOutput()
-        .orElseThrow(() -> new RuntimeException("Terminal job does not have an output"))
-        .getCheckConnection();
+    final StandardCheckConnectionOutput output = job.getOutput().map(JobOutput::getCheckConnection)
+        // the job should always produce an output, but if it does not, we assume a failure.
+        .orElse(new StandardCheckConnectionOutput().withStatus(StandardCheckConnectionOutput.Status.FAILURE));
 
     return new CheckConnectionRead()
         .status(Enums.convertTo(output.getStatus(), CheckConnectionRead.StatusEnum.class))
