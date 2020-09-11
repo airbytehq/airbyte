@@ -52,7 +52,7 @@ public class ConnectionHelpers {
         .withSchema(generateBasicPersistenceSchema())
         .withSourceImplementationId(sourceImplementationId)
         .withDestinationImplementationId(UUID.randomUUID())
-        .withSyncMode(StandardSync.SyncMode.APPEND);
+        .withSyncMode(StandardSync.SyncMode.FULL_REFRESH);
   }
 
   public static Schema generateBasicPersistenceSchema() {
@@ -99,7 +99,7 @@ public class ConnectionHelpers {
         .destinationImplementationId(destinationImplementationId)
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
-        .syncMode(ConnectionRead.SyncModeEnum.APPEND)
+        .syncMode(ConnectionRead.SyncModeEnum.FULL_REFRESH)
         .schedule(generateBasicSchedule())
         .syncSchema(ConnectionHelpers.generateBasicApiSchema());
   }
