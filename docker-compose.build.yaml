@@ -1,42 +1,41 @@
 version: '3.7'
 
 services:
-  db:
-    image: dataline/db:dev
-    build:
-      dockerfile: Dockerfile.database
-      context: .
-      labels:
-        io.dataline.git-revision: ${GIT_REVISION}
-  seed:
-    image: dataline/seed:dev
-    build:
-      dockerfile: Dockerfile.build
-      target: seed
-      context: .
-      labels:
-        io.dataline.git-revision: ${GIT_REVISION}
-  scheduler:
-    image: dataline/scheduler:dev
-    build:
-      dockerfile: Dockerfile.build
-      target: scheduler
-      context: .
-      labels:
-        io.dataline.git-revision: ${GIT_REVISION}
-  server:
-    image: dataline/server:dev
-    build:
-      dockerfile: Dockerfile.build
-      target: server
-      context: .
-      labels:
-        io.dataline.git-revision: ${GIT_REVISION}
+#  db:
+#    image: dataline/db:dev
+#    build:
+#      dockerfile: Dockerfile.database
+#      context: .
+#      labels:
+#        io.dataline.git-revision: ${GIT_REVISION}
+#  seed:
+#    image: dataline/seed:dev
+#    build:
+#      dockerfile: Dockerfile.build
+#      target: seed
+#      context: .
+#      labels:
+#        io.dataline.git-revision: ${GIT_REVISION}
+#  scheduler:
+#    image: dataline/scheduler:dev
+#    build:
+#      dockerfile: Dockerfile.build
+#      target: scheduler
+#      context: .
+#      labels:
+#        io.dataline.git-revision: ${GIT_REVISION}
+#  server:
+#    image: dataline/server:dev
+#    build:
+#      dockerfile: Dockerfile.build
+#      target: server
+#      context: .
+#      labels:
+#        io.dataline.git-revision: ${GIT_REVISION}
   webapp:
     image: dataline/webapp:dev
     build:
-      dockerfile: Dockerfile.build
-      target: webapp
-      context: .
+      dockerfile: Dockerfile
+      context: dataline-webapp
       labels:
         io.dataline.git-revision: ${GIT_REVISION}
