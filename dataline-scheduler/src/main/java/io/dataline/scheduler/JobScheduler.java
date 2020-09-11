@@ -25,11 +25,11 @@
 package io.dataline.scheduler;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.commons.json.JsonValidationException;
 import io.dataline.scheduler.job_factory.DefaultSyncJobFactory;
 import io.dataline.scheduler.job_factory.SyncJobFactory;
 import io.dataline.scheduler.persistence.SchedulerPersistence;

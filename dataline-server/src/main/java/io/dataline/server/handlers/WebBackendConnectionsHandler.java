@@ -36,8 +36,8 @@ import io.dataline.api.model.WbConnectionRead;
 import io.dataline.api.model.WbConnectionReadList;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.enums.Enums;
-import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.commons.json.JsonValidationException;
+import io.dataline.config.persistence.ConfigNotFoundException;
 import java.io.IOException;
 import java.util.List;
 

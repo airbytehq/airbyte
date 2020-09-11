@@ -147,4 +147,5 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
+
 }
