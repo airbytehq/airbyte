@@ -25,6 +25,9 @@
 package io.dataline.workers.protocol.singer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.dataline.commons.json.Jsons;
 import io.dataline.singer.SingerMessage;
@@ -34,6 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("StringBufferReplaceableByString")
@@ -41,6 +45,14 @@ class SingerJsonStreamFactoryTest {
 
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
+
+  private SingerProtocolPredicate singerProtocolPredicate;
+
+  @BeforeEach
+  public void setup() {
+    singerProtocolPredicate = mock(SingerProtocolPredicate.class);
+    when(singerProtocolPredicate.test(any())).thenReturn(true);
+  }
 
   @Test
   public void testValid() {
@@ -154,10 +166,10 @@ class SingerJsonStreamFactoryTest {
   // expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
   // }
 
-  private static Stream<SingerMessage> stringToSingerMessageStream(String inputString) {
+  private Stream<SingerMessage> stringToSingerMessageStream(String inputString) {
     InputStream inputStream = new ByteArrayInputStream(inputString.getBytes());
     final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-    return new SingerJsonStreamFactory().create(bufferedReader);
+    return new SingerJsonStreamFactory(singerProtocolPredicate).create(bufferedReader);
   }
 
 }

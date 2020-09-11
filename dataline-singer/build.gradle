@@ -7,6 +7,7 @@ dependencies {
 }
 
 jsonSchema2Pojo {
+    source = files("${sourceSets.main.output.resourcesDir}/singer_json")
     targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
 
     targetPackage = 'io.dataline.singer'
