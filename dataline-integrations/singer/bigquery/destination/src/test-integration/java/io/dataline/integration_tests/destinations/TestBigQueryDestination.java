@@ -169,9 +169,8 @@ class TestBigQueryDestination {
     Map<String, Object> fullConfig = new HashMap<>();
 
     fullConfig.put("project_id", credentials.get("project_id").textValue());
-    fullConfig.put("credentials_json", credentialsJsonString);
     fullConfig.put("dataset_id", datasetName);
-    fullConfig.put("disable_collection", true);
+    fullConfig.put("credentials_json", credentialsJsonString);
     fullConfig.put("default_target_schema", datasetName);
 
     Files.writeString(
