@@ -24,6 +24,9 @@
 
 package io.dataline.integration_tests.destinations;
 
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -55,9 +58,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 class TestBigQueryDestination {
 
@@ -171,6 +171,7 @@ class TestBigQueryDestination {
     fullConfig.put("project_id", credentials.get("project_id").textValue());
     fullConfig.put("dataset_id", datasetName);
     fullConfig.put("credentials_json", credentialsJsonString);
+    fullConfig.put("default_target_schema", datasetName);
 
     Files.writeString(
         Path.of(jobRoot.toString(), "rendered_bigquery.json"), Jsons.serialize(fullConfig));
