@@ -69,7 +69,7 @@ public class ConnectionsHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID connectionId = uuidGenerator.get();
 
-    // todo (cgardens): for MVP we only support append.
+    // todo (cgardens): for MVP we only support full refresh.
     if (connectionCreate.getSyncMode() != ConnectionCreate.SyncModeEnum.FULL_REFRESH) {
       throw new RuntimeException("Only FULL_REFRESH is currently supported!");
     }
