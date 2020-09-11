@@ -106,50 +106,50 @@ class SingerJsonStreamFactoryTest {
     assertEquals(
         expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
   }
+//
+//  @Test
+//  public void testMissingNewLineAndLineStartsWithValidRecord() {
+//    final SingerMessage record1 =
+//        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+//    final SingerMessage record2 =
+//        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+//
+//    final String inputString =
+//        new StringBuilder()
+//            .append(Jsons.serialize(record1))
+//            .append("{ \"fish\": \"tuna\"}")
+//            .append('\n')
+//            .append(Jsons.serialize(record2))
+//            .toString();
+//
+//    final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
+//    final Stream<SingerMessage> expectedStream = Stream.of(record1, record2);
+//
+//    assertEquals(
+//        expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
+//  }
 
-  @Test
-  public void testMissingNewLineAndLineStartsWithValidRecord() {
-    final SingerMessage record1 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
-    final SingerMessage record2 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
-
-    final String inputString =
-        new StringBuilder()
-            .append(Jsons.serialize(record1))
-            .append("{ \"fish\": \"tuna\"}")
-            .append('\n')
-            .append(Jsons.serialize(record2))
-            .toString();
-
-    final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
-    final Stream<SingerMessage> expectedStream = Stream.of(record1, record2);
-
-    assertEquals(
-        expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
-  }
-
-  @Test
-  public void testMissingNewLineAndLineStartsWithInvalidRecord() {
-    final SingerMessage record1 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
-    final SingerMessage record2 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
-
-    final String inputString =
-        new StringBuilder()
-             .append(Jsons.serialize(record1))
-             .append('\n')
-            .append("{ \"fish\": \"tuna\"}")
-             .append(Jsons.serialize(record2))
-            .toString();
-
-    final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
-    final Stream<SingerMessage> expectedStream = Stream.of(record1);
-
-    assertEquals(
-        expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
-  }
+//  @Test
+//  public void testMissingNewLineAndLineStartsWithInvalidRecord() {
+//    final SingerMessage record1 =
+//        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+//    final SingerMessage record2 =
+//        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+//
+//    final String inputString =
+//        new StringBuilder()
+//             .append(Jsons.serialize(record1))
+//             .append('\n')
+//            .append("{ \"fish\": \"tuna\"}")
+//             .append(Jsons.serialize(record2))
+//            .toString();
+//
+//    final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
+//    final Stream<SingerMessage> expectedStream = Stream.of(record1);
+//
+//    assertEquals(
+//        expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
+//  }
 
   private static Stream<SingerMessage> stringToSingerMessageStream(String inputString) {
     InputStream inputStream = new ByteArrayInputStream(inputString.getBytes());
