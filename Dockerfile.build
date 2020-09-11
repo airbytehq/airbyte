@@ -29,6 +29,7 @@ FROM nginx:1.19-alpine as webapp
 
 EXPOSE 80
 
+COPY  /code/dataline-webapp/nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /code/dataline-webapp/build /usr/share/nginx/html
 
 ####################
