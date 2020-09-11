@@ -24,6 +24,7 @@
 
 package io.dataline.config.persistence;
 
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.ConfigSchema;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.DestinationConnectionSpecification;

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.dataline.commons.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -31,7 +31,11 @@ import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import io.dataline.commons.string.Strings;
+import java.io.File;
+import java.io.IOException;
 import java.util.Set;
+import me.andrz.jackson.JsonReferenceException;
+import me.andrz.jackson.JsonReferenceProcessor;
 
 public class JsonSchemaValidator {
 
@@ -51,6 +55,10 @@ public class JsonSchemaValidator {
         .validate(objectJson);
   }
 
+  public boolean test(JsonNode schemaJson, JsonNode objectJson) {
+    return validate(schemaJson, objectJson).isEmpty();
+  }
+
   public void ensure(JsonNode schemaJson, JsonNode objectJson) throws JsonValidationException {
     final Set<ValidationMessage> validationMessages = validate(schemaJson, objectJson);
     if (validationMessages.isEmpty()) {
@@ -62,6 +70,18 @@ public class JsonSchemaValidator {
         Strings.join(validationMessages, ", "),
         schemaJson.toPrettyString(),
         objectJson.toPrettyString()));
+  }
+
+  public static JsonNode getSchema(final File schemaFile) {
+    try {
+      // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
+      // this.
+      final JsonReferenceProcessor jsonReferenceProcessor = new JsonReferenceProcessor();
+      jsonReferenceProcessor.setMaxDepth(-1); // no max.
+      return jsonReferenceProcessor.process(schemaFile);
+    } catch (IOException | JsonReferenceException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

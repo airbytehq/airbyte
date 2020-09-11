@@ -29,11 +29,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.Configs;
 import io.dataline.config.StandardWorkspace;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConstants;
 import java.io.IOException;
 import java.util.UUID;
