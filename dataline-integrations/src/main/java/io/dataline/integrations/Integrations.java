@@ -30,16 +30,16 @@ public enum Integrations {
 
   POSTGRES_TAP(
       UUID.fromString("2168516a-5c9a-4582-90dc-5e3a01e3f607"),
-      new IntegrationMapping("dataline/integration-singer-postgres-source")),
+      new IntegrationMapping("dataline/integration-singer-postgres-source:0.1.0")),
   EXCHANGERATEAPI_IO_TAP(
       UUID.fromString("37eb2ebf-0899-4b22-aba8-8537ec88b5a8"),
-      new IntegrationMapping("dataline/integration-singer-exchangerateapi_io-source")),
+      new IntegrationMapping("dataline/integration-singer-exchangerateapi_io-source:0.1.1")),
   POSTGRES_TARGET(
       UUID.fromString("a6655e6a-838c-4ecb-a28f-ffdcd27ec710"),
-      new IntegrationMapping("dataline/integration-singer-postgres-destination")),
+      new IntegrationMapping("dataline/integration-singer-postgres-destination:0.1.1")),
   BIGQUERY_TARGET(
       UUID.fromString("e28a1a10-214a-4051-8cf4-79b6f88719cd"),
-      new IntegrationMapping("dataline/integration-singer-bigquery-destination"));
+      new IntegrationMapping("dataline/integration-singer-bigquery-destination:0.1.1"));
 
   private final UUID specId;
   private final IntegrationMapping integrationMapping;
