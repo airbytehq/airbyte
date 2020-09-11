@@ -51,33 +51,37 @@ This part assumes that you have access to a terminal on your workstation
 * Connect to your instance
 
 ```bash
-w$ SSH_KEY=~/Downloads/dataline-key.pem # or wherever you've downloaded the key
-w$ INSTANCE_IP=REPLACE_WITH_YOUR_INSTANCE_IP
-w$ chmod 400 $SSH_KEY # or ssh will complain that the key has the wrong permissions
-w$ ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
+# In your workstation terminal
+SSH_KEY=~/Downloads/dataline-key.pem # or wherever you've downloaded the key
+INSTANCE_IP=REPLACE_WITH_YOUR_INSTANCE_IP
+chmod 400 $SSH_KEY # or ssh will complain that the key has the wrong permissions
+ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 ```
 
 * Install `docker`
 
-```
-~]$ sudo yum update -y
-~]$ sudo yum install -y docker
-~]$ sudo service docker start
-~]$ sudo usermod -a -G docker $USER
+```bash
+# In your ssh session on the instance terminal
+sudo yum update -y
+sudo yum install -y docker
+sudo service docker start
+sudo usermod -a -G docker $USER
 ```
 
 * Install `docker-compose`
 
 ```bash
-~]$ sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
-~]$ sudo chmod +x /usr/local/bin/docker-compose
-~]$ docker-compose --version
+# In your ssh session on the instance terminal
+sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
 ```
 
 * Close the ssh connection to ensure the group modification is taken into account
 
 ```bash
-~]$ logout
+# In your ssh session on the instance terminal
+logout
 ```
 
 ## Install & Start Dataline
@@ -85,15 +89,17 @@ w$ ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 * Connect to your instance
 
 ```bash
-w$ ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
+# In your workstation terminal
+ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 ```
 
 * Install Dataline
 
 ```bash
-~]$ mkdir dataline && cd dataline
-~]$ wget https://raw.githubusercontent.com/datalineio/dataline/master/{.env,docker-compose.yaml}
-~]$ docker-compose up -d
+# In your ssh session on the instance terminal
+mkdir dataline && cd dataline
+wget https://raw.githubusercontent.com/datalineio/dataline/master/{.env,docker-compose.yaml}
+docker-compose up -d
 ```
 
 ## Connect to Dataline
@@ -105,7 +111,8 @@ For security reason we strongly recommend to not expose Dataline on Internet ava
 * Create ssh tunnel
 
 ```bash
-w$ ssh -i $SSH_KEY -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f ec2-user@$INSTANCE_IP
+# In your workstation terminal
+ssh -i $SSH_KEY -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f ec2-user@$INSTANCE_IP
 ```
 
 * In your browser, just visit [http://localhost:8000](http://localhost:8000)
