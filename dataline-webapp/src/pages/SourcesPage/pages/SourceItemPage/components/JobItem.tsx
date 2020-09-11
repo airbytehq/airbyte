@@ -34,7 +34,7 @@ const ErrorSign = styled(StatusIcon)`
 `;
 
 const JobItem: React.FC<IProps> = ({ job }) => {
-  const isFailed = job.status === "fail";
+  const isFailed = job.status === "failed";
   return (
     <Item>
       <Cell>
@@ -45,7 +45,7 @@ const JobItem: React.FC<IProps> = ({ job }) => {
       </Cell>
       <Cell>
         <FormattedTimeParts
-          value={new Date(job.created_at)}
+          value={job.createdAt * 1000}
           hour="numeric"
           minute="2-digit"
         >
@@ -54,7 +54,7 @@ const JobItem: React.FC<IProps> = ({ job }) => {
           )}
         </FormattedTimeParts>
         <FormattedDateParts
-          value={job.created_at}
+          value={job.createdAt * 1000}
           month="2-digit"
           day="2-digit"
         >

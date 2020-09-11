@@ -8,7 +8,7 @@ export type ScheduleProperties = {
 
 export type SyncSchemaColumn = {
   name: string;
-  selected: string;
+  selected: boolean;
   type: string;
 };
 

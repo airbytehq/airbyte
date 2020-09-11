@@ -24,9 +24,10 @@ type IProps = {
 const Content = styled.div`
   max-width: 816px;
   margin: 18px auto;
+`;
 
-  max-height: calc(100% - 104px);
-  //overflow: hidden;
+const StyledContentCard = styled(ContentCard)`
+  margin-bottom: 20px;
 `;
 
 const Title = styled.div`
@@ -48,8 +49,8 @@ const SyncButton = styled(Button)`
 
 const StatusView: React.FC<IProps> = ({ sourceData, onEnabledChange }) => {
   const { jobs } = useResource(JobResource.listShape(), {
-    config_id: sourceData.connectionId,
-    config_type: "check_connection_source"
+    configId: sourceData.connectionId,
+    configType: "sync"
   });
 
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
@@ -65,7 +66,7 @@ const StatusView: React.FC<IProps> = ({ sourceData, onEnabledChange }) => {
         sourceData={sourceData}
         onEnabledChange={onEnabledChange}
       />
-      <ContentCard
+      <StyledContentCard
         title={
           <Title>
             <FormattedMessage id={"sources.syncHistory"} />
@@ -77,7 +78,7 @@ const StatusView: React.FC<IProps> = ({ sourceData, onEnabledChange }) => {
         }
       >
         {jobs.length ? <JobsList jobs={jobs} /> : <EmptySyncHistory />}
-      </ContentCard>
+      </StyledContentCard>
     </Content>
   );
 };
