@@ -26,6 +26,7 @@
 
 * [Contributing to Dataline](contributing/contributing-to-dataline/README.md)
   * [Developing Locally](contributing/contributing-to-dataline/developing-locally.md)
+  * [Code Style](contributing/contributing-to-dataline/code-style.md)
   * [Updating Documentation](contributing/contributing-to-dataline/updating-documentation.md)
   * [Code of Conduct](contributing/contributing-to-dataline/code-of-conduct.md)
 
