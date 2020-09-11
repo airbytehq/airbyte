@@ -20,8 +20,6 @@ dependencies {
     implementation project(':dataline-db')
     implementation project(':dataline-scheduler')
 
-    testImplementation 'org.apache.commons:commons-lang3:3.0'
-
 }
 
 application {

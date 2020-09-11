@@ -1,3 +1,7 @@
 plugins {
     id "java-library"
 }
+
+dependencies {
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+}

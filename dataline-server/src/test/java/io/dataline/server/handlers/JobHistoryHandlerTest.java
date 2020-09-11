@@ -24,7 +24,10 @@
 
 package io.dataline.server.handlers;
 
-import com.google.common.collect.Iterables;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.dataline.api.model.JobConfigType;
 import io.dataline.api.model.JobIdRequestBody;
 import io.dataline.api.model.JobInfoRead;
@@ -38,22 +41,11 @@ import io.dataline.scheduler.Job;
 import io.dataline.scheduler.JobStatus;
 import io.dataline.scheduler.ScopeHelper;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class JobHistoryHandlerTest {
 
@@ -133,40 +125,6 @@ public class JobHistoryHandlerTest {
   public void testGetJobRead() {
     JobRead jobReadActual = JobHistoryHandler.getJobRead(JOB);
     assertEquals(JOB_INFO.getJob(), jobReadActual);
-  }
-
-  @Test
-  public void testGetTailDoesNotExist() throws IOException {
-    List<String> tail = JobHistoryHandler.getTail(100, RandomStringUtils.random(100));
-    assertEquals(Collections.emptyList(), tail);
-  }
-
-  @Test
-  public void testGetTailExists() throws IOException {
-    Path stdoutFile = Files.createTempFile("job-history-handler-test", "stdout");
-
-    List<String> head = List.of(
-        "line1",
-        "line2",
-        "line3",
-        "line4");
-
-    List<String> expectedTail = List.of(
-        "line5",
-        "line6",
-        "line7",
-        "line8");
-
-    Writer writer = new BufferedWriter(new FileWriter(stdoutFile.toString(), true));
-
-    for (String line : Iterables.concat(head, expectedTail)) {
-      writer.write(line + "\n");
-    }
-
-    writer.close();
-
-    List<String> tail = JobHistoryHandler.getTail(expectedTail.size(), stdoutFile.toString());
-    assertEquals(expectedTail, tail);
   }
 
 }

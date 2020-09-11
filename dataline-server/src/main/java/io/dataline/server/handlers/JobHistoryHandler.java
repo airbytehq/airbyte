@@ -25,7 +25,6 @@
 package io.dataline.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
 import io.dataline.api.model.JobConfigType;
 import io.dataline.api.model.JobIdRequestBody;
 import io.dataline.api.model.JobInfoRead;
@@ -34,17 +33,14 @@ import io.dataline.api.model.JobRead;
 import io.dataline.api.model.JobReadList;
 import io.dataline.api.model.LogRead;
 import io.dataline.commons.enums.Enums;
+import io.dataline.commons.io.TailHelper;
 import io.dataline.config.JobConfig;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.ScopeHelper;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.io.input.ReversedLinesFileReader;
 
 public class JobHistoryHandler {
 
@@ -71,34 +67,12 @@ public class JobHistoryHandler {
     Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
 
     LogRead logRead = new LogRead()
-        .stdout(getTail(LOG_TAIL_SIZE, job.getStdoutPath()))
-        .stderr(getTail(LOG_TAIL_SIZE, job.getStderrPath()));
+        .stdout(TailHelper.getTail(LOG_TAIL_SIZE, job.getStdoutPath()))
+        .stderr(TailHelper.getTail(LOG_TAIL_SIZE, job.getStderrPath()));
 
     return new JobInfoRead()
         .job(getJobRead(job))
         .logs(logRead);
-  }
-
-  @VisibleForTesting
-  protected static List<String> getTail(int numLines, String path) throws IOException {
-    File file = new File(path);
-
-    if (file.exists()) {
-      try (ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
-        List<String> lines = new ArrayList<>();
-
-        String line;
-        while ((line = fileReader.readLine()) != null && lines.size() < numLines) {
-          lines.add(line);
-        }
-
-        Collections.reverse(lines);
-
-        return lines;
-      }
-    } else {
-      return Collections.emptyList();
-    }
   }
 
   @VisibleForTesting
