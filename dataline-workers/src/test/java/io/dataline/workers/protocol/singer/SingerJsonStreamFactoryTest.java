@@ -75,32 +75,34 @@ class SingerJsonStreamFactoryTest {
         expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
   }
 
-  // TODO these test cases are commented out because jsonschema2pojo does not generate annotations
-  // that allow us to validate records correctly.
-  // Until we add validation, deserializing invalid records (e.g: ones missing required fields) will
-  // succeed, so we temporarily comment these cases out.
-  // @Test
-  // public void testInvalid() {
-  // final SingerMessage record1 =
-  // MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
-  // final SingerMessage record2 =
-  // MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
-  //
-  // final String inputString =
-  // new StringBuilder()
-  // .append(Jsons.serialize(record1))
-  // .append('\n')
-  // .append("{ \"fish\": \"tuna\"}")
-  // .append('\n')
-  // .append(Jsons.serialize(record2))
-  // .toString();
-  //
-  // final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
-  // final Stream<SingerMessage> expectedStream = Stream.of(record1, record2);
-  //
-  // assertEquals(
-  // expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
-  // }
+  @Test
+  public void testInvalid() {
+
+    final SingerMessage record1 =
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+    final SingerMessage record2 =
+        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+    final String invalidRecord = "{ \"fish\": \"tuna\"}";
+
+    when(singerProtocolPredicate.test(Jsons.serialize(record1))).thenReturn(true);
+    when(singerProtocolPredicate.test(Jsons.serialize(record2))).thenReturn(true);
+    when(singerProtocolPredicate.test(invalidRecord)).thenReturn(false);
+
+    final String inputString =
+        new StringBuilder()
+            .append(Jsons.serialize(record1))
+            .append('\n')
+            .append("{ \"fish\": \"tuna\"}")
+            .append('\n')
+            .append(Jsons.serialize(record2))
+            .toString();
+
+    final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
+    final Stream<SingerMessage> expectedStream = Stream.of(record1, record2);
+
+    assertEquals(
+        expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
+  }
 
   @Test
   public void testMissingNewLineBetweenValidRecords() {
@@ -121,50 +123,6 @@ class SingerJsonStreamFactoryTest {
     assertEquals(
         expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
   }
-
-  @Test
-  public void testMissingNewLineAndLineStartsWithValidRecord() {
-    final SingerMessage record1 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
-    final SingerMessage record2 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
-
-    final String inputString =
-        new StringBuilder()
-            .append(Jsons.serialize(record1))
-            .append("{ \"fish\": \"tuna\"}")
-            .append('\n')
-            .append(Jsons.serialize(record2))
-            .toString();
-
-    final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
-    final Stream<SingerMessage> expectedStream = Stream.of(record1, record2);
-
-    assertEquals(
-        expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
-  }
-
-  // @Test
-  // public void testMissingNewLineAndLineStartsWithInvalidRecord() {
-  // final SingerMessage record1 =
-  // MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
-  // final SingerMessage record2 =
-  // MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
-  //
-  // final String inputString =
-  // new StringBuilder()
-  // .append(Jsons.serialize(record1))
-  // .append('\n')
-  // .append("{ \"fish\": \"tuna\"}")
-  // .append(Jsons.serialize(record2))
-  // .toString();
-  //
-  // final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
-  // final Stream<SingerMessage> expectedStream = Stream.of(record1);
-  //
-  // assertEquals(
-  // expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
-  // }
 
   private Stream<SingerMessage> stringToSingerMessageStream(String inputString) {
     InputStream inputStream = new ByteArrayInputStream(inputString.getBytes());
