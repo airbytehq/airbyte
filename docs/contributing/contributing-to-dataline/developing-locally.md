@@ -80,7 +80,7 @@ _Note: We namespace most API calls with a workspace id. For now there is only ev
 
 #### Now that you have the API running, here are a couple other useful things to know...
 
-To get a better sense of what you can do with the API, checkout the [documentation](https://app.gitbook.com/@dataline/s/docs/~/drafts/-MGtz5jr9rLGyL81PJBz/architecture/api).
+To get a better sense of what you can do with the API, checkout the [documentation](../../architecture/api.md).
 
 The following endpoints aren't going to be successful because they depend directly on the backend. If you are making a change that touches on of these endpoints, then you'll need to run whole Dataline application. You can follow the instructions in the [Develop with Docker](developing-locally.md#develop-with-docker) section.
 
