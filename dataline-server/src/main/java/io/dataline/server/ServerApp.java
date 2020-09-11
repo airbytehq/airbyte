@@ -31,7 +31,7 @@ import io.dataline.config.StandardWorkspace;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.DefaultConfigPersistence;
-import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.server.apis.ConfigurationApi;

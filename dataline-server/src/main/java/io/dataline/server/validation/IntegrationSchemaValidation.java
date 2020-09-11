@@ -27,8 +27,8 @@ package io.dataline.server.validation;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.SourceConnectionSpecification;
-import io.dataline.config.persistence.JsonSchemaValidator;
-import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.commons.json.JsonSchemaValidator;
+import io.dataline.commons.json.JsonValidationException;
 
 public class IntegrationSchemaValidation {
 

@@ -44,7 +44,7 @@ import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.StandardDestination;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.server.helpers.DestinationHelpers;
 import io.dataline.server.helpers.DestinationSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.dataline.commons.json;
 
 public class JsonValidationException extends Exception {
 

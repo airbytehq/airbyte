@@ -49,7 +49,7 @@ import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.server.helpers.ConnectionHelpers;
 import io.dataline.server.helpers.SourceImplementationHelpers;
 import java.io.IOException;

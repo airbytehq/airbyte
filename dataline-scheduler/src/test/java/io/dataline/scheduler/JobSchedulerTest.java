@@ -43,7 +43,7 @@ import io.dataline.config.StandardSyncSchedule;
 import io.dataline.config.Table;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.integrations.Integrations;
 import io.dataline.scheduler.job_factory.SyncJobFactory;
 import io.dataline.scheduler.persistence.SchedulerPersistence;

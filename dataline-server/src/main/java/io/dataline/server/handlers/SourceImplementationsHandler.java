@@ -40,7 +40,7 @@ import io.dataline.config.SourceConnectionSpecification;
 import io.dataline.config.StandardSource;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
 import java.util.List;

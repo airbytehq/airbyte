@@ -34,7 +34,7 @@ import io.dataline.api.model.SourceSpecificationRead;
 import io.dataline.config.SourceConnectionSpecification;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.JsonValidationException;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.server.helpers.SourceSpecificationHelpers;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
