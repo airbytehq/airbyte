@@ -138,3 +138,9 @@ subprojects {
         testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
     }
 }
+
+task composeBuild(type: Exec) {
+    workingDir rootDir
+    commandLine 'docker-compose', '-f', 'docker-compose.build.yaml', 'build'
+}
+composeBuild.dependsOn(build)
