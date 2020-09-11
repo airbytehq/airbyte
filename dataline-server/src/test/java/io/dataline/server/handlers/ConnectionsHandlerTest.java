@@ -96,7 +96,7 @@ class ConnectionsHandlerTest {
         .destinationImplementationId(standardSync.getDestinationImplementationId())
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
-        .syncMode(ConnectionCreate.SyncModeEnum.APPEND)
+        .syncMode(ConnectionCreate.SyncModeEnum.FULL_REFRESH)
         .schedule(ConnectionHelpers.generateBasicSchedule())
         .syncSchema(ConnectionHelpers.generateBasicApiSchema());
 

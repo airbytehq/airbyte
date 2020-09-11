@@ -36,6 +36,7 @@ import io.dataline.api.client.model.ConnectionCreate;
 import io.dataline.api.client.model.ConnectionIdRequestBody;
 import io.dataline.api.client.model.ConnectionRead;
 import io.dataline.api.client.model.ConnectionSchedule;
+import io.dataline.api.client.model.ConnectionStatus;
 import io.dataline.api.client.model.ConnectionSyncRead;
 import io.dataline.api.client.model.DestinationIdRequestBody;
 import io.dataline.api.client.model.DestinationImplementationCreate;
@@ -122,8 +123,8 @@ public class AcceptanceTests {
     schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true)));
 
     // TODO
-    // ConnectionRead createdConnection = testCreateConnection(createdSourceImplId,
-    // createdDestinationImplId, schema);
+    ConnectionRead createdConnection = testCreateConnection(createdSourceImplId,
+        createdDestinationImplId, schema);
     //
     // testRunManualSync(createdConnection.getConnectionId());
     //
@@ -255,6 +256,7 @@ public class AcceptanceTests {
     String name = "AccTest-PG2PG-" + UUID.randomUUID().toString();
     UUID createdConnectionId = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
+            .status(ConnectionStatus.ACTIVE)
             .sourceImplementationId(sourceImplId)
             .destinationImplementationId(destinationImplId)
             .syncMode(syncMode)
