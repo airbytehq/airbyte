@@ -5,32 +5,20 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
-    "required": [
-      "project_id",
-      "dataset_id",
-      "credentials_json",
-      "disable_collection",
-      "replication_method"
-    ],
+    "required": ["project_id", "dataset_id", "credentials_json"],
     "additionalProperties": false,
     "properties": {
       "project_id": {
-        "type": "string"
+        "type": "string",
+        "description": "The GCP project ID for the project containing the target BigQuery dataset."
       },
       "dataset_id": {
-        "type": "string"
-      },
-      "validate_records": {
-        "type": "boolean"
+        "type": "string",
+        "description": "The BigQuery dataset id that will house replicated tables."
       },
       "credentials_json": {
-        "type": "string"
-      },
-      "disable_collection": {
-        "type": "boolean"
-      },
-      "replication_method": {
-        "type": "string"
+        "type": "string",
+        "description": "The contents of the JSON service account key. This is the contents of the file path usually specified in GOOGLE_APPLICATION_CREDENTIALS. The service account for this key must have BigQuery User access to the specified project and dataset."
       }
     }
   }
