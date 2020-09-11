@@ -24,6 +24,9 @@
 
 package io.dataline.integrations.io.dataline.integration_tests.sources;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.json.Jsons;
 import io.dataline.commons.resources.MoreResources;
@@ -64,9 +67,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SingerPostgresSourceTest {
 
@@ -143,7 +143,7 @@ public class SingerPostgresSourceTest {
     // .withSourceConnectionImplementation(sourceImpl);
   }
 
-  @Test
+  // @Test
   public void testIncrementalRead() {
     // run an initial read, get the state from it
     // add a few more records to the DB
@@ -168,8 +168,7 @@ public class SingerPostgresSourceTest {
       // something we want a test to fail over.
       // So we check for equality of a field only if the provided message has that field set. Only
       // exception is a message type since it's a required field.
-      if (!isEqualIfSet(message.getAdditionalProperties(), containedMessage.getAdditionalProperties()) ||
-          !isEqualIfSet(message.getBookmarkProperties(), containedMessage.getBookmarkProperties()) ||
+      if (!isEqualIfSet(message.getBookmarkProperties(), containedMessage.getBookmarkProperties()) ||
           !isEqualIfSet(message.getKeyProperties(), containedMessage.getKeyProperties()) ||
           !isEqualIfSet(message.getRecord(), containedMessage.getRecord()) ||
           !isEqualIfSet(message.getSchema(), containedMessage.getSchema()) ||
@@ -197,7 +196,7 @@ public class SingerPostgresSourceTest {
     Schema exepcted = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), Schema.class);
     assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(exepcted, run.getOutput().get());
+    assertEquals(exepcted, run.getOutput().get().getSchema());
   }
 
   @Test

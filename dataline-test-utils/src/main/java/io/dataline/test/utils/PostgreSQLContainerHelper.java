@@ -1,4 +1,4 @@
-package io.dataline.test.utils;/*
+/*
  * MIT License
  *
  * Copyright (c) 2020 Dataline
@@ -21,6 +21,8 @@ package io.dataline.test.utils;/*
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+package io.dataline.test.utils;
 
 import java.io.IOException;
 import java.util.UUID;

@@ -24,6 +24,8 @@
 
 package io.dataline.test.acceptance;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.api.client.DatalineApiClient;
@@ -49,13 +51,13 @@ import io.dataline.commons.json.Jsons;
 import io.dataline.commons.resources.MoreResources;
 import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import io.dataline.test.utils.PostgreSQLContainerHelper;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -68,8 +70,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("rawtypes")
 public class AcceptanceTests {
