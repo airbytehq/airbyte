@@ -24,6 +24,8 @@
 
 package io.dataline.commons.io;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.common.collect.Iterables;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -35,8 +37,6 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class IOsTest {
 
