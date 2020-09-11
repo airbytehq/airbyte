@@ -1,12 +1,12 @@
-# On AWS \(EC2\)
-
-{% hint style="info" %}
-The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
-{% endhint %}
+# On GCP \(Compute Engine\)
 
 ## Pre-requisites
 
-* Create a new instance or use an existing instance
+{% hint style="info" %}
+The instructions have been tested on `Debian GNU/Linux 10 (buster)`
+{% endhint %}
+
+* Create a new instance or use an existing instance 
 * The instance **must** have access to the internet
 * The instance **must** have these two ports open \(using security groups\):
   * `8000` \(webapp\)
@@ -15,9 +15,12 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 * You **must** have `docker` installed
 
 ```
-$ sudo yum update -y
-$ sudo yum install docker
-$ sudo service docker start
+$ sudo apt-get update
+$ sudo apt-get install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+$ curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add --
+$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable"
+$ sudo apt-get update
+$ sudo apt-get install docker-ce docker-ce-cli containerd.io
 $ sudo usermod -a -G docker $USER
 $ logout # necessary for the group change to take effect
 ```
@@ -25,6 +28,7 @@ $ logout # necessary for the group change to take effect
 * You **must** have `docker-compose` installed
 
 ```bash
+$ sudo apt-get install wget
 $ sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
 $ sudo chmod +x /usr/local/bin/docker-compose
 $ docker-compose --version
