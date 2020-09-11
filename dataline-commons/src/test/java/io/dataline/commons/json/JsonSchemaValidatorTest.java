@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.dataline.commons.json;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.json.Jsons;
 import org.junit.jupiter.api.Test;
 
 class JsonSchemaValidatorTest {
