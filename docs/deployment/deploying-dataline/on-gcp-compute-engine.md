@@ -1,7 +1,5 @@
 # On GCP \(Compute Engine\)
 
-
-
 {% hint style="info" %}
 The instructions have been tested on `Debian GNU/Linux 10 (buster)`
 {% endhint %}
