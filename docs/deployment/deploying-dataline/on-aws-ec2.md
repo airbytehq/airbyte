@@ -4,41 +4,114 @@
 The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 {% endhint %}
 
-## Pre-requisites
+## Create a new instance
 
-* Create a new instance or use an existing instance
-* The instance **must** have access to the internet
-* The instance **must** have these two ports open \(using security groups\):
-  * `8000` \(webapp\)
-  * `8001` \(API\)
-* You **must** have an `ssh` access
-* You **must** have `docker` installed
+* Launch a new instance
 
-```
-$ sudo yum update -y
-$ sudo yum install docker
-$ sudo service docker start
-$ sudo usermod -a -G docker $USER
-$ logout # necessary for the group change to take effect
-```
+![](../../.gitbook/assets/aws_ec2_launch.png)
 
-* You **must** have `docker-compose` installed
+* Select instance AMI
+
+![](../../.gitbook/assets/aws_ec2_ami.png)
+
+* Select instance type
+
+![](../../.gitbook/assets/aws_ec2_instance_type.png)
+
+* `Next: Configure Instance Details` 
+  * You can tune parameters or keep the defaults
+* `Next: Add Storage`
+  * You can tune parameters or keep the defaults
+* `Next: Add Tags`
+  * You can tune parameters or keep the defaults
+* `Next: Configure Security Groups`
+  * We are going to allow network for `ssh` 
+
+![](../../.gitbook/assets/aws_ec2_security_group.png)
+
+* `Review and Launch`
+* `Launch`
+* Create a ssh key so you can connect to the instance
+  * Download the key \(and don't lose it or you wont be able to connect to the instance\)
+
+![](../../.gitbook/assets/aws_ec2_ssh_key.png)
+
+* `Launch Instances`
+
+![](../../.gitbook/assets/aws_ec2_instance_view.png)
+
+* Wait for the instance to become `Running`
+
+## Install environment
+
+{% hint style="info" %}
+This part assumes that you have access to a terminal on your workstation
+{% endhint %}
+
+* Connect to your instance
 
 ```bash
-$ sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
-$ sudo chmod +x /usr/local/bin/docker-compose
-$ docker-compose --version
+w$ SSH_KEY=~/Downloads/dataline-key.pem # or wherever you've downloaded the key
+w$ INSTANCE_IP=REPLACE_WITH_YOUR_INSTANCE_IP
+w$ chmod 400 $SSH_KEY # or ssh will complain that the key has the wrong permissions
+w$ ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 ```
 
-## Start Dataline
+* Install `docker`
+
+```
+~]$ sudo yum update -y
+~]$ sudo yum install -y docker
+~]$ sudo service docker start
+~]$ sudo usermod -a -G docker $USER
+```
+
+* Install `docker-compose`
 
 ```bash
-$ mkdir dataline && cd dataline
-$ wget https://raw.githubusercontent.com/datalineio/dataline/master/{.env,docker-compose.yaml}
-$ docker-compose up
+~]$ sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
+~]$ sudo chmod +x /usr/local/bin/docker-compose
+~]$ docker-compose --version
 ```
 
-You can now connect to your instance public IP on port `8000`
+* Close the ssh connection to ensure the group modification is taken into account
+
+```bash
+~]$ logout
+```
+
+## Install & Start Dataline
+
+* Connect to your instance
+
+```bash
+w$ ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
+```
+
+* Install Dataline
+
+```bash
+~]$ mkdir dataline && cd dataline
+~]$ wget https://raw.githubusercontent.com/datalineio/dataline/master/{.env,docker-compose.yaml}
+~]$ docker-compose up -d
+```
+
+## Connect to Dataline
+
+{% hint style="danger" %}
+For security reason we strongly recommend to not expose Dataline on Internet available ports.
+
+In the future versions we will add support for SSL & Authentication
+{% endhint %}
+
+* Create ssh tunnel
+
+```bash
+w$ ssh -i $SSH_KEY -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f ec2-user@$INSTANCE_IP
+```
+
+* In your browser, just visit [http://localhost:8000](http://localhost:8000)
+* Start moving some data!
 
 ## Troubleshooting
 
