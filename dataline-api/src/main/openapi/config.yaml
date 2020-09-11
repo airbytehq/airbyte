@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   description: |
-    Dataline API
+    Dataline Configuration API
     [https://dataline.io](https://dataline.io).
 
     This API is a collection HTTP RPC-style methods. While it is not a REST API, those familiar with REST should find the conventions of this API recognizable.
@@ -9,12 +9,12 @@ info:
     Here are some conventions that this API follows:
     * All endpoints are http POST methods.
     * All endpoints accept data via `application/json` request bodies. The API does not accept any data via query params.
-    *  The naming convention for endpoints is: localhost:8080/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8080/v1/connections/create` or `localhost:8080/v1/connections/create`.
+    * The naming convention for endpoints is: localhost:8001/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8001/v1/connections/create`.
     * For all `update` method, the whole object must be passed in, even the fields that did not change.
 
     Change Management:
     * The major version of the API endpoint can be determined / specified in the URL `localhost:8080/v1/connections/create`
-    * Minor version bumps will be visible to the end user. The user cannot specify minor versions in requests.
+    * Minor version bumps will be invisible to the end user. The user cannot specify minor versions in requests.
     * All backwards incompatible changes will happen in major version bumps. We will not make backwards incompatible changes in minor version bumps. Examples of non-breaking changes (includes but not limited to...):
       * Adding fields to request or response bodies.
       * Adding new HTTP endpoints.
@@ -26,6 +26,11 @@ info:
   license:
     name: MIT
     url: "https://opensource.org/licenses/MIT"
+externalDocs:
+  description: Find out more about Dataline
+  url: "https://dataline.io"
+servers:
+  - url: "localhost:8001"
 tags:
   - name: workspace
     description: Workspace related resources.
@@ -706,12 +711,6 @@ paths:
           description: Job not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-externalDocs:
-  description: Find out more about Dataline
-  url: "http://dataline.io"
-servers:
-  - url: "https://virtserver.swaggerhub.com/cgardens6/dataline/1.0.0"
-  - url: "http://virtserver.swaggerhub.com/cgardens6/dataline/1.0.0"
 components:
   securitySchemes:
     bearerAuth:
@@ -1367,6 +1366,5 @@ components:
   responses:
     InvalidInput:
       description: Invalid Input
-# apply the security globally to all operations
 security:
-  - bearerAuth: []
+  - {}
