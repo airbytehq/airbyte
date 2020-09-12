@@ -295,7 +295,7 @@ class DefaultSchedulerPersistenceTest {
     final Job updated = schedulerPersistence.getJob(jobId);
 
     assertEquals(JobStatus.FAILED, updated.getStatus());
-    assertNotEquals(created.getUpdatedAt(), updated.getUpdatedAt());
+    assertNotEquals(created.getUpdatedAtInSecond(), updated.getUpdatedAtInSecond());
   }
 
   @Test
