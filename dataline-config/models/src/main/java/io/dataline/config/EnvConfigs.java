@@ -24,6 +24,7 @@
 
 package io.dataline.config;
 
+import com.google.common.base.Preconditions;
 import java.nio.file.Path;
 import java.util.function.Function;
 import org.slf4j.Logger;
@@ -38,6 +39,9 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_ROOT = "CONFIG_ROOT";
   public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
   public static final String TRACKING_STRATEGY = "TRACKING_STRATEGY";
+  public static final String DATABASE_USER = "DATABASE_USER";
+  public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
+  public static final String DATABASE_URL = "DATABASE_URL";
 
   public static final String DEFAULT_NETWORK = "host";
 
@@ -62,9 +66,23 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getDatabaseUser() {
+    return getEnsureEnv(DATABASE_USER);
+  }
+
+  @Override
+  public String getDatabasePassword() {
+    return getEnsureEnv(DATABASE_PASSWORD);
+  }
+
+  @Override
+  public String getDatabaseUrl() {
+    return getEnsureEnv(DATABASE_URL);
+  }
+
+  @Override
   public String getWorkspaceDockerMount() {
     final String mount = getEnv.apply(WORKSPACE_DOCKER_MOUNT);
-
     if (mount != null) {
       return mount;
     }
@@ -98,6 +116,13 @@ public class EnvConfigs implements Configs {
       LOGGER.info(trackingStrategy + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
       return TrackingStrategy.LOGGING;
     }
+  }
+
+  private String getEnsureEnv(final String name) {
+    final String value = getEnv.apply(name);
+    Preconditions.checkArgument(value != null, "'%s' environment variable cannot be null", name);
+
+    return value;
   }
 
   private Path getPath(final String name) {
