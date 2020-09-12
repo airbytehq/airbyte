@@ -6,8 +6,7 @@ plugins {
 }
 
 Properties env = new Properties()
-File envFile = rootProject.file('.env')
-envFile.withInputStream { env.load(it) }
+rootProject.file('.env').withInputStream { env.load(it) }
 
 if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
@@ -43,7 +42,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'pmd'
     apply plugin: 'com.diffplug.spotless'
-    apply plugin: 'de.aaschmid.cpd'
+    //    apply plugin: 'de.aaschmid.cpd'
 
     repositories {
         mavenCentral()
@@ -59,12 +58,15 @@ subprojects {
         )
     }
 
-    cpdCheck {
-        ignoreFailures = true
-        reports {
-            text.enabled = true
-        }
-    }
+    // Disabled because it generate an obnoxious warning
+    // TODO: https://github.com/datalineio/dataline/issues/225
+    //
+    //    cpdCheck {
+    //        ignoreFailures = true
+    //        reports {
+    //            text.enabled = true
+    //        }
+    //    }
 
     spotless {
         java {
