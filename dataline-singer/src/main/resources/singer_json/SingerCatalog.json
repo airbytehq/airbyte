@@ -76,7 +76,7 @@
           "$ref": "SingerCatalog.json#/definitions/SingerType"
         },
         "format": {
-          "type": "string"
+          "type": ["string", "array"]
         },
         "selected": {
           "description": "Deprecated: Some legacy Taps handle stream and field selection by looking for \"selected\": true directly in the stream's schema in the catalog.json file (called properties.json in legacy taps).",
