@@ -257,6 +257,23 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
+  public List<Job> listJobs(JobConfig.ConfigType configType, String configId, JobStatus status) throws IOException {
+    try {
+      String scope = ScopeHelper.createScope(configType, configId);
+      return DatabaseHelper.query(
+          connectionPool,
+          ctx -> ctx.fetch(
+              "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) = ? ORDER BY created_at DESC",
+              scope,
+              status.toString().toLowerCase()).stream()
+              .map(DefaultSchedulerPersistence::getJobFromRecord)
+              .collect(Collectors.toList()));
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
   public Optional<Job> getLastSyncJob(UUID connectionId) throws IOException {
     try {
       return DatabaseHelper.query(

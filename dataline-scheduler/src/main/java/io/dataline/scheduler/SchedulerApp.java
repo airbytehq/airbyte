@@ -84,6 +84,7 @@ public class SchedulerApp {
 
     final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, schedulerPersistence, workerRunFactory);
     final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, new ConfigRepository(configPersistence));
+    final JobRetrier jobRetrier = new JobRetrier(schedulerPersistence);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
