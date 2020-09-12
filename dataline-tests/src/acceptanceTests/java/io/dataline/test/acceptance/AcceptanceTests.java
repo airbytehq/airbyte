@@ -59,6 +59,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -115,14 +116,12 @@ public class AcceptanceTests {
     // select all columns
     schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true)));
 
-    // TODO
-    ConnectionRead createdConnection = testCreateConnection(createdSourceImplId,
-        createdDestinationImplId, schema);
-    //
-    // testRunManualSync(createdConnection.getConnectionId());
-    //
-    // assertSourceAndTargetDbInSync(SOURCE_PSQL, TARGET_PSQL);
+    ConnectionRead createdConnection = testCreateConnection(createdSourceImplId, createdDestinationImplId, schema);
 
+    testRunManualSync(createdConnection.getConnectionId());
+
+    assertSourceAndTargetDbInSync(SOURCE_PSQL, TARGET_PSQL);
+    Lists.newArrayList();
     // TODO test scheduled sync
   }
 
