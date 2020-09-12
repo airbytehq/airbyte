@@ -82,7 +82,7 @@ public class JobScheduler implements Runnable {
   }
 
   private void scheduleSyncJobs() throws IOException {
-    for (StandardSync connection : SchedulerUtils.getAllActiveConnections()) {
+    for (StandardSync connection : SchedulerUtils.getAllActiveConnections(configRepository)) {
       Optional<Job> previousJobOptional = schedulerPersistence.getLastSyncJob(connection.getConnectionId());
       final StandardSyncSchedule standardSyncSchedule = getStandardSyncSchedule(connection);
 

@@ -364,6 +364,7 @@ class DefaultSchedulerPersistenceTest {
         null,
         JobLogs.getLogDirectory(scope),
         JobLogs.getLogDirectory(scope),
+        0,
         afterNow.getEpochSecond(),
         null,
         afterNow.getEpochSecond());
@@ -467,6 +468,7 @@ class DefaultSchedulerPersistenceTest {
         null,
         JobLogs.getLogDirectory(scope),
         JobLogs.getLogDirectory(scope),
+        0,
         NOW.getEpochSecond(),
         null,
         NOW.getEpochSecond());

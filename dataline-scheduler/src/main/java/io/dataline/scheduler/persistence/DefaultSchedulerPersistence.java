@@ -208,6 +208,17 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
+  public void incrementAttempts(long jobId) throws IOException {
+    try {
+      DatabaseHelper.query(
+          connectionPool,
+          ctx -> ctx.execute("UPDATE jobs SET attempts = attempts + 1 WHERE id = ?", jobId));
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
   public <T> void writeOutput(long jobId, T output) throws IOException {
     LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
@@ -341,6 +352,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
         output,
         jobEntry.get("stdout_path", String.class),
         jobEntry.get("stderr_path", String.class),
+        jobEntry.get("attempts", Integer.class),
         getEpoch(jobEntry, "created_at"),
         Optional.ofNullable(jobEntry.get("started_at"))
             .map(value -> getEpoch(jobEntry, "started_at"))

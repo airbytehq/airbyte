@@ -55,6 +55,8 @@ public interface SchedulerPersistence {
 
   void updateStatus(long jobId, JobStatus status) throws IOException;
 
+  void incrementAttempts(long jobId) throws IOException;
+
   <T> void writeOutput(long jobId, T output) throws IOException;
 
   /**

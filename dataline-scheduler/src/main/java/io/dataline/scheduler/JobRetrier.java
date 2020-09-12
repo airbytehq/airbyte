@@ -24,45 +24,71 @@
 
 package io.dataline.scheduler;
 
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.JobConfig;
+import io.dataline.config.StandardSync;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class JobRetrier implements Runnable {
 
   private static final int MAX_RETRIES = 5;
   private static final int RETRY_WAIT_MINUTES = 1;
 
-  private ConfigPersistence configPersistence;
+  private ConfigRepository configRepository;
   private final SchedulerPersistence persistence;
   private Supplier<Instant> timeSupplier;
 
-  public JobRetrier(ConfigPersistence configPersistence, SchedulerPersistence schedulerPersistence, Supplier<Instant> timeSupplier) {
-    this.configPersistence = configPersistence;
+  public JobRetrier(SchedulerPersistence schedulerPersistence, ConfigRepository configRepository, Supplier<Instant> timeSupplier) {
     this.persistence = schedulerPersistence;
+    this.configRepository = configRepository;
     this.timeSupplier = timeSupplier;
   }
 
   @Override
   public void run() {
-    SchedulerUtils.getAllActiveConnections().stream()
-        .flatMap(connection -> persistence.listJobs(JobConfig.ConfigType.SYNC, connection, JobStatus.FAILED))
-        .filter(job -> {
-          // if (job.getAttempts() > MAX_RETRIES) {
-          // return false;
-          // }
+    SchedulerUtils.getAllActiveConnections(configRepository).stream()
+        .flatMap(this::getFailedJobsForConnection)
+        .forEach(job -> {
+          if (shouldCancel(job)) {
+            setSetStatusTo(job, JobStatus.CANCELLED);
+            return;
+          }
 
-          return isTimeToRetry(job);
-        })
-        .forEach(job -> persistence.updateStatus(job.getId(), JobStatus.RUNNING));
+          if (shouldRetry(job)) {
+            setSetStatusTo(job, JobStatus.PENDING);
+          }
+        });
   }
 
-  private boolean isTimeToRetry(Job job) {
+  private Stream<Job> getFailedJobsForConnection(StandardSync connection) {
+    try {
+      return persistence.listJobs(JobConfig.ConfigType.SYNC, connection.getConnectionId().toString(), JobStatus.FAILED).stream();
+    } catch (IOException e) {
+      throw new RuntimeException("failed to fetch jobs for connection: " + connection.getConnectionId(), e);
+    }
+  }
+
+  private boolean shouldCancel(Job job) {
+    return job.getAttempts() > MAX_RETRIES;
+  }
+
+  private boolean shouldRetry(Job job) {
     long lastRun = job.getUpdatedAtInSecond();
-    // todo (cgardens) - use exponential backoff instead.
+    // todo (cgardens) - use exponential backoff.
     return lastRun < timeSupplier.get().getEpochSecond() + TimeUnit.MINUTES.toSeconds(RETRY_WAIT_MINUTES);
+  }
+
+  private void setSetStatusTo(Job job, JobStatus status) {
+    try {
+      persistence.updateStatus(job.getId(), status);
+    } catch (IOException e) {
+      throw new RuntimeException("failed to update status for job " + job.getId(), e);
+    }
   }
 
 }

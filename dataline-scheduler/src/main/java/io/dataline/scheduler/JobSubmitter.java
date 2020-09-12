@@ -70,7 +70,10 @@ public class JobSubmitter implements Runnable {
           }
           persistence.updateStatus(job.getId(), getStatus(output));
         })
-        .setOnException(noop -> persistence.updateStatus(job.getId(), JobStatus.FAILED)).build());
+        .setOnException(noop -> {
+          persistence.updateStatus(job.getId(), JobStatus.FAILED);
+          persistence.incrementAttempts(job.getId());
+        }).build());
   }
 
   private JobStatus getStatus(OutputAndStatus<?> output) {

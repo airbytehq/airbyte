@@ -38,7 +38,8 @@ CREATE
             config JSONB,
             OUTPUT JSONB,
             stdout_path VARCHAR(255),
-            stderr_path VARCHAR(255)
+            stderr_path VARCHAR(255),
+            attempts INTEGER
         );
 
 -- entries

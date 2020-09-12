@@ -25,13 +25,15 @@
 package io.dataline.scheduler;
 
 import io.dataline.commons.json.JsonValidationException;
+import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.util.List;
 
 public class SchedulerUtils {
 
-  public static List<StandardSync> getAllActiveConnections() {
+  public static List<StandardSync> getAllActiveConnections(ConfigRepository configRepository) {
     try {
       return configRepository.listStandardSyncs();
     } catch (JsonValidationException | IOException | ConfigNotFoundException e) {

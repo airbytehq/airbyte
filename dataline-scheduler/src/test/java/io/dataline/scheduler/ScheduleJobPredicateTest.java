@@ -74,6 +74,7 @@ class ScheduleJobPredicateTest {
         null,
         null,
         null,
+        0,
         createdAt.getEpochSecond(),
         null,
         createdAt.getEpochSecond()));
