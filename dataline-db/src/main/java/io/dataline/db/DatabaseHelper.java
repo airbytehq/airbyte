@@ -30,19 +30,8 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DatabaseHelper {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseHelper.class);
-
-  public static BasicDataSource getConnectionPoolFromEnv() {
-    return getConnectionPool(
-        System.getenv("DATABASE_USER"),
-        System.getenv("DATABASE_PASSWORD"),
-        System.getenv("DATABASE_URL"));
-  }
 
   public static BasicDataSource getConnectionPool(String username,
                                                   String password,
@@ -57,10 +46,6 @@ public class DatabaseHelper {
     return connectionPool;
   }
 
-  public static DSLContext getContext(Connection connection) {
-    return DSL.using(connection, SQLDialect.POSTGRES);
-  }
-
   public static <T> T query(BasicDataSource connectionPool, ContextQueryFunction<T> transform)
       throws SQLException {
     try (Connection connection = connectionPool.getConnection()) {
@@ -69,15 +54,8 @@ public class DatabaseHelper {
     }
   }
 
-  public static void execute(BasicDataSource connectionPool,
-                             ContextExecutionFunction executionFunction)
-      throws SQLException {
-    query(
-        connectionPool,
-        ctx -> {
-          executionFunction.execute(ctx);
-          return 1;
-        });
+  private static DSLContext getContext(Connection connection) {
+    return DSL.using(connection, SQLDialect.POSTGRES);
   }
 
 }
