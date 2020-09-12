@@ -85,13 +85,13 @@ public class JobHistoryHandler {
     jobRead.setId(job.getId());
     jobRead.setConfigId(configId);
     jobRead.setConfigType(configType);
-    jobRead.setCreatedAt(job.getCreatedAt());
+    jobRead.setCreatedAt(job.getCreatedAtInSecond());
 
-    if (job.getStartedAt().isPresent()) {
-      jobRead.setStartedAt(job.getStartedAt().get());
+    if (job.getStartedAtInSecond().isPresent()) {
+      jobRead.setStartedAt(job.getStartedAtInSecond().get());
     }
 
-    jobRead.setUpdatedAt(job.getUpdatedAt());
+    jobRead.setUpdatedAt(job.getUpdatedAtInSecond());
     jobRead.setStatus(Enums.convertTo(job.getStatus(), JobRead.StatusEnum.class));
 
     return jobRead;

@@ -35,9 +35,9 @@ public class Job {
   private final long id;
   private final String scope;
   private final JobStatus status;
-  private final long createdAt;
-  private final Long startedAt;
-  private final long updatedAt;
+  private final long createdAtInSecond;
+  private final Long startedAtInSecond;
+  private final long updatedAtInSecond;
   private final JobConfig config;
   private final JobOutput output;
   private final String stdoutPath;
@@ -50,9 +50,9 @@ public class Job {
              @Nullable JobOutput output,
              String stdoutPath,
              String stderrPath,
-             long createdAt,
-             @Nullable Long startedAt,
-             long updatedAt) {
+             long createdAtInSecond,
+             @Nullable Long startedAtInSecond,
+             long updatedAtInSecond) {
     this.id = id;
     this.scope = scope;
     this.status = status;
@@ -60,9 +60,9 @@ public class Job {
     this.output = output;
     this.stdoutPath = stdoutPath;
     this.stderrPath = stderrPath;
-    this.createdAt = createdAt;
-    this.startedAt = startedAt;
-    this.updatedAt = updatedAt;
+    this.createdAtInSecond = createdAtInSecond;
+    this.startedAtInSecond = startedAtInSecond;
+    this.updatedAtInSecond = updatedAtInSecond;
   }
 
   public long getId() {
@@ -77,16 +77,16 @@ public class Job {
     return status;
   }
 
-  public long getCreatedAt() {
-    return createdAt;
+  public long getCreatedAtInSecond() {
+    return createdAtInSecond;
   }
 
-  public Optional<Long> getStartedAt() {
-    return Optional.ofNullable(startedAt);
+  public Optional<Long> getStartedAtInSecond() {
+    return Optional.ofNullable(startedAtInSecond);
   }
 
-  public long getUpdatedAt() {
-    return updatedAt;
+  public long getUpdatedAtInSecond() {
+    return updatedAtInSecond;
   }
 
   public JobConfig getConfig() {
@@ -113,11 +113,11 @@ public class Job {
       return false;
     Job job = (Job) o;
     return id == job.id &&
-        createdAt == job.createdAt &&
-        updatedAt == job.updatedAt &&
+        createdAtInSecond == job.createdAtInSecond &&
+        updatedAtInSecond == job.updatedAtInSecond &&
         scope.equals(job.scope) &&
         status == job.status &&
-        Objects.equals(startedAt, job.startedAt) &&
+        Objects.equals(startedAtInSecond, job.startedAtInSecond) &&
         config.equals(job.config) &&
         Objects.equals(output, job.output) &&
         Objects.equals(stdoutPath, job.stdoutPath) &&
@@ -126,7 +126,7 @@ public class Job {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, scope, status, createdAt, startedAt, updatedAt, config, output, stdoutPath, stderrPath);
+    return Objects.hash(id, scope, status, createdAtInSecond, startedAtInSecond, updatedAtInSecond, config, output, stdoutPath, stderrPath);
   }
 
   @Override
@@ -140,11 +140,11 @@ public class Job {
         + ", status="
         + status
         + ", createdAt="
-        + createdAt
+        + createdAtInSecond
         + ", startedAt="
-        + startedAt
+        + startedAtInSecond
         + ", updatedAt="
-        + updatedAt
+        + updatedAtInSecond
         + ", config='"
         + config
         + '\''
