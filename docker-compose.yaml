@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   # hook in case we need to add init behavior
-  # every root server (no depends_on) should depend on init
+  # every root service (no depends_on) should depend on init
   init:
     image: alpine
   db:
