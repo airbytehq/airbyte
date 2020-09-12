@@ -81,12 +81,12 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
     }
 
     final Job previousJob = previousJobOptional.get();
-    long nextRunStart = previousJob.getUpdatedAt() + getIntervalInMillis(standardSyncSchedule.getSchedule());
-    return nextRunStart < timeSupplier.get().toEpochMilli();
+    long nextRunStart = previousJob.getUpdatedAtInSecond() + getIntervalInSecond(standardSyncSchedule.getSchedule());
+    return nextRunStart < timeSupplier.get().getEpochSecond();
   }
 
-  private static Long getIntervalInMillis(Schedule schedule) {
-    return ScheduleHelpers.getSecondsInUnit(schedule.getTimeUnit()) * 1000 * schedule.getUnits();
+  private static Long getIntervalInSecond(Schedule schedule) {
+    return ScheduleHelpers.getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
   }
 
 }
