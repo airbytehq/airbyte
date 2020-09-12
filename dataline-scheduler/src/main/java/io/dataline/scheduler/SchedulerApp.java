@@ -107,7 +107,10 @@ public class SchedulerApp {
     LOGGER.info("workspaceRoot = " + workspaceRoot);
 
     LOGGER.info("Creating DB connection pool...");
-    final BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+    final BasicDataSource connectionPool = DatabaseHelper.getConnectionPool(
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl());
 
     final ProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, configs.getWorkspaceDockerMount(), configs.getDockerNetwork());
 

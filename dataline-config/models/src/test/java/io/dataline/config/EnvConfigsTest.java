@@ -69,6 +69,33 @@ class EnvConfigsTest {
   }
 
   @Test
+  void testGetDatabaseUser() {
+    when(function.apply(EnvConfigs.DATABASE_USER)).thenReturn(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getDatabaseUser());
+
+    when(function.apply(EnvConfigs.DATABASE_USER)).thenReturn("user");
+    Assertions.assertEquals("user", config.getDatabaseUser());
+  }
+
+  @Test
+  void testGetDatabasePassword() {
+    when(function.apply(EnvConfigs.DATABASE_PASSWORD)).thenReturn(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getDatabasePassword());
+
+    when(function.apply(EnvConfigs.DATABASE_PASSWORD)).thenReturn("password");
+    Assertions.assertEquals("password", config.getDatabasePassword());
+  }
+
+  @Test
+  void testGetDatabaseUrl() {
+    when(function.apply(EnvConfigs.DATABASE_URL)).thenReturn(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getDatabaseUrl());
+
+    when(function.apply(EnvConfigs.DATABASE_URL)).thenReturn("url");
+    Assertions.assertEquals("url", config.getDatabaseUrl());
+  }
+
+  @Test
   void testGetDockerMount() {
     when(function.apply(EnvConfigs.WORKSPACE_DOCKER_MOUNT)).thenReturn(null);
     when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn("abc/def");

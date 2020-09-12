@@ -25,26 +25,26 @@
 package io.dataline.server;
 
 import io.dataline.config.persistence.ConfigRepository;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.server.apis.ConfigurationApi;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.glassfish.hk2.api.Factory;
 
 public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
 
   private static ConfigRepository configRepository;
-  private static BasicDataSource connectionPool;
+  private static SchedulerPersistence schedulerPersistence;
 
   public static void setConfigRepository(final ConfigRepository configRepository) {
     ConfigurationApiFactory.configRepository = configRepository;
   }
 
-  public static void setDbConnectionPool(final BasicDataSource connectionPool) {
-    ConfigurationApiFactory.connectionPool = connectionPool;
+  public static void setSchedulerPersistence(final SchedulerPersistence schedulerPersistence) {
+    ConfigurationApiFactory.schedulerPersistence = schedulerPersistence;
   }
 
   @Override
   public ConfigurationApi provide() {
-    return new ConfigurationApi(ConfigurationApiFactory.configRepository, ConfigurationApiFactory.connectionPool);
+    return new ConfigurationApi(ConfigurationApiFactory.configRepository, ConfigurationApiFactory.schedulerPersistence);
   }
 
   @Override
