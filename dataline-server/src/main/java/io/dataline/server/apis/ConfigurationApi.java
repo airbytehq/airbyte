@@ -63,7 +63,6 @@ import io.dataline.api.model.WorkspaceUpdate;
 import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.server.errors.KnownException;
 import io.dataline.server.handlers.ConnectionsHandler;
@@ -80,7 +79,6 @@ import io.dataline.server.handlers.WorkspacesHandler;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
 import javax.validation.Valid;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.http.HttpStatus;
 
 @javax.ws.rs.Path("/v1")
@@ -98,7 +96,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
 
-  public ConfigurationApi(final ConfigRepository configRepository, BasicDataSource connectionPool) {
+  public ConfigurationApi(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence) {
     final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation();
     workspacesHandler = new WorkspacesHandler(configRepository);
     sourcesHandler = new SourcesHandler(configRepository);
@@ -108,7 +106,6 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     destinationsHandler = new DestinationsHandler(configRepository);
     destinationSpecificationsHandler = new DestinationSpecificationsHandler(configRepository);
     destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, integrationSchemaValidation);
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
     schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);

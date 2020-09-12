@@ -22,31 +22,27 @@
  * SOFTWARE.
  */
 
-package io.dataline.config;
+package io.dataline.workers.protocol.singer;
 
-import java.nio.file.Path;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.dataline.commons.json.JsonSchemaValidator;
+import io.dataline.commons.json.Jsons;
+import io.dataline.singer.SingerConfigSchema;
+import java.util.function.Predicate;
 
-public interface Configs {
+public class SingerProtocolPredicate implements Predicate<String> {
 
-  Path getConfigRoot();
+  private final JsonSchemaValidator jsonSchemaValidator;
+  private final JsonNode schema;
 
-  Path getWorkspaceRoot();
+  public SingerProtocolPredicate() {
+    jsonSchemaValidator = new JsonSchemaValidator();
+    schema = JsonSchemaValidator.getSchema(SingerConfigSchema.SINGER_MESSAGE.getFile());
+  }
 
-  String getDatabaseUser();
-
-  String getDatabasePassword();
-
-  String getDatabaseUrl();
-
-  String getWorkspaceDockerMount();
-
-  String getDockerNetwork();
-
-  TrackingStrategy getTrackingStrategy();
-
-  enum TrackingStrategy {
-    SEGMENT,
-    LOGGING
+  @Override
+  public boolean test(String s) {
+    return jsonSchemaValidator.test(schema, Jsons.deserialize(s));
   }
 
 }

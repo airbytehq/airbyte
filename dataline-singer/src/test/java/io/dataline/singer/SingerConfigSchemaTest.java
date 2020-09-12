@@ -22,40 +22,28 @@
  * SOFTWARE.
  */
 
-package io.dataline.db;
+package io.dataline.singer;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.jooq.impl.DSL;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DatabaseHelper {
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import org.junit.jupiter.api.Test;
 
-  public static BasicDataSource getConnectionPool(String username,
-                                                  String password,
-                                                  String jdbcConnectionString) {
+public class SingerConfigSchemaTest {
 
-    BasicDataSource connectionPool = new BasicDataSource();
-    connectionPool.setDriverClassName("org.postgresql.Driver");
-    connectionPool.setUsername(username);
-    connectionPool.setPassword(password);
-    connectionPool.setUrl(jdbcConnectionString);
-
-    return connectionPool;
+  @Test
+  void testFile() throws IOException {
+    final String schema = Files.readString(SingerConfigSchema.SINGER_MESSAGE.getFile().toPath(), StandardCharsets.UTF_8);
+    assertTrue(schema.contains("title"));
   }
 
-  public static <T> T query(BasicDataSource connectionPool, ContextQueryFunction<T> transform)
-      throws SQLException {
-    try (Connection connection = connectionPool.getConnection()) {
-      DSLContext context = getContext(connection);
-      return transform.apply(context);
+  @Test
+  void testPrepareKnownSchemas() {
+    for (SingerConfigSchema value : SingerConfigSchema.values()) {
+      assertTrue(Files.exists(value.getFile().toPath()));
     }
-  }
-
-  private static DSLContext getContext(Connection connection) {
-    return DSL.using(connection, SQLDialect.POSTGRES);
   }
 
 }
