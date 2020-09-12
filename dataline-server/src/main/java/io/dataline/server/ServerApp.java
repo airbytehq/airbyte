@@ -34,6 +34,8 @@ import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
 import io.dataline.server.errors.InvalidJsonExceptionMapper;
@@ -44,7 +46,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
 import java.util.logging.Level;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -62,12 +63,12 @@ public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
   private final ConfigRepository configRepository;
-  private final BasicDataSource connectionPool;
+  private final SchedulerPersistence schedulerPersistence;
 
-  public ServerApp(ConfigRepository configRepository, BasicDataSource connectionPool) {
+  public ServerApp(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence) {
 
     this.configRepository = configRepository;
-    this.connectionPool = connectionPool;
+    this.schedulerPersistence = schedulerPersistence;
   }
 
   public void start() throws Exception {
@@ -78,7 +79,7 @@ public class ServerApp {
     ServletContextHandler handler = new ServletContextHandler();
 
     ConfigurationApiFactory.setConfigRepository(configRepository);
-    ConfigurationApiFactory.setDbConnectionPool(connectionPool);
+    ConfigurationApiFactory.setSchedulerPersistence(schedulerPersistence);
 
     ResourceConfig rc =
         new ResourceConfig()
@@ -152,6 +153,7 @@ public class ServerApp {
     final Path configRoot = configs.getConfigRoot();
     LOGGER.info("configRoot = " + configRoot);
 
+    LOGGER.info("Creating config repository...");
     final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(configRoot));
 
     // hack: upon installation we need to assign a random customerId so that when
@@ -160,10 +162,14 @@ public class ServerApp {
 
     TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configRepository);
 
-    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+    LOGGER.info("Creating Scheduler persistence...");
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(DatabaseHelper.getConnectionPool(
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl()));
 
     LOGGER.info("Starting server...");
-    new ServerApp(configRepository, connectionPool).start();
+    new ServerApp(configRepository, schedulerPersistence).start();
   }
 
 }
