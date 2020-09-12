@@ -70,5 +70,6 @@ services:
 
 volumes:
   workspace:
+    name: ${WORKSPACE_DOCKER_MOUNT}
   data:
   db:
