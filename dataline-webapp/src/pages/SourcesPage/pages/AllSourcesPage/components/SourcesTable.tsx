@@ -97,7 +97,10 @@ const SourcesTable: React.FC = () => {
         Header: <FormattedMessage id="sources.lastSync" />,
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <LastSyncCell value={cell.value} enabled={row.original.enabled} />
+          <LastSyncCell
+            timeInSecond={cell.value}
+            enabled={row.original.enabled}
+          />
         )
       },
       {
