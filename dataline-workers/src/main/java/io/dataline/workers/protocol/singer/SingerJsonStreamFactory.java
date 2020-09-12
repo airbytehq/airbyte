@@ -48,8 +48,18 @@ public class SingerJsonStreamFactory implements StreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerJsonStreamFactory.class);
 
+  private final SingerProtocolPredicate singerProtocolValidator;
+
+  public SingerJsonStreamFactory() {
+    this(new SingerProtocolPredicate());
+  }
+
+  SingerJsonStreamFactory(SingerProtocolPredicate singerProtocolPredicate) {
+    singerProtocolValidator = singerProtocolPredicate;
+  }
+
   public Stream<SingerMessage> create(BufferedReader bufferedReader) {
-    return bufferedReader.lines().map(this::parseJsonOrNull).filter(Objects::nonNull);
+    return bufferedReader.lines().filter(singerProtocolValidator).map(this::parseJsonOrNull).filter(Objects::nonNull);
   }
 
   private SingerMessage parseJsonOrNull(String record) {
