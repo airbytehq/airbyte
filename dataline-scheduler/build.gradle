@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+
 plugins {
     id 'application'
 }
@@ -16,12 +19,15 @@ application {
     mainClass = 'io.dataline.scheduler.SchedulerApp'
 }
 
+Properties env = new Properties()
+rootProject.file('.env.dev').withInputStream { env.load(it) }
+
 run {
     // default for running on local machine.
-    environment "CONFIG_ROOT", new File(".").absolutePath + "data/config"
-    environment "VERSION", "0.1.0"
-    environment "DATABASE_USER", "postgres"
-    environment "DATABASE_PASSWORD", ""
-    environment "DATABASE_DB", "dataline"
+    environment "CONFIG_ROOT", "${env.DEV_ROOT}/data"
+    environment "WORKSPACE_ROOT", "${env.DEV_ROOT}/workspace"
+    environment "VERSION", env.VERSION
+    environment "DATABASE_USER", env.DATABASE_USER
+    environment "DATABASE_PASSWORD", env.DATABASE_PASSWORD
     environment "DATABASE_URL", "jdbc:postgresql://localhost:5432/dataline"
 }
