@@ -7,6 +7,11 @@ dependencies {
 }
 
 jsonSchema2Pojo {
+    // todo (cgardens) - this path cannot be the same as the one in dataline-configs:model,
+    //  otherwise they clobber each other, when we are accessing them as java resources.
+    //  we need to find a more graceful way of handling this issue, but for now this keeps
+    //  us moving forward.
+    source = files("${sourceSets.main.output.resourcesDir}/singer_json")
     targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
 
     targetPackage = 'io.dataline.singer'
