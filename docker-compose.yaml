@@ -1,6 +1,10 @@
 version: '3.7'
 
 services:
+  # hook in case we need to add init behavior
+  # every root service (no depends_on) should depend on init
+  init:
+    image: alpine
   db:
     image: dataline/db:${VERSION}
     container_name: dataline-db
@@ -8,31 +12,26 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=db-${DATABASE_DB}
+    volumes:
+      - db:/var/lib/postgresql/data
+    depends_on:
+      - init
   seed:
     image: dataline/seed:${VERSION}
     container_name: dataline-data-seed
-    environment:
-      - ENV=${ENV}
-    # When the volume is created for the first time it will be populated with the contents of /app/seed,
-    # which is prepopulated with the configs that we want config persistence to have access to upon
-    # installation. On subsequent compose up / down, this will get mounted, but not copy any data.
-    # Effectively it'll be a no-op on subsequent runs, though we may be able to use it to add new data
-    # to the volume if we need to as we release updates.
-    # reference:
-    # https://docs.docker.com/storage/volumes/#populate-a-volume-using-a-container
-    # https://docs.docker.com/compose/compose-file/#long-syntax-3
+    # Pre-populate the volume if it is empty.
+    # See: https://docs.docker.com/storage/volumes/#populate-a-volume-using-a-container
     volumes:
-      - type: volume
-        source: data
-        target: /app/seed
+      - data:/app/seed
+    depends_on:
+      - init
   scheduler:
     image: dataline/scheduler:${VERSION}
     container_name: dataline-scheduler
     environment:
-      - ENV=${ENV}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=jdbc:postgresql://db:5432/${DATABASE_DB}
       - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS=db:5432
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
@@ -40,7 +39,7 @@ services:
       - CONFIG_ROOT=${CONFIG_ROOT}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${WORKSPACE_DOCKER_MOUNT}:${WORKSPACE_ROOT}
+      - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
     depends_on:
       - db
@@ -49,10 +48,9 @@ services:
     image: dataline/server:${VERSION}
     container_name: dataline-server
     environment:
-      - ENV=${ENV}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=jdbc:postgresql://db:5432/${DATABASE_DB}
       - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS=db:5432
       - CONFIG_ROOT=${CONFIG_ROOT}
@@ -72,6 +70,5 @@ services:
 
 volumes:
   workspace:
-    name: ${WORKSPACE_DOCKER_MOUNT}
   data:
-    name: data
+  db:
