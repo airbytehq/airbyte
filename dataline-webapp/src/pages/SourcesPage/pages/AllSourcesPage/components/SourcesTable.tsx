@@ -98,7 +98,7 @@ const SourcesTable: React.FC = () => {
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <LastSyncCell
-            valueInSecond={cell.value}
+            timeInSecond={cell.value}
             enabled={row.original.enabled}
           />
         )

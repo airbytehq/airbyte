@@ -16,12 +16,12 @@ const Content = styled.div<{ enabled?: boolean }>`
 `;
 
 type IProps = {
-  valueInSecond: number;
+  timeInSecond: number;
   enabled?: boolean;
 };
 
-const LastSyncCell: React.FC<IProps> = ({ valueInSecond, enabled }) => {
-  if (!valueInSecond) {
+const LastSyncCell: React.FC<IProps> = ({ timeInSecond, enabled }) => {
+  if (!timeInSecond) {
     return null;
   }
 
@@ -29,7 +29,7 @@ const LastSyncCell: React.FC<IProps> = ({ valueInSecond, enabled }) => {
     <Content enabled={enabled}>
       <CalendarIcon icon={faCalendarAlt} />
       <FormattedRelativeTime
-        value={valueInSecond - Date.now() / 1000}
+        value={timeInSecond - Date.now() / 1000}
         updateIntervalInSeconds={60}
       />
     </Content>
