@@ -121,7 +121,6 @@ public class AcceptanceTests {
     testRunManualSync(createdConnection.getConnectionId());
 
     assertSourceAndTargetDbInSync(SOURCE_PSQL, TARGET_PSQL);
-    Lists.newArrayList();
     // TODO test scheduled sync
   }
 
