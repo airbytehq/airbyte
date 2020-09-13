@@ -47,4 +47,10 @@ class SingerTypeDeserializerTest {
         Jsons.deserialize("{\"type\":[\"string\",\"null\"]}", SingerColumn.class));
   }
 
+  @Test
+  void testBadType() {
+    Assertions.assertThrows(RuntimeException.class,
+        () -> Jsons.deserialize("{\"type\":1}", SingerColumn.class));
+  }
+
 }

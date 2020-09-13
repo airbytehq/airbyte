@@ -37,12 +37,8 @@ import io.dataline.commons.json.Jsons;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SingerTypeDeserializer extends JsonDeserializer<List<SingerType>> {
-
-  private final static Logger LOGGER = LoggerFactory.getLogger(SingerTypeDeserializer.class);
 
   @Override
   public List<SingerType> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
@@ -53,7 +49,10 @@ public class SingerTypeDeserializer extends JsonDeserializer<List<SingerType>> {
     } else if (node.isTextual()) {
       return Collections.singletonList(Jsons.object(node, SingerType.class));
     }
-    throw MismatchedInputException.from(p, ArrayType.construct(SimpleType.constructUnsafe(SingerType.class), null), "Cannot decode field");
+    throw MismatchedInputException.from(
+        p,
+        ArrayType.construct(SimpleType.constructUnsafe(SingerType.class), null),
+        String.format("Cannot deserialize instance of `%s` out of %s token", "List<SingerType>", node.getNodeType()));
   }
 
 }
