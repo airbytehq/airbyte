@@ -25,7 +25,10 @@
 package io.dataline.commons.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -125,6 +128,18 @@ class JsonsTest {
     Assertions.assertEquals(
         Jsons.jsonNode(new ToClass("abc", 999, 888L)),
         Jsons.jsonNode(Jsons.jsonNode(new ToClass("abc", 999, 888L))));
+  }
+
+  @Test
+  void testToObject() {
+    final ToClass expected = new ToClass("abc", 999, 888L);
+    Assertions.assertEquals(
+        expected,
+        Jsons.object(Jsons.jsonNode(expected), ToClass.class));
+
+    Assertions.assertEquals(
+        Lists.newArrayList(expected),
+        Jsons.object(Jsons.jsonNode(Lists.newArrayList(expected)), new TypeReference<List<ToClass>>() {}));
   }
 
   @Test
