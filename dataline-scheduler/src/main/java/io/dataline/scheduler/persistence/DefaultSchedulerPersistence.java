@@ -171,13 +171,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       final Record record = DatabaseHelper.query(
           connectionPool,
           ctx -> ctx.fetch(
-              "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?) RETURNING id",
+              "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, attempts, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?, ?) RETURNING id",
               scope,
               now,
               now,
               JobStatus.PENDING.toString().toLowerCase(),
               Jsons.serialize(jobConfig),
               null,
+              0,
               JobLogs.getLogDirectory(scope),
               JobLogs.getLogDirectory(scope)))
           .stream()
@@ -268,14 +269,13 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public List<Job> listJobs(JobConfig.ConfigType configType, String configId, JobStatus status) throws IOException {
+  public List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException {
     try {
-      String scope = ScopeHelper.createScope(configType, configId);
       return DatabaseHelper.query(
           connectionPool,
           ctx -> ctx.fetch(
-              "SELECT * FROM jobs WHERE scope = ? AND CAST(status AS VARCHAR) = ? ORDER BY created_at DESC",
-              scope,
+              "SELECT * FROM jobs WHERE scope LIKE '%?%' AND CAST(status AS VARCHAR) = ? ORDER BY created_at DESC",
+              ScopeHelper.getScopePrefix(configType),
               status.toString().toLowerCase()).stream()
               .map(DefaultSchedulerPersistence::getJobFromRecord)
               .collect(Collectors.toList()));

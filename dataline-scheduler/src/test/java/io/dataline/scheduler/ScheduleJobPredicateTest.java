@@ -37,6 +37,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class ScheduleJobPredicateTest {
 
@@ -92,33 +94,25 @@ class ScheduleJobPredicateTest {
   }
 
   @Test
-  public void testScheduleReady() {
-    final Optional<Job> jobOptionalCompleted = generateJobWithStatusAndUpdatedAt(JobStatus.COMPLETED, now.minus(Duration.ofDays(2)));
-    assertTrue(scheduleJobPredicate.test(jobOptionalCompleted, SCHEDULE));
-
-    final Optional<Job> jobOptionalCancelled = generateJobWithStatusAndUpdatedAt(JobStatus.COMPLETED, now.minus(Duration.ofDays(2)));
-    assertTrue(scheduleJobPredicate.test(jobOptionalCancelled, SCHEDULE));
-  }
-
-  @Test
   public void testScheduleNotReady() {
     final Optional<Job> jobOptional = generateJobWithStatusAndUpdatedAt(JobStatus.COMPLETED, now.minus(Duration.ofDays(1)));
     assertFalse(scheduleJobPredicate.test(jobOptional, SCHEDULE));
   }
 
-  @Test
-  public void testScheduleNotReadyPreviousFailed() {
-    final Optional<Job> jobOptional = generateJobWithStatusAndUpdatedAt(JobStatus.FAILED, now.minus(Duration.ofDays(1)));
-    assertTrue(scheduleJobPredicate.test(jobOptional, SCHEDULE));
+  @ParameterizedTest
+  @EnumSource(value = JobStatus.class,
+              names = {"COMPLETED", "CANCELLED"})
+  public void testShouldScheduleBasedOnPreviousJobStatus(JobStatus status) {
+    final Optional<Job> jobOptionalCompleted = generateJobWithStatusAndUpdatedAt(status, now.minus(Duration.ofDays(2)));
+    assertTrue(scheduleJobPredicate.test(jobOptionalCompleted, SCHEDULE));
   }
 
-  @Test
-  public void testScheduleReadyPreviousNotCompleted() {
-    final Optional<Job> jobOptionalPending = generateJobWithStatusAndUpdatedAt(JobStatus.PENDING, now.minus(Duration.ofDays(2)));
-    assertFalse(scheduleJobPredicate.test(jobOptionalPending, SCHEDULE));
-
-    final Optional<Job> jobOptionalRunning = generateJobWithStatusAndUpdatedAt(JobStatus.RUNNING, now.minus(Duration.ofDays(2)));
-    assertFalse(scheduleJobPredicate.test(jobOptionalRunning, SCHEDULE));
+  @ParameterizedTest
+  @EnumSource(value = JobStatus.class,
+              names = {"FAILED", "PENDING", "RUNNING"})
+  public void testScheduleShouldNotScheduleBasedOnPreviousJobStatus(JobStatus status) {
+    final Optional<Job> jobOptional = generateJobWithStatusAndUpdatedAt(status, now.minus(Duration.ofDays(1)));
+    assertFalse(scheduleJobPredicate.test(jobOptional, SCHEDULE));
   }
 
 }

@@ -115,6 +115,7 @@ public class JobSubmitterTest {
     InOrder inOrder = inOrder(persistence);
     inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
     inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.FAILED);
+    inOrder.verify(persistence).incrementAttempts(1L);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -139,6 +140,7 @@ public class JobSubmitterTest {
     InOrder inOrder = inOrder(persistence);
     inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
     inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.FAILED);
+    inOrder.verify(persistence).incrementAttempts(1L);
     inOrder.verifyNoMoreInteractions();
   }
 
