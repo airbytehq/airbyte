@@ -62,11 +62,12 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
     final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
 
     // write config.json to disk
-    final Path configPath = IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
+      LOGGER.info("Running Singer target...");
       final Process targetProcess =
-          pbf.create(jobRoot, imageName, "--config", configPath.toString())
+          pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME)
               .redirectError(jobRoot.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile())
               .start();
 
