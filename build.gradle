@@ -1,7 +1,8 @@
 plugins {
     id 'base'
+    id 'java'
     id 'pmd'
-    id 'com.diffplug.spotless' version '5.3.0' apply false
+    id 'com.diffplug.spotless' version '5.3.0'
     id 'de.aaschmid.cpd' version '3.1' apply false
 }
 
@@ -31,6 +32,35 @@ def createLicenseWith = { licence ->
     }
     return tmp
 }
+
+spotless {
+    java {
+        targetExclude "**/build/generated/**/*"
+
+        importOrder()
+
+        eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
+
+        licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
+        removeUnusedImports()
+        trimTrailingWhitespace()
+    }
+    groovyGradle {
+        target '**/*.gradle'
+    }
+    sql {
+        target '**/*.sql'
+
+        dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
+    }
+    format 'styling', {
+        target '**/*.json', '**/*.yaml'
+        targetExclude "**/build/generated/**/*", "**/node_modules/**/*"
+
+        prettier()
+    }
+}
+check.dependsOn('spotlessApply')
 
 // Java projects common configurations
 subprojects {
@@ -67,35 +97,6 @@ subprojects {
     //            text.enabled = true
     //        }
     //    }
-
-    spotless {
-        java {
-            targetExclude "build/generated/**/*.*"
-
-            importOrder()
-
-            eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
-
-            licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
-            removeUnusedImports()
-            trimTrailingWhitespace()
-        }
-        groovyGradle {
-            target '**/*.gradle'
-        }
-        sql {
-            target '**/*.sql'
-
-            dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
-        }
-        format 'styling', {
-            target '**/*.json', '**/*.yaml'
-            targetExclude "build/generated/**/*.*"
-
-            prettier()
-        }
-    }
-    compileJava.dependsOn 'spotlessApply'
 
     test {
         useJUnitPlatform()
@@ -139,10 +140,18 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
         testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
     }
+
+    afterEvaluate { project ->
+        composeBuild.dependsOn(project.tasks.build)
+    }
 }
 
-task composeBuild(type: Exec) {
-    workingDir rootDir
-    commandLine 'docker-compose', '-f', 'docker-compose.build.yaml', 'build'
+task composeBuild {
+    doFirst {
+        exec {
+            workingDir rootDir
+            commandLine 'docker-compose', '-f', 'docker-compose.build.yaml', 'build', '--parallel'
+        }
+    }
+    dependsOn('build')
 }
-composeBuild.dependsOn(build)
