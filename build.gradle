@@ -6,6 +6,10 @@ plugins {
     // id 'de.aaschmid.cpd' version '3.1'
 }
 
+repositories {
+    mavenCentral()
+}
+
 Properties env = new Properties()
 rootProject.file('.env').withInputStream { env.load(it) }
 
@@ -33,9 +37,9 @@ def createLicenseWith = { licence ->
     return tmp
 }
 
-
 spotless {
     java {
+        target '**/*.java'
         targetExclude "**/build/**/*"
 
         importOrder()
@@ -63,7 +67,7 @@ spotless {
         prettier()
     }
 }
-check.dependsOn('spotlessApply')
+check.dependsOn 'spotlessApply'
 
 // Disabled because it generate an obnoxious warning
 // TODO: https://github.com/datalineio/dataline/issues/225
@@ -75,11 +79,17 @@ check.dependsOn('spotlessApply')
 //        }
 //    }
 
-// Common to all subprojects
-subprojects {
+allprojects {
+    apply plugin: 'base'
+
     afterEvaluate { project ->
         composeBuild.dependsOn(project.tasks.assemble)
     }
+}
+
+// Common to all subprojects
+subprojects {
+    apply plugin: 'base'
 }
 
 // Java projects common configurations
@@ -89,6 +99,7 @@ subprojects {
         return
     }
 
+    apply plugin: 'base'
     apply plugin: 'java'
 
     repositories {
@@ -100,9 +111,7 @@ subprojects {
 
         rulePriority = 5
         ruleSets = []
-        ruleSetFiles = files(
-                rootProject.file('tools/gradle/pmd/rules.xml')
-        )
+        ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
     }
 
     test {
