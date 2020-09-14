@@ -6,6 +6,7 @@ import {
   FormattedTimeParts
 } from "react-intl";
 import styled from "styled-components";
+import dayjs from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
@@ -64,6 +65,12 @@ const LoadLogs = styled.div`
   min-height: 58px;
 `;
 
+const CompletedTime = styled.div`
+  font-size: 12px;
+  line-height: 15px;
+  color: ${({ theme }) => theme.greyColor40};
+`;
+
 const Arrow = styled.div<{
   isOpen?: boolean;
   isFailed?: boolean;
@@ -106,6 +113,13 @@ const JobItem: React.FC<IProps> = ({ job }) => {
   const [isOpen, setIsOpen] = useState(false);
   const onExpand = () => setIsOpen(!isOpen);
 
+  const date1 = dayjs(job.createdAt * 1000);
+  const date2 = dayjs(job.updatedAt * 1000);
+  const hours = Math.abs(date2.diff(date1, "hour"));
+  const minutes = Math.abs(date2.diff(date1, "minute")) - hours * 60;
+  const seconds =
+    Math.abs(date2.diff(date1, "second")) - minutes * 60 - hours * 3600;
+
   const isFailed = job.status === "failed";
   return (
     <Item isFailed={isFailed}>
@@ -133,6 +147,21 @@ const JobItem: React.FC<IProps> = ({ job }) => {
           >
             {parts => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
           </FormattedDateParts>
+          <CompletedTime>
+            {hours ? (
+              <FormattedMessage id="sources.hour" values={{ hour: hours }} />
+            ) : null}
+            {hours || minutes ? (
+              <FormattedMessage
+                id="sources.minute"
+                values={{ minute: minutes }}
+              />
+            ) : null}
+            <FormattedMessage
+              id="sources.second"
+              values={{ second: seconds }}
+            />
+          </CompletedTime>
           <Arrow isOpen={isOpen} isFailed={isFailed}>
             <FontAwesomeIcon icon={faAngleDown} />
           </Arrow>

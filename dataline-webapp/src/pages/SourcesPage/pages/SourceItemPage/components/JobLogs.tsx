@@ -19,7 +19,6 @@ const Logs = styled.div`
 const JobLogs: React.FC<IProps> = ({ id }) => {
   const job = useResource(JobResource.detailShape(), { id });
 
-  // logs.stdout or logs.stderr ??? Test with data
   if (!job.logs.stderr.length) {
     return (
       <Logs>
