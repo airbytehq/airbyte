@@ -23,3 +23,22 @@ jsonSchema2Pojo {
     includeConstructors = false
     includeSetters = true
 }
+
+task postprocess {
+    doFirst {
+        def original = new File(project.buildDir, 'generated/src/gen/java/io/dataline/singer/SingerColumn.java')
+        def lines = original.readLines()
+
+        original.withWriter('utf-8') { writer ->
+            lines.each {
+                if (it.contains("private List<SingerType> type"))
+                    writer.writeLine("    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = io.dataline.singer.SingerTypeDeserializer.class)")
+                writer.writeLine(it)
+            }
+        }
+    }
+}
+
+afterEvaluate { project ->
+    project.tasks.generateJsonSchema2Pojo.finalizedBy postprocess
+}
