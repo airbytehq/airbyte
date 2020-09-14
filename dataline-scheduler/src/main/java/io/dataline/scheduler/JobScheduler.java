@@ -35,6 +35,7 @@ import io.dataline.scheduler.job_factory.SyncJobFactory;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ public class JobScheduler implements Runnable {
   }
 
   private void scheduleSyncJobs() throws IOException {
-    for (StandardSync connection : SchedulerUtils.getAllActiveConnections(configRepository)) {
+    for (StandardSync connection : getAllActiveConnections()) {
       Optional<Job> previousJobOptional = schedulerPersistence.getLastSyncJob(connection.getConnectionId());
       final StandardSyncSchedule standardSyncSchedule = getStandardSyncSchedule(connection);
 
@@ -95,6 +96,14 @@ public class JobScheduler implements Runnable {
   private StandardSyncSchedule getStandardSyncSchedule(StandardSync connection) {
     try {
       return configRepository.getStandardSyncSchedule(connection.getConnectionId());
+    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  private List<StandardSync> getAllActiveConnections() {
+    try {
+      return configRepository.listStandardSyncs();
     } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
