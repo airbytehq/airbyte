@@ -34,6 +34,9 @@ public enum Integrations {
   EXCHANGERATEAPI_IO_TAP(
       UUID.fromString("37eb2ebf-0899-4b22-aba8-8537ec88b5a8"),
       new IntegrationMapping("dataline/integration-singer-exchangerateapi_io-source:0.1.2")),
+  STRIPE_TAP(
+      UUID.fromString("dd42e77b-24ce-485d-8146-ee6c96d5b454"),
+      new IntegrationMapping("dataline/integration-singer-stripe-source:0.1.0")),
   POSTGRES_TARGET(
       UUID.fromString("a6655e6a-838c-4ecb-a28f-ffdcd27ec710"),
       new IntegrationMapping("dataline/integration-singer-postgres-destination:0.1.1")),
