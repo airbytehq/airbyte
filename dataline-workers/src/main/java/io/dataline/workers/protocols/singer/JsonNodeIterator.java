@@ -35,6 +35,9 @@ public class JsonNodeIterator extends AbstractIterator<JsonNode> {
         } else {
           return treeNode;
         }
+        // When no object can be parsed, the mapper throws a JsonParseException. This is our cue to move on to the
+        // next token. This could be come a performance problem because it means for each word it finds, it throws
+        // an exception.
       } catch (JsonParseException e) {
         // no op.
       } catch (IOException e) {
