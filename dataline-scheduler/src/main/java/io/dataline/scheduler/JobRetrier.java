@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class JobRetryer implements Runnable {
+public class JobRetrier implements Runnable {
 
   private static final int MAX_ATTEMPTS = 5;
   private static final int RETRY_WAIT_MINUTES = 1;
@@ -40,7 +40,7 @@ public class JobRetryer implements Runnable {
   private final SchedulerPersistence persistence;
   private final Supplier<Instant> timeSupplier;
 
-  public JobRetryer(SchedulerPersistence schedulerPersistence, Supplier<Instant> timeSupplier) {
+  public JobRetrier(SchedulerPersistence schedulerPersistence, Supplier<Instant> timeSupplier) {
     this.persistence = schedulerPersistence;
     this.timeSupplier = timeSupplier;
   }

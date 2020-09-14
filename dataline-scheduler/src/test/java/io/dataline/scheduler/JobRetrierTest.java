@@ -40,17 +40,17 @@ import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class JobRetryerTest {
+class JobRetrierTest {
 
   private static final Instant NOW = Instant.now();
 
   private SchedulerPersistence persistence;
-  private JobRetryer jobRetryer;
+  private JobRetrier jobRetrier;
 
   @BeforeEach
   void setup() throws JsonValidationException, IOException, ConfigNotFoundException {
     persistence = mock(SchedulerPersistence.class);
-    jobRetryer = new JobRetryer(persistence, () -> NOW);
+    jobRetrier = new JobRetrier(persistence, () -> NOW);
   }
 
   @Test
@@ -71,7 +71,7 @@ class JobRetryerTest {
     when(persistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED))
         .thenReturn(Collections.singletonList(job));
 
-    jobRetryer.run();
+    jobRetrier.run();
 
     verify(persistence).listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED);
     verify(persistence).updateStatus(12L, JobStatus.PENDING);
@@ -97,7 +97,7 @@ class JobRetryerTest {
     when(persistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED))
         .thenReturn(Collections.singletonList(job));
 
-    jobRetryer.run();
+    jobRetrier.run();
 
     verify(persistence).listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED);
     verifyNoMoreInteractions(persistence);
@@ -121,7 +121,7 @@ class JobRetryerTest {
     when(persistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED))
         .thenReturn(Collections.singletonList(job));
 
-    jobRetryer.run();
+    jobRetrier.run();
 
     verify(persistence).listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED);
     verify(persistence).updateStatus(12L, JobStatus.CANCELLED);

@@ -84,13 +84,13 @@ public class SchedulerApp {
 
     final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
 
-    final JobRetryer jobRetryer = new JobRetryer(schedulerPersistence, Instant::now);
+    final JobRetrier jobRetrier = new JobRetrier(schedulerPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, schedulerPersistence, workerRunFactory);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
-          jobRetryer.run();
+          jobRetrier.run();
           jobScheduler.run();
           jobSubmitter.run();
         },
