@@ -24,6 +24,7 @@
 
 package io.dataline.workers.process;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -63,7 +64,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
             imageName);
     cmd.addAll(Arrays.asList(args));
 
-    LOGGER.debug("Preparing command: {}", cmd);
+    LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
 
     return new ProcessBuilder(cmd);
   }

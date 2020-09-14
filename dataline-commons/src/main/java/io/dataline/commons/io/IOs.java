@@ -25,6 +25,7 @@
 package io.dataline.commons.io;
 
 import com.google.common.base.Charsets;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -73,6 +74,14 @@ public class IOs {
       }
     } else {
       return Collections.emptyList();
+    }
+  }
+
+  public static void silentClose(final Closeable closeable) {
+    try {
+      closeable.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 

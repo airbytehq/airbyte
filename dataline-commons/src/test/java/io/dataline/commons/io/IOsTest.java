@@ -24,10 +24,13 @@
 
 package io.dataline.commons.io;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.Iterables;
 import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -37,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class IOsTest {
 
@@ -86,4 +90,13 @@ class IOsTest {
     assertEquals(expectedTail, tail);
   }
 
+  @Test
+  void testSilentClose() throws IOException {
+    Closeable closeable = Mockito.mock(Closeable.class);
+
+    assertDoesNotThrow(() -> IOs.silentClose(closeable));
+
+    Mockito.doThrow(new IOException()).when(closeable).close();
+    assertThrows(RuntimeException.class, () -> IOs.silentClose(closeable));
+  }
 }
