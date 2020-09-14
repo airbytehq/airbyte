@@ -1,5 +1,6 @@
 import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
+import JobLogsResource from "./JobLogs";
 
 export interface Job {
   id: number;
@@ -30,6 +31,16 @@ export default class JobResource extends BaseResource implements Job {
     return {
       ...super.listShape(),
       schema: { jobs: [this.asSchema()] }
+    };
+  }
+
+  static detailShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      schema: {
+        job: this.asSchema(),
+        logs: JobLogsResource.asSchema()
+      }
     };
   }
 }

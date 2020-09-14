@@ -106,6 +106,7 @@
   "sources.pending": "Pending",
   "sources.running": "Running",
   "sources.cancelled": "Cancelled",
+  "sources.emptyLogs": "Empty data",
   "sources.deleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All past logs and configurations will be deleted\n  - Updates of new data will stop\n  - No existing data in the destination will be altered",
 
   "destination.destinationSettings": "Destination Settings"
