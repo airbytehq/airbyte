@@ -56,6 +56,8 @@ public class JobSubmitter implements Runnable {
       Optional<Job> oldestPendingJob = persistence.getOldestPendingJob();
 
       oldestPendingJob.ifPresent(this::submitJob);
+
+      LOGGER.info("Completed job-submitter...");
     } catch (Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }

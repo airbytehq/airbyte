@@ -31,9 +31,12 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JobRetrier implements Runnable {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(JobRetrier.class);
   private static final int MAX_ATTEMPTS = 5;
   private static final int RETRY_WAIT_MINUTES = 1;
 
@@ -47,6 +50,8 @@ public class JobRetrier implements Runnable {
 
   @Override
   public void run() {
+    LOGGER.info("Running job-retrier...");
+
     listFailedJobs()
         .forEach(job -> {
           if (shouldCancel(job)) {
@@ -58,6 +63,8 @@ public class JobRetrier implements Runnable {
             setSetStatusTo(job, JobStatus.PENDING);
           }
         });
+
+    LOGGER.info("Completed job-retrier...");
   }
 
   private Stream<Job> listFailedJobs() {
