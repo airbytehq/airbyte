@@ -81,11 +81,15 @@ public class SingerTarget {
   }
 
   public void consume(SingerMessage message) throws IOException {
+    Preconditions.checkState(targetProcess != null);
+
     writer.write(Jsons.serialize(message));
     writer.newLine();
   }
 
   public void stop() throws IOException {
+    Preconditions.checkState(targetProcess != null);
+
     writer.flush();
     writer.close();
     WorkerUtils.closeProcess(targetProcess);

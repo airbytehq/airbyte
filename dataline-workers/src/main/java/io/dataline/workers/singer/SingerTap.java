@@ -122,12 +122,14 @@ public class SingerTap {
   }
 
   public boolean hasNext() {
-    Preconditions.checkState(messageIterator != null);
+    Preconditions.checkState(tapProcess != null);
+
     return messageIterator.hasNext();
   }
 
   public SingerMessage next() {
-    Preconditions.checkState(messageIterator != null);
+    Preconditions.checkState(tapProcess != null);
+
     return messageIterator.next();
   }
 
