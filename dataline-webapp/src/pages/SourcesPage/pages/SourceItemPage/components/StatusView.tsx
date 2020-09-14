@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { useFetcher } from "rest-hooks";
+import { useFetcher, useSubscription, useResource } from "rest-hooks";
 
 import ContentCard from "../../../../../components/ContentCard";
 import Button from "../../../../../components/Button";
@@ -12,7 +12,6 @@ import EmptySyncHistory from "./EmptySyncHistory";
 import ConnectionResource, {
   Connection
 } from "../../../../../core/resources/Connection";
-import { useResource } from "rest-hooks/lib/react-integration/hooks";
 import JobResource from "../../../../../core/resources/Job";
 import JobsList from "./JobsList";
 
@@ -49,6 +48,10 @@ const SyncButton = styled(Button)`
 
 const StatusView: React.FC<IProps> = ({ sourceData, onEnabledChange }) => {
   const { jobs } = useResource(JobResource.listShape(), {
+    configId: sourceData.connectionId,
+    configType: "sync"
+  });
+  useSubscription(JobResource.listShape(), {
     configId: sourceData.connectionId,
     configType: "sync"
   });

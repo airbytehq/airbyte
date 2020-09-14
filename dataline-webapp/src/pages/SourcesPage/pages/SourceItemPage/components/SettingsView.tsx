@@ -79,6 +79,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
       {},
       {
         ...sourceData,
+        schedule: frequencyData?.config,
         source: {
           ...sourceData.source,
           name: values.name,

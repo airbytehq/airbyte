@@ -143,21 +143,18 @@ export default class ConnectionResource extends BaseResource
     };
   }
 
-  // TODO: fix error
   static syncShape<T extends typeof Resource>(this: T) {
     return {
-      ...super.partialUpdateShape(),
+      ...super.detailShape(),
       getFetchKey: (params: any) =>
         "POST " + this.url(params) + "/sync" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
       ): Promise<any> => {
-        const result = await this.fetch(
-          "post",
-          `${this.url(params)}/sync`,
-          params
-        );
-        return result;
+        await this.fetch("post", `${this.url(params)}/sync`, params);
+        return {
+          connectionId: params.connectionId
+        };
       }
     };
   }

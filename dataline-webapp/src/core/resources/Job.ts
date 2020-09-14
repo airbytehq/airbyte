@@ -1,4 +1,4 @@
-import { Resource } from "rest-hooks";
+import { Resource, FetchOptions } from "rest-hooks";
 import BaseResource from "./BaseResource";
 import JobLogsResource from "./JobLogs";
 
@@ -26,6 +26,12 @@ export default class JobResource extends BaseResource implements Job {
   }
 
   static urlRoot = "jobs";
+
+  static getFetchOptions(): FetchOptions {
+    return {
+      pollFrequency: 2500 // every 2,5 seconds
+    };
+  }
 
   static listShape<T extends typeof Resource>(this: T) {
     return {

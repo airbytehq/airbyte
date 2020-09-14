@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
 import styled from "styled-components";
@@ -12,6 +12,7 @@ import StatusView from "./components/StatusView";
 import SettingsView from "./components/SettingsView";
 import SchemaView from "./components/SchemaView";
 import ConnectionResource from "../../../../core/resources/Connection";
+import LoadingPage from "../../../../components/LoadingPage";
 
 const Content = styled.div`
   overflow-y: auto;
@@ -60,7 +61,7 @@ const SourceItemPage: React.FC = () => {
       name: <FormattedMessage id="sidebar.sources" />,
       onClick: onClickBack
     },
-    { name: connection.name }
+    { name: connection.source?.name }
   ];
 
   const onChangeStatus = async () => {
@@ -108,7 +109,9 @@ const SourceItemPage: React.FC = () => {
           />
         }
       />
-      <Content>{renderStep()}</Content>
+      <Content>
+        <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
+      </Content>
     </Page>
   );
 };
