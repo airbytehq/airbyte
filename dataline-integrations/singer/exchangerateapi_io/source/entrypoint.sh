@@ -42,7 +42,7 @@ function main() {
   # Singer's discovery is what we currently use to check connection
   if [ "$DISCOVER" == 1 ]; then
     echo2 "Checking connection..."
-    echo '{"streams":[]}' > catalog.json
+    tap-exchangeratesapi | grep '"type": "SCHEMA"' | jq -c '{"streams":[{"stream": .stream, "schema": .schema}]}' > catalog.json
   else
     echo2 "Running sync..."
     tap-exchangeratesapi $ARGS
