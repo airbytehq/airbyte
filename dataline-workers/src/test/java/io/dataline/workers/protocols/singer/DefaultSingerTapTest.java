@@ -155,7 +155,7 @@ class DefaultSingerTapTest {
     final JsonNode actualInputState = Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.STATE_JSON_FILENAME));
     assertEquals(expectedInputState, actualInputState);
 
-    assertEquals(expected, Lists.newArrayList(tap.next(), tap.next()));
+    assertEquals(expected, Lists.newArrayList(tap.attemptRead(), tap.attemptRead()));
 
     verify(discoverSchemaWorker).runInternal(discoverSchemaInput, discoverSchemaJobRoot);
   }

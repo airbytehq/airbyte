@@ -7,17 +7,16 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.Optional;
 
-public interface SingerTap extends Iterator<SingerMessage>, Closeable {
+public interface SingerTap extends AutoCloseable {
 
   void start(StandardTapConfig input, Path jobRoot) throws IOException, InvalidCredentialsException;
 
-  @Override
-  boolean hasNext();
+  boolean isFinished();
+
+  Optional<SingerMessage> attemptRead();
 
   @Override
-  SingerMessage next();
-
-  @Override
-  void close();
+  void close() throws Exception;
 }

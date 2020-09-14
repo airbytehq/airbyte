@@ -38,6 +38,7 @@ import io.dataline.workers.SyncWorker;
 import io.dataline.workers.WorkerUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,10 +76,13 @@ public class SingerSyncWorker implements SyncWorker {
       singerTarget.start(targetConfig, jobRoot);
       singerTap.start(tapConfig, jobRoot);
 
-      while (!cancelled.get() && singerTap.hasNext()) {
-        SingerMessage message = singerTap.next();
-        singerMessageTracker.accept(message);
-        singerTarget.accept(message);
+      while (!cancelled.get() && singerTap.isFinished()) {
+        final Optional<SingerMessage> maybeMessage = singerTap.attemptRead();
+        if (maybeMessage.isPresent()) {
+          final SingerMessage message = maybeMessage.get();
+          singerMessageTracker.accept(message);
+          singerTarget.accept(message);
+        }
       }
 
       singerTarget.notifyEndOfStream();

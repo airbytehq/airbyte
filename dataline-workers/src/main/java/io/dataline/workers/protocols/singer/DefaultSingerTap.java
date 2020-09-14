@@ -37,13 +37,12 @@ import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.StreamFactory;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,8 +66,7 @@ public class DefaultSingerTap implements SingerTap {
   private final SingerDiscoverSchemaWorker discoverSchemaWorker;
 
   private Process tapProcess = null;
-  private BufferedReader bufferedReader = null;
-  private Iterator<SingerMessage> messageIterator;
+  private Iterator<SingerMessage> messageIterator = null;
 
   public DefaultSingerTap(final String imageName,
                           final ProcessBuilderFactory pbf,
@@ -118,31 +116,35 @@ public class DefaultSingerTap implements SingerTap {
             .redirectError(jobRoot.resolve(SingerSyncWorker.TAP_ERR_LOG).toFile())
             .start();
 
-    bufferedReader = new BufferedReader(new InputStreamReader(tapProcess.getInputStream()));
-    messageIterator = streamFactory.create(new BufferedReader(new InputStreamReader(tapProcess.getInputStream()))).iterator();
+    messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream())).iterator();
   }
 
   @Override
-  public boolean hasNext() {
+  public boolean isFinished() {
     Preconditions.checkState(tapProcess != null);
 
     return tapProcess.isAlive() || messageIterator.hasNext();
   }
 
   @Override
-  public SingerMessage next() {
+  public Optional<SingerMessage> attemptRead() {
     Preconditions.checkState(tapProcess != null);
 
     // the code will only work if the read from the stream is blocking
-    return messageIterator.next();
+    return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
   }
 
   @Override
-  public void close() {
-    Preconditions.checkState(tapProcess != null);
+  public void close() throws Exception {
+    if (tapProcess == null) {
+      return;
+    }
 
     LOGGER.debug("Closing tap process");
-    WorkerUtils.gentleClose(tapProcess);
+    WorkerUtils.gentleClose(tapProcess, 1, TimeUnit.MINUTES);
+    if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
+      throw new Exception("Tap process wasn't successful");
+    }
   }
 
   private SingerCatalog runDiscovery(StandardTapConfig input, Path jobRoot) throws InvalidCredentialsException, IOException {

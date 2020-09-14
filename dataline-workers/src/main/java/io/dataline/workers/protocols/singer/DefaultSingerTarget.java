@@ -100,10 +100,15 @@ public class DefaultSingerTarget implements SingerTarget {
   }
 
   @Override
-  public void close() {
-    Preconditions.checkState(targetProcess != null);
+  public void close() throws Exception {
+    if (targetProcess == null) {
+      return;
+    }
 
     LOGGER.debug("Closing target process");
-    WorkerUtils.gentleClose(targetProcess);
+    WorkerUtils.gentleClose(targetProcess, 1, TimeUnit.MINUTES);
+    if (targetProcess.isAlive() || targetProcess.exitValue() != 0) {
+      throw new Exception("target process wasn't successful");
+    }
   }
 }

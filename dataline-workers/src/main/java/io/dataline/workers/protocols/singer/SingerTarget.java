@@ -7,7 +7,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public interface SingerTarget extends CheckedConsumer<SingerMessage, IOException>, Closeable {
+public interface SingerTarget extends CheckedConsumer<SingerMessage, IOException>, AutoCloseable {
 
   void start(StandardTargetConfig targetConfig, Path jobRoot);
 
@@ -17,5 +17,5 @@ public interface SingerTarget extends CheckedConsumer<SingerMessage, IOException
   void notifyEndOfStream() throws IOException;
 
   @Override
-  void close();
+  void close() throws Exception;
 }

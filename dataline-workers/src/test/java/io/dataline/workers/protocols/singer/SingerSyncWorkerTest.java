@@ -67,8 +67,8 @@ class SingerSyncWorkerTest {
     SingerMessage recordMessage1 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
     SingerMessage recordMessage2 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
-    when(tap.hasNext()).thenReturn(true, true, false);
-    when(tap.next()).thenReturn(recordMessage1, recordMessage2);
+    when(tap.isFinished()).thenReturn(true, true, false);
+    when(tap.attemptRead()).thenReturn(recordMessage1, recordMessage2);
 
     final SingerSyncWorker singerSyncWorker = new SingerSyncWorker(tap, target);
 
