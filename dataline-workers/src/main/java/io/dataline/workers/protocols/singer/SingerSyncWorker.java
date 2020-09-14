@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import io.dataline.commons.io.IOs;
 import io.dataline.config.StandardSyncInput;
@@ -77,7 +77,7 @@ public class SingerSyncWorker implements SyncWorker {
       while (!cancelled.get() && singerTap.hasNext()) {
         SingerMessage message = singerTap.next();
         singerMessageTracker.accept(message);
-        singerTarget.consume(message);
+        singerTarget.accept(message);
       }
 
       singerTap.stop();

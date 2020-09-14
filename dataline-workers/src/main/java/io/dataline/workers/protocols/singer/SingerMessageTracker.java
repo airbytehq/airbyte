@@ -22,26 +22,41 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.json.JsonSchemaValidator;
-import io.dataline.singer.SingerConfigSchema;
-import java.util.function.Predicate;
+import io.dataline.singer.SingerMessage;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
-public class SingerProtocolPredicate implements Predicate<JsonNode> {
+public class SingerMessageTracker implements Consumer<SingerMessage> {
 
-  private final JsonSchemaValidator jsonSchemaValidator;
-  private final JsonNode schema;
+  private final AtomicLong recordCount;
+  private final AtomicReference<JsonNode> outputState;
 
-  public SingerProtocolPredicate() {
-    jsonSchemaValidator = new JsonSchemaValidator();
-    schema = JsonSchemaValidator.getSchema(SingerConfigSchema.SINGER_MESSAGE.getFile());
+  public SingerMessageTracker() {
+    this.recordCount = new AtomicLong();
+    this.outputState = new AtomicReference<>();
   }
 
   @Override
-  public boolean test(JsonNode s) {
-    return jsonSchemaValidator.test(schema, s);
+  public void accept(SingerMessage message) {
+    if (message.getType().equals(SingerMessage.Type.RECORD)) {
+      recordCount.incrementAndGet();
+    }
+    if (message.getType().equals(SingerMessage.Type.STATE)) {
+      outputState.set(message.getValue());
+    }
+  }
+
+  public long getRecordCount() {
+    return recordCount.get();
+  }
+
+  public Optional<JsonNode> getOutputState() {
+    return Optional.ofNullable(outputState.get());
   }
 
 }

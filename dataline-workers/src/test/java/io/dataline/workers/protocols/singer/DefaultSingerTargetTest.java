@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -42,7 +42,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class SingerTargetTest {
+class DefaultSingerTargetTest {
 
   private static final String IMAGE_NAME = "spark_streaming:latest";
   private static final String JOB_ROOT_PREFIX = "workspace";
@@ -67,7 +67,7 @@ class SingerTargetTest {
 
   @Test
   public void test() throws Exception {
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerTarget.CONFIG_JSON_FILENAME))
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", DefaultSingerTarget.CONFIG_JSON_FILENAME))
         .thenReturn(processBuilder);
     when(processBuilder.redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())).thenReturn(processBuilder);
     when(processBuilder.start()).thenReturn(process);
@@ -76,15 +76,15 @@ class SingerTargetTest {
     final StandardTargetConfig targetConfig =
         WorkerUtils.syncToTargetConfig(TestConfigHelpers.createSyncConfig().getValue());
 
-    final SingerTarget target = new SingerTarget(IMAGE_NAME, pbf);
+    final SingerTarget target = new DefaultSingerTarget(IMAGE_NAME, pbf);
     target.start(targetConfig, jobRoot);
 
-    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", SingerTarget.CONFIG_JSON_FILENAME);
+    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", DefaultSingerTarget.CONFIG_JSON_FILENAME);
     verify(processBuilder).redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile());
     verify(processBuilder).start();
     verify(process).getOutputStream();
 
-    SingerMessage recordMessage = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
+    SingerMessage recordMessage = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
     target.consume(recordMessage);
     target.stop();
 

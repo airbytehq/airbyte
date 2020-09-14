@@ -33,11 +33,11 @@ import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.workers.Worker;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.singer.SingerCheckConnectionWorker;
-import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
-import io.dataline.workers.singer.SingerSyncWorker;
-import io.dataline.workers.singer.SingerTap;
-import io.dataline.workers.singer.SingerTarget;
+import io.dataline.workers.protocols.singer.DefaultSingerTap;
+import io.dataline.workers.protocols.singer.DefaultSingerTarget;
+import io.dataline.workers.protocols.singer.SingerCheckConnectionWorker;
+import io.dataline.workers.protocols.singer.SingerDiscoverSchemaWorker;
+import io.dataline.workers.protocols.singer.SingerSyncWorker;
 import io.dataline.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.dataline.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.dataline.workers.wrappers.JobOutputSyncWorker;
@@ -104,8 +104,8 @@ public class WorkerRunFactory {
             // mediated in DefaultSyncWorker.
             new JobOutputSyncWorker(
                 new SingerSyncWorker(
-                    new SingerTap(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
-                    new SingerTarget(job.getConfig().getSync().getDestinationDockerImage(), pbf))));
+                    new DefaultSingerTap(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
+                    new DefaultSingerTarget(job.getConfig().getSync().getDestinationDockerImage(), pbf))));
       default:
         throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }

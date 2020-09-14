@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import io.dataline.commons.json.Jsons;
 import io.dataline.singer.SingerMessage;

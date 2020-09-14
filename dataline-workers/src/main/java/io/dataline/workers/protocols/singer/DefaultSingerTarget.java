@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -41,9 +41,9 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerTarget {
+public class DefaultSingerTarget implements SingerTarget {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerTarget.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerTarget.class);
 
   @VisibleForTesting
   static final String CONFIG_JSON_FILENAME = "target_config.json";
@@ -54,11 +54,12 @@ public class SingerTarget {
   private Process targetProcess;
   private BufferedWriter writer;
 
-  public SingerTarget(final String imageName, final ProcessBuilderFactory pbf) {
+  public DefaultSingerTarget(final String imageName, final ProcessBuilderFactory pbf) {
     this.imageName = imageName;
     this.pbf = pbf;
   }
 
+  @Override
   public void start(StandardTargetConfig targetConfig, Path jobRoot) {
     Preconditions.checkState(targetProcess == null);
 
@@ -80,19 +81,19 @@ public class SingerTarget {
     }
   }
 
-  public void consume(SingerMessage message) throws IOException {
+  @Override
+  public void accept(SingerMessage message) throws IOException {
     Preconditions.checkState(targetProcess != null);
 
     writer.write(Jsons.serialize(message));
     writer.newLine();
   }
 
-  public void stop() throws IOException {
+  @Override public void stop() throws IOException {
     Preconditions.checkState(targetProcess != null);
 
     writer.flush();
     writer.close();
     WorkerUtils.closeProcess(targetProcess);
   }
-
 }

@@ -22,12 +22,14 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.dataline.commons.json.Jsons;
+import io.dataline.workers.protocols.singer.SingerMessageUtils;
+import io.dataline.workers.protocols.singer.SingerProtocolPredicate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +47,7 @@ class SingerProtocolPredicateTest {
 
   @Test
   void testValid() {
-    assertTrue(predicate.test(Jsons.jsonNode(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"))));
+    assertTrue(predicate.test(Jsons.jsonNode(SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"))));
   }
 
   @Test
@@ -56,15 +58,15 @@ class SingerProtocolPredicateTest {
   @Test
   void testConcatenatedValid() {
     final String concatenated =
-        Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"))
-            + Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow"));
+        Jsons.serialize(SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"))
+            + Jsons.serialize(SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow"));
     assertTrue(predicate.test(Jsons.deserialize(concatenated)));
   }
 
   @Test
   void testMissingNewLineAndLineStartsWithValidRecord() {
     final String concatenated =
-        Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"))
+        Jsons.serialize(SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"))
             + "{ \"fish\": \"tuna\"}";
     assertTrue(predicate.test(Jsons.deserialize(concatenated)));
   }
@@ -73,7 +75,7 @@ class SingerProtocolPredicateTest {
   void testMissingNewLineAndLineStartsWithInvalidRecord() {
     final String concatenated =
         "{ \"fish\": \"tuna\"}"
-            + Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"));
+            + Jsons.serialize(SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"));
     assertFalse(predicate.test(Jsons.deserialize(concatenated)));
   }
 

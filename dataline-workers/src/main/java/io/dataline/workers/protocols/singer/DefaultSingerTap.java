@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -47,9 +47,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerTap {
+public class DefaultSingerTap implements SingerTap {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerTap.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerTap.class);
 
   @VisibleForTesting
   static final String CONFIG_JSON_FILENAME = "tap_config.json";
@@ -69,23 +69,23 @@ public class SingerTap {
   private BufferedReader bufferedReader = null;
   private Iterator<SingerMessage> messageIterator;
 
-  public SingerTap(final String imageName,
-                   final ProcessBuilderFactory pbf,
-                   final SingerDiscoverSchemaWorker discoverSchemaWorker) {
+  public DefaultSingerTap(final String imageName,
+                          final ProcessBuilderFactory pbf,
+                          final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this(imageName, pbf, new SingerJsonStreamFactory(), discoverSchemaWorker);
   }
 
-  @VisibleForTesting
-  SingerTap(final String imageName,
-            final ProcessBuilderFactory pbf,
-            final StreamFactory streamFactory,
-            final SingerDiscoverSchemaWorker discoverSchemaWorker) {
+  @VisibleForTesting DefaultSingerTap(final String imageName,
+                                      final ProcessBuilderFactory pbf,
+                                      final StreamFactory streamFactory,
+                                      final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this.imageName = imageName;
     this.pbf = pbf;
     this.streamFactory = streamFactory;
     this.discoverSchemaWorker = discoverSchemaWorker;
   }
 
+  @Override
   public void start(StandardTapConfig input, Path jobRoot) throws IOException, InvalidCredentialsException {
     Preconditions.checkState(tapProcess == null);
 
@@ -121,18 +121,21 @@ public class SingerTap {
     messageIterator = streamFactory.create(new BufferedReader(new InputStreamReader(tapProcess.getInputStream()))).iterator();
   }
 
+  @Override
   public boolean hasNext() {
     Preconditions.checkState(tapProcess != null);
 
     return messageIterator.hasNext();
   }
 
+  @Override
   public SingerMessage next() {
     Preconditions.checkState(tapProcess != null);
 
     return messageIterator.next();
   }
 
+  @Override
   public void stop() throws IOException {
     Preconditions.checkState(tapProcess != null);
 

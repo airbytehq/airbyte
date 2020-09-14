@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -32,6 +32,7 @@ import io.dataline.config.Schema;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.singer.SingerCatalog;
 import io.dataline.singer.SingerMetadataChild;
+import io.dataline.workers.protocols.singer.SingerCatalogConverters;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 

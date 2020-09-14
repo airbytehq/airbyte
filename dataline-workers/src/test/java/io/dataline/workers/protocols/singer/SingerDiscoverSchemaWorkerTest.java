@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,6 +41,7 @@ import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.process.ProcessBuilderFactory;
+import io.dataline.workers.protocols.singer.SingerDiscoverSchemaWorker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

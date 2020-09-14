@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.json.Jsons;
 import io.dataline.singer.SingerMessage;
+import io.dataline.workers.protocols.singer.SingerMessageTracker;
 import org.junit.jupiter.api.Test;
 
 class SingerMessageTrackerTest {

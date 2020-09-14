@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,6 +31,9 @@ import static org.mockito.Mockito.when;
 
 import io.dataline.commons.json.Jsons;
 import io.dataline.singer.SingerMessage;
+import io.dataline.workers.protocols.singer.SingerJsonStreamFactory;
+import io.dataline.workers.protocols.singer.SingerMessageUtils;
+import io.dataline.workers.protocols.singer.SingerProtocolPredicate;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -57,9 +60,9 @@ class SingerJsonStreamFactoryTest {
   @Test
   public void testValid() {
     final SingerMessage record1 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+        SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
     final SingerMessage record2 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+        SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
     final String inputString =
         new StringBuilder()
@@ -78,8 +81,8 @@ class SingerJsonStreamFactoryTest {
   @Test
   public void testInvalid() {
 
-    final SingerMessage record1 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
-    final SingerMessage record2 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+    final SingerMessage record1 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+    final SingerMessage record2 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
     final String invalidRecord = "{ \"fish\": \"tuna\"}";
 
     when(singerProtocolPredicate.test(Jsons.jsonNode(record1))).thenReturn(true);
@@ -104,9 +107,9 @@ class SingerJsonStreamFactoryTest {
   @Test
   public void testMissingNewLineBetweenValidRecords() {
     final SingerMessage record1 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+        SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
     final SingerMessage record2 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+        SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
     final String inputString =
         new StringBuilder()

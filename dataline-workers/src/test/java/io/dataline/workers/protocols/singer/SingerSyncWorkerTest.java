@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -61,11 +61,11 @@ class SingerSyncWorkerTest {
         .withStandardSync(standardSync)
         .withDestinationConnectionImplementation(syncInput.getDestinationConnectionImplementation());
 
-    final SingerTap tap = mock(SingerTap.class);
-    final SingerTarget target = mock(SingerTarget.class);
+    final SingerTap tap = mock(DefaultSingerTap.class);
+    final SingerTarget target = mock(DefaultSingerTarget.class);
 
-    SingerMessage recordMessage1 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
-    SingerMessage recordMessage2 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+    SingerMessage recordMessage1 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
+    SingerMessage recordMessage2 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
     when(tap.hasNext()).thenReturn(true, true, false);
     when(tap.next()).thenReturn(recordMessage1, recordMessage2);
