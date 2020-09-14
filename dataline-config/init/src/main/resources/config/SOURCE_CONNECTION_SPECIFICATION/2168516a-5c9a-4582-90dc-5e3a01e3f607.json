@@ -9,23 +9,29 @@
     "additionalProperties": false,
     "properties": {
       "host": {
+        "description": "Hostname of the database.",
         "type": "string"
       },
       "port": {
+        "description": "Port of the database.",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536
       },
       "user": {
+        "description": "Username to use to access the database.",
         "type": "string"
       },
       "password": {
+        "description": "Password associated with the username.",
         "type": "string"
       },
       "dbname": {
+        "description": "Name of the database.",
         "type": "string"
       },
       "filter_dbs": {
+        "description": "This should be identical to dbname field.",
         "type": "string"
       }
     }
