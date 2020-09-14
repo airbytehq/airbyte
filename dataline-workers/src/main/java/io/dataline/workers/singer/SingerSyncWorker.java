@@ -36,6 +36,7 @@ import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.SyncWorker;
 import io.dataline.workers.WorkerUtils;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
@@ -82,10 +83,10 @@ public class SingerSyncWorker implements SyncWorker {
       singerTap.stop();
       singerTarget.stop();
     } catch (Exception e) {
-      LOGGER.debug(
-          "Sync worker failed. Tap error log: {}.\n Target error log: {}",
-          IOs.readFile(jobRoot, TAP_ERR_LOG),
-          IOs.readFile(jobRoot, TARGET_ERR_LOG));
+      LOGGER.error("Sync worker failed. Tap error log: {}.\n Target error log: {}",
+          Files.exists(jobRoot.resolve(TAP_ERR_LOG)) ? IOs.readFile(jobRoot, TAP_ERR_LOG) : "<null>",
+          Files.exists(jobRoot.resolve(TARGET_ERR_LOG)) ? IOs.readFile(jobRoot, TARGET_ERR_LOG) : "<null>",
+          e);
 
       return new OutputAndStatus<>(JobStatus.FAILED, null);
     }
