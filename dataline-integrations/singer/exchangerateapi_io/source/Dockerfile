@@ -11,6 +11,8 @@ COPY requirements.txt .
 RUN python -m pip install --upgrade pip && \
   pip install -r requirements.txt
 
-ENTRYPOINT ["tap-exchangeratesapi"]
+COPY entrypoint.sh .
 
-LABEL io.dataline.version=0.1.1
+ENTRYPOINT ["/singer/entrypoint.sh"]
+
+LABEL io.dataline.version=0.1.2
