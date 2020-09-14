@@ -29,15 +29,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
-import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.TestConfigHelpers;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocol.singer.MessageUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,7 +42,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class SingerTargetFactoryTest {
+class SingerTargetTest {
 
   private static final String IMAGE_NAME = "spark_streaming:latest";
   private static final String JOB_ROOT_PREFIX = "workspace";
@@ -70,26 +67,26 @@ class SingerTargetFactoryTest {
 
   @Test
   public void test() throws Exception {
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerTargetFactory.CONFIG_JSON_FILENAME))
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerTarget.CONFIG_JSON_FILENAME))
         .thenReturn(processBuilder);
-    when(processBuilder.redirectError(jobRoot.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile())).thenReturn(processBuilder);
+    when(processBuilder.redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())).thenReturn(processBuilder);
     when(processBuilder.start()).thenReturn(process);
     when(process.getOutputStream()).thenReturn(outputStream);
 
     final StandardTargetConfig targetConfig =
         WorkerUtils.syncToTargetConfig(TestConfigHelpers.createSyncConfig().getValue());
 
-    final SingerTargetFactory targetFactory = new SingerTargetFactory(IMAGE_NAME, pbf);
-    final CloseableConsumer<SingerMessage> closeableConsumer = targetFactory.create(targetConfig, jobRoot);
+    final SingerTarget target = new SingerTarget(IMAGE_NAME, pbf);
+    target.start(targetConfig, jobRoot);
 
-    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", SingerTargetFactory.CONFIG_JSON_FILENAME);
-    verify(processBuilder).redirectError(jobRoot.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile());
+    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", SingerTarget.CONFIG_JSON_FILENAME);
+    verify(processBuilder).redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile());
     verify(processBuilder).start();
     verify(process).getOutputStream();
 
     SingerMessage recordMessage = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
-    closeableConsumer.accept(recordMessage);
-    closeableConsumer.close();
+    target.consume(recordMessage);
+    target.stop();
 
     String actualOutput = new String(outputStream.toByteArray());
     assertEquals(Jsons.serialize(recordMessage) + "\n", actualOutput);

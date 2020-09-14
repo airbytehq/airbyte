@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocol.singer;
+package io.dataline.workers.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;

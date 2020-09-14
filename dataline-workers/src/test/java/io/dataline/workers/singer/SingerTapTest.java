@@ -44,7 +44,6 @@ import io.dataline.singer.SingerMessage;
 import io.dataline.singer.SingerStream;
 import io.dataline.singer.SingerTableSchema;
 import io.dataline.singer.SingerType;
-import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
@@ -52,19 +51,16 @@ import io.dataline.workers.StreamFactory;
 import io.dataline.workers.TestConfigHelpers;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocol.singer.MessageUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class SingerTapFactoryTest {
+class SingerTapTest {
 
   private static final String IMAGE_NAME = "hudi:latest";
   private static final String JOB_ROOT_PREFIX = "workspace";
@@ -78,8 +74,8 @@ class SingerTapFactoryTest {
   @BeforeEach
   public void setup() throws IOException {
     jobRoot = Files.createTempDirectory(JOB_ROOT_PREFIX);
-    discoverSchemaJobRoot = jobRoot.resolve(SingerTapFactory.DISCOVERY_DIR);
-    errorLogPath = jobRoot.resolve(DefaultSyncWorker.TAP_ERR_LOG);
+    discoverSchemaJobRoot = jobRoot.resolve(SingerTap.DISCOVERY_DIR);
+    errorLogPath = jobRoot.resolve(SingerSyncWorker.TAP_ERR_LOG);
   }
 
   @Test
@@ -127,11 +123,11 @@ class SingerTapFactoryTest {
         jobRoot,
         IMAGE_NAME,
         "--config",
-        SingerTapFactory.CONFIG_JSON_FILENAME,
+        SingerTap.CONFIG_JSON_FILENAME,
         "--properties",
-        SingerTapFactory.CATALOG_JSON_FILENAME,
+        SingerTap.CATALOG_JSON_FILENAME,
         "--state",
-        SingerTapFactory.STATE_JSON_FILENAME))
+        SingerTap.STATE_JSON_FILENAME))
             .thenReturn(processBuilder);
     when(processBuilder.redirectError(errorLogPath.toFile())).thenReturn(processBuilder);
     when(processBuilder.start()).thenReturn(process);
@@ -139,27 +135,27 @@ class SingerTapFactoryTest {
 
     when(streamFactory.create(any())).thenReturn(expected.stream());
 
-    final SingerTapFactory tapFactory = new SingerTapFactory(IMAGE_NAME, pbf, streamFactory, discoverSchemaWorker);
-    final Stream<SingerMessage> actual = tapFactory.create(tapConfig, jobRoot);
+    final SingerTap tap = new SingerTap(IMAGE_NAME, pbf, streamFactory, discoverSchemaWorker);
+    tap.start(tapConfig, jobRoot);
 
     assertTrue(Files.exists(jobRoot));
-    assertTrue(Files.exists(jobRoot.resolve(SingerTapFactory.CONFIG_JSON_FILENAME)));
-    assertTrue(Files.exists(jobRoot.resolve(SingerTapFactory.CATALOG_JSON_FILENAME)));
-    assertTrue(Files.exists(jobRoot.resolve(SingerTapFactory.STATE_JSON_FILENAME)));
+    assertTrue(Files.exists(jobRoot.resolve(SingerTap.CONFIG_JSON_FILENAME)));
+    assertTrue(Files.exists(jobRoot.resolve(SingerTap.CATALOG_JSON_FILENAME)));
+    assertTrue(Files.exists(jobRoot.resolve(SingerTap.STATE_JSON_FILENAME)));
 
     final JsonNode expectedConfig = Jsons.jsonNode(tapConfig.getSourceConnectionImplementation().getConfiguration());
-    final JsonNode actualConfig = Jsons.deserialize(IOs.readFile(jobRoot, SingerTapFactory.CONFIG_JSON_FILENAME));
+    final JsonNode actualConfig = Jsons.deserialize(IOs.readFile(jobRoot, SingerTap.CONFIG_JSON_FILENAME));
     assertEquals(expectedConfig, actualConfig);
 
     final JsonNode expectedCatalog = Jsons.jsonNode(singerCatalog);
-    final JsonNode actualCatalog = Jsons.deserialize(IOs.readFile(jobRoot, SingerTapFactory.CATALOG_JSON_FILENAME));
+    final JsonNode actualCatalog = Jsons.deserialize(IOs.readFile(jobRoot, SingerTap.CATALOG_JSON_FILENAME));
     assertEquals(expectedCatalog, actualCatalog);
 
     final JsonNode expectedInputState = Jsons.jsonNode(tapConfig.getState());
-    final JsonNode actualInputState = Jsons.deserialize(IOs.readFile(jobRoot, SingerTapFactory.STATE_JSON_FILENAME));
+    final JsonNode actualInputState = Jsons.deserialize(IOs.readFile(jobRoot, SingerTap.STATE_JSON_FILENAME));
     assertEquals(expectedInputState, actualInputState);
 
-    assertEquals(expected, actual.collect(Collectors.toList()));
+    assertEquals(expected, Lists.newArrayList(tap.next(), tap.next()));
 
     verify(discoverSchemaWorker).runInternal(discoverSchemaInput, discoverSchemaJobRoot);
   }

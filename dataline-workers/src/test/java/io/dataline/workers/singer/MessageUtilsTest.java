@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocol.singer;
+package io.dataline.workers.singer;
 
 import static org.junit.jupiter.api.Assertions.*;
 

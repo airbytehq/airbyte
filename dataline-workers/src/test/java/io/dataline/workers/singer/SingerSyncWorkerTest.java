@@ -22,31 +22,27 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.workers.singer;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
-import io.dataline.workers.protocol.singer.MessageUtils;
+import io.dataline.workers.TestConfigHelpers;
 import java.nio.file.Path;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
 
-class DefaultSyncWorkerTest {
+class SingerSyncWorkerTest {
 
   private static final Path WORKSPACE_ROOT = Path.of("/workspaces/10");
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
-  private static final long LAST_SYNC_TIME = 1598565106;
 
   @SuppressWarnings("unchecked")
   @Test
@@ -65,29 +61,25 @@ class DefaultSyncWorkerTest {
         .withStandardSync(standardSync)
         .withDestinationConnectionImplementation(syncInput.getDestinationConnectionImplementation());
 
-    final TapFactory<SingerMessage> tapFactory = (TapFactory<SingerMessage>) mock(TapFactory.class);
-    final TargetFactory<SingerMessage> targetFactory =
-        (TargetFactory<SingerMessage>) mock(TargetFactory.class);
-    final CloseableConsumer<SingerMessage> consumer =
-        (CloseableConsumer<SingerMessage>) mock(CloseableConsumer.class);
+    final SingerTap tap = mock(SingerTap.class);
+    final SingerTarget target = mock(SingerTarget.class);
 
     SingerMessage recordMessage1 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
     SingerMessage recordMessage2 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
-    final Stream<SingerMessage> tapStream = spy(Stream.of(recordMessage1, recordMessage2));
+    when(tap.hasNext()).thenReturn(true, true, false);
+    when(tap.next()).thenReturn(recordMessage1, recordMessage2);
 
-    when(tapFactory.create(tapConfig, WORKSPACE_ROOT)).thenReturn(tapStream);
-    when(targetFactory.create(targetConfig, WORKSPACE_ROOT)).thenReturn(consumer);
-    final DefaultSyncWorker defaultSyncWorker = new DefaultSyncWorker(tapFactory, targetFactory);
+    final SingerSyncWorker singerSyncWorker = new SingerSyncWorker(tap, target);
 
-    defaultSyncWorker.run(syncInput, WORKSPACE_ROOT);
+    singerSyncWorker.run(syncInput, WORKSPACE_ROOT);
 
-    verify(tapFactory).create(tapConfig, WORKSPACE_ROOT);
-    verify(targetFactory).create(targetConfig, WORKSPACE_ROOT);
-    verify(tapStream).close();
-    verify(consumer).accept(recordMessage1);
-    verify(consumer).accept(recordMessage2);
-    verify(consumer).close();
+    verify(tap).start(tapConfig, WORKSPACE_ROOT);
+    verify(target).start(targetConfig, WORKSPACE_ROOT);
+    verify(tap).stop();
+    verify(target).stop();
+    verify(target).consume(recordMessage1);
+    verify(target).consume(recordMessage2);
   }
 
 }

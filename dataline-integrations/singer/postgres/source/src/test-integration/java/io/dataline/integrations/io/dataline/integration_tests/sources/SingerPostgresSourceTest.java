@@ -46,10 +46,10 @@ import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocol.singer.SingerMessageTracker;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
-import io.dataline.workers.singer.SingerTapFactory;
+import io.dataline.workers.singer.SingerMessageTracker;
+import io.dataline.workers.singer.SingerTap;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -100,7 +100,7 @@ public class SingerPostgresSourceTest {
 
   @Test
   public void testReadFirstTime() throws IOException, InvalidCredentialsException {
-    SingerTapFactory singerTapFactory = new SingerTapFactory(IMAGE_NAME, pbf, new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
+    SingerTap singerTap = new SingerTap(IMAGE_NAME, pbf, new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
 
     Schema schema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), Schema.class);
 
@@ -116,7 +116,7 @@ public class SingerPostgresSourceTest {
         .withStandardSync(syncConfig)
         .withSourceConnectionImplementation(sourceImpl);
 
-    Stream<SingerMessage> singerMessageStream = singerTapFactory.create(tapConfig, jobRoot);
+    Stream<SingerMessage> singerMessageStream = singerTap.create(tapConfig, jobRoot);
 
     SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
     List<SingerMessage> actualMessages = singerMessageStream.peek(singerMessageTracker).collect(Collectors.toList());

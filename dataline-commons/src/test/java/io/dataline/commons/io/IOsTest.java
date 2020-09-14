@@ -99,4 +99,5 @@ class IOsTest {
     Mockito.doThrow(new IOException()).when(closeable).close();
     assertThrows(RuntimeException.class, () -> IOs.silentClose(closeable));
   }
+
 }

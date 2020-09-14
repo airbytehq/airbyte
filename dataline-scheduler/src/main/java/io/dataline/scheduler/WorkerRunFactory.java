@@ -31,13 +31,13 @@ import io.dataline.config.JobSyncConfig;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardSyncInput;
-import io.dataline.workers.DefaultSyncWorker;
 import io.dataline.workers.Worker;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import io.dataline.workers.singer.SingerCheckConnectionWorker;
 import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
-import io.dataline.workers.singer.SingerTapFactory;
-import io.dataline.workers.singer.SingerTargetFactory;
+import io.dataline.workers.singer.SingerSyncWorker;
+import io.dataline.workers.singer.SingerTap;
+import io.dataline.workers.singer.SingerTarget;
 import io.dataline.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.dataline.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.dataline.workers.wrappers.JobOutputSyncWorker;
@@ -103,9 +103,9 @@ public class WorkerRunFactory {
             // interoperate with SingerTap and SingerTarget now that they are split and
             // mediated in DefaultSyncWorker.
             new JobOutputSyncWorker(
-                new DefaultSyncWorker(
-                    new SingerTapFactory(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
-                    new SingerTargetFactory(job.getConfig().getSync().getDestinationDockerImage(), pbf))));
+                new SingerSyncWorker(
+                    new SingerTap(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
+                    new SingerTarget(job.getConfig().getSync().getDestinationDockerImage(), pbf))));
       default:
         throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }
