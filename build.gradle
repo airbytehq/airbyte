@@ -87,11 +87,6 @@ allprojects {
     }
 }
 
-// Common to all subprojects
-subprojects {
-    apply plugin: 'base'
-}
-
 // Java projects common configurations
 subprojects {
 
@@ -99,7 +94,6 @@ subprojects {
         return
     }
 
-    apply plugin: 'base'
     apply plugin: 'java'
 
     repositories {
