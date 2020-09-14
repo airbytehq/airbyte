@@ -26,11 +26,10 @@ package io.dataline.workers.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.json.JsonSchemaValidator;
-import io.dataline.commons.json.Jsons;
 import io.dataline.singer.SingerConfigSchema;
 import java.util.function.Predicate;
 
-public class SingerProtocolPredicate implements Predicate<String> {
+public class SingerProtocolPredicate implements Predicate<JsonNode> {
 
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JsonNode schema;
@@ -41,8 +40,8 @@ public class SingerProtocolPredicate implements Predicate<String> {
   }
 
   @Override
-  public boolean test(String s) {
-    return jsonSchemaValidator.test(schema, Jsons.deserialize(s));
+  public boolean test(JsonNode s) {
+    return jsonSchemaValidator.test(schema, s);
   }
 
 }

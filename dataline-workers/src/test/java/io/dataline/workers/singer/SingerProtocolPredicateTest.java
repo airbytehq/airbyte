@@ -45,31 +45,36 @@ class SingerProtocolPredicateTest {
 
   @Test
   void testValid() {
-    assertTrue(predicate.test(Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"))));
+    assertTrue(predicate.test(Jsons.jsonNode(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"))));
   }
 
   @Test
   void testInValid() {
-    assertFalse(predicate.test("{ \"fish\": \"tuna\"}"));
+    assertFalse(predicate.test(Jsons.deserialize("{ \"fish\": \"tuna\"}")));
   }
 
   @Test
   void testConcatenatedValid() {
-    final String concatenated = Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green")) + Jsons
-        .serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow"));
-    assertTrue(predicate.test(concatenated));
+    final String concatenated =
+        Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"))
+            + Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow"));
+    assertTrue(predicate.test(Jsons.deserialize(concatenated)));
   }
 
   @Test
   void testMissingNewLineAndLineStartsWithValidRecord() {
-    final String concatenated = Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green")) + "{ \"fish\": \"tuna\"}";
-    assertTrue(predicate.test(concatenated));
+    final String concatenated =
+        Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"))
+            + "{ \"fish\": \"tuna\"}";
+    assertTrue(predicate.test(Jsons.deserialize(concatenated)));
   }
 
   @Test
   void testMissingNewLineAndLineStartsWithInvalidRecord() {
-    final String concatenated = "{ \"fish\": \"tuna\"}" + Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"));
-    assertFalse(predicate.test(concatenated));
+    final String concatenated =
+        "{ \"fish\": \"tuna\"}"
+            + Jsons.serialize(MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green"));
+    assertFalse(predicate.test(Jsons.deserialize(concatenated)));
   }
 
 }

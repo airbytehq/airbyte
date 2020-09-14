@@ -78,15 +78,13 @@ class SingerJsonStreamFactoryTest {
   @Test
   public void testInvalid() {
 
-    final SingerMessage record1 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
-    final SingerMessage record2 =
-        MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+    final SingerMessage record1 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+    final SingerMessage record2 = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
     final String invalidRecord = "{ \"fish\": \"tuna\"}";
 
-    when(singerProtocolPredicate.test(Jsons.serialize(record1))).thenReturn(true);
-    when(singerProtocolPredicate.test(Jsons.serialize(record2))).thenReturn(true);
-    when(singerProtocolPredicate.test(invalidRecord)).thenReturn(false);
+    when(singerProtocolPredicate.test(Jsons.jsonNode(record1))).thenReturn(true);
+    when(singerProtocolPredicate.test(Jsons.jsonNode(record2))).thenReturn(true);
+    when(singerProtocolPredicate.test(Jsons.deserialize(invalidRecord))).thenReturn(false);
 
     final String inputString =
         new StringBuilder()
@@ -100,8 +98,7 @@ class SingerJsonStreamFactoryTest {
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
     final Stream<SingerMessage> expectedStream = Stream.of(record1, record2);
 
-    assertEquals(
-        expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
+    assertEquals(expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
   }
 
   @Test
