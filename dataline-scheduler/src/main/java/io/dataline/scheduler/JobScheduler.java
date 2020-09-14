@@ -77,6 +77,7 @@ public class JobScheduler implements Runnable {
 
       scheduleSyncJobs();
 
+      LOGGER.info("Completed job-scheduler...");
     } catch (Throwable e) {
       LOGGER.error("Job Scheduler Error", e);
     }
