@@ -189,7 +189,15 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["string", "integer", "null", "boolean"]
+        "enum": [
+          "null",
+          "boolean",
+          "object",
+          "array",
+          "number",
+          "string",
+          "integer"
+        ]
       }
     }
   }
