@@ -63,17 +63,17 @@ public class JobSubmitter implements Runnable {
 
   private void submitJob(Job job) {
     threadPool.submit(new LifecycledCallable.Builder<>(workerRunFactory.create(job))
-        .setOnStart(() -> persistence.updateStatus(job.getId(), JobStatus.RUNNING))
+        .setOnStart(() -> {
+          persistence.updateStatus(job.getId(), JobStatus.RUNNING);
+          persistence.incrementAttempts(job.getId());
+        })
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {
             persistence.writeOutput(job.getId(), output.getOutput().get());
           }
           persistence.updateStatus(job.getId(), getStatus(output));
         })
-        .setOnException(noop -> {
-          persistence.updateStatus(job.getId(), JobStatus.FAILED);
-          persistence.incrementAttempts(job.getId());
-        }).build());
+        .setOnException(noop -> persistence.updateStatus(job.getId(), JobStatus.FAILED)).build());
   }
 
   private JobStatus getStatus(OutputAndStatus<?> output) {
