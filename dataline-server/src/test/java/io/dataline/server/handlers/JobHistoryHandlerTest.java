@@ -70,6 +70,7 @@ public class JobHistoryHandlerTest {
       null,
       STDOUT_PATH,
       STDERR_PATH,
+      0,
       CREATED_AT,
       null,
       CREATED_AT);

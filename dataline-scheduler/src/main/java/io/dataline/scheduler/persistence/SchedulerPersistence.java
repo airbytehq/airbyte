@@ -55,6 +55,8 @@ public interface SchedulerPersistence {
 
   void updateStatus(long jobId, JobStatus status) throws IOException;
 
+  void incrementAttempts(long jobId) throws IOException;
+
   <T> void writeOutput(long jobId, T output) throws IOException;
 
   /**
@@ -64,6 +66,8 @@ public interface SchedulerPersistence {
    * @throws IOException - what you do when you IO
    */
   List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException;
+
+  List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
   Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
 

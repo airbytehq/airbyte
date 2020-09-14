@@ -62,9 +62,7 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
       case CANCELLED:
       case COMPLETED:
         return timeForJobNewJob;
-      // todo (cgardens) - add max retry concept
       case FAILED:
-        return true;
       case PENDING:
       case RUNNING:
         return false;
