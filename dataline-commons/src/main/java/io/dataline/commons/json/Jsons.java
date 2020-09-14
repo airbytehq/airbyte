@@ -25,6 +25,7 @@
 package io.dataline.commons.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -77,6 +78,14 @@ public class Jsons {
 
   public static <T> JsonNode jsonNode(final T object) {
     return OBJECT_MAPPER.valueToTree(object);
+  }
+
+  public static <T> T object(final JsonNode jsonNode, final Class<T> klass) {
+    return OBJECT_MAPPER.convertValue(jsonNode, klass);
+  }
+
+  public static <T> T object(final JsonNode jsonNode, final TypeReference<T> typeReference) {
+    return OBJECT_MAPPER.convertValue(jsonNode, typeReference);
   }
 
   @SuppressWarnings("unchecked")
