@@ -85,7 +85,7 @@ class DefaultSingerTargetTest {
     verify(process).getOutputStream();
 
     SingerMessage recordMessage = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
-    target.consume(recordMessage);
+    target.accept(recordMessage);
     target.stop();
 
     String actualOutput = new String(outputStream.toByteArray());

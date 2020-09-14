@@ -78,8 +78,8 @@ class SingerSyncWorkerTest {
     verify(target).start(targetConfig, WORKSPACE_ROOT);
     verify(tap).stop();
     verify(target).stop();
-    verify(target).consume(recordMessage1);
-    verify(target).consume(recordMessage2);
+    verify(target).accept(recordMessage1);
+    verify(target).accept(recordMessage2);
   }
 
 }
