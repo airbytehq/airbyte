@@ -270,13 +270,15 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
   @Override
   public List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException {
+    // todo (cgardens) - jooq does not let you use bindings to do LIKE queries. you have to construct
+    // the string yourself or use their DSL.
+    final String likeStatement = "'%" + ScopeHelper.getScopePrefix(configType) + "%'";
     try {
-      return DatabaseHelper.query(
-          connectionPool,
-          ctx -> ctx.fetch(
-              "SELECT * FROM jobs WHERE scope LIKE '%?%' AND CAST(status AS VARCHAR) = ? ORDER BY created_at DESC",
-              ScopeHelper.getScopePrefix(configType),
-              status.toString().toLowerCase()).stream()
+      return DatabaseHelper.query(connectionPool,
+          ctx -> ctx
+              .fetch("SELECT * FROM jobs WHERE scope LIKE " + likeStatement + " AND CAST(status AS VARCHAR) = ? ORDER BY created_at DESC",
+                  status.toString().toLowerCase())
+              .stream()
               .map(DefaultSchedulerPersistence::getJobFromRecord)
               .collect(Collectors.toList()));
     } catch (SQLException e) {
