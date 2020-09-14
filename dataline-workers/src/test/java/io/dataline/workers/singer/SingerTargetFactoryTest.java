@@ -70,7 +70,7 @@ class SingerTargetFactoryTest {
 
   @Test
   public void test() throws Exception {
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", jobRoot.resolve(SingerTargetFactory.CONFIG_JSON_FILENAME).toString()))
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerTargetFactory.CONFIG_JSON_FILENAME))
         .thenReturn(processBuilder);
     when(processBuilder.redirectError(jobRoot.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile())).thenReturn(processBuilder);
     when(processBuilder.start()).thenReturn(process);
@@ -82,7 +82,7 @@ class SingerTargetFactoryTest {
     final SingerTargetFactory targetFactory = new SingerTargetFactory(IMAGE_NAME, pbf);
     final CloseableConsumer<SingerMessage> closeableConsumer = targetFactory.create(targetConfig, jobRoot);
 
-    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", jobRoot.resolve(SingerTargetFactory.CONFIG_JSON_FILENAME).toString());
+    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", SingerTargetFactory.CONFIG_JSON_FILENAME);
     verify(processBuilder).redirectError(jobRoot.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile());
     verify(processBuilder).start();
     verify(process).getOutputStream();
