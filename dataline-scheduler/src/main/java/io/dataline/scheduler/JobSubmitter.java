@@ -56,6 +56,8 @@ public class JobSubmitter implements Runnable {
       Optional<Job> oldestPendingJob = persistence.getOldestPendingJob();
 
       oldestPendingJob.ifPresent(this::submitJob);
+
+      LOGGER.info("Completed job-submitter...");
     } catch (Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
@@ -63,7 +65,10 @@ public class JobSubmitter implements Runnable {
 
   private void submitJob(Job job) {
     threadPool.submit(new LifecycledCallable.Builder<>(workerRunFactory.create(job))
-        .setOnStart(() -> persistence.updateStatus(job.getId(), JobStatus.RUNNING))
+        .setOnStart(() -> {
+          persistence.updateStatus(job.getId(), JobStatus.RUNNING);
+          persistence.incrementAttempts(job.getId());
+        })
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {
             persistence.writeOutput(job.getId(), output.getOutput().get());

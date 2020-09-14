@@ -35,6 +35,7 @@ public class Job {
   private final long id;
   private final String scope;
   private final JobStatus status;
+  private int attempts;
   private final long createdAtInSecond;
   private final Long startedAtInSecond;
   private final long updatedAtInSecond;
@@ -50,6 +51,7 @@ public class Job {
              @Nullable JobOutput output,
              String stdoutPath,
              String stderrPath,
+             int attempts,
              long createdAtInSecond,
              @Nullable Long startedAtInSecond,
              long updatedAtInSecond) {
@@ -60,6 +62,7 @@ public class Job {
     this.output = output;
     this.stdoutPath = stdoutPath;
     this.stderrPath = stderrPath;
+    this.attempts = attempts;
     this.createdAtInSecond = createdAtInSecond;
     this.startedAtInSecond = startedAtInSecond;
     this.updatedAtInSecond = updatedAtInSecond;
@@ -103,6 +106,10 @@ public class Job {
 
   public String getStderrPath() {
     return stderrPath;
+  }
+
+  public int getAttempts() {
+    return attempts;
   }
 
   @Override
