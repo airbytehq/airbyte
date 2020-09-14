@@ -3,11 +3,12 @@ package io.dataline.workers.protocols.singer;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.singer.SingerMessage;
 import io.dataline.workers.InvalidCredentialsException;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-public interface SingerTap extends Iterator<SingerMessage> {
+public interface SingerTap extends Iterator<SingerMessage>, Closeable {
 
   void start(StandardTapConfig input, Path jobRoot) throws IOException, InvalidCredentialsException;
 
@@ -17,5 +18,6 @@ public interface SingerTap extends Iterator<SingerMessage> {
   @Override
   SingerMessage next();
 
-  void stop() throws IOException;
+  @Override
+  void close();
 }

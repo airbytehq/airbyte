@@ -38,6 +38,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,10 +74,12 @@ public class DefaultSingerTarget implements SingerTarget {
       targetProcess =
           pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME)
               .redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())
+              .redirectOutput(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())
               .start();
 
       writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));
     } catch (Exception e) {
+      // TODO: we should probably do some cleanup here.
       throw new RuntimeException(e);
     }
   }
@@ -89,11 +92,18 @@ public class DefaultSingerTarget implements SingerTarget {
     writer.newLine();
   }
 
-  @Override public void stop() throws IOException {
+  @Override public void notifyEndOfStream() throws IOException {
     Preconditions.checkState(targetProcess != null);
 
     writer.flush();
     writer.close();
-    WorkerUtils.closeProcess(targetProcess);
+  }
+
+  @Override
+  public void close() {
+    Preconditions.checkState(targetProcess != null);
+
+    LOGGER.debug("Closing target process");
+    WorkerUtils.gentleClose(targetProcess);
   }
 }

@@ -53,7 +53,7 @@ class DefaultSingerTargetTest {
   private ProcessBuilderFactory pbf;
   private ProcessBuilder processBuilder;
   private Process process;
-  ByteArrayOutputStream outputStream;
+  private ByteArrayOutputStream outputStream;
 
   @BeforeEach
   public void setup() throws IOException {
@@ -86,7 +86,7 @@ class DefaultSingerTargetTest {
 
     SingerMessage recordMessage = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
     target.accept(recordMessage);
-    target.stop();
+    target.close();
 
     String actualOutput = new String(outputStream.toByteArray());
     assertEquals(Jsons.serialize(recordMessage) + "\n", actualOutput);

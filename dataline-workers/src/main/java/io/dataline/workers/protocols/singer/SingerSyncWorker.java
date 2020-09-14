@@ -70,7 +70,8 @@ public class SingerSyncWorker implements SyncWorker {
 
     final SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
 
-    try {
+    try (singerTarget; singerTap) {
+
       singerTarget.start(targetConfig, jobRoot);
       singerTap.start(tapConfig, jobRoot);
 
@@ -80,8 +81,8 @@ public class SingerSyncWorker implements SyncWorker {
         singerTarget.accept(message);
       }
 
-      singerTap.stop();
-      singerTarget.stop();
+      singerTarget.notifyEndOfStream();
+
     } catch (Exception e) {
       LOGGER.error("Sync worker failed. Tap error log: {}.\n Target error log: {}",
           Files.exists(jobRoot.resolve(TAP_ERR_LOG)) ? IOs.readFile(jobRoot, TAP_ERR_LOG) : "<null>",

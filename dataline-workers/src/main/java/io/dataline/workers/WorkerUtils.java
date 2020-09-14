@@ -35,6 +35,22 @@ public class WorkerUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
 
+  public static void gentleClose(final Process process) {
+    if (process == null) {
+      return;
+    }
+
+    try {
+      process.waitFor(1, TimeUnit.MINUTES);
+    } catch (InterruptedException e) {
+      LOGGER.error("Exception while while waiting for process to finish");
+    }
+    if (process.isAlive()) {
+      LOGGER.error("Process is taking too long to finish. Killing it");
+      process.destroy();
+    }
+  }
+
   public static void closeProcess(Process process) {
     closeProcess(process, 1, TimeUnit.MINUTES);
   }

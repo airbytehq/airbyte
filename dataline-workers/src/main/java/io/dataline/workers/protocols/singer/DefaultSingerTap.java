@@ -43,6 +43,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.Optional;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,22 +126,23 @@ public class DefaultSingerTap implements SingerTap {
   public boolean hasNext() {
     Preconditions.checkState(tapProcess != null);
 
-    return messageIterator.hasNext();
+    return tapProcess.isAlive() || messageIterator.hasNext();
   }
 
   @Override
   public SingerMessage next() {
     Preconditions.checkState(tapProcess != null);
 
+    // the code will only work if the read from the stream is blocking
     return messageIterator.next();
   }
 
   @Override
-  public void stop() throws IOException {
+  public void close() {
     Preconditions.checkState(tapProcess != null);
 
-    bufferedReader.close();
-    WorkerUtils.cancelProcess(tapProcess);
+    LOGGER.debug("Closing tap process");
+    WorkerUtils.gentleClose(tapProcess);
   }
 
   private SingerCatalog runDiscovery(StandardTapConfig input, Path jobRoot) throws InvalidCredentialsException, IOException {
