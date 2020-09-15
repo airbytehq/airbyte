@@ -6,7 +6,7 @@ import { faChevronRight, faCheck } from "@fortawesome/free-solid-svg-icons";
 
 import "react-checkbox-tree/lib/react-checkbox-tree.css";
 
-type INode = {
+export type INode = {
   value: string;
   label: string;
   children?: Array<INode>;

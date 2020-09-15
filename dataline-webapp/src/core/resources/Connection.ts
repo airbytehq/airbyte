@@ -8,7 +8,7 @@ export type ScheduleProperties = {
 
 export type SyncSchemaColumn = {
   name: string;
-  selected: string;
+  selected: boolean;
   type: string;
 };
 
@@ -139,6 +139,22 @@ export default class ConnectionResource extends BaseResource
         body: any
       ): Promise<any> => {
         return { ...params, ...body };
+      }
+    };
+  }
+
+  static syncShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      getFetchKey: (params: any) =>
+        "POST " + this.url(params) + "/sync" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<any> => {
+        await this.fetch("post", `${this.url(params)}/sync`, params);
+        return {
+          connectionId: params.connectionId
+        };
       }
     };
   }
