@@ -2,10 +2,7 @@
   {
     "text": "manual",
     "value": "manual",
-    "config": {
-      "units": 0,
-      "timeUnit": "minutes"
-    }
+    "config": null
   },
   {
     "text": "5 min",

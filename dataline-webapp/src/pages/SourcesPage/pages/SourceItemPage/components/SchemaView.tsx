@@ -10,6 +10,10 @@ import ConnectionResource, {
   SyncSchema
 } from "../../../../../core/resources/Connection";
 import EmptySyncHistory from "./EmptySyncHistory";
+import {
+  constructInitialSchemaState,
+  constructNewSchema
+} from "../../../../../core/helpers";
 
 type IProps = {
   connectionId: string;
@@ -37,28 +41,13 @@ const SchemaView: React.FC<IProps> = ({
   connectionStatus
 }) => {
   const updateConnection = useFetcher(ConnectionResource.updateShape());
-  const initialChecked: Array<string> = [];
-  syncSchema.tables.map(item =>
-    item.columns.forEach(column =>
-      column.selected ? initialChecked.push(column.name) : null
-    )
+  const { formSyncSchema, initialChecked } = useMemo(
+    () => constructInitialSchemaState(syncSchema),
+    [syncSchema]
   );
 
   const [disabledButtons, setDisabledButtons] = useState(true);
   const [checkedState, setCheckedState] = useState(initialChecked);
-
-  const formSyncSchema = useMemo(
-    () =>
-      syncSchema.tables.map((item: any) => ({
-        value: item.name,
-        label: item.name,
-        children: item.columns.map((column: any) => ({
-          value: column.name,
-          label: column.name
-        }))
-      })),
-    [syncSchema.tables]
-  );
 
   const onCheckAction = (data: Array<string>) => {
     setDisabledButtons(JSON.stringify(data) === JSON.stringify(initialChecked));
@@ -71,15 +60,7 @@ const SchemaView: React.FC<IProps> = ({
   };
   const onSubmit = async () => {
     setDisabledButtons(true);
-    const newSyncSchema = {
-      tables: syncSchema.tables.map(item => ({
-        ...item,
-        columns: item.columns.map(column => ({
-          ...column,
-          selected: checkedState.includes(column.name)
-        }))
-      }))
-    };
+    const newSyncSchema = constructNewSchema(syncSchema, checkedState);
 
     await updateConnection(
       {},
