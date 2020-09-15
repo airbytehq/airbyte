@@ -130,7 +130,6 @@ public class AcceptanceTests {
   }
 
   private void testScheduledSync(Duration waitTime) throws InterruptedException, SQLException {
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_update.sql"), SOURCE_PSQL);
     Thread.sleep(waitTime.toMillis());
     assertSourceAndTargetDbInSync(SOURCE_PSQL, TARGET_PSQL);
   }
