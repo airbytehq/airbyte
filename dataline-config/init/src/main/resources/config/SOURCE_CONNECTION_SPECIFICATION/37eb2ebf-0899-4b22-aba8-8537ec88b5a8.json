@@ -15,7 +15,7 @@
       },
       "base": {
         "type": "string",
-        "description": "Reference currency."
+        "description": "Reference currency. This value must match exactly one of the currency abbreviations found <a href=\"https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html\">here</a>."
       }
     }
   }
