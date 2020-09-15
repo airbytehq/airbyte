@@ -22,13 +22,12 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocol.singer;
+package io.dataline.workers.protocols.singer;
 
 import io.dataline.commons.json.Jsons;
 import io.dataline.singer.SingerMessage;
 import io.dataline.workers.StreamFactory;
 import java.io.BufferedReader;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -59,17 +58,13 @@ public class SingerJsonStreamFactory implements StreamFactory {
   }
 
   public Stream<SingerMessage> create(BufferedReader bufferedReader) {
-    return bufferedReader.lines().filter(singerProtocolValidator).map(this::parseJsonOrNull).filter(Objects::nonNull);
-  }
-
-  private SingerMessage parseJsonOrNull(String record) {
-    Optional<SingerMessage> message = Jsons.tryDeserialize(record, SingerMessage.class);
-    if (message.isPresent()) {
-      return message.get();
-    } else {
-      LOGGER.info("Record was not a json representation of a SingerMessage. Record: {}", record);
-      return null;
-    }
+    return bufferedReader
+        .lines()
+        .map(Jsons::tryDeserialize)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .filter(singerProtocolValidator)
+        .map(n -> Jsons.object(n, SingerMessage.class));
   }
 
 }

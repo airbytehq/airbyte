@@ -22,9 +22,8 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.workers.protocols.singer;
 
-import io.dataline.commons.functional.CloseableConsumer;
 import io.dataline.commons.io.IOs;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
@@ -33,29 +32,33 @@ import io.dataline.config.StandardTapConfig;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.config.State;
 import io.dataline.singer.SingerMessage;
-import io.dataline.workers.protocol.singer.SingerMessageTracker;
+import io.dataline.workers.JobStatus;
+import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.SyncWorker;
+import io.dataline.workers.WorkerUtils;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultSyncWorker implements SyncWorker {
+public class SingerSyncWorker implements SyncWorker {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSyncWorker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerSyncWorker.class);
 
   public static final String TAP_ERR_LOG = "tap_err.log";
   public static final String TARGET_ERR_LOG = "target_err.log";
 
-  private final TapFactory<SingerMessage> singerTapFactory;
-  private final TargetFactory<SingerMessage> singerTargetFactory;
+  private final SingerTap singerTap;
+  private final SingerTarget singerTarget;
 
   private final AtomicBoolean cancelled;
 
-  public DefaultSyncWorker(TapFactory<SingerMessage> singerTapFactory,
-                           TargetFactory<SingerMessage> singerTargetFactory) {
-    this.singerTapFactory = singerTapFactory;
-    this.singerTargetFactory = singerTargetFactory;
+  public SingerSyncWorker(SingerTap singerTap,
+                          SingerTarget singerTarget) {
+    this.singerTap = singerTap;
+    this.singerTarget = singerTarget;
     this.cancelled = new AtomicBoolean(false);
   }
 
@@ -68,16 +71,27 @@ public class DefaultSyncWorker implements SyncWorker {
 
     final SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
 
-    try (Stream<SingerMessage> tap = singerTapFactory.create(tapConfig, jobRoot);
-        CloseableConsumer<SingerMessage> consumer = singerTargetFactory.create(targetConfig, jobRoot)) {
+    try (singerTarget; singerTap) {
 
-      tap.takeWhile(record -> !cancelled.get()).peek(singerMessageTracker).forEach(consumer);
+      singerTarget.start(targetConfig, jobRoot);
+      singerTap.start(tapConfig, jobRoot);
+
+      while (!cancelled.get() && !singerTap.isFinished()) {
+        final Optional<SingerMessage> maybeMessage = singerTap.attemptRead();
+        if (maybeMessage.isPresent()) {
+          final SingerMessage message = maybeMessage.get();
+          singerMessageTracker.accept(message);
+          singerTarget.accept(message);
+        }
+      }
+
+      singerTarget.notifyEndOfStream();
 
     } catch (Exception e) {
-      LOGGER.debug(
-          "Sync worker failed. Tap error log: {}.\n Target error log: {}",
-          IOs.readFile(jobRoot, TAP_ERR_LOG),
-          IOs.readFile(jobRoot, TARGET_ERR_LOG));
+      LOGGER.error("Sync worker failed. Tap error log: {}.\n Target error log: {}",
+          Files.exists(jobRoot.resolve(TAP_ERR_LOG)) ? IOs.readFile(jobRoot, TAP_ERR_LOG) : "<null>",
+          Files.exists(jobRoot.resolve(TARGET_ERR_LOG)) ? IOs.readFile(jobRoot, TARGET_ERR_LOG) : "<null>",
+          e);
 
       return new OutputAndStatus<>(JobStatus.FAILED, null);
     }

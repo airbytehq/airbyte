@@ -22,27 +22,24 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocol.singer;
+package io.dataline.workers.protocols.singer;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.json.JsonSchemaValidator;
-import io.dataline.commons.json.Jsons;
-import io.dataline.singer.SingerConfigSchema;
-import java.util.function.Predicate;
+import io.dataline.config.StandardTapConfig;
+import io.dataline.singer.SingerMessage;
+import io.dataline.workers.InvalidCredentialsException;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Optional;
 
-public class SingerProtocolPredicate implements Predicate<String> {
+public interface SingerTap extends AutoCloseable {
 
-  private final JsonSchemaValidator jsonSchemaValidator;
-  private final JsonNode schema;
+  void start(StandardTapConfig input, Path jobRoot) throws IOException, InvalidCredentialsException;
 
-  public SingerProtocolPredicate() {
-    jsonSchemaValidator = new JsonSchemaValidator();
-    schema = JsonSchemaValidator.getSchema(SingerConfigSchema.SINGER_MESSAGE.getFile());
-  }
+  boolean isFinished();
+
+  Optional<SingerMessage> attemptRead();
 
   @Override
-  public boolean test(String s) {
-    return jsonSchemaValidator.test(schema, Jsons.deserialize(s));
-  }
+  void close() throws Exception;
 
 }
