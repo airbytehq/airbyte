@@ -12,15 +12,12 @@
 
 ## Integrations
 
-* [Integrations](integrations/integrations.md)
 * [Sources](integrations/sources/README.md)
-  * [CSV](integrations/sources/csv.md)
   * [Postgres](integrations/sources/postgres.md)
   * [Stripe](integrations/sources/stripe.md)
 * [Destinations](integrations/destinations/README.md)
   * [Postgres](integrations/destinations/postgres.md)
   * [BigQuery](integrations/destinations/bigquery.md)
-  * [Local Filesystem](integrations/destinations/local-filesystem.md)
 
 ## Contributing
 
