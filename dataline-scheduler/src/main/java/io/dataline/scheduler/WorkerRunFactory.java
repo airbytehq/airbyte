@@ -42,6 +42,7 @@ import io.dataline.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.dataline.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.dataline.workers.wrappers.JobOutputSyncWorker;
 import java.nio.file.Path;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,9 +72,9 @@ public class WorkerRunFactory {
   }
 
   public WorkerRun create(final Job job) {
-    LOGGER.info("job: {} {} {}", job.getId(), job.getScope(), job.getConfig().getConfigType());
+    LOGGER.info("job id: {} attempt: {} scope: {} type: {}", job.getId(), job.getAttempts(), job.getScope(), job.getConfig().getConfigType());
 
-    final Path jobRoot = workspaceRoot.resolve(String.valueOf(job.getId()));
+    final Path jobRoot = workspaceRoot.resolve(String.valueOf(job.getId())).resolve(String.valueOf(job.getAttempts()));
     LOGGER.info("job root: {}", jobRoot);
 
     switch (job.getConfig().getConfigType()) {
