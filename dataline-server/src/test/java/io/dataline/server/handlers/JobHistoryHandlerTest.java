@@ -64,18 +64,7 @@ public class JobHistoryHandlerTest {
   private static final String STDERR_PATH = "stderr-path";
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
 
-  private static final Job JOB = new Job(
-      JOB_ID,
-      SCOPE,
-      JOB_STATUS,
-      JOB_CONFIG,
-      null,
-      STDOUT_PATH,
-      STDERR_PATH,
-      0,
-      CREATED_AT,
-      null,
-      CREATED_AT);
+  private Job job;
 
   private static final JobInfoRead JOB_INFO =
       new JobInfoRead()
@@ -98,13 +87,23 @@ public class JobHistoryHandlerTest {
 
   @BeforeEach
   public void setUp() {
+    job = mock(Job.class);
+    when(job.getId()).thenReturn(JOB_ID);
+    when(job.getScope()).thenReturn(SCOPE);
+    when(job.getConfig()).thenReturn(JOB_CONFIG);
+    when(job.getStatus()).thenReturn(JOB_STATUS);
+    when(job.getStdoutPath()).thenReturn(STDOUT_PATH);
+    when(job.getStderrPath()).thenReturn(STDERR_PATH);
+    when(job.getCreatedAtInSecond()).thenReturn(CREATED_AT);
+    when(job.getUpdatedAtInSecond()).thenReturn(CREATED_AT);
+
     schedulerPersistence = mock(SchedulerPersistence.class);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
   }
 
   @Test
   public void testListJobsFor() throws IOException {
-    when(schedulerPersistence.listJobs(CONFIG_TYPE, JOB_CONFIG_ID)).thenReturn(Collections.singletonList(JOB));
+    when(schedulerPersistence.listJobs(CONFIG_TYPE, JOB_CONFIG_ID)).thenReturn(Collections.singletonList(job));
 
     JobListRequestBody requestBody = new JobListRequestBody().configType(CONFIG_TYPE_FOR_API).configId(JOB_CONFIG_ID);
     JobReadList jobReadList = jobHistoryHandler.listJobsFor(requestBody);
@@ -116,7 +115,7 @@ public class JobHistoryHandlerTest {
 
   @Test
   public void testGetJobInfo() throws IOException {
-    when(schedulerPersistence.getJob(JOB_ID)).thenReturn(JOB);
+    when(schedulerPersistence.getJob(JOB_ID)).thenReturn(job);
 
     JobIdRequestBody requestBody = new JobIdRequestBody().id(JOB_ID);
     JobInfoRead jobInfoActual = jobHistoryHandler.getJobInfo(requestBody);
@@ -126,7 +125,7 @@ public class JobHistoryHandlerTest {
 
   @Test
   public void testGetJobRead() {
-    JobRead jobReadActual = JobHistoryHandler.getJobRead(JOB);
+    JobRead jobReadActual = JobHistoryHandler.getJobRead(job);
     assertEquals(JOB_INFO.getJob(), jobReadActual);
   }
 
