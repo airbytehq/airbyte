@@ -132,6 +132,10 @@ const FormContent: React.FC<IProps> = ({
                         />
                       )
                     }
+                    message={condition?.description}
+                    placeholder={
+                      condition?.examples?.length ? condition?.examples[0] : ""
+                    }
                   />
                 )}
               </Field>
