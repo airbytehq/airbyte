@@ -122,7 +122,7 @@ public class AcceptanceTests {
 
     // TODO This is a bit of a hack to get around the fact that we don't have incremental behavior. Ideally we wouldn't wipe the DB, but
     //  running a full_refresh replicate on the same target db twice copies the data to new tables e.g: "students" becomes "students" and "students_123"
-    //  in the target db. Once we support incremental sync, we shouldn't need to wipe the db.
+    //  in the target db which is finicky to validate correctly in the test. Once we support incremental sync, we shouldn't need to wipe the db.
     wipeTables(TARGET_PSQL);
 
     testScheduledSync(Duration.ofSeconds(90));
