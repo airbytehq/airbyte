@@ -24,6 +24,9 @@
 
 package io.dataline.integrations.io.dataline.integration_tests.sources;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
@@ -49,10 +52,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class SingerStripeSourceTest {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerStripeSourceTest.class);
 
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
@@ -65,7 +66,8 @@ public class SingerStripeSourceTest {
 
   @BeforeEach
   public void setUp() throws IOException {
-    // todo: create test records if they do not exist as part of the test lifecycle instead of doing it in a separate script
+    // todo: create test records if they do not exist as part of the test lifecycle instead of doing it
+    // in a separate script
 
     Files.createDirectories(TESTS_PATH);
     workspaceRoot = Files.createTempDirectory(TESTS_PATH, "stripe");
@@ -79,16 +81,17 @@ public class SingerStripeSourceTest {
     pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
   }
 
- // TODO: need to have a separate endpoint for checking connectivity since discover does not use credentials
-//  @Test
-//  public void testInvalidCredentialsDiscover() throws IOException, InterruptedException {
-//    Process process = createDiscoveryProcess("invalid_config.json");
-//    process.waitFor();
-//
-//    assertEquals(0, process.exitValue());
-//
-//    final String catalog = IOs.readFile(jobRoot, jobRoot.resolve("catalog.json").toString());
-//  }
+  // TODO: need to have a separate endpoint for checking connectivity since discover does not use
+  // credentials
+  // @Test
+  // public void testInvalidCredentialsDiscover() throws IOException, InterruptedException {
+  // Process process = createDiscoveryProcess("invalid_config.json");
+  // process.waitFor();
+  //
+  // assertEquals(0, process.exitValue());
+  //
+  // final String catalog = IOs.readFile(jobRoot, jobRoot.resolve("catalog.json").toString());
+  // }
 
   @Test
   public void testSuccessfulDiscover() throws InvalidCredentialsException, InvalidCatalogException, IOException, InterruptedException {
@@ -132,7 +135,7 @@ public class SingerStripeSourceTest {
   private static JsonNode normalize(JsonNode node) {
     ObjectNode normalized = node.deepCopy();
 
-    if(normalized.get("type").textValue().equals("RECORD")) {
+    if (normalized.get("type").textValue().equals("RECORD")) {
       ObjectNode record = (ObjectNode) normalized.get("record");
       record.put("id", "id");
       record.put("created", "created");
@@ -199,4 +202,5 @@ public class SingerStripeSourceTest {
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
   }
+
 }
