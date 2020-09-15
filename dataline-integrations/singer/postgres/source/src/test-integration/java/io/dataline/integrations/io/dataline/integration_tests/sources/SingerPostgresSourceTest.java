@@ -139,25 +139,6 @@ public class SingerPostgresSourceTest {
         .collect(Collectors.toList());
 
     assertMessagesEquivalent(expectedMessages, actualMessages);
-
-    // test incremental: insert a few more records then run another sync
-    // io.dataline.test.utils.PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_update.sql"),
-    // psqlDb);
-    //
-    // StandardSync incrementalStandardSync = new
-    // StandardSync().withSyncMode(StandardSync.SyncMode.APPEND).withSchema(schema).;
-    // StandardTapConfig incrementalTapConfig = new StandardTapConfig()
-    // .withStandardSync(incrementalStandardSync)
-    // .withState(new State().withState(singerMessageTracker.getOutputState().get()))
-    // .withSourceConnectionImplementation(sourceImpl);
-  }
-
-  // @Test
-  public void testIncrementalRead() {
-    // run an initial read, get the state from it
-    // add a few more records to the DB
-    // pass the state into a second read and make sure the messages are what we expect
-    // TODO
   }
 
   private void assertMessagesEquivalent(Collection<SingerMessage> expected, Collection<SingerMessage> actual) {

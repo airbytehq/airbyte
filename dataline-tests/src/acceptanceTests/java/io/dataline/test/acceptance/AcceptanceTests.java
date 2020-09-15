@@ -55,6 +55,7 @@ import io.dataline.db.DatabaseHelper;
 import io.dataline.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -103,7 +104,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  public void fullTestRun() throws IOException, ApiException, SQLException {
+  public void fullTestRun() throws IOException, ApiException, SQLException, InterruptedException {
     UUID createdSourceImplId = testCreateSourceImplementation().getSourceImplementationId();
     testCheckSourceConnection(createdSourceImplId);
 
@@ -115,21 +116,42 @@ public class AcceptanceTests {
     // select all columns
     schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true)));
 
-    ConnectionRead createdConnection = testCreateConnection(createdSourceImplId, createdDestinationImplId, schema);
+    ConnectionRead createdConnection = testCreateConnection(createdSourceImplId, createdDestinationImplId, schema, 1L);
 
     testRunManualSync(createdConnection.getConnectionId());
 
+    // TODO This is a bit of a hack to get around the fact that we don't have incremental behavior. Ideally we wouldn't wipe the DB, but
+    //  running a full_refresh replicate on the same target db twice copies the data to new tables e.g: "students" becomes "students" and "students_123"
+    //  in the target db. Once we support incremental sync, we shouldn't need to wipe the db.
+    wipeTables(TARGET_PSQL);
+
+    testScheduledSync(Duration.ofSeconds(90));
     assertSourceAndTargetDbInSync(SOURCE_PSQL, TARGET_PSQL);
-    // TODO test scheduled sync
+  }
+
+  private void testScheduledSync(Duration waitTime) throws InterruptedException, SQLException {
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_update.sql"), SOURCE_PSQL);
+    Thread.sleep(waitTime.toMillis());
+    assertSourceAndTargetDbInSync(SOURCE_PSQL, TARGET_PSQL);
+  }
+
+  private void wipeTables(PostgreSQLContainer db) throws SQLException {
+    BasicDataSource connectionPool = getConnectionPool(db);
+    Set<String> tableNames = listTables(connectionPool);
+    for (String table : tableNames){
+      DatabaseHelper.query(
+          connectionPool,
+            ctx -> {
+              ctx.execute("DROP TABLE " + table);
+              return null;
+            }
+          );
+    }
   }
 
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb, PostgreSQLContainer targetDb) throws SQLException {
-    BasicDataSource sourceDbPool =
-        DatabaseHelper.getConnectionPool(
-            sourceDb.getUsername(), sourceDb.getPassword(), sourceDb.getJdbcUrl());
-    BasicDataSource targetDbPool =
-        DatabaseHelper.getConnectionPool(
-            targetDb.getUsername(), targetDb.getPassword(), targetDb.getJdbcUrl());
+    BasicDataSource sourceDbPool = getConnectionPool(sourceDb);
+    BasicDataSource targetDbPool = getConnectionPool(targetDb);
 
     Set<String> sourceTables = listTables(sourceDbPool);
     Set<String> targetTables = listTables(targetDbPool);
@@ -138,6 +160,11 @@ public class AcceptanceTests {
     for (String table : sourceTables) {
       assertTablesEquivalent(sourceDbPool, targetDbPool, table);
     }
+  }
+
+  private BasicDataSource getConnectionPool(PostgreSQLContainer db){
+    return DatabaseHelper.getConnectionPool(
+        db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
   private Set<String> listTables(BasicDataSource connectionPool) throws SQLException {
@@ -239,9 +266,9 @@ public class AcceptanceTests {
 
   }
 
-  private ConnectionRead testCreateConnection(UUID sourceImplId, UUID destinationImplId, SourceSchema schema)
+  private ConnectionRead testCreateConnection(UUID sourceImplId, UUID destinationImplId, SourceSchema schema, long syncIntervalMinutes)
       throws ApiException {
-    ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES).units(3L);
+    ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES).units(syncIntervalMinutes);
     ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
     String name = "AccTest-PG2PG-" + UUID.randomUUID().toString();
     UUID createdConnectionId = apiClient.getConnectionApi().createConnection(
