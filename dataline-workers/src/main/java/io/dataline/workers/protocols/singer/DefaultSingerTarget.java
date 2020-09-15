@@ -22,29 +22,29 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.singer;
+package io.dataline.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
-import io.dataline.commons.functional.CloseableConsumer;
+import com.google.common.base.Preconditions;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
-import io.dataline.workers.DefaultSyncWorker;
-import io.dataline.workers.TargetConsumer;
-import io.dataline.workers.TargetFactory;
+import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerTargetFactory implements TargetFactory<SingerMessage> {
+public class DefaultSingerTarget implements SingerTarget {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerTargetFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerTarget.class);
 
   @VisibleForTesting
   static final String CONFIG_JSON_FILENAME = "target_config.json";
@@ -52,13 +52,19 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
   private final String imageName;
   private final ProcessBuilderFactory pbf;
 
-  public SingerTargetFactory(final String imageName, final ProcessBuilderFactory pbf) {
+  private Process targetProcess = null;
+  private BufferedWriter writer = null;
+  private boolean endOfStream = false;
+
+  public DefaultSingerTarget(final String imageName, final ProcessBuilderFactory pbf) {
     this.imageName = imageName;
     this.pbf = pbf;
   }
 
   @Override
-  public CloseableConsumer<SingerMessage> create(StandardTargetConfig targetConfig, Path jobRoot) {
+  public void start(StandardTargetConfig targetConfig, Path jobRoot) {
+    Preconditions.checkState(targetProcess == null);
+
     final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
 
     // write config.json to disk
@@ -66,16 +72,49 @@ public class SingerTargetFactory implements TargetFactory<SingerMessage> {
 
     try {
       LOGGER.info("Running Singer target...");
-      final Process targetProcess =
+      targetProcess =
           pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME)
-              .redirectError(jobRoot.resolve(DefaultSyncWorker.TARGET_ERR_LOG).toFile())
+              .redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())
               .start();
 
-      // the TargetConsumer is responsible for closing this.
-      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));
-      return new TargetConsumer(writer, targetProcess);
+      writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));
     } catch (Exception e) {
+      // TODO: we should probably do some cleanup here.
       throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void accept(SingerMessage message) throws IOException {
+    Preconditions.checkState(targetProcess != null && !endOfStream);
+
+    writer.write(Jsons.serialize(message));
+    writer.newLine();
+  }
+
+  @Override
+  public void notifyEndOfStream() throws IOException {
+    Preconditions.checkState(targetProcess != null && !endOfStream);
+
+    writer.flush();
+    writer.close();
+    endOfStream = true;
+  }
+
+  @Override
+  public void close() throws Exception {
+    if (targetProcess == null) {
+      return;
+    }
+
+    if (!endOfStream) {
+      notifyEndOfStream();
+    }
+
+    LOGGER.debug("Closing target process");
+    WorkerUtils.gentleClose(targetProcess, 1, TimeUnit.MINUTES);
+    if (targetProcess.isAlive() || targetProcess.exitValue() != 0) {
+      throw new Exception("target process wasn't successful");
     }
   }
 
