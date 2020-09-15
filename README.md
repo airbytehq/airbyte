@@ -11,25 +11,21 @@
   </p>
   
   <p>
-    <a href="https://docs.dataline.io/deployment/deploying-dataline/with-docker">
-      <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-Locally.svg" />
-    </a>
+  <a href="https://docs.dataline.io/deployment/deploying-dataline/with-docker">
+    <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-Locally.svg" />
+  </a>
   
-    <a href="https://docs.dataline.io/deployment/deploying-dataline/on-aws-ec2">
-      <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-on-AWS.svg" />
-    </a>
+  <a href="https://docs.dataline.io/deployment/deploying-dataline/on-aws-ec2">
+    <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-on-AWS.svg" />
+  </a>
   
-    <a href="https://docs.dataline.io/deployment/deploying-dataline/on-gcp-compute-engine">
-      <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-on-GCP.svg" />
-    </a>
+  <a href="https://docs.dataline.io/deployment/deploying-dataline/on-gcp-compute-engine">
+    <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-on-GCP.svg" />
+  </a>
   </p>
 </div>
 
-<br />
-
 ![](https://dataline.io/wp-content/uploads/2020/08/Sources_List.png)
-
-<br />
 
 Dataline is on a mission to make data integration pipelines a commodity.
 
