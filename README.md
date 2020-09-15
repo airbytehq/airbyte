@@ -1,4 +1,5 @@
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI) ![License](https://img.shields.io/github/license/datalineio/dataline)
+
 <div  align="center">
   <a href="https://dataline.io">
     <img src="https://dataline.io/wp-content/uploads/2020/08/Dataline_light-background.svg" width="318px" alt="Dataline logo" />
