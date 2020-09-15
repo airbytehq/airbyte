@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class JobSubmitter implements Runnable {
 
@@ -64,10 +65,14 @@ public class JobSubmitter implements Runnable {
   }
 
   private void submitJob(Job job) {
-    threadPool.submit(new LifecycledCallable.Builder<>(workerRunFactory.create(job))
+    final WorkerRun workerRun = workerRunFactory.create(job);
+    threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
           persistence.updateStatus(job.getId(), JobStatus.RUNNING);
           persistence.incrementAttempts(job.getId());
+          MDC.put("context", "worker");
+          MDC.put("job_root", workerRun.getJobRoot().toString());
+          MDC.put("job_id", String.valueOf(job.getId()));
         })
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {
@@ -75,7 +80,9 @@ public class JobSubmitter implements Runnable {
           }
           persistence.updateStatus(job.getId(), getStatus(output));
         })
-        .setOnException(noop -> persistence.updateStatus(job.getId(), JobStatus.FAILED)).build());
+        .setOnException(noop -> persistence.updateStatus(job.getId(), JobStatus.FAILED))
+        .setOnFinish(MDC::clear)
+        .build());
   }
 
   private JobStatus getStatus(OutputAndStatus<?> output) {
