@@ -139,4 +139,9 @@ class WebBackendConnectionsHandlerTest {
     assertEquals(expected, wbConnectionRead);
   }
 
+  @Test
+  public void testEnumConversion() {
+    assertTrue(Enums.isCompatible(ConnectionRead.SyncModeEnum.class, WbConnectionRead.SyncModeEnum.class));
+  }
+
 }
