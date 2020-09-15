@@ -55,8 +55,8 @@ task integrationTest(type: Test) {
     environment "GOOGLE_CLOUD_PROJECT", creds["project_id"]
     environment "GOOGLE_APPLICATION_CREDENTIALS", credFile.absolutePath
 
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
+    testClassesDirs += sourceSets.integrationTest.output.classesDirs
+    classpath += sourceSets.integrationTest.runtimeClasspath
 
     useJUnitPlatform()
     testLogging() {
