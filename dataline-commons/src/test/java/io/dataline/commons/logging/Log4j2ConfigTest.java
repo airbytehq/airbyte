@@ -22,47 +22,41 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.dataline.commons.logging;
 
-import io.dataline.commons.functional.CheckedSupplier;
-import io.dataline.config.JobOutput;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.Worker;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import io.dataline.commons.io.IOs;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Callable;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
-/*
- * This class represents a single run of a worker. It handles making sure the correct inputs and
- * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
- * persisted to the db.
- */
-public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
+public class Log4j2ConfigTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Log4j2ConfigTest.class);
 
-  private final Path jobRoot;
-  private final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun;
+  private Path root;
 
-  public <InputType> WorkerRun(final Path jobRoot,
-                               final InputType input,
-                               final Worker<InputType, JobOutput> worker) {
-    this.jobRoot = jobRoot;
-    this.workerRun = () -> worker.run(input, jobRoot);
+  @BeforeEach
+  void setUp() throws IOException {
+    root = Files.createTempDirectory("test");
+    MDC.clear();
   }
 
-  @Override
-  public OutputAndStatus<JobOutput> call() throws Exception {
-    LOGGER.info("Executing worker wrapper...");
-    Files.createDirectories(jobRoot);
+  @Test
+  void testWorkerDispatch() {
+    MDC.put("context", "worker");
+    MDC.put("job_root", root.toString());
+    MDC.put("job_id", "1");
 
-    return workerRun.get();
-  }
+    LOGGER.error("random message");
 
-  public Path getJobRoot() {
-    return jobRoot;
+    assertTrue(IOs.readFile(root, "logs.log").contains("random message"));
   }
 
 }

@@ -6,6 +6,7 @@ export const Row = styled.div`
   justify-content: flex-start;
   align-items: center;
   height: 32px;
+  position: relative;
 
   font-size: 14px;
   line-height: 17px;

@@ -14,9 +14,7 @@ const Content = styled.div<{ enabled?: boolean }>`
 
 const FrequencyCell: React.FC<IProps> = ({ value, enabled }) => {
   const cellText = FrequencyConfig.find(
-    item =>
-      item.config.units === value?.units &&
-      item.config.timeUnit === value?.timeUnit
+    item => JSON.stringify(item.config) === JSON.stringify(value)
   );
   return <Content enabled={enabled}>{cellText?.text || ""}</Content>;
 };

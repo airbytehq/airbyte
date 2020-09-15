@@ -18,6 +18,7 @@ import SourceImplementationResource, {
 } from "../../../../core/resources/SourceImplementation";
 import FrequencyConfig from "../../../../data/FrequencyConfig.json";
 import ConnectionResource from "../../../../core/resources/Connection";
+import { SyncSchema } from "../../../../core/resources/Schema";
 
 const Content = styled.div`
   max-width: 638px;
@@ -104,7 +105,10 @@ const CreateSourcePage: React.FC = () => {
       setErrorStatusRequest(e.status);
     }
   };
-  const onSubmitConnectionStep = async (values: { frequency: string }) => {
+  const onSubmitConnectionStep = async (values: {
+    frequency: string;
+    syncSchema: SyncSchema;
+  }) => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
@@ -126,7 +130,8 @@ const CreateSourcePage: React.FC = () => {
             currentDestination.destinationImplementationId,
           syncMode: "full_refresh",
           schedule: frequencyData?.config,
-          status: "active"
+          status: "active",
+          syncSchema: values.syncSchema
         },
         [
           [
@@ -164,6 +169,9 @@ const CreateSourcePage: React.FC = () => {
         onSubmit={onSubmitConnectionStep}
         destination={destination}
         sourceId={currentSourceImplementation?.sourceId || ""}
+        sourceImplementationId={
+          currentSourceImplementation?.sourceImplementationId || ""
+        }
       />
     );
   };
