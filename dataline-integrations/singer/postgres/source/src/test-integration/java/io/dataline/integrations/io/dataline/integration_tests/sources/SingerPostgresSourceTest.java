@@ -73,7 +73,7 @@ import org.testcontainers.utility.MountableFile;
 public class SingerPostgresSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerPostgresSourceTest.class);
-  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-source:blah";
+  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-source:dev";
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
 
   private PostgreSQLContainer psqlDb;
