@@ -50,11 +50,11 @@ class SchemaConverterTest {
 
   private static final SourceSchema API_SCHEMA = new SourceSchema()
       .tables(Lists.newArrayList(new SourceSchemaTable()
-      .name("users")
-      .columns(Lists.newArrayList(new SourceSchemaColumn()
-          .dataType(io.dataline.api.model.DataType.STRING)
-          .name("id")
-          .selected(true)))));
+          .name("users")
+          .columns(Lists.newArrayList(new SourceSchemaColumn()
+              .dataType(io.dataline.api.model.DataType.STRING)
+              .name("id")
+              .selected(true)))));
 
   @Test
   void convertToPersistenceSchema() {
