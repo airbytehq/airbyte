@@ -47,7 +47,7 @@ public class SchemaConverter {
                           .map(
                               apiColumn -> new Column()
                                   .withName(apiColumn.getName())
-                                  .withDataType(toPersistenceDataType(apiColumn.getDataType()))
+                                  .withDataType(Enums.convertTo(apiColumn.getDataType(), DataType.class))
                                   .withSelected(apiColumn.getSelected()))
                           .collect(Collectors.toList());
 
@@ -71,7 +71,7 @@ public class SchemaConverter {
                           .map(
                               persistenceColumn -> new SourceSchemaColumn()
                                   .name(persistenceColumn.getName())
-                                  .dataType(toApiDataType(persistenceColumn.getDataType()))
+                                  .dataType(Enums.convertTo(persistenceColumn.getDataType(), io.dataline.api.model.DataType.class))
                                   .selected(persistenceColumn.getSelected()))
                           .collect(Collectors.toList());
 
@@ -82,14 +82,6 @@ public class SchemaConverter {
             .collect(Collectors.toList());
 
     return new SourceSchema().tables(persistenceTables);
-  }
-
-  public static DataType toPersistenceDataType(io.dataline.api.model.DataType apiDataType) {
-    return Enums.convertTo(apiDataType, DataType.class);
-  }
-
-  public static io.dataline.api.model.DataType toApiDataType(DataType persistenceDataType) {
-    return Enums.convertTo(persistenceDataType, io.dataline.api.model.DataType.class);
   }
 
 }
