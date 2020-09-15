@@ -1,25 +1,30 @@
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI) ![License](https://img.shields.io/github/license/datalineio/dataline)
+
 <p align="center">
   <a href="https://dataline.io">
     <img src="https://dataline.io/wp-content/uploads/2020/08/Dataline_light-background.svg" width="318px" alt="Dataline logo" />
   </a>
 </p>
-<h3 align="center">Data integration made simple, secure and reliable</h3>
+
+<h3 align="center">Data integration made simple, secure and reliable.</h3>
 <p align="center">The new open-source standard to sync data from applications & databases to warehouses.</p>
 <br />
-
 <p align="center">
-  <a href="https://docs.dataline.io/deployment/deploying-dataline">
-    <img src="https://dataline.io/wp-content/uploads/2020/08/Deploy-with-Docker.png"  />
+  <a href="https://docs.dataline.io/deployment/deploying-dataline/with-docker">
+    <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-Locally.svg"  />
   </a>
-</p>
 
-<br>
+<a href="https://docs.dataline.io/deployment/deploying-dataline/on-aws-ec2">
+<img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-on-AWS.svg" />
+</a>
 
-<p align="center">
-  <a href="https://dataline.io">
-    <img src="https://dataline.io/wp-content/uploads/2020/08/Sources_List.png" alt="Sources panel" />
-  </a>
+<a href="https://docs.dataline.io/deployment/deploying-dataline/on-gcp-compute-engine">
+<img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-on-GCP.svg" />
+</a>
 </p>
+<br />
+
+![](https://dataline.io/wp-content/uploads/2020/08/Sources_List.png)
 
 <br>
 
@@ -37,6 +42,8 @@ Dataline is on a mission to make data integration pipelines a commodity.
 ### Quick start
 
 ```bash
+git clone git@github.com:datalineio/dataline.git
+cd dataline
 docker-compose up
 ```
 
