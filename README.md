@@ -49,13 +49,6 @@ docker-compose up
 
 Now visit [http://localhost:8000](http://localhost:8000)
 
-### Update images
-
-```bash
-docker-compose -f docker-compose.build.yaml build
-docker-compose -f docker-compose.build.yaml push
-```
-
 ## Features
 
 - **Normalized schemas**: Elegant, entirely customizable and a fully extensible admin panel.
@@ -65,25 +58,25 @@ docker-compose -f docker-compose.build.yaml push
 - **Manual full refresh**: Sometimes, you need to re-sync all your data to start again.
 - **Granular system logs**: No opacity whatsoever to let you control and trust.
 
-<a href="https://dataline.io/features/">See more on our website.</a>
+[See more on our website.](https://dataline.io/features/)
 
 ## Contributing
 
-We love contributions to Dataline, big or small. See our <a href="https://docs.dataline.io/contributing/contributing-to-dataline">Contributing Guide</a> on how to get started.
-Not sure where to start? We’ve listed some <a href="https://github.com/datalineio/dataline/labels/good%20first%20issue">good first issues</a> to start with. You can also <a href="http://drift.me/micheltricot/meeting">book a free, no-pressure pairing session</a> with one of our core contributors.
+We love contributions to Dataline, big or small. See our [Contributing Guide](https://docs.dataline.io/contributing/contributing-to-dataline) on how to get started.
+Not sure where to start? We’ve listed some [good first issues](https://github.com/datalineio/dataline/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
  
 ## Community support
 
 For general help using Dataline, please refer to the official Dataline documentation. For additional help, you can use one of these channels to ask a question:
-- <a href="https://join.slack.com/t/datalineusers/shared_invite/zt-gj10ijyq-ZcUVTnUJWpD4eKICy0RU2A">Slack</a> (For live discussion with the Community and Dataline team)
-- <a href="https://github.com/datalineio/dataline">GitHub</a> (Bug reports, Contributions)
-- <a href="https://twitter.com/datalinehq">Twitter</a> (Get the news fast)
+* [Slack](https://join.slack.com/t/datalinehq/shared_invite/zt-h5m88w3a-twQ_6AF9e8SnAzOIkHu2VQ) \(For live discussion with the Community and Dataline team\)
+* [GitHub](https://github.com/datalineio/dataline) \(Bug reports, Contributions\)
+* [Twitter](https://twitter.com/datalinehq) \(Get the news fast\)
  
 ## Roadmap
 
-Check out our <a href="https://github.com/datalineio/dataline/projects/1">roadmap</a> to get informed of the latest features released and the upcoming ones. You may also give us insights and vote for a specific feature.
-For our high-level roadmap and strategy, you can check <a href="https://docs.dataline.io/company-handbook/company-handbook/roadmap">our handbook</a>.
+Check out our [roadmap](https://github.com/datalineio/dataline/projects/1) to get informed of the latest features released and the upcoming ones. You may also give us insights and vote for a specific feature.
+For our high-level roadmap and strategy, you can check [our handbook](https://docs.dataline.io/company-handbook/company-handbook/roadmap).
 
 ## License
 
-Dataline is licensed under the MIT license. See the <a href="https://docs.dataline.io/license">LICENSE</a> file for licensing information.
+Dataline is licensed under the MIT license. See the [LICENSE](https://docs.dataline.io/license) file for licensing information.
