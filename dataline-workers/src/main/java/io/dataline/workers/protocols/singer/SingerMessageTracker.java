@@ -22,15 +22,41 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.workers.protocols.singer;
 
-import io.dataline.config.StandardTapConfig;
-import java.nio.file.Path;
-import java.util.stream.Stream;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.dataline.singer.SingerMessage;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
-public interface TapFactory<T> {
+public class SingerMessageTracker implements Consumer<SingerMessage> {
 
-  Stream<T> create(StandardTapConfig tapConfig, Path workspacePath)
-      throws InvalidCredentialsException, InvalidCatalogException, SyncException;
+  private final AtomicLong recordCount;
+  private final AtomicReference<JsonNode> outputState;
+
+  public SingerMessageTracker() {
+    this.recordCount = new AtomicLong();
+    this.outputState = new AtomicReference<>();
+  }
+
+  @Override
+  public void accept(SingerMessage message) {
+    if (message.getType().equals(SingerMessage.Type.RECORD)) {
+      recordCount.incrementAndGet();
+    }
+    if (message.getType().equals(SingerMessage.Type.STATE)) {
+      outputState.set(message.getValue());
+    }
+  }
+
+  public long getRecordCount() {
+    return recordCount.get();
+  }
+
+  public Optional<JsonNode> getOutputState() {
+    return Optional.ofNullable(outputState.get());
+  }
 
 }

@@ -22,41 +22,24 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocol.singer;
+package io.dataline.workers.protocols.singer;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.dataline.commons.functional.CheckedConsumer;
+import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+import java.io.IOException;
+import java.nio.file.Path;
 
-public class SingerMessageTracker implements Consumer<SingerMessage> {
+public interface SingerTarget extends CheckedConsumer<SingerMessage, IOException>, AutoCloseable {
 
-  private final AtomicLong recordCount;
-  private final AtomicReference<JsonNode> outputState;
-
-  public SingerMessageTracker() {
-    this.recordCount = new AtomicLong();
-    this.outputState = new AtomicReference<>();
-  }
+  void start(StandardTargetConfig targetConfig, Path jobRoot);
 
   @Override
-  public void accept(SingerMessage message) {
-    if (message.getType().equals(SingerMessage.Type.RECORD)) {
-      recordCount.incrementAndGet();
-    }
-    if (message.getType().equals(SingerMessage.Type.STATE)) {
-      outputState.set(message.getValue());
-    }
-  }
+  void accept(SingerMessage message) throws IOException;
 
-  public long getRecordCount() {
-    return recordCount.get();
-  }
+  void notifyEndOfStream() throws IOException;
 
-  public Optional<JsonNode> getOutputState() {
-    return Optional.ofNullable(outputState.get());
-  }
+  @Override
+  void close() throws Exception;
 
 }

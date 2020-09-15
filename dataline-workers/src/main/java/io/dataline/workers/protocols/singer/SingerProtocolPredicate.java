@@ -22,15 +22,26 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.workers.protocols.singer;
 
-import io.dataline.commons.functional.CloseableConsumer;
-import io.dataline.config.StandardTargetConfig;
-import java.nio.file.Path;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.dataline.commons.json.JsonSchemaValidator;
+import io.dataline.singer.SingerConfigSchema;
+import java.util.function.Predicate;
 
-public interface TargetFactory<T> {
+public class SingerProtocolPredicate implements Predicate<JsonNode> {
 
-  CloseableConsumer<T> create(StandardTargetConfig targetConfig, Path workspacePath)
-      throws SyncException;
+  private final JsonSchemaValidator jsonSchemaValidator;
+  private final JsonNode schema;
+
+  public SingerProtocolPredicate() {
+    jsonSchemaValidator = new JsonSchemaValidator();
+    schema = JsonSchemaValidator.getSchema(SingerConfigSchema.SINGER_MESSAGE.getFile());
+  }
+
+  @Override
+  public boolean test(JsonNode s) {
+    return jsonSchemaValidator.test(schema, s);
+  }
 
 }

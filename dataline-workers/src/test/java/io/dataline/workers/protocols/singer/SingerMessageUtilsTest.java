@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocol.singer;
+package io.dataline.workers.protocols.singer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,7 +32,7 @@ import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
-class MessageUtilsTest {
+class SingerMessageUtilsTest {
 
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
@@ -45,9 +45,9 @@ class MessageUtilsTest {
         .withType(SingerMessage.Type.RECORD)
         .withStream(TABLE_NAME)
         .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)))
-        .withTimeExtracted(MessageUtils.SINGER_DATETIME_FORMATTER.format(now));
+        .withTimeExtracted(SingerMessageUtils.SINGER_DATETIME_FORMATTER.format(now));
 
-    final SingerMessage actualMessage = MessageUtils.createRecordMessage(
+    final SingerMessage actualMessage = SingerMessageUtils.createRecordMessage(
         TABLE_NAME,
         Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)),
         now);
@@ -62,7 +62,7 @@ class MessageUtilsTest {
         .withStream(TABLE_NAME)
         .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
 
-    final SingerMessage actualMessage = MessageUtils.createRecordMessage(TABLE_NAME, ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE));
+    final SingerMessage actualMessage = SingerMessageUtils.createRecordMessage(TABLE_NAME, ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE));
 
     assertEquals(expectedMessage, actualMessage);
   }
@@ -74,7 +74,7 @@ class MessageUtilsTest {
         .withStream(TABLE_NAME)
         .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
 
-    final SingerMessage actualMessage = MessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, COLUMN_VALUE);
+    final SingerMessage actualMessage = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, COLUMN_VALUE);
 
     assertEquals(expectedMessage, actualMessage);
   }
