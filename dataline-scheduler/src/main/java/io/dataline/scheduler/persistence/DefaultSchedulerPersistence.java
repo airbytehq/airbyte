@@ -272,7 +272,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   public List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException {
     // todo (cgardens) - jooq does not let you use bindings to do LIKE queries. you have to construct
     // the string yourself or use their DSL.
-    final String likeStatement = "'%" + ScopeHelper.getScopePrefix(configType) + "%'";
+    final String likeStatement = "'" + ScopeHelper.getScopePrefix(configType) + "%'";
     try {
       return DatabaseHelper.query(connectionPool,
           ctx -> ctx
