@@ -35,6 +35,7 @@ import io.dataline.singer.SingerMessage;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.SyncWorker;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,9 +47,6 @@ import org.slf4j.LoggerFactory;
 public class SingerSyncWorker implements SyncWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerSyncWorker.class);
-
-  public static final String TAP_ERR_LOG = "tap_err.log";
-  public static final String TARGET_ERR_LOG = "target_err.log";
 
   private final SingerTap singerTap;
   private final SingerTarget singerTarget;
@@ -89,8 +87,8 @@ public class SingerSyncWorker implements SyncWorker {
 
     } catch (Exception e) {
       LOGGER.error("Sync worker failed. Tap error log: {}.\n Target error log: {}",
-          Files.exists(jobRoot.resolve(TAP_ERR_LOG)) ? IOs.readFile(jobRoot, TAP_ERR_LOG) : "<null>",
-          Files.exists(jobRoot.resolve(TARGET_ERR_LOG)) ? IOs.readFile(jobRoot, TARGET_ERR_LOG) : "<null>",
+          Files.exists(jobRoot.resolve(WorkerConstants.TAP_ERR_LOG)) ? IOs.readFile(jobRoot, WorkerConstants.TAP_ERR_LOG) : "<null>",
+          Files.exists(jobRoot.resolve(WorkerConstants.TARGET_ERR_LOG)) ? IOs.readFile(jobRoot, WorkerConstants.TARGET_ERR_LOG) : "<null>",
           e);
 
       return new OutputAndStatus<>(JobStatus.FAILED, null);

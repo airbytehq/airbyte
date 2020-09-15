@@ -35,6 +35,7 @@ import io.dataline.singer.SingerCatalog;
 import io.dataline.singer.SingerMessage;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.StreamFactory;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
@@ -51,12 +52,6 @@ public class DefaultSingerTap implements SingerTap {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerTap.class);
 
-  @VisibleForTesting
-  static final String CONFIG_JSON_FILENAME = "tap_config.json";
-  @VisibleForTesting
-  static final String CATALOG_JSON_FILENAME = "catalog.json";
-  @VisibleForTesting
-  static final String STATE_JSON_FILENAME = "input_state.json";
   @VisibleForTesting
   static final String DISCOVERY_DIR = "discover";
 
@@ -96,25 +91,25 @@ public class DefaultSingerTap implements SingerTap {
     final SingerCatalog selectedCatalog = SingerCatalogConverters
         .applySchemaToDiscoveredCatalog(singerCatalog, input.getStandardSync().getSchema());
 
-    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
-    IOs.writeFile(jobRoot, CATALOG_JSON_FILENAME, Jsons.serialize(selectedCatalog));
-    IOs.writeFile(jobRoot, STATE_JSON_FILENAME, Jsons.serialize(input.getState()));
+    IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(selectedCatalog));
+    IOs.writeFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME, Jsons.serialize(input.getState()));
 
     String[] cmd = {
       "--config",
-      CONFIG_JSON_FILENAME,
+      WorkerConstants.TAP_CONFIG_JSON_FILENAME,
       // TODO support both --properties and --catalog depending on integration
       "--properties",
-      CATALOG_JSON_FILENAME
+      WorkerConstants.CATALOG_JSON_FILENAME
     };
 
     if (input.getState() != null) {
-      cmd = ArrayUtils.addAll(cmd, "--state", STATE_JSON_FILENAME);
+      cmd = ArrayUtils.addAll(cmd, "--state", WorkerConstants.INPUT_STATE_JSON_FILENAME);
     }
 
     tapProcess =
         pbf.create(jobRoot, imageName, cmd)
-            .redirectError(jobRoot.resolve(SingerSyncWorker.TAP_ERR_LOG).toFile())
+            .redirectError(jobRoot.resolve(WorkerConstants.TAP_ERR_LOG).toFile())
             .start();
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream())).iterator();
