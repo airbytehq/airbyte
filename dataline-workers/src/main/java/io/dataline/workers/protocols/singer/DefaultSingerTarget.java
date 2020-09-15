@@ -86,7 +86,7 @@ public class DefaultSingerTarget implements SingerTarget {
 
   @Override
   public void accept(SingerMessage message) throws IOException {
-    Preconditions.checkState(targetProcess != null);
+    Preconditions.checkState(targetProcess != null && !endOfStream);
 
     writer.write(Jsons.serialize(message));
     writer.newLine();
