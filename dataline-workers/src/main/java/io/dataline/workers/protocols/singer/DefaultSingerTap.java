@@ -124,7 +124,7 @@ public class DefaultSingerTap implements SingerTap {
   public boolean isFinished() {
     Preconditions.checkState(tapProcess != null);
 
-    return tapProcess.isAlive() || messageIterator.hasNext();
+    return !tapProcess.isAlive() && !messageIterator.hasNext();
   }
 
   @Override

@@ -76,7 +76,7 @@ public class SingerSyncWorker implements SyncWorker {
       singerTarget.start(targetConfig, jobRoot);
       singerTap.start(tapConfig, jobRoot);
 
-      while (!cancelled.get() && singerTap.isFinished()) {
+      while (!cancelled.get() && !singerTap.isFinished()) {
         final Optional<SingerMessage> maybeMessage = singerTap.attemptRead();
         if (maybeMessage.isPresent()) {
           final SingerMessage message = maybeMessage.get();
