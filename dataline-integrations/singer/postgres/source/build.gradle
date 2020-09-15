@@ -1,18 +1,22 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 plugins {
     id 'java'
     id 'com.bmuschko.docker-remote-api' version '6.6.1'
 }
 
+def image = 'dataline/integration-singer-postgres-source:dev'
+
 sourceSets {
     integrationTest {
         java {
-            srcDir("src/test-integration/java")
+            srcDir 'src/test-integration/java'
         }
         resources {
-            srcDir("src/test-integration/resources")
+            srcDir 'src/test-integration/resources'
         }
     }
 }
+test.dependsOn('compileIntegrationTestJava')
 
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
@@ -32,28 +36,27 @@ dependencies {
     integrationTestImplementation project(':dataline-singer')
 }
 
-def image = "dataline/integration-singer-postgres-source:latest"
 task imageName {
     doLast {
         println "IMAGE $image"
     }
 }
 
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 task buildImage(type: DockerBuildImage) {
-    inputDir = file('.')
+    inputDir = projectDir
     images.add(image)
 }
 
 task integrationTest(type: Test) {
     testClassesDirs += sourceSets.integrationTest.output.classesDirs
     classpath += sourceSets.integrationTest.runtimeClasspath
+
     useJUnitPlatform()
     testLogging() {
         events "passed", "failed"
         exceptionFormat "full"
     }
-    mustRunAfter test
-}
 
-integrationTest.dependsOn(buildImage)
+    mustRunAfter test
+    dependsOn(buildImage)
+}

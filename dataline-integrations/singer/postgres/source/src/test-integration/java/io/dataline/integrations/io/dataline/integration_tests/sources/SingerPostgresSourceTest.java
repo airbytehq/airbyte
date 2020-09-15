@@ -58,9 +58,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.apache.commons.compress.utils.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,8 +102,6 @@ public class SingerPostgresSourceTest {
 
   @Test
   public void testReadFirstTime() throws IOException, InvalidCredentialsException {
-    SingerTap singerTap = new DefaultSingerTap(IMAGE_NAME, pbf, new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
-
     Schema schema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), Schema.class);
 
     // select all tables and all columns
@@ -117,10 +116,19 @@ public class SingerPostgresSourceTest {
         .withStandardSync(syncConfig)
         .withSourceConnectionImplementation(sourceImpl);
 
-    Stream<SingerMessage> singerMessageStream = singerTap.create(tapConfig, jobRoot);
+    SingerTap singerTap = new DefaultSingerTap(IMAGE_NAME, pbf, new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
+    singerTap.start(tapConfig, jobRoot);
 
+    List<SingerMessage> actualMessages = Lists.newArrayList();
     SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
-    List<SingerMessage> actualMessages = singerMessageStream.peek(singerMessageTracker).collect(Collectors.toList());
+    while (!singerTap.isFinished()) {
+      Optional<SingerMessage> maybeMessage = singerTap.attemptRead();
+      if (maybeMessage.isPresent()) {
+        singerMessageTracker.accept(maybeMessage.get());
+        actualMessages.add(maybeMessage.get());
+      }
+    }
+
     for (SingerMessage singerMessage : actualMessages) {
       LOGGER.info("{}", singerMessage);
     }
