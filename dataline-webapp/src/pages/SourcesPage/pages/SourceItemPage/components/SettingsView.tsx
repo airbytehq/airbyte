@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useFetcher, useResource } from "rest-hooks";
@@ -23,6 +23,8 @@ const Content = styled.div`
 `;
 
 const SettingsView: React.FC<IProps> = ({ sourceData }) => {
+  const [saved, setSaved] = useState(false);
+
   const updateConnection = useFetcher(ConnectionResource.updateShape());
   const updateStateConnection = useFetcher(
     ConnectionResource.updateStateShape()
@@ -87,11 +89,13 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
         }
       }
     );
+
+    setSaved(true);
   };
 
   return (
     <Content>
-      <ContentCard title={<FormattedMessage id={"sources.sourceSettings"} />}>
+      <ContentCard title={<FormattedMessage id="sources.sourceSettings" />}>
         <ServiceForm
           onSubmit={onSubmit}
           formType="connection"
@@ -102,6 +106,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
               img: "/default-logo-catalog.svg"
             }
           ]}
+          successMessage={saved && <FormattedMessage id="form.changesSaved" />}
           formValues={{
             ...sourceData.source?.connectionConfiguration,
             name: sourceData.source?.name,

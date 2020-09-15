@@ -56,6 +56,7 @@
   "form.replication_method": "Replication Method",
   "form.validationError": "The received form did not pass validation",
   "form.someError": "Sorry. Something went wrong... ",
+  "form.changesSaved": "Your changes were saved!",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
