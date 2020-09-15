@@ -120,9 +120,12 @@ public class AcceptanceTests {
 
     testRunManualSync(createdConnection.getConnectionId());
 
-    // TODO This is a bit of a hack to get around the fact that we don't have incremental behavior. Ideally we wouldn't wipe the DB, but
-    //  running a full_refresh replicate on the same target db twice copies the data to new tables e.g: "students" becomes "students" and "students_123"
-    //  in the target db which is finicky to validate correctly in the test. Once we support incremental sync, we shouldn't need to wipe the db.
+    // TODO This is a bit of a hack to get around the fact that we don't have incremental behavior.
+    // Ideally we wouldn't wipe the DB, but
+    // running a full_refresh replicate on the same target db twice copies the data to new tables e.g:
+    // "students" becomes "students" and "students_123"
+    // in the target db which is finicky to validate correctly in the test. Once we support incremental
+    // sync, we shouldn't need to wipe the db.
     wipeTables(TARGET_PSQL);
 
     testScheduledSync(Duration.ofSeconds(90));
@@ -137,14 +140,13 @@ public class AcceptanceTests {
   private void wipeTables(PostgreSQLContainer db) throws SQLException {
     BasicDataSource connectionPool = getConnectionPool(db);
     Set<String> tableNames = listTables(connectionPool);
-    for (String table : tableNames){
+    for (String table : tableNames) {
       DatabaseHelper.query(
           connectionPool,
-            ctx -> {
-              ctx.execute("DROP TABLE " + table);
-              return null;
-            }
-          );
+          ctx -> {
+            ctx.execute("DROP TABLE " + table);
+            return null;
+          });
     }
   }
 
@@ -161,7 +163,7 @@ public class AcceptanceTests {
     }
   }
 
-  private BasicDataSource getConnectionPool(PostgreSQLContainer db){
+  private BasicDataSource getConnectionPool(PostgreSQLContainer db) {
     return DatabaseHelper.getConnectionPool(
         db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
