@@ -1,18 +1,13 @@
 import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
-export interface SourceSpecification {
-  sourceSpecificationId: string;
-  sourceId: string;
-  connectionSpecification: {
-    properties: any;
-    required: [string];
-  };
-}
+type propertiesType = {
+  [key: string]: any;
+};
 
 export type specification = {
-  properties: any;
-  required: [string];
+  properties: propertiesType;
+  required: string[];
 };
 
 export interface SourceSpecification {
@@ -27,7 +22,7 @@ export default class SourceSpecificationResource extends BaseResource
   readonly sourceId: string = "";
   readonly connectionSpecification: specification = {
     properties: {},
-    required: [""]
+    required: []
   };
 
   pk() {

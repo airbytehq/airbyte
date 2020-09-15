@@ -117,7 +117,7 @@ const FormContent: React.FC<IProps> = ({
       {properties?.map(item => {
         const condition = specifications?.properties[item];
 
-        if (condition.type === "boolean") {
+        if (condition?.type === "boolean") {
           return (
             <FormItem key={`form-field-${item}`}>
               <Field name={item}>
@@ -146,14 +146,15 @@ const FormContent: React.FC<IProps> = ({
                 <LabeledInput
                   {...field}
                   label={
-                    condition.title || (
+                    condition?.title || (
                       <FormattedMessage
                         id={`form.${item}`}
                         defaultMessage={item}
                       />
                     )
                   }
-                  type={condition.type === "integer" ? "number" : "text"}
+                  message={condition?.description}
+                  type={condition?.type === "integer" ? "number" : "text"}
                 />
               )}
             </Field>
