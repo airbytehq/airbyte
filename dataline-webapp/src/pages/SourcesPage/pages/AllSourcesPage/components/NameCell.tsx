@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
-import StatusIcon from "../../../../../components/StatusIcon";
+// If we have errorStatus - will add it
+// import StatusIcon from "../../../../../components/StatusIcon";
 
 type IProps = {
   value: string;
@@ -29,10 +30,11 @@ const Space = styled.div`
   opacity: 0;
 `;
 
-const NameCell: React.FC<IProps> = ({ value, error, enabled }) => {
+const NameCell: React.FC<IProps> = ({ value, enabled }) => {
   return (
     <Content>
-      {enabled ? <StatusIcon success={!error} /> : <Space />}
+      <Space />
+      {/*{enabled ? <StatusIcon success={!error} /> : <Space />}*/}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );

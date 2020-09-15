@@ -1,52 +1,101 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useResource, useFetcher } from "rest-hooks";
 
 import ContentCard from "../../../components/ContentCard";
 import ServiceForm from "../../../components/ServiceForm";
 import ConnectionBlock from "../../../components/ConnectionBlock";
+import DestinationSpecificationResource, {
+  DestinationSpecification
+} from "../../../core/resources/DestinationSpecification";
+import SourceResource from "../../../core/resources/Source";
 
 type IProps = {
-  onSubmit: () => void;
+  dropDownData: Array<{ text: string; value: string; img?: string }>;
+  hasSuccess?: boolean;
+  onSubmit: (values: {
+    name: string;
+    serviceType: string;
+    specificationId?: string;
+    connectionConfiguration?: any;
+  }) => void;
+  errorStatus?: number;
+  currentSourceId: string;
 };
 
-const Destination: React.FC<IProps> = ({ onSubmit }) => {
-  const data = [
-    {
-      text: "destination 1",
-      value: "1",
-      img: "/default-logo-catalog.svg"
-    },
-    {
-      text: "destination 2",
-      value: "2",
-      img: "/default-logo-catalog.svg"
-    },
-    {
-      text: "destination 3",
-      value: "3",
-      img: "/default-logo-catalog.svg"
-    },
-    {
-      text: "destination 4",
-      value: "4",
-      img: "/default-logo-catalog.svg"
-    }
-  ];
+const useDestinationSpecificationLoad = (destinationId: string) => {
+  const [
+    destinationSpecification,
+    setDestinationSpecification
+  ] = useState<null | DestinationSpecification>(null);
+
+  const fetchSourceSpecification = useFetcher(
+    DestinationSpecificationResource.detailShape(),
+    true
+  );
+
+  useEffect(() => {
+    (async () => {
+      if (destinationId) {
+        setDestinationSpecification(
+          await fetchSourceSpecification({ destinationId })
+        );
+      }
+    })();
+  }, [fetchSourceSpecification, destinationId]);
+
+  return destinationSpecification;
+};
+
+const DestinationStep: React.FC<IProps> = ({
+  onSubmit,
+  dropDownData,
+  hasSuccess,
+  errorStatus,
+  currentSourceId
+}) => {
+  const [destinationId, setDestinationId] = useState("");
+  const specification = useDestinationSpecificationLoad(destinationId);
+  const currentSource = useResource(SourceResource.detailShape(), {
+    sourceId: currentSourceId
+  });
+
+  const onDropDownSelect = (sourceId: string) => setDestinationId(sourceId);
+  const onSubmitForm = async (values: {
+    name: string;
+    serviceType: string;
+  }) => {
+    await onSubmit({
+      ...values,
+      specificationId: specification?.destinationSpecificationId
+    });
+  };
+
+  const errorMessage =
+    errorStatus === 0 ? null : errorStatus === 400 ? (
+      <FormattedMessage id="form.validationError" />
+    ) : (
+      <FormattedMessage id="form.someError" />
+    );
 
   return (
     <>
-      <ConnectionBlock itemFrom={{ name: "Test 1" }} />
+      <ConnectionBlock itemFrom={{ name: currentSource.name }} />
       <ContentCard
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >
         <ServiceForm
-          onSubmit={onSubmit}
+          onDropDownSelect={onDropDownSelect}
+          onSubmit={onSubmitForm}
+          hasSuccess={hasSuccess}
           formType="destination"
-          dropDownData={data}
+          dropDownData={dropDownData}
+          errorMessage={errorMessage}
+          specifications={specification?.connectionSpecification}
         />
       </ContentCard>
     </>
   );
 };
 
-export default Destination;
+export default DestinationStep;

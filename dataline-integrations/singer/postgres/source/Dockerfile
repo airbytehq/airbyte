@@ -17,6 +17,6 @@ RUN python -m pip install --upgrade pip && \
 
 RUN apt-get autoremove -y gcc
 
-WORKDIR /singer/data
-
 ENTRYPOINT ["tap-postgres"]
+
+LABEL io.dataline.version=0.1.0

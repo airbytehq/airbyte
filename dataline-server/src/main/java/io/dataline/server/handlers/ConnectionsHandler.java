@@ -24,6 +24,8 @@
 
 package io.dataline.server.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import io.dataline.api.model.ConnectionCreate;
 import io.dataline.api.model.ConnectionIdRequestBody;
 import io.dataline.api.model.ConnectionRead;
@@ -33,191 +35,169 @@ import io.dataline.api.model.ConnectionStatus;
 import io.dataline.api.model.ConnectionUpdate;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.enums.Enums;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.Schedule;
+import io.dataline.config.Schema;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.server.converters.SchemaConverter;
-import io.dataline.server.helpers.ConfigFetchers;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class ConnectionsHandler {
 
-  private final ConfigPersistence configPersistence;
+  private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidGenerator;
 
-  public ConnectionsHandler(ConfigPersistence configPersistence, Supplier<UUID> uuidGenerator) {
-    this.configPersistence = configPersistence;
+  @VisibleForTesting
+  ConnectionsHandler(final ConfigRepository configRepository,
+                     final Supplier<UUID> uuidGenerator) {
+    this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
   }
 
-  public ConnectionsHandler(ConfigPersistence configPersistence) {
-    this(configPersistence, UUID::randomUUID);
+  public ConnectionsHandler(final ConfigRepository configRepository) {
+    this(configRepository, UUID::randomUUID);
   }
 
-  public ConnectionRead createConnection(ConnectionCreate connectionCreate) {
+  public ConnectionRead createConnection(ConnectionCreate connectionCreate)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID connectionId = uuidGenerator.get();
 
-    // persist sync
-    final StandardSync standardSync = new StandardSync();
-    standardSync.setConnectionId(connectionId);
-    standardSync.setSourceImplementationId(connectionCreate.getSourceImplementationId());
-    standardSync.setDestinationImplementationId(connectionCreate.getDestinationImplementationId());
-    // todo (cgardens): for MVP we only support append.
-    standardSync.setSyncMode(StandardSync.SyncMode.APPEND);
-    standardSync.setSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
-    standardSync.setName(
-        connectionCreate.getName() != null ? connectionCreate.getName() : "default");
-    standardSync.setStatus(toPersistenceStatus(connectionCreate.getStatus()));
-    writeStandardSync(standardSync);
-
-    // persist schedule
-    final StandardSyncSchedule standardSyncSchedule = new StandardSyncSchedule();
-    standardSyncSchedule.setConnectionId(connectionId);
-    if (connectionCreate.getSchedule() != null) {
-      final Schedule schedule = new Schedule();
-      schedule.setTimeUnit(toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()));
-      schedule.setUnits(connectionCreate.getSchedule().getUnits());
-      standardSyncSchedule.setManual(false);
-      standardSyncSchedule.setSchedule(schedule);
-    } else {
-      standardSyncSchedule.setManual(true);
+    // todo (cgardens): for MVP we only support full refresh.
+    if (connectionCreate.getSyncMode() != ConnectionCreate.SyncModeEnum.FULL_REFRESH) {
+      throw new RuntimeException("Only FULL_REFRESH is currently supported!");
     }
 
-    writeSchedule(standardSyncSchedule);
+    // persist sync
+    final StandardSync standardSync = new StandardSync()
+        .withConnectionId(connectionId)
+        .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
+        .withSourceImplementationId(connectionCreate.getSourceImplementationId())
+        .withDestinationImplementationId(connectionCreate.getDestinationImplementationId())
+        .withSyncMode(Enums.convertTo(connectionCreate.getSyncMode(), StandardSync.SyncMode.class))
+        .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
 
-    return getConnectionInternal(connectionId);
+    if (connectionCreate.getSyncSchema() != null) {
+      standardSync.withSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
+    } else {
+      standardSync.withSchema(new Schema().withTables(Collections.emptyList()));
+    }
+
+    configRepository.writeStandardSync(standardSync);
+
+    // persist schedule
+    final StandardSyncSchedule standardSyncSchedule = new StandardSyncSchedule().withConnectionId(connectionId);
+    if (connectionCreate.getSchedule() != null) {
+      final Schedule schedule = new Schedule()
+          .withTimeUnit(toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
+          .withUnits(connectionCreate.getSchedule().getUnits());
+      standardSyncSchedule
+          .withManual(false)
+          .withSchedule(schedule);
+    } else {
+      standardSyncSchedule.withManual(true);
+    }
+
+    configRepository.writeStandardSchedule(standardSyncSchedule);
+
+    return buildConnectionRead(connectionId);
   }
 
-  private void writeStandardSync(StandardSync standardSync) {
-    ConfigFetchers.writeConfig(
-        configPersistence,
-        PersistenceConfigType.STANDARD_SYNC,
-        standardSync.getConnectionId().toString(),
-        standardSync);
-  }
-
-  // todo (cgardens) - stored on sync id (there is no schedule id concept). this is non-intuitive.
-  private void writeSchedule(StandardSyncSchedule schedule) {
-    ConfigFetchers.writeConfig(
-        configPersistence,
-        PersistenceConfigType.STANDARD_SYNC_SCHEDULE,
-        schedule.getConnectionId().toString(),
-        schedule);
-  }
-
-  public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate) {
+  public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID connectionId = connectionUpdate.getConnectionId();
 
-    // get existing sync
-    final StandardSync persistedSync = getStandardSync(connectionId);
-    persistedSync.setSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()));
-    persistedSync.setStatus(toPersistenceStatus(connectionUpdate.getStatus()));
+    // retrieve sync
+    final StandardSync persistedSync = configRepository.getStandardSync(connectionId)
+        .withSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()))
+        .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
-    // get existing schedule
-    final StandardSyncSchedule persistedSchedule = getSyncSchedule(connectionId);
+    // retrieve schedule
+    final StandardSyncSchedule persistedSchedule = configRepository.getStandardSyncSchedule(connectionId);
     if (connectionUpdate.getSchedule() != null) {
-      final Schedule schedule = new Schedule();
-      schedule.setTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()));
-      schedule.setUnits(connectionUpdate.getSchedule().getUnits());
+      final Schedule schedule = new Schedule()
+          .withTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()))
+          .withUnits(connectionUpdate.getSchedule().getUnits());
 
-      persistedSchedule.setSchedule(schedule);
-
-      persistedSchedule.setManual(false);
+      persistedSchedule
+          .withSchedule(schedule)
+          .withManual(false);
     } else {
-      persistedSchedule.setSchedule(null);
-      persistedSchedule.setManual(true);
+      persistedSchedule
+          .withSchedule(null)
+          .withManual(true);
     }
 
-    // persist sync
-    writeStandardSync(persistedSync);
+    configRepository.writeStandardSync(persistedSync);
+    configRepository.writeStandardSchedule(persistedSchedule);
 
-    // persist schedule
-    writeSchedule(persistedSchedule);
-
-    return getConnectionInternal(connectionId);
+    return buildConnectionRead(connectionId);
   }
 
-  // todo (cgardens) - this is a disaster without a relational db.
-  public ConnectionReadList listConnectionsForWorkspace(
-      WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public ConnectionReadList listConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
-    final List<ConnectionRead> reads =
-        // read all connections.
-        ConfigFetchers.getStandardSyncs(configPersistence).stream()
-            // filter out connections attached to source implementations NOT associated with the
-            // workspace
-            .filter(
-                standardSync ->
-                    ConfigFetchers.getSourceConnectionImplementation(
-                            configPersistence, standardSync.getSourceImplementationId())
-                        .getWorkspaceId()
-                        .equals(workspaceIdRequestBody.getWorkspaceId()))
+    for (StandardSync standardSync : configRepository.listStandardSyncs()) {
+      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED) {
+        continue;
+      }
+      if (!isStandardSyncInWorkspace(workspaceIdRequestBody.getWorkspaceId(), standardSync)) {
+        continue;
+      }
 
-            // pull the sync schedule
-            // convert to api format
-            .map(
-                standardSync -> {
-                  final StandardSyncSchedule syncSchedule =
-                      getSyncSchedule(standardSync.getConnectionId());
-                  return toConnectionRead(standardSync, syncSchedule);
-                })
-            .collect(Collectors.toList());
+      connectionReads.add(buildConnectionRead(standardSync.getConnectionId()));
+    }
 
-    final ConnectionReadList connectionReadList = new ConnectionReadList();
-    connectionReadList.setConnections(reads);
-    return connectionReadList;
+    return new ConnectionReadList().connections(connectionReads);
   }
 
-  public ConnectionRead getConnection(ConnectionIdRequestBody connectionIdRequestBody) {
-    return getConnectionInternal(connectionIdRequestBody.getConnectionId());
+  public ConnectionRead getConnection(ConnectionIdRequestBody connectionIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return buildConnectionRead(connectionIdRequestBody.getConnectionId());
   }
 
-  private ConnectionRead getConnectionInternal(UUID connectionId) {
+  private boolean isStandardSyncInWorkspace(final UUID workspaceId,
+                                            final StandardSync standardSync)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    return configRepository.getSourceConnectionImplementation(standardSync.getSourceImplementationId()).getWorkspaceId().equals(workspaceId);
+  }
+
+  private ConnectionRead buildConnectionRead(UUID connectionId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     // read sync from db
-    final StandardSync standardSync = getStandardSync(connectionId);
+    final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
     // read schedule from db
-    final StandardSyncSchedule standardSyncSchedule = getSyncSchedule(connectionId);
-    return toConnectionRead(standardSync, standardSyncSchedule);
+    final StandardSyncSchedule standardSyncSchedule = configRepository.getStandardSyncSchedule(connectionId);
+    return buildConnectionRead(standardSync, standardSyncSchedule);
   }
 
-  private StandardSync getStandardSync(UUID connectionId) {
-    return ConfigFetchers.getStandardSync(configPersistence, connectionId);
-  }
+  private ConnectionRead buildConnectionRead(final StandardSync standardSync,
+                                             final StandardSyncSchedule standardSyncSchedule) {
+    ConnectionSchedule apiSchedule = null;
 
-  private StandardSyncSchedule getSyncSchedule(UUID connectionId) {
-    return ConfigFetchers.getStandardSyncSchedule(configPersistence, connectionId);
-  }
-
-  private ConnectionRead toConnectionRead(
-      StandardSync standardSync, StandardSyncSchedule standardSyncSchedule) {
-    final ConnectionSchedule apiSchedule;
-
-    standardSyncSchedule.setConnectionId(standardSyncSchedule.getConnectionId());
     if (!standardSyncSchedule.getManual()) {
-      apiSchedule = new ConnectionSchedule();
-      apiSchedule.setTimeUnit(toApiTimeUnit(standardSyncSchedule.getSchedule().getTimeUnit()));
-      apiSchedule.setUnits(standardSyncSchedule.getSchedule().getUnits());
-    } else {
-      apiSchedule = null;
+      apiSchedule = new ConnectionSchedule()
+          .timeUnit(toApiTimeUnit(standardSyncSchedule.getSchedule().getTimeUnit()))
+          .units(standardSyncSchedule.getSchedule().getUnits());
     }
 
-    final ConnectionRead connectionRead = new ConnectionRead();
-    connectionRead.setConnectionId(standardSync.getConnectionId());
-    connectionRead.setSourceImplementationId(standardSync.getSourceImplementationId());
-    connectionRead.setDestinationImplementationId(standardSync.getDestinationImplementationId());
-    connectionRead.setStatus(toApiStatus(standardSync.getStatus()));
-    connectionRead.setSchedule(apiSchedule);
-    connectionRead.setSyncMode(toApiSyncMode(standardSync.getSyncMode()));
-    connectionRead.setName(standardSync.getName());
-    connectionRead.setSyncSchema(SchemaConverter.toApiSchema(standardSync.getSchema()));
-
-    return connectionRead;
+    return new ConnectionRead()
+        .connectionId(standardSync.getConnectionId())
+        .sourceImplementationId(standardSync.getSourceImplementationId())
+        .destinationImplementationId(standardSync.getDestinationImplementationId())
+        .status(toApiStatus(standardSync.getStatus()))
+        .schedule(apiSchedule)
+        .syncMode(toApiSyncMode(standardSync.getSyncMode()))
+        .name(standardSync.getName())
+        .syncSchema(SchemaConverter.toApiSchema(standardSync.getSchema()));
   }
 
   private StandardSync.Status toPersistenceStatus(ConnectionStatus apiStatus) {
@@ -239,4 +219,5 @@ public class ConnectionsHandler {
   private ConnectionSchedule.TimeUnitEnum toApiTimeUnit(Schedule.TimeUnit apiTimeUnit) {
     return Enums.convertTo(apiTimeUnit, ConnectionSchedule.TimeUnitEnum.class);
   }
+
 }

@@ -25,105 +25,80 @@
 package io.dataline.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import io.dataline.api.model.DestinationIdRequestBody;
 import io.dataline.api.model.DestinationRead;
 import io.dataline.api.model.DestinationReadList;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.StandardDestination;
 import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.config.persistence.PersistenceConfigType;
-import java.util.Optional;
+import io.dataline.config.persistence.ConfigRepository;
+import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DestinationsHandlerTest {
-  private ConfigPersistence configPersistence;
+
+  private ConfigRepository configRepository;
   private StandardDestination destination;
   private DestinationsHandler destinationHandler;
 
   @BeforeEach
   void setUp() {
-    configPersistence = mock(ConfigPersistence.class);
+    configRepository = mock(ConfigRepository.class);
     destination = generateDestination();
-    destinationHandler = new DestinationsHandler(configPersistence);
+    destinationHandler = new DestinationsHandler(configRepository);
   }
 
   private StandardDestination generateDestination() {
     final UUID destinationId = UUID.randomUUID();
 
-    final StandardDestination standardDestination = new StandardDestination();
-    standardDestination.setDestinationId(destinationId);
-    standardDestination.setName("presto");
-
-    return standardDestination;
+    return new StandardDestination()
+        .withDestinationId(destinationId)
+        .withName("presto");
   }
 
   @Test
-  void testListDestinations() throws JsonValidationException {
+  void testListDestinations() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardDestination destination2 = generateDestination();
-    configPersistence.writeConfig(
-        PersistenceConfigType.STANDARD_DESTINATION,
-        destination2.getDestinationId().toString(),
-        destination2);
 
-    when(configPersistence.getConfigs(
-            PersistenceConfigType.STANDARD_DESTINATION, StandardDestination.class))
-        .thenReturn(Sets.newHashSet(destination, destination2));
+    when(configRepository.listStandardDestinations())
+        .thenReturn(Lists.newArrayList(destination, destination2));
 
-    DestinationRead expectedDestinationRead1 = new DestinationRead();
-    expectedDestinationRead1.setDestinationId(destination.getDestinationId());
-    expectedDestinationRead1.setName(destination.getName());
+    DestinationRead expectedDestinationRead1 = new DestinationRead()
+        .destinationId(destination.getDestinationId())
+        .name(destination.getName());
 
-    DestinationRead expectedDestinationRead2 = new DestinationRead();
-    expectedDestinationRead2.setDestinationId(destination2.getDestinationId());
-    expectedDestinationRead2.setName(destination2.getName());
+    DestinationRead expectedDestinationRead2 = new DestinationRead()
+        .destinationId(destination2.getDestinationId())
+        .name(destination2.getName());
 
     final DestinationReadList actualDestinationReadList = destinationHandler.listDestinations();
 
-    final Optional<DestinationRead> actualDestinationRead1 =
-        actualDestinationReadList.getDestinations().stream()
-            .filter(
-                destinationRead ->
-                    destinationRead.getDestinationId().equals(destination.getDestinationId()))
-            .findFirst();
-    final Optional<DestinationRead> actualDestinationRead2 =
-        actualDestinationReadList.getDestinations().stream()
-            .filter(
-                destinationRead ->
-                    destinationRead.getDestinationId().equals(destination2.getDestinationId()))
-            .findFirst();
-
-    assertTrue(actualDestinationRead1.isPresent());
-    assertEquals(expectedDestinationRead1, actualDestinationRead1.get());
-    assertTrue(actualDestinationRead2.isPresent());
-    assertEquals(expectedDestinationRead2, actualDestinationRead2.get());
+    assertEquals(
+        Lists.newArrayList(expectedDestinationRead1, expectedDestinationRead2),
+        actualDestinationReadList.getDestinations());
   }
 
   @Test
-  void testGetDestination() throws JsonValidationException, ConfigNotFoundException {
-    when(configPersistence.getConfig(
-            PersistenceConfigType.STANDARD_DESTINATION,
-            destination.getDestinationId().toString(),
-            StandardDestination.class))
+  void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configRepository.getStandardDestination(destination.getDestinationId()))
         .thenReturn(destination);
 
-    DestinationRead expectedDestinationRead = new DestinationRead();
-    expectedDestinationRead.setDestinationId(destination.getDestinationId());
-    expectedDestinationRead.setName(destination.getName());
+    DestinationRead expectedDestinationRead = new DestinationRead()
+        .destinationId(destination.getDestinationId())
+        .name(destination.getName());
 
-    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody();
-    destinationIdRequestBody.setDestinationId(destination.getDestinationId());
+    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody()
+        .destinationId(destination.getDestinationId());
 
-    final DestinationRead actualDestinationRead =
-        destinationHandler.getDestination(destinationIdRequestBody);
+    final DestinationRead actualDestinationRead = destinationHandler.getDestination(destinationIdRequestBody);
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
   }
+
 }

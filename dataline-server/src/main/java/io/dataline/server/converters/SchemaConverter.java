@@ -36,38 +36,32 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class SchemaConverter {
-  public static Schema toPersistenceSchema(SourceSchema api) {
+
+  public static Schema toPersistenceSchema(SourceSchema sourceSchema) {
     final List<Table> persistenceTables =
-        api.getTables().stream()
+        sourceSchema.getTables().stream()
             .map(
                 apiTable -> {
                   final List<Column> persistenceColumns =
                       apiTable.getColumns().stream()
                           .map(
-                              apiColumn -> {
-                                final Column persistenceColumn = new Column();
-                                persistenceColumn.setName(apiColumn.getName());
-                                persistenceColumn.setDataType(
-                                    toPersistenceDataType(apiColumn.getDataType()));
-                                return persistenceColumn;
-                              })
+                              apiColumn -> new Column()
+                                  .withName(apiColumn.getName())
+                                  .withDataType(Enums.convertTo(apiColumn.getDataType(), DataType.class))
+                                  .withSelected(apiColumn.getSelected()))
                           .collect(Collectors.toList());
 
-                  final Table persistenceTable = new Table();
-                  persistenceTable.setName(apiTable.getName());
-                  persistenceTable.setColumns(persistenceColumns);
-
-                  return persistenceTable;
+                  return new Table()
+                      .withName(apiTable.getName())
+                      .withColumns(persistenceColumns)
+                      .withSelected(persistenceColumns.stream().anyMatch(Column::getSelected));
                 })
             .collect(Collectors.toList());
 
-    final Schema persistenceSchema = new Schema();
-    persistenceSchema.setTables(persistenceTables);
-    return persistenceSchema;
+    return new Schema().withTables(persistenceTables);
   }
 
   public static SourceSchema toApiSchema(Schema persistenceSchema) {
-
     final List<SourceSchemaTable> persistenceTables =
         persistenceSchema.getTables().stream()
             .map(
@@ -75,33 +69,19 @@ public class SchemaConverter {
                   final List<SourceSchemaColumn> apiColumns =
                       persistenceTable.getColumns().stream()
                           .map(
-                              persistenceColumn -> {
-                                final SourceSchemaColumn apiColumn = new SourceSchemaColumn();
-                                apiColumn.setName(persistenceColumn.getName());
-                                apiColumn.setDataType(
-                                    toApiDataType(persistenceColumn.getDataType()));
-                                return apiColumn;
-                              })
+                              persistenceColumn -> new SourceSchemaColumn()
+                                  .name(persistenceColumn.getName())
+                                  .dataType(Enums.convertTo(persistenceColumn.getDataType(), io.dataline.api.model.DataType.class))
+                                  .selected(persistenceColumn.getSelected()))
                           .collect(Collectors.toList());
 
-                  final SourceSchemaTable apiTable = new SourceSchemaTable();
-                  apiTable.setName(persistenceTable.getName());
-                  apiTable.setColumns(apiColumns);
-
-                  return apiTable;
+                  return new SourceSchemaTable()
+                      .name(persistenceTable.getName())
+                      .columns(apiColumns);
                 })
             .collect(Collectors.toList());
 
-    final SourceSchema apiSchema = new SourceSchema();
-    apiSchema.setTables(persistenceTables);
-    return apiSchema;
+    return new SourceSchema().tables(persistenceTables);
   }
 
-  public static DataType toPersistenceDataType(io.dataline.api.model.DataType apiDataType) {
-    return Enums.convertTo(apiDataType, DataType.class);
-  }
-
-  public static io.dataline.api.model.DataType toApiDataType(DataType persistenceDataType) {
-    return Enums.convertTo(persistenceDataType, io.dataline.api.model.DataType.class);
-  }
 }

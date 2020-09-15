@@ -27,18 +27,25 @@ package io.dataline.integrations;
 import java.util.UUID;
 
 public enum Integrations {
+
   POSTGRES_TAP(
       UUID.fromString("2168516a-5c9a-4582-90dc-5e3a01e3f607"),
-      new IntegrationMapping("dataline/integration-singer-postgres-source")),
+      new IntegrationMapping("dataline/integration-singer-postgres-source:0.1.0")),
+  EXCHANGERATEAPI_IO_TAP(
+      UUID.fromString("37eb2ebf-0899-4b22-aba8-8537ec88b5a8"),
+      new IntegrationMapping("dataline/integration-singer-exchangerateapi_io-source:0.1.2")),
   POSTGRES_TARGET(
-      UUID.fromString("71cb2b91-1b2f-4c42-8f4d-f1ab2bd72080"),
-      new IntegrationMapping("dataline/integration-singer-postgres-destination"));
+      UUID.fromString("a6655e6a-838c-4ecb-a28f-ffdcd27ec710"),
+      new IntegrationMapping("dataline/integration-singer-postgres-destination:0.1.1")),
+  BIGQUERY_TARGET(
+      UUID.fromString("e28a1a10-214a-4051-8cf4-79b6f88719cd"),
+      new IntegrationMapping("dataline/integration-singer-bigquery-destination:0.1.1"));
 
   private final UUID specId;
   private final IntegrationMapping integrationMapping;
 
   // todo (cgardens) - turn this into a map if we have enough integrations that iterating through
-  //   the enum becomes expensive.
+  // the enum becomes expensive.
   public static Integrations findBySpecId(UUID specId) {
     for (Integrations value : values()) {
       if (value.getSpecId().equals(specId)) {
@@ -70,6 +77,7 @@ public enum Integrations {
   }
 
   public static class IntegrationMapping {
+
     private final String checkConnection;
     private final String discoverSchema;
     private final String sync;
@@ -95,5 +103,7 @@ public enum Integrations {
     public String getSync() {
       return sync;
     }
+
   }
+
 }

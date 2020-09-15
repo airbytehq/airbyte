@@ -24,7 +24,7 @@
 
 package io.dataline.server.handlers;
 
-import com.google.common.base.Charsets;
+import com.google.common.annotations.VisibleForTesting;
 import io.dataline.api.model.JobConfigType;
 import io.dataline.api.model.JobIdRequestBody;
 import io.dataline.api.model.JobInfoRead;
@@ -33,19 +33,17 @@ import io.dataline.api.model.JobRead;
 import io.dataline.api.model.JobReadList;
 import io.dataline.api.model.LogRead;
 import io.dataline.commons.enums.Enums;
+import io.dataline.commons.io.IOs;
 import io.dataline.config.JobConfig;
 import io.dataline.scheduler.Job;
-import io.dataline.scheduler.SchedulerPersistence;
 import io.dataline.scheduler.ScopeHelper;
-import java.io.File;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.io.input.ReversedLinesFileReader;
 
 public class JobHistoryHandler {
+
   private static final int LOG_TAIL_SIZE = 10;
   private final SchedulerPersistence schedulerPersistence;
 
@@ -53,82 +51,50 @@ public class JobHistoryHandler {
     this.schedulerPersistence = schedulerPersistence;
   }
 
-  public JobReadList listJobsFor(JobListRequestBody request) {
-    try {
-      JobConfig.ConfigType configType =
-          Enums.convertTo(request.getConfigType(), JobConfig.ConfigType.class);
-      String configId = request.getConfigId();
+  public JobReadList listJobsFor(JobListRequestBody request) throws IOException {
+    JobConfig.ConfigType configType = Enums.convertTo(request.getConfigType(), JobConfig.ConfigType.class);
+    String configId = request.getConfigId();
 
-      // todo: use functions for scope scoping
-      List<JobRead> jobReads =
-          schedulerPersistence.listJobs(configType, configId).stream()
-              .map(JobHistoryHandler::getJobRead)
-              .collect(Collectors.toList());
+    List<JobRead> jobReads = schedulerPersistence.listJobs(configType, configId)
+        .stream()
+        .map(JobHistoryHandler::getJobRead)
+        .collect(Collectors.toList());
 
-      JobReadList jobReadList = new JobReadList();
-      jobReadList.setJobs(jobReads);
-
-      return jobReadList;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    return new JobReadList().jobs(jobReads);
   }
 
-  public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) {
-    try {
-      Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
+  public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
+    Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
 
-      LogRead logRead = new LogRead();
-      logRead.setStdout(getTail(LOG_TAIL_SIZE, job.getStdoutPath()));
-      logRead.setStderr(getTail(LOG_TAIL_SIZE, job.getStderrPath()));
+    LogRead logRead = new LogRead()
+        .stdout(IOs.getTail(LOG_TAIL_SIZE, job.getStdoutPath()))
+        .stderr(IOs.getTail(LOG_TAIL_SIZE, job.getStderrPath()));
 
-      JobInfoRead jobInfo = new JobInfoRead();
-      jobInfo.setJob(getJobRead(job));
-      jobInfo.setLogs(logRead);
-
-      return jobInfo;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    return new JobInfoRead()
+        .job(getJobRead(job))
+        .logs(logRead);
   }
 
-  private static List<String> getTail(int numLines, String path) {
-    File file = new File(path);
-    try (ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
-      List<String> lines = new ArrayList<>();
-
-      String line;
-      while ((line = fileReader.readLine()) != null && lines.size() < numLines) {
-        lines.add(line);
-      }
-
-      Collections.reverse(lines);
-
-      return lines;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static JobRead getJobRead(Job job) {
+  @VisibleForTesting
+  protected static JobRead getJobRead(Job job) {
     String configId = ScopeHelper.getConfigId(job.getScope());
-    JobConfigType configType =
-        Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
+    JobConfigType configType = Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
 
     JobRead jobRead = new JobRead();
 
     jobRead.setId(job.getId());
     jobRead.setConfigId(configId);
     jobRead.setConfigType(configType);
-    jobRead.setCreatedAt(job.getCreatedAt());
+    jobRead.setCreatedAt(job.getCreatedAtInSecond());
 
-    if (job.getStartedAt().isPresent()) {
-      jobRead.setStartedAt(job.getStartedAt().get());
+    if (job.getStartedAtInSecond().isPresent()) {
+      jobRead.setStartedAt(job.getStartedAtInSecond().get());
     }
 
-    jobRead.setUpdatedAt(job.getUpdatedAt());
+    jobRead.setUpdatedAt(job.getUpdatedAtInSecond());
     jobRead.setStatus(Enums.convertTo(job.getStatus(), JobRead.StatusEnum.class));
 
     return jobRead;
   }
+
 }

@@ -1,0 +1,52 @@
+version: "3.7"
+
+services:
+  init:
+    # create all the necessary mount directory so we can create volumes
+    image: busybox
+    container_name: init
+    command: /bin/sh -c "
+      mkdir -p /tmp/workspace;
+      mkdir -p /tmp/data;
+      mkdir -p /tmp/db;
+      "
+    volumes:
+      - root:/tmp
+  seed:
+  db:
+    ports:
+      - 5432:5432
+  scheduler:
+  server:
+  webapp:
+
+# Allow us to access the volume content on the local filesystem
+volumes:
+  root:
+    name: dev-root
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${DEV_ROOT}
+  workspace:
+    name: dev-workspace
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${DEV_ROOT}/workspace
+  data:
+    name: dev-data
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${DEV_ROOT}/data
+  db:
+    name: dev-db
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${DEV_ROOT}/db

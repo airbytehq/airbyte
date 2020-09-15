@@ -1,0 +1,17 @@
+plugins {
+    id "com.github.eirnym.js2p" version "1.0"
+}
+
+jsonSchema2Pojo {
+    source = files("${sourceSets.main.output.resourcesDir}/json")
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+
+    targetPackage = 'io.dataline.config'
+    useLongIntegers = true
+
+    removeOldOutput = true
+
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
+}

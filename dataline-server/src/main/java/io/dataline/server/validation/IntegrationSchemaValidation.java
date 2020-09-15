@@ -25,54 +25,33 @@
 package io.dataline.server.validation;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.commons.json.JsonSchemaValidator;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.SourceConnectionSpecification;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.JsonSchemaValidation;
-import io.dataline.config.persistence.JsonValidationException;
-import io.dataline.server.helpers.ConfigFetchers;
-import java.util.UUID;
 
 public class IntegrationSchemaValidation {
-  private final ConfigPersistence configPersistence;
 
-  private final ObjectMapper objectMapper;
-  private final JsonSchemaValidation jsonSchemaValidation;
+  private final JsonSchemaValidator jsonSchemaValidator;
 
-  public IntegrationSchemaValidation(ConfigPersistence configPersistence) {
-    this.configPersistence = configPersistence;
-
-    this.objectMapper = new ObjectMapper();
-    this.jsonSchemaValidation = new JsonSchemaValidation();
+  public IntegrationSchemaValidation() {
+    this.jsonSchemaValidator = new JsonSchemaValidator();
   }
 
-  public void validateSourceConnectionConfiguration(
-      UUID sourceConnectionSpecificationId, Object configuration)
-      throws JsonValidationException, ConfigNotFoundException {
-    final SourceConnectionSpecification sourceConnectionSpecification =
-        ConfigFetchers.getSourceConnectionSpecification(
-            configPersistence, sourceConnectionSpecificationId);
+  public void validateConfig(final SourceConnectionSpecification sourceConnectionSpecification,
+                             final JsonNode configJson)
+      throws JsonValidationException {
+    final JsonNode schemaJson = sourceConnectionSpecification.getSpecification();
 
-    final JsonNode schemaJson =
-        objectMapper.valueToTree(sourceConnectionSpecification.getSpecification());
-    final JsonNode configJson = objectMapper.valueToTree(configuration);
-
-    jsonSchemaValidation.validateThrow(schemaJson, configJson);
+    jsonSchemaValidator.ensure(schemaJson, configJson);
   }
 
-  public void validateDestinationConnectionConfiguration(
-      UUID destinationConnectionSpecificationId, Object configuration)
-      throws JsonValidationException, ConfigNotFoundException {
-    final DestinationConnectionSpecification destinationConnectionSpecification =
-        ConfigFetchers.getDestinationConnectionSpecification(
-            configPersistence, destinationConnectionSpecificationId);
+  public void validateConfig(final DestinationConnectionSpecification destinationConnectionSpecification,
+                             final JsonNode configJson)
+      throws JsonValidationException {
+    final JsonNode schemaJson = destinationConnectionSpecification.getSpecification();
 
-    final JsonNode schemaJson =
-        objectMapper.valueToTree(destinationConnectionSpecification.getSpecification());
-    final JsonNode configJson = objectMapper.valueToTree(configuration);
-
-    jsonSchemaValidation.validateThrow(schemaJson, configJson);
+    jsonSchemaValidator.ensure(schemaJson, configJson);
   }
+
 }

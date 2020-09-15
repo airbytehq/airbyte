@@ -27,44 +27,42 @@ package io.dataline.server.handlers;
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceRead;
 import io.dataline.api.model.SourceReadList;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.StandardSource;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.server.helpers.ConfigFetchers;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
+import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class SourcesHandler {
-  private final ConfigPersistence configPersistence;
 
-  public SourcesHandler(ConfigPersistence configPersistence) {
-    this.configPersistence = configPersistence;
+  private final ConfigRepository configRepository;
+
+  public SourcesHandler(final ConfigRepository configRepository) {
+    this.configRepository = configRepository;
   }
 
-  public SourceReadList listSources() {
-    final List<SourceRead> sourceReads;
-    sourceReads =
-        ConfigFetchers.getStandardSources(configPersistence).stream()
-            .map(SourcesHandler::toSourceRead)
-            .collect(Collectors.toList());
+  public SourceReadList listSources() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final List<SourceRead> reads = configRepository.listStandardSources()
+        .stream()
+        .map(SourcesHandler::buildSourceRead)
+        .collect(Collectors.toList());
 
-    final SourceReadList sourceReadList = new SourceReadList();
-    sourceReadList.setSources(sourceReads);
-    return sourceReadList;
+    return new SourceReadList().sources(reads);
   }
 
-  public SourceRead getSource(SourceIdRequestBody sourceIdRequestBody) {
-    final UUID sourceId = sourceIdRequestBody.getSourceId();
-    final StandardSource standardSource =
-        ConfigFetchers.getStandardSource(configPersistence, sourceId);
-    return toSourceRead(standardSource);
+  public SourceRead getSource(SourceIdRequestBody sourceIdRequestBody) throws ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardSource standardSource = configRepository.getStandardSource(sourceIdRequestBody.getSourceId());
+    return buildSourceRead(standardSource);
   }
 
-  private static SourceRead toSourceRead(StandardSource standardSource) {
+  private static SourceRead buildSourceRead(StandardSource standardSource) {
     final SourceRead sourceRead = new SourceRead();
     sourceRead.setSourceId(standardSource.getSourceId());
     sourceRead.setName(standardSource.getName());
 
     return sourceRead;
   }
+
 }

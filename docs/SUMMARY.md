@@ -6,9 +6,9 @@
 ## Deployment
 
 * [Deploying Dataline](deployment/deploying-dataline/README.md)
-  * [With Docker](deployment/deploying-dataline/with-docker.md)
-  * [With Kubernetes](deployment/deploying-dataline/with-kubernetes.md)
-  * [From Sources](deployment/deploying-dataline/from-sources.md)
+  * [On your workstation](deployment/deploying-dataline/with-docker.md)
+  * [On AWS \(EC2\)](deployment/deploying-dataline/on-aws-ec2.md)
+  * [On GCP \(Compute Engine\)](deployment/deploying-dataline/on-gcp-compute-engine.md)
 
 ## Integrations
 
@@ -26,6 +26,7 @@
 
 * [Contributing to Dataline](contributing/contributing-to-dataline/README.md)
   * [Developing Locally](contributing/contributing-to-dataline/developing-locally.md)
+  * [Code Style](contributing/contributing-to-dataline/code-style.md)
   * [Updating Documentation](contributing/contributing-to-dataline/updating-documentation.md)
   * [Code of Conduct](contributing/contributing-to-dataline/code-of-conduct.md)
 

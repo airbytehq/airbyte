@@ -1,0 +1,44 @@
+plugins {
+    id "com.github.eirnym.js2p" version "1.0"
+}
+
+dependencies {
+    implementation group: 'javax.validation', name: 'validation-api', version: '1.1.0.Final'
+}
+
+jsonSchema2Pojo {
+    // todo (cgardens) - this path cannot be the same as the one in dataline-configs:model,
+    //  otherwise they clobber each other, when we are accessing them as java resources.
+    //  we need to find a more graceful way of handling this issue, but for now this keeps
+    //  us moving forward.
+    source = files("${sourceSets.main.output.resourcesDir}/singer_json")
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+
+    targetPackage = 'io.dataline.singer'
+    useLongIntegers = true
+
+    removeOldOutput = true
+
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
+}
+
+task postprocess {
+    doFirst {
+        def original = new File(project.buildDir, 'generated/src/gen/java/io/dataline/singer/SingerColumn.java')
+        def lines = original.readLines()
+
+        original.withWriter('utf-8') { writer ->
+            lines.each {
+                if (it.contains("private List<SingerType> type"))
+                    writer.writeLine("    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = io.dataline.singer.SingerTypeDeserializer.class)")
+                writer.writeLine(it)
+            }
+        }
+    }
+}
+
+afterEvaluate { project ->
+    project.tasks.generateJsonSchema2Pojo.finalizedBy postprocess
+}

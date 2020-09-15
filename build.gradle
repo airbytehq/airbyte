@@ -1,14 +1,20 @@
 plugins {
-    id "base"
-    id "com.diffplug.spotless" version "5.1.1" apply false
+    id 'base'
+    id 'java'
+    id 'pmd'
+    id 'com.diffplug.spotless' version '5.3.0'
+    // id 'de.aaschmid.cpd' version '3.1'
+}
+
+repositories {
+    mavenCentral()
 }
 
 Properties env = new Properties()
-File envFile = new File('.env')
-envFile.withInputStream { env.load(it) }
+rootProject.file('.env').withInputStream { env.load(it) }
 
-if (!env.containsKey("VERSION")) {
-    throw new Exception("Version not specified in .env file...")
+if (!env.containsKey('VERSION')) {
+    throw new Exception('Version not specified in .env file...')
 }
 
 allprojects {
@@ -17,7 +23,7 @@ allprojects {
 }
 
 def createLicenseWith = { licence ->
-    def tmp = File.createTempFile("tmp", ".tmp")
+    def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
         w.writeLine("/*")
@@ -31,42 +37,98 @@ def createLicenseWith = { licence ->
     return tmp
 }
 
+spotless {
+    java {
+        target '**/*.java'
+        targetExclude "**/build/**/*"
+
+        importOrder()
+
+        eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
+
+        licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
+        removeUnusedImports()
+        trimTrailingWhitespace()
+    }
+    groovyGradle {
+        target '**/*.gradle'
+        targetExclude "**/build/**/*"
+    }
+    sql {
+        target '**/*.sql'
+        targetExclude "**/build/**/*"
+
+        dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
+    }
+    format 'styling', {
+        target '**/*.json', '**/*.yaml'
+        targetExclude "**/build/**/*", "**/node_modules/**/*"
+
+        prettier()
+    }
+}
+check.dependsOn 'spotlessApply'
+
+// Disabled because it generate an obnoxious warning
+// TODO: https://github.com/datalineio/dataline/issues/225
+//
+//    cpdCheck {
+//        ignoreFailures = true
+//        reports {
+//            text.enabled = true
+//        }
+//    }
+
+allprojects {
+    apply plugin: 'base'
+
+    afterEvaluate { project ->
+        composeBuild.dependsOn(project.tasks.assemble)
+    }
+}
+
 // Java projects common configurations
 subprojects {
 
-    if (project.name == "dataline-webapp") {
+    if (project.name == 'dataline-webapp') {
         return
     }
 
     apply plugin: 'java'
-    apply plugin: 'com.diffplug.spotless'
 
     repositories {
         mavenCentral()
     }
 
-    spotless {
-        java {
-            licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
-            googleJavaFormat('1.8')
-            removeUnusedImports()
-            trimTrailingWhitespace()
-        }
-        groovyGradle {
-            target '**/*.gradle'
-        }
+    pmd {
+        consoleOutput = true
+
+        rulePriority = 5
+        ruleSets = []
+        ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
     }
-    compileJava.dependsOn 'spotlessApply'
 
     test {
         useJUnitPlatform()
         testLogging() {
-            events "failed"
-            exceptionFormat "full"
+            events 'failed'
+            exceptionFormat 'full'
+            // showStandardStreams = true
         }
     }
 
     dependencies {
+        if (project.name != 'dataline-commons') {
+            implementation project(':dataline-commons')
+        }
+
+        implementation(platform("com.fasterxml.jackson:jackson-bom:2.10.4"))
+        implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
+
+        // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
+        implementation 'com.fasterxml.jackson.core:jackson-databind'
+        implementation 'com.fasterxml.jackson.core:jackson-annotations'
+
         implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
         implementation group: 'commons-io', name: 'commons-io', version: '2.7'
@@ -85,6 +147,17 @@ subprojects {
 
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
         testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
     }
 }
+
+task composeBuild {
+    doFirst {
+        exec {
+            workingDir rootDir
+            commandLine 'docker-compose', '-f', 'docker-compose.build.yaml', 'build', '--parallel', '--quiet'
+        }
+    }
+}
+build.dependsOn(composeBuild)

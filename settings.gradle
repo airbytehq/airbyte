@@ -1,13 +1,28 @@
+import groovy.io.FileType
+
 rootProject.name = 'dataline'
 
-include 'dataline-api'
-include 'dataline-commons'
-include 'dataline-config'
-include 'dataline-config-init'
-include 'dataline-config-persistence'
-include 'dataline-db'
-include 'dataline-integrations'
-include 'dataline-scheduler'
-include 'dataline-server'
-include 'dataline-webapp'
-include 'dataline-workers'
+include ':dataline-analytics'
+include ':dataline-api'
+include ':dataline-commons'
+include ':dataline-config:models'
+include ':dataline-config:init'
+include ':dataline-config:persistence'
+include ':dataline-db'
+include ':dataline-integrations'
+include ':dataline-scheduler'
+include ':dataline-server'
+include ':dataline-singer'
+include ':dataline-webapp'
+include ':dataline-workers'
+include ':dataline-tests'
+include ':dataline-test-utils'
+
+// include all integration subprojects
+def integrationsPath = rootDir.toPath().resolve('dataline-integrations')
+integrationsPath.eachFileRecurse(FileType.FILES) { path ->
+    def relativizedPath = integrationsPath.relativize(path)
+    if (path.endsWith('build.gradle') && !path.contains("build") && relativizedPath.getNameCount() > 1) {
+        include ":dataline-integrations:${relativizedPath.parent.join(':')}"
+    }
+}

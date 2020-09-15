@@ -87,4 +87,3 @@ For our high-level roadmap and strategy, you can check <a href="https://docs.dat
 ## License
 
 Dataline is licensed under the MIT license. See the <a href="https://docs.dataline.io/license">LICENSE</a> file for licensing information.
-

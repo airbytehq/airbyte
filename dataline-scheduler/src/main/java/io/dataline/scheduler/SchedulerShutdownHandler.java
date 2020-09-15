@@ -30,10 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SchedulerShutdownHandler extends Thread {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerShutdownHandler.class);
-  private ExecutorService[] threadPools;
 
-  public SchedulerShutdownHandler(ExecutorService... threadPools) {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerShutdownHandler.class);
+  private final ExecutorService[] threadPools;
+
+  public SchedulerShutdownHandler(final ExecutorService... threadPools) {
     this.threadPools = threadPools;
   }
 
@@ -51,4 +52,5 @@ public class SchedulerShutdownHandler extends Thread {
       }
     }
   }
+
 }

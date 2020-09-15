@@ -25,9 +25,18 @@
 package io.dataline.scheduler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.dataline.config.Configs;
+import io.dataline.config.EnvConfigs;
 import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.DefaultConfigPersistence;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.dataline.workers.process.DockerProcessBuilderFactory;
+import io.dataline.workers.process.ProcessBuilderFactory;
+import java.nio.file.Path;
+import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -44,55 +53,73 @@ import org.slf4j.LoggerFactory;
  * launching new jobs.
  */
 public class SchedulerApp {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
   private static final int MAX_WORKERS = 4;
-  private static final long JOB_SUBMITTER_DELAY_MILLIS = 1000L;
-  private static final ThreadFactory THREAD_FACTORY =
-      new ThreadFactoryBuilder().setNameFormat("scheduler-%d").build();
+  private static final long JOB_SUBMITTER_DELAY_MILLIS = 5000L;
+  private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
 
   private final BasicDataSource connectionPool;
-  private final String configPersistenceRoot;
+  private final Path configRoot;
+  private final Path workspaceRoot;
+  private final ProcessBuilderFactory pbf;
 
-  public SchedulerApp(BasicDataSource connectionPool, String configPersistenceRoot) {
+  public SchedulerApp(BasicDataSource connectionPool,
+                      Path configRoot,
+                      Path workspaceRoot,
+                      ProcessBuilderFactory pbf) {
     this.connectionPool = connectionPool;
-    this.configPersistenceRoot = configPersistenceRoot;
+    this.configRoot = configRoot;
+    this.workspaceRoot = workspaceRoot;
+    this.pbf = pbf;
   }
 
   public void start() {
-    final SchedulerPersistence schedulerPersistence =
-        new DefaultSchedulerPersistence(connectionPool);
-    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configPersistenceRoot);
-    final ExecutorService workerThreadPool =
-        Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
+    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+    final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
 
-    final JobSubmitter jobSubmitter =
-        new JobSubmitter(workerThreadPool, connectionPool, schedulerPersistence);
-    final JobScheduler jobScheduler =
-        new JobScheduler(connectionPool, schedulerPersistence, configPersistence);
+    final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
+
+    final JobRetrier jobRetrier = new JobRetrier(schedulerPersistence, Instant::now);
+    final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, configRepository);
+    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, schedulerPersistence, workerRunFactory);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
-          jobSubmitter.run();
+          jobRetrier.run();
           jobScheduler.run();
+          jobSubmitter.run();
         },
         0L,
         JOB_SUBMITTER_DELAY_MILLIS,
         TimeUnit.MILLISECONDS);
 
-    Runtime.getRuntime()
-        .addShutdownHook(new SchedulerShutdownHandler(workerThreadPool, scheduledPool));
+    Runtime.getRuntime().addShutdownHook(new SchedulerShutdownHandler(workerThreadPool, scheduledPool));
   }
 
   public static void main(String[] args) {
-    final String configPersistenceRoot = System.getenv("CONFIG_PERSISTENCE_ROOT");
-    LOGGER.info("configPersistenceRoot = " + configPersistenceRoot);
+    final Configs configs = new EnvConfigs();
+
+    final Path configRoot = configs.getConfigRoot();
+    LOGGER.info("configRoot = " + configRoot);
+
+    final Path workspaceRoot = configs.getWorkspaceRoot();
+    LOGGER.info("workspaceRoot = " + workspaceRoot);
 
     LOGGER.info("Creating DB connection pool...");
-    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+    final BasicDataSource connectionPool = DatabaseHelper.getConnectionPool(
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl());
+
+    final ProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, configs.getWorkspaceDockerMount(), configs.getDockerNetwork());
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(connectionPool, configPersistenceRoot).start();
+    new SchedulerApp(connectionPool, configRoot, workspaceRoot, pbf).start();
   }
+
 }

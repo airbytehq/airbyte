@@ -1,14 +1,23 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import { useFetcher, useResource } from "rest-hooks";
 
 import { H2 } from "../../components/Titles";
 import StepsMenu from "../../components/StepsMenu";
 import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
-import useRouter from "../../components/hooks/useRouterHook";
+import SourceImplementationResource from "../../core/resources/SourceImplementation";
+import DestinationImplementationResource from "../../core/resources/DestinationImplementation";
+import ConnectionResource from "../../core/resources/Connection";
+import config from "../../config";
+import StepsConfig, { StepsTypes } from "./components/StepsConfig";
+import PrepareDropDownLists from "./components/PrepareDropDownLists";
+import FrequencyConfig from "../../data/FrequencyConfig.json";
 import { Routes } from "../routes";
+import useRouter from "../../components/hooks/useRouterHook";
+import { Source } from "../../core/resources/Source";
 
 const Content = styled.div`
   width: 100%;
@@ -45,36 +54,194 @@ const StepsCover = styled.div`
 const OnboardingPage: React.FC = () => {
   const { push } = useRouter();
 
-  const steps = [
+  const { sources } = useResource(SourceImplementationResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
+  const { destinations } = useResource(
+    DestinationImplementationResource.listShape(),
     {
-      id: "create-source",
-      name: <FormattedMessage id={"onboarding.createSource"} />
-    },
-    {
-      id: "create-destination",
-      name: <FormattedMessage id={"onboarding.createDestination"} />
-    },
-    {
-      id: "set-up-connection",
-      name: <FormattedMessage id={"onboarding.setUpConnection"} />
+      workspaceId: config.ui.workspaceId
     }
-  ];
-  const [currentStep, setCurrentStep] = useState("create-source");
+  );
 
-  const onSelectStep = (id: string) => setCurrentStep(id);
-  const onSubmitSourceStep = () => setCurrentStep("create-destination");
-  const onSubmitDestinationStep = () => setCurrentStep("set-up-connection");
-  const onSubmitConnectionStep = () => push(Routes.Root);
+  const [successRequest, setSuccessRequest] = useState(false);
+  const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
+  const { currentStep, steps, setCurrentStep } = StepsConfig(
+    !!sources.length,
+    !!destinations.length
+  );
+  const createSourcesImplementation = useFetcher(
+    SourceImplementationResource.createShape()
+  );
+  const createDestinationsImplementation = useFetcher(
+    DestinationImplementationResource.createShape()
+  );
+  const createConnection = useFetcher(ConnectionResource.createShape());
+
+  const {
+    sourcesDropDownData,
+    destinationsDropDownData
+  } = PrepareDropDownLists();
+
+  const onSubmitSourceStep = async (values: {
+    name: string;
+    serviceType: string;
+    specificationId?: string;
+    connectionConfiguration?: any;
+  }) => {
+    setErrorStatusRequest(0);
+    try {
+      await createSourcesImplementation(
+        {},
+        {
+          name: values.name,
+          workspaceId: config.ui.workspaceId,
+          sourceSpecificationId: values.specificationId,
+          connectionConfiguration: values.connectionConfiguration
+        },
+        [
+          [
+            SourceImplementationResource.listShape(),
+            { workspaceId: config.ui.workspaceId },
+            (
+              newSourceImplementationId: string,
+              sourcesImplementationIds: { sources: string[] }
+            ) => ({
+              sources: [
+                ...sourcesImplementationIds.sources,
+                newSourceImplementationId
+              ]
+            })
+          ]
+        ]
+      );
+
+      setSuccessRequest(true);
+      setTimeout(() => {
+        setSuccessRequest(false);
+        setCurrentStep(StepsTypes.CREATE_DESTINATION);
+      }, 2000);
+    } catch (e) {
+      setErrorStatusRequest(e.status);
+    }
+  };
+
+  const onSubmitDestinationStep = async (values: {
+    name: string;
+    serviceType: string;
+    specificationId?: string;
+    connectionConfiguration?: any;
+  }) => {
+    setErrorStatusRequest(0);
+    try {
+      await createDestinationsImplementation(
+        {},
+        {
+          name: values.name,
+          workspaceId: config.ui.workspaceId,
+          destinationSpecificationId: values.specificationId,
+          connectionConfiguration: values.connectionConfiguration
+        },
+        [
+          [
+            DestinationImplementationResource.listShape(),
+            { workspaceId: config.ui.workspaceId },
+            (
+              newDestinationImplementationId: string,
+              destinationsImplementationIds: { destinations: string[] }
+            ) => ({
+              destinations: [
+                ...destinationsImplementationIds.destinations,
+                newDestinationImplementationId
+              ]
+            })
+          ]
+        ]
+      );
+
+      setSuccessRequest(true);
+      setTimeout(() => {
+        setSuccessRequest(false);
+        setCurrentStep(StepsTypes.SET_UP_CONNECTION);
+      }, 2000);
+    } catch (e) {
+      setErrorStatusRequest(e.status);
+    }
+  };
+
+  const onSubmitConnectionStep = async (values: {
+    frequency: string;
+    source?: Source;
+  }) => {
+    const frequencyData = FrequencyConfig.find(
+      item => item.value === values.frequency
+    );
+    setErrorStatusRequest(0);
+    try {
+      await createConnection(
+        {
+          sourceId: values.source?.sourceId || "",
+          sourceName: values.source?.name || "",
+          name: sources[0].name || ""
+        },
+        {
+          sourceImplementationId: sources[0].sourceImplementationId,
+          destinationImplementationId:
+            destinations[0].destinationImplementationId,
+          syncMode: "full_refresh",
+          schedule: frequencyData?.config,
+          status: "active"
+        },
+        [
+          [
+            ConnectionResource.listShape(),
+            { workspaceId: config.ui.workspaceId },
+            (
+              newConnectionId: string,
+              connectionsIds: { connections: string[] }
+            ) => ({
+              connections: [...connectionsIds.connections, newConnectionId]
+            })
+          ]
+        ]
+      );
+      push(Routes.Root);
+    } catch (e) {
+      setErrorStatusRequest(e.status);
+    }
+  };
 
   const renderStep = () => {
-    if (currentStep === "create-source") {
-      return <SourceStep onSubmit={onSubmitSourceStep} />;
+    if (currentStep === StepsTypes.CREATE_SOURCE) {
+      return (
+        <SourceStep
+          onSubmit={onSubmitSourceStep}
+          dropDownData={sourcesDropDownData}
+          hasSuccess={successRequest}
+          errorStatus={errorStatusRequest}
+        />
+      );
     }
-    if (currentStep === "create-destination") {
-      return <DestinationStep onSubmit={onSubmitDestinationStep} />;
+    if (currentStep === StepsTypes.CREATE_DESTINATION) {
+      return (
+        <DestinationStep
+          onSubmit={onSubmitDestinationStep}
+          dropDownData={destinationsDropDownData}
+          hasSuccess={successRequest}
+          errorStatus={errorStatusRequest}
+          currentSourceId={sources[0].sourceId}
+        />
+      );
     }
 
-    return <ConnectionStep onSubmit={onSubmitConnectionStep} />;
+    return (
+      <ConnectionStep
+        onSubmit={onSubmitConnectionStep}
+        currentSourceId={sources[0].sourceId}
+        currentDestinationId={destinations[0].destinationId}
+        errorStatus={errorStatusRequest}
+      />
+    );
   };
 
   return (
@@ -87,11 +254,7 @@ const OnboardingPage: React.FC = () => {
         <FormattedMessage id={"onboarding.subtitle"} />
       </Subtitle>
       <StepsCover>
-        <StepsMenu
-          data={steps}
-          onSelect={onSelectStep}
-          activeStep={currentStep}
-        />
+        <StepsMenu data={steps} activeStep={currentStep} />
       </StepsCover>
       {renderStep()}
     </Content>

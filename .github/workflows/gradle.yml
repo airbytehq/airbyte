@@ -7,7 +7,6 @@ jobs:
     env:
       GRADLE_PATH: /tmp/gradle
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Dataline
         uses: actions/checkout@v2
@@ -41,3 +40,42 @@ jobs:
 
       - name: Ensure no file change
         run: git diff-index --quiet HEAD
+
+      - name: Write BigQuery Integration Test Credentials
+        if: success() && github.ref == 'refs/heads/master'
+        run: 'mkdir dataline-integrations/singer/bigquery/destination/config && echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > dataline-integrations/singer/bigquery/destination/config/credentials.json'
+        env:
+          BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
+
+      - name: Run Integration Tests
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
+
+      - name: Build Core Docker Images
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./gradlew composeBuild --no-daemon -g ${{ env.GRADLE_PATH }}
+        env:
+          GIT_REVISION: ${{ github.sha }}
+
+      - name: Run End-to-End Acceptance Tests
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./tools/bin/acceptance_test.sh
+
+      - name: Push Core Docker Images
+        if: success() && github.ref == 'refs/heads/master'
+        run: |
+          docker login -u datalinebot -p ${DOCKER_PASSWORD}
+          docker-compose -f docker-compose.build.yaml push
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Slack Notification (Master branch only)
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+          SLACK_USERNAME: Buildozer
+          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
+          SLACK_COLOR: DC143C
+          SLACK_TITLE: "Build failure"
+          SLACK_FOOTER: ""

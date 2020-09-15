@@ -85,4 +85,5 @@ class EnumsTest {
   void testNotCompatibleDifferentLength2() {
     Assertions.assertFalse(isCompatible(E4.class, E1.class));
   }
+
 }

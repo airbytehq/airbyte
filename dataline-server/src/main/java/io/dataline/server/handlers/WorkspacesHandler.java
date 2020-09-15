@@ -24,66 +24,71 @@
 
 package io.dataline.server.handlers;
 
+import io.dataline.analytics.TrackingClientSingleton;
 import io.dataline.api.model.SlugRequestBody;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.api.model.WorkspaceRead;
 import io.dataline.api.model.WorkspaceUpdate;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.StandardWorkspace;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.PersistenceConfigType;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.config.persistence.PersistenceConstants;
-import io.dataline.server.helpers.ConfigFetchers;
+import java.io.IOException;
 import java.util.UUID;
 
 public class WorkspacesHandler {
-  private final ConfigPersistence configPersistence;
 
-  public WorkspacesHandler(ConfigPersistence configPersistence) {
-    this.configPersistence = configPersistence;
+  private final ConfigRepository configRepository;
+
+  public WorkspacesHandler(final ConfigRepository configRepository) {
+    this.configRepository = configRepository;
   }
 
-  public WorkspaceRead getWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return getWorkspaceFromId(workspaceIdRequestBody.getWorkspaceId());
+  public WorkspaceRead getWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return buildWorkspaceReadFromId(workspaceIdRequestBody.getWorkspaceId());
   }
 
   @SuppressWarnings("unused")
-  public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody) {
+  public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     // for now we assume there is one workspace and it has a default uuid.
-    return getWorkspaceFromId(PersistenceConstants.DEFAULT_WORKSPACE_ID);
+    return buildWorkspaceReadFromId(PersistenceConstants.DEFAULT_WORKSPACE_ID);
   }
 
-  private WorkspaceRead getWorkspaceFromId(UUID workspaceId) {
-    final StandardWorkspace workspace =
-        ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
-
-    final WorkspaceRead workspaceRead = new WorkspaceRead();
-    workspaceRead.setWorkspaceId(workspace.getWorkspaceId());
-    workspaceRead.setName(workspace.getName());
-    workspaceRead.setSlug(workspace.getSlug());
-    workspaceRead.setInitialSetupComplete(workspace.getInitialSetupComplete());
-
-    return workspaceRead;
-  }
-
-  public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate) {
+  public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = workspaceUpdate.getWorkspaceId();
 
-    final StandardWorkspace persistedWorkspace =
-        ConfigFetchers.getStandardWorkspace(configPersistence, workspaceId);
+    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceId);
 
     if (workspaceUpdate.getEmail() != null && !workspaceUpdate.getEmail().equals("")) {
-      persistedWorkspace.setEmail(workspaceUpdate.getEmail());
+      persistedWorkspace.withEmail(workspaceUpdate.getEmail());
     }
-    persistedWorkspace.setInitialSetupComplete(workspaceUpdate.getInitialSetupComplete());
-    persistedWorkspace.setAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection());
-    persistedWorkspace.setNews(workspaceUpdate.getNews());
-    persistedWorkspace.setSecurityUpdates(workspaceUpdate.getSecurityUpdates());
-    ConfigFetchers.writeConfig(
-        configPersistence,
-        PersistenceConfigType.STANDARD_WORKSPACE,
-        workspaceId.toString(),
-        persistedWorkspace);
+    persistedWorkspace.withInitialSetupComplete(workspaceUpdate.getInitialSetupComplete())
+        .withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection())
+        .withNews(workspaceUpdate.getNews())
+        .withSecurityUpdates(workspaceUpdate.getSecurityUpdates());
 
-    return getWorkspaceFromId(workspaceUpdate.getWorkspaceId());
+    configRepository.writeStandardWorkspace(persistedWorkspace);
+
+    // after updating email or tracking info, we need to re-identify the instance.
+    TrackingClientSingleton.get().identify();
+
+    return buildWorkspaceReadFromId(workspaceUpdate.getWorkspaceId());
   }
+
+  private WorkspaceRead buildWorkspaceReadFromId(UUID workspaceId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId);
+
+    return new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
+        .name(workspace.getName())
+        .slug(workspace.getSlug())
+        .initialSetupComplete(workspace.getInitialSetupComplete());
+  }
+
 }

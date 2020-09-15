@@ -28,17 +28,18 @@ import java.util.Optional;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class OutputAndStatus<OutputType> {
-  private final Optional<OutputType> output;
+
+  private final OutputType output;
   private final JobStatus status;
 
   public OutputAndStatus(JobStatus status, OutputType output) {
-    this.output = Optional.of(output);
+    this.output = output;
     this.status = status;
   }
 
   public OutputAndStatus(JobStatus status) {
     this.status = status;
-    this.output = Optional.empty();
+    this.output = null;
   }
 
   @Override
@@ -47,10 +48,11 @@ public class OutputAndStatus<OutputType> {
   }
 
   public Optional<OutputType> getOutput() {
-    return output;
+    return Optional.ofNullable(output);
   }
 
   public JobStatus getStatus() {
     return status;
   }
+
 }

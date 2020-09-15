@@ -25,39 +25,50 @@
 package io.dataline.server.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dataline.api.model.SourceImplementationRead;
+import io.dataline.commons.json.Jsons;
 import io.dataline.config.SourceConnectionImplementation;
-import java.io.File;
+import io.dataline.config.StandardSource;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 public class SourceImplementationHelpers {
-  public static SourceConnectionImplementation generateSourceImplementation(
-      UUID sourceSpecificationId) {
+
+  public static SourceConnectionImplementation generateSourceImplementation(UUID sourceSpecificationId)
+      throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
 
     JsonNode implementationJson = getTestImplementationJson();
 
-    final SourceConnectionImplementation sourceConnectionImplementation =
-        new SourceConnectionImplementation();
-    sourceConnectionImplementation.setWorkspaceId(workspaceId);
-    sourceConnectionImplementation.setSourceSpecificationId(sourceSpecificationId);
-    sourceConnectionImplementation.setSourceImplementationId(sourceImplementationId);
-    sourceConnectionImplementation.setConfiguration(implementationJson.toString());
-    sourceConnectionImplementation.setTombstone(false);
-
-    return sourceConnectionImplementation;
+    return new SourceConnectionImplementation()
+        .withName("my postgres db")
+        .withWorkspaceId(workspaceId)
+        .withSourceSpecificationId(sourceSpecificationId)
+        .withSourceImplementationId(sourceImplementationId)
+        .withConfiguration(implementationJson)
+        .withTombstone(false);
   }
 
-  public static JsonNode getTestImplementationJson() {
-    final File implementationFile =
-        new File("../dataline-server/src/test/resources/json/TestImplementation.json");
-
-    try {
-      return new ObjectMapper().readTree(implementationFile);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public static JsonNode getTestImplementationJson() throws IOException {
+    final Path path = Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
+    return Jsons.deserialize(Files.readString(path));
   }
+
+  public static SourceImplementationRead getSourceImplementationRead(SourceConnectionImplementation sourceImplementation,
+                                                                     StandardSource standardSource) {
+
+    return new SourceImplementationRead()
+        .sourceId(standardSource.getSourceId())
+        .workspaceId(sourceImplementation.getWorkspaceId())
+        .sourceSpecificationId(sourceImplementation.getSourceSpecificationId())
+        .sourceImplementationId(sourceImplementation.getSourceImplementationId())
+        .connectionConfiguration(sourceImplementation.getConfiguration())
+        .name(sourceImplementation.getName())
+        .sourceName(standardSource.getName());
+  }
+
 }

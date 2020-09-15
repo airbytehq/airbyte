@@ -24,124 +24,41 @@
 
 package io.dataline.scheduler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dataline.db.DatabaseHelper;
+import io.dataline.commons.functional.CheckedSupplier;
+import io.dataline.config.JobOutput;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.commons.io.FileUtils;
+import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
+/*
  * This class represents a single run of a worker. It handles making sure the correct inputs and
  * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
  * persisted to the db.
- *
- * <p>todo (cgardens) - this line between this abstraction and WorkerRunner is a little blurry. we
- * can clarify it later. the main benefit is of this class is that it gives us some type safety when
- * working with workers. you can probably make an argument that this class should not have access to
- * the db.
- *
- * @param <InputType> - the type that the worker consumes.
- * @param <OutputType> - the type that the worker outputs.
  */
-public class WorkerRun<InputType, OutputType> implements Runnable {
+public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRun.class);
 
-  private final long jobId;
-  private InputType input;
-  private final Worker<InputType, OutputType> worker;
-  private final BasicDataSource connectionPool;
+  private final Path jobRoot;
+  private final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun;
 
-  public WorkerRun(
-      long jobId,
-      InputType input,
-      Worker<InputType, OutputType> worker,
-      BasicDataSource connectionPool) {
-    this.jobId = jobId;
-    this.input = input;
-    this.worker = worker;
-    this.connectionPool = connectionPool;
+  public <InputType> WorkerRun(final Path jobRoot,
+                               final InputType input,
+                               final Worker<InputType, JobOutput> worker) {
+    this.jobRoot = jobRoot;
+    this.workerRun = () -> worker.run(input, jobRoot);
   }
 
   @Override
-  public void run() {
+  public OutputAndStatus<JobOutput> call() throws Exception {
     LOGGER.info("Executing worker wrapper...");
-    try {
-      setJobStatus(connectionPool, jobId, JobStatus.RUNNING);
+    Files.createDirectories(jobRoot);
 
-      // todo (cgardens) - replace this with whatever the correct path is. probably dependency
-      //   inject it based via env.
-      final Path workspacesRoot = Path.of("/tmp/dataline/workspaces/");
-      FileUtils.forceMkdir(workspacesRoot.toFile());
-      final Path workspaceRoot = workspacesRoot.resolve(String.valueOf(jobId));
-      FileUtils.forceMkdir(workspaceRoot.toFile());
-      OutputAndStatus<OutputType> outputAndStatus = worker.run(input, workspaceRoot);
-
-      switch (outputAndStatus.getStatus()) {
-        case FAILED:
-          setJobStatus(connectionPool, jobId, JobStatus.FAILED);
-          break;
-        case SUCCESSFUL:
-          setJobStatus(connectionPool, jobId, JobStatus.COMPLETED);
-          break;
-      }
-
-      if (outputAndStatus.getOutput().isPresent()) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(outputAndStatus.getOutput().get());
-        setJobOutput(connectionPool, jobId, json);
-        LOGGER.info("Set job output for job " + jobId);
-      } else {
-        LOGGER.info("No output present for job " + jobId);
-      }
-    } catch (Exception e) {
-      LOGGER.error("Worker Error", e);
-      setJobStatus(connectionPool, jobId, JobStatus.FAILED);
-    }
+    return workerRun.get();
   }
 
-  private static void setJobStatus(BasicDataSource connectionPool, long jobId, JobStatus status) {
-    LOGGER.info("Setting job status to " + status + " for job " + jobId);
-    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
-
-    try {
-      DatabaseHelper.query(
-          connectionPool,
-          ctx ->
-              ctx.execute(
-                  "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
-                  status.toString().toLowerCase(),
-                  now,
-                  jobId));
-    } catch (SQLException e) {
-      LOGGER.error("SQL Error", e);
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static void setJobOutput(BasicDataSource connectionPool, long jobId, String outputJson) {
-    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
-
-    try {
-      DatabaseHelper.query(
-          connectionPool,
-          ctx ->
-              ctx.execute(
-                  "UPDATE jobs SET output = CAST(? as JSONB), updated_at = ? WHERE id = ?",
-                  outputJson,
-                  now,
-                  jobId));
-    } catch (SQLException e) {
-      LOGGER.error("SQL Error", e);
-      throw new RuntimeException(e);
-    }
-  }
 }

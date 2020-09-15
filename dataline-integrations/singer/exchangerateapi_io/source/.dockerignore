@@ -1,0 +1,4 @@
+*
+!Dockerfile
+!requirements.txt
+!entrypoint.sh

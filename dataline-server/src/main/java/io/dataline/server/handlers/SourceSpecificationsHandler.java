@@ -26,49 +26,44 @@ package io.dataline.server.handlers;
 
 import io.dataline.api.model.SourceIdRequestBody;
 import io.dataline.api.model.SourceSpecificationRead;
+import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.SourceConnectionSpecification;
-import io.dataline.config.persistence.ConfigPersistence;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.server.errors.KnownException;
-import io.dataline.server.helpers.ConfigFetchers;
+import java.io.IOException;
 
 public class SourceSpecificationsHandler {
-  private final ConfigPersistence configPersistence;
 
-  public SourceSpecificationsHandler(ConfigPersistence configPersistence) {
-    this.configPersistence = configPersistence;
+  private final ConfigRepository configRepository;
+
+  public SourceSpecificationsHandler(final ConfigRepository configRepository) {
+    this.configRepository = configRepository;
   }
 
-  public SourceSpecificationRead getSourceSpecification(SourceIdRequestBody sourceIdRequestBody) {
-    final SourceConnectionSpecification sourceConnection;
+  public SourceSpecificationRead getSourceSpecification(SourceIdRequestBody sourceIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     // todo (cgardens) - this is a shortcoming of rolling our own disk storage. since we are not
-    //   querying on a the primary key, we have to list all of the specification objects and then
-    //   filter.
-    sourceConnection =
-        ConfigFetchers.getSourceConnectionSpecifications(configPersistence).stream()
-            .filter(
-                sourceSpecification ->
-                    sourceSpecification.getSourceId().equals(sourceIdRequestBody.getSourceId()))
-            .findFirst()
-            .orElseThrow(
-                () ->
-                    new KnownException(
-                        404,
-                        String.format(
-                            "Could not find a source specification for source: %s",
-                            sourceIdRequestBody.getSourceId())));
+    // querying on a the primary key, we have to list all of the specification objects and then
+    // filter.
+    final SourceConnectionSpecification sourceConnection = configRepository.listSourceConnectionSpecifications().stream()
+        .filter(sourceSpecification -> sourceSpecification.getSourceId().equals(sourceIdRequestBody.getSourceId()))
+        .findFirst()
+        .orElseThrow(
+            () -> new KnownException(
+                404,
+                String.format(
+                    "Could not find a source specification for source: %s",
+                    sourceIdRequestBody.getSourceId())));
 
-    return toSourceSpecificationRead(sourceConnection);
+    return buildSourceSpecificationRead(sourceConnection);
   }
 
-  private static SourceSpecificationRead toSourceSpecificationRead(
-      SourceConnectionSpecification sourceConnectionSpecification) {
-    final SourceSpecificationRead sourceSpecificationRead = new SourceSpecificationRead();
-    sourceSpecificationRead.setSourceId(sourceConnectionSpecification.getSourceId());
-    sourceSpecificationRead.setSourceSpecificationId(
-        sourceConnectionSpecification.getSourceSpecificationId());
-    sourceSpecificationRead.setConnectionSpecification(
-        sourceConnectionSpecification.getSpecification());
-
-    return sourceSpecificationRead;
+  private static SourceSpecificationRead buildSourceSpecificationRead(SourceConnectionSpecification scs) {
+    return new SourceSpecificationRead()
+        .sourceId(scs.getSourceId())
+        .sourceSpecificationId(scs.getSourceSpecificationId())
+        .connectionSpecification(scs.getSpecification());
   }
+
 }

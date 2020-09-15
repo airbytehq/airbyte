@@ -24,46 +24,83 @@
 
 package io.dataline.workers;
 
-import io.dataline.workers.singer.BaseSingerWorker;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
+import io.dataline.config.StandardSyncInput;
+import io.dataline.config.StandardTapConfig;
+import io.dataline.config.StandardTargetConfig;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WorkerUtils {
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSingerWorker.class);
 
-  public static Path writeFileToWorkspace(Path workspaceRoot, String fileName, String contents) {
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
+
+  public static void gentleClose(final Process process, final long timeout, final TimeUnit timeUnit) {
+    if (process == null) {
+      return;
+    }
+
     try {
-      Path filePath = workspaceRoot.resolve(fileName);
-      FileUtils.writeStringToFile(filePath.toFile(), contents, StandardCharsets.UTF_8);
-      return filePath;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+      process.waitFor(timeout, timeUnit);
+    } catch (InterruptedException e) {
+      LOGGER.error("Exception while while waiting for process to finish", e);
+    }
+    if (process.isAlive()) {
+      LOGGER.warn("Process is taking too long to finish. Killing it");
+      process.destroy();
+      try {
+        process.waitFor(1, TimeUnit.MINUTES);
+      } catch (InterruptedException e) {
+        LOGGER.error("Exception while while killing the process", e);
+      }
+      if (process.isAlive()) {
+        LOGGER.warn("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
+      }
     }
   }
 
-  public static String readFileFromWorkspace(Path workspaceRoot, String fileName) {
-    try {
-      Path filePath = workspaceRoot.resolve(fileName);
-      return FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public static void closeProcess(Process process) {
+    closeProcess(process, 1, TimeUnit.MINUTES);
   }
 
-  public static void cancelHelper(Process workerProcess) {
+  public static void closeProcess(Process process, int duration, TimeUnit timeUnit) {
+    if (process == null) {
+      return;
+    }
     try {
-      workerProcess.destroy();
-      workerProcess.waitFor(10, TimeUnit.SECONDS);
-      if (workerProcess.isAlive()) {
-        workerProcess.destroyForcibly();
+      process.destroy();
+      process.waitFor(duration, timeUnit);
+      if (process.isAlive()) {
+        process.destroyForcibly();
       }
     } catch (InterruptedException e) {
-      LOGGER.error("Exception when cancelling job.", e);
+      LOGGER.error("Exception when closing process.", e);
     }
   }
+
+  public static void cancelProcess(Process process) {
+    closeProcess(process, 10, TimeUnit.SECONDS);
+  }
+
+  /**
+   * Translates a StandardSyncInput into a StandardTapConfig. StandardTapConfig is a subset of
+   * StandardSyncInput.
+   */
+  public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
+    return new StandardTapConfig()
+        .withSourceConnectionImplementation(sync.getSourceConnectionImplementation())
+        .withStandardSync(sync.getStandardSync())
+        .withState(sync.getState());
+  }
+
+  /**
+   * Translates a StandardSyncInput into a StandardTargetConfig. StandardTargetConfig is a subset of
+   * StandardSyncInput.
+   */
+  public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
+    return new StandardTargetConfig()
+        .withDestinationConnectionImplementation(sync.getDestinationConnectionImplementation())
+        .withStandardSync(sync.getStandardSync());
+  }
+
 }

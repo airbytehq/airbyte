@@ -24,15 +24,28 @@
 
 package io.dataline.server;
 
+import io.dataline.analytics.TrackingClientSingleton;
+import io.dataline.commons.json.JsonValidationException;
+import io.dataline.config.Configs;
+import io.dataline.config.EnvConfigs;
+import io.dataline.config.StandardWorkspace;
+import io.dataline.config.persistence.ConfigNotFoundException;
+import io.dataline.config.persistence.ConfigRepository;
+import io.dataline.config.persistence.DefaultConfigPersistence;
+import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
+import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.server.apis.ConfigurationApi;
 import io.dataline.server.errors.InvalidInputExceptionMapper;
 import io.dataline.server.errors.InvalidJsonExceptionMapper;
 import io.dataline.server.errors.InvalidJsonInputExceptionMapper;
 import io.dataline.server.errors.KnownExceptionMapper;
 import io.dataline.server.errors.UncaughtExceptionMapper;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.UUID;
 import java.util.logging.Level;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -46,40 +59,46 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ServerApp {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
-  private final String configPersistenceRoot;
 
-  public ServerApp(String configPersistenceRoot) {
+  private final ConfigRepository configRepository;
+  private final SchedulerPersistence schedulerPersistence;
 
-    this.configPersistenceRoot = configPersistenceRoot;
+  public ServerApp(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence) {
+
+    this.configRepository = configRepository;
+    this.schedulerPersistence = schedulerPersistence;
   }
 
   public void start() throws Exception {
-    BasicDataSource connectionPool = DatabaseHelper.getConnectionPoolFromEnv();
+    TrackingClientSingleton.get().identify();
 
     Server server = new Server(8001);
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    ConfigurationApiFactory.setConfigPersistenceRoot(configPersistenceRoot);
-    ConfigurationApiFactory.setDbConnectionPool(connectionPool);
+    ConfigurationApiFactory.setConfigRepository(configRepository);
+    ConfigurationApiFactory.setSchedulerPersistence(schedulerPersistence);
 
     ResourceConfig rc =
         new ResourceConfig()
             // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add
-            //   auth.
+            // auth.
             // cors
             .register(new CorsFilter())
             // api
             .register(ConfigurationApi.class)
             .register(
                 new AbstractBinder() {
+
                   @Override
                   public void configure() {
                     bindFactory(ConfigurationApiFactory.class)
                         .to(ConfigurationApi.class)
                         .in(RequestScoped.class);
                   }
+
                 })
             // exception handling
             .register(InvalidInputExceptionMapper.class)
@@ -109,11 +128,48 @@ public class ServerApp {
     server.join();
   }
 
+  private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) {
+    final StandardWorkspace workspace;
+    try {
+      workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
+
+      if (workspace.getCustomerId() == null) {
+        final UUID customerId = UUID.randomUUID();
+        LOGGER.info("customerId not set for workspace. Setting it to " + customerId);
+        workspace.setCustomerId(customerId);
+
+        configRepository.writeStandardWorkspace(workspace);
+      }
+    } catch (ConfigNotFoundException e) {
+      throw new RuntimeException("could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
+    } catch (JsonValidationException | IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static void main(String[] args) throws Exception {
-    final String configPersistenceRoot = System.getenv("CONFIG_PERSISTENCE_ROOT");
-    LOGGER.info("configPersistenceRoot = " + configPersistenceRoot);
+    final Configs configs = new EnvConfigs();
+
+    final Path configRoot = configs.getConfigRoot();
+    LOGGER.info("configRoot = " + configRoot);
+
+    LOGGER.info("Creating config repository...");
+    final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(configRoot));
+
+    // hack: upon installation we need to assign a random customerId so that when
+    // tracking we can associate all action with the correct anonymous id.
+    setCustomerIdIfNotSet(configRepository);
+
+    TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configRepository);
+
+    LOGGER.info("Creating Scheduler persistence...");
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(DatabaseHelper.getConnectionPool(
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl()));
 
     LOGGER.info("Starting server...");
-    new ServerApp(configPersistenceRoot).start();
+    new ServerApp(configRepository, schedulerPersistence).start();
   }
+
 }
