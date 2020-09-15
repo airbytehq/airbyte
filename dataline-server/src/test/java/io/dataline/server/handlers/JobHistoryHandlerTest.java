@@ -25,6 +25,7 @@
 package io.dataline.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +36,7 @@ import io.dataline.api.model.JobListRequestBody;
 import io.dataline.api.model.JobRead;
 import io.dataline.api.model.JobReadList;
 import io.dataline.api.model.LogRead;
+import io.dataline.commons.enums.Enums;
 import io.dataline.config.JobCheckConnectionConfig;
 import io.dataline.config.JobConfig;
 import io.dataline.scheduler.Job;
@@ -126,6 +128,12 @@ public class JobHistoryHandlerTest {
   public void testGetJobRead() {
     JobRead jobReadActual = JobHistoryHandler.getJobRead(JOB);
     assertEquals(JOB_INFO.getJob(), jobReadActual);
+  }
+
+  @Test
+  public void testEnumConversion() {
+    assertTrue(Enums.isCompatible(JobConfig.ConfigType.class, JobConfigType.class));
+    assertTrue(Enums.isCompatible(JobStatus.class, JobRead.StatusEnum.class));
   }
 
 }
