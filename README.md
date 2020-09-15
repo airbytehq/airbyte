@@ -1,28 +1,28 @@
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI) ![License](https://img.shields.io/github/license/datalineio/dataline)
 
 <div  align="center">
-  <a href="https://dataline.io">
-    <img src="https://dataline.io/wp-content/uploads/2020/08/Dataline_light-background.svg" width="318px" alt="Dataline logo" />
-  </a>
+<a href="https://dataline.io">
+  <img src="https://dataline.io/wp-content/uploads/2020/08/Dataline_light-background.svg" width="318px" alt="Dataline logo" />
+</a>
 
-  <h3>Data integration made simple, secure and reliable.</h3>
-  <p>
-    The new open-source standard to sync data from applications & databases to warehouses.
-  </p>
-  
-  <p>
-  <a href="https://docs.dataline.io/deployment/deploying-dataline/with-docker">
-    <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-Locally.svg" />
-  </a>
-  
-  <a href="https://docs.dataline.io/deployment/deploying-dataline/on-aws-ec2">
-    <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-on-AWS.svg" />
-  </a>
-  
-  <a href="https://docs.dataline.io/deployment/deploying-dataline/on-gcp-compute-engine">
-    <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-on-GCP.svg" />
-  </a>
-  </p>
+<h3>Data integration made simple, secure and reliable.</h3>
+<p>
+The new open-source standard to sync data from applications & databases to warehouses.
+</p>
+
+<p>
+<a href="https://docs.dataline.io/deployment/deploying-dataline/with-docker">
+  <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-Locally.svg" />
+</a>
+
+<a href="https://docs.dataline.io/deployment/deploying-dataline/on-aws-ec2">
+  <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-on-AWS.svg" />
+</a>
+
+<a href="https://docs.dataline.io/deployment/deploying-dataline/on-gcp-compute-engine">
+  <img src="https://dataline.io/wp-content/uploads/2020/09/Deploy-on-GCP.svg" />
+</a>
+</p>
 </div>
 
 ![](https://dataline.io/wp-content/uploads/2020/08/Sources_List.png)
