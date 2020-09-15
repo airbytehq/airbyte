@@ -42,8 +42,6 @@ task imageName {
 task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
-
-    dependsOn(check)
 }
 
 task integrationTest(type: Test) {
