@@ -40,6 +40,7 @@ import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -68,9 +69,9 @@ public class SingerDiscoverSchemaWorkerTest {
 
     input = new StandardDiscoverSchemaInput().withConnectionConfiguration(CREDS);
 
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover")).thenReturn(processBuilder);
-    when(processBuilder.redirectError(jobRoot.resolve(SingerDiscoverSchemaWorker.ERROR_LOG_FILENAME).toFile())).thenReturn(processBuilder);
-    when(processBuilder.redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile())).thenReturn(processBuilder);
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")).thenReturn(processBuilder);
+    when(processBuilder.redirectError(jobRoot.resolve(WorkerConstants.TAP_ERR_LOG).toFile())).thenReturn(processBuilder);
+    when(processBuilder.redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())).thenReturn(processBuilder);
     when(processBuilder.start()).thenReturn(process);
     when(process.waitFor(1, TimeUnit.MINUTES)).thenReturn(true);
 
@@ -92,16 +93,16 @@ public class SingerDiscoverSchemaWorkerTest {
     assertTrue(run.getOutput().isPresent());
     assertEquals(expectedOutput, actualOutput);
 
-    assertTrue(Files.exists(jobRoot.resolve(SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME)));
-    assertTrue(Files.exists(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME)));
+    assertTrue(Files.exists(jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
+    assertTrue(Files.exists(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME)));
 
     final JsonNode expectedConfig = Jsons.jsonNode(input.getConnectionConfiguration());
-    final JsonNode actualConfig = Jsons.deserialize(IOs.readFile(jobRoot, SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME));
+    final JsonNode actualConfig = Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME));
     assertEquals(expectedConfig, actualConfig);
 
-    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover");
-    verify(processBuilder).redirectError(jobRoot.resolve(SingerDiscoverSchemaWorker.ERROR_LOG_FILENAME).toFile());
-    verify(processBuilder).redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile());
+    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover");
+    verify(processBuilder).redirectError(jobRoot.resolve(WorkerConstants.TAP_ERR_LOG).toFile());
+    verify(processBuilder).redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile());
     verify(processBuilder).start();
     verify(process).waitFor(1, TimeUnit.MINUTES);
   }

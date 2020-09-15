@@ -39,6 +39,7 @@ import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
@@ -53,10 +54,6 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
   // TODO log errors to specified file locations
   @VisibleForTesting
-  static final String CONFIG_JSON_FILENAME = "config.json";
-  static final String CATALOG_JSON_FILENAME = "catalog.json";
-  static final String ERROR_LOG_FILENAME = "err.log";
-
   private final String imageName;
   private final ProcessBuilderFactory pbf;
 
@@ -74,14 +71,14 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
     // reduced.
     final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
 
-    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     // exec
     try {
       workerProcess =
-          pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME, "--discover")
-              .redirectError(jobRoot.resolve(ERROR_LOG_FILENAME).toFile())
-              .redirectOutput(jobRoot.resolve(CATALOG_JSON_FILENAME).toFile())
+          pbf.create(jobRoot, imageName, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")
+              .redirectError(jobRoot.resolve(WorkerConstants.TAP_ERR_LOG).toFile())
+              .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
               .start();
 
       while (!workerProcess.waitFor(1, TimeUnit.MINUTES)) {
@@ -90,11 +87,11 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
       int exitCode = workerProcess.exitValue();
       if (exitCode == 0) {
-        final String catalog = IOs.readFile(jobRoot, CATALOG_JSON_FILENAME);
+        final String catalog = IOs.readFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME);
         return new OutputAndStatus<>(SUCCESSFUL, Jsons.deserialize(catalog, SingerCatalog.class));
       } else {
         // TODO throw invalid credentials exception where appropriate based on error log
-        String errLog = IOs.readFile(jobRoot, ERROR_LOG_FILENAME);
+        String errLog = IOs.readFile(jobRoot, WorkerConstants.TAP_ERR_LOG);
         LOGGER.debug(
             "Discovery job subprocess finished with exit code {}. Error log: {}", exitCode, errLog);
         return new OutputAndStatus<>(FAILED);
