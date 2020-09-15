@@ -230,7 +230,6 @@ public class SingerPostgresSourceTest {
     confMap.put("password", psqlDb.getPassword());
     confMap.put("port", psqlDb.getFirstMappedPort());
     confMap.put("host", psqlDb.getHost());
-    confMap.put("filter_dbs", psqlDb.getDatabaseName());
     return confMap;
   }
 
