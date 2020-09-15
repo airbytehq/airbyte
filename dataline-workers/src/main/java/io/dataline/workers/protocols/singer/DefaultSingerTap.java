@@ -149,7 +149,8 @@ public class DefaultSingerTap implements SingerTap {
     Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
     Files.createDirectory(discoverJobRoot);
 
-    return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot).getOutput().get();
+    return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot).getOutput()
+        .orElseThrow(() -> new IOException("Failed to discover schema."));
   }
 
 }
