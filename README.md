@@ -30,7 +30,7 @@ cd dataline
 docker-compose up
 ```
 
-Now go to [http://localhost:8000](http://localhost:8000)
+Now visit [http://localhost:8000](http://localhost:8000)
 
 ## Features
 
