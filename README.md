@@ -1,8 +1,8 @@
 # Getting Started
 
- ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI) ![License](https://img.shields.io/github/license/datalineio/dataline)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI) ![License](https://img.shields.io/github/license/datalineio/dataline)
 
-![](docs/.gitbook/assets/dataline_light-background%20%281%29.svg)
+![](docs/.gitbook/assets/dataline_light-background%20%281%29%20%281%29.svg)
 
 **Data integration made simple, secure and reliable**  
 The new open-source standard to sync data from applications & databases to warehouses.
