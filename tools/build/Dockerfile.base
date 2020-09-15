@@ -13,7 +13,7 @@ RUN apt-get update && apt-get -y install curl
 # Setup Node & Java
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get update && apt-get -y install \
-  nodejs \
+  nodejs=14.10.1-deb-1nodesource1 \
   openjdk-14-jdk
 
 
