@@ -67,9 +67,7 @@ const StatusMainInfo: React.FC<IProps> = ({ sourceData, onEnabledChange }) => {
   });
 
   const cellText = FrequencyConfig.find(
-    item =>
-      item.config.units === sourceData.schedule?.units &&
-      item.config.timeUnit === sourceData.schedule?.timeUnit
+    item => JSON.stringify(item.config) === JSON.stringify(sourceData.schedule)
   );
 
   return (

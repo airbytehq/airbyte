@@ -18,6 +18,7 @@ import FrequencyConfig from "../../data/FrequencyConfig.json";
 import { Routes } from "../routes";
 import useRouter from "../../components/hooks/useRouterHook";
 import { Source } from "../../core/resources/Source";
+import { SyncSchema } from "../../core/resources/Schema";
 
 const Content = styled.div`
   width: 100%;
@@ -171,6 +172,7 @@ const OnboardingPage: React.FC = () => {
 
   const onSubmitConnectionStep = async (values: {
     frequency: string;
+    syncSchema: SyncSchema;
     source?: Source;
   }) => {
     const frequencyData = FrequencyConfig.find(
@@ -190,7 +192,8 @@ const OnboardingPage: React.FC = () => {
             destinations[0].destinationImplementationId,
           syncMode: "full_refresh",
           schedule: frequencyData?.config,
-          status: "active"
+          status: "active",
+          syncSchema: values.syncSchema
         },
         [
           [
@@ -240,6 +243,7 @@ const OnboardingPage: React.FC = () => {
         currentSourceId={sources[0].sourceId}
         currentDestinationId={destinations[0].destinationId}
         errorStatus={errorStatusRequest}
+        sourceImplementationId={sources[0].sourceImplementationId}
       />
     );
   };
