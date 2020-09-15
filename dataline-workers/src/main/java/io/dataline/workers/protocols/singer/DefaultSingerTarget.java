@@ -52,8 +52,9 @@ public class DefaultSingerTarget implements SingerTarget {
   private final String imageName;
   private final ProcessBuilderFactory pbf;
 
-  private Process targetProcess;
-  private BufferedWriter writer;
+  private Process targetProcess = null;
+  private BufferedWriter writer = null;
+  private boolean endOfStream = false;
 
   public DefaultSingerTarget(final String imageName, final ProcessBuilderFactory pbf) {
     this.imageName = imageName;
@@ -74,7 +75,6 @@ public class DefaultSingerTarget implements SingerTarget {
       targetProcess =
           pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME)
               .redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())
-              .redirectOutput(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())
               .start();
 
       writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));
@@ -92,11 +92,13 @@ public class DefaultSingerTarget implements SingerTarget {
     writer.newLine();
   }
 
-  @Override public void notifyEndOfStream() throws IOException {
-    Preconditions.checkState(targetProcess != null);
+  @Override
+  public void notifyEndOfStream() throws IOException {
+    Preconditions.checkState(targetProcess != null && !endOfStream);
 
     writer.flush();
     writer.close();
+    endOfStream = true;
   }
 
   @Override
@@ -105,10 +107,15 @@ public class DefaultSingerTarget implements SingerTarget {
       return;
     }
 
+    if (!endOfStream) {
+      notifyEndOfStream();
+    }
+
     LOGGER.debug("Closing target process");
     WorkerUtils.gentleClose(targetProcess, 1, TimeUnit.MINUTES);
     if (targetProcess.isAlive() || targetProcess.exitValue() != 0) {
       throw new Exception("target process wasn't successful");
     }
   }
+
 }

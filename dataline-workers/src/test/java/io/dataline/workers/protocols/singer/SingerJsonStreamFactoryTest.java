@@ -31,9 +31,6 @@ import static org.mockito.Mockito.when;
 
 import io.dataline.commons.json.Jsons;
 import io.dataline.singer.SingerMessage;
-import io.dataline.workers.protocols.singer.SingerJsonStreamFactory;
-import io.dataline.workers.protocols.singer.SingerMessageUtils;
-import io.dataline.workers.protocols.singer.SingerProtocolPredicate;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

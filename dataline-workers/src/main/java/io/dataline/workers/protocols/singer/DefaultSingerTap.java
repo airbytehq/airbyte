@@ -74,10 +74,11 @@ public class DefaultSingerTap implements SingerTap {
     this(imageName, pbf, new SingerJsonStreamFactory(), discoverSchemaWorker);
   }
 
-  @VisibleForTesting DefaultSingerTap(final String imageName,
-                                      final ProcessBuilderFactory pbf,
-                                      final StreamFactory streamFactory,
-                                      final SingerDiscoverSchemaWorker discoverSchemaWorker) {
+  @VisibleForTesting
+  DefaultSingerTap(final String imageName,
+                   final ProcessBuilderFactory pbf,
+                   final StreamFactory streamFactory,
+                   final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this.imageName = imageName;
     this.pbf = pbf;
     this.streamFactory = streamFactory;
@@ -130,7 +131,6 @@ public class DefaultSingerTap implements SingerTap {
   public Optional<SingerMessage> attemptRead() {
     Preconditions.checkState(tapProcess != null);
 
-    // the code will only work if the read from the stream is blocking
     return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
   }
 

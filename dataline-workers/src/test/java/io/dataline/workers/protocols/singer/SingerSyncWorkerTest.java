@@ -35,6 +35,7 @@ import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
 import io.dataline.workers.TestConfigHelpers;
 import java.nio.file.Path;
+import java.util.Optional;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
 
@@ -47,8 +48,7 @@ class SingerSyncWorkerTest {
   @SuppressWarnings("unchecked")
   @Test
   public void test() throws Exception {
-    final ImmutablePair<StandardSync, StandardSyncInput> syncPair =
-        TestConfigHelpers.createSyncConfig();
+    final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     final StandardSync standardSync = syncPair.getKey();
     final StandardSyncInput syncInput = syncPair.getValue();
 
@@ -67,8 +67,8 @@ class SingerSyncWorkerTest {
     SingerMessage recordMessage1 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
     SingerMessage recordMessage2 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
 
-    when(tap.isFinished()).thenReturn(true, true, false);
-    when(tap.attemptRead()).thenReturn(recordMessage1, recordMessage2);
+    when(tap.isFinished()).thenReturn(true, true, true, false);
+    when(tap.attemptRead()).thenReturn(Optional.of(recordMessage1), Optional.empty(), Optional.of(recordMessage2));
 
     final SingerSyncWorker singerSyncWorker = new SingerSyncWorker(tap, target);
 
@@ -76,10 +76,10 @@ class SingerSyncWorkerTest {
 
     verify(tap).start(tapConfig, WORKSPACE_ROOT);
     verify(target).start(targetConfig, WORKSPACE_ROOT);
-    verify(tap).close();
-    verify(target).close();
     verify(target).accept(recordMessage1);
     verify(target).accept(recordMessage2);
+    verify(tap).close();
+    verify(target).close();
   }
 
 }

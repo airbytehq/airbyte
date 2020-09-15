@@ -28,8 +28,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.dataline.commons.json.Jsons;
-import io.dataline.workers.protocols.singer.SingerMessageUtils;
-import io.dataline.workers.protocols.singer.SingerProtocolPredicate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -25,25 +25,19 @@
 package io.dataline.workers.protocols.singer;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.singer.SingerCatalog;
-import io.dataline.singer.SingerColumn;
-import io.dataline.singer.SingerColumnMap;
 import io.dataline.singer.SingerMessage;
 import io.dataline.singer.SingerStream;
 import io.dataline.singer.SingerTableSchema;
-import io.dataline.singer.SingerType;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
@@ -63,61 +57,45 @@ import org.junit.jupiter.api.Test;
 class DefaultSingerTapTest {
 
   private static final String IMAGE_NAME = "hudi:latest";
-  private static final String JOB_ROOT_PREFIX = "workspace";
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
 
+  private static final SingerCatalog SINGER_CATALOG = new SingerCatalog()
+      .withStreams(Collections.singletonList(new SingerStream()
+          .withStream("hudi:latest")
+          .withTapStreamId("workspace")
+          .withTableName(TABLE_NAME)
+          .withSchema(new SingerTableSchema())));
+
+  private static final StandardTapConfig TAP_CONFIG = WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
+
   private Path jobRoot;
-  private Path discoverSchemaJobRoot;
   private Path errorLogPath;
+  private SingerDiscoverSchemaWorker discoverSchemaWorker;
 
   @BeforeEach
-  public void setup() throws IOException {
-    jobRoot = Files.createTempDirectory(JOB_ROOT_PREFIX);
-    discoverSchemaJobRoot = jobRoot.resolve(DefaultSingerTap.DISCOVERY_DIR);
+  public void setup() throws IOException, InvalidCredentialsException {
+    jobRoot = Files.createTempDirectory("test");
     errorLogPath = jobRoot.resolve(SingerSyncWorker.TAP_ERR_LOG);
+
+    discoverSchemaWorker = mock(SingerDiscoverSchemaWorker.class);
+    when(discoverSchemaWorker.runInternal(
+        new StandardDiscoverSchemaInput()
+            .withConnectionConfiguration(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration()),
+        jobRoot.resolve(DefaultSingerTap.DISCOVERY_DIR)))
+            .thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, SINGER_CATALOG));
   }
 
   @Test
   public void test() throws InvalidCredentialsException, IOException {
-    StreamFactory streamFactory = mock(StreamFactory.class);
-    SingerMessage recordMessage1 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
-    SingerMessage recordMessage2 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+    final List<SingerMessage> expectedMessages = Lists.newArrayList(
+        SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue"),
+        SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow"));
+    StreamFactory streamFactory = noop -> expectedMessages.stream();
 
-    final List<SingerMessage> expected = Lists.newArrayList(recordMessage1, recordMessage2);
-
-    final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
-    final StandardDiscoverSchemaInput discoverSchemaInput = new StandardDiscoverSchemaInput()
-        .withConnectionConfiguration(tapConfig.getSourceConnectionImplementation().getConfiguration());
-    final ProcessBuilderFactory pbf = mock(ProcessBuilderFactory.class);
-    final ProcessBuilder processBuilder = mock(ProcessBuilder.class);
+    final ProcessBuilderFactory pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
     final Process process = mock(Process.class);
     final InputStream inputStream = mock(InputStream.class);
-    final SingerDiscoverSchemaWorker discoverSchemaWorker = mock(SingerDiscoverSchemaWorker.class);
-
-    final SingerColumn singerColumn = new SingerColumn()
-        .withType(Lists.newArrayList(SingerType.NULL, SingerType.STRING));
-
-    final SingerColumnMap singerColumnMap = new SingerColumnMap()
-        .withAdditionalProperty(COLUMN_NAME, singerColumn);
-
-    final SingerTableSchema singerSchema = new SingerTableSchema()
-        .withType("object")
-        .withProperties(singerColumnMap);
-
-    final SingerStream singerStream = new SingerStream()
-        .withStream(TABLE_NAME)
-        .withTapStreamId(TABLE_NAME)
-        .withTableName(TABLE_NAME)
-        .withSchema(singerSchema);
-
-    final SingerCatalog singerCatalog = new SingerCatalog()
-        .withStreams(Collections.singletonList(singerStream));
-
-    final OutputAndStatus<SingerCatalog> discoverSchemaOutput = new OutputAndStatus<>(JobStatus.SUCCESSFUL, singerCatalog);
-
-    when(discoverSchemaWorker.runInternal(discoverSchemaInput, discoverSchemaJobRoot))
-        .thenReturn(discoverSchemaOutput);
 
     when(pbf.create(
         jobRoot,
@@ -127,37 +105,27 @@ class DefaultSingerTapTest {
         "--properties",
         DefaultSingerTap.CATALOG_JSON_FILENAME,
         "--state",
-        DefaultSingerTap.STATE_JSON_FILENAME))
-            .thenReturn(processBuilder);
-    when(processBuilder.redirectError(errorLogPath.toFile())).thenReturn(processBuilder);
-    when(processBuilder.start()).thenReturn(process);
+        DefaultSingerTap.STATE_JSON_FILENAME)
+        .redirectError(errorLogPath.toFile())
+        .start()).thenReturn(process);
     when(process.getInputStream()).thenReturn(inputStream);
 
-    when(streamFactory.create(any())).thenReturn(expected.stream());
-
     final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, streamFactory, discoverSchemaWorker);
-    tap.start(tapConfig, jobRoot);
+    tap.start(TAP_CONFIG, jobRoot);
 
-    assertTrue(Files.exists(jobRoot));
-    assertTrue(Files.exists(jobRoot.resolve(DefaultSingerTap.CONFIG_JSON_FILENAME)));
-    assertTrue(Files.exists(jobRoot.resolve(DefaultSingerTap.CATALOG_JSON_FILENAME)));
-    assertTrue(Files.exists(jobRoot.resolve(DefaultSingerTap.STATE_JSON_FILENAME)));
+    assertEquals(
+        Jsons.jsonNode(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration()),
+        Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.CONFIG_JSON_FILENAME)));
 
-    final JsonNode expectedConfig = Jsons.jsonNode(tapConfig.getSourceConnectionImplementation().getConfiguration());
-    final JsonNode actualConfig = Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.CONFIG_JSON_FILENAME));
-    assertEquals(expectedConfig, actualConfig);
+    assertEquals(
+        Jsons.jsonNode(SINGER_CATALOG),
+        Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.CATALOG_JSON_FILENAME)));
 
-    final JsonNode expectedCatalog = Jsons.jsonNode(singerCatalog);
-    final JsonNode actualCatalog = Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.CATALOG_JSON_FILENAME));
-    assertEquals(expectedCatalog, actualCatalog);
+    assertEquals(
+        Jsons.jsonNode(TAP_CONFIG.getState()),
+        Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.STATE_JSON_FILENAME)));
 
-    final JsonNode expectedInputState = Jsons.jsonNode(tapConfig.getState());
-    final JsonNode actualInputState = Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.STATE_JSON_FILENAME));
-    assertEquals(expectedInputState, actualInputState);
-
-    assertEquals(expected, Lists.newArrayList(tap.attemptRead(), tap.attemptRead()));
-
-    verify(discoverSchemaWorker).runInternal(discoverSchemaInput, discoverSchemaJobRoot);
+    assertEquals(expectedMessages, Lists.newArrayList(tap.attemptRead().get(), tap.attemptRead().get()));
   }
 
 }

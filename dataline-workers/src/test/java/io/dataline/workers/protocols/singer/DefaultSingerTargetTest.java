@@ -25,8 +25,8 @@
 package io.dataline.workers.protocols.singer;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.dataline.commons.json.Jsons;
@@ -51,7 +51,6 @@ class DefaultSingerTargetTest {
 
   private Path jobRoot;
   private ProcessBuilderFactory pbf;
-  private ProcessBuilder processBuilder;
   private Process process;
   private ByteArrayOutputStream outputStream;
 
@@ -59,18 +58,16 @@ class DefaultSingerTargetTest {
   public void setup() throws IOException {
     jobRoot = Files.createTempDirectory(JOB_ROOT_PREFIX);
 
-    pbf = mock(ProcessBuilderFactory.class);
-    processBuilder = mock(ProcessBuilder.class);
+    pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
     outputStream = new ByteArrayOutputStream();
   }
 
   @Test
   public void test() throws Exception {
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", DefaultSingerTarget.CONFIG_JSON_FILENAME))
-        .thenReturn(processBuilder);
-    when(processBuilder.redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())).thenReturn(processBuilder);
-    when(processBuilder.start()).thenReturn(process);
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", DefaultSingerTarget.CONFIG_JSON_FILENAME)
+        .redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())
+        .start()).thenReturn(process);
     when(process.getOutputStream()).thenReturn(outputStream);
 
     final StandardTargetConfig targetConfig =
@@ -78,11 +75,6 @@ class DefaultSingerTargetTest {
 
     final SingerTarget target = new DefaultSingerTarget(IMAGE_NAME, pbf);
     target.start(targetConfig, jobRoot);
-
-    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", DefaultSingerTarget.CONFIG_JSON_FILENAME);
-    verify(processBuilder).redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile());
-    verify(processBuilder).start();
-    verify(process).getOutputStream();
 
     SingerMessage recordMessage = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
     target.accept(recordMessage);

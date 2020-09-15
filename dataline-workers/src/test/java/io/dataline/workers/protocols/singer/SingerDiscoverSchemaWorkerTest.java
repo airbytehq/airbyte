@@ -41,7 +41,6 @@ import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocols.singer.SingerDiscoverSchemaWorker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -43,7 +43,6 @@ import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.protocols.singer.SingerCheckConnectionWorker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
