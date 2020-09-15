@@ -81,11 +81,12 @@ class DefaultSingerTapTest {
 
     discoverSchemaWorker = mock(SingerDiscoverSchemaWorker.class);
     when(discoverSchemaWorker.runInternal(
-        new StandardDiscoverSchemaInput().withConnectionConfiguration(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration()),
-        jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, SINGER_CATALOG));
+        new StandardDiscoverSchemaInput()
+            .withConnectionConfiguration(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration()),
+        jobRoot.resolve(DefaultSingerTap.DISCOVERY_DIR)))
+            .thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, SINGER_CATALOG));
   }
 
-  @SuppressWarnings("OptionalGetWithoutIsPresent")
   @Test
   public void test() throws InvalidCredentialsException, IOException {
     final List<SingerMessage> expectedMessages = Lists.newArrayList(

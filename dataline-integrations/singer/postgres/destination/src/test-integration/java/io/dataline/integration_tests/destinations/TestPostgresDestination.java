@@ -63,7 +63,7 @@ class TestPostgresDestination {
 
   private static final String IMAGE_NAME = "dataline/integration-singer-postgres-destination:dev";
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
-  private static final String CONFIG_FILENAME = "target_config.json";
+  private static final String CONFIG_FILENAME = "config.json";
 
   protected Path jobRoot;
   protected Path workspaceRoot;
@@ -155,7 +155,7 @@ class TestPostgresDestination {
   }
 
   private void writeConfigFileToJobRoot(String fileContent) throws IOException {
-    Files.writeString(Path.of(jobRoot.toString(), CONFIG_FILENAME), fileContent);
+    Files.writeString(Path.of(jobRoot.toString(), "config.json"), fileContent);
   }
 
   private void writeResourceToStdIn(String resourceName, Process process) throws IOException {

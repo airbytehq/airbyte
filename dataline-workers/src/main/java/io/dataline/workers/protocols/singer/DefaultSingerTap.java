@@ -52,6 +52,9 @@ public class DefaultSingerTap implements SingerTap {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerTap.class);
 
+  @VisibleForTesting
+  static final String DISCOVERY_DIR = "discover";
+
   private final String imageName;
   private final ProcessBuilderFactory pbf;
   private final StreamFactory streamFactory;
@@ -143,15 +146,10 @@ public class DefaultSingerTap implements SingerTap {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput()
         .withConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
 
-    final Optional<SingerCatalog> output = discoverSchemaWorker.runInternal(discoveryInput, jobRoot).getOutput();
-    // We are going to write the catalog to be used in sync to this location. Instead of
-    // overwriting, retain the returned schema for debugging purposes.
-    final Path catalogPath = jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME);
-    if (Files.exists(catalogPath)) {
-      Files.move(catalogPath, jobRoot.resolve(WorkerConstants.ORIGINAL_CATALOG_JSON_FILENAME));
-    }
+    Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
+    Files.createDirectory(discoverJobRoot);
 
-    return output.orElseThrow(() -> new IOException("Failed to discover schema."));
+    return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot).getOutput().get();
   }
 
 }
