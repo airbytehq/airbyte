@@ -38,6 +38,9 @@ def createLicenseWith = { licence ->
 }
 
 spotless {
+    // these docs are generated.
+    targetExclude "docs/api/index.html"
+
     java {
         target '**/*.java'
         targetExclude "**/build/**/*"
