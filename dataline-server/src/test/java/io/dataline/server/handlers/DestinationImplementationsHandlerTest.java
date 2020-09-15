@@ -46,12 +46,10 @@ import io.dataline.config.StandardDestination;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
 import io.dataline.server.helpers.DestinationHelpers;
+import io.dataline.server.helpers.DestinationImplementationHelpers;
 import io.dataline.server.helpers.DestinationSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,32 +74,10 @@ class DestinationImplementationsHandlerTest {
 
     standardDestination = DestinationHelpers.generateDestination();
     destinationConnectionSpecification = DestinationSpecificationHelpers.generateDestinationSpecification(standardDestination.getDestinationId());
-    destinationConnectionImplementation = generateDestinationImplementation(
+    destinationConnectionImplementation = DestinationImplementationHelpers.generateDestinationImplementation(
         destinationConnectionSpecification.getDestinationSpecificationId());
 
     destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, validator, uuidGenerator);
-  }
-
-  private JsonNode getTestImplementationJson() throws IOException {
-    final Path path =
-        Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
-
-    return Jsons.deserialize(Files.readString(path));
-  }
-
-  private DestinationConnectionImplementation generateDestinationImplementation(UUID destinationSpecificationId)
-      throws IOException {
-    final UUID workspaceId = UUID.randomUUID();
-    final UUID destinationImplementationId = UUID.randomUUID();
-
-    JsonNode implementationJson = getTestImplementationJson();
-
-    return new DestinationConnectionImplementation()
-        .withName("my db2 instance")
-        .withWorkspaceId(workspaceId)
-        .withDestinationSpecificationId(destinationSpecificationId)
-        .withDestinationImplementationId(destinationImplementationId)
-        .withConfiguration(implementationJson);
   }
 
   @Test
@@ -123,7 +99,7 @@ class DestinationImplementationsHandlerTest {
         .name(destinationConnectionImplementation.getName())
         .workspaceId(destinationConnectionImplementation.getWorkspaceId())
         .destinationSpecificationId(destinationConnectionSpecification.getDestinationSpecificationId())
-        .connectionConfiguration(getTestImplementationJson());
+        .connectionConfiguration(DestinationImplementationHelpers.getTestImplementationJson());
 
     final DestinationImplementationRead actualDestinationImplementationRead =
         destinationImplementationsHandler.createDestinationImplementation(destinationImplementationCreate);
@@ -134,7 +110,7 @@ class DestinationImplementationsHandlerTest {
         .destinationSpecificationId(destinationConnectionSpecification.getDestinationSpecificationId())
         .workspaceId(destinationConnectionImplementation.getWorkspaceId())
         .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId())
-        .connectionConfiguration(getTestImplementationJson())
+        .connectionConfiguration(DestinationImplementationHelpers.getTestImplementationJson())
         .destinationName(standardDestination.getName());
 
     assertEquals(expectedDestinationImplementationRead, actualDestinationImplementationRead);
