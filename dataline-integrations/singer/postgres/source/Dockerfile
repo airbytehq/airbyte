@@ -8,7 +8,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # need gcc to compile psycopg2
 RUN apt-get update && \
-  apt-get install -y libpq-dev gcc
+  apt-get install -y libpq-dev gcc jq
 
 # Install dependencies:
 COPY requirements.txt .
@@ -17,6 +17,8 @@ RUN python -m pip install --upgrade pip && \
 
 RUN apt-get autoremove -y gcc
 
-ENTRYPOINT ["tap-postgres"]
+COPY entrypoint.sh .
+
+ENTRYPOINT ["/singer/entrypoint.sh"]
 
 LABEL io.dataline.version=0.1.0

@@ -43,6 +43,7 @@ import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.StreamFactory;
 import io.dataline.workers.TestConfigHelpers;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
@@ -76,7 +77,7 @@ class DefaultSingerTapTest {
   @BeforeEach
   public void setup() throws IOException, InvalidCredentialsException {
     jobRoot = Files.createTempDirectory("test");
-    errorLogPath = jobRoot.resolve(SingerSyncWorker.TAP_ERR_LOG);
+    errorLogPath = jobRoot.resolve(WorkerConstants.TAP_ERR_LOG);
 
     discoverSchemaWorker = mock(SingerDiscoverSchemaWorker.class);
     when(discoverSchemaWorker.runInternal(
@@ -101,11 +102,11 @@ class DefaultSingerTapTest {
         jobRoot,
         IMAGE_NAME,
         "--config",
-        DefaultSingerTap.CONFIG_JSON_FILENAME,
+        WorkerConstants.TAP_CONFIG_JSON_FILENAME,
         "--properties",
-        DefaultSingerTap.CATALOG_JSON_FILENAME,
+        WorkerConstants.CATALOG_JSON_FILENAME,
         "--state",
-        DefaultSingerTap.STATE_JSON_FILENAME)
+        WorkerConstants.INPUT_STATE_JSON_FILENAME)
         .redirectError(errorLogPath.toFile())
         .start()).thenReturn(process);
     when(process.getInputStream()).thenReturn(inputStream);
@@ -115,15 +116,15 @@ class DefaultSingerTapTest {
 
     assertEquals(
         Jsons.jsonNode(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration()),
-        Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.CONFIG_JSON_FILENAME)));
+        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
 
     assertEquals(
         Jsons.jsonNode(SINGER_CATALOG),
-        Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.CATALOG_JSON_FILENAME)));
+        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME)));
 
     assertEquals(
         Jsons.jsonNode(TAP_CONFIG.getState()),
-        Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.STATE_JSON_FILENAME)));
+        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME)));
 
     assertEquals(expectedMessages, Lists.newArrayList(tap.attemptRead().get(), tap.attemptRead().get()));
   }
