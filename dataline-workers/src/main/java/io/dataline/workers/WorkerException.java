@@ -22,22 +22,12 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.dataline.workers;
 
-import io.dataline.config.StandardTapConfig;
-import io.dataline.singer.SingerMessage;
-import java.nio.file.Path;
-import java.util.Optional;
+public class WorkerException extends Exception {
 
-public interface SingerTap extends AutoCloseable {
-
-  void start(StandardTapConfig input, Path jobRoot) throws Exception;
-
-  boolean isFinished();
-
-  Optional<SingerMessage> attemptRead();
-
-  @Override
-  void close() throws Exception;
+  public WorkerException(String message) {
+    super(message);
+  }
 
 }
