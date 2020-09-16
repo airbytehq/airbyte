@@ -36,6 +36,7 @@ import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.singer.SingerCatalog;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
@@ -47,10 +48,6 @@ import org.slf4j.LoggerFactory;
 public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoverSchemaWorker.class);
-
-  static final String CONFIG_JSON_FILENAME = "config.json";
-  static final String CATALOG_JSON_FILENAME = "catalog.json";
-  static final String ERROR_LOG_FILENAME = "err.log";
 
   private final String imageName;
   private final ProcessBuilderFactory pbf;
@@ -78,11 +75,11 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
       throws IOException {
     final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
 
-    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
-    process = pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME, "--discover")
+    process = pbf.create(jobRoot, imageName, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")
         // TODO: we shouldn't trust the tap not not pollute stdout
-        .redirectOutput(jobRoot.resolve(CATALOG_JSON_FILENAME).toFile())
+        .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
         .start();
 
     LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
@@ -109,7 +106,7 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
   }
 
   public static SingerCatalog readCatalog(Path jobRoot) {
-    return Jsons.deserialize(IOs.readFile(jobRoot, CATALOG_JSON_FILENAME), SingerCatalog.class);
+    return Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME), SingerCatalog.class);
   }
 
 }

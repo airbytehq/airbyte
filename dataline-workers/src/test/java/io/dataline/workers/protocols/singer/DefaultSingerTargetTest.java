@@ -38,6 +38,7 @@ import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
 import io.dataline.workers.TestConfigHelpers;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerException;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
@@ -76,7 +77,7 @@ class DefaultSingerTargetTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("error".getBytes(StandardCharsets.UTF_8)));
 
     pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", DefaultSingerTarget.CONFIG_JSON_FILENAME).start())
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME).start())
         .thenReturn(process);
   }
 

@@ -42,6 +42,7 @@ import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -68,12 +69,12 @@ public class SingerDiscoverSchemaWorkerTest {
 
     input = new StandardDiscoverSchemaInput().withConnectionConfiguration(CREDENTIALS);
 
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover")
-        .redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile())
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")
+        .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
         .start())
             .thenReturn(process);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("data".getBytes(StandardCharsets.UTF_8)));
-    IOs.writeFile(jobRoot, "catalog.json", MoreResources.readResource("simple_postgres_singer_catalog.json"));
+    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, MoreResources.readResource("simple_postgres_singer_catalog.json"));
   }
 
   @Test
@@ -88,11 +89,11 @@ public class SingerDiscoverSchemaWorkerTest {
 
     assertEquals(expectedOutput, output);
 
-    assertTrue(Files.exists(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME)));
+    assertTrue(Files.exists(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME)));
 
     assertEquals(
         Jsons.jsonNode(input.getConnectionConfiguration()),
-        Jsons.deserialize(IOs.readFile(jobRoot, SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME)));
+        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
 
     assertEquals(process.getErrorStream().available(), 0);
 

@@ -48,6 +48,7 @@ import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.StreamFactory;
 import io.dataline.workers.TestConfigHelpers;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerException;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
@@ -100,7 +101,7 @@ class DefaultSingerTapTest {
         jobRoot.resolve(DefaultSingerTap.DISCOVERY_DIR)))
             .thenAnswer(invocation -> {
               Files.writeString(
-                  jobRoot.resolve(DefaultSingerTap.DISCOVERY_DIR).resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME),
+                  jobRoot.resolve(DefaultSingerTap.DISCOVERY_DIR).resolve(WorkerConstants.CATALOG_JSON_FILENAME),
                   Jsons.serialize(SINGER_CATALOG));
               return new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverSchemaOutput());
             });
@@ -112,11 +113,11 @@ class DefaultSingerTapTest {
         jobRoot,
         IMAGE_NAME,
         "--config",
-        DefaultSingerTap.CONFIG_JSON_FILENAME,
+        WorkerConstants.TAP_CONFIG_JSON_FILENAME,
         "--properties",
-        DefaultSingerTap.CATALOG_JSON_FILENAME,
+        WorkerConstants.CATALOG_JSON_FILENAME,
         "--state",
-        DefaultSingerTap.STATE_JSON_FILENAME)
+        WorkerConstants.INPUT_STATE_JSON_FILENAME)
         .start()).thenReturn(process);
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);
@@ -145,13 +146,13 @@ class DefaultSingerTapTest {
 
     assertEquals(
         Jsons.jsonNode(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration()),
-        Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.CONFIG_JSON_FILENAME)));
+        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
     assertEquals(
         Jsons.jsonNode(TAP_CONFIG.getState()),
-        Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.STATE_JSON_FILENAME)));
+        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME)));
     assertEquals(
         Jsons.jsonNode(SINGER_CATALOG),
-        Jsons.deserialize(IOs.readFile(jobRoot, DefaultSingerTap.CATALOG_JSON_FILENAME)));
+        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME)));
 
     assertEquals(MESSAGES, messages);
 
@@ -177,9 +178,9 @@ class DefaultSingerTapTest {
     final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, streamFactory, discoverSchemaWorker);
     Assertions.assertThrows(WorkerException.class, () -> tap.start(TAP_CONFIG, jobRoot));
 
-    assertFalse(Files.exists(jobRoot.resolve(DefaultSingerTap.CONFIG_JSON_FILENAME)));
-    assertFalse(Files.exists(jobRoot.resolve(DefaultSingerTap.STATE_JSON_FILENAME)));
-    assertFalse(Files.exists(jobRoot.resolve(DefaultSingerTap.CATALOG_JSON_FILENAME)));
+    assertFalse(Files.exists(jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
+    assertFalse(Files.exists(jobRoot.resolve(WorkerConstants.INPUT_STATE_JSON_FILENAME)));
+    assertFalse(Files.exists(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME)));
   }
 
 }
