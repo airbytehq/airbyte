@@ -69,8 +69,6 @@ class DefaultSingerTargetTest {
     jobRoot = Files.createTempDirectory(JOB_ROOT_PREFIX);
 
     process = mock(Process.class);
-    outputStream = spy(new ByteArrayOutputStream());
-    when(process.getOutputStream()).thenReturn(outputStream);
 
     pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
     when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
