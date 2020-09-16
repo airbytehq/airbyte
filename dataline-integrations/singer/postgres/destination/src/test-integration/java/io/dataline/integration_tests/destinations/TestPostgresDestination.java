@@ -76,7 +76,7 @@ class TestPostgresDestination {
   @BeforeEach
   public void setUp() throws IOException {
     PSQL = new PostgreSQLContainer<>();
-    if(!System.getProperty("os.name").equals("Mac OS X")) {
+    if (!System.getProperty("os.name").equals("Mac OS X")) {
       PSQL.withNetworkMode("host");
     }
     PSQL.start();
