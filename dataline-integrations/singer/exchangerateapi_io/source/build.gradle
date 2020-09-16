@@ -35,6 +35,8 @@ task imageName {
 task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
+
+    dependsOn(':dataline-integrations:singer:base:buildImage')
 }
 
 task integrationTest(type: Test) {

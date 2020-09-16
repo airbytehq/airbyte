@@ -32,7 +32,7 @@ class DatalineEntrypointBuilder(object):
     def __create_and_run_parser(self, entrypoint_type):
         parent_parser = argparse.ArgumentParser(add_help=False)
         main_parser = argparse.ArgumentParser()
-        subparsers = main_parser.add_subparsers(title='commands')
+        subparsers = main_parser.add_subparsers(title='commands', dest='command')
 
         spec_parser = subparsers.add_parser("spec", help="outputs the json configuration specification", parents=[parent_parser])
 

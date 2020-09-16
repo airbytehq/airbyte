@@ -16,5 +16,3 @@ task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
 }
-
-// todo: have others depend on base image
