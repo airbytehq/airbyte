@@ -34,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
@@ -95,6 +96,9 @@ public class SingerDiscoverSchemaWorkerTest {
         Jsons.jsonNode(input.getConnectionConfiguration()),
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
 
+    if(process.getErrorStream().available() != 0) {
+      throw new RuntimeException(new String(process.getErrorStream().readAllBytes(), Charsets.UTF_8)  );
+    }
     assertEquals(process.getErrorStream().available(), 0);
 
     verify(process).waitFor(anyLong(), any());
