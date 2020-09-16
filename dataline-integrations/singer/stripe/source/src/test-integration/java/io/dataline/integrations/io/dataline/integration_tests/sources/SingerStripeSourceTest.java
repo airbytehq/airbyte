@@ -60,7 +60,7 @@ public class SingerStripeSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerStripeSourceTest.class);
 
-  private static final Path TESTS_PATH = createTempDirectory();
+  private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
   private static final String IMAGE_NAME = "dataline/integration-singer-stripe-source:dev";
 
   protected Path jobRoot;
@@ -232,14 +232,6 @@ public class SingerStripeSourceTest {
         .redirectOutput(syncOutputPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
-  }
-
-  private static Path createTempDirectory() {
-    try {
-      return Files.createTempDirectory("dataline_integration_tests");
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
 }
