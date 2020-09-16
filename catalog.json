@@ -1,0 +1,165 @@
+{
+  "streams": [
+    {
+      "table_name": "notebooks",
+      "stream": "notebooks",
+      "metadata": [
+        {
+          "breadcrumb": [],
+          "metadata": {
+            "table-key-properties": [
+              "id"
+            ],
+            "schema-name": "public",
+            "database-name": "df2398b8h9cmec",
+            "row-count": 3,
+            "is-view": false,
+            "selected": true,
+            "replication-method": "FULL_TABLE"
+          }
+        },
+        {
+          "breadcrumb": [
+            "properties",
+            "id"
+          ],
+          "metadata": {
+            "sql-datatype": "integer",
+            "inclusion": "automatic",
+            "selected-by-default": true
+          }
+        },
+        {
+          "breadcrumb": [
+            "properties",
+            "name"
+          ],
+          "metadata": {
+            "sql-datatype": "character varying",
+            "inclusion": "available",
+            "selected-by-default": true
+          }
+        },
+        {
+          "breadcrumb": [
+            "properties",
+            "active"
+          ],
+          "metadata": {
+            "sql-datatype": "boolean",
+            "inclusion": "available",
+            "selected-by-default": true
+          }
+        },
+        {
+          "breadcrumb": [
+            "properties",
+            "length"
+          ],
+          "metadata": {
+            "sql-datatype": "integer",
+            "inclusion": "available",
+            "selected-by-default": true
+          }
+        }
+      ],
+      "tap_stream_id": "df2398b8h9cmec-public-notebooks",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "integer"
+            ],
+            "minimum": -2147483648,
+            "maximum": 2147483647
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "maxLength": 255
+          },
+          "active": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "length": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "minimum": -2147483648,
+            "maximum": 2147483647
+          }
+        },
+        "definitions": {
+          "sdc_recursive_integer_array": {
+            "type": [
+              "null",
+              "integer",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_integer_array"
+            }
+          },
+          "sdc_recursive_number_array": {
+            "type": [
+              "null",
+              "number",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_number_array"
+            }
+          },
+          "sdc_recursive_string_array": {
+            "type": [
+              "null",
+              "string",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_string_array"
+            }
+          },
+          "sdc_recursive_boolean_array": {
+            "type": [
+              "null",
+              "boolean",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_boolean_array"
+            }
+          },
+          "sdc_recursive_timestamp_array": {
+            "type": [
+              "null",
+              "string",
+              "array"
+            ],
+            "format": "date-time",
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_timestamp_array"
+            }
+          },
+          "sdc_recursive_object_array": {
+            "type": [
+              "null",
+              "object",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_object_array"
+            }
+          }
+        }
+      }
+    }
+  ]
+}
