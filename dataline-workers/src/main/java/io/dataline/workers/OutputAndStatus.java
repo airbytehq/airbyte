@@ -24,6 +24,7 @@
 
 package io.dataline.workers;
 
+import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -53,6 +54,24 @@ public class OutputAndStatus<OutputType> {
 
   public JobStatus getStatus() {
     return status;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    OutputAndStatus<?> that = (OutputAndStatus<?>) o;
+    return Objects.equals(output, that.output) &&
+        status == that.status;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(output, status);
   }
 
 }
