@@ -60,7 +60,7 @@ public class DefaultSingerTap implements SingerTap {
 
   private final String imageName;
   private final ProcessBuilderFactory pbf;
-  private final SingerStreamFactory singerStreamFactory;
+  private final SingerStreamFactory streamFactory;
   private final SingerDiscoverSchemaWorker discoverSchemaWorker;
 
   private Process tapProcess = null;
@@ -79,7 +79,7 @@ public class DefaultSingerTap implements SingerTap {
                    final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this.imageName = imageName;
     this.pbf = pbf;
-    this.singerStreamFactory = streamFactory;
+    this.streamFactory = streamFactory;
     this.discoverSchemaWorker = discoverSchemaWorker;
   }
 
@@ -114,7 +114,7 @@ public class DefaultSingerTap implements SingerTap {
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
 
-    messageIterator = singerStreamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream())).iterator();
+    messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream())).iterator();
   }
 
   @Override
