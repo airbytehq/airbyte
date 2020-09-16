@@ -48,6 +48,8 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -95,7 +97,11 @@ public class SingerDiscoverSchemaWorkerTest {
         Jsons.jsonNode(input.getConnectionConfiguration()),
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
 
-    assertEquals(process.getErrorStream().available(), 0);
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
 
     verify(process).waitFor(anyLong(), any());
   }
@@ -111,7 +117,11 @@ public class SingerDiscoverSchemaWorkerTest {
 
     assertEquals(expectedOutput, output);
 
-    assertEquals(process.getErrorStream().available(), 0);
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
 
     verify(process).waitFor(anyLong(), any());
   }

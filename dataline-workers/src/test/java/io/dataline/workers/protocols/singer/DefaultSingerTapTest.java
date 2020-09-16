@@ -58,6 +58,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
@@ -156,7 +157,11 @@ class DefaultSingerTapTest {
 
     assertEquals(MESSAGES, messages);
 
-    assertEquals(0, process.getErrorStream().available());
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
 
     verify(process).waitFor(anyLong(), any());
   }
