@@ -66,7 +66,7 @@ class WorkerRunFactoryTest {
   void setUp() throws IOException {
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(1L);
-    when(job.getAttempts()).thenReturn(0);
+    when(job.getAttempts()).thenReturn(2);
 
     creator = mock(WorkerRunFactory.Creator.class);
     rootPath = Files.createTempDirectory("test");
@@ -86,7 +86,7 @@ class WorkerRunFactoryTest {
 
     StandardCheckConnectionInput expectedInput = new StandardCheckConnectionInput().withConnectionConfiguration(CONFIG);
     ArgumentCaptor<Worker<StandardCheckConnectionInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
-    verify(creator).create(eq(rootPath.resolve("1").resolve("0")), eq(expectedInput), argument.capture());
+    verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputCheckConnectionWorker);
   }
 
@@ -100,7 +100,7 @@ class WorkerRunFactoryTest {
 
     StandardDiscoverSchemaInput expectedInput = new StandardDiscoverSchemaInput().withConnectionConfiguration(CONFIG);
     ArgumentCaptor<Worker<StandardDiscoverSchemaInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
-    verify(creator).create(eq(rootPath.resolve("1").resolve("0")), eq(expectedInput), argument.capture());
+    verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputDiscoverSchemaWorker);
   }
 
@@ -117,7 +117,7 @@ class WorkerRunFactoryTest {
         .withStandardSync(job.getConfig().getSync().getStandardSync());
 
     ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
-    verify(creator).create(eq(rootPath.resolve("1").resolve("0")), eq(expectedInput), argument.capture());
+    verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputSyncWorker);
   }
 
