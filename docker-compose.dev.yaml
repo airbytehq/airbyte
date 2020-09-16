@@ -6,15 +6,12 @@ services:
     image: busybox
     container_name: init
     command: /bin/sh -c "
-      echo ${DEV_ROOT};
-      mkdir -p ${DEV_ROOT}/workspace;
-      mkdir -p ${DEV_ROOT}/data;
-      mkdir -p ${DEV_ROOT}/db;
+      mkdir -p /tmp/workspace;
+      mkdir -p /tmp/data;
+      mkdir -p /tmp/db;
       "
-    environment:
-      - DEV_ROOT=${DEV_ROOT}
     volumes:
-      - ${DEV_ROOT}/..:/tmp
+      - root:/tmp
   seed:
   db:
     ports:
@@ -25,6 +22,13 @@ services:
 
 # Allow us to access the volume content on the local filesystem
 volumes:
+  root:
+    name: dev-root
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${DEV_ROOT}
   workspace:
     name: dev-workspace
     driver: local
