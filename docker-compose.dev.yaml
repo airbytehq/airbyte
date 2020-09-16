@@ -12,9 +12,9 @@ services:
       mkdir -p ${DEV_ROOT}/db;
       "
     environment:
-    - DEV_ROOT=${DEV_ROOT}
+      - DEV_ROOT=${DEV_ROOT}
     volumes:
-    - ${DEV_ROOT}/..:/tmp
+      - ${DEV_ROOT}/..:/tmp
   seed:
   db:
     ports:
