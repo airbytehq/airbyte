@@ -24,4 +24,9 @@
 
 package io.dataline.workers;
 
-public class SyncException extends Exception {}
+public class SyncException extends Exception {
+
+  public SyncException(String message) {
+    super(message);
+  }
+}

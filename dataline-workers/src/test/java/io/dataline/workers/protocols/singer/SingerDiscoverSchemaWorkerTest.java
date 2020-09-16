@@ -24,12 +24,6 @@
 
 package io.dataline.workers.protocols.singer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.io.IOs;
@@ -37,16 +31,24 @@ import io.dataline.commons.json.Jsons;
 import io.dataline.commons.resources.MoreResources;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class SingerDiscoverSchemaWorkerTest {
 
@@ -55,59 +57,78 @@ public class SingerDiscoverSchemaWorkerTest {
 
   private Path jobRoot;
   private ProcessBuilderFactory pbf;
-  private ProcessBuilder processBuilder;
   private Process process;
   private StandardDiscoverSchemaInput input;
 
   @BeforeEach
-  public void setup() throws IOException, InterruptedException {
+  public void setup() throws Exception {
     jobRoot = Files.createTempDirectory("");
-    pbf = mock(ProcessBuilderFactory.class);
-    processBuilder = mock(ProcessBuilder.class);
+    pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 
     input = new StandardDiscoverSchemaInput().withConnectionConfiguration(CREDS);
 
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover")).thenReturn(processBuilder);
-    when(processBuilder.redirectError(jobRoot.resolve(SingerDiscoverSchemaWorker.ERROR_LOG_FILENAME).toFile())).thenReturn(processBuilder);
-    when(processBuilder.redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile())).thenReturn(processBuilder);
-    when(processBuilder.start()).thenReturn(process);
-    when(process.waitFor(1, TimeUnit.MINUTES)).thenReturn(true);
-
-    // this would be written by the docker process.
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover")
+        .redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile())
+        .start())
+        .thenReturn(process);
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("data".getBytes(StandardCharsets.UTF_8)));
     IOs.writeFile(jobRoot, "catalog.json", MoreResources.readResource("simple_postgres_singer_catalog.json"));
   }
 
   @Test
-  public void testDiscoverSchema() throws IOException, InterruptedException, InvalidCredentialsException {
-    SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
-    OutputAndStatus<StandardDiscoverSchemaOutput> run = worker.run(input, jobRoot);
+  public void testDiscoverSchema() throws Exception {
+    final SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
+    final OutputAndStatus<StandardDiscoverSchemaOutput> output = worker.run(input, jobRoot);
 
-    assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
+    final OutputAndStatus<StandardDiscoverSchemaOutput> expectedOutput =
+        new OutputAndStatus<>(
+            JobStatus.SUCCESSFUL,
+            Jsons.deserialize(MoreResources.readResource("simple_discovered_postgres_schema.json"), StandardDiscoverSchemaOutput.class));
 
-    final StandardDiscoverSchemaOutput expectedOutput =
-        Jsons.deserialize(MoreResources.readResource("simple_discovered_postgres_schema.json"), StandardDiscoverSchemaOutput.class);
-    final StandardDiscoverSchemaOutput actualOutput = run.getOutput().get();
+    assertEquals(expectedOutput, output);
 
-    assertTrue(run.getOutput().isPresent());
-    assertEquals(expectedOutput, actualOutput);
-
-    assertTrue(Files.exists(jobRoot.resolve(SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME)));
     assertTrue(Files.exists(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME)));
 
     final JsonNode expectedConfig = Jsons.jsonNode(input.getConnectionConfiguration());
     final JsonNode actualConfig = Jsons.deserialize(IOs.readFile(jobRoot, SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME));
     assertEquals(expectedConfig, actualConfig);
 
-    verify(pbf).create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover");
-    verify(processBuilder).redirectError(jobRoot.resolve(SingerDiscoverSchemaWorker.ERROR_LOG_FILENAME).toFile());
-    verify(processBuilder).redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile());
-    verify(processBuilder).start();
-    verify(process).waitFor(1, TimeUnit.MINUTES);
+    assertEquals(process.getErrorStream().available(), 0);
+
+    verify(process).waitFor(anyLong(), any());
   }
 
   @Test
-  public void testCancel() throws InvalidCredentialsException {
+  public void testDiscoverSchemaProcessFail() throws Exception {
+    when(process.exitValue()).thenReturn(1);
+
+    final SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
+    final OutputAndStatus<StandardDiscoverSchemaOutput> output = worker.run(input, jobRoot);
+
+    final OutputAndStatus<StandardDiscoverSchemaOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
+
+    assertEquals(expectedOutput, output);
+
+    assertEquals(process.getErrorStream().available(), 0);
+
+    verify(process).waitFor(anyLong(), any());
+  }
+
+  @Test
+  public void testDiscoverSchemaException() {
+    when(pbf.create(any(), any(), any())).thenThrow(new RuntimeException());
+
+    final SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
+    final OutputAndStatus<StandardDiscoverSchemaOutput> output = worker.run(input, jobRoot);
+
+    final OutputAndStatus<StandardDiscoverSchemaOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
+
+    assertEquals(expectedOutput, output);
+  }
+
+  @Test
+  public void testCancel() {
     SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
     worker.run(input, jobRoot);
 

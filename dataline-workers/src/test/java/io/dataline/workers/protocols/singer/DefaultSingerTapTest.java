@@ -32,7 +32,9 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.Lists;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
+import io.dataline.config.Schema;
 import io.dataline.config.StandardDiscoverSchemaInput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.singer.SingerCatalog;
 import io.dataline.singer.SingerMessage;
@@ -74,20 +76,23 @@ class DefaultSingerTapTest {
   private SingerDiscoverSchemaWorker discoverSchemaWorker;
 
   @BeforeEach
-  public void setup() throws IOException, InvalidCredentialsException {
+  public void setup() throws IOException {
     jobRoot = Files.createTempDirectory("test");
     errorLogPath = jobRoot.resolve(SingerSyncWorker.TAP_ERR_LOG);
 
     discoverSchemaWorker = mock(SingerDiscoverSchemaWorker.class);
-    when(discoverSchemaWorker.runInternal(
+    when(discoverSchemaWorker.run(
         new StandardDiscoverSchemaInput()
             .withConnectionConfiguration(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration()),
         jobRoot.resolve(DefaultSingerTap.DISCOVERY_DIR)))
-            .thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, SINGER_CATALOG));
+            .thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverSchemaOutput()));
+    Files.writeString(
+        jobRoot.resolve(DefaultSingerTap.DISCOVERY_DIR).resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME),
+        Jsons.serialize(SINGER_CATALOG));
   }
 
   @Test
-  public void test() throws InvalidCredentialsException, IOException {
+  public void test() throws Exception {
     final List<SingerMessage> expectedMessages = Lists.newArrayList(
         SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue"),
         SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow"));

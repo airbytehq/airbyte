@@ -29,6 +29,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.dataline.commons.io.IOs;
+import io.dataline.commons.io.LineGobbler;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
@@ -67,15 +68,13 @@ public class DefaultSingerTarget implements SingerTarget {
 
     final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
 
-    // write config.json to disk
     IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
       LOGGER.info("Running Singer target...");
-      targetProcess =
-          pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME)
-              .redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())
-              .start();
+      targetProcess = pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME).start();
+      LineGobbler.gobble(targetProcess.getInputStream(), LOGGER::info);
+      LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER::error);
 
       writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));
     } catch (Exception e) {

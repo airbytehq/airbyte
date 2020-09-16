@@ -33,7 +33,7 @@ import java.util.Optional;
 
 public interface SingerTap extends AutoCloseable {
 
-  void start(StandardTapConfig input, Path jobRoot) throws IOException, InvalidCredentialsException;
+  void start(StandardTapConfig input, Path jobRoot) throws Exception;
 
   boolean isFinished();
 
