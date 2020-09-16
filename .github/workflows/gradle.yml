@@ -47,6 +47,12 @@ jobs:
         env:
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
 
+      - name: Write Stripe Integration Test Credentials
+        if: success()
+        run: 'mkdir dataline-integrations/singer/stripe/source/config && echo "$STRIPE_INTEGRATION_TEST_CREDS" > dataline-integrations/singer/stripe/source/config/source.json'
+        env:
+          STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
+
       - name: Run Integration Tests
         if: success() && github.ref == 'refs/heads/master'
         run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
