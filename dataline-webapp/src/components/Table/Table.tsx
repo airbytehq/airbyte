@@ -47,6 +47,10 @@ const Td = styled.td`
   overflow: hidden;
   text-overflow: ellipsis;
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
+
+  tr:last-child > & {
+    border-bottom: none;
+  }
 `;
 
 const Th = styled.th<IThProps>`
