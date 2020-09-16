@@ -9,6 +9,7 @@ type IProps = {
   isValid: boolean;
   dirty: boolean;
   resetForm: () => void;
+  successMessage?: React.ReactNode;
 };
 
 const Controls = styled.div`
@@ -19,11 +20,18 @@ const ButtonContainer = styled.span`
   margin-left: 10px;
 `;
 
+const Success = styled(ButtonContainer)`
+  color: ${({ theme }) => theme.successColor};
+  font-size: 14px;
+  line-height: 17px;
+`;
+
 const EditControls: React.FC<IProps> = ({
   isSubmitting,
   isValid,
   dirty,
-  resetForm
+  resetForm,
+  successMessage
 }) => {
   return (
     <Controls>
@@ -40,6 +48,7 @@ const EditControls: React.FC<IProps> = ({
           <FormattedMessage id={`form.cancel`} />
         </Button>
       </ButtonContainer>
+      {successMessage && !dirty ? <Success>{successMessage}</Success> : null}
     </Controls>
   );
 };

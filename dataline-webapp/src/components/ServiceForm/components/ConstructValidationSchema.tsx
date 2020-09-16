@@ -32,15 +32,15 @@ const ConstructValidationSchema = (
       if (!!isRequired) {
         return yup
           .number()
-          .min(condition.minimum)
-          .max(condition.maximum)
+          .min(condition?.minimum)
+          .max(condition?.maximum)
           .required("form.empty.error");
       }
 
       return yup
         .number()
-        .min(condition.minimum)
-        .max(condition.maximum);
+        .min(condition?.minimum)
+        .max(condition?.maximum);
     }
 
     return null;

@@ -24,6 +24,7 @@ const Label = styled.label<{ disabled?: boolean }>`
 `;
 
 const AdditionMessage = styled.span`
+  padding-left: 5px;
   color: ${({ theme }) => theme.greyColor40};
 `;
 
