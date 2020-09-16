@@ -27,7 +27,6 @@ package io.dataline.workers.protocols.singer;
 import io.dataline.commons.functional.CheckedConsumer;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
-import java.io.IOException;
 import java.nio.file.Path;
 
 public interface SingerTarget extends CheckedConsumer<SingerMessage, Exception>, AutoCloseable {

@@ -26,8 +26,6 @@ package io.dataline.workers.protocols.singer;
 
 import io.dataline.config.StandardTapConfig;
 import io.dataline.singer.SingerMessage;
-import io.dataline.workers.InvalidCredentialsException;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 

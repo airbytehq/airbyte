@@ -24,6 +24,15 @@
 
 package io.dataline.workers.protocols.singer;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.io.IOs;
@@ -40,15 +49,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class SingerDiscoverSchemaWorkerTest {
 
@@ -71,7 +71,7 @@ public class SingerDiscoverSchemaWorkerTest {
     when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover")
         .redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile())
         .start())
-        .thenReturn(process);
+            .thenReturn(process);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("data".getBytes(StandardCharsets.UTF_8)));
     IOs.writeFile(jobRoot, "catalog.json", MoreResources.readResource("simple_postgres_singer_catalog.json"));
   }

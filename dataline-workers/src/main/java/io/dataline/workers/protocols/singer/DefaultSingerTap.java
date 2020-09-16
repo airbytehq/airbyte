@@ -38,7 +38,6 @@ import io.dataline.singer.SingerMessage;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.StreamFactory;
-import io.dataline.workers.SyncException;
 import io.dataline.workers.WorkerException;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
@@ -79,10 +78,11 @@ public class DefaultSingerTap implements SingerTap {
     this(imageName, pbf, new SingerJsonStreamFactory(), discoverSchemaWorker);
   }
 
-  @VisibleForTesting DefaultSingerTap(final String imageName,
-                                      final ProcessBuilderFactory pbf,
-                                      final StreamFactory streamFactory,
-                                      final SingerDiscoverSchemaWorker discoverSchemaWorker) {
+  @VisibleForTesting
+  DefaultSingerTap(final String imageName,
+                   final ProcessBuilderFactory pbf,
+                   final StreamFactory streamFactory,
+                   final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this.imageName = imageName;
     this.pbf = pbf;
     this.streamFactory = streamFactory;
@@ -105,11 +105,11 @@ public class DefaultSingerTap implements SingerTap {
     IOs.writeFile(jobRoot, STATE_JSON_FILENAME, Jsons.serialize(input.getState()));
 
     String[] cmd = {
-        "--config",
-        CONFIG_JSON_FILENAME,
-        // TODO support both --properties and --catalog depending on integration
-        "--properties",
-        CATALOG_JSON_FILENAME
+      "--config",
+      CONFIG_JSON_FILENAME,
+      // TODO support both --properties and --catalog depending on integration
+      "--properties",
+      CATALOG_JSON_FILENAME
     };
 
     if (input.getState() != null) {

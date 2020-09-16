@@ -24,12 +24,13 @@
 
 package io.dataline.workers.protocols.singer;
 
+import static io.dataline.workers.JobStatus.FAILED;
+import static io.dataline.workers.JobStatus.SUCCESSFUL;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.io.LineGobbler;
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.Schema;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.singer.SingerCatalog;
@@ -42,9 +43,6 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
 public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
@@ -76,7 +74,8 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
   }
 
   private OutputAndStatus<StandardDiscoverSchemaOutput> runInternal(final StandardDiscoverSchemaInput discoverSchemaInput,
-                                                                    final Path jobRoot) throws IOException {
+                                                                    final Path jobRoot)
+      throws IOException {
     final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
 
     IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));

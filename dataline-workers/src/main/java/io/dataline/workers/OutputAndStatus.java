@@ -56,7 +56,8 @@ public class OutputAndStatus<OutputType> {
     return status;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -68,7 +69,9 @@ public class OutputAndStatus<OutputType> {
         status == that.status;
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return Objects.hash(output, status);
   }
+
 }
