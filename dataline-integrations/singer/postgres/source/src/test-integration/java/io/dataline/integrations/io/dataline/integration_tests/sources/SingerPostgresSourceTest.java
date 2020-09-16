@@ -92,7 +92,7 @@ public class SingerPostgresSourceTest {
     jobRoot = workspaceRoot.resolve("job");
     Files.createDirectories(jobRoot);
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
+    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString());
   }
 
   @AfterEach
