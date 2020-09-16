@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,8 +101,16 @@ class DefaultSingerTargetTest {
     final String actualOutput = new String(outputStream.toByteArray());
     assertEquals(Jsons.serialize(recordMessage) + "\n", actualOutput);
 
-    assertEquals(0, process.getErrorStream().available());
-    assertEquals(0, process.getInputStream().available());
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getInputStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
 
     verify(process).waitFor(anyLong(), any());
   }
