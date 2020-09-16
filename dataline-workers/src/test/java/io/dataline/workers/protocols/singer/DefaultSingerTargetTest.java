@@ -34,6 +34,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.base.Charsets;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
@@ -99,6 +100,10 @@ class DefaultSingerTargetTest {
 
     final String actualOutput = new String(outputStream.toByteArray());
     assertEquals(Jsons.serialize(recordMessage) + "\n", actualOutput);
+
+    if(process.getErrorStream().available() != 0) {
+      throw new RuntimeException(new String(process.getErrorStream().readAllBytes(), Charsets.UTF_8)  );
+    }
 
     assertEquals(0, process.getErrorStream().available());
     assertEquals(0, process.getInputStream().available());
