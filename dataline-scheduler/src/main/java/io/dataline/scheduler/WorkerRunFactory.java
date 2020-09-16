@@ -71,9 +71,10 @@ public class WorkerRunFactory {
   }
 
   public WorkerRun create(final Job job) {
-    LOGGER.info("job: {} {} {}", job.getId(), job.getScope(), job.getConfig().getConfigType());
+    final int currentAttempt = job.getAttempts();
+    LOGGER.info("job id: {} attempt: {} scope: {} type: {}", job.getId(), currentAttempt, job.getScope(), job.getConfig().getConfigType());
 
-    final Path jobRoot = workspaceRoot.resolve(String.valueOf(job.getId()));
+    final Path jobRoot = workspaceRoot.resolve(String.valueOf(job.getId())).resolve(String.valueOf(currentAttempt));
     LOGGER.info("job root: {}", jobRoot);
 
     switch (job.getConfig().getConfigType()) {
