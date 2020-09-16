@@ -76,9 +76,6 @@ class TestPostgresDestination {
   @BeforeEach
   public void setUp() throws IOException {
     PSQL = new PostgreSQLContainer<>();
-    if(!System.getProperty("os.name").equals("Mac OS X")) {
-      PSQL.withNetworkMode("host");
-    }
     PSQL.start();
 
     Files.createDirectories(TESTS_PATH);
@@ -149,7 +146,7 @@ class TestPostgresDestination {
   private Map<String, Object> getDbConfig() {
     Map<String, Object> fullConfig = new HashMap<>();
 
-    fullConfig.put("postgres_host", System.getProperty("os.name").equals("Mac OS X") ? "host.docker.internal" : "localhost");
+    fullConfig.put("postgres_host", PSQL.getHost());
     fullConfig.put("postgres_port", PSQL.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT));
     fullConfig.put("postgres_username", PSQL.getUsername());
     fullConfig.put("postgres_password", PSQL.getPassword());
