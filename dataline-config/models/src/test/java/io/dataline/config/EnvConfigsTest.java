@@ -109,7 +109,7 @@ class EnvConfigsTest {
     when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
     Assertions.assertThrows(IllegalArgumentException.class, () -> config.getWorkspaceDockerMount());
   }
-  
+
   @Test
   void testTrackingStrategy() {
     when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn(null);
