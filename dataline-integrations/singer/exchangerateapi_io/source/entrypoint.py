@@ -8,8 +8,7 @@ def spec_handler(args):
     sys.exit(0)
 
 def check_handler(args):
-    print("check") # todo
-    sys.exit(0)
+    discover_handler(args)
 
 def discover_handler(args):
     exit_code = os.system("tap-exchangeratesapi | grep '\"type\": \"SCHEMA\"' | head -1 | jq -c '{\"streams\":[{\"stream\": .stream, \"schema\": .schema}]}' > " + args.catalog)
