@@ -78,7 +78,7 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
     IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     process = pbf.create(jobRoot, imageName, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")
-        // TODO: we shouldn't trust the tap not not pollute stdout
+        // TODO: we shouldn't trust the tap does not pollute stdout
         .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
         .start();
 
