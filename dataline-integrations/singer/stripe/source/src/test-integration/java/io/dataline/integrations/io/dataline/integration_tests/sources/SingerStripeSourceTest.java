@@ -24,16 +24,11 @@
 
 package io.dataline.integrations.io.dataline.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
-import io.dataline.workers.InvalidCatalogException;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
@@ -51,6 +46,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SingerStripeSourceTest {
 
@@ -81,20 +79,16 @@ public class SingerStripeSourceTest {
     pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
   }
 
-  // TODO: need to have a separate endpoint for checking connectivity since discover does not use
-  // credentials
-  // @Test
-  // public void testInvalidCredentialsDiscover() throws IOException, InterruptedException {
-  // Process process = createDiscoveryProcess("invalid_config.json");
-  // process.waitFor();
-  //
-  // assertEquals(0, process.exitValue());
-  //
-  // final String catalog = IOs.readFile(jobRoot, jobRoot.resolve("catalog.json").toString());
-  // }
+  @Test
+  public void testInvalidCredentialsDiscover() throws IOException, InterruptedException {
+    Process process = createDiscoveryProcess("invalid_config.json");
+    process.waitFor();
+
+    assertEquals(2, process.exitValue());
+  }
 
   @Test
-  public void testSuccessfulDiscover() throws InvalidCredentialsException, InvalidCatalogException, IOException, InterruptedException {
+  public void testSuccessfulDiscover() throws IOException, InterruptedException {
     Process process = createDiscoveryProcess("config.json");
     process.waitFor();
 
@@ -170,8 +164,8 @@ public class SingerStripeSourceTest {
   private void writeInvalidConfigFile() throws IOException {
     Map<String, Object> fullConfig = new HashMap<>();
 
-    fullConfig.put("client_secret", "sk_test_" + RandomStringUtils.randomAlphanumeric(10));
-    fullConfig.put("account_id", "acct_" + RandomStringUtils.randomAlphanumeric(10));
+    fullConfig.put("client_secret", "sk_test_" + RandomStringUtils.randomAlphanumeric(20));
+    fullConfig.put("account_id", "acct_" + RandomStringUtils.randomAlphanumeric(20));
     fullConfig.put("start_date", "2017-01-01T00:00:00Z");
 
     Files.writeString(
@@ -183,7 +177,7 @@ public class SingerStripeSourceTest {
         jobRoot,
         IMAGE_NAME,
         "--config",
-        "config.json",
+        configFileName,
         "--discover")
         .redirectOutput(catalogPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)

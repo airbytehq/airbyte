@@ -1,4 +1,4 @@
-FROM python:3.7-slim
+FROM python:3.7-alpine
 
 WORKDIR /singer
 
@@ -11,6 +11,10 @@ COPY requirements.txt .
 RUN python -m pip install --upgrade pip && \
   pip install -r requirements.txt
 
-ENTRYPOINT ["tap-stripe"]
+RUN apk add --no-cache jq curl bash
+
+COPY entrypoint.sh .
+
+ENTRYPOINT ["/singer/entrypoint.sh"]
 
 LABEL io.dataline.version=0.1.0
