@@ -10,7 +10,7 @@ echo "Starting app..."
 
 # Detach so we can run subsequent commands
 VERSION=dev docker-compose up -d
-trap "docker-compose down" EXIT
+trap "docker-compose logs -t -f --tail 150 && docker-compose down" EXIT
 
 echo "Waiting for services to begin"
 sleep 10 # TODO need a better way to wait
