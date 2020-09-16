@@ -78,6 +78,7 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
     process = pbf.create(jobRoot, imageName, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")
         // TODO: we shouldn't trust the tap not not pollute stdout
+        .redirectError(jobRoot.resolve(WorkerConstants.TAP_ERR_LOG).toFile())
         .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
         .start();
 
