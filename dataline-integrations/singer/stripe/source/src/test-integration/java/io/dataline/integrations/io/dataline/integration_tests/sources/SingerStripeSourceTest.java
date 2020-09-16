@@ -24,9 +24,6 @@
 
 package io.dataline.integrations.io.dataline.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
@@ -56,6 +53,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class SingerStripeSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerStripeSourceTest.class);
@@ -81,7 +81,7 @@ public class SingerStripeSourceTest {
 
     writeConfigFilesToJobRoot();
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
+    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString());
   }
 
   private static String getEmail(int number) {
