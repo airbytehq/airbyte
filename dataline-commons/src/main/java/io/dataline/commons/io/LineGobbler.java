@@ -54,8 +54,8 @@ public class LineGobbler implements VoidCallable {
 
   @Override
   public void voidCall() {
-    String line;
     try {
+      String line;
       while ((line = is.readLine()) != null) {
         consumer.accept(line);
       }
