@@ -52,8 +52,10 @@ import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerException;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -116,10 +118,10 @@ class DefaultSingerTapTest {
         WorkerConstants.CATALOG_JSON_FILENAME,
         "--state",
         WorkerConstants.INPUT_STATE_JSON_FILENAME)
-        .redirectError(jobRoot.resolve(WorkerConstants.TAP_ERR_LOG).toFile())
         .start()).thenReturn(process);
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
 
     streamFactory = noop -> MESSAGES.stream();
   }
@@ -153,6 +155,8 @@ class DefaultSingerTapTest {
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME)));
 
     assertEquals(MESSAGES, messages);
+
+    assertEquals(0, process.getErrorStream().available());
 
     verify(process).waitFor(anyLong(), any());
   }

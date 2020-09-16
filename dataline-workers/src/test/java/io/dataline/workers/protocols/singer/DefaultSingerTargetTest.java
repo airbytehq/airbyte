@@ -42,8 +42,10 @@ import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerException;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Assertions;
@@ -71,12 +73,12 @@ class DefaultSingerTargetTest {
     process = mock(Process.class);
     outputStream = spy(new ByteArrayOutputStream());
     when(process.getOutputStream()).thenReturn(outputStream);
+    when(process.getInputStream()).thenReturn(new ByteArrayInputStream("input".getBytes(StandardCharsets.UTF_8)));
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("error".getBytes(StandardCharsets.UTF_8)));
 
     pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
-        .redirectError(jobRoot.resolve(WorkerConstants.TARGET_ERR_LOG).toFile())
-        .start())
-            .thenReturn(process);
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME).start())
+        .thenReturn(process);
   }
 
   @Test
@@ -97,6 +99,9 @@ class DefaultSingerTargetTest {
 
     final String actualOutput = new String(outputStream.toByteArray());
     assertEquals(Jsons.serialize(recordMessage) + "\n", actualOutput);
+
+    assertEquals(0, process.getErrorStream().available());
+    assertEquals(0, process.getInputStream().available());
 
     verify(process).waitFor(anyLong(), any());
   }

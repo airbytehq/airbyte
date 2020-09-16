@@ -29,6 +29,7 @@ import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.io.IOs;
+import io.dataline.commons.io.LineGobbler;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
@@ -78,9 +79,10 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
     process = pbf.create(jobRoot, imageName, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")
         // TODO: we shouldn't trust the tap does not pollute stdout
-        .redirectError(jobRoot.resolve(WorkerConstants.TAP_ERR_LOG).toFile())
         .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
         .start();
+
+    LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 
