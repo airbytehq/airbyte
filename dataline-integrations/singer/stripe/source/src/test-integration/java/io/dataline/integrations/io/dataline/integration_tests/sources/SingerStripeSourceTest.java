@@ -27,6 +27,11 @@ package io.dataline.integrations.io.dataline.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
+import com.stripe.net.RequestOptions;
+import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.CustomerListParams;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
@@ -37,6 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,7 +60,7 @@ public class SingerStripeSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerStripeSourceTest.class);
 
-  private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
+  private static final Path TESTS_PATH = createTempDirectory();
   private static final String IMAGE_NAME = "dataline/integration-singer-stripe-source:dev";
 
   protected Path jobRoot;
@@ -63,9 +69,8 @@ public class SingerStripeSourceTest {
   protected Path catalogPath;
 
   @BeforeEach
-  public void setUp() throws IOException {
-    // todo: create test records if they do not exist as part of the test lifecycle instead of doing it
-    // in a separate script
+  public void setUp() throws IOException, StripeException {
+    createTestRecordsIfNonExistent();
 
     Files.createDirectories(TESTS_PATH);
     workspaceRoot = Files.createTempDirectory(TESTS_PATH, "stripe");
@@ -77,6 +82,39 @@ public class SingerStripeSourceTest {
     writeConfigFilesToJobRoot();
 
     pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
+  }
+
+  private static String getEmail(int number) {
+    return "customer" + number + "@test.com";
+  }
+
+  private void createTestRecordsIfNonExistent() throws IOException, StripeException {
+    String credentialsJsonString = new String(Files.readAllBytes(Paths.get("config/config.json")));
+    JsonNode credentials = Jsons.deserialize(credentialsJsonString);
+    String stripeApiKey = credentials.get("client_secret").textValue();
+
+    RequestOptions requestOptions = RequestOptions.builder()
+        .setApiKey(stripeApiKey)
+        .build();
+
+    for (int i = 1; i <= 4; i++) {
+      String email = getEmail(i);
+      String phone = "" + i + i + i + "-" + i + i + i + "-" + i + i + i + i;
+      String description = "Customer " + i;
+
+      List<Customer> customers = Customer.list(CustomerListParams.builder().setEmail(email).build(), requestOptions).getData();
+
+      if (customers.isEmpty()) {
+        Customer.create(
+            CustomerCreateParams.builder()
+                .setEmail(email)
+                .setDescription(description)
+                .setPhone(phone)
+                .build(),
+            requestOptions
+        );
+      }
+    }
   }
 
   @Test
@@ -195,6 +233,14 @@ public class SingerStripeSourceTest {
         .redirectOutput(syncOutputPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
+  }
+
+  private static Path createTempDirectory() {
+    try {
+      return Files.createTempDirectory("dataline_integration_tests");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }
