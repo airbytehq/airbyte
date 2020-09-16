@@ -30,8 +30,13 @@ function main() {
       ARGS="$ARGS --state $2"
       shift 2
       ;;
-    --catalog | --properties)
-      # ignore
+    -d | --catalog)
+      ARGS="$ARGS --catalog $2"
+      shift 2
+      ;;
+
+    -e | --properties)
+      ARGS="$ARGS --properties $2"
       shift 2
       ;;
     *)
