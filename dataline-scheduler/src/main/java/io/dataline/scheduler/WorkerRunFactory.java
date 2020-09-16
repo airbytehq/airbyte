@@ -74,6 +74,7 @@ public class WorkerRunFactory {
     LOGGER.info("job: {} {} {}", job.getId(), job.getScope(), job.getConfig().getConfigType());
 
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(job.getId()));
+    LOGGER.info("job root: {}", jobRoot);
 
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION_SOURCE:

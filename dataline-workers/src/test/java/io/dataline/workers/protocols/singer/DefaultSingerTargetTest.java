@@ -33,6 +33,7 @@ import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
 import io.dataline.workers.TestConfigHelpers;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.ByteArrayOutputStream;
@@ -65,8 +66,8 @@ class DefaultSingerTargetTest {
 
   @Test
   public void test() throws Exception {
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", DefaultSingerTarget.CONFIG_JSON_FILENAME)
-        .redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
+        .redirectError(jobRoot.resolve(WorkerConstants.TARGET_ERR_LOG).toFile())
         .start()).thenReturn(process);
     when(process.getOutputStream()).thenReturn(outputStream);
 

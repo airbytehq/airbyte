@@ -29,10 +29,6 @@
       "dbname": {
         "description": "Name of the database.",
         "type": "string"
-      },
-      "filter_dbs": {
-        "description": "This should be identical to dbname field.",
-        "type": "string"
       }
     }
   }
