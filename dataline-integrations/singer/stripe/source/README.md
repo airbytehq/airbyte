@@ -13,10 +13,8 @@ In order to test the Stripe source, you will need API credentials and the abilit
   "start_date": "2017-01-01T00:00:00Z"
 }
 ```
-1. TODO run migration script
 
 ## Dataline Employee
 
 1. Access the `Stripe Integration Test Config` secret on Rippling under the `Engineering` folder
 1. Create a file with the contents at `config/config.json`
-1. TODO run migration script
