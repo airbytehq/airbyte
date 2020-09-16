@@ -24,9 +24,6 @@
 
 package io.dataline.workers.protocols.singer;
 
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.io.LineGobbler;
@@ -44,6 +41,9 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.dataline.workers.JobStatus.FAILED;
+import static io.dataline.workers.JobStatus.SUCCESSFUL;
 
 public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
@@ -77,7 +77,7 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
     IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
-    process = pbf.create(jobRoot, imageName, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")
+    process = pbf.create(jobRoot, imageName, "discover", "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME)
         // TODO: we shouldn't trust the tap does not pollute stdout
         .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
         .start();
