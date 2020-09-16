@@ -22,23 +22,12 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.dataline.workers;
 
-import io.dataline.commons.functional.CheckedConsumer;
-import io.dataline.config.StandardTargetConfig;
-import io.dataline.singer.SingerMessage;
-import java.nio.file.Path;
+public class WorkerException extends Exception {
 
-public interface SingerTarget extends CheckedConsumer<SingerMessage, Exception>, AutoCloseable {
-
-  void start(StandardTargetConfig targetConfig, Path jobRoot) throws Exception;
-
-  @Override
-  void accept(SingerMessage message) throws Exception;
-
-  void notifyEndOfStream() throws Exception;
-
-  @Override
-  void close() throws Exception;
+  public WorkerException(String message) {
+    super(message);
+  }
 
 }
