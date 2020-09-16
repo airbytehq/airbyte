@@ -26,14 +26,12 @@ package io.dataline.workers.protocols.singer;
 
 import io.dataline.config.StandardTapConfig;
 import io.dataline.singer.SingerMessage;
-import io.dataline.workers.InvalidCredentialsException;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
 public interface SingerTap extends AutoCloseable {
 
-  void start(StandardTapConfig input, Path jobRoot) throws IOException, InvalidCredentialsException;
+  void start(StandardTapConfig input, Path jobRoot) throws Exception;
 
   boolean isFinished();
 
