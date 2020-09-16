@@ -40,6 +40,8 @@ public interface Configs {
 
   String getWorkspaceDockerMount();
 
+  String getDockerNetwork();
+
   TrackingStrategy getTrackingStrategy();
 
   enum TrackingStrategy {
