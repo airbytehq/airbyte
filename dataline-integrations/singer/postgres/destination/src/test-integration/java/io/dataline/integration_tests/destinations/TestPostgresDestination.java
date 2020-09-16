@@ -49,6 +49,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,7 @@ class TestPostgresDestination {
     PSQL = new PostgreSQLContainer<>();
     if (!System.getProperty("os.name").equals("Mac OS X")) {
       PSQL.withNetworkMode("host");
+      PSQL.setPortBindings(Collections.singletonList("3851:5432"));
     }
     PSQL.start();
 
@@ -150,7 +152,8 @@ class TestPostgresDestination {
     Map<String, Object> fullConfig = new HashMap<>();
 
     fullConfig.put("postgres_host", System.getProperty("os.name").equals("Mac OS X") ? "host.docker.internal" : "localhost");
-    fullConfig.put("postgres_port", PSQL.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT));
+    fullConfig.put("postgres_port",
+        System.getProperty("os.name").equals("Mac OS X") ? PSQL.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT) : 3851);
     fullConfig.put("postgres_username", PSQL.getUsername());
     fullConfig.put("postgres_password", PSQL.getPassword());
     fullConfig.put("postgres_database", PSQL.getDatabaseName());
