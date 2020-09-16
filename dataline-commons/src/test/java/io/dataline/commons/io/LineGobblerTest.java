@@ -26,6 +26,7 @@ package io.dataline.commons.io;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -71,12 +72,12 @@ class LineGobblerTest {
   void shutdownOnError() throws InterruptedException {
     final Consumer<String> consumer = Mockito.mock(Consumer.class);
     Mockito.doThrow(RuntimeException.class).when(consumer).accept(anyString());
-    final InputStream is = Mockito.spy(new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8)));
+    final InputStream is = new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
 
     final ExecutorService executor = Executors.newSingleThreadExecutor();
     executor.submit(new LineGobbler(is, consumer, executor));
 
-    Mockito.verify(consumer, never()).accept(anyString());
+    verify(consumer).accept(anyString());
     executor.awaitTermination(10, TimeUnit.SECONDS);
     Assertions.assertTrue(executor.isTerminated());
   }
