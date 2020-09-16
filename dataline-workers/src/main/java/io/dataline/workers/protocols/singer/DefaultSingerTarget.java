@@ -25,13 +25,13 @@
 package io.dataline.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.BufferedWriter;
@@ -45,9 +45,6 @@ import org.slf4j.LoggerFactory;
 public class DefaultSingerTarget implements SingerTarget {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerTarget.class);
-
-  @VisibleForTesting
-  static final String CONFIG_JSON_FILENAME = "target_config.json";
 
   private final String imageName;
   private final ProcessBuilderFactory pbf;
@@ -68,13 +65,13 @@ public class DefaultSingerTarget implements SingerTarget {
     final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
 
     // write config.json to disk
-    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    IOs.writeFile(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
       LOGGER.info("Running Singer target...");
       targetProcess =
-          pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME)
-              .redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())
+          pbf.create(jobRoot, imageName, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
+              .redirectError(jobRoot.resolve(WorkerConstants.TARGET_ERR_LOG).toFile())
               .start();
 
       writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));

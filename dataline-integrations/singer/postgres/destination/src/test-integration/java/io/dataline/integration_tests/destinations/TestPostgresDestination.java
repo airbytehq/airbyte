@@ -38,6 +38,7 @@ import io.dataline.db.DatabaseHelper;
 import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
 import io.dataline.workers.process.ProcessBuilderFactory;
@@ -63,7 +64,6 @@ class TestPostgresDestination {
 
   private static final String IMAGE_NAME = "dataline/integration-singer-postgres-destination:dev";
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
-  private static final String CONFIG_FILENAME = "config.json";
 
   protected Path jobRoot;
   protected Path workspaceRoot;
@@ -137,7 +137,7 @@ class TestPostgresDestination {
   }
 
   private Process startTarget() throws IOException {
-    return pbf.create(jobRoot, IMAGE_NAME, "--config", CONFIG_FILENAME)
+    return pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
@@ -155,7 +155,7 @@ class TestPostgresDestination {
   }
 
   private void writeConfigFileToJobRoot(String fileContent) throws IOException {
-    Files.writeString(Path.of(jobRoot.toString(), "config.json"), fileContent);
+    Files.writeString(Path.of(jobRoot.toString(), WorkerConstants.TARGET_CONFIG_JSON_FILENAME), fileContent);
   }
 
   private void writeResourceToStdIn(String resourceName, Process process) throws IOException {
