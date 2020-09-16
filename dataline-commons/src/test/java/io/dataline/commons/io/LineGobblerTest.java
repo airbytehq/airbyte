@@ -25,8 +25,10 @@
 package io.dataline.commons.io;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -45,40 +47,40 @@ class LineGobblerTest {
   void readAllLines() {
     final Consumer<String> consumer = Mockito.mock(Consumer.class);
     final InputStream is = new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
+    final ExecutorService executor = spy(MoreExecutors.newDirectExecutorService());
 
-    LineGobbler.gobble(is, consumer);
+    executor.submit(new LineGobbler(is, consumer, executor));
 
     Mockito.verify(consumer).accept("test");
     Mockito.verify(consumer).accept("test2");
+    Mockito.verify(executor).shutdown();
   }
 
   @Test
   @SuppressWarnings("unchecked")
-  void shutdownOnSuccess() throws InterruptedException {
+  void shutdownOnSuccess() {
     final Consumer<String> consumer = Mockito.mock(Consumer.class);
     final InputStream is = new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
+    final ExecutorService executor = spy(MoreExecutors.newDirectExecutorService());
 
-    final ExecutorService executor = Executors.newSingleThreadExecutor();
     executor.submit(new LineGobbler(is, consumer, executor));
 
     Mockito.verify(consumer, Mockito.times(2)).accept(anyString());
-    executor.awaitTermination(10, TimeUnit.SECONDS);
-    Assertions.assertTrue(executor.isTerminated());
+    Mockito.verify(executor).shutdown();
   }
 
   @Test
   @SuppressWarnings("unchecked")
-  void shutdownOnError() throws InterruptedException {
+  void shutdownOnError() {
     final Consumer<String> consumer = Mockito.mock(Consumer.class);
     Mockito.doThrow(RuntimeException.class).when(consumer).accept(anyString());
     final InputStream is = new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
+    final ExecutorService executor = spy(MoreExecutors.newDirectExecutorService());
 
-    final ExecutorService executor = Executors.newSingleThreadExecutor();
     executor.submit(new LineGobbler(is, consumer, executor));
 
     verify(consumer).accept(anyString());
-    executor.awaitTermination(10, TimeUnit.SECONDS);
-    Assertions.assertTrue(executor.isTerminated());
+    Mockito.verify(executor).shutdown();
   }
 
 }
