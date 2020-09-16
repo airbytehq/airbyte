@@ -86,7 +86,7 @@ class TestPostgresDestination {
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString());
+    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
   }
 
   @AfterEach
