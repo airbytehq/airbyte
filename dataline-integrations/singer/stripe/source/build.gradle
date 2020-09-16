@@ -1,18 +1,22 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 plugins {
     id 'java'
     id 'com.bmuschko.docker-remote-api' version '6.6.1'
 }
 
+def image = 'dataline/integration-singer-stripe-source:dev'
+
 sourceSets {
     integrationTest {
         java {
-            srcDir("src/test-integration/java")
+            srcDir 'src/test-integration/java'
         }
         resources {
-            srcDir("src/test-integration/resources")
+            srcDir 'src/test-integration/resources'
         }
     }
 }
+test.dependsOn('compileIntegrationTestJava')
 
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
@@ -23,38 +27,32 @@ dependencies {
     integrationTestImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
     integrationTestImplementation 'com.fasterxml.jackson.core:jackson-databind'
     integrationTestImplementation 'org.apache.commons:commons-text:1.9'
-    integrationTestImplementation 'org.testcontainers:postgresql:1.14.3'
-    integrationTestImplementation 'org.postgresql:postgresql:42.2.16'
-    integrationTestImplementation 'com.stripe:stripe-java:20.6.0'
+    integrationTestImplementation "com.stripe:stripe-java:20.6.0"
 
-    integrationTestImplementation project(':dataline-config:models')
     integrationTestImplementation project(':dataline-workers')
-    integrationTestImplementation project(':dataline-test-utils')
-    integrationTestImplementation project(':dataline-singer')
 }
 
-def image = "dataline/integration-singer-stripe-source:dev"
 task imageName {
     doLast {
         println "IMAGE $image"
     }
 }
 
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 task buildImage(type: DockerBuildImage) {
-    inputDir = file('.')
+    inputDir = projectDir
     images.add(image)
 }
 
 task integrationTest(type: Test) {
     testClassesDirs += sourceSets.integrationTest.output.classesDirs
     classpath += sourceSets.integrationTest.runtimeClasspath
+
     useJUnitPlatform()
     testLogging() {
         events "passed", "failed"
         exceptionFormat "full"
     }
-    mustRunAfter test
-}
 
-integrationTest.dependsOn(buildImage)
+    mustRunAfter test
+    dependsOn(buildImage)
+}
