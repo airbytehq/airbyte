@@ -40,6 +40,8 @@ public interface Configs {
 
   String getWorkspaceDockerMount();
 
+  String getLocalDockerMount();
+
   String getDockerNetwork();
 
   TrackingStrategy getTrackingStrategy();

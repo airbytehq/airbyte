@@ -96,7 +96,7 @@ class EnvConfigsTest {
   }
 
   @Test
-  void testGetDockerMount() {
+  void testGetWorkspaceDockerMount() {
     when(function.apply(EnvConfigs.WORKSPACE_DOCKER_MOUNT)).thenReturn(null);
     when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn("abc/def");
     Assertions.assertEquals("abc/def", config.getWorkspaceDockerMount());
@@ -108,6 +108,21 @@ class EnvConfigsTest {
     when(function.apply(EnvConfigs.WORKSPACE_DOCKER_MOUNT)).thenReturn(null);
     when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
     Assertions.assertThrows(IllegalArgumentException.class, () -> config.getWorkspaceDockerMount());
+  }
+
+  @Test
+  void testGetLocalDockerMount() {
+    when(function.apply(EnvConfigs.LOCAL_DOCKER_MOUNT)).thenReturn(null);
+    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn("abc/def");
+    Assertions.assertEquals("abc/def", config.getLocalDockerMount());
+
+    when(function.apply(EnvConfigs.LOCAL_DOCKER_MOUNT)).thenReturn("root");
+    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
+    Assertions.assertEquals("root", config.getLocalDockerMount());
+
+    when(function.apply(EnvConfigs.LOCAL_DOCKER_MOUNT)).thenReturn(null);
+    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getLocalDockerMount());
   }
 
   @Test
