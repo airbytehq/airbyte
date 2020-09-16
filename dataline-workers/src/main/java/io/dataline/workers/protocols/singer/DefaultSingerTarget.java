@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.dataline.commons.io.IOs;
+import io.dataline.commons.io.LineGobbler;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
@@ -68,9 +69,9 @@ public class DefaultSingerTarget implements SingerTarget {
     IOs.writeFile(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     LOGGER.info("Running Singer target...");
-    targetProcess = pbf.create(jobRoot, imageName, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
-        .redirectError(jobRoot.resolve(WorkerConstants.TARGET_ERR_LOG).toFile())
-        .start();
+    targetProcess = pbf.create(jobRoot, imageName, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME).start();
+    LineGobbler.gobble(targetProcess.getInputStream(), LOGGER::info);
+    LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER::error);
 
     writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));
   }

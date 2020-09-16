@@ -21,7 +21,7 @@
     </Appenders>
 
     <Loggers>
-        <Root level="TRACE">
+        <Root level="DEBUG">
             <AppenderRef ref="Default"/>
             <AppenderRef ref="Context"/>
         </Root>

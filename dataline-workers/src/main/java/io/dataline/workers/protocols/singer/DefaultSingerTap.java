@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.dataline.commons.io.IOs;
+import io.dataline.commons.io.LineGobbler;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
@@ -110,9 +111,9 @@ public class DefaultSingerTap implements SingerTap {
       cmd = ArrayUtils.addAll(cmd, "--state", WorkerConstants.INPUT_STATE_JSON_FILENAME);
     }
 
-    tapProcess = pbf.create(jobRoot, imageName, cmd)
-        .redirectError(jobRoot.resolve(WorkerConstants.TAP_ERR_LOG).toFile())
-        .start();
+    tapProcess = pbf.create(jobRoot, imageName, cmd).start();
+    // stdout logs are logged elsewhere since stdout also contains data
+    LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream())).iterator();
   }
