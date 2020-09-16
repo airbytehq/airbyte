@@ -24,7 +24,7 @@ type IProps = {
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
-  padding: 23px 20px 24px 23px;
+  padding: 23px 20px 20px 23px;
 `;
 
 const Img = styled(ImageBlock)`
@@ -40,7 +40,7 @@ const SourceCell = styled(Cell)`
 const EnabledCell = styled(Cell)`
   display: flex;
   align-items: center;
-  margin-top: -20px;
+  margin-top: -18px;
 `;
 
 const ToggleLabel = styled.label`
