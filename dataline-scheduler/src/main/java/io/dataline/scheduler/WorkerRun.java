@@ -61,4 +61,8 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
     return workerRun.get();
   }
 
+  public Path getJobRoot() {
+    return jobRoot;
+  }
+
 }

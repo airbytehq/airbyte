@@ -85,7 +85,7 @@ class TestBigQueryDestination {
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
+    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString());
 
     datasetName = "dataline_tests_" + RandomStringUtils.randomAlphanumeric(8);
     DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetName).build();

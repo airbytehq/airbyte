@@ -26,6 +26,7 @@ run {
     // default for running on local machine.
     environment "CONFIG_ROOT", "${env.DEV_ROOT}/data"
     environment "WORKSPACE_ROOT", "${env.DEV_ROOT}/workspace"
+    environment "WORKSPACE_DOCKER_MOUNT", env.WORKSPACE_DOCKER_MOUNT
     environment "VERSION", env.VERSION
     environment "DATABASE_USER", env.DATABASE_USER
     environment "DATABASE_PASSWORD", env.DATABASE_PASSWORD

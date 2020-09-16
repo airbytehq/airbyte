@@ -24,6 +24,7 @@
 
 package io.dataline.workers.process;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -39,12 +40,10 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
 
   private final String mountSource;
   private final Path workspaceRoot;
-  private final String networkName;
 
-  public DockerProcessBuilderFactory(Path workspaceRoot, String mountSource, String networkName) {
+  public DockerProcessBuilderFactory(final Path workspaceRoot, final String mountSource) {
     this.mountSource = mountSource;
     this.workspaceRoot = workspaceRoot;
-    this.networkName = networkName;
   }
 
   @Override
@@ -53,17 +52,16 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
         Lists.newArrayList(
             "docker",
             "run",
+            "--rm",
             "-i",
             "-v",
             String.format("%s:%s", mountSource, MOUNT_DESTINATION),
             "-w",
             rebasePath(jobRoot).toString(),
-            "--network",
-            networkName,
             imageName);
     cmd.addAll(Arrays.asList(args));
 
-    LOGGER.debug("Preparing command: {}", cmd);
+    LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
 
     return new ProcessBuilder(cmd);
   }

@@ -31,10 +31,14 @@ public class ScopeHelper {
 
   private static final String SCOPE_DELIMITER = ":";
 
+  public static String getScopePrefix(JobConfig.ConfigType configType) {
+    return configType.value();
+  }
+
   public static String createScope(JobConfig.ConfigType configType, String configId) {
     Preconditions.checkNotNull(configType);
     Preconditions.checkNotNull(configId);
-    return configType.value() + SCOPE_DELIMITER + configId;
+    return getScopePrefix(configType) + SCOPE_DELIMITER + configId;
   }
 
   public static String getConfigId(String scope) {

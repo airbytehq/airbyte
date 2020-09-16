@@ -171,13 +171,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       final Record record = DatabaseHelper.query(
           connectionPool,
           ctx -> ctx.fetch(
-              "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?) RETURNING id",
+              "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, attempts, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?, ?) RETURNING id",
               scope,
               now,
               now,
               JobStatus.PENDING.toString().toLowerCase(),
               Jsons.serialize(jobConfig),
               null,
+              0,
               JobLogs.getLogDirectory(scope),
               JobLogs.getLogDirectory(scope)))
           .stream()
@@ -202,6 +203,17 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
               status.toString().toLowerCase(),
               now,
               jobId));
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public void incrementAttempts(long jobId) throws IOException {
+    try {
+      DatabaseHelper.query(
+          connectionPool,
+          ctx -> ctx.execute("UPDATE jobs SET attempts = attempts + 1 WHERE id = ?", jobId));
     } catch (SQLException e) {
       throw new IOException(e);
     }
@@ -249,6 +261,24 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       return DatabaseHelper.query(
           connectionPool,
           ctx -> ctx.fetch("SELECT * FROM jobs WHERE scope = ? ORDER BY created_at DESC", scope).stream()
+              .map(DefaultSchedulerPersistence::getJobFromRecord)
+              .collect(Collectors.toList()));
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException {
+    // todo (cgardens) - jooq does not let you use bindings to do LIKE queries. you have to construct
+    // the string yourself or use their DSL.
+    final String likeStatement = "'" + ScopeHelper.getScopePrefix(configType) + "%'";
+    try {
+      return DatabaseHelper.query(connectionPool,
+          ctx -> ctx
+              .fetch("SELECT * FROM jobs WHERE scope LIKE " + likeStatement + " AND CAST(status AS VARCHAR) = ? ORDER BY created_at DESC",
+                  status.toString().toLowerCase())
+              .stream()
               .map(DefaultSchedulerPersistence::getJobFromRecord)
               .collect(Collectors.toList()));
     } catch (SQLException e) {
@@ -324,6 +354,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
         output,
         jobEntry.get("stdout_path", String.class),
         jobEntry.get("stderr_path", String.class),
+        jobEntry.get("attempts", Integer.class),
         getEpoch(jobEntry, "created_at"),
         Optional.ofNullable(jobEntry.get("started_at"))
             .map(value -> getEpoch(jobEntry, "started_at"))

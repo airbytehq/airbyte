@@ -1,3 +1,5 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import groovy.json.JsonSlurper
 plugins {
     id 'java'
     id 'com.bmuschko.docker-remote-api' version '6.6.1'
@@ -5,30 +7,43 @@ plugins {
 
 def image = 'dataline/integration-singer-bigquery-destination:dev'
 
+sourceSets {
+    integrationTest {
+        java {
+            srcDir 'src/test-integration/java'
+        }
+        resources {
+            srcDir 'src/test-integration/resources'
+        }
+    }
+}
+test.dependsOn('compileIntegrationTestJava')
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+dependencies {
+    integrationTestImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
+    integrationTestImplementation 'com.google.cloud:google-cloud-bigquery:1.117.0'
+    integrationTestImplementation 'org.apache.commons:commons-text:1.9'
+
+    integrationTestImplementation project(':dataline-workers')
+}
+
+
 task imageName {
     doLast {
         println "IMAGE $image"
     }
 }
 
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
 }
 
-sourceSets {
-    integrationTest {
-        java {
-            srcDir("src/test-integration/java")
-        }
-        resources {
-            srcDir("src/test-integration/resources")
-        }
-    }
-}
-
-import groovy.json.JsonSlurper
 task integrationTest(type: Test) {
     def credFile = project.file("config/credentials.json")
     def creds = [:]
@@ -48,18 +63,7 @@ task integrationTest(type: Test) {
         events "passed", "failed"
         exceptionFormat "full"
     }
-}
-integrationTest.dependsOn(buildImage)
 
-configurations {
-    integrationTestImplementation.extendsFrom testImplementation
-    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
-}
-
-dependencies {
-    integrationTestImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
-    integrationTestImplementation 'com.google.cloud:google-cloud-bigquery:1.117.0'
-    integrationTestImplementation 'org.apache.commons:commons-text:1.9'
-
-    integrationTestImplementation project(':dataline-workers')
+    mustRunAfter test
+    dependsOn(buildImage)
 }

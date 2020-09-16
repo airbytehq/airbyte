@@ -36,6 +36,7 @@ import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -77,18 +78,21 @@ public class SchedulerApp {
   public void start() {
     final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
 
     final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
 
+    final JobRetrier jobRetrier = new JobRetrier(schedulerPersistence, Instant::now);
+    final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, schedulerPersistence, workerRunFactory);
-    final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, new ConfigRepository(configPersistence));
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
-          jobSubmitter.run();
+          jobRetrier.run();
           jobScheduler.run();
+          jobSubmitter.run();
         },
         0L,
         JOB_SUBMITTER_DELAY_MILLIS,
@@ -112,7 +116,7 @@ public class SchedulerApp {
         configs.getDatabasePassword(),
         configs.getDatabaseUrl());
 
-    final ProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, configs.getWorkspaceDockerMount(), configs.getDockerNetwork());
+    final ProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, configs.getWorkspaceDockerMount());
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(connectionPool, configRoot, workspaceRoot, pbf).start();

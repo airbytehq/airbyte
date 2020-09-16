@@ -1,15 +1,16 @@
 # Getting Started
 
- ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI) ![License](https://img.shields.io/github/license/datalineio/dataline)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI) ![License](https://img.shields.io/github/license/datalineio/dataline)
 
-![](docs/.gitbook/assets/dataline_light-background%20%281%29.svg)
+[![](docs/.gitbook/assets/dataline_light-background%20%282%29.svg)](https://dataline.io)
 
-**Data integration made simple, secure and reliable**  
+### Data integration made simple, secure and reliable.
+
 The new open-source standard to sync data from applications & databases to warehouses.
 
-[![](https://dataline.io/wp-content/uploads/2020/08/Deploy-with-Docker.png)](https://docs.dataline.io/deployment/deploying-dataline)
+[![](docs/.gitbook/assets/deploy-locally.svg)](https://docs.dataline.io/deployment/deploying-dataline/with-docker) [![](docs/.gitbook/assets/deploy-on-aws.svg)](https://docs.dataline.io/deployment/deploying-dataline/on-aws-ec2) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](https://docs.dataline.io/deployment/deploying-dataline/on-gcp-compute-engine)
 
-![](https://dataline.io/wp-content/uploads/2020/08/Sources_List.png)
+![](docs/.gitbook/assets/sources_list.png)
 
 Dataline is on a mission to make data integration pipelines a commodity.
 
@@ -20,9 +21,9 @@ Dataline is on a mission to make data integration pipelines a commodity.
 * **No more security compliance process** to go through as self-hosted. 
 * **No more pricing indexed on volume**, as cloud-based solutions offer. 
 
-The new open-source standard for data integration engine that syncs data from applications & databases to warehouses.
+## Getting Started
 
-## Quick start
+### Quick start
 
 ```bash
 git clone git@github.com:datalineio/dataline.git
@@ -30,7 +31,7 @@ cd dataline
 docker-compose up
 ```
 
-Now go to [http://localhost:8000](http://localhost:8000)
+Now visit [http://localhost:8000](http://localhost:8000)
 
 ## Features
 
@@ -45,7 +46,7 @@ Now go to [http://localhost:8000](http://localhost:8000)
 
 ## Contributing
 
-We love contributions to Dataline, big or small. See our [Contributing Guide](https://docs.dataline.io/contributing/contributing-to-dataline) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/datalineio/dataline/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](http://drift.me/johnlafleur) with one of our core contributors.
+We love contributions to Dataline, big or small. See our [Contributing Guide](https://docs.dataline.io/contributing/contributing-to-dataline) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/datalineio/dataline/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
 
 ## Community support
 

@@ -46,10 +46,11 @@ import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
 import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocol.singer.SingerMessageTracker;
-import io.dataline.workers.singer.SingerCheckConnectionWorker;
-import io.dataline.workers.singer.SingerDiscoverSchemaWorker;
-import io.dataline.workers.singer.SingerTapFactory;
+import io.dataline.workers.protocols.singer.DefaultSingerTap;
+import io.dataline.workers.protocols.singer.SingerCheckConnectionWorker;
+import io.dataline.workers.protocols.singer.SingerDiscoverSchemaWorker;
+import io.dataline.workers.protocols.singer.SingerMessageTracker;
+import io.dataline.workers.protocols.singer.SingerTap;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,9 +58,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.apache.commons.compress.utils.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,7 +73,7 @@ import org.testcontainers.utility.MountableFile;
 public class SingerPostgresSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerPostgresSourceTest.class);
-  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-source";
+  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-source:dev";
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
 
   private PostgreSQLContainer psqlDb;
@@ -90,7 +92,7 @@ public class SingerPostgresSourceTest {
     jobRoot = workspaceRoot.resolve("job");
     Files.createDirectories(jobRoot);
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
+    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString());
   }
 
   @AfterEach
@@ -99,9 +101,7 @@ public class SingerPostgresSourceTest {
   }
 
   @Test
-  public void testReadFirstTime() throws IOException, InvalidCredentialsException {
-    SingerTapFactory singerTapFactory = new SingerTapFactory(IMAGE_NAME, pbf, new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
-
+  public void testReadFirstTime() throws Exception {
     Schema schema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), Schema.class);
 
     // select all tables and all columns
@@ -116,10 +116,19 @@ public class SingerPostgresSourceTest {
         .withStandardSync(syncConfig)
         .withSourceConnectionImplementation(sourceImpl);
 
-    Stream<SingerMessage> singerMessageStream = singerTapFactory.create(tapConfig, jobRoot);
+    SingerTap singerTap = new DefaultSingerTap(IMAGE_NAME, pbf, new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
+    singerTap.start(tapConfig, jobRoot);
 
+    List<SingerMessage> actualMessages = Lists.newArrayList();
     SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
-    List<SingerMessage> actualMessages = singerMessageStream.peek(singerMessageTracker).collect(Collectors.toList());
+    while (!singerTap.isFinished()) {
+      Optional<SingerMessage> maybeMessage = singerTap.attemptRead();
+      if (maybeMessage.isPresent()) {
+        singerMessageTracker.accept(maybeMessage.get());
+        actualMessages.add(maybeMessage.get());
+      }
+    }
+
     for (SingerMessage singerMessage : actualMessages) {
       LOGGER.info("{}", singerMessage);
     }
@@ -221,7 +230,6 @@ public class SingerPostgresSourceTest {
     confMap.put("password", psqlDb.getPassword());
     confMap.put("port", psqlDb.getFirstMappedPort());
     confMap.put("host", psqlDb.getHost());
-    confMap.put("filter_dbs", psqlDb.getDatabaseName());
     return confMap;
   }
 

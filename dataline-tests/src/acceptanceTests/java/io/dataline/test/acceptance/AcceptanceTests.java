@@ -318,7 +318,6 @@ public class AcceptanceTests {
         .put("password", SOURCE_PSQL.getPassword())
         .put("port", SOURCE_PSQL.getFirstMappedPort())
         .put("dbname", SOURCE_PSQL.getDatabaseName())
-        .put("filter_dbs", SOURCE_PSQL.getDatabaseName())
         .put("user", SOURCE_PSQL.getUsername()).build());
 
     UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;

@@ -332,6 +332,35 @@ class DefaultSchedulerPersistenceTest {
   }
 
   @Test
+  public void testListJobsWithStatus() throws IOException {
+    // non-sync job that has failed.
+    final long discoverSchemaJobId = schedulerPersistence.createDiscoverSchemaJob(SOURCE_CONNECTION_IMPLEMENTATION);
+
+    // sync job that is not failed.
+    schedulerPersistence.createSyncJob(
+        SOURCE_CONNECTION_IMPLEMENTATION,
+        DESTINATION_CONNECTION_IMPLEMENTATION,
+        STANDARD_SYNC);
+
+    // sync job that has failed.
+    final long jobId = schedulerPersistence.createSyncJob(
+        SOURCE_CONNECTION_IMPLEMENTATION,
+        DESTINATION_CONNECTION_IMPLEMENTATION,
+        STANDARD_SYNC);
+
+    schedulerPersistence.updateStatus(discoverSchemaJobId, JobStatus.FAILED);
+    schedulerPersistence.updateStatus(jobId, JobStatus.FAILED);
+
+    final List<Job> actualList = schedulerPersistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED);
+
+    final Job actual = actualList.get(0);
+    final Job expected = getExpectedJob(jobId, JobStatus.FAILED);
+
+    assertEquals(1, actualList.size());
+    assertEquals(expected, actual);
+  }
+
+  @Test
   public void testGetLastSyncJobForConnectionId() throws IOException {
     schedulerPersistence.createSyncJob(SOURCE_CONNECTION_IMPLEMENTATION, DESTINATION_CONNECTION_IMPLEMENTATION, STANDARD_SYNC);
     final Instant afterNow = NOW.plusSeconds(1000);
@@ -364,6 +393,7 @@ class DefaultSchedulerPersistenceTest {
         null,
         JobLogs.getLogDirectory(scope),
         JobLogs.getLogDirectory(scope),
+        0,
         afterNow.getEpochSecond(),
         null,
         afterNow.getEpochSecond());
@@ -440,6 +470,10 @@ class DefaultSchedulerPersistenceTest {
   }
 
   private Job getExpectedJob(long jobId) {
+    return getExpectedJob(jobId, JobStatus.PENDING);
+  }
+
+  private Job getExpectedJob(long jobId, JobStatus jobStatus) {
     final String sourceImageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId())
         .getDiscoverSchemaImage();
     final String destinationImageName = Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId())
@@ -462,11 +496,12 @@ class DefaultSchedulerPersistenceTest {
     return new Job(
         jobId,
         scope,
-        JobStatus.PENDING,
+        jobStatus,
         jobConfig,
         null,
         JobLogs.getLogDirectory(scope),
         JobLogs.getLogDirectory(scope),
+        0,
         NOW.getEpochSecond(),
         null,
         NOW.getEpochSecond());

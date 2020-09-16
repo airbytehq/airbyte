@@ -16,9 +16,10 @@ const Badge = styled.div<IProps>`
   box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
   border-radius: 50%;
   margin-right: 10px;
-  padding-top: 1px;
+  padding-top: 4px;
   color: ${({ theme }) => theme.whiteColor};
   font-size: 12px;
+  line-height: 12px;
   text-align: center;
   display: inline-block;
 `;

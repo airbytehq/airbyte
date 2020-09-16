@@ -111,15 +111,6 @@ class EnvConfigsTest {
   }
 
   @Test
-  void testDockerNetwork() {
-    when(function.apply(EnvConfigs.DOCKER_NETWORK)).thenReturn(null);
-    Assertions.assertEquals("host", config.getDockerNetwork());
-
-    when(function.apply(EnvConfigs.DOCKER_NETWORK)).thenReturn("abc");
-    Assertions.assertEquals("abc", config.getDockerNetwork());
-  }
-
-  @Test
   void testTrackingStrategy() {
     when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn(null);
     Assertions.assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
