@@ -39,6 +39,7 @@ import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.StreamFactory;
 import io.dataline.workers.SyncException;
+import io.dataline.workers.WorkerException;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
@@ -145,11 +146,11 @@ public class DefaultSingerTap implements SingerTap {
     LOGGER.debug("Closing tap process");
     WorkerUtils.gentleClose(tapProcess, 1, TimeUnit.MINUTES);
     if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
-      throw new Exception("Tap process wasn't successful");
+      throw new WorkerException("Tap process wasn't successful");
     }
   }
 
-  private SingerCatalog runDiscovery(StandardTapConfig input, Path jobRoot) throws IOException, SyncException {
+  private SingerCatalog runDiscovery(StandardTapConfig input, Path jobRoot) throws IOException, WorkerException {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput()
         .withConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
 
@@ -158,10 +159,10 @@ public class DefaultSingerTap implements SingerTap {
 
     final OutputAndStatus<StandardDiscoverSchemaOutput> output = discoverSchemaWorker.run(discoveryInput, discoverJobRoot);
     if (output.getStatus() == JobStatus.FAILED) {
-      throw new SyncException("Cannot discover schema");
+      throw new WorkerException("Cannot discover schema");
     }
 
-    // This is a hack because we need to have access to the original singer catalogue
+    // This is a hack because we need to have access to the original singer catalog
     return SingerDiscoverSchemaWorker.readCatalog(discoverJobRoot);
   }
 

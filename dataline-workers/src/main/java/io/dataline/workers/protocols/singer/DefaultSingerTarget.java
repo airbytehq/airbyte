@@ -33,6 +33,7 @@ import io.dataline.commons.io.LineGobbler;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
+import io.dataline.workers.WorkerException;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.BufferedWriter;
@@ -63,24 +64,19 @@ public class DefaultSingerTarget implements SingerTarget {
   }
 
   @Override
-  public void start(StandardTargetConfig targetConfig, Path jobRoot) {
+  public void start(StandardTargetConfig targetConfig, Path jobRoot) throws IOException {
     Preconditions.checkState(targetProcess == null);
 
     final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
 
     IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
-    try {
-      LOGGER.info("Running Singer target...");
-      targetProcess = pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME).start();
-      LineGobbler.gobble(targetProcess.getInputStream(), LOGGER::info);
-      LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER::error);
+    LOGGER.info("Running Singer target...");
+    targetProcess = pbf.create(jobRoot, imageName, "--config", CONFIG_JSON_FILENAME).start();
+    LineGobbler.gobble(targetProcess.getInputStream(), LOGGER::info);
+    LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER::error);
 
-      writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));
-    } catch (Exception e) {
-      // TODO: we should probably do some cleanup here.
-      throw new RuntimeException(e);
-    }
+    writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));
   }
 
   @Override
@@ -101,7 +97,7 @@ public class DefaultSingerTarget implements SingerTarget {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws WorkerException, IOException {
     if (targetProcess == null) {
       return;
     }
@@ -113,7 +109,7 @@ public class DefaultSingerTarget implements SingerTarget {
     LOGGER.debug("Closing target process");
     WorkerUtils.gentleClose(targetProcess, 1, TimeUnit.MINUTES);
     if (targetProcess.isAlive() || targetProcess.exitValue() != 0) {
-      throw new Exception("target process wasn't successful");
+      throw new WorkerException("target process wasn't successful");
     }
   }
 

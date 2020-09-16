@@ -53,7 +53,7 @@ import static org.mockito.Mockito.when;
 public class SingerDiscoverSchemaWorkerTest {
 
   private static final String IMAGE_NAME = "selfie:latest";
-  private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
+  private static final JsonNode CREDENTIALS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
 
   private Path jobRoot;
   private ProcessBuilderFactory pbf;
@@ -66,7 +66,7 @@ public class SingerDiscoverSchemaWorkerTest {
     pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 
-    input = new StandardDiscoverSchemaInput().withConnectionConfiguration(CREDS);
+    input = new StandardDiscoverSchemaInput().withConnectionConfiguration(CREDENTIALS);
 
     when(pbf.create(jobRoot, IMAGE_NAME, "--config", SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME, "--discover")
         .redirectOutput(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME).toFile())
@@ -90,9 +90,9 @@ public class SingerDiscoverSchemaWorkerTest {
 
     assertTrue(Files.exists(jobRoot.resolve(SingerDiscoverSchemaWorker.CATALOG_JSON_FILENAME)));
 
-    final JsonNode expectedConfig = Jsons.jsonNode(input.getConnectionConfiguration());
-    final JsonNode actualConfig = Jsons.deserialize(IOs.readFile(jobRoot, SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME));
-    assertEquals(expectedConfig, actualConfig);
+    assertEquals(
+        Jsons.jsonNode(input.getConnectionConfiguration()),
+        Jsons.deserialize(IOs.readFile(jobRoot, SingerDiscoverSchemaWorker.CONFIG_JSON_FILENAME)));
 
     assertEquals(process.getErrorStream().available(), 0);
 

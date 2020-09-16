@@ -101,7 +101,7 @@ public class SingerPostgresSourceTest {
   }
 
   @Test
-  public void testReadFirstTime() throws IOException, InvalidCredentialsException {
+  public void testReadFirstTime() throws Exception {
     Schema schema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), Schema.class);
 
     // select all tables and all columns
