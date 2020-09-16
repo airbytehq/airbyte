@@ -89,7 +89,7 @@ public class IOs {
   }
 
   public static BufferedReader newBufferedReader(final InputStream inputStream) {
-    return new BufferedReader(new InputStreamReader(inputStream));
+    return new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
   }
 
 }
