@@ -156,7 +156,7 @@ class DefaultSingerTapTest {
 
     assertEquals(MESSAGES, messages);
 
-    assertEquals(0, process.getErrorStream().available());
+//    assertEquals(0, process.getErrorStream().available());
 
     verify(process).waitFor(anyLong(), any());
   }
