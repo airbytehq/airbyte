@@ -22,7 +22,6 @@ services:
   scheduler:
   server:
   webapp:
-
 # Allow us to access the volume content on the local filesystem
 volumes:
   workspace:
