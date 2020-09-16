@@ -47,7 +47,7 @@ class DatalineEntrypointBuilder(object):
             required_discover_parser.add_argument('--catalog', type=str, required=True, help='output path for the discovered catalog')
 
             read_parser = subparsers.add_parser("read", help="reads the source and outputs messages to STDOUT", parents=[parent_parser])
-            read_parser.add_argument('--state', type=str, required=True, help='path to the json-encoded state file')
+            read_parser.add_argument('--state', type=str, required=False, help='path to the json-encoded state file')
             required_read_parser = read_parser.add_argument_group('required named arguments')
             required_read_parser.add_argument('--config', type=str, required=True, help='path to the json configuration file')
             required_read_parser.add_argument('--catalog', type=str, required=True, help='path to the catalog used to determine which data to read')
