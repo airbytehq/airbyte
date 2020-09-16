@@ -44,6 +44,8 @@ import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.process.ProcessBuilderFactory;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,10 +70,10 @@ public class SingerDiscoverSchemaWorkerTest {
     input = new StandardDiscoverSchemaInput().withConnectionConfiguration(CREDENTIALS);
 
     when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")
-        .redirectError(jobRoot.resolve(WorkerConstants.TAP_ERR_LOG).toFile())
         .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
         .start())
             .thenReturn(process);
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("data".getBytes(StandardCharsets.UTF_8)));
     IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, MoreResources.readResource("simple_postgres_singer_catalog.json"));
   }
 
@@ -93,6 +95,8 @@ public class SingerDiscoverSchemaWorkerTest {
         Jsons.jsonNode(input.getConnectionConfiguration()),
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
 
+    assertEquals(process.getErrorStream().available(), 0);
+
     verify(process).waitFor(anyLong(), any());
   }
 
@@ -106,6 +110,8 @@ public class SingerDiscoverSchemaWorkerTest {
     final OutputAndStatus<StandardDiscoverSchemaOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
 
     assertEquals(expectedOutput, output);
+
+    assertEquals(process.getErrorStream().available(), 0);
 
     verify(process).waitFor(anyLong(), any());
   }
