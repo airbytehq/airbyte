@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
@@ -42,7 +41,7 @@ public class OutputConvertingWorkerTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testRun() throws InvalidCredentialsException, InvalidCatalogException {
+  public void testRun() {
     Worker<String, String> worker = Mockito.mock(Worker.class);
     String inputConfig = "input";
     int expectedOutput = 123;

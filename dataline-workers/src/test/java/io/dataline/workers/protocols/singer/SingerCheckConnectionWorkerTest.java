@@ -39,7 +39,6 @@ import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.workers.DiscoverSchemaWorker;
-import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
@@ -70,7 +69,7 @@ public class SingerCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testSuccessfulConnection() throws InvalidCredentialsException, InvalidCatalogException {
+  public void testSuccessfulConnection() {
     OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput =
         new OutputAndStatus<>(JobStatus.SUCCESSFUL, mock(StandardDiscoverSchemaOutput.class));
     when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
@@ -87,7 +86,7 @@ public class SingerCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testFailedConnection() throws InvalidCredentialsException, InvalidCatalogException {
+  public void testFailedConnection() {
     OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput = new OutputAndStatus<>(JobStatus.FAILED, null);
     when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
@@ -103,7 +102,7 @@ public class SingerCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testCancel() throws InvalidCredentialsException, InvalidCatalogException {
+  public void testCancel() {
     OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput =
         new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverSchemaOutput());
     when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);

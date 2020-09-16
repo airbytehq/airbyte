@@ -33,7 +33,6 @@ import io.dataline.config.JobOutput;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.State;
-import io.dataline.workers.InvalidCatalogException;
 import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
@@ -45,7 +44,7 @@ import org.junit.jupiter.api.Test;
 public class JobOutputSyncWorkerTest {
 
   @Test
-  public void test() throws InvalidCredentialsException, InvalidCatalogException {
+  public void test() {
     StandardSyncInput input = mock(StandardSyncInput.class);
     Path jobRoot = Path.of("fakeroot");
     SyncWorker syncWorker = mock(SyncWorker.class);
