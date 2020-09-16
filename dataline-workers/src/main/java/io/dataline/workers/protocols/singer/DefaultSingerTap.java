@@ -37,7 +37,6 @@ import io.dataline.singer.SingerCatalog;
 import io.dataline.singer.SingerMessage;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.StreamFactory;
 import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerException;
 import io.dataline.workers.WorkerUtils;
@@ -61,7 +60,7 @@ public class DefaultSingerTap implements SingerTap {
 
   private final String imageName;
   private final ProcessBuilderFactory pbf;
-  private final StreamFactory streamFactory;
+  private final SingerStreamFactory singerStreamFactory;
   private final SingerDiscoverSchemaWorker discoverSchemaWorker;
 
   private Process tapProcess = null;
@@ -70,17 +69,17 @@ public class DefaultSingerTap implements SingerTap {
   public DefaultSingerTap(final String imageName,
                           final ProcessBuilderFactory pbf,
                           final SingerDiscoverSchemaWorker discoverSchemaWorker) {
-    this(imageName, pbf, new SingerJsonStreamFactory(), discoverSchemaWorker);
+    this(imageName, pbf, new DefaultSingerStreamFactory(), discoverSchemaWorker);
   }
 
   @VisibleForTesting
   DefaultSingerTap(final String imageName,
                    final ProcessBuilderFactory pbf,
-                   final StreamFactory streamFactory,
+                   final SingerStreamFactory streamFactory,
                    final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this.imageName = imageName;
     this.pbf = pbf;
-    this.streamFactory = streamFactory;
+    this.singerStreamFactory = streamFactory;
     this.discoverSchemaWorker = discoverSchemaWorker;
   }
 
@@ -115,7 +114,7 @@ public class DefaultSingerTap implements SingerTap {
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
 
-    messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream())).iterator();
+    messageIterator = singerStreamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream())).iterator();
   }
 
   @Override

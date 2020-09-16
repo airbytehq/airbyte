@@ -46,7 +46,6 @@ import io.dataline.singer.SingerStream;
 import io.dataline.singer.SingerTableSchema;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.StreamFactory;
 import io.dataline.workers.TestConfigHelpers;
 import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerException;
@@ -90,7 +89,7 @@ class DefaultSingerTapTest {
   private SingerDiscoverSchemaWorker discoverSchemaWorker;
   private ProcessBuilderFactory pbf;
   private Process process;
-  private StreamFactory streamFactory;
+  private SingerStreamFactory singerStreamFactory;
 
   @BeforeEach
   public void setup() throws IOException {
@@ -124,12 +123,12 @@ class DefaultSingerTapTest {
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
 
-    streamFactory = noop -> MESSAGES.stream();
+    singerStreamFactory = noop -> MESSAGES.stream();
   }
 
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, streamFactory, discoverSchemaWorker);
+    final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, singerStreamFactory, discoverSchemaWorker);
     tap.start(TAP_CONFIG, jobRoot);
 
     final List<SingerMessage> messages = Lists.newArrayList();
@@ -168,7 +167,7 @@ class DefaultSingerTapTest {
 
   @Test
   public void testProcessFail() throws Exception {
-    final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, streamFactory, discoverSchemaWorker);
+    final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, singerStreamFactory, discoverSchemaWorker);
     tap.start(TAP_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
@@ -180,7 +179,7 @@ class DefaultSingerTapTest {
   public void testSchemaDiscoveryFail() {
     when(discoverSchemaWorker.run(any(), any())).thenReturn(new OutputAndStatus<>(JobStatus.FAILED));
 
-    final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, streamFactory, discoverSchemaWorker);
+    final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, singerStreamFactory, discoverSchemaWorker);
     Assertions.assertThrows(WorkerException.class, () -> tap.start(TAP_CONFIG, jobRoot));
 
     assertFalse(Files.exists(jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
