@@ -76,7 +76,7 @@ Incremental sync \(copying only the data that has changed\) for this source is c
 
 This is dependent on your networking setup. The easiest way to verify if Dataline is able to connect to your Postgres instance is via the check connection tool in the UI. 
 
-### 2. Create a dedicated read-only user with access to the relevant tables 
+### 2. Create a dedicated read-only user with access to the relevant tables (Recommended but optional)
 
 This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Dataline with an existing user in your database. 
 
@@ -104,4 +104,3 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO datal
 ```
 
 Your database user should now be ready for use with Dataline.
-
