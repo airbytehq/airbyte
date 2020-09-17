@@ -290,7 +290,7 @@ public class AcceptanceTests {
         .connectionConfiguration(dbConfiguration)
         .workspaceId(defaultWorkspaceId)
         .destinationSpecificationId(destinationSpecId);
-
+    ConfigurationApi
     DestinationImplementationRead destinationImpl = apiClient.getDestinationImplementationApi().createDestinationImplementation(create);
 
     assertEquals(destinationSpecId, destinationImpl.getDestinationSpecificationId());

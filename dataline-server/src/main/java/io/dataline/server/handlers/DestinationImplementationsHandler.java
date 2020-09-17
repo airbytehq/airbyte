@@ -83,6 +83,9 @@ public class DestinationImplementationsHandler {
     return buildDestinationImplementationRead(destinationImplementationId);
   }
 
+  public void deleteDestinationImplementation(DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+  }
+
   public DestinationImplementationRead updateDestinationImplementation(final DestinationImplementationUpdate destinationImplementationUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing implementation
@@ -170,5 +173,4 @@ public class DestinationImplementationsHandler {
         .name(destinationConnectionImplementation.getName())
         .destinationName(standardDestination.getName());
   }
-
 }

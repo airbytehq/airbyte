@@ -187,8 +187,8 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     return execute(() -> schedulerHandler.discoverSchemaForSourceImplementation(sourceImplementationIdRequestBody));
   }
 
-  // DESTINATION
 
+  // DESTINATION
   @Override
   public DestinationReadList listDestinations() {
     return execute(destinationsHandler::listDestinations);
@@ -199,17 +199,26 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     return execute(() -> destinationsHandler.getDestination(destinationIdRequestBody));
   }
 
-  // DESTINATION SPECIFICATION
 
+  // DESTINATION SPECIFICATION
   @Override
   public DestinationSpecificationRead getDestinationSpecification(@Valid DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> destinationSpecificationsHandler.getDestinationSpecification(destinationIdRequestBody));
   }
 
   // DESTINATION IMPLEMENTATION
+
   @Override
   public DestinationImplementationRead createDestinationImplementation(@Valid DestinationImplementationCreate destinationImplementationCreate) {
     return execute(() -> destinationImplementationsHandler.createDestinationImplementation(destinationImplementationCreate));
+  }
+
+  @Override
+  public void deleteDestinationImplementation(@Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+    execute(() -> {
+      destinationImplementationsHandler.deleteDestinationImplementation(destinationImplementationIdRequestBody);
+      return null;
+    });
   }
 
   @Override
