@@ -95,8 +95,6 @@ public class AcceptanceTests {
   private List<UUID> connectionIds = Lists.newArrayList();
   // Dataline currently officially supports only one destination per instance, so once it is created, we keep track of its ID and re-use it
   // instead of creating new destinations
-  private List<UUID> destinationImplIds = Lists.newArrayList();
-  
   private UUID destinationImplId;
 
   @BeforeEach
@@ -382,6 +380,8 @@ public class AcceptanceTests {
                                                                         UUID workspaceId,
                                                                         UUID destinationSpecId,
                                                                         Map<Object, Object> destinationConfig) throws ApiException {
+    // Dataline currently only supports one destination implementation
+    Preconditions.checkNotNull(destinationImplId);
     DestinationImplementationRead destinationImplementation =
         apiClient.getDestinationImplementationApi().createDestinationImplementation(new DestinationImplementationCreate()
             .name(name)
