@@ -74,7 +74,7 @@ public class DefaultSingerStreamFactory implements SingerStreamFactory {
         })
         .filter(Optional::isPresent)
         .map(Optional::get)
-        .filter( j -> {
+        .filter(j -> {
           boolean res = singerProtocolValidator.test(j);
           if (!res) {
             logger.error("Validation failed: {}", Jsons.serialize(j));
