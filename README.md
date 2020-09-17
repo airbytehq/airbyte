@@ -2,15 +2,15 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI) ![License](https://img.shields.io/github/license/datalineio/dataline)
 
-[![](docs/.gitbook/assets/dataline_light-background%20%282%29%20%282%29.svg)](https://dataline.io)
+[![](docs/.gitbook/assets/dataline_light-background.svg)](https://dataline.io)
 
 ### Data integration made simple, secure and reliable.
 
 The new open-source standard to sync data from applications & databases to warehouses.
 
-[![](docs/.gitbook/assets/deploy-locally%20%282%29.svg)](https://docs.dataline.io/deployment/deploying-dataline/with-docker) [![](docs/.gitbook/assets/deploy-on-aws%20%282%29.svg)](https://docs.dataline.io/deployment/deploying-dataline/on-aws-ec2) [![](docs/.gitbook/assets/deploy-on-gcp%20%282%29.svg)](https://docs.dataline.io/deployment/deploying-dataline/on-gcp-compute-engine)
+[![](docs/.gitbook/assets/deploy-locally.svg)](https://docs.dataline.io/deployment/deploying-dataline/with-docker) [![](docs/.gitbook/assets/deploy-on-aws.svg)](https://docs.dataline.io/deployment/deploying-dataline/on-aws-ec2) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](https://docs.dataline.io/deployment/deploying-dataline/on-gcp-compute-engine)
 
-![](docs/.gitbook/assets/sources_list%20%282%29.png)
+![](docs/.gitbook/assets/sources_list.png)
 
 Dataline is on a mission to make data integration pipelines a commodity.
 
