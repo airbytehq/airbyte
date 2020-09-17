@@ -3,7 +3,7 @@
 ## Overview 
 
 ### Sync Overview
-#### Resulting schema
+#### Output schema
 Is the schema changed or altered in any way? If so, mention how. 
 
 Does this source have a fixed schema? (e.g: SaaS API like ExchangeRateIO) if so, point to the schema or include it here directly
