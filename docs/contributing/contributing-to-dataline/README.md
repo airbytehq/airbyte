@@ -12,9 +12,9 @@ We do ask that you read this document and send us any issues or raise pull reque
 
 **‌‌**If you are considering adding to the codebase or contributing a new integration, first a big thank you. We sincerely appreciate your help in our mission to solve the data integration problem!
 
-Here is a list of easy [good first issues](https://github.com/datalineio/dataline/labels/good%20first%20issue) to do. 
+Here is a list of easy [good first issues](https://github.com/datalineio/dataline/labels/good%20first%20issue) to do.
 
-As soon as you are done with your development, just put up a PR.   
+As soon as you are done with your development, just put up a PR.  
 When we review we look at:
 
 * ‌Does the PR solve the issue?
@@ -27,7 +27,7 @@ When we review we look at:
 
 ## **Upvoting Issues, Feature and Integration Requests**
 
-You are very welcome to add your own reactions to the existing issues. We will take them in consideration in our prioritization efforts, especially for integrations. 
+You are welcome to add your own reactions to the existing issues. We will take them in consideration in our prioritization efforts, especially for integrations.
 
 ❤️ means that this task is CRITICAL to you.  
 👍 means it is important to you.
@@ -44,7 +44,7 @@ To see what has already been proposed by the community you can look [here](https
 
 ## **Requesting new Integrations**
 
-This is very similar to requesting new features. The template will change a bit and all integration requests will be tagged with the “**community\_new**” and “**area/integration**” labels. 
+This is very similar to requesting new features. The template will change a bit and all integration requests will be tagged with the “**community\_new**” and “**area/integration**” labels.
 
 To see what has already been proposed by the community you can look [here](https://github.com/datalineio/dataline/labels/area%2Fintegration). Again watch out for duplicates!
 
