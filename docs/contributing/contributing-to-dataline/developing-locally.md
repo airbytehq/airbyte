@@ -27,7 +27,7 @@ The build will take a few minutes. Once it completes, Dataline compiled at curre
 
 ## Run Acceptance Tests
 
-To run acceptance \(end-to-end\) tests you must have the Dataline running locally. 
+To run acceptance \(end-to-end\) tests you must have the Dataline running locally.
 
 ```bash
 ./gradlew build

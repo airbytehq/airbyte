@@ -1,8 +1,6 @@
 # Business Model
 
-
-
-Our business model is open core. We will have a community edition that will stay in MIT license, and a source-available enterprise edition. 
+Our business model is open core. We will have a community edition that will stay in MIT license, and a source-available enterprise edition.
 
 Note that t**he open-source codebase will never contain arbitrary limits** \(e.g., event volumes, user numbers\).
 
@@ -16,9 +14,9 @@ To achieve our vision that data integration pipelines should be a commodity, we 
 
 ## **Enterprise edition**
 
-At some point, when we feel that Dataline has become the open-source standard to move data, we will start focusing on features that will make more sense to enterprises. These features will stay **source-available** but will be sold and not open-sourced. 
+At some point, when we feel that Dataline has become the open-source standard to move data, we will start focusing on features that will make more sense to enterprises. These features will stay **source-available** but will be sold and not open-sourced.
 
-The enterprise edition is essential for us, as we will need the revenues to grow our team. A larger team will help us build more features and, eventually, a better product. 
+The enterprise edition is essential for us, as we will need the revenues to grow our team. A larger team will help us build more features and, eventually, a better product.
 
 Some features that we’re considering for the enterprise edition:
 

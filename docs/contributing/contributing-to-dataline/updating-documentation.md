@@ -6,7 +6,7 @@ There are 3 different ways you can update the documentation.
 
 ## `Edit on GitHub`
 
-On the page you want to update, just click the `Edit on GitHub` link in the right column. That will get you directly to the file on GitHub that you need to modify. You can use their editor to update the file. Once you're satisfied with your change you can submit a PR. 
+On the page you want to update, just click the `Edit on GitHub` link in the right column. That will get you directly to the file on GitHub that you need to modify. You can use their editor to update the file. Once you're satisfied with your change you can submit a PR.
 
 We recommend that method for changes limited to one file \(typo, updates\).
 
