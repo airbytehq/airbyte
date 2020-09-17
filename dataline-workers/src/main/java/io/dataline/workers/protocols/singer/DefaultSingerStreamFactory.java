@@ -24,9 +24,9 @@
 
 package io.dataline.workers.protocols.singer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.json.Jsons;
 import io.dataline.singer.SingerMessage;
-import io.dataline.workers.StreamFactory;
 import java.io.BufferedReader;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -43,28 +43,53 @@ import org.slf4j.LoggerFactory;
  * will still be parsed. If there are multiple SingerMessage records on the same line, only the
  * first will be parsed.
  */
-public class SingerJsonStreamFactory implements StreamFactory {
+public class DefaultSingerStreamFactory implements SingerStreamFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerJsonStreamFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerStreamFactory.class);
 
   private final SingerProtocolPredicate singerProtocolValidator;
+  private final Logger logger;
 
-  public SingerJsonStreamFactory() {
-    this(new SingerProtocolPredicate());
+  public DefaultSingerStreamFactory() {
+    this(new SingerProtocolPredicate(), LOGGER);
   }
 
-  SingerJsonStreamFactory(SingerProtocolPredicate singerProtocolPredicate) {
+  DefaultSingerStreamFactory(final SingerProtocolPredicate singerProtocolPredicate, final Logger logger) {
     singerProtocolValidator = singerProtocolPredicate;
+    this.logger = logger;
   }
 
   public Stream<SingerMessage> create(BufferedReader bufferedReader) {
     return bufferedReader
         .lines()
-        .map(Jsons::tryDeserialize)
+        .map(s -> {
+          Optional<JsonNode> j = Jsons.tryDeserialize(s);
+          if (j.isEmpty()) {
+            // we log as info all the lines that are not valid json
+            // some taps actually logs their process on stdout, we
+            // want to make sure this info is available in the logs.
+            logger.info(s);
+          }
+          return j;
+        })
         .filter(Optional::isPresent)
         .map(Optional::get)
-        .filter(singerProtocolValidator)
-        .map(n -> Jsons.object(n, SingerMessage.class));
+        .filter(j -> {
+          boolean res = singerProtocolValidator.test(j);
+          if (!res) {
+            logger.error("Validation failed: {}", Jsons.serialize(j));
+          }
+          return res;
+        })
+        .map(j -> {
+          Optional<SingerMessage> m = Jsons.tryObject(j, SingerMessage.class);
+          if (m.isEmpty()) {
+            logger.error("Deserialization failed: {}", Jsons.serialize(j));
+          }
+          return m;
+        })
+        .filter(Optional::isPresent)
+        .map(Optional::get);
   }
 
 }

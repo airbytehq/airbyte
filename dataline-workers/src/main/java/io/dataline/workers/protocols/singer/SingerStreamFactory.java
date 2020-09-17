@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.dataline.workers.protocols.singer;
 
 import io.dataline.singer.SingerMessage;
 import java.io.BufferedReader;
 import java.util.stream.Stream;
 
-public interface StreamFactory {
+public interface SingerStreamFactory {
 
   Stream<SingerMessage> create(BufferedReader bufferedReader);
 
