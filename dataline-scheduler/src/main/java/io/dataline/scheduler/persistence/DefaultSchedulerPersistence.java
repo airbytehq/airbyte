@@ -36,10 +36,10 @@ import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.db.DatabaseHelper;
-import io.dataline.scheduler.Job;
-import io.dataline.scheduler.JobStatus;
 import io.dataline.integrations.Integrations;
+import io.dataline.scheduler.Job;
 import io.dataline.scheduler.JobLogs;
+import io.dataline.scheduler.JobStatus;
 import io.dataline.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -62,7 +62,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private final BasicDataSource connectionPool;
   private final Supplier<Instant> timeSupplier;
 
-  @VisibleForTesting DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
+  @VisibleForTesting
+  DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
     this.connectionPool = connectionPool;
     this.timeSupplier = timeSupplier;
   }
