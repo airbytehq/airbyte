@@ -6,7 +6,7 @@ We want to become the self-hosted data integration and transformation engine tha
 
 On top of that, we will build data quality monitoring, privacy compliance \(GDPR, CCPA, HIPAA, etc\), and enterprise features \(role access / management, SSO, etc.\).
 
-Eventually, you should be able to build your own Fivetran platform internally, while having complete control over your data and costs \(not indexed on MTUs\). If any integration that you need is missing, we will make it super easy for you to build it and to use our orchestration and scheduling features for it. 
+Eventually, you should be able to build your own Fivetran platform internally, while having complete control over your data and costs \(not indexed on MTUs\). If any integration that you need is missing, we will make it super easy for you to build it and to use our orchestration and scheduling features for it.
 
 We will stay at parity with the incumbent’s features \(Fivetran, StitchData\) at first - see our [high-level roadmap](https://docs.dataline.io/company-handbook/company-handbook/roadmap) -, as our differentiation is on:
 
@@ -30,7 +30,7 @@ There are a few key differentiating aspects to our strategy:
 
 We raised $1.8M in a seed round that gives us a runway until mid 2022. We will focus on the community edition until the Series-A. The metrics we will display to investors will be on adoption, deployments, and external contributions.
 
-It is completely fine for us not to present any revenues before the Series-A. 
+It is completely fine for us not to present any revenues before the Series-A.
 
 ### **Series-A by Q1 2022**
 
@@ -41,9 +41,9 @@ We will build out and release the enterprise edition only after the Series-A. It
 
 ## **Our hiring strategy**
 
-Our team is composed of 4 engineering leaders, all from one of the highest-growing data companies in the world. We have already built 500+ integrations in the past on high-scale volume projects. This is why we can afford our ambitious technological goals. 
+Our team is composed of 4 engineering leaders, all from one of the highest-growing data companies in the world. We have already built 500+ integrations in the past on high-scale volume projects. This is why we can afford our ambitious technological goals.
 
-We are working closely with a contractor on the frontend side and are doing all the UI design specs in-house for the moment. 
+We are working closely with a contractor on the frontend side and are doing all the UI design specs in-house for the moment.
 
 Until the Series-A, we will stay lean. But if we ever hire a person, it will be a 5th A-player data engineer, as our focus is only on what is key to our company: data engineering.
 
