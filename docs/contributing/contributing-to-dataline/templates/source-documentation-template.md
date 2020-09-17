@@ -6,7 +6,7 @@
 #### Resulting schema
 Is the schema changed or altered in any way? If so, mention how. 
 
-Does this source have a fixed schema? (e.g: SaaS API like ExchangeRateIO) if so, point to the schema 
+Does this source have a fixed schema? (e.g: SaaS API like ExchangeRateIO) if so, point to the schema or include it here directly
 
 #### Data Type Mapping
 This section should contain a table mapping each of the source's data types to Dataline types. At the moment, 
