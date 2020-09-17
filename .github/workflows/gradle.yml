@@ -41,10 +41,11 @@ jobs:
       - name: Ensure no file change
         run: git diff-index --quiet HEAD
 
-      - name: Write BigQuery Integration Test Credentials
-        run: 'mkdir dataline-integrations/singer/bigquery/destination/config && echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > dataline-integrations/singer/bigquery/destination/config/credentials.json'
+      - name: Write Integration Test Credentials
+        run: ./tools/bin/ci_credentials.sh
         env:
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
+          STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
 
       - name: Run Integration Tests
         run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
