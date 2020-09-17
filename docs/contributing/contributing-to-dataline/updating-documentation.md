@@ -6,7 +6,7 @@ There are 3 different ways you can update the documentation.
 
 ## `Edit on GitHub` link
 
-On the documentation page you want to update, just click the `Edit on GitHub` link in right panel. 
+On the documentation page you want to update, just click the `Edit on GitHub` link in right panel.
 
 That will get you directly to the file on GitHub. You can use GitHub's editor to update the file. Once you're satisfied with your change you can submit a PR.
 
