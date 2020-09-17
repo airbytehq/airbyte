@@ -26,11 +26,15 @@ package io.dataline.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.dataline.api.model.ConnectionRead;
+import io.dataline.api.model.ConnectionStatus;
+import io.dataline.api.model.ConnectionUpdate;
 import io.dataline.api.model.DestinationImplementationCreate;
 import io.dataline.api.model.DestinationImplementationIdRequestBody;
 import io.dataline.api.model.DestinationImplementationRead;
 import io.dataline.api.model.DestinationImplementationReadList;
 import io.dataline.api.model.DestinationImplementationUpdate;
+import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.DestinationConnectionImplementation;
@@ -46,21 +50,25 @@ import java.util.function.Supplier;
 
 public class DestinationImplementationsHandler {
 
+  private ConnectionsHandler connectionsHandler;
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final IntegrationSchemaValidation validator;
 
   public DestinationImplementationsHandler(final ConfigRepository configRepository,
                                            final IntegrationSchemaValidation integrationSchemaValidation,
+                                           final ConnectionsHandler connectionsHandler,
                                            final Supplier<UUID> uuidGenerator) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
+    this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
   }
 
   public DestinationImplementationsHandler(final ConfigRepository configRepository,
-                                           final IntegrationSchemaValidation integrationSchemaValidation) {
-    this(configRepository, integrationSchemaValidation, UUID::randomUUID);
+                                           final IntegrationSchemaValidation integrationSchemaValidation,
+                                           final ConnectionsHandler connectionsHandler) {
+    this(configRepository, integrationSchemaValidation, connectionsHandler, UUID::randomUUID);
   }
 
   public DestinationImplementationRead createDestinationImplementation(final DestinationImplementationCreate destinationImplementationCreate)
@@ -83,7 +91,36 @@ public class DestinationImplementationsHandler {
     return buildDestinationImplementationRead(destinationImplementationId);
   }
 
-  public void deleteDestinationImplementation(DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+  public void deleteDestinationImplementation(final DestinationImplementationIdRequestBody destinationImplementationIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    // get existing implementation
+    final DestinationImplementationRead destinationImpl =
+        buildDestinationImplementationRead(destinationImplementationIdRequestBody.getDestinationImplementationId());
+
+    // disable all connections associated with this destinationImplemenation
+    // Delete connections first in case it it fails in the middle, destination will still be visible
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destinationImpl.getWorkspaceId());
+    for (ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
+      if (!connectionRead.getDestinationImplementationId().equals(destinationImpl.getDestinationImplementationId())) {
+        continue;
+      }
+
+      final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+          .connectionId(connectionRead.getConnectionId())
+          .syncSchema(connectionRead.getSyncSchema())
+          .schedule(connectionRead.getSchedule())
+          .status(ConnectionStatus.DEPRECATED);
+
+      connectionsHandler.updateConnection(connectionUpdate);
+    }
+
+    // persist
+    persistDestinationConnectionImplementation(
+        destinationImpl.getName(),
+        destinationImpl.getDestinationSpecificationId(),
+        destinationImpl.getWorkspaceId(),
+        destinationImpl.getDestinationImplementationId(),
+        destinationImpl.getConnectionConfiguration());
   }
 
   public DestinationImplementationRead updateDestinationImplementation(final DestinationImplementationUpdate destinationImplementationUpdate)

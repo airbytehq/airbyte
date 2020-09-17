@@ -105,7 +105,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     sourceImplementationsHandler = new SourceImplementationsHandler(configRepository, integrationSchemaValidation, connectionsHandler);
     destinationsHandler = new DestinationsHandler(configRepository);
     destinationSpecificationsHandler = new DestinationSpecificationsHandler(configRepository);
-    destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, integrationSchemaValidation);
+    destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, integrationSchemaValidation, connectionsHandler);
     schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
@@ -148,7 +148,6 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   // SOURCE IMPLEMENTATION
-
   @Override
   public SourceImplementationRead createSourceImplementation(@Valid SourceImplementationCreate sourceImplementationCreate) {
     return execute(() -> sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate));
