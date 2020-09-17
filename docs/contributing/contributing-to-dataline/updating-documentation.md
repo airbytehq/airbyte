@@ -4,13 +4,15 @@ Our documentation uses [GitBook](https://gitbook.com) and all the [Markdown](htt
 
 There are 3 different ways you can update the documentation.
 
-## `Edit on GitHub` button
+## `Edit on GitHub` link
 
-On the page you want to update, just click the `Edit on GitHub` link in the right column. That will get you directly to the file on GitHub that you need to modify. You can use their editor to update the file. Once you're satisfied with your change you can submit a PR.
+On the documentation page you want to update, just click the `Edit on GitHub` link in right panel. 
 
-We recommend that method for changes limited to one file \(typo, updates\).
+That will get you directly to the file on GitHub. You can use GitHub's editor to update the file. Once you're satisfied with your change you can submit a PR.
 
-## Clone the repository
+We recommend that method for changes limited to one file \(typos, minor updates\).
+
+## Modify the repository
 
 ```bash
 $ git clone git@github.com:datalineio/dataline.git
@@ -31,7 +33,7 @@ To update with GitBook, follow these instructions:
 3. Save & merge regularly
 4. Once you're satisfied, go on [GitHub](https://github.com/datalineio/dataline) and create a PR for your variant branch
 5. After the PR is approved, your changes will be merged to `master`
-6. Don't forget to remove the branch once it's been merged
+6. Don't forget to remove the branch and the variant once your change has been merged
 
 Just [contact us](mailto:hey@dataline.io) and we will invite you to our space.
 
