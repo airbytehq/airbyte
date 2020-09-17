@@ -502,6 +502,25 @@ paths:
           description: Destination Implementation not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/destination_implementations/delete:
+    post:
+      tags:
+        - destination_implementation
+      summary: Delete the destination implementation
+      operationId: deleteDestinationImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationImplementationIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          description: Destination Implementation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/connections/create:
     post:
       tags:
