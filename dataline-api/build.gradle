@@ -99,12 +99,12 @@ task generateApiDocs(type: GenerateTask) {
     ]
 
     doLast {
-        delete rootProject.file("api_docs")
+        delete rootProject.file("random")
         copy {
             from outputDir
             include "**/*.html"
             includeEmptyDirs = false
-            into rootProject.file("api_docs")
+            into rootProject.file("random")
         }
     }
 }
