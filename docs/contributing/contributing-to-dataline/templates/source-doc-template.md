@@ -4,9 +4,9 @@
 
 ### Sync Overview
 #### Output schema
-Is the schema changed or altered in any way? If so, mention how. 
+Is the output schema fixed (e.g: for an API like Stripe)? If so, point to the source’s schema (e.g: link to Stripe’s documentation) or include it here directly.
 
-Does this source have a fixed schema? (e.g: SaaS API like ExchangeRateIO) if so, point to the schema or include it here directly
+Describe how the source schema is mapped to Dataline concepts. An example description might be: “MagicDB tables become Dataline Streams and MagicDB columns become Dataline Fields. In addition, an extracted_at column is appended to each row being read.”
 
 #### Data Type Mapping
 This section should contain a table mapping each of the source's data types to Dataline types. At the moment, 
