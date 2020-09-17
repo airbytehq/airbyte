@@ -26,11 +26,12 @@ Once you're satisfied with your changes just follow the regular PR process.
 
 To update with GitBook, follow these instructions:
 
-1. Create a [new variant](https://docs.gitbook.com/editing-content/variants#create-a-variant). This will create a branch on [GitHub](https://github.com/datalineio/dataline) with the name of the variant
+1. Create a [new variant](https://docs.gitbook.com/editing-content/variants#create-a-variant). This will create a branch on [GitHub](https://github.com/datalineio/dataline) with the same name
 2. Modify the documentation in that new variant
 3. Save & merge regularly
 4. Once you're satisfied go on [GitHub](https://github.com/datalineio/dataline) and create a PR for your variant branch
 5. Once reviewed it will be merge to our master documentation
+6. After it's been merged, don't forget to remove the branch
 
 Just [contact us](mailto:hey@dataline.io) and we will invite you to our space.
 
