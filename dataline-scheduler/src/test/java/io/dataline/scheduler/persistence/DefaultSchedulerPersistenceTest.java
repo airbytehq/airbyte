@@ -24,6 +24,13 @@
 
 package io.dataline.scheduler.persistence;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -41,12 +48,12 @@ import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.Table;
 import io.dataline.db.DatabaseHelper;
+import io.dataline.integrations.Integrations;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.JobStatus;
-import io.dataline.integrations.Integrations;
-import io.dataline.scheduler.JobLogs;
 import io.dataline.scheduler.ScopeHelper;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -63,13 +70,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class DefaultSchedulerPersistenceTest {
 
@@ -299,6 +299,24 @@ class DefaultSchedulerPersistenceTest {
   }
 
   @Test
+  void testUpdateLogPath() throws IOException {
+    final long jobId = schedulerPersistence.createSyncJob(
+        SOURCE_CONNECTION_IMPLEMENTATION,
+        DESTINATION_CONNECTION_IMPLEMENTATION,
+        STANDARD_SYNC);
+
+    final Job created = schedulerPersistence.getJob(jobId);
+
+    when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
+    schedulerPersistence.updateLogPath(jobId, Path.of("test_log_path"));
+
+    final Job updated = schedulerPersistence.getJob(jobId);
+
+    assertEquals("test_log_path", updated.getLogPath());
+    assertNotEquals(created.getUpdatedAtInSecond(), updated.getUpdatedAtInSecond());
+  }
+
+  @Test
   void testWriteOutput() throws IOException {
     final long jobId = schedulerPersistence.createSyncJob(
         SOURCE_CONNECTION_IMPLEMENTATION,
@@ -388,8 +406,13 @@ class DefaultSchedulerPersistenceTest {
     final Job expected = new Job(
         jobId,
         scope,
-        jobConfig, JobLogs.getLogDirectory(scope), null, 0, JobStatus.PENDING,
-        null, afterNow.getEpochSecond(),
+        jobConfig,
+        null,
+        null,
+        0,
+        JobStatus.PENDING,
+        null,
+        afterNow.getEpochSecond(),
         afterNow.getEpochSecond());
 
     assertTrue(actual.isPresent());
@@ -454,11 +477,9 @@ class DefaultSchedulerPersistenceTest {
     assertEquals(jobId, actual.get("id"));
     assertEquals(scope, actual.get("scope"));
     assertEquals("pending", actual.get("status", String.class));
-    assertEquals(JobLogs.getLogDirectory(scope), actual.get("stdout_path", String.class));
-    assertEquals(JobLogs.getLogDirectory(scope), actual.get("stderr_path", String.class));
-    assertEquals(NOW.getEpochSecond(), actual.getValue("created_at", LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
-    assertNull(actual.getValue("started_at", LocalDateTime.class));
-    assertEquals(NOW.getEpochSecond(), actual.getValue("updated_at", LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
+    assertEquals(NOW.getEpochSecond(), actual.get("created_at", LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
+    assertNull(actual.get("started_at", LocalDateTime.class));
+    assertEquals(NOW.getEpochSecond(), actual.get("updated_at", LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
     assertNull(actual.get("output"));
     assertEquals(expected, Jsons.deserialize(actual.get("config", String.class), JobConfig.class));
   }
@@ -491,7 +512,7 @@ class DefaultSchedulerPersistenceTest {
         jobId,
         scope,
         jobConfig,
-        JobLogs.getLogDirectory(scope),
+        null,
         null,
         0,
         jobStatus,

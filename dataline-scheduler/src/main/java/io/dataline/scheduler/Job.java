@@ -105,7 +105,8 @@ public class Job {
     return updatedAtInSecond;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -125,11 +126,13 @@ public class Job {
         updatedAtInSecond == job.updatedAtInSecond;
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return Objects.hash(id, scope, config, logPath, output, attempts, status, startedAtInSecond, createdAtInSecond, updatedAtInSecond);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "Job{" +
         "id=" + id +
         ", scope='" + scope + '\'' +
@@ -143,4 +146,5 @@ public class Job {
         ", updatedAtInSecond=" + updatedAtInSecond +
         '}';
   }
+
 }

@@ -11,7 +11,7 @@
         <Routing name="Context">
             <Routes pattern="${ctx:context}">
                 <Route key="worker">
-                    <File name="${ctx:context}-${ctx:job_id}" fileName="${ctx:job_root}/logs.log">
+                    <File name="${ctx:context}-${ctx:job_id}" fileName="${ctx:job_root}/${ctx:job_log_filename}">
                         <PatternLayout pattern="${default-pattern}"/>
                     </File>
                 </Route>

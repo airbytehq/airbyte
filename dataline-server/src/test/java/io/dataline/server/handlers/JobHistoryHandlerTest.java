@@ -60,8 +60,7 @@ public class JobHistoryHandlerTest {
   private static final JobConfig JOB_CONFIG = new JobConfig()
       .withConfigType(CONFIG_TYPE)
       .withCheckConnection(new JobCheckConnectionConfig());
-  private static final String STDOUT_PATH = "stdout-path";
-  private static final String STDERR_PATH = "stderr-path";
+  private static final String LOG_PATH = "log_path";
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
 
   private Job job;
@@ -77,10 +76,7 @@ public class JobHistoryHandlerTest {
                   .createdAt(CREATED_AT)
                   .startedAt(null)
                   .updatedAt(CREATED_AT))
-          .logs(
-              new LogRead()
-                  .stdout(new ArrayList<>())
-                  .stderr(new ArrayList<>()));
+          .logs(new LogRead().logLines(new ArrayList<>()));
 
   private SchedulerPersistence schedulerPersistence;
   private JobHistoryHandler jobHistoryHandler;
@@ -92,8 +88,7 @@ public class JobHistoryHandlerTest {
     when(job.getScope()).thenReturn(SCOPE);
     when(job.getConfig()).thenReturn(JOB_CONFIG);
     when(job.getStatus()).thenReturn(JOB_STATUS);
-    when(job.getLogPath()).thenReturn(STDOUT_PATH);
-    when(job.getStderrPath()).thenReturn(STDERR_PATH);
+    when(job.getLogPath()).thenReturn(LOG_PATH);
     when(job.getCreatedAtInSecond()).thenReturn(CREATED_AT);
     when(job.getUpdatedAtInSecond()).thenReturn(CREATED_AT);
 

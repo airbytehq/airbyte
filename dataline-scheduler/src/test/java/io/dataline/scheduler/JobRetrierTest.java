@@ -29,9 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.JobConfig;
-import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
 import java.time.Duration;
