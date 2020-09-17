@@ -22,9 +22,7 @@ If you're adding new files, don't forget to update `docs/SUMMARY.md`.
 
 Once you're satisfied with your changes just follow the regular PR process.
 
-## GitBook
-
-You can edit the documentation on GitBook.
+## Edit on GitBook
 
 To update with GitBook, follow these instructions:
 
