@@ -370,7 +370,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
         getEpoch(jobEntry, "updated_at"));
   }
 
-  private static Long getEpoch(Record record, String fieldName) {
+  private static long getEpoch(Record record, String fieldName) {
     return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
   }
 
