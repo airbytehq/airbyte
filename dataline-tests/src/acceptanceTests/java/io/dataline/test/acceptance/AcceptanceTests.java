@@ -24,9 +24,7 @@
 
 package io.dataline.test.acceptance;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.api.client.DatalineApiClient;
 import io.dataline.api.client.invoker.ApiClient;
@@ -43,7 +41,6 @@ import io.dataline.api.client.model.DestinationIdRequestBody;
 import io.dataline.api.client.model.DestinationImplementationCreate;
 import io.dataline.api.client.model.DestinationImplementationIdRequestBody;
 import io.dataline.api.client.model.DestinationImplementationRead;
-import io.dataline.api.client.model.DestinationImplementationUpdate;
 import io.dataline.api.client.model.SourceIdRequestBody;
 import io.dataline.api.client.model.SourceImplementationCreate;
 import io.dataline.api.client.model.SourceImplementationIdRequestBody;
@@ -79,6 +76,8 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @SuppressWarnings("rawtypes")
 public class AcceptanceTests {
 
@@ -93,8 +92,12 @@ public class AcceptanceTests {
           .setBasePath("/api"));
 
   private List<UUID> sourceImplIds = Lists.newArrayList();
-  private List<UUID> destinationImplIds = Lists.newArrayList();
   private List<UUID> connectionIds = Lists.newArrayList();
+  // Dataline currently officially supports only one destination per instance, so once it is created, we keep track of its ID and re-use it
+  // instead of creating new destinations
+  private List<UUID> destinationImplIds = Lists.newArrayList();
+  
+  private UUID destinationImplId;
 
   @BeforeEach
   public void init() throws IOException, InterruptedException {
@@ -110,17 +113,50 @@ public class AcceptanceTests {
   public void tearDown() throws ApiException {
     sourcePsql.stop();
     targetPsql.stop();
+
     for (UUID sourceImplId : sourceImplIds) {
       deleteSourceImpl(sourceImplId);
     }
 
-    for (UUID connectionId : connectionIds){
+    for (UUID connectionId : connectionIds) {
       disableConnection(connectionId);
     }
   }
 
   @Test
-  public void testCreateSourceImplementation() throws IOException, ApiException {
+  public void testCreateDestinationImpl() throws ApiException {
+    Map<Object, Object> destinationDbConfig = getDestinationDbConfig();
+    UUID postgresDestinationSpecId = getPostgresDestinationSpecId();
+    UUID workspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
+    String name = "AccTestDestinationDb-" + UUID.randomUUID().toString();
+
+    DestinationImplementationRead destinationImpl = createDestinationImplementation(
+        name,
+        workspaceId,
+        postgresDestinationSpecId,
+        getDestinationDbConfig()
+    );
+
+    assertEquals(name, destinationImpl.getName());
+    assertEquals(postgresDestinationSpecId, destinationImpl.getDestinationSpecificationId());
+    assertEquals(workspaceId, destinationImpl.getWorkspaceId());
+    assertEquals(destinationDbConfig, destinationImpl.getConnectionConfiguration());
+  }
+
+  @Test
+  public void testDestinationCheckConnection() throws ApiException {
+    Preconditions.checkNotNull(destinationImplId);
+
+    CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationImplementationApi()
+        .checkConnectionToDestinationImplementation(
+            new DestinationImplementationIdRequestBody().destinationImplementationId(destinationImplId))
+        .getStatus();
+
+    assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkOperationStatus);
+  }
+
+  @Test
+  public void testCreateSourceImplementation() throws ApiException {
     String dbName = "acc-test-db";
     UUID postgresSourceSpecId = getPostgresSourceSpecId();
     UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
@@ -136,6 +172,8 @@ public class AcceptanceTests {
     assertEquals(defaultWorkspaceId, response.getWorkspaceId());
     assertEquals(postgresSourceSpecId, response.getSourceSpecificationId());
     assertEquals(Jsons.jsonNode(sourceDbConfig), response.getConnectionConfiguration());
+
+    deleteSourceImpl(response.getSourceImplementationId());
   }
 
   @Test
@@ -147,11 +185,25 @@ public class AcceptanceTests {
   }
 
   @Test
-  public void testSync() throws IOException, ApiException, SQLException, InterruptedException {
-    UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
-    UUID destinationImplId = testCreateDestinationImpl().getDestinationImplementationId();
-    testCheckDestinationConnection(destinationImplId);
+  public void testDiscoverSourceSchema() throws ApiException, IOException {
+    UUID sourceImplementationId = createPostgresSourceImpl().getSourceImplementationId();
+    SourceSchema actualSchema = apiClient.getSourceImplementationApi().discoverSchemaForSourceImplementation(
+        new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplementationId)).getSchema();
 
+    SourceSchema expectedSchema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), SourceSchema.class);
+
+    assertEquals(expectedSchema, actualSchema);
+  }
+
+  @Test
+  public void testCreateConnection() {
+
+  }
+
+  @Test
+  public void testManualSync() throws IOException, ApiException, SQLException, InterruptedException {
+    UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
+    UUID destinationImplementationId = destinationImplId;
     SourceSchema schema = testDiscoverSourceSchema(sourceImplId);
 
     // select all columns
@@ -172,7 +224,8 @@ public class AcceptanceTests {
     assertSourceAndTargetDbInSync(sourcePsql, targetPsql);
   }
 
-  private void testScheduledSync(Duration waitTime) throws InterruptedException, SQLException {
+  @Test
+  public void testScheduledSync(Duration waitTime) throws InterruptedException, SQLException {
     Thread.sleep(waitTime.toMillis());
     assertSourceAndTargetDbInSync(sourcePsql, targetPsql);
   }
@@ -271,28 +324,9 @@ public class AcceptanceTests {
         });
   }
 
-  private SourceSchema testDiscoverSourceSchema(UUID sourceImplementationId) throws ApiException, IOException {
-    SourceSchema actualSchema = apiClient.getSourceImplementationApi().discoverSchemaForSourceImplementation(
-        new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplementationId)).getSchema();
-
-    SourceSchema expectedSchema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), SourceSchema.class);
-
-    assertEquals(expectedSchema, actualSchema);
-    return actualSchema;
-  }
-
   private void testRunManualSync(UUID connectionId) throws ApiException {
     ConnectionSyncRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(ConnectionSyncRead.StatusEnum.SUCCESS, connectionSyncRead.getStatus());
-  }
-
-  private void testCheckDestinationConnection(UUID destinationImplementationId) throws ApiException {
-    CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationImplementationApi()
-        .checkConnectionToDestinationImplementation(
-            new DestinationImplementationIdRequestBody().destinationImplementationId(destinationImplementationId))
-        .getStatus();
-
-    assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkOperationStatus);
   }
 
   private ConnectionRead testCreateConnection(UUID sourceImplId, UUID destinationImplId, SourceSchema schema, long syncIntervalMinutes)
@@ -324,44 +358,52 @@ public class AcceptanceTests {
     return readConnection;
   }
 
-  private DestinationImplementationRead testCreateDestinationImpl() throws ApiException {
-    UUID postgresDestinationId = getPostgresDestinationId();
-    UUID destinationSpecId =
-        apiClient.getDestinationSpecificationApi()
-            .getDestinationSpecification(new DestinationIdRequestBody().destinationId(postgresDestinationId))
-            .getDestinationSpecificationId();
+  private DestinationImplementationRead createPostgresDestinationImpl() throws ApiException {
+    return createDestinationImplementation(
+        "AccTestDestination-" + UUID.randomUUID().toString(),
+        PersistenceConstants.DEFAULT_WORKSPACE_ID,
+        getPostgresDestinationSpecId(),
+        getDestinationDbConfig()
+    );
+  }
 
-    JsonNode dbConfiguration = Jsons.jsonNode(ImmutableMap.builder()
+  private Map<Object, Object> getDestinationDbConfig() {
+    return ImmutableMap.builder()
         .put("postgres_host", targetPsql.getHost())
         .put("postgres_username", targetPsql.getUsername())
         .put("postgres_password", targetPsql.getPassword())
         .put("postgres_schema", "public")
         .put("postgres_port", targetPsql.getFirstMappedPort())
         .put("postgres_database", targetPsql.getDatabaseName())
-        .build());
-
-    UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
-
-    DestinationImplementationCreate create = new DestinationImplementationCreate()
-        .connectionConfiguration(dbConfiguration)
-        .workspaceId(defaultWorkspaceId)
-        .destinationSpecificationId(destinationSpecId);
-
-    DestinationImplementationRead destinationImpl = apiClient.getDestinationImplementationApi().createDestinationImplementation(create);
-
-    assertEquals(destinationSpecId, destinationImpl.getDestinationSpecificationId());
-    assertEquals(defaultWorkspaceId, destinationImpl.getWorkspaceId());
-    assertEquals(dbConfiguration, destinationImpl.getConnectionConfiguration());
-    return destinationImpl;
+        .build();
   }
 
-  private UUID getPostgresDestinationId() throws ApiException {
-    return apiClient.getDestinationApi().listDestinations().getDestinations()
+  private DestinationImplementationRead createDestinationImplementation(String name,
+                                                                        UUID workspaceId,
+                                                                        UUID destinationSpecId,
+                                                                        Map<Object, Object> destinationConfig) throws ApiException {
+    DestinationImplementationRead destinationImplementation =
+        apiClient.getDestinationImplementationApi().createDestinationImplementation(new DestinationImplementationCreate()
+            .name(name)
+            .connectionConfiguration(Jsons.jsonNode(destinationConfig))
+            .workspaceId(workspaceId)
+            .destinationSpecificationId(destinationSpecId));
+
+    destinationImplId = destinationImplementation.getDestinationImplementationId();
+    return destinationImplementation;
+  }
+
+  private UUID getPostgresDestinationSpecId() throws ApiException {
+    UUID destinationId = apiClient.getDestinationApi().listDestinations().getDestinations()
         .stream()
         .filter(dr -> dr.getName().toLowerCase().equals("postgres"))
         .findFirst()
         .orElseThrow()
         .getDestinationId();
+
+    return apiClient.getDestinationSpecificationApi()
+        .getDestinationSpecification(new DestinationIdRequestBody().destinationId(destinationId))
+        .getDestinationSpecificationId();
   }
 
   private Map<Object, Object> getSourceDbConfig() {
@@ -384,14 +426,13 @@ public class AcceptanceTests {
     );
   }
 
-  private SourceImplementationRead createSourceImplementation(String dbName, UUID workspaceId, UUID sourceSpecId, Map<Object, Object> sourceConfig)
+  private SourceImplementationRead createSourceImplementation(String name, UUID workspaceId, UUID sourceSpecId, Map<Object, Object> sourceConfig)
       throws ApiException {
     SourceImplementationRead sourceImplementation = apiClient.getSourceImplementationApi().createSourceImplementation(new SourceImplementationCreate()
-        .name(dbName)
+        .name(name)
         .sourceSpecificationId(sourceSpecId)
         .workspaceId(workspaceId)
         .connectionConfiguration(Jsons.jsonNode(sourceConfig)));
-
     sourceImplIds.add(sourceImplementation.getSourceImplementationId());
     return sourceImplementation;
   }
@@ -411,10 +452,6 @@ public class AcceptanceTests {
 
   private void deleteSourceImpl(UUID sourceImplId) throws ApiException {
     apiClient.getSourceImplementationApi().deleteSourceImplementation(new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplId));
-  }
-
-  private void deleteDestinationImpl(UUID destinationImplId){
-    apiClient.getDestinationImplementationApi().updateDestinationImplementation(new DestinationImplementationUpdate().)
   }
 
   private void disableConnection(UUID connectionId) throws ApiException {
