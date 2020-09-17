@@ -24,9 +24,6 @@
 
 package io.dataline.integrations.io.dataline.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
@@ -56,12 +53,20 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class SingerStripeSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerStripeSourceTest.class);
 
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
   private static final String IMAGE_NAME = "dataline/integration-singer-stripe-source:dev";
+
+  private static final String CATALOG = "catalog.json";
+  private static final String CONFIG = "config.json";
+  private static final String CONFIG_PATH = "config/config.json";
+  private static final String INVALID_CONFIG = "invalid_config.json";
 
   protected Path jobRoot;
   protected Path workspaceRoot;
@@ -77,7 +82,7 @@ public class SingerStripeSourceTest {
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
 
-    catalogPath = jobRoot.resolve("catalog.json");
+    catalogPath = jobRoot.resolve(CATALOG);
 
     writeConfigFilesToJobRoot();
 
@@ -89,7 +94,7 @@ public class SingerStripeSourceTest {
   }
 
   private void createTestRecordsIfNonExistent() throws IOException, StripeException {
-    String credentialsJsonString = new String(Files.readAllBytes(Paths.get("config/config.json")));
+    String credentialsJsonString = new String(Files.readAllBytes(Paths.get(CONFIG_PATH)));
     JsonNode credentials = Jsons.deserialize(credentialsJsonString);
     String stripeApiKey = credentials.get("client_secret").textValue();
 
@@ -118,7 +123,7 @@ public class SingerStripeSourceTest {
 
   @Test
   public void testInvalidCredentialsDiscover() throws IOException, InterruptedException {
-    Process process = createDiscoveryProcess("invalid_config.json");
+    Process process = createDiscoveryProcess(INVALID_CONFIG);
     process.waitFor();
 
     assertEquals(2, process.exitValue());
@@ -126,7 +131,7 @@ public class SingerStripeSourceTest {
 
   @Test
   public void testSuccessfulDiscover() throws IOException, InterruptedException {
-    Process process = createDiscoveryProcess("config.json");
+    Process process = createDiscoveryProcess(CONFIG);
     process.waitFor();
 
     assertEquals(0, process.exitValue());
@@ -140,7 +145,7 @@ public class SingerStripeSourceTest {
 
   @Test
   public void testSync() throws IOException, InterruptedException {
-    InputStream catalogStream = getClass().getClassLoader().getResourceAsStream("catalog.json");
+    InputStream catalogStream = getClass().getClassLoader().getResourceAsStream(CATALOG);
     String catalog = IOUtils.toString(catalogStream, Charsets.UTF_8);
     IOs.writeFile(catalogPath.getParent(), catalogPath.getFileName().toString(), catalog);
 
@@ -187,7 +192,7 @@ public class SingerStripeSourceTest {
   }
 
   private void writeValidConfigFile() throws IOException {
-    String credentialsJsonString = new String(Files.readAllBytes(Paths.get("config/config.json")));
+    String credentialsJsonString = new String(Files.readAllBytes(Paths.get(CONFIG_PATH)));
     JsonNode credentials = Jsons.deserialize(credentialsJsonString);
 
     assertTrue(credentials.get("client_secret").textValue().startsWith("sk_test_"));
@@ -206,7 +211,7 @@ public class SingerStripeSourceTest {
     fullConfig.put("start_date", "2017-01-01T00:00:00Z");
 
     Files.writeString(
-        Path.of(jobRoot.toString(), "invalid_config.json"), Jsons.serialize(fullConfig));
+        Path.of(jobRoot.toString(), INVALID_CONFIG), Jsons.serialize(fullConfig));
   }
 
   private Process createDiscoveryProcess(String configFileName) throws IOException {
@@ -226,9 +231,9 @@ public class SingerStripeSourceTest {
         jobRoot,
         IMAGE_NAME,
         "--config",
-        "config.json",
+        CONFIG,
         "--catalog",
-        "catalog.json")
+        CATALOG)
         .redirectOutput(syncOutputPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();

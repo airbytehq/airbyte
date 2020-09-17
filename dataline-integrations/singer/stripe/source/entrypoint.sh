@@ -3,7 +3,7 @@
 set -e
 
 # TODO: replace with more general version
-# hacky version that expects ordering of args "--discover --config config.json"
+# hacky version that expects ordering of args "--config config.json --discover"
 function check_connection() {
   if [[ "$1" == "--config" ]]; then
     echo "Config provided, running check connection."
