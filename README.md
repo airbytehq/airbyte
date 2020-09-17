@@ -2,7 +2,7 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/datalineio/dataline/Dataline%20CI) ![License](https://img.shields.io/github/license/datalineio/dataline)
 
-[![](docs/.gitbook/assets/dataline_light-background%20%282%29.svg)](https://dataline.io)
+[![](docs/.gitbook/assets/dataline_light-background.svg)](https://dataline.io)
 
 ### Data integration made simple, secure and reliable.
 

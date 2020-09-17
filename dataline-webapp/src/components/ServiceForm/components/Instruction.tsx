@@ -24,7 +24,7 @@ const Instruction: React.FC<IProps> = ({ dropDownData, serviceId }) => {
     dropDownData && dropDownData.find(item => item.value === serviceId);
 
   return service ? (
-    <LinkToInstruction href="https://dataline.io/" target="_blank">
+    <LinkToInstruction href="https://docs.dataline.io/" target="_blank">
       <FormattedMessage
         id="onboarding.instructionsLink"
         values={{ name: service.text }}

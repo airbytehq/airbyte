@@ -1,8 +1,8 @@
 # High Level Overview
 
-Here is a high level view of Dataline's components: 
+Here is a high level view of Dataline's components:
 
-![3.048-Kilometer view](../.gitbook/assets/10-000-feet-view-.png)
+![3.048-Kilometer view](../.gitbook/assets/10-000-feet-view.png)
 
 * `UI`: Acts as the control center for Dataline. From the UI you can configure new integration connections. You can also track the different syncing jobs and view logs.
 * `Config Store`: Stores all the connections information \(credentials, frequency...\).
@@ -12,6 +12,4 @@ Here is a high level view of Dataline's components:
 * `Scheduler`: The scheduler orchestrate all the data syncing from the source integration to the destination. It is responsible for tracking success/failure and for triggering syncs based on the configured frequency.
 * `Worker`: The worker connects to the source system, pulls the data and writes it to the destination system.
 * `Temporary Storage`: A storage that worker can use whenever they need to spill data on a disk.
-
-
 

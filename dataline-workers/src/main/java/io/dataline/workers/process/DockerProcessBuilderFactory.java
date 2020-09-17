@@ -40,10 +40,12 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
 
   private final String mountSource;
   private final Path workspaceRoot;
+  private final String networkName;
 
-  public DockerProcessBuilderFactory(final Path workspaceRoot, final String mountSource) {
+  public DockerProcessBuilderFactory(Path workspaceRoot, String mountSource, String networkName) {
     this.mountSource = mountSource;
     this.workspaceRoot = workspaceRoot;
+    this.networkName = networkName;
   }
 
   @Override
@@ -58,6 +60,8 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
             String.format("%s:%s", mountSource, MOUNT_DESTINATION),
             "-w",
             rebasePath(jobRoot).toString(),
+            "--network",
+            networkName,
             imageName);
     cmd.addAll(Arrays.asList(args));
 

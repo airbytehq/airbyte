@@ -4,13 +4,15 @@ Our documentation uses [GitBook](https://gitbook.com) and all the [Markdown](htt
 
 There are 3 different ways you can update the documentation.
 
-## `Edit on GitHub`
+## `Edit on GitHub` link
 
-On the page you want to update, just click the `Edit on GitHub` link in the right column. That will get you directly to the file on GitHub that you need to modify. You can use their editor to update the file. Once you're satisfied with your change you can submit a PR. 
+On the documentation page you want to update, just click the `Edit on GitHub` link in right panel.
 
-We recommend that method for changes limited to one file \(typo, updates\).
+That will get you directly to the file on GitHub. You can use GitHub's editor to update the file. Once you're satisfied with your change you can submit a PR.
 
-## Clone repository
+We recommend that method for changes limited to one file \(typos, minor updates\).
+
+## Modify the repository
 
 ```bash
 $ git clone git@github.com:datalineio/dataline.git
@@ -22,11 +24,16 @@ If you're adding new files, don't forget to update `docs/SUMMARY.md`.
 
 Once you're satisfied with your changes just follow the regular PR process.
 
-## GitBook
+## Edit on GitBook
 
-You can edit the documentation on GitBook. You will able to use their convenient WYSIWYG editor.
+To update with GitBook, follow these instructions:
 
-All the changes you make on GitBook will be automatically synced with GitHub once they get reviewed.
+1. Create a [new variant](https://docs.gitbook.com/editing-content/variants#create-a-variant). This will create a new branch on [GitHub](https://github.com/datalineio/dataline) with the same name
+2. Modify the documentation in that new variant
+3. Save & merge regularly
+4. Once you're satisfied, go on [GitHub](https://github.com/datalineio/dataline) and create a PR for your variant branch
+5. After the PR is approved, your changes will be merged to `master`
+6. Don't forget to remove the branch and the variant once your change has been merged
 
 Just [contact us](mailto:hey@dataline.io) and we will invite you to our space.
 
