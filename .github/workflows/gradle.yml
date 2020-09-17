@@ -41,15 +41,10 @@ jobs:
       - name: Ensure no file change
         run: git diff-index --quiet HEAD
 
-      - name: Write BigQuery Integration Test Credentials
-        run: 'mkdir dataline-integrations/singer/bigquery/destination/config && echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > dataline-integrations/singer/bigquery/destination/config/credentials.json'
+      - name: Write Integration Test Credentials
+        run: ./tools/bin/ci_credentials.sh
         env:
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
-
-      - name: Write Stripe Integration Test Credentials
-        if: success()
-        run: 'mkdir dataline-integrations/singer/stripe/source/config && echo "$STRIPE_INTEGRATION_TEST_CREDS" > dataline-integrations/singer/stripe/source/config/source.json'
-        env:
           STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
 
       - name: Run Integration Tests
