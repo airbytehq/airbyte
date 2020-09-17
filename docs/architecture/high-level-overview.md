@@ -2,7 +2,7 @@
 
 Here is a high level view of Dataline's components:
 
-![3.048-Kilometer view](../.gitbook/assets/10-000-feet-view-%20%282%29.png)
+![3.048-Kilometer view](../.gitbook/assets/10-000-feet-view.png)
 
 * `UI`: Acts as the control center for Dataline. From the UI you can configure new integration connections. You can also track the different syncing jobs and view logs.
 * `Config Store`: Stores all the connections information \(credentials, frequency...\).
