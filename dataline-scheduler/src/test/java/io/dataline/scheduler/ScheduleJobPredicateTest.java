@@ -71,14 +71,8 @@ class ScheduleJobPredicateTest {
     return Optional.of(new Job(
         10L,
         "",
-        status,
-        null,
-        null,
-        null,
-        null,
-        0,
-        createdAt.getEpochSecond(),
-        null,
+        null, null, null, 0, status,
+        null, createdAt.getEpochSecond(),
         createdAt.getEpochSecond()));
   }
 

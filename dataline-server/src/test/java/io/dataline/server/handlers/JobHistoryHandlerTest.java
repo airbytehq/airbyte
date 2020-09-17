@@ -92,7 +92,7 @@ public class JobHistoryHandlerTest {
     when(job.getScope()).thenReturn(SCOPE);
     when(job.getConfig()).thenReturn(JOB_CONFIG);
     when(job.getStatus()).thenReturn(JOB_STATUS);
-    when(job.getStdoutPath()).thenReturn(STDOUT_PATH);
+    when(job.getLogPath()).thenReturn(STDOUT_PATH);
     when(job.getStderrPath()).thenReturn(STDERR_PATH);
     when(job.getCreatedAtInSecond()).thenReturn(CREATED_AT);
     when(job.getUpdatedAtInSecond()).thenReturn(CREATED_AT);

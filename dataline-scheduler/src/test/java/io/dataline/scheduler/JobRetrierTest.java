@@ -46,27 +46,21 @@ class JobRetrierTest {
 
   private SchedulerPersistence persistence;
   private JobRetrier jobRetrier;
+  private Job job;
 
   @BeforeEach
-  void setup() throws JsonValidationException, IOException, ConfigNotFoundException {
+  void setup() {
     persistence = mock(SchedulerPersistence.class);
     jobRetrier = new JobRetrier(persistence, () -> NOW);
+    job = mock(Job.class);
+    when(job.getId()).thenReturn(12L);
   }
 
   @Test
   void testTimeToRetry() throws IOException {
-    final Job job = new Job(
-        12L,
-        "sync:abc",
-        JobStatus.FAILED,
-        null,
-        null,
-        null,
-        null,
-        1,
-        0L,
-        0L,
-        NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
+    when(job.getAttempts()).thenReturn(1);
+    when(job.getStatus()).thenReturn(JobStatus.FAILED);
+    when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
 
     when(persistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED))
         .thenReturn(Collections.singletonList(job));
@@ -81,18 +75,9 @@ class JobRetrierTest {
 
   @Test
   void testToSoonToRetry() throws IOException {
-    final Job job = new Job(
-        12L,
-        "sync:abc",
-        JobStatus.FAILED,
-        null,
-        null,
-        null,
-        null,
-        1,
-        0L,
-        0L,
-        NOW.minus(Duration.ofSeconds(10)).getEpochSecond());
+    when(job.getAttempts()).thenReturn(1);
+    when(job.getStatus()).thenReturn(JobStatus.FAILED);
+    when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofSeconds(10)).getEpochSecond());
 
     when(persistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED))
         .thenReturn(Collections.singletonList(job));
@@ -105,18 +90,9 @@ class JobRetrierTest {
 
   @Test
   void testTooManyFailures() throws IOException {
-    final Job job = new Job(
-        12L,
-        "sync:abc",
-        JobStatus.FAILED,
-        null,
-        null,
-        null,
-        null,
-        5,
-        0L,
-        0L,
-        NOW.minus(Duration.ofDays(2)).getEpochSecond());
+    when(job.getAttempts()).thenReturn(5);
+    when(job.getStatus()).thenReturn(JobStatus.FAILED);
+    when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
 
     when(persistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED))
         .thenReturn(Collections.singletonList(job));

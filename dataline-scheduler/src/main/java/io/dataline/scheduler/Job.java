@@ -34,37 +34,34 @@ public class Job {
 
   private final long id;
   private final String scope;
-  private final JobStatus status;
-  private int attempts;
-  private final long createdAtInSecond;
-  private final Long startedAtInSecond;
-  private final long updatedAtInSecond;
   private final JobConfig config;
+  private final String logPath;
   private final JobOutput output;
-  private final String stdoutPath;
-  private final String stderrPath;
+  private final int attempts;
+  private final JobStatus status;
+  private final Long startedAtInSecond;
+  private final long createdAtInSecond;
+  private final long updatedAtInSecond;
 
-  public Job(long id,
-             String scope,
-             JobStatus status,
-             JobConfig config,
-             @Nullable JobOutput output,
-             String stdoutPath,
-             String stderrPath,
-             int attempts,
-             long createdAtInSecond,
-             @Nullable Long startedAtInSecond,
-             long updatedAtInSecond) {
+  public Job(final long id,
+             final String scope,
+             final JobConfig config,
+             final String logPath,
+             final @Nullable JobOutput output,
+             final int attempts,
+             final JobStatus status,
+             final @Nullable Long startedAtInSecond,
+             final long createdAtInSecond,
+             final long updatedAtInSecond) {
     this.id = id;
     this.scope = scope;
-    this.status = status;
     this.config = config;
+    this.logPath = logPath;
     this.output = output;
-    this.stdoutPath = stdoutPath;
-    this.stderrPath = stderrPath;
     this.attempts = attempts;
-    this.createdAtInSecond = createdAtInSecond;
+    this.status = status;
     this.startedAtInSecond = startedAtInSecond;
+    this.createdAtInSecond = createdAtInSecond;
     this.updatedAtInSecond = updatedAtInSecond;
   }
 
@@ -76,94 +73,74 @@ public class Job {
     return scope;
   }
 
-  public JobStatus getStatus() {
-    return status;
-  }
-
-  public long getCreatedAtInSecond() {
-    return createdAtInSecond;
-  }
-
-  public Optional<Long> getStartedAtInSecond() {
-    return Optional.ofNullable(startedAtInSecond);
-  }
-
-  public long getUpdatedAtInSecond() {
-    return updatedAtInSecond;
-  }
-
   public JobConfig getConfig() {
     return config;
+  }
+
+  public String getLogPath() {
+    return logPath;
   }
 
   public Optional<JobOutput> getOutput() {
     return Optional.ofNullable(output);
   }
 
-  public String getStdoutPath() {
-    return stdoutPath;
-  }
-
-  public String getStderrPath() {
-    return stderrPath;
-  }
-
   public int getAttempts() {
     return attempts;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
+  public JobStatus getStatus() {
+    return status;
+  }
+
+  public Optional<Long> getStartedAtInSecond() {
+    return Optional.ofNullable(startedAtInSecond);
+  }
+
+  public long getCreatedAtInSecond() {
+    return createdAtInSecond;
+  }
+
+  public long getUpdatedAtInSecond() {
+    return updatedAtInSecond;
+  }
+
+  @Override public boolean equals(Object o) {
+    if (this == o) {
       return true;
-    if (o == null || getClass() != o.getClass())
+    }
+    if (o == null || getClass() != o.getClass()) {
       return false;
+    }
     Job job = (Job) o;
     return id == job.id &&
-        createdAtInSecond == job.createdAtInSecond &&
-        updatedAtInSecond == job.updatedAtInSecond &&
-        scope.equals(job.scope) &&
+        Objects.equals(scope, job.scope) &&
+        Objects.equals(config, job.config) &&
+        Objects.equals(logPath, job.logPath) &&
+        Objects.equals(output, job.output) &&
+        attempts == job.attempts &&
         status == job.status &&
         Objects.equals(startedAtInSecond, job.startedAtInSecond) &&
-        config.equals(job.config) &&
-        Objects.equals(output, job.output) &&
-        Objects.equals(stdoutPath, job.stdoutPath) &&
-        Objects.equals(stderrPath, job.stderrPath);
+        createdAtInSecond == job.createdAtInSecond &&
+        updatedAtInSecond == job.updatedAtInSecond;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, scope, status, createdAtInSecond, startedAtInSecond, updatedAtInSecond, config, output, stdoutPath, stderrPath);
+  @Override public int hashCode() {
+    return Objects.hash(id, scope, config, logPath, output, attempts, status, startedAtInSecond, createdAtInSecond, updatedAtInSecond);
   }
 
-  @Override
-  public String toString() {
-    return "Job{"
-        + "id="
-        + id
-        + ", scope='"
-        + scope
-        + '\''
-        + ", status="
-        + status
-        + ", createdAt="
-        + createdAtInSecond
-        + ", startedAt="
-        + startedAtInSecond
-        + ", updatedAt="
-        + updatedAtInSecond
-        + ", config='"
-        + config
-        + '\''
-        + ", output="
-        + output
-        + ", stdoutPath='"
-        + stdoutPath
-        + '\''
-        + ", stderrPath='"
-        + stderrPath
-        + '\''
-        + '}';
+  @Override public String toString() {
+    return "Job{" +
+        "id=" + id +
+        ", scope='" + scope + '\'' +
+        ", config=" + config +
+        ", logPath='" + logPath + '\'' +
+        ", output=" + output +
+        ", attempts=" + attempts +
+        ", status=" + status +
+        ", startedAtInSecond=" + startedAtInSecond +
+        ", createdAtInSecond=" + createdAtInSecond +
+        ", updatedAtInSecond=" + updatedAtInSecond +
+        '}';
   }
-
 }

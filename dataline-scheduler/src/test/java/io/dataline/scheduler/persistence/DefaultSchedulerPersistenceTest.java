@@ -24,13 +24,6 @@
 
 package io.dataline.scheduler.persistence;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -48,10 +41,10 @@ import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.Table;
 import io.dataline.db.DatabaseHelper;
-import io.dataline.integrations.Integrations;
 import io.dataline.scheduler.Job;
-import io.dataline.scheduler.JobLogs;
 import io.dataline.scheduler.JobStatus;
+import io.dataline.integrations.Integrations;
+import io.dataline.scheduler.JobLogs;
 import io.dataline.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -70,6 +63,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DefaultSchedulerPersistenceTest {
 
@@ -388,14 +388,8 @@ class DefaultSchedulerPersistenceTest {
     final Job expected = new Job(
         jobId,
         scope,
-        JobStatus.PENDING,
-        jobConfig,
-        null,
-        JobLogs.getLogDirectory(scope),
-        JobLogs.getLogDirectory(scope),
-        0,
-        afterNow.getEpochSecond(),
-        null,
+        jobConfig, JobLogs.getLogDirectory(scope), null, 0, JobStatus.PENDING,
+        null, afterNow.getEpochSecond(),
         afterNow.getEpochSecond());
 
     assertTrue(actual.isPresent());
@@ -496,14 +490,13 @@ class DefaultSchedulerPersistenceTest {
     return new Job(
         jobId,
         scope,
-        jobStatus,
         jobConfig,
+        JobLogs.getLogDirectory(scope),
         null,
-        JobLogs.getLogDirectory(scope),
-        JobLogs.getLogDirectory(scope),
         0,
-        NOW.getEpochSecond(),
+        jobStatus,
         null,
+        NOW.getEpochSecond(),
         NOW.getEpochSecond());
   }
 

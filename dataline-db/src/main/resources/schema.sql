@@ -22,7 +22,7 @@
  CREATE
     TABLE
         DATALINE_METADATA(
-            KEY VARCHAR(255) PRIMARY KEY,
+            key VARCHAR(255) PRIMARY KEY,
             value VARCHAR(255)
         );
 
@@ -30,16 +30,15 @@ CREATE
     TABLE
         JOBS(
             id BIGSERIAL PRIMARY KEY,
-            SCOPE VARCHAR(255),
-            created_at TIMESTAMPTZ,
-            started_at TIMESTAMPTZ,
-            updated_at TIMESTAMPTZ,
-            status JOB_STATUS,
+            scope VARCHAR(255),
             config JSONB,
-            OUTPUT JSONB,
-            stdout_path VARCHAR(255),
-            stderr_path VARCHAR(255),
-            attempts INTEGER
+            log_path VARCHAR(255),
+            output JSONB,
+            attempts INTEGER,
+            status JOB_STATUS,
+            started_at TIMESTAMPTZ,
+            created_at TIMESTAMPTZ,
+            updated_at TIMESTAMPTZ
         );
 
 -- entries

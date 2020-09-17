@@ -36,10 +36,10 @@ import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.db.DatabaseHelper;
-import io.dataline.integrations.Integrations;
 import io.dataline.scheduler.Job;
-import io.dataline.scheduler.JobLogs;
 import io.dataline.scheduler.JobStatus;
+import io.dataline.integrations.Integrations;
+import io.dataline.scheduler.JobLogs;
 import io.dataline.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -62,8 +62,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private final BasicDataSource connectionPool;
   private final Supplier<Instant> timeSupplier;
 
-  @VisibleForTesting
-  DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
+  @VisibleForTesting DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
     this.connectionPool = connectionPool;
     this.timeSupplier = timeSupplier;
   }
@@ -348,22 +347,19 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
     return new Job(
         jobEntry.get("id", Long.class),
-        jobEntry.getValue("scope", String.class),
-        JobStatus.valueOf(jobEntry.getValue("status", String.class).toUpperCase()),
+        jobEntry.get("scope", String.class),
         jobConfig,
+        jobEntry.get("log_path", String.class),
         output,
-        jobEntry.get("stdout_path", String.class),
-        jobEntry.get("stderr_path", String.class),
         jobEntry.get("attempts", Integer.class),
+        JobStatus.valueOf(jobEntry.get("status", String.class).toUpperCase()),
+        Optional.ofNullable(jobEntry.get("started_at")).map(value -> getEpoch(jobEntry, "started_at")).orElse(null),
         getEpoch(jobEntry, "created_at"),
-        Optional.ofNullable(jobEntry.get("started_at"))
-            .map(value -> getEpoch(jobEntry, "started_at"))
-            .orElse(null),
         getEpoch(jobEntry, "updated_at"));
   }
 
-  private static long getEpoch(Record record, String fieldName) {
-    return record.getValue(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
+  private static Long getEpoch(Record record, String fieldName) {
+    return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
   }
 
 }

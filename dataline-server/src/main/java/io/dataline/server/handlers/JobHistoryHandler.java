@@ -67,7 +67,7 @@ public class JobHistoryHandler {
     Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
 
     LogRead logRead = new LogRead()
-        .stdout(IOs.getTail(LOG_TAIL_SIZE, job.getStdoutPath()))
+        .stdout(IOs.getTail(LOG_TAIL_SIZE, job.getLogPath()))
         .stderr(IOs.getTail(LOG_TAIL_SIZE, job.getStderrPath()));
 
     return new JobInfoRead()
