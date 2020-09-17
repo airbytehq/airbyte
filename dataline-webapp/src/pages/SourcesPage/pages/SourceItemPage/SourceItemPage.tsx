@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
+import styled from "styled-components";
 
 import PageTitle from "../../../../components/PageTitle";
 import Breadcrumbs from "../../../../components/Breadcrumbs";
@@ -11,6 +12,19 @@ import StatusView from "./components/StatusView";
 import SettingsView from "./components/SettingsView";
 import SchemaView from "./components/SchemaView";
 import ConnectionResource from "../../../../core/resources/Connection";
+import LoadingPage from "../../../../components/LoadingPage";
+
+const Content = styled.div`
+  overflow-y: auto;
+  height: calc(100% - 67px);
+  margin-top: -17px;
+  padding-top: 17px;
+`;
+
+const Page = styled.div`
+  overflow-y: hidden;
+  height: 100%;
+`;
 
 const SourceItemPage: React.FC = () => {
   const { query, push, history } = useRouter();
@@ -47,7 +61,7 @@ const SourceItemPage: React.FC = () => {
       name: <FormattedMessage id="sidebar.sources" />,
       onClick: onClickBack
     },
-    { name: connection.name }
+    { name: connection.source?.name }
   ];
 
   const onChangeStatus = async () => {
@@ -82,7 +96,7 @@ const SourceItemPage: React.FC = () => {
   };
 
   return (
-    <>
+    <Page>
       <PageTitle
         withLine
         title={<Breadcrumbs data={breadcrumbsData} />}
@@ -95,8 +109,10 @@ const SourceItemPage: React.FC = () => {
           />
         }
       />
-      {renderStep()}
-    </>
+      <Content>
+        <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
+      </Content>
+    </Page>
   );
 };
 

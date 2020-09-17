@@ -402,8 +402,11 @@ ij_xml_space_inside_empty_tag = false
 ij_xml_text_wrap = normal
 ij_xml_use_custom_settings = false
 
-[{*.ats,*.ts}]
-ij_continuation_indent_size = 4
+[{*.ats,*.ts,*.tsx}]
+max_line_length = off
+indent_size = 2
+tab_width = 2
+ij_continuation_indent_size = 2
 ij_typescript_align_imports = false
 ij_typescript_align_multiline_array_initializer_expression = false
 ij_typescript_align_multiline_binary_operation = false

@@ -26,6 +26,7 @@ const Content = styled.label<{ additionLength?: number | string }>`
 `;
 
 const MessageText = styled.span<{ error?: boolean; success?: boolean }>`
+  white-space: break-spaces;
   color: ${props =>
     props.error
       ? props.theme.dangerColor

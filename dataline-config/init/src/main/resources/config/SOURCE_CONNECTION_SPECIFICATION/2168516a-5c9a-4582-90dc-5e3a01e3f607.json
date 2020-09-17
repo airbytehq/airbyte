@@ -5,7 +5,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Postgres Source Spec",
     "type": "object",
-    "required": ["host", "port", "user", "dbname", "filter_dbs"],
+    "required": ["host", "port", "user", "dbname"],
     "additionalProperties": false,
     "properties": {
       "host": {
@@ -28,10 +28,6 @@
       },
       "dbname": {
         "description": "Name of the database.",
-        "type": "string"
-      },
-      "filter_dbs": {
-        "description": "This should be identical to dbname field.",
         "type": "string"
       }
     }

@@ -95,8 +95,8 @@ class JsonsTest {
   @Test
   void testTryDeserializeToJsonNode() {
     Assertions.assertEquals(
-        Jsons.deserialize("{\"str\":\"abc\"}"),
-        Jsons.tryDeserialize("{\"str\":\"abc\"}").get());
+        Optional.of(Jsons.deserialize("{\"str\":\"abc\"}")),
+        Jsons.tryDeserialize("{\"str\":\"abc\"}"));
 
     Assertions.assertEquals(
         Optional.empty(),
@@ -140,6 +140,30 @@ class JsonsTest {
     Assertions.assertEquals(
         Lists.newArrayList(expected),
         Jsons.object(Jsons.jsonNode(Lists.newArrayList(expected)), new TypeReference<List<ToClass>>() {}));
+
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> Jsons.object(Jsons.deserialize("{\"a\":1}"), ToClass.class));
+  }
+
+  @Test
+  void testTryToObject() {
+    final ToClass expected = new ToClass("abc", 999, 888L);
+    Assertions.assertEquals(
+        Optional.of(expected),
+        Jsons.tryObject(Jsons.deserialize("{\"str\":\"abc\",\"num\":999,\"numLong\":888}"), ToClass.class));
+
+    Assertions.assertEquals(
+        Optional.of(expected),
+        Jsons.tryObject(Jsons.deserialize("{\"str\":\"abc\",\"num\":999,\"numLong\":888}"), new TypeReference<ToClass>() {}));
+
+    Assertions.assertEquals(
+        Optional.empty(),
+        Jsons.tryObject(Jsons.deserialize("{\"str1\":\"abc\"}"), ToClass.class));
+
+    Assertions.assertEquals(
+        Optional.empty(),
+        Jsons.tryObject(Jsons.deserialize("{\"str1\":\"abc\"}"), new TypeReference<ToClass>() {}));
+
   }
 
   @Test

@@ -24,12 +24,15 @@
 
 package io.dataline.workers;
 
-import io.dataline.singer.SingerMessage;
-import java.io.BufferedReader;
-import java.util.stream.Stream;
+public class WorkerConstants {
 
-public interface StreamFactory {
+  public static final String TAP_CONFIG_JSON_FILENAME = "tap_config.json";
+  public static final String TARGET_CONFIG_JSON_FILENAME = "target_config.json";
 
-  Stream<SingerMessage> create(BufferedReader bufferedReader);
+  public static final String CATALOG_JSON_FILENAME = "catalog.json";
+  public static final String INPUT_STATE_JSON_FILENAME = "input_state.json";
+
+  public static final String TAP_ERR_LOG = "tap_err.log";
+  public static final String TARGET_ERR_LOG = "target_err.log";
 
 }

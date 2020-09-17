@@ -25,20 +25,31 @@
 package io.dataline.workers.protocols.singer;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
 import io.dataline.workers.TestConfigHelpers;
+import io.dataline.workers.WorkerConstants;
+import io.dataline.workers.WorkerException;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -49,6 +60,8 @@ class DefaultSingerTargetTest {
   private static final String TABLE_NAME = "user_preferences";
   private static final String COLUMN_NAME = "favorite_color";
 
+  private static final StandardTargetConfig TARGET_CONFIG = WorkerUtils.syncToTargetConfig(TestConfigHelpers.createSyncConfig().getValue());
+
   private Path jobRoot;
   private ProcessBuilderFactory pbf;
   private Process process;
@@ -58,30 +71,68 @@ class DefaultSingerTargetTest {
   public void setup() throws IOException {
     jobRoot = Files.createTempDirectory(JOB_ROOT_PREFIX);
 
-    pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
-    outputStream = new ByteArrayOutputStream();
+    outputStream = spy(new ByteArrayOutputStream());
+    when(process.getOutputStream()).thenReturn(outputStream);
+    when(process.getInputStream()).thenReturn(new ByteArrayInputStream("input".getBytes(StandardCharsets.UTF_8)));
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("error".getBytes(StandardCharsets.UTF_8)));
+
+    pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
+    when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME).start())
+        .thenReturn(process);
   }
 
   @Test
-  public void test() throws Exception {
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", DefaultSingerTarget.CONFIG_JSON_FILENAME)
-        .redirectError(jobRoot.resolve(SingerSyncWorker.TARGET_ERR_LOG).toFile())
-        .start()).thenReturn(process);
-    when(process.getOutputStream()).thenReturn(outputStream);
-
-    final StandardTargetConfig targetConfig =
-        WorkerUtils.syncToTargetConfig(TestConfigHelpers.createSyncConfig().getValue());
-
+  public void testSuccessfulLifecycle() throws Exception {
     final SingerTarget target = new DefaultSingerTarget(IMAGE_NAME, pbf);
-    target.start(targetConfig, jobRoot);
+    target.start(TARGET_CONFIG, jobRoot);
 
-    SingerMessage recordMessage = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
+    final SingerMessage recordMessage = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
     target.accept(recordMessage);
+
+    verify(outputStream, never()).close();
+
+    target.notifyEndOfStream();
+
+    verify(outputStream).close();
+
     target.close();
 
-    String actualOutput = new String(outputStream.toByteArray());
+    final String actualOutput = new String(outputStream.toByteArray());
     assertEquals(Jsons.serialize(recordMessage) + "\n", actualOutput);
+
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getInputStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
+
+    verify(process).waitFor(anyLong(), any());
+  }
+
+  @Test
+  public void testCloseNotifiesLifecycle() throws Exception {
+    final SingerTarget target = new DefaultSingerTarget(IMAGE_NAME, pbf);
+    target.start(TARGET_CONFIG, jobRoot);
+
+    verify(outputStream, never()).close();
+
+    target.close();
+    verify(outputStream).close();
+  }
+
+  @Test
+  public void testProcessFailLifecycle() throws Exception {
+    final SingerTarget target = new DefaultSingerTarget(IMAGE_NAME, pbf);
+    target.start(TARGET_CONFIG, jobRoot);
+
+    when(process.exitValue()).thenReturn(1);
+    Assertions.assertThrows(WorkerException.class, target::close);
   }
 
 }

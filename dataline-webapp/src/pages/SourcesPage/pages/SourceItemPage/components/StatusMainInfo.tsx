@@ -24,7 +24,7 @@ type IProps = {
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
-  padding: 23px 20px 24px 23px;
+  padding: 23px 20px 20px 23px;
 `;
 
 const Img = styled(ImageBlock)`
@@ -40,7 +40,7 @@ const SourceCell = styled(Cell)`
 const EnabledCell = styled(Cell)`
   display: flex;
   align-items: center;
-  margin-top: -20px;
+  margin-top: -18px;
 `;
 
 const ToggleLabel = styled.label`
@@ -67,9 +67,7 @@ const StatusMainInfo: React.FC<IProps> = ({ sourceData, onEnabledChange }) => {
   });
 
   const cellText = FrequencyConfig.find(
-    item =>
-      item.config.units === sourceData.schedule?.units &&
-      item.config.timeUnit === sourceData.schedule?.timeUnit
+    item => JSON.stringify(item.config) === JSON.stringify(sourceData.schedule)
   );
 
   return (

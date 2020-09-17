@@ -12,15 +12,12 @@
 
 ## Integrations
 
-* [Integrations](integrations/integrations.md)
 * [Sources](integrations/sources/README.md)
-  * [CSV](integrations/sources/csv.md)
   * [Postgres](integrations/sources/postgres.md)
   * [Stripe](integrations/sources/stripe.md)
 * [Destinations](integrations/destinations/README.md)
   * [Postgres](integrations/destinations/postgres.md)
   * [BigQuery](integrations/destinations/bigquery.md)
-  * [Local Filesystem](integrations/destinations/local-filesystem.md)
 
 ## Contributing
 
@@ -28,7 +25,7 @@
   * [Developing Locally](contributing/contributing-to-dataline/developing-locally.md)
   * [Code Style](contributing/contributing-to-dataline/code-style.md)
   * [Updating Documentation](contributing/contributing-to-dataline/updating-documentation.md)
-  * [Code of Conduct](contributing/contributing-to-dataline/code-of-conduct.md)
+* [Code of Conduct](contributing/code-of-conduct.md)
 
 ## Architecture
 

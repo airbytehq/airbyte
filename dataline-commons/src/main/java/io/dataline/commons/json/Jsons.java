@@ -88,6 +88,22 @@ public class Jsons {
     return OBJECT_MAPPER.convertValue(jsonNode, typeReference);
   }
 
+  public static <T> Optional<T> tryObject(final JsonNode jsonNode, final Class<T> klass) {
+    try {
+      return Optional.of(OBJECT_MAPPER.convertValue(jsonNode, klass));
+    } catch (Exception e) {
+      return Optional.empty();
+    }
+  }
+
+  public static <T> Optional<T> tryObject(final JsonNode jsonNode, final TypeReference<T> typeReference) {
+    try {
+      return Optional.of(OBJECT_MAPPER.convertValue(jsonNode, typeReference));
+    } catch (Exception e) {
+      return Optional.empty();
+    }
+  }
+
   @SuppressWarnings("unchecked")
   public static <T> T clone(final T object) {
     return (T) deserialize(serialize(object), object.getClass());

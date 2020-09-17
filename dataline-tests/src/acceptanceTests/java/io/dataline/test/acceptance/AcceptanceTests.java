@@ -24,7 +24,10 @@
 
 package io.dataline.test.acceptance;
 
-import com.google.common.base.Preconditions;
+import static io.dataline.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.common.collect.ImmutableMap;
 import io.dataline.api.client.DatalineApiClient;
 import io.dataline.api.client.invoker.ApiClient;
@@ -61,7 +64,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -76,10 +78,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
-
-import static io.dataline.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("rawtypes")
 public class AcceptanceTests {
@@ -134,8 +132,7 @@ public class AcceptanceTests {
         name,
         workspaceId,
         postgresDestinationSpecId,
-        getDestinationDbConfig()
-    );
+        getDestinationDbConfig());
 
     assertEquals(name, destinationImpl.getName());
     assertEquals(postgresDestinationSpecId, destinationImpl.getDestinationSpecificationId());
@@ -164,8 +161,7 @@ public class AcceptanceTests {
         dbName,
         postgresSourceSpecId,
         defaultWorkspaceId,
-        sourceDbConfig
-    );
+        sourceDbConfig);
 
     assertEquals(dbName, response.getName());
     assertEquals(defaultWorkspaceId, response.getWorkspaceId());
@@ -220,7 +216,8 @@ public class AcceptanceTests {
     ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
     ConnectionRead createdConnection = createConnection(connectionName, sourceImplId, destinationImplId, schema, connectionSchedule, syncMode);
 
-    ConnectionSyncRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(createdConnection.getConnectionId()));
+    ConnectionSyncRead connectionSyncRead =
+        apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(createdConnection.getConnectionId()));
     assertEquals(ConnectionSyncRead.StatusEnum.SUCCESS, connectionSyncRead.getStatus());
     assertSourceAndTargetDbInSync(sourcePsql, targetPsql);
   }
@@ -244,7 +241,7 @@ public class AcceptanceTests {
     return apiClient.getSourceImplementationApi().discoverSchemaForSourceImplementation(
         new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplementationId)).getSchema();
   }
-  
+
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb, PostgreSQLContainer targetDb) throws SQLException {
     BasicDataSource sourceDbPool = getConnectionPool(sourceDb);
     BasicDataSource targetDbPool = getConnectionPool(targetDb);
@@ -277,9 +274,9 @@ public class AcceptanceTests {
   }
 
   private void assertTablesEquivalent(
-      BasicDataSource sourceDbPool,
-      BasicDataSource targetDbPool,
-      String table)
+                                      BasicDataSource sourceDbPool,
+                                      BasicDataSource targetDbPool,
+                                      String table)
       throws SQLException {
     long sourceTableCount = getTableCount(sourceDbPool, table);
     long targetTableCount = getTableCount(targetDbPool, table);
@@ -335,7 +332,8 @@ public class AcceptanceTests {
                                           UUID destinationImplId,
                                           SourceSchema schema,
                                           ConnectionSchedule schedule,
-                                          ConnectionCreate.SyncModeEnum syncMode) throws ApiException {
+                                          ConnectionCreate.SyncModeEnum syncMode)
+      throws ApiException {
     ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
             .status(ConnectionStatus.ACTIVE)
@@ -354,8 +352,7 @@ public class AcceptanceTests {
         "AccTestDestination-" + UUID.randomUUID().toString(),
         PersistenceConstants.DEFAULT_WORKSPACE_ID,
         getPostgresDestinationSpecId(),
-        getDestinationDbConfig()
-    );
+        getDestinationDbConfig());
   }
 
   private Map<Object, Object> getDestinationDbConfig() {
@@ -372,7 +369,8 @@ public class AcceptanceTests {
   private DestinationImplementationRead createDestinationImplementation(String name,
                                                                         UUID workspaceId,
                                                                         UUID destinationSpecId,
-                                                                        Map<Object, Object> destinationConfig) throws ApiException {
+                                                                        Map<Object, Object> destinationConfig)
+      throws ApiException {
     DestinationImplementationRead destinationImplementation =
         apiClient.getDestinationImplementationApi().createDestinationImplementation(new DestinationImplementationCreate()
             .name(name)
@@ -390,7 +388,6 @@ public class AcceptanceTests {
         .findFirst()
         .orElseThrow()
         .getDestinationId();
-
     return apiClient.getDestinationSpecificationApi()
         .getDestinationSpecification(new DestinationIdRequestBody().destinationId(destinationId))
         .getDestinationSpecificationId();
@@ -402,7 +399,6 @@ public class AcceptanceTests {
     dbConfig.put("password", sourcePsql.getPassword());
     dbConfig.put("port", sourcePsql.getFirstMappedPort());
     dbConfig.put("dbname", sourcePsql.getDatabaseName());
-    dbConfig.put("filter_dbs", sourcePsql.getDatabaseName());
     dbConfig.put("user", sourcePsql.getUsername());
     return dbConfig;
   }
@@ -412,8 +408,7 @@ public class AcceptanceTests {
         "acceptanceTestDb-" + UUID.randomUUID().toString(),
         PersistenceConstants.DEFAULT_WORKSPACE_ID,
         getPostgresSourceSpecId(),
-        getSourceDbConfig()
-    );
+        getSourceDbConfig());
   }
 
   private SourceImplementationRead createSourceImplementation(String name, UUID workspaceId, UUID sourceSpecId, Map<Object, Object> sourceConfig)
@@ -447,4 +442,5 @@ public class AcceptanceTests {
   private void disableConnection(UUID connectionId) throws ApiException {
     apiClient.getConnectionApi().updateConnection(new ConnectionUpdate().status(ConnectionStatus.DEPRECATED));
   }
+
 }

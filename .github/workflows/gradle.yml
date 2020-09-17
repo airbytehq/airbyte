@@ -41,14 +41,13 @@ jobs:
       - name: Ensure no file change
         run: git diff-index --quiet HEAD
 
-      - name: Write BigQuery Integration Test Credentials
-        if: success() && github.ref == 'refs/heads/master'
-        run: 'mkdir dataline-integrations/singer/bigquery/destination/config && echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > dataline-integrations/singer/bigquery/destination/config/credentials.json'
+      - name: Write Integration Test Credentials
+        run: ./tools/bin/ci_credentials.sh
         env:
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
+          STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
 
       - name: Run Integration Tests
-        if: success() && github.ref == 'refs/heads/master'
         run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
 
       - name: Build Core Docker Images
@@ -58,7 +57,6 @@ jobs:
           GIT_REVISION: ${{ github.sha }}
 
       - name: Run End-to-End Acceptance Tests
-        if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/acceptance_test.sh
 
       - name: Push Core Docker Images

@@ -73,7 +73,7 @@ import org.testcontainers.utility.MountableFile;
 public class SingerPostgresSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerPostgresSourceTest.class);
-  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-source";
+  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-source:dev";
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
 
   private PostgreSQLContainer psqlDb;
@@ -101,7 +101,7 @@ public class SingerPostgresSourceTest {
   }
 
   @Test
-  public void testReadFirstTime() throws IOException, InvalidCredentialsException {
+  public void testReadFirstTime() throws Exception {
     Schema schema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), Schema.class);
 
     // select all tables and all columns
@@ -211,7 +211,6 @@ public class SingerPostgresSourceTest {
     confMap.put("password", psqlDb.getPassword());
     confMap.put("port", psqlDb.getFirstMappedPort());
     confMap.put("host", psqlDb.getHost());
-    confMap.put("filter_dbs", psqlDb.getDatabaseName());
     return confMap;
   }
 

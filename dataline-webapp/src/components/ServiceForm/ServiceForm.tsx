@@ -30,6 +30,7 @@ type IProps = {
   formValues?: formInitialValues;
   hasSuccess?: boolean;
   errorMessage?: React.ReactNode;
+  successMessage?: React.ReactNode;
   specifications?: specification;
 };
 
@@ -44,6 +45,7 @@ const ServiceForm: React.FC<IProps> = ({
   formValues,
   onDropDownSelect,
   hasSuccess,
+  successMessage,
   errorMessage,
   specifications
 }) => {
@@ -113,6 +115,7 @@ const ServiceForm: React.FC<IProps> = ({
               isValid={isValid}
               dirty={dirty}
               resetForm={resetForm}
+              successMessage={successMessage}
             />
           ) : (
             <BottomBlock

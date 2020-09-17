@@ -28,13 +28,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.dataline.commons.io.IOs;
+import io.dataline.commons.io.LineGobbler;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardDiscoverSchemaInput;
+import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.singer.SingerCatalog;
 import io.dataline.singer.SingerMessage;
-import io.dataline.workers.InvalidCredentialsException;
-import io.dataline.workers.StreamFactory;
+import io.dataline.workers.JobStatus;
+import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.WorkerConstants;
+import io.dataline.workers.WorkerException;
 import io.dataline.workers.WorkerUtils;
 import io.dataline.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
@@ -52,17 +56,11 @@ public class DefaultSingerTap implements SingerTap {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerTap.class);
 
   @VisibleForTesting
-  static final String CONFIG_JSON_FILENAME = "tap_config.json";
-  @VisibleForTesting
-  static final String CATALOG_JSON_FILENAME = "catalog.json";
-  @VisibleForTesting
-  static final String STATE_JSON_FILENAME = "input_state.json";
-  @VisibleForTesting
   static final String DISCOVERY_DIR = "discover";
 
   private final String imageName;
   private final ProcessBuilderFactory pbf;
-  private final StreamFactory streamFactory;
+  private final SingerStreamFactory streamFactory;
   private final SingerDiscoverSchemaWorker discoverSchemaWorker;
 
   private Process tapProcess = null;
@@ -71,13 +69,13 @@ public class DefaultSingerTap implements SingerTap {
   public DefaultSingerTap(final String imageName,
                           final ProcessBuilderFactory pbf,
                           final SingerDiscoverSchemaWorker discoverSchemaWorker) {
-    this(imageName, pbf, new SingerJsonStreamFactory(), discoverSchemaWorker);
+    this(imageName, pbf, new DefaultSingerStreamFactory(), discoverSchemaWorker);
   }
 
   @VisibleForTesting
   DefaultSingerTap(final String imageName,
                    final ProcessBuilderFactory pbf,
-                   final StreamFactory streamFactory,
+                   final SingerStreamFactory streamFactory,
                    final SingerDiscoverSchemaWorker discoverSchemaWorker) {
     this.imageName = imageName;
     this.pbf = pbf;
@@ -86,7 +84,7 @@ public class DefaultSingerTap implements SingerTap {
   }
 
   @Override
-  public void start(StandardTapConfig input, Path jobRoot) throws IOException, InvalidCredentialsException {
+  public void start(StandardTapConfig input, Path jobRoot) throws Exception {
     Preconditions.checkState(tapProcess == null);
 
     SingerCatalog singerCatalog = runDiscovery(input, jobRoot);
@@ -96,26 +94,25 @@ public class DefaultSingerTap implements SingerTap {
     final SingerCatalog selectedCatalog = SingerCatalogConverters
         .applySchemaToDiscoveredCatalog(singerCatalog, input.getStandardSync().getSchema());
 
-    IOs.writeFile(jobRoot, CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
-    IOs.writeFile(jobRoot, CATALOG_JSON_FILENAME, Jsons.serialize(selectedCatalog));
-    IOs.writeFile(jobRoot, STATE_JSON_FILENAME, Jsons.serialize(input.getState()));
+    IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(selectedCatalog));
+    IOs.writeFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME, Jsons.serialize(input.getState()));
 
     String[] cmd = {
       "--config",
-      CONFIG_JSON_FILENAME,
+      WorkerConstants.TAP_CONFIG_JSON_FILENAME,
       // TODO support both --properties and --catalog depending on integration
       "--properties",
-      CATALOG_JSON_FILENAME
+      WorkerConstants.CATALOG_JSON_FILENAME
     };
 
     if (input.getState() != null) {
-      cmd = ArrayUtils.addAll(cmd, "--state", STATE_JSON_FILENAME);
+      cmd = ArrayUtils.addAll(cmd, "--state", WorkerConstants.INPUT_STATE_JSON_FILENAME);
     }
 
-    tapProcess =
-        pbf.create(jobRoot, imageName, cmd)
-            .redirectError(jobRoot.resolve(SingerSyncWorker.TAP_ERR_LOG).toFile())
-            .start();
+    tapProcess = pbf.create(jobRoot, imageName, cmd).start();
+    // stdout logs are logged elsewhere since stdout also contains data
+    LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream())).iterator();
   }
@@ -143,18 +140,24 @@ public class DefaultSingerTap implements SingerTap {
     LOGGER.debug("Closing tap process");
     WorkerUtils.gentleClose(tapProcess, 1, TimeUnit.MINUTES);
     if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
-      throw new Exception("Tap process wasn't successful");
+      throw new WorkerException("Tap process wasn't successful");
     }
   }
 
-  private SingerCatalog runDiscovery(StandardTapConfig input, Path jobRoot) throws InvalidCredentialsException, IOException {
+  private SingerCatalog runDiscovery(StandardTapConfig input, Path jobRoot) throws IOException, WorkerException {
     StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput()
         .withConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
 
     Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
     Files.createDirectory(discoverJobRoot);
 
-    return discoverSchemaWorker.runInternal(discoveryInput, discoverJobRoot).getOutput().get();
+    final OutputAndStatus<StandardDiscoverSchemaOutput> output = discoverSchemaWorker.run(discoveryInput, discoverJobRoot);
+    if (output.getStatus() == JobStatus.FAILED) {
+      throw new WorkerException("Cannot discover schema");
+    }
+
+    // This is a hack because we need to have access to the original singer catalog
+    return SingerDiscoverSchemaWorker.readCatalog(discoverJobRoot);
   }
 
 }
