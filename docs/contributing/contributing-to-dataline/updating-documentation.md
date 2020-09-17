@@ -24,9 +24,17 @@ Once you're satisfied with your changes just follow the regular PR process.
 
 ## GitBook
 
-You can edit the documentation on GitBook. You will able to use their convenient WYSIWYG editor.
+You can edit the documentation on GitBook. You will able to use their convenient editor.
 
 All the changes you make on GitBook will be automatically synced with GitHub once they get reviewed.
+
+To update with GitBook, follow these instructions:
+
+1. Create a [new variant](https://docs.gitbook.com/editing-content/variants#create-a-variant). This will create a branch on [GitHub](https://github.com/datalineio/dataline) with the name of the variant
+2. Modify the documentation in that new variant
+3. Save & merge regularly
+4. Once you're satisfied go on [GitHub](https://github.com/datalineio/dataline) and create a PR for your variant branch
+5. Once reviewed it will be merge to our master documentation
 
 Just [contact us](mailto:hey@dataline.io) and we will invite you to our space.
 
