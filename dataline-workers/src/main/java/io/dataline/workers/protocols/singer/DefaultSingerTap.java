@@ -107,7 +107,7 @@ public class DefaultSingerTap implements SingerTap {
     };
 
     if (input.getState() != null) {
-      cmd = ArrayUtils.addAll(cmd, "--state", WorkerConstants.INPUT_STATE_JSON_FILENAME);
+      cmd = ArrayUtils.addAll(cmd, "--state", jobRoot.resolve(WorkerConstants.INPUT_STATE_JSON_FILENAME).toString());
     }
 
     tapProcess = pbf.create(imageName, cmd).start();
