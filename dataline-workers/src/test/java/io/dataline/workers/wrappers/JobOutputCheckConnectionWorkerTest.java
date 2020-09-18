@@ -33,7 +33,6 @@ import io.dataline.config.JobOutput;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.workers.CheckConnectionWorker;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import java.nio.file.Path;

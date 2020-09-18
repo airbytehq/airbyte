@@ -35,7 +35,6 @@ import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.db.DatabaseHelper;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerUtils;
@@ -157,6 +156,7 @@ class TestPostgresDestination {
     Files.writeString(Path.of(jobRoot.toString(), WorkerConstants.TARGET_CONFIG_JSON_FILENAME), fileContent);
   }
 
+  @SuppressWarnings("SameParameterValue")
   private void writeResourceToStdIn(String resourceName, Process process) throws IOException {
     Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(resourceName))
         .transferTo(process.getOutputStream());

@@ -36,7 +36,6 @@ import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.config.Table;
 import io.dataline.workers.DiscoverSchemaWorker;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import java.nio.file.Path;

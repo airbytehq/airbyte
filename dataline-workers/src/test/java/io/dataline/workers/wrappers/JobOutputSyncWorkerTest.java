@@ -33,7 +33,6 @@ import io.dataline.config.JobOutput;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.State;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.SyncWorker;
