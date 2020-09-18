@@ -10,6 +10,7 @@ services:
       mkdir -p ${DEV_ROOT}/workspace;
       mkdir -p ${DEV_ROOT}/data;
       mkdir -p ${DEV_ROOT}/db;
+      mkdir -p ${LOCAL_ROOT};
       "
     environment:
       - DEV_ROOT=${DEV_ROOT}
@@ -24,6 +25,13 @@ services:
   webapp:
 # Allow us to access the volume content on the local filesystem
 volumes:
+  local:
+    name: dev-local
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${LOCAL_ROOT}
   workspace:
     name: dev-workspace
     driver: local

@@ -86,7 +86,7 @@ public class SingerStripeSourceTest {
 
     writeConfigFilesToJobRoot();
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
+    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "", "host");
   }
 
   private static String getEmail(int number) {
