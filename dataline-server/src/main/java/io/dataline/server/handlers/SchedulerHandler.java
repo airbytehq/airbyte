@@ -120,7 +120,7 @@ public class SchedulerHandler {
 
     final StandardDiscoverSchemaOutput output = job.getOutput().map(JobOutput::getDiscoverSchema)
         // the job should always produce an output, but if does not, we fall back on an empty schema.
-        .orElse(new StandardDiscoverSchemaOutput().withSchema(new Schema().withTables(Collections.emptyList())));
+        .orElse(new StandardDiscoverSchemaOutput().withSchema(new Schema().withStreams(Collections.emptyList())));
 
     LOGGER.debug("output = " + output);
 

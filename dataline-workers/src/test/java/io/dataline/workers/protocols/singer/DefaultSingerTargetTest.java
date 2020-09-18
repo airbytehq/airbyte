@@ -57,8 +57,8 @@ class DefaultSingerTargetTest {
 
   private static final String IMAGE_NAME = "spark_streaming:latest";
   private static final String JOB_ROOT_PREFIX = "workspace";
-  private static final String TABLE_NAME = "user_preferences";
-  private static final String COLUMN_NAME = "favorite_color";
+  private static final String STREAM_NAME = "user_preferences";
+  private static final String FIELD_NAME = "favorite_color";
 
   private static final StandardTargetConfig TARGET_CONFIG = WorkerUtils.syncToTargetConfig(TestConfigHelpers.createSyncConfig().getValue());
 
@@ -87,7 +87,7 @@ class DefaultSingerTargetTest {
     final SingerTarget target = new DefaultSingerTarget(IMAGE_NAME, pbf);
     target.start(TARGET_CONFIG, jobRoot);
 
-    final SingerMessage recordMessage = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
+    final SingerMessage recordMessage = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
     target.accept(recordMessage);
 
     verify(outputStream, never()).close();

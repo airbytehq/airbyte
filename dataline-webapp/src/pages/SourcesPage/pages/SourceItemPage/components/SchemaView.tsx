@@ -83,7 +83,7 @@ const SchemaView: React.FC<IProps> = ({
         </SaveButton>
       </ButtonsContainer>
       <ContentCard>
-        {!syncSchema.tables.length ? (
+        {!syncSchema.streams.length ? (
           <EmptySyncHistory
             text={<FormattedMessage id="sources.emptySchema" />}
           />

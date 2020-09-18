@@ -118,7 +118,7 @@ class ConnectionsHandlerTest {
   @Test
   void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     final SourceSchema newApiSchema = ConnectionHelpers.generateBasicApiSchema();
-    newApiSchema.getTables().get(0).setName("azkaban_users");
+    newApiSchema.getStreams().get(0).setName("azkaban_users");
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
         .connectionId(standardSync.getConnectionId())
@@ -127,7 +127,7 @@ class ConnectionsHandlerTest {
         .syncSchema(newApiSchema);
 
     final Schema newPersistenceSchema = ConnectionHelpers.generateBasicPersistenceSchema();
-    newPersistenceSchema.getTables().get(0).withName("azkaban_users");
+    newPersistenceSchema.getStreams().get(0).withName("azkaban_users");
 
     final StandardSync updatedStandardSync = new StandardSync()
         .withConnectionId(standardSync.getConnectionId())

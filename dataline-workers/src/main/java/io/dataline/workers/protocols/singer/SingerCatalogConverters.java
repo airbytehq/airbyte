@@ -25,10 +25,10 @@
 package io.dataline.workers.protocols.singer;
 
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.Column;
 import io.dataline.config.DataType;
+import io.dataline.config.Field;
 import io.dataline.config.Schema;
-import io.dataline.config.Table;
+import io.dataline.config.Stream;
 import io.dataline.singer.SingerCatalog;
 import io.dataline.singer.SingerColumn;
 import io.dataline.singer.SingerMetadata;
@@ -44,7 +44,7 @@ public class SingerCatalogConverters {
 
   /**
    * Takes in a singer catalog and a dataline schema. It then applies the dataline configuration to
-   * that catalog. e.g. If dataline says that a certain column should or should not be included in the
+   * that catalog. e.g. If dataline says that a certain field should or should not be included in the
    * sync, this method applies that to the catalog. Thus we produce a valid singer catalog that
    * contains configurations stored in dataline.
    *
@@ -53,9 +53,9 @@ public class SingerCatalogConverters {
    * @return singer catalog with dataline schema applied to it.
    */
   public static SingerCatalog applySchemaToDiscoveredCatalog(SingerCatalog catalog, Schema schema) {
-    Map<String, Table> tableNameToTable = schema.getTables()
+    Map<String, Stream> streamNameToDatalineStream = schema.getStreams()
         .stream()
-        .collect(Collectors.toMap(Table::getName, table -> table));
+        .collect(Collectors.toMap(Stream::getName, stream -> stream));
 
     final List<SingerStream> updatedStreams =
         catalog.getStreams().stream()
@@ -64,42 +64,42 @@ public class SingerCatalogConverters {
 
                   // recourse here is probably to run discovery again and update sync
                   // configuration. this method just outputs the original metadata.
-                  if (!tableNameToTable.containsKey(stream.getStream())) {
+                  if (!streamNameToDatalineStream.containsKey(stream.getStream())) {
                     return stream;
                   }
-                  final Table table = tableNameToTable.get(stream.getStream());
-                  final Map<String, Column> columnNameToColumn =
-                      table.getColumns()
+                  final Stream datalineStream = streamNameToDatalineStream.get(stream.getStream());
+                  final Map<String, Field> fieldNameToField =
+                      datalineStream.getFields()
                           .stream()
-                          .collect(Collectors.toMap(Column::getName, column -> column));
+                          .collect(Collectors.toMap(Field::getName, field -> field));
 
                   final List<SingerMetadata> newMetadata =
                       stream.getMetadata().stream()
                           .map(
                               metadata -> {
                                 final SingerMetadata newSingerMetadata = Jsons.clone(metadata);
-                                if (isColumnMetadata(metadata)) {
-                                  // column metadata
-                                  final String columnName = getColumnName(metadata);
+                                if (isFieldMetadata(metadata)) {
+                                  // field metadata
+                                  final String fieldName = getFieldName(metadata);
                                   // recourse here is probably to run discovery again and update
                                   // sync configuration. this method just outputs the original
                                   // metadata.
-                                  if (!columnNameToColumn.containsKey(columnName)) {
+                                  if (!fieldNameToField.containsKey(fieldName)) {
                                     return metadata;
                                   }
-                                  final Column column = columnNameToColumn.get(columnName);
+                                  final Field field = fieldNameToField.get(fieldName);
 
-                                  newSingerMetadata.getMetadata().setSelected(column.getSelected());
+                                  newSingerMetadata.getMetadata().setSelected(field.getSelected());
                                 } else {
 
-                                  // table metadata
+                                  // stream metadata
                                   // TODO HACK set replication mode to full_refresh on every stream
                                   // to unblock some other dev work. Needs to be fixed ASAP. Sherif
                                   // is working on this.
 
                                   newSingerMetadata.getMetadata()
                                       .withReplicationMethod(SingerMetadataChild.ReplicationMethod.FULL_TABLE)
-                                      .withSelected(table.getSelected());
+                                      .withSelected(datalineStream.getSelected());
                                 }
                                 return newSingerMetadata;
                               })
@@ -123,24 +123,24 @@ public class SingerCatalogConverters {
 
   // assumes discoverable input only.
   public static Schema toDatalineSchema(SingerCatalog catalog) {
-    Map<String, List<SingerMetadata>> tableNameToMetadata =
-        getTableNameToMetadataList(catalog.getStreams());
+    Map<String, List<SingerMetadata>> streamNameToMetadata =
+        getStreamNameToMetadataList(catalog.getStreams());
 
-    List<Table> tables = catalog.getStreams()
+    List<Stream> streams = catalog.getStreams()
         .stream()
         .map(
             stream -> {
-              final Map<String, SingerMetadataChild> columnNameToMetadata =
-                  getColumnMetadataForTable(tableNameToMetadata, stream.getStream());
-              final SingerMetadata tableMetadata = tableNameToMetadata.get(stream.getStream())
+              final Map<String, SingerMetadataChild> fieldNameToMetadata =
+                  getFieldMetadataForStream(streamNameToMetadata, stream.getStream());
+              final SingerMetadata streamMetadata = streamNameToMetadata.get(stream.getStream())
                   .stream()
                   .filter(metadata -> metadata.getBreadcrumb().equals(new ArrayList<>()))
                   .findFirst()
-                  .orElseThrow(() -> new RuntimeException("Could not find table metadata"));
-              return new Table()
+                  .orElseThrow(() -> new RuntimeException("Could not find stream metadata"));
+              return new Stream()
                   .withName(stream.getStream())
-                  .withSelected(isSelected(tableMetadata.getMetadata()))
-                  .withColumns(
+                  .withSelected(isSelected(streamMetadata.getMetadata()))
+                  .withFields(
                       stream
                           .getSchema()
                           .getProperties()
@@ -149,24 +149,24 @@ public class SingerCatalogConverters {
                           .stream()
                           .map(
                               entry -> {
-                                final String columnName = entry.getKey();
-                                final SingerColumn singerColumn = entry.getValue();
-                                final SingerMetadataChild singerColumnMetadata =
-                                    columnNameToMetadata.get(columnName);
+                                final String fieldName = entry.getKey();
+                                final SingerColumn singerField = entry.getValue();
+                                final SingerMetadataChild singerFieldMetadata =
+                                    fieldNameToMetadata.get(fieldName);
 
-                                final Column column = new Column();
-                                column.withName(columnName);
-                                column.withDataType(singerTypesToDataType(singerColumn.getType()));
-                                // in discovery, you can find columns that are replicated by
+                                final Field field = new Field();
+                                field.withName(fieldName);
+                                field.withDataType(singerTypesToDataType(singerField.getType()));
+                                // in discovery, you can find fields that are replicated by
                                 // default. we set those to selected. the rest are not.
-                                column.withSelected(isSelected(singerColumnMetadata));
-                                return column;
+                                field.withSelected(isSelected(singerFieldMetadata));
+                                return field;
                               })
                           .collect(Collectors.toList()));
             })
         .collect(Collectors.toList());
 
-    return new Schema().withTables(tables);
+    return new Schema().withStreams(streams);
   }
 
   private static boolean isSelected(SingerMetadataChild metadataChild) {
@@ -183,50 +183,50 @@ public class SingerCatalogConverters {
     return false;
   }
 
-  private static Map<String, List<SingerMetadata>> getTableNameToMetadataList(List<SingerStream> streams) {
-    // todo (cgardens) - figure out if it's stream or stream id or table name.
+  private static Map<String, List<SingerMetadata>> getStreamNameToMetadataList(List<SingerStream> streams) {
+    // todo (cgardens) - figure out if it's stream or stream id or stream name.
     return streams.stream()
         .collect(Collectors.toMap(SingerStream::getStream, SingerStream::getMetadata));
   }
 
-  private static Map<String, SingerMetadataChild> getColumnMetadataForTable(Map<String, List<SingerMetadata>> tableNameToMetadata,
-                                                                            String tableName) {
-    if (!tableNameToMetadata.containsKey(tableName)) {
-      throw new RuntimeException("could not find metadata for table: " + tableName);
+  private static Map<String, SingerMetadataChild> getFieldMetadataForStream(Map<String, List<SingerMetadata>> streamNameToMetadata,
+                                                                            String streamName) {
+    if (!streamNameToMetadata.containsKey(streamName)) {
+      throw new RuntimeException("could not find metadata for stream: " + streamName);
     }
-    return tableNameToMetadata.get(tableName).stream()
-        // singer breadcrumb is empty if it is table metadata and it it has two
-        // items if it is column metadata. the first item is "properties" and
-        // the second item is the column name.
-        .filter(SingerCatalogConverters::isColumnMetadata)
+    return streamNameToMetadata.get(streamName).stream()
+        // singer breadcrumb is empty if it is stream metadata and it it has two
+        // items if it is field metadata. the first item is "properties" and
+        // the second item is the field name.
+        .filter(SingerCatalogConverters::isFieldMetadata)
         .collect(
             Collectors.toMap(
                 metadata -> metadata.getBreadcrumb().get(1), SingerMetadata::getMetadata));
   }
 
-  private static boolean isColumnMetadata(SingerMetadata metadata) {
-    // column metadata must have 2 breadcrumb entries
+  private static boolean isFieldMetadata(SingerMetadata metadata) {
+    // field metadata must have 2 breadcrumb entries
     if (metadata.getBreadcrumb().size() != 2) {
       return false;
     }
-    // column metadata must have first breadcrumb be property
+    // field metadata must have first breadcrumb be property
     return !metadata.getBreadcrumb().get(0).equals("property");
   }
 
-  private static String getColumnName(SingerMetadata metadata) {
-    if (!isColumnMetadata(metadata)) {
-      throw new RuntimeException("Cannot get column name for non-column metadata");
+  private static String getFieldName(SingerMetadata metadata) {
+    if (!isFieldMetadata(metadata)) {
+      throw new RuntimeException("Cannot get field name for non-field metadata");
     }
 
     return metadata.getBreadcrumb().get(1);
   }
 
   /**
-   * Singer tends to have 2 types for columns one of which is null. The null is pretty irrelevant, so
+   * Singer tends to have 2 types for fields one of which is null. The null is pretty irrelevant, so
    * look at types and find the first non-null one and use that.
    *
    * @param singerTypes - list of types discovered by singer.
-   * @return reduce down to one type which best matches the column's data type
+   * @return reduce down to one type which best matches the field's data type
    */
   private static DataType singerTypesToDataType(List<SingerType> singerTypes) {
     return singerTypes.stream()
@@ -241,7 +241,7 @@ public class SingerCatalogConverters {
    * to do our best here as we discover them. If it becomes too awful, we can just map types we don't
    * recognize to string.
    *
-   * @param singerType - singer's column data type
+   * @param singerType - singer's field data type
    * @return best match for our own data type
    */
   private static DataType singerTypeToDataType(SingerType singerType) {
