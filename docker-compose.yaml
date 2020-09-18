@@ -36,6 +36,7 @@ services:
       - WAIT_HOSTS=db:5432
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
       - WORKSPACE_DOCKER_MOUNT=${WORKSPACE_DOCKER_MOUNT}
+      - LOCAL_DOCKER_MOUNT=${LOCAL_DOCKER_MOUNT}
       - CONFIG_ROOT=${CONFIG_ROOT}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -72,5 +73,7 @@ services:
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
+  local:
+    name: ${LOCAL_DOCKER_MOUNT}
   data:
   db:
