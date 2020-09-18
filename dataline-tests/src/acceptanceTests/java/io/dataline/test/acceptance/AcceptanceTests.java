@@ -24,9 +24,10 @@
 
 package io.dataline.test.acceptance;
 
+import static io.dataline.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.api.client.DatalineApiClient;
 import io.dataline.api.client.invoker.ApiClient;
@@ -38,6 +39,7 @@ import io.dataline.api.client.model.ConnectionRead;
 import io.dataline.api.client.model.ConnectionSchedule;
 import io.dataline.api.client.model.ConnectionStatus;
 import io.dataline.api.client.model.ConnectionSyncRead;
+import io.dataline.api.client.model.ConnectionUpdate;
 import io.dataline.api.client.model.DestinationIdRequestBody;
 import io.dataline.api.client.model.DestinationImplementationCreate;
 import io.dataline.api.client.model.DestinationImplementationIdRequestBody;
@@ -55,81 +57,220 @@ import io.dataline.db.DatabaseHelper;
 import io.dataline.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Result;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings("rawtypes")
+// We order tests so that independent operations are first and operations dependent on them come
+// last
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
-  static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
+  private PostgreSQLContainer sourcePsql;
+  private PostgreSQLContainer targetPsql;
 
-  static PostgreSQLContainer SOURCE_PSQL;
-  static PostgreSQLContainer TARGET_PSQL;
-
-  DatalineApiClient apiClient = new DatalineApiClient(
+  private DatalineApiClient apiClient = new DatalineApiClient(
       new ApiClient().setScheme("http")
           .setHost("localhost")
           .setPort(8001)
           .setBasePath("/api"));
 
-  @BeforeAll
-  public static void init() throws IOException, InterruptedException {
-    SOURCE_PSQL = new PostgreSQLContainer();
-    TARGET_PSQL = new PostgreSQLContainer();
-    SOURCE_PSQL.start();
-    TARGET_PSQL.start();
+  private List<UUID> sourceImplIds;
+  private List<UUID> connectionIds;
 
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), SOURCE_PSQL);
+  @BeforeEach
+  public void init() throws IOException, InterruptedException {
+    sourceImplIds = Lists.newArrayList();
+    connectionIds = Lists.newArrayList();
+
+    sourcePsql = new PostgreSQLContainer();
+    targetPsql = new PostgreSQLContainer();
+    sourcePsql.start();
+    targetPsql.start();
+
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), sourcePsql);
   }
 
-  @AfterAll
-  public static void tearDown() {
-    SOURCE_PSQL.stop();
-    TARGET_PSQL.stop();
+  @AfterEach
+  public void tearDown() throws ApiException {
+    sourcePsql.stop();
+    targetPsql.stop();
+
+    for (UUID sourceImplId : sourceImplIds) {
+      deleteSourceImpl(sourceImplId);
+    }
+
+    for (UUID connectionId : connectionIds) {
+      disableConnection(connectionId);
+    }
+
+    // TODO disable destination once the API exposes the functionality.
   }
 
   @Test
-  public void fullTestRun() throws IOException, ApiException, SQLException {
-    UUID createdSourceImplId = testCreateSourceImplementation().getSourceImplementationId();
-    testCheckSourceConnection(createdSourceImplId);
+  @Order(1)
+  public void testCreateDestinationImpl() throws ApiException {
+    Map<Object, Object> destinationDbConfig = getDestinationDbConfig();
+    UUID postgresDestinationSpecId = getPostgresDestinationSpecId();
+    UUID workspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
+    String name = "AccTestDestinationDb-" + UUID.randomUUID().toString();
 
-    UUID createdDestinationImplId = testCreateDestinationImpl().getDestinationImplementationId();
-    testCheckDestinationConnection(createdDestinationImplId);
+    DestinationImplementationRead destinationImpl = createDestinationImplementation(
+        name,
+        workspaceId,
+        postgresDestinationSpecId,
+        getDestinationDbConfig());
 
-    SourceSchema schema = testDiscoverSourceSchema(createdSourceImplId);
+    assertEquals(name, destinationImpl.getName());
+    assertEquals(postgresDestinationSpecId, destinationImpl.getDestinationSpecificationId());
+    assertEquals(workspaceId, destinationImpl.getWorkspaceId());
+    assertEquals(Jsons.jsonNode(destinationDbConfig), destinationImpl.getConnectionConfiguration());
+  }
 
-    // select all columns
-    schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true)));
+  @Test
+  @Order(2)
+  public void testDestinationCheckConnection() throws ApiException {
+    UUID destinationImplId = createPostgresDestinationImpl().getDestinationImplementationId();
 
-    ConnectionRead createdConnection = testCreateConnection(createdSourceImplId, createdDestinationImplId, schema);
+    CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationImplementationApi()
+        .checkConnectionToDestinationImplementation(
+            new DestinationImplementationIdRequestBody().destinationImplementationId(destinationImplId))
+        .getStatus();
 
-    testRunManualSync(createdConnection.getConnectionId());
+    assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkOperationStatus);
+  }
 
-    assertSourceAndTargetDbInSync(SOURCE_PSQL, TARGET_PSQL);
-    // TODO test scheduled sync
+  @Test
+  @Order(3)
+  public void testCreateSourceImplementation() throws ApiException {
+    String dbName = "acc-test-db";
+    UUID postgresSourceSpecId = getPostgresSourceSpecId();
+    UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
+    Map<Object, Object> sourceDbConfig = getSourceDbConfig();
+
+    SourceImplementationRead response = createSourceImplementation(
+        dbName,
+        defaultWorkspaceId,
+        postgresSourceSpecId,
+        sourceDbConfig);
+
+    assertEquals(dbName, response.getName());
+    assertEquals(defaultWorkspaceId, response.getWorkspaceId());
+    assertEquals(postgresSourceSpecId, response.getSourceSpecificationId());
+    assertEquals(Jsons.jsonNode(sourceDbConfig), response.getConnectionConfiguration());
+  }
+
+  @Test
+  @Order(4)
+  public void testSourceCheckConnection() throws ApiException {
+    UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
+
+    CheckConnectionRead checkConnectionRead = apiClient.getSourceImplementationApi()
+        .checkConnectionToSourceImplementation(new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplId));
+
+    assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkConnectionRead.getStatus());
+  }
+
+  @Test
+  @Order(5)
+  public void testDiscoverSourceSchema() throws ApiException, IOException {
+    UUID sourceImplementationId = createPostgresSourceImpl().getSourceImplementationId();
+
+    SourceSchema actualSchema = discoverSourceSchema(sourceImplementationId);
+
+    SourceSchema expectedSchema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), SourceSchema.class);
+    assertEquals(expectedSchema, actualSchema);
+  }
+
+  @Test
+  @Order(6)
+  public void testCreateConnection() throws ApiException {
+    UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
+    SourceSchema schema = discoverSourceSchema(sourceImplId);
+    UUID destinationImplId = createPostgresDestinationImpl().getDestinationImplementationId();
+    String name = "test-connection-" + UUID.randomUUID().toString();
+    ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
+    ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
+
+    ConnectionRead createdConnection = createConnection(name, sourceImplId, destinationImplId, schema, schedule, syncMode);
+
+    assertEquals(sourceImplId, createdConnection.getSourceImplementationId());
+    assertEquals(destinationImplId, createdConnection.getDestinationImplementationId());
+    assertEquals(ConnectionRead.SyncModeEnum.FULL_REFRESH, createdConnection.getSyncMode());
+    assertEquals(schema, createdConnection.getSyncSchema());
+    assertEquals(schedule, createdConnection.getSchedule());
+    assertEquals(name, createdConnection.getName());
+  }
+
+  @Test
+  @Order(7)
+  public void testManualSync() throws IOException, ApiException, SQLException, InterruptedException {
+    String connectionName = "test-connection";
+    UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
+    UUID destinationImplId = createPostgresDestinationImpl().getDestinationImplementationId();
+    SourceSchema schema = discoverSourceSchema(sourceImplId);
+    schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true))); // select all columns
+    ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(100L).timeUnit(MINUTES);
+    ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
+
+    ConnectionRead createdConnection = createConnection(connectionName, sourceImplId, destinationImplId, schema, connectionSchedule, syncMode);
+
+    ConnectionSyncRead connectionSyncRead =
+        apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(createdConnection.getConnectionId()));
+    assertEquals(ConnectionSyncRead.StatusEnum.SUCCESS, connectionSyncRead.getStatus());
+    assertSourceAndTargetDbInSync(sourcePsql, targetPsql);
+  }
+
+  @Test
+  @Order(8)
+  public void testScheduledSync() throws InterruptedException, SQLException, ApiException {
+    String connectionName = "test-connection";
+    UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
+    UUID destinationImplId = createPostgresDestinationImpl().getDestinationImplementationId();
+    SourceSchema schema = discoverSourceSchema(sourceImplId);
+    schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true))); // select all columns
+    ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
+    ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
+
+    createConnection(connectionName, sourceImplId, destinationImplId, schema, connectionSchedule, syncMode);
+
+    // When a new connection is created, Dataline might sync it immediately (before the sync interval).
+    // Then it will wait the sync interval.
+    Thread.sleep(Duration.of(30, SECONDS).toMillis());
+    assertSourceAndTargetDbInSync(sourcePsql, targetPsql);
+  }
+
+  private SourceSchema discoverSourceSchema(UUID sourceImplementationId) throws ApiException {
+    return apiClient.getSourceImplementationApi().discoverSchemaForSourceImplementation(
+        new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplementationId)).getSchema();
   }
 
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb, PostgreSQLContainer targetDb) throws SQLException {
-    BasicDataSource sourceDbPool =
-        DatabaseHelper.getConnectionPool(
-            sourceDb.getUsername(), sourceDb.getPassword(), sourceDb.getJdbcUrl());
-    BasicDataSource targetDbPool =
-        DatabaseHelper.getConnectionPool(
-            targetDb.getUsername(), targetDb.getPassword(), targetDb.getJdbcUrl());
+    BasicDataSource sourceDbPool = getConnectionPool(sourceDb);
+    BasicDataSource targetDbPool = getConnectionPool(targetDb);
 
     Set<String> sourceTables = listTables(sourceDbPool);
     Set<String> targetTables = listTables(targetDbPool);
@@ -138,6 +279,11 @@ public class AcceptanceTests {
     for (String table : sourceTables) {
       assertTablesEquivalent(sourceDbPool, targetDbPool, table);
     }
+  }
+
+  private BasicDataSource getConnectionPool(PostgreSQLContainer db) {
+    return DatabaseHelper.getConnectionPool(
+        db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
   private Set<String> listTables(BasicDataSource connectionPool) throws SQLException {
@@ -203,48 +349,18 @@ public class AcceptanceTests {
         });
   }
 
-  private SourceSchema testDiscoverSourceSchema(UUID sourceImplementationId) throws ApiException, IOException {
-    SourceSchema actualSchema = apiClient.getSourceImplementationApi().discoverSchemaForSourceImplementation(
-        new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplementationId)).getSchema();
-
-    SourceSchema expectedSchema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), SourceSchema.class);
-
-    assertEquals(expectedSchema, actualSchema);
-    return actualSchema;
-  }
-
   private void testRunManualSync(UUID connectionId) throws ApiException {
-    ConnectionSyncRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(ConnectionSyncRead.StatusEnum.SUCCESS, connectionSyncRead.getStatus());
-  }
-
-  private void testCheckDestinationConnection(UUID destinationImplementationId) throws ApiException {
-    CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationImplementationApi()
-        .checkConnectionToDestinationImplementation(
-            new DestinationImplementationIdRequestBody().destinationImplementationId(destinationImplementationId))
-        .getStatus();
-
-    assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkOperationStatus);
-  }
-
-  private void testCheckSourceConnection(UUID sourceImplementationId) throws ApiException {
-    try {
-      CheckConnectionRead checkConnectionRead = apiClient.getSourceImplementationApi()
-          .checkConnectionToSourceImplementation(new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplementationId));
-      assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkConnectionRead.getStatus());
-    } catch (ApiException e) {
-      LOGGER.info("{}", e.getResponseBody());
-      throw e;
-    }
 
   }
 
-  private ConnectionRead testCreateConnection(UUID sourceImplId, UUID destinationImplId, SourceSchema schema)
+  private ConnectionRead createConnection(String name,
+                                          UUID sourceImplId,
+                                          UUID destinationImplId,
+                                          SourceSchema schema,
+                                          ConnectionSchedule schedule,
+                                          ConnectionCreate.SyncModeEnum syncMode)
       throws ApiException {
-    ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES).units(3L);
-    ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
-    String name = "AccTest-PG2PG-" + UUID.randomUUID().toString();
-    UUID createdConnectionId = apiClient.getConnectionApi().createConnection(
+    ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
             .status(ConnectionStatus.ACTIVE)
             .sourceImplementationId(sourceImplId)
@@ -252,99 +368,112 @@ public class AcceptanceTests {
             .syncMode(syncMode)
             .syncSchema(schema)
             .schedule(schedule)
-            .name(name))
-        .getConnectionId();
-
-    ConnectionRead readConnection = apiClient.getConnectionApi().getConnection(
-        new ConnectionIdRequestBody().connectionId(createdConnectionId));
-
-    assertEquals(sourceImplId, readConnection.getSourceImplementationId());
-    assertEquals(destinationImplId, readConnection.getDestinationImplementationId());
-    assertEquals(ConnectionRead.SyncModeEnum.FULL_REFRESH, readConnection.getSyncMode());
-    assertEquals(schema, readConnection.getSyncSchema());
-    assertEquals(schedule, readConnection.getSchedule());
-    assertEquals(name, readConnection.getName());
-
-    return readConnection;
+            .name(name));
+    connectionIds.add(connection.getConnectionId());
+    return connection;
   }
 
-  private DestinationImplementationRead testCreateDestinationImpl() throws ApiException {
-    UUID postgresDestinationId = getPostgresDestinationId();
-    UUID destinationSpecId =
-        apiClient.getDestinationSpecificationApi()
-            .getDestinationSpecification(new DestinationIdRequestBody().destinationId(postgresDestinationId))
-            .getDestinationSpecificationId();
+  private DestinationImplementationRead createPostgresDestinationImpl() throws ApiException {
+    return createDestinationImplementation(
+        "AccTestDestination-" + UUID.randomUUID().toString(),
+        PersistenceConstants.DEFAULT_WORKSPACE_ID,
+        getPostgresDestinationSpecId(),
+        getDestinationDbConfig());
+  }
 
-    JsonNode dbConfiguration = Jsons.jsonNode(ImmutableMap.builder()
-        .put("postgres_host", TARGET_PSQL.getHost())
-        .put("postgres_username", TARGET_PSQL.getUsername())
-        .put("postgres_password", TARGET_PSQL.getPassword())
+  private Map<Object, Object> getDestinationDbConfig() {
+    return ImmutableMap.builder()
+        .put("postgres_host", targetPsql.getHost())
+        .put("postgres_username", targetPsql.getUsername())
+        .put("postgres_password", targetPsql.getPassword())
         .put("postgres_schema", "public")
-        .put("postgres_port", TARGET_PSQL.getFirstMappedPort())
-        .put("postgres_database", TARGET_PSQL.getDatabaseName())
-        .build());
-
-    UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
-
-    DestinationImplementationCreate create = new DestinationImplementationCreate()
-        .connectionConfiguration(dbConfiguration)
-        .workspaceId(defaultWorkspaceId)
-        .destinationSpecificationId(destinationSpecId);
-
-    DestinationImplementationRead destinationImpl = apiClient.getDestinationImplementationApi().createDestinationImplementation(create);
-
-    assertEquals(destinationSpecId, destinationImpl.getDestinationSpecificationId());
-    assertEquals(defaultWorkspaceId, destinationImpl.getWorkspaceId());
-    assertEquals(dbConfiguration, destinationImpl.getConnectionConfiguration());
-    return destinationImpl;
+        .put("postgres_port", targetPsql.getFirstMappedPort())
+        .put("postgres_database", targetPsql.getDatabaseName())
+        .build();
   }
 
-  private UUID getPostgresDestinationId() throws ApiException {
-    return apiClient.getDestinationApi().listDestinations().getDestinations()
+  private DestinationImplementationRead createDestinationImplementation(String name,
+                                                                        UUID workspaceId,
+                                                                        UUID destinationSpecId,
+                                                                        Map<Object, Object> destinationConfig)
+      throws ApiException {
+    DestinationImplementationRead destinationImplementation =
+        apiClient.getDestinationImplementationApi().createDestinationImplementation(new DestinationImplementationCreate()
+            .name(name)
+            .connectionConfiguration(Jsons.jsonNode(destinationConfig))
+            .workspaceId(workspaceId)
+            .destinationSpecificationId(destinationSpecId));
+
+    return destinationImplementation;
+  }
+
+  private UUID getPostgresDestinationSpecId() throws ApiException {
+    UUID destinationId = apiClient.getDestinationApi().listDestinations().getDestinations()
         .stream()
         .filter(dr -> dr.getName().toLowerCase().equals("postgres"))
         .findFirst()
         .orElseThrow()
         .getDestinationId();
+    return apiClient.getDestinationSpecificationApi()
+        .getDestinationSpecification(new DestinationIdRequestBody().destinationId(destinationId))
+        .getDestinationSpecificationId();
   }
 
-  private SourceImplementationRead testCreateSourceImplementation() throws IOException, ApiException {
-    UUID postgresSourceId = getPostgresSourceId();
-    SourceSpecificationRead sourceSpecRead =
-        apiClient.getSourceSpecificationApi().getSourceSpecification(new SourceIdRequestBody().sourceId(postgresSourceId));
-
-    JsonNode dbConfiguration = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", SOURCE_PSQL.getHost())
-        .put("password", SOURCE_PSQL.getPassword())
-        .put("port", SOURCE_PSQL.getFirstMappedPort())
-        .put("dbname", SOURCE_PSQL.getDatabaseName())
-        .put("user", SOURCE_PSQL.getUsername()).build());
-
-    UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
-    UUID sourceSpecificationId = sourceSpecRead.getSourceSpecificationId();
-
-    SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate()
-        .name("rldb")
-        .sourceSpecificationId(sourceSpecificationId)
-        .workspaceId(defaultWorkspaceId)
-        .connectionConfiguration(dbConfiguration);
-
-    SourceImplementationRead createResponse = apiClient.getSourceImplementationApi().createSourceImplementation(sourceImplementationCreate);
-
-    assertEquals("rldb", createResponse.getName());
-    assertEquals(defaultWorkspaceId, createResponse.getWorkspaceId());
-    assertEquals(sourceSpecificationId, createResponse.getSourceSpecificationId());
-    assertEquals(dbConfiguration, Jsons.jsonNode(createResponse.getConnectionConfiguration()));
-    return createResponse;
+  private Map<Object, Object> getSourceDbConfig() {
+    Map<Object, Object> dbConfig = new HashMap<>();
+    dbConfig.put("host", sourcePsql.getHost());
+    dbConfig.put("password", sourcePsql.getPassword());
+    dbConfig.put("port", sourcePsql.getFirstMappedPort());
+    dbConfig.put("dbname", sourcePsql.getDatabaseName());
+    dbConfig.put("user", sourcePsql.getUsername());
+    return dbConfig;
   }
 
-  private UUID getPostgresSourceId() throws ApiException {
-    return apiClient.getSourceApi().listSources().getSources()
+  private SourceImplementationRead createPostgresSourceImpl() throws ApiException {
+    return createSourceImplementation(
+        "acceptanceTestDb-" + UUID.randomUUID().toString(),
+        PersistenceConstants.DEFAULT_WORKSPACE_ID,
+        getPostgresSourceSpecId(),
+        getSourceDbConfig());
+  }
+
+  private SourceImplementationRead createSourceImplementation(String name, UUID workspaceId, UUID sourceSpecId, Map<Object, Object> sourceConfig)
+      throws ApiException {
+    SourceImplementationRead sourceImplementation = apiClient.getSourceImplementationApi().createSourceImplementation(new SourceImplementationCreate()
+        .name(name)
+        .sourceSpecificationId(sourceSpecId)
+        .workspaceId(workspaceId)
+        .connectionConfiguration(Jsons.jsonNode(sourceConfig)));
+    sourceImplIds.add(sourceImplementation.getSourceImplementationId());
+    return sourceImplementation;
+  }
+
+  private UUID getPostgresSourceSpecId() throws ApiException {
+    UUID postgresSourceId = apiClient.getSourceApi().listSources().getSources()
         .stream()
         .filter(sourceRead -> sourceRead.getName().toLowerCase().equals("postgres"))
         .findFirst()
         .orElseThrow()
         .getSourceId();
+
+    SourceSpecificationRead sourceSpecRead =
+        apiClient.getSourceSpecificationApi().getSourceSpecification(new SourceIdRequestBody().sourceId(postgresSourceId));
+    return sourceSpecRead.getSourceSpecificationId();
+  }
+
+  private void deleteSourceImpl(UUID sourceImplId) throws ApiException {
+    apiClient.getSourceImplementationApi().deleteSourceImplementation(new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplId));
+  }
+
+  private void disableConnection(UUID connectionId) throws ApiException {
+    ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    ConnectionUpdate connectionUpdate =
+        new ConnectionUpdate()
+            .connectionId(connectionId)
+            .status(ConnectionStatus.DEPRECATED)
+            .schedule(connection.getSchedule())
+            .syncSchema(connection.getSyncSchema());
+    apiClient.getConnectionApi().updateConnection(connectionUpdate);
   }
 
 }
