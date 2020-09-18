@@ -27,6 +27,8 @@ package io.dataline.scheduler;
 import io.dataline.commons.concurrency.LifecycledCallable;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.WorkerConstants;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
@@ -69,10 +71,13 @@ public class JobSubmitter implements Runnable {
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
           persistence.updateStatus(job.getId(), JobStatus.RUNNING);
+          final Path logFilePath = workerRun.getJobRoot().resolve(WorkerConstants.LOG_FILENAME);
+          persistence.updateLogPath(job.getId(), logFilePath);
           persistence.incrementAttempts(job.getId());
           MDC.put("context", "worker");
-          MDC.put("job_root", workerRun.getJobRoot().toString());
           MDC.put("job_id", String.valueOf(job.getId()));
+          MDC.put("job_root", logFilePath.getParent().toString());
+          MDC.put("job_log_filename", logFilePath.getFileName().toString());
         })
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {

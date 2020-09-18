@@ -31,15 +31,14 @@ CREATE
         JOBS(
             id BIGSERIAL PRIMARY KEY,
             SCOPE VARCHAR(255),
-            created_at TIMESTAMPTZ,
-            started_at TIMESTAMPTZ,
-            updated_at TIMESTAMPTZ,
-            status JOB_STATUS,
             config JSONB,
+            log_path VARCHAR(255),
             OUTPUT JSONB,
-            stdout_path VARCHAR(255),
-            stderr_path VARCHAR(255),
-            attempts INTEGER
+            attempts INTEGER,
+            status JOB_STATUS,
+            started_at TIMESTAMPTZ,
+            created_at TIMESTAMPTZ,
+            updated_at TIMESTAMPTZ
         );
 
 -- entries

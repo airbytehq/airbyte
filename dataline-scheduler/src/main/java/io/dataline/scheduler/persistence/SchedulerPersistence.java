@@ -31,20 +31,18 @@ import io.dataline.config.StandardSync;
 import io.dataline.scheduler.Job;
 import io.dataline.scheduler.JobStatus;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface SchedulerPersistence {
 
-  long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation)
-      throws IOException;
+  long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation) throws IOException;
 
-  long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation)
-      throws IOException;
+  long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation) throws IOException;
 
-  long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation)
-      throws IOException;
+  long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation) throws IOException;
 
   long createSyncJob(SourceConnectionImplementation sourceImplementation,
                      DestinationConnectionImplementation destinationImplementation,
@@ -54,6 +52,8 @@ public interface SchedulerPersistence {
   Job getJob(long jobId) throws IOException;
 
   void updateStatus(long jobId, JobStatus status) throws IOException;
+
+  void updateLogPath(long jobId, Path logPath) throws IOException;
 
   void incrementAttempts(long jobId) throws IOException;
 

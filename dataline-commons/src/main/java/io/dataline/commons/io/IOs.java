@@ -60,23 +60,26 @@ public class IOs {
   }
 
   public static List<String> getTail(int numLines, String path) throws IOException {
-    File file = new File(path);
-
-    if (file.exists()) {
-      try (ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
-        List<String> lines = new ArrayList<>();
-
-        String line;
-        while ((line = fileReader.readLine()) != null && lines.size() < numLines) {
-          lines.add(line);
-        }
-
-        Collections.reverse(lines);
-
-        return lines;
-      }
-    } else {
+    if (path == null) {
       return Collections.emptyList();
+    }
+
+    File file = new File(path);
+    if (!file.exists()) {
+      return Collections.emptyList();
+    }
+
+    try (ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
+      List<String> lines = new ArrayList<>();
+
+      String line;
+      while ((line = fileReader.readLine()) != null && lines.size() < numLines) {
+        lines.add(line);
+      }
+
+      Collections.reverse(lines);
+
+      return lines;
     }
   }
 
