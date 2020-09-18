@@ -9,17 +9,17 @@
     "additionalProperties": false,
     "properties": {
       "delimiter": {
-        "description": "the delimiter used to separate records.",
+        "description": "Delimiter used to separate records.",
         "type": "string",
         "examples": ["\t"]
       },
       "quotechar": {
-        "description": "huh?",
+        "description": "What character in the input should be treated as a quotation mark.",
         "type": "string",
         "examples": ["'"]
       },
       "destination_path": {
-        "description": "path to send the data.",
+        "description": "Path to write the data. The provided directory _must_ exist on the filesystem. This path will be concatenated onto the `LOCAL_ROOT`. e.g. If `LOCAL_ROOT = /tmp/dataline_local` and destination_path is `cars/models`, then the directory `/tmp/dataline_local/cars/models` must already exist.",
         "type": "string"
       }
     }
