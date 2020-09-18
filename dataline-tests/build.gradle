@@ -38,6 +38,7 @@ task acceptanceTests(type: Test) {
     testClassesDirs += sourceSets.acceptanceTests.output.classesDirs
     classpath += sourceSets.acceptanceTests.runtimeClasspath
     useJUnitPlatform()
+    failFast = true
     testLogging() {
         events "passed", "failed"
         exceptionFormat "full"
