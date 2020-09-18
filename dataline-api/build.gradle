@@ -71,6 +71,45 @@ task generateApiClient(type: GenerateTask) {
 }
 compileJava.dependsOn tasks.generateApiClient
 
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask;
+task generateApiDocs(type: GenerateTask) {
+    def docsOutputDir = "$buildDir/generated/api/docs"
+
+    generatorName = "html"
+    inputSpec = specFile
+    outputDir = docsOutputDir
+
+    apiPackage = "io.dataline.api.client"
+    invokerPackage = "io.dataline.api.client.invoker"
+    modelPackage = "io.dataline.api.client.model"
+
+    importMappings = [
+            'SourceSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceConfiguration'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationSpecification': 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationConfiguration': 'com.fasterxml.jackson.databind.JsonNode',
+    ]
+
+    generateApiDocumentation = false
+
+    configOptions = [
+            dateLibrary  : "java8",
+            generatePom  : "false",
+            interfaceOnly: "true"
+    ]
+
+    doLast {
+        delete rootProject.file("api")
+        copy {
+            from outputDir
+            include "**/*.html"
+            includeEmptyDirs = false
+            into rootProject.file("api")
+        }
+    }
+}
+compileJava.dependsOn tasks.generateApiDocs
+
 dependencies {
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
 
