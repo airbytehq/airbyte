@@ -24,13 +24,6 @@
 
 package io.dataline.integration_tests.destinations;
 
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertLinesMatch;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
@@ -58,6 +51,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import static io.dataline.workers.JobStatus.FAILED;
+import static io.dataline.workers.JobStatus.SUCCESSFUL;
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class TestPostgresDestination {
 
   private static final String IMAGE_NAME = "dataline/integration-singer-postgres-destination:dev";
@@ -81,7 +81,7 @@ class TestPostgresDestination {
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
+    pbf = new DockerProcessBuilderFactory(workspaceRoot.toString(), "host");
   }
 
   @AfterEach
@@ -135,7 +135,7 @@ class TestPostgresDestination {
   }
 
   private Process startTarget() throws IOException {
-    return pbf.create(jobRoot, IMAGE_NAME, "--config", jobRoot.resolve(WorkerConstants.TARGET_CONFIG_JSON_FILENAME).toString())
+    return pbf.create(IMAGE_NAME, "--config", jobRoot.resolve(WorkerConstants.TARGET_CONFIG_JSON_FILENAME).toString())
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
