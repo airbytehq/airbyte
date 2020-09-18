@@ -235,7 +235,6 @@ public class AcceptanceTests {
     schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true))); // select all columns
     ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(100L).timeUnit(MINUTES);
     ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
-    
 
     ConnectionRead createdConnection = createConnection(connectionName, sourceImplId, destinationImplId, schema, connectionSchedule, syncMode);
 
@@ -258,7 +257,8 @@ public class AcceptanceTests {
 
     createConnection(connectionName, sourceImplId, destinationImplId, schema, connectionSchedule, syncMode);
 
-    // When a new connection is created, Dataline might sync it immediately (before the sync interval). Then it will wait the sync interval.
+    // When a new connection is created, Dataline might sync it immediately (before the sync interval).
+    // Then it will wait the sync interval.
     Thread.sleep(Duration.of(30, SECONDS).toMillis());
     assertSourceAndTargetDbInSync(sourcePsql, targetPsql);
   }
@@ -300,9 +300,9 @@ public class AcceptanceTests {
   }
 
   private void assertTablesEquivalent(
-      BasicDataSource sourceDbPool,
-      BasicDataSource targetDbPool,
-      String table)
+                                      BasicDataSource sourceDbPool,
+                                      BasicDataSource targetDbPool,
+                                      String table)
       throws SQLException {
     long sourceTableCount = getTableCount(sourceDbPool, table);
     long targetTableCount = getTableCount(targetDbPool, table);
