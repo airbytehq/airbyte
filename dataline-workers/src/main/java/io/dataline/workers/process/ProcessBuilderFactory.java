@@ -24,8 +24,16 @@
 
 package io.dataline.workers.process;
 
+import java.nio.file.Path;
+
 public interface ProcessBuilderFactory {
 
   ProcessBuilder create(String imageName, String... args);
+
+  /**
+   * @param path a local filesystem path
+   * @return the path from the process's perspective
+   */
+  Path rebasePath(final Path path);
 
 }

@@ -24,16 +24,6 @@
 
 package io.dataline.workers.protocols.singer;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardTargetConfig;
 import io.dataline.singer.SingerMessage;
@@ -52,6 +42,16 @@ import java.time.Duration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class DefaultSingerTargetTest {
 
@@ -78,7 +78,7 @@ class DefaultSingerTargetTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("error".getBytes(StandardCharsets.UTF_8)));
 
     pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
-    when(pbf.create(IMAGE_NAME, "--config", jobRoot.resolve(WorkerConstants.TARGET_CONFIG_JSON_FILENAME).toString()).start())
+    when(pbf.create(IMAGE_NAME, "--config", pbf.rebasePath(jobRoot.resolve(WorkerConstants.TARGET_CONFIG_JSON_FILENAME)).toString()).start())
         .thenReturn(process);
   }
 

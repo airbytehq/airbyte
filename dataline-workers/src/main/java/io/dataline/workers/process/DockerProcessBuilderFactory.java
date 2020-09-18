@@ -66,4 +66,9 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
     return new ProcessBuilder(cmd);
   }
 
+  @Override
+  public Path rebasePath(final Path path) {
+    final Path relativePath = Path.of(mountSource).relativize(path);
+    return MOUNT_DESTINATION.resolve(relativePath);
+  }
 }

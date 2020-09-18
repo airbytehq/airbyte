@@ -100,14 +100,14 @@ public class DefaultSingerTap implements SingerTap {
 
     String[] cmd = {
       "--config",
-      jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME).toString(),
+      pbf.rebasePath(jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME)).toString(),
       // TODO support both --properties and --catalog depending on integration
       "--properties",
-      jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toString()
+      pbf.rebasePath(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME)).toString()
     };
 
     if (input.getState() != null) {
-      cmd = ArrayUtils.addAll(cmd, "--state", jobRoot.resolve(WorkerConstants.INPUT_STATE_JSON_FILENAME).toString());
+      cmd = ArrayUtils.addAll(cmd, "--state", pbf.rebasePath(jobRoot.resolve(WorkerConstants.INPUT_STATE_JSON_FILENAME)).toString());
     }
 
     tapProcess = pbf.create(imageName, cmd).start();

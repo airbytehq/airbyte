@@ -24,15 +24,6 @@
 
 package io.dataline.workers.protocols.singer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.io.IOs;
@@ -53,6 +44,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 public class SingerDiscoverSchemaWorkerTest {
 
   private static final String IMAGE_NAME = "selfie:latest";
@@ -71,7 +71,7 @@ public class SingerDiscoverSchemaWorkerTest {
 
     input = new StandardDiscoverSchemaInput().withConnectionConfiguration(CREDENTIALS);
 
-    when(pbf.create(IMAGE_NAME, "--config", jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME).toString(), "--discover")
+    when(pbf.create(IMAGE_NAME, "--config", pbf.rebasePath(jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME)).toString(), "--discover")
         .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
         .start())
             .thenReturn(process);
