@@ -32,4 +32,4 @@ This integration will be constrained by the speed at which your filesystem accep
 ## Getting Started
 
 ### Requirements:
-* The `destination_path` field in the configuration _must_ point to a directory that _already_ exists on the filesystem. This path will be concatenated onto the `LOCAL_ROOT`. e.g. If `LOCAL_ROOT = /tmp/dataline_local` and the user provides the value `cars/models`, then the directory `/tmp/dataline_local/cars/models` must already be created for this destination to work as intended.
+* The `destination_path` field will be appended to `LOCAL_ROOT`. e.g. If `LOCAL_ROOT = /tmp/dataline_local` and the user provides the value `cars/models`, then data will be written to `/tmp/dataline_local/cars/models`. By default `LOCAL_ROOT = /tmp/dataline_local`.
