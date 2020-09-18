@@ -27,5 +27,4 @@ package io.dataline.workers;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 
-public interface CheckConnectionWorker
-    extends Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput> {}
+public interface CheckConnectionWorker extends Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput> {}

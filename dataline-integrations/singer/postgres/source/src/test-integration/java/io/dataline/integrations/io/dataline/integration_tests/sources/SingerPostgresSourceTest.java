@@ -40,8 +40,6 @@ import io.dataline.config.StandardSync;
 import io.dataline.config.StandardTapConfig;
 import io.dataline.singer.SingerMessage;
 import io.dataline.test.utils.PostgreSQLContainerHelper;
-import io.dataline.workers.InvalidCatalogException;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.process.DockerProcessBuilderFactory;
@@ -70,6 +68,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+@SuppressWarnings("rawtypes")
 public class SingerPostgresSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerPostgresSourceTest.class);
@@ -78,7 +77,6 @@ public class SingerPostgresSourceTest {
 
   private PostgreSQLContainer psqlDb;
   private ProcessBuilderFactory pbf;
-  private Path workspaceRoot;
   private Path jobRoot;
 
   @BeforeEach
@@ -88,7 +86,7 @@ public class SingerPostgresSourceTest {
 
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), psqlDb);
     Files.createDirectories(TESTS_PATH);
-    workspaceRoot = Files.createTempDirectory(TESTS_PATH, "dataline-integration");
+    Path workspaceRoot = Files.createTempDirectory(TESTS_PATH, "dataline-integration");
     jobRoot = workspaceRoot.resolve("job");
     Files.createDirectories(jobRoot);
 
@@ -188,7 +186,7 @@ public class SingerPostgresSourceTest {
   }
 
   @Test
-  public void testDiscover() throws IOException, InvalidCredentialsException {
+  public void testDiscover() throws IOException {
     StandardDiscoverSchemaInput inputConfig =
         new StandardDiscoverSchemaInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig()));
     OutputAndStatus<StandardDiscoverSchemaOutput> run = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf).run(inputConfig, jobRoot);
@@ -200,7 +198,7 @@ public class SingerPostgresSourceTest {
   }
 
   @Test
-  public void testSuccessfulConnectionCheck() throws InvalidCredentialsException, InvalidCatalogException {
+  public void testSuccessfulConnectionCheck() {
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig()));
     OutputAndStatus<StandardCheckConnectionOutput> run =
         new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf)).run(inputConfig, jobRoot);
@@ -211,7 +209,7 @@ public class SingerPostgresSourceTest {
   }
 
   @Test
-  public void testInvalidCredsFailedConnectionCheck() throws InvalidCredentialsException, InvalidCatalogException {
+  public void testInvalidCredsFailedConnectionCheck() {
     Map<String, Object> dbConfig = getDbConfig();
     dbConfig.put("password", "notarealpassword");
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(dbConfig));
