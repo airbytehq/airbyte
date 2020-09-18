@@ -3,7 +3,7 @@
 set -e
 
 case "$1" in
-  -c|--config)        CONFIG_FILE="$2"         ;;
+  --config)        CONFIG_FILE="$2"         ;;
   *)                 shift; break             ;;
 esac
 

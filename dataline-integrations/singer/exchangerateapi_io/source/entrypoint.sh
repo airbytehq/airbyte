@@ -20,11 +20,11 @@ function main() {
       shift 1
       break
       ;;
-    -b | --config)
+    --config)
       ARGS="$ARGS --config $2"
       shift 2
       ;;
-    -c | --state)
+    --state)
       ARGS="$ARGS --state $2"
       shift 2
       ;;

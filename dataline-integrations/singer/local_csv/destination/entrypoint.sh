@@ -30,11 +30,11 @@ function main() {
   ARGS=
   while [ $# -ne 0 ]; do
     case "$1" in
-    -a | --discover)
+    --discover)
       ARGS="$ARGS --discover"
       shift 1
       ;;
-    -b | --config)
+    --config)
       jq '.destination_path = "/local/" + .destination_path' $2 > $PROCESSED_CONFIG_FILE
       ARGS="$ARGS --config $PROCESSED_CONFIG_FILE"
       shift 2

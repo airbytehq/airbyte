@@ -21,21 +21,21 @@ function main() {
       ARGS="$ARGS --discover"
       shift 1
       ;;
-    -b | --config)
+    --config)
       jq '.filter_dbs = .dbname' $2 > $PROCESSED_CONFIG_FILE
       ARGS="$ARGS --config $PROCESSED_CONFIG_FILE"
       shift 2
       ;;
-    -c | --state)
+    --state)
       ARGS="$ARGS --state $2"
       shift 2
       ;;
-    -d | --catalog)
+    --catalog)
       ARGS="$ARGS --catalog $2"
       shift 2
       ;;
 
-    -e | --properties)
+    --properties)
       ARGS="$ARGS --properties $2"
       shift 2
       ;;
