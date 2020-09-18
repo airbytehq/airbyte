@@ -13,7 +13,7 @@ These instructions have been tested on MacOS
 # In your workstation terminal
 git clone git@github.com:datalineio/dataline.git
 cd dataline
-docker-compose up -d
+VERSION=dev docker-compose up -d
 ```
 
 * In your browser, just visit [http://localhost:8000](http://localhost:8000)
