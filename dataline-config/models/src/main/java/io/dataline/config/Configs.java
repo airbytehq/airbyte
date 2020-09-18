@@ -32,6 +32,8 @@ public interface Configs {
 
   Path getWorkspaceRoot();
 
+  Path getLocalRoot();
+
   String getDatabaseUser();
 
   String getDatabasePassword();
@@ -39,6 +41,8 @@ public interface Configs {
   String getDatabaseUrl();
 
   String getWorkspaceDockerMount();
+
+  String getLocalDockerMount();
 
   String getDockerNetwork();
 

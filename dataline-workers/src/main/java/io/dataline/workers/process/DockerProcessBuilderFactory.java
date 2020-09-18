@@ -36,15 +36,18 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerProcessBuilderFactory.class);
 
-  private static final Path MOUNT_DESTINATION = Path.of("/data");
+  private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
+  private static final Path LOCAL_MOUNT_DESTINATION = Path.of("/local");
 
-  private final String mountSource;
+  private final String workspaceMountSource;
   private final Path workspaceRoot;
+  private String localMountSource;
   private final String networkName;
 
-  public DockerProcessBuilderFactory(Path workspaceRoot, String mountSource, String networkName) {
-    this.mountSource = mountSource;
+  public DockerProcessBuilderFactory(Path workspaceRoot, String workspaceMountSource, String localMountSource, String networkName) {
+    this.workspaceMountSource = workspaceMountSource;
     this.workspaceRoot = workspaceRoot;
+    this.localMountSource = localMountSource;
     this.networkName = networkName;
   }
 
@@ -57,7 +60,9 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
             "--rm",
             "-i",
             "-v",
-            String.format("%s:%s", mountSource, MOUNT_DESTINATION),
+            String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION),
+            "-v",
+            String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
             "-w",
             rebasePath(jobRoot).toString(),
             "--network",
@@ -72,7 +77,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
 
   private Path rebasePath(final Path jobRoot) {
     final Path relativePath = workspaceRoot.relativize(jobRoot);
-    return MOUNT_DESTINATION.resolve(relativePath);
+    return DATA_MOUNT_DESTINATION.resolve(relativePath);
   }
 
 }
