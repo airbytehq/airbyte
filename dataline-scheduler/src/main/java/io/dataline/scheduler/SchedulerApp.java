@@ -116,7 +116,7 @@ public class SchedulerApp {
         configs.getDatabasePassword(),
         configs.getDatabaseUrl());
 
-    final ProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, configs.getWorkspaceDockerMount(), configs.getDockerNetwork());
+    final ProcessBuilderFactory pbf = new DockerProcessBuilderFactory(configs.getWorkspaceDockerMount(), configs.getDockerNetwork());
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(connectionPool, configRoot, workspaceRoot, pbf).start();

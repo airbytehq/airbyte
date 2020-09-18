@@ -110,7 +110,6 @@ class DefaultSingerTapTest {
     process = mock(Process.class, RETURNS_DEEP_STUBS);
     final InputStream inputStream = mock(InputStream.class);
     when(pbf.create(
-        jobRoot,
         IMAGE_NAME,
         "--config",
         jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME).toString(),

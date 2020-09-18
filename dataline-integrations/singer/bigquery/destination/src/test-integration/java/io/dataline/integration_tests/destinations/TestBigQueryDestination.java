@@ -85,7 +85,7 @@ class TestBigQueryDestination {
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
+    pbf = new DockerProcessBuilderFactory(workspaceRoot.toString(), "host");
 
     datasetName = "dataline_tests_" + RandomStringUtils.randomAlphanumeric(8);
     DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetName).build();
@@ -153,7 +153,6 @@ class TestBigQueryDestination {
 
   private Process startTarget() throws IOException {
     return pbf.create(
-        jobRoot,
         IMAGE_NAME,
         "--config",
         jobRoot.resolve("rendered_bigquery.json").toString())

@@ -78,7 +78,7 @@ class DefaultSingerTargetTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("error".getBytes(StandardCharsets.UTF_8)));
 
     pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", jobRoot.resolve(WorkerConstants.TARGET_CONFIG_JSON_FILENAME).toString()).start())
+    when(pbf.create(IMAGE_NAME, "--config", jobRoot.resolve(WorkerConstants.TARGET_CONFIG_JSON_FILENAME).toString()).start())
         .thenReturn(process);
   }
 

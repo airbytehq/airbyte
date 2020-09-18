@@ -71,7 +71,7 @@ public class SingerDiscoverSchemaWorkerTest {
 
     input = new StandardDiscoverSchemaInput().withConnectionConfiguration(CREDENTIALS);
 
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")
+    when(pbf.create(IMAGE_NAME, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")
         .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
         .start())
             .thenReturn(process);

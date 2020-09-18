@@ -86,7 +86,7 @@ public class SingerStripeSourceTest {
 
     writeConfigFilesToJobRoot();
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "host");
+    pbf = new DockerProcessBuilderFactory(workspaceRoot.toString(), "host");
   }
 
   private static String getEmail(int number) {
@@ -216,7 +216,6 @@ public class SingerStripeSourceTest {
 
   private Process createDiscoveryProcess(String configFileName) throws IOException {
     return pbf.create(
-        jobRoot,
         IMAGE_NAME,
         "--config",
         jobRoot.resolve(configFileName).toString(),
@@ -228,7 +227,6 @@ public class SingerStripeSourceTest {
 
   private Process createSyncProcess(Path syncOutputPath) throws IOException {
     return pbf.create(
-        jobRoot,
         IMAGE_NAME,
         "--config",
         jobRoot.resolve(CONFIG).toString(),

@@ -39,17 +39,15 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   private static final Path MOUNT_DESTINATION = Path.of("/data");
 
   private final String mountSource;
-  private final Path workspaceRoot;
   private final String networkName;
 
-  public DockerProcessBuilderFactory(Path workspaceRoot, String mountSource, String networkName) {
+  public DockerProcessBuilderFactory(String mountSource, String networkName) {
     this.mountSource = mountSource;
-    this.workspaceRoot = workspaceRoot;
     this.networkName = networkName;
   }
 
   @Override
-  public ProcessBuilder create(final Path jobRoot, final String imageName, final String... args) {
+  public ProcessBuilder create(final String imageName, final String... args) {
     final List<String> cmd =
         Lists.newArrayList(
             "docker",

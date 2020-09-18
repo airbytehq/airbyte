@@ -110,7 +110,7 @@ public class DefaultSingerTap implements SingerTap {
       cmd = ArrayUtils.addAll(cmd, "--state", WorkerConstants.INPUT_STATE_JSON_FILENAME);
     }
 
-    tapProcess = pbf.create(jobRoot, imageName, cmd).start();
+    tapProcess = pbf.create(imageName, cmd).start();
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
 
