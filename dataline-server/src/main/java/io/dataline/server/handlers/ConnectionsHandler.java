@@ -86,7 +86,7 @@ public class ConnectionsHandler {
     if (connectionCreate.getSyncSchema() != null) {
       standardSync.withSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
     } else {
-      standardSync.withSchema(new Schema().withTables(Collections.emptyList()));
+      standardSync.withSchema(new Schema().withStreams(Collections.emptyList()));
     }
 
     configRepository.writeStandardSync(standardSync);

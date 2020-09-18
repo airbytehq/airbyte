@@ -26,15 +26,15 @@ package io.dataline.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.Column;
 import io.dataline.config.DataType;
 import io.dataline.config.DestinationConnectionImplementation;
+import io.dataline.config.Field;
 import io.dataline.config.Schema;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.State;
-import io.dataline.config.Table;
+import io.dataline.config.Stream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -43,8 +43,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 public class TestConfigHelpers {
 
   private static final String CONNECTION_NAME = "favorite_color_pipe";
-  private static final String TABLE_NAME = "user_preferences";
-  private static final String COLUMN_NAME = "favorite_color";
+  private static final String STREAM_NAME = "user_preferences";
+  private static final String FIELD_NAME = "favorite_color";
   private static final long LAST_SYNC_TIME = 1598565106;
 
   public static ImmutablePair<StandardSync, StandardSyncInput> createSyncConfig() {
@@ -81,17 +81,17 @@ public class TestConfigHelpers {
         .withDestinationImplementationId(destinationImplementationId)
         .withTombstone(false);
 
-    final Column column = new Column()
-        .withName(COLUMN_NAME)
+    final Field field = new Field()
+        .withName(FIELD_NAME)
         .withDataType(DataType.STRING)
         .withSelected(true);
 
-    final Table table = new Table()
-        .withName(TABLE_NAME)
+    final Stream stream = new Stream()
+        .withName(STREAM_NAME)
         .withSelected(true)
-        .withColumns(Collections.singletonList(column));
+        .withFields(Collections.singletonList(field));
 
-    final Schema schema = new Schema().withTables(Collections.singletonList(table));
+    final Schema schema = new Schema().withStreams(Collections.singletonList(stream));
 
     StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)

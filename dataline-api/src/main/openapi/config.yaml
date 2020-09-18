@@ -1191,25 +1191,25 @@ components:
       description: describes the available schema.
       type: object
       required:
-        - tables
+        - streams
       properties:
-        tables:
+        streams:
           type: array
           items:
-            $ref: "#/components/schemas/SourceSchemaTable"
-    SourceSchemaTable:
+            $ref: "#/components/schemas/SourceSchemaStream"
+    SourceSchemaStream:
       type: object
       required:
         - name
-        - columns
+        - fields
       properties:
         name:
           type: string
-        columns:
+        fields:
           type: array
           items:
-            $ref: "#/components/schemas/SourceSchemaColumn"
-    SourceSchemaColumn:
+            $ref: "#/components/schemas/SourceSchemaField"
+    SourceSchemaField:
       type: object
       required:
         - name

@@ -25,63 +25,63 @@
 package io.dataline.server.converters;
 
 import io.dataline.api.model.SourceSchema;
-import io.dataline.api.model.SourceSchemaColumn;
-import io.dataline.api.model.SourceSchemaTable;
+import io.dataline.api.model.SourceSchemaField;
+import io.dataline.api.model.SourceSchemaStream;
 import io.dataline.commons.enums.Enums;
-import io.dataline.config.Column;
 import io.dataline.config.DataType;
+import io.dataline.config.Field;
 import io.dataline.config.Schema;
-import io.dataline.config.Table;
+import io.dataline.config.Stream;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class SchemaConverter {
 
   public static Schema toPersistenceSchema(SourceSchema sourceSchema) {
-    final List<Table> persistenceTables =
-        sourceSchema.getTables().stream()
+    final List<Stream> persistenceStreams =
+        sourceSchema.getStreams().stream()
             .map(
-                apiTable -> {
-                  final List<Column> persistenceColumns =
-                      apiTable.getColumns().stream()
+                apiStream -> {
+                  final List<Field> persistenceFields =
+                      apiStream.getFields().stream()
                           .map(
-                              apiColumn -> new Column()
-                                  .withName(apiColumn.getName())
-                                  .withDataType(Enums.convertTo(apiColumn.getDataType(), DataType.class))
-                                  .withSelected(apiColumn.getSelected()))
+                              apiField -> new Field()
+                                  .withName(apiField.getName())
+                                  .withDataType(Enums.convertTo(apiField.getDataType(), DataType.class))
+                                  .withSelected(apiField.getSelected()))
                           .collect(Collectors.toList());
 
-                  return new Table()
-                      .withName(apiTable.getName())
-                      .withColumns(persistenceColumns)
-                      .withSelected(persistenceColumns.stream().anyMatch(Column::getSelected));
+                  return new Stream()
+                      .withName(apiStream.getName())
+                      .withFields(persistenceFields)
+                      .withSelected(persistenceFields.stream().anyMatch(Field::getSelected));
                 })
             .collect(Collectors.toList());
 
-    return new Schema().withTables(persistenceTables);
+    return new Schema().withStreams(persistenceStreams);
   }
 
   public static SourceSchema toApiSchema(Schema persistenceSchema) {
-    final List<SourceSchemaTable> persistenceTables =
-        persistenceSchema.getTables().stream()
+    final List<SourceSchemaStream> persistenceStreams =
+        persistenceSchema.getStreams().stream()
             .map(
-                persistenceTable -> {
-                  final List<SourceSchemaColumn> apiColumns =
-                      persistenceTable.getColumns().stream()
+                persistenceStream -> {
+                  final List<SourceSchemaField> apiFields =
+                      persistenceStream.getFields().stream()
                           .map(
-                              persistenceColumn -> new SourceSchemaColumn()
-                                  .name(persistenceColumn.getName())
-                                  .dataType(Enums.convertTo(persistenceColumn.getDataType(), io.dataline.api.model.DataType.class))
-                                  .selected(persistenceColumn.getSelected()))
+                              persistenceField -> new SourceSchemaField()
+                                  .name(persistenceField.getName())
+                                  .dataType(Enums.convertTo(persistenceField.getDataType(), io.dataline.api.model.DataType.class))
+                                  .selected(persistenceField.getSelected()))
                           .collect(Collectors.toList());
 
-                  return new SourceSchemaTable()
-                      .name(persistenceTable.getName())
-                      .columns(apiColumns);
+                  return new SourceSchemaStream()
+                      .name(persistenceStream.getName())
+                      .fields(apiFields);
                 })
             .collect(Collectors.toList());
 
-    return new SourceSchema().tables(persistenceTables);
+    return new SourceSchema().streams(persistenceStreams);
   }
 
 }
