@@ -55,7 +55,6 @@ import io.dataline.commons.resources.MoreResources;
 import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.test.utils.PostgreSQLContainerHelper;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -66,7 +65,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Condition;
@@ -306,9 +304,9 @@ public class AcceptanceTests {
   }
 
   private void assertTablesEquivalent(
-      BasicDataSource sourceDbPool,
-      BasicDataSource targetDbPool,
-      String table)
+                                      BasicDataSource sourceDbPool,
+                                      BasicDataSource targetDbPool,
+                                      String table)
       throws SQLException {
     long sourceTableCount = getTableCount(sourceDbPool, table);
     long targetTableCount = getTableCount(targetDbPool, table);
