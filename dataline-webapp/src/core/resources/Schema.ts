@@ -1,16 +1,16 @@
 import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
-export type SyncSchemaColumn = {
+export type SyncSchemaField = {
   name: string;
   selected: boolean;
   type: string;
 };
 
 export type SyncSchema = {
-  tables: {
+  streams: {
     name: string;
-    columns: SyncSchemaColumn[];
+    fields: SyncSchemaField[];
   }[];
 };
 
@@ -20,7 +20,7 @@ export interface Schema {
 }
 
 export default class SchemaResource extends BaseResource implements Schema {
-  readonly schema: SyncSchema = { tables: [] };
+  readonly schema: SyncSchema = { streams: [] };
   readonly id: string = "";
 
   pk() {

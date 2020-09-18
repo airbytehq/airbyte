@@ -6,16 +6,16 @@ export type ScheduleProperties = {
   timeUnit: string;
 };
 
-export type SyncSchemaColumn = {
+export type SyncSchemaField = {
   name: string;
   selected: boolean;
   type: string;
 };
 
 export type SyncSchema = {
-  tables: {
+  streams: {
     name: string;
-    columns: SyncSchemaColumn[];
+    fields: SyncSchemaField[];
   }[];
 };
 
@@ -51,7 +51,7 @@ export default class ConnectionResource extends BaseResource
   readonly schedule: ScheduleProperties | null = null;
   readonly source: SourceInformation | undefined = undefined;
   readonly lastSync: number | undefined | null = null;
-  readonly syncSchema: SyncSchema = { tables: [] };
+  readonly syncSchema: SyncSchema = { streams: [] };
 
   pk() {
     return this.connectionId?.toString();
