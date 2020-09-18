@@ -73,13 +73,19 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings("rawtypes")
+// We order tests so that independent operations are first and operations dependent on them come
+// last
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
@@ -92,11 +98,14 @@ public class AcceptanceTests {
           .setPort(8001)
           .setBasePath("/api"));
 
-  private List<UUID> sourceImplIds = Lists.newArrayList();
-  private List<UUID> connectionIds = Lists.newArrayList();
+  private List<UUID> sourceImplIds;
+  private List<UUID> connectionIds;
 
   @BeforeEach
   public void init() throws IOException, InterruptedException {
+    sourceImplIds = Lists.newArrayList();
+    connectionIds = Lists.newArrayList();
+
     sourcePsql = new PostgreSQLContainer();
     targetPsql = new PostgreSQLContainer();
     sourcePsql.start();
@@ -122,6 +131,7 @@ public class AcceptanceTests {
   }
 
   @Test
+  @Order(1)
   public void testCreateDestinationImpl() throws ApiException {
     Map<Object, Object> destinationDbConfig = getDestinationDbConfig();
     UUID postgresDestinationSpecId = getPostgresDestinationSpecId();
@@ -137,10 +147,11 @@ public class AcceptanceTests {
     assertEquals(name, destinationImpl.getName());
     assertEquals(postgresDestinationSpecId, destinationImpl.getDestinationSpecificationId());
     assertEquals(workspaceId, destinationImpl.getWorkspaceId());
-    assertEquals(destinationDbConfig, destinationImpl.getConnectionConfiguration());
+    assertEquals(Jsons.jsonNode(destinationDbConfig), destinationImpl.getConnectionConfiguration());
   }
 
   @Test
+  @Order(2)
   public void testDestinationCheckConnection() throws ApiException {
     UUID destinationImplId = createPostgresDestinationImpl().getDestinationImplementationId();
     CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationImplementationApi()
@@ -152,6 +163,7 @@ public class AcceptanceTests {
   }
 
   @Test
+  @Order(3)
   public void testCreateSourceImplementation() throws ApiException {
     String dbName = "acc-test-db";
     UUID postgresSourceSpecId = getPostgresSourceSpecId();
@@ -159,8 +171,8 @@ public class AcceptanceTests {
     Map<Object, Object> sourceDbConfig = getSourceDbConfig();
     SourceImplementationRead response = createSourceImplementation(
         dbName,
-        postgresSourceSpecId,
         defaultWorkspaceId,
+        postgresSourceSpecId,
         sourceDbConfig);
 
     assertEquals(dbName, response.getName());
@@ -170,7 +182,8 @@ public class AcceptanceTests {
   }
 
   @Test
-  public void testSourceCheckConnection() throws IOException, ApiException {
+  @Order(4)
+  public void testSourceCheckConnection() throws ApiException {
     UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
     CheckConnectionRead checkConnectionRead = apiClient.getSourceImplementationApi()
         .checkConnectionToSourceImplementation(new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplId));
@@ -178,6 +191,7 @@ public class AcceptanceTests {
   }
 
   @Test
+  @Order(5)
   public void testDiscoverSourceSchema() throws ApiException, IOException {
     UUID sourceImplementationId = createPostgresSourceImpl().getSourceImplementationId();
     SourceSchema actualSchema = discoverSourceSchema(sourceImplementationId);
@@ -188,6 +202,7 @@ public class AcceptanceTests {
   }
 
   @Test
+  @Order(6)
   public void testCreateConnection() throws ApiException {
     UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
     SourceSchema schema = discoverSourceSchema(sourceImplId);
@@ -206,6 +221,7 @@ public class AcceptanceTests {
   }
 
   @Test
+  @Order(7)
   public void testManualSync() throws IOException, ApiException, SQLException, InterruptedException {
     String connectionName = "test-connection";
     UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
@@ -223,6 +239,7 @@ public class AcceptanceTests {
   }
 
   @Test
+  @Order(8)
   public void testScheduledSync() throws InterruptedException, SQLException, ApiException {
     String connectionName = "test-connection";
     UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
@@ -274,9 +291,9 @@ public class AcceptanceTests {
   }
 
   private void assertTablesEquivalent(
-                                      BasicDataSource sourceDbPool,
-                                      BasicDataSource targetDbPool,
-                                      String table)
+      BasicDataSource sourceDbPool,
+      BasicDataSource targetDbPool,
+      String table)
       throws SQLException {
     long sourceTableCount = getTableCount(sourceDbPool, table);
     long targetTableCount = getTableCount(targetDbPool, table);
@@ -440,7 +457,14 @@ public class AcceptanceTests {
   }
 
   private void disableConnection(UUID connectionId) throws ApiException {
-    apiClient.getConnectionApi().updateConnection(new ConnectionUpdate().status(ConnectionStatus.DEPRECATED));
+    ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    ConnectionUpdate connectionUpdate =
+        new ConnectionUpdate()
+            .connectionId(connectionId)
+            .status(ConnectionStatus.DEPRECATED)
+            .schedule(connection.getSchedule())
+            .syncSchema(connection.getSyncSchema());
+    apiClient.getConnectionApi().updateConnection(connectionUpdate);
   }
 
 }
