@@ -235,6 +235,7 @@ font-style: italic;
   <ul>
   <li><a href="#checkConnectionToDestinationImplementation"><code><span class="http-method">post</span> /v1/destination_implementations/check_connection</code></a></li>
   <li><a href="#createDestinationImplementation"><code><span class="http-method">post</span> /v1/destination_implementations/create</code></a></li>
+  <li><a href="#deleteDestinationImplementation"><code><span class="http-method">post</span> /v1/destination_implementations/delete</code></a></li>
   <li><a href="#getDestinationImplementation"><code><span class="http-method">post</span> /v1/destination_implementations/get</code></a></li>
   <li><a href="#listDestinationImplementationsForWorkspace"><code><span class="http-method">post</span> /v1/destination_implementations/list</code></a></li>
   <li><a href="#updateDestinationImplementation"><code><span class="http-method">post</span> /v1/destination_implementations/update</code></a></li>
@@ -325,24 +326,24 @@ font-style: italic;
   "syncMode" : "full_refresh",
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "syncSchema" : {
-    "tables" : [ {
-      "columns" : [ {
+    "streams" : [ {
+      "name" : "name",
+      "fields" : [ {
         "name" : "name",
         "selected" : true
       }, {
         "name" : "name",
         "selected" : true
-      } ],
-      "name" : "name"
+      } ]
     }, {
-      "columns" : [ {
+      "name" : "name",
+      "fields" : [ {
         "name" : "name",
         "selected" : true
       }, {
         "name" : "name",
         "selected" : true
-      } ],
-      "name" : "name"
+      } ]
     } ]
   },
   "destinationImplementationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -409,24 +410,24 @@ font-style: italic;
   "syncMode" : "full_refresh",
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "syncSchema" : {
-    "tables" : [ {
-      "columns" : [ {
+    "streams" : [ {
+      "name" : "name",
+      "fields" : [ {
         "name" : "name",
         "selected" : true
       }, {
         "name" : "name",
         "selected" : true
-      } ],
-      "name" : "name"
+      } ]
     }, {
-      "columns" : [ {
+      "name" : "name",
+      "fields" : [ {
         "name" : "name",
         "selected" : true
       }, {
         "name" : "name",
         "selected" : true
-      } ],
-      "name" : "name"
+      } ]
     } ]
   },
   "destinationImplementationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -497,24 +498,24 @@ font-style: italic;
     "syncMode" : "full_refresh",
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "syncSchema" : {
-      "tables" : [ {
-        "columns" : [ {
+      "streams" : [ {
+        "name" : "name",
+        "fields" : [ {
           "name" : "name",
           "selected" : true
         }, {
           "name" : "name",
           "selected" : true
-        } ],
-        "name" : "name"
+        } ]
       }, {
-        "columns" : [ {
+        "name" : "name",
+        "fields" : [ {
           "name" : "name",
           "selected" : true
         }, {
           "name" : "name",
           "selected" : true
-        } ],
-        "name" : "name"
+        } ]
       } ]
     },
     "destinationImplementationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -528,24 +529,24 @@ font-style: italic;
     "syncMode" : "full_refresh",
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "syncSchema" : {
-      "tables" : [ {
-        "columns" : [ {
+      "streams" : [ {
+        "name" : "name",
+        "fields" : [ {
           "name" : "name",
           "selected" : true
         }, {
           "name" : "name",
           "selected" : true
-        } ],
-        "name" : "name"
+        } ]
       }, {
-        "columns" : [ {
+        "name" : "name",
+        "fields" : [ {
           "name" : "name",
           "selected" : true
         }, {
           "name" : "name",
           "selected" : true
-        } ],
-        "name" : "name"
+        } ]
       } ]
     },
     "destinationImplementationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -674,24 +675,24 @@ font-style: italic;
   "syncMode" : "full_refresh",
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "syncSchema" : {
-    "tables" : [ {
-      "columns" : [ {
+    "streams" : [ {
+      "name" : "name",
+      "fields" : [ {
         "name" : "name",
         "selected" : true
       }, {
         "name" : "name",
         "selected" : true
-      } ],
-      "name" : "name"
+      } ]
     }, {
-      "columns" : [ {
+      "name" : "name",
+      "fields" : [ {
         "name" : "name",
         "selected" : true
       }, {
         "name" : "name",
         "selected" : true
-      } ],
-      "name" : "name"
+      } ]
     } ]
   },
   "destinationImplementationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -937,6 +938,48 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#DestinationImplementationRead">DestinationImplementationRead</a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="deleteDestinationImplementation"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_implementations/delete</code></pre></div>
+    <div class="method-summary">Delete the destination implementation (<span class="nickname">deleteDestinationImplementation</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationImplementationIdRequestBody <a href="#DestinationImplementationIdRequestBody">DestinationImplementationIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    The resource was deleted successfully.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Destination Implementation not found
+        <a href="#"></a>
     <h4 class="field-label">422</h4>
     Invalid Input
         <a href="#"></a>
@@ -1260,8 +1303,7 @@ font-style: italic;
     "status" : "pending"
   },
   "logs" : {
-    "stdout" : [ "stdout", "stdout" ],
-    "stderr" : [ "stderr", "stderr" ]
+    "logLines" : [ "logLines", "logLines" ]
   }
 }</code></pre>
 
@@ -1664,24 +1706,24 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "schema" : {
-    "tables" : [ {
-      "columns" : [ {
+    "streams" : [ {
+      "name" : "name",
+      "fields" : [ {
         "name" : "name",
         "selected" : true
       }, {
         "name" : "name",
         "selected" : true
-      } ],
-      "name" : "name"
+      } ]
     }, {
-      "columns" : [ {
+      "name" : "name",
+      "fields" : [ {
         "name" : "name",
         "selected" : true
       }, {
         "name" : "name",
         "selected" : true
-      } ],
-      "name" : "name"
+      } ]
     } ]
   }
 }</code></pre>
@@ -2027,24 +2069,24 @@ font-style: italic;
   "syncMode" : "full_refresh",
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "syncSchema" : {
-    "tables" : [ {
-      "columns" : [ {
+    "streams" : [ {
+      "name" : "name",
+      "fields" : [ {
         "name" : "name",
         "selected" : true
       }, {
         "name" : "name",
         "selected" : true
-      } ],
-      "name" : "name"
+      } ]
     }, {
-      "columns" : [ {
+      "name" : "name",
+      "fields" : [ {
         "name" : "name",
         "selected" : true
       }, {
         "name" : "name",
         "selected" : true
-      } ],
-      "name" : "name"
+      } ]
     } ]
   },
   "source" : {
@@ -2127,24 +2169,24 @@ font-style: italic;
     "syncMode" : "full_refresh",
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "syncSchema" : {
-      "tables" : [ {
-        "columns" : [ {
+      "streams" : [ {
+        "name" : "name",
+        "fields" : [ {
           "name" : "name",
           "selected" : true
         }, {
           "name" : "name",
           "selected" : true
-        } ],
-        "name" : "name"
+        } ]
       }, {
-        "columns" : [ {
+        "name" : "name",
+        "fields" : [ {
           "name" : "name",
           "selected" : true
         }, {
           "name" : "name",
           "selected" : true
-        } ],
-        "name" : "name"
+        } ]
       } ]
     },
     "source" : {
@@ -2170,24 +2212,24 @@ font-style: italic;
     "syncMode" : "full_refresh",
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "syncSchema" : {
-      "tables" : [ {
-        "columns" : [ {
+      "streams" : [ {
+        "name" : "name",
+        "fields" : [ {
           "name" : "name",
           "selected" : true
         }, {
           "name" : "name",
           "selected" : true
-        } ],
-        "name" : "name"
+        } ]
       }, {
-        "columns" : [ {
+        "name" : "name",
+        "fields" : [ {
           "name" : "name",
           "selected" : true
         }, {
           "name" : "name",
           "selected" : true
-        } ],
-        "name" : "name"
+        } ]
       } ]
     },
     "source" : {
@@ -2454,8 +2496,8 @@ font-style: italic;
     <li><a href="#SourceRead"><code>SourceRead</code> - </a></li>
     <li><a href="#SourceReadList"><code>SourceReadList</code> - </a></li>
     <li><a href="#SourceSchema"><code>SourceSchema</code> - </a></li>
-    <li><a href="#SourceSchemaColumn"><code>SourceSchemaColumn</code> - </a></li>
-    <li><a href="#SourceSchemaTable"><code>SourceSchemaTable</code> - </a></li>
+    <li><a href="#SourceSchemaField"><code>SourceSchemaField</code> - </a></li>
+    <li><a href="#SourceSchemaStream"><code>SourceSchemaStream</code> - </a></li>
     <li><a href="#SourceSpecificationRead"><code>SourceSpecificationRead</code> - </a></li>
     <li><a href="#WbConnectionRead"><code>WbConnectionRead</code> - </a></li>
     <li><a href="#WbConnectionReadList"><code>WbConnectionReadList</code> - </a></li>
@@ -2692,8 +2734,7 @@ font-style: italic;
     <h3><a name="LogRead"><code>LogRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">stdout </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
-<div class="param">stderr </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+      <div class="param">logLines </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -2782,11 +2823,11 @@ font-style: italic;
     <h3><a name="SourceSchema"><code>SourceSchema</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>describes the available schema.</div>
     <div class="field-items">
-      <div class="param">tables </div><div class="param-desc"><span class="param-type"><a href="#SourceSchemaTable">array[SourceSchemaTable]</a></span>  </div>
+      <div class="param">streams </div><div class="param-desc"><span class="param-type"><a href="#SourceSchemaStream">array[SourceSchemaStream]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="SourceSchemaColumn"><code>SourceSchemaColumn</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="SourceSchemaField"><code>SourceSchemaField</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
@@ -2795,11 +2836,11 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="SourceSchemaTable"><code>SourceSchemaTable</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="SourceSchemaStream"><code>SourceSchemaStream</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">columns </div><div class="param-desc"><span class="param-type"><a href="#SourceSchemaColumn">array[SourceSchemaColumn]</a></span>  </div>
+<div class="param">fields </div><div class="param-desc"><span class="param-type"><a href="#SourceSchemaField">array[SourceSchemaField]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
