@@ -55,6 +55,7 @@ import io.dataline.commons.resources.MoreResources;
 import io.dataline.config.persistence.PersistenceConstants;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.test.utils.PostgreSQLContainerHelper;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -65,6 +66,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Condition;
@@ -100,11 +102,13 @@ public class AcceptanceTests {
 
   private List<UUID> sourceImplIds;
   private List<UUID> connectionIds;
+  private List<UUID> destinationImplIds;
 
   @BeforeEach
   public void init() throws IOException, InterruptedException {
     sourceImplIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
+    destinationImplIds = Lists.newArrayList();
 
     sourcePsql = new PostgreSQLContainer();
     targetPsql = new PostgreSQLContainer();
@@ -127,7 +131,9 @@ public class AcceptanceTests {
       disableConnection(connectionId);
     }
 
-    // TODO disable destination once the API exposes the functionality.
+    for (UUID destinationImplId : destinationImplIds) {
+      deleteDestinationImpl(destinationImplId);
+    }
   }
 
   @Test
@@ -300,9 +306,9 @@ public class AcceptanceTests {
   }
 
   private void assertTablesEquivalent(
-                                      BasicDataSource sourceDbPool,
-                                      BasicDataSource targetDbPool,
-                                      String table)
+      BasicDataSource sourceDbPool,
+      BasicDataSource targetDbPool,
+      String table)
       throws SQLException {
     long sourceTableCount = getTableCount(sourceDbPool, table);
     long targetTableCount = getTableCount(targetDbPool, table);
@@ -403,7 +409,7 @@ public class AcceptanceTests {
             .connectionConfiguration(Jsons.jsonNode(destinationConfig))
             .workspaceId(workspaceId)
             .destinationSpecificationId(destinationSpecId));
-
+    destinationImplIds.add(destinationImplementation.getDestinationImplementationId());
     return destinationImplementation;
   }
 
@@ -474,6 +480,11 @@ public class AcceptanceTests {
             .schedule(connection.getSchedule())
             .syncSchema(connection.getSyncSchema());
     apiClient.getConnectionApi().updateConnection(connectionUpdate);
+  }
+
+  private void deleteDestinationImpl(UUID destinationImplId) throws ApiException {
+    apiClient.getDestinationImplementationApi()
+        .deleteDestinationImplementation(new DestinationImplementationIdRequestBody().destinationImplementationId(destinationImplId));
   }
 
 }
