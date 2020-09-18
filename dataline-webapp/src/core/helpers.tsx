@@ -11,7 +11,7 @@ export const constructInitialSchemaState = (syncSchema: SyncSchema) => {
   const formSyncSchema = syncSchema.streams.map((item: any) => ({
     value: item.name,
     label: item.name,
-    children: item.field.map((field: any) => ({
+    children: item.fields.map((field: any) => ({
       value: `${item.name}_${field.name}`,
       label: field.name
     }))
