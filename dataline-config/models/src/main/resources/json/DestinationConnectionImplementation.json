@@ -9,7 +9,8 @@
     "destinationSpecificationId",
     "workspaceId",
     "destinationImplementationId",
-    "configuration"
+    "configuration",
+    "tombstone"
   ],
   "additionalProperties": false,
   "properties": {

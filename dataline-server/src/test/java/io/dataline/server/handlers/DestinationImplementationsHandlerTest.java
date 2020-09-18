@@ -41,13 +41,11 @@ import io.dataline.api.model.DestinationImplementationIdRequestBody;
 import io.dataline.api.model.DestinationImplementationRead;
 import io.dataline.api.model.DestinationImplementationReadList;
 import io.dataline.api.model.DestinationImplementationUpdate;
-import io.dataline.api.model.SourceImplementationIdRequestBody;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.json.JsonValidationException;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.DestinationConnectionSpecification;
-import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardDestination;
 import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigNotFoundException;
@@ -136,38 +134,40 @@ class DestinationImplementationsHandlerTest {
   }
 
   @Test
-  void testDeleteSourceImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testDeleteDestinationImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
     final JsonNode newConfiguration = destinationConnectionImplementation.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
-    final DestinationConnectionImplementation expectedSourceConnectionImplementation = Jsons.clone(destinationConnectionImplementation)
+    final DestinationConnectionImplementation expectedDestinationConnectionImplementation = Jsons.clone(destinationConnectionImplementation)
         .withTombstone(true);
 
-    when(configRepository.getSourceConnectionImplementation(destinationConnectionImplementation.getDestinationImplementationId()))
-        .thenReturn(sourceConnectionImplementation)
-        .thenReturn(expectedSourceConnectionImplementation);
+    when(configRepository.getDestinationConnectionImplementation(destinationConnectionImplementation.getDestinationImplementationId()))
+        .thenReturn(destinationConnectionImplementation)
+        .thenReturn(expectedDestinationConnectionImplementation);
 
-    when(configRepository.getSourceConnectionSpecification(sourceConnectionSpecification.getSourceSpecificationId()))
-        .thenReturn(sourceConnectionSpecification);
+    when(configRepository.getDestinationConnectionSpecification(destinationConnectionSpecification.getDestinationSpecificationId()))
+        .thenReturn(destinationConnectionSpecification);
 
-    when(configRepository.getStandardSource(sourceConnectionSpecification.getSourceId()))
-        .thenReturn(standardSource);
+    when(configRepository.getStandardDestination(destinationConnectionSpecification.getDestinationId()))
+        .thenReturn(standardDestination);
 
-    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody()
-        .sourceImplementationId(sourceConnectionImplementation.getSourceImplementationId());
+    final DestinationImplementationIdRequestBody destinationImplementationId = new DestinationImplementationIdRequestBody()
+        .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId());
 
-    final StandardSync standardSync = ConnectionHelpers.generateSync(sourceConnectionImplementation.getSourceImplementationId());
+    final StandardSync standardSync =
+        ConnectionHelpers.generateSyncWithDestinationImplId(destinationConnectionImplementation.getDestinationImplementationId());
 
     final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
 
     ConnectionReadList connectionReadList = new ConnectionReadList()
         .connections(Collections.singletonList(connectionRead));
 
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(sourceConnectionImplementation.getWorkspaceId());
+    final WorkspaceIdRequestBody workspaceIdRequestBody =
+        new WorkspaceIdRequestBody().workspaceId(destinationConnectionImplementation.getWorkspaceId());
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
-    sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
+    destinationImplementationsHandler.deleteDestinationImplementation(destinationImplementationId);
 
-    verify(configRepository).writeSourceConnectionImplementation(expectedSourceConnectionImplementation);
+    verify(configRepository).writeDestinationConnectionImplementation(expectedDestinationConnectionImplementation);
 
     final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
         .connectionId(connectionRead.getConnectionId())
@@ -187,7 +187,8 @@ class DestinationImplementationsHandlerTest {
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final DestinationConnectionImplementation expectedDestinationConnectionImplementation = Jsons.clone(destinationConnectionImplementation)
-        .withConfiguration(newConfiguration);
+        .withConfiguration(newConfiguration)
+        .withTombstone(false);
 
     when(configRepository.getDestinationConnectionImplementation(destinationConnectionImplementation.getDestinationImplementationId()))
         .thenReturn(destinationConnectionImplementation)

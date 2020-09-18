@@ -78,7 +78,8 @@ public class TestConfigHelpers {
         .withConfiguration(destinationConnection)
         .withWorkspaceId(workspaceId)
         .withDestinationSpecificationId(destinationSpecificationId)
-        .withDestinationImplementationId(destinationImplementationId);
+        .withDestinationImplementationId(destinationImplementationId)
+        .withTombstone(false);
 
     final Column column = new Column()
         .withName(COLUMN_NAME)

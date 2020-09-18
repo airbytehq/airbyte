@@ -54,7 +54,8 @@ public class DestinationImplementationHelpers {
         .withWorkspaceId(workspaceId)
         .withDestinationSpecificationId(destinationSpecificationId)
         .withDestinationImplementationId(destinationImplementationId)
-        .withConfiguration(implementationJson);
+        .withConfiguration(implementationJson)
+        .withTombstone(false);
   }
 
 }

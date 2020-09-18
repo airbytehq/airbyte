@@ -34,7 +34,6 @@ import io.dataline.api.model.DestinationImplementationIdRequestBody;
 import io.dataline.api.model.DestinationImplementationRead;
 import io.dataline.api.model.DestinationImplementationReadList;
 import io.dataline.api.model.DestinationImplementationUpdate;
-import io.dataline.api.model.SourceImplementationRead;
 import io.dataline.api.model.WorkspaceIdRequestBody;
 import io.dataline.commons.json.JsonValidationException;
 import io.dataline.config.DestinationConnectionImplementation;
@@ -85,7 +84,8 @@ public class DestinationImplementationsHandler {
         destinationImplementationCreate.getDestinationSpecificationId(),
         destinationImplementationCreate.getWorkspaceId(),
         destinationImplementationId,
-        destinationImplementationCreate.getConnectionConfiguration());
+        destinationImplementationCreate.getConnectionConfiguration(),
+        false);
 
     // read configuration from db
     return buildDestinationImplementationRead(destinationImplementationId);
@@ -120,27 +120,29 @@ public class DestinationImplementationsHandler {
         destinationImpl.getDestinationSpecificationId(),
         destinationImpl.getWorkspaceId(),
         destinationImpl.getDestinationImplementationId(),
-        destinationImpl.getConnectionConfiguration());
+        destinationImpl.getConnectionConfiguration(),
+        true);
   }
 
   public DestinationImplementationRead updateDestinationImplementation(final DestinationImplementationUpdate destinationImplementationUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing implementation
-    final DestinationConnectionImplementation dci =
+    final DestinationConnectionImplementation currentDci =
         configRepository.getDestinationConnectionImplementation(destinationImplementationUpdate.getDestinationImplementationId());
 
     // validate configuration
     validateDestinationImplementation(
-        dci.getDestinationSpecificationId(),
+        currentDci.getDestinationSpecificationId(),
         destinationImplementationUpdate.getConnectionConfiguration());
 
     // persist
     persistDestinationConnectionImplementation(
         destinationImplementationUpdate.getName(),
-        dci.getDestinationSpecificationId(),
-        dci.getWorkspaceId(),
+        currentDci.getDestinationSpecificationId(),
+        currentDci.getWorkspaceId(),
         destinationImplementationUpdate.getDestinationImplementationId(),
-        destinationImplementationUpdate.getConnectionConfiguration());
+        destinationImplementationUpdate.getConnectionConfiguration(),
+        currentDci.getTombstone());
 
     // read configuration from db
     return buildDestinationImplementationRead(destinationImplementationUpdate.getDestinationImplementationId());
@@ -157,6 +159,10 @@ public class DestinationImplementationsHandler {
 
     for (DestinationConnectionImplementation dci : configRepository.listDestinationConnectionImplementations()) {
       if (!dci.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId())) {
+        continue;
+      }
+
+      if (dci.getTombstone()) {
         continue;
       }
 
@@ -177,14 +183,16 @@ public class DestinationImplementationsHandler {
                                                           final UUID destinationSpecificationId,
                                                           final UUID workspaceId,
                                                           final UUID destinationImplementationId,
-                                                          final JsonNode configurationJson)
+                                                          final JsonNode configurationJson,
+                                                          final boolean tombstone)
       throws JsonValidationException, IOException {
     final DestinationConnectionImplementation destinationConnectionImplementation = new DestinationConnectionImplementation()
         .withName(name)
         .withDestinationSpecificationId(destinationSpecificationId)
         .withWorkspaceId(workspaceId)
         .withDestinationImplementationId(destinationImplementationId)
-        .withConfiguration(configurationJson);
+        .withConfiguration(configurationJson)
+        .withTombstone(tombstone);
 
     configRepository.writeDestinationConnectionImplementation(destinationConnectionImplementation);
   }
@@ -210,4 +218,5 @@ public class DestinationImplementationsHandler {
         .name(destinationConnectionImplementation.getName())
         .destinationName(standardDestination.getName());
   }
+
 }

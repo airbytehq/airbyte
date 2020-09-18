@@ -186,7 +186,6 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     return execute(() -> schedulerHandler.discoverSchemaForSourceImplementation(sourceImplementationIdRequestBody));
   }
 
-
   // DESTINATION
   @Override
   public DestinationReadList listDestinations() {
@@ -197,7 +196,6 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   public DestinationRead getDestination(@Valid DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> destinationsHandler.getDestination(destinationIdRequestBody));
   }
-
 
   // DESTINATION SPECIFICATION
   @Override
