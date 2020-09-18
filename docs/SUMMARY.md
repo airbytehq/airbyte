@@ -16,7 +16,6 @@
   * [Postgres](integrations/sources/postgres.md)
   * [Stripe](integrations/sources/stripe.md)
 * [Destinations](integrations/destinations/README.md)
-  * [Postgres](integrations/destinations/postgres.md)
   * [BigQuery](integrations/destinations/bigquery.md)
 
 ## Contributing
@@ -24,7 +23,8 @@
 * [Contributing to Dataline](contributing/contributing-to-dataline/README.md)
   * [Developing Locally](contributing/contributing-to-dataline/developing-locally.md)
   * [Code Style](contributing/contributing-to-dataline/code-style.md)
-  * [Updating Documentation](contributing/contributing-to-dataline/updating-documentation.md)
+  * [Updating Documentation](contributing/contributing-to-dataline/updating-documentation/README.md)
+    * [Source Documentation Template](contributing/contributing-to-dataline/updating-documentation/source-documentation-template.md)
 * [Code of Conduct](contributing/code-of-conduct.md)
 
 ## Architecture
