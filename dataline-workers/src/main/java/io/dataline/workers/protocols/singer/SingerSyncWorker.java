@@ -24,7 +24,6 @@
 
 package io.dataline.workers.protocols.singer;
 
-import io.dataline.commons.io.IOs;
 import io.dataline.config.StandardSyncInput;
 import io.dataline.config.StandardSyncOutput;
 import io.dataline.config.StandardSyncSummary;
@@ -35,9 +34,7 @@ import io.dataline.singer.SingerMessage;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.SyncWorker;
-import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerUtils;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -86,10 +83,7 @@ public class SingerSyncWorker implements SyncWorker {
       singerTarget.notifyEndOfStream();
 
     } catch (Exception e) {
-      LOGGER.error("Sync worker failed. Tap error log: {}.\n Target error log: {}",
-          Files.exists(jobRoot.resolve(WorkerConstants.TAP_ERR_LOG)) ? IOs.readFile(jobRoot, WorkerConstants.TAP_ERR_LOG) : "<null>",
-          Files.exists(jobRoot.resolve(WorkerConstants.TARGET_ERR_LOG)) ? IOs.readFile(jobRoot, WorkerConstants.TARGET_ERR_LOG) : "<null>",
-          e);
+      LOGGER.error("Sync worker failed.", e);
 
       return new OutputAndStatus<>(JobStatus.FAILED, null);
     }

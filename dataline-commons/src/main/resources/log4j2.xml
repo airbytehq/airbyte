@@ -2,6 +2,7 @@
 <Configuration status="INFO">
     <Properties>
         <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %m%n</Property>
+        <Property name="default-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %p (%X{job_root}) %C{1}(%M):%L - %m%n</Property>
     </Properties>
 
     <Appenders>
@@ -11,8 +12,8 @@
         <Routing name="Context">
             <Routes pattern="${ctx:context}">
                 <Route key="worker">
-                    <File name="${ctx:context}-${ctx:job_id}" fileName="${ctx:job_root}/logs.log">
-                        <PatternLayout pattern="${default-pattern}"/>
+                    <File name="${ctx:context}-${ctx:job_id}" fileName="${ctx:job_root}/${ctx:job_log_filename}">
+                        <PatternLayout pattern="${default-worker-file-pattern}"/>
                     </File>
                 </Route>
             </Routes>
@@ -30,6 +31,8 @@
         <Logger name="com.github.dockerjava" level="INFO" />
         <Logger name="org.apache.hc" level="INFO" />
         <Logger name="org.jooq" level="INFO" />
+        <Logger name="com.networknt.schema" level="INFO" />
+        <Logger name="me.andrz.jackson" level="INFO" />
 
     </Loggers>
 

@@ -50,13 +50,16 @@ public class Log4j2ConfigTest {
 
   @Test
   void testWorkerDispatch() {
+    final String filename = "logs.log";
+
     MDC.put("context", "worker");
     MDC.put("job_root", root.toString());
+    MDC.put("job_log_filename", filename);
     MDC.put("job_id", "1");
 
     LOGGER.error("random message");
 
-    assertTrue(IOs.readFile(root, "logs.log").contains("random message"));
+    assertTrue(IOs.readFile(root, filename).contains("random message"));
   }
 
 }

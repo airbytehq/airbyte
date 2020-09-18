@@ -1,13 +1,11 @@
 import BaseResource from "./BaseResource";
 
 export interface JobLogs {
-  stdout: string[];
-  stderr: string[];
+  logLines: string[];
 }
 
 export default class JobLogsResource extends BaseResource implements JobLogs {
-  readonly stdout: string[] = [];
-  readonly stderr: string[] = [];
+  readonly logLines: string[] = [];
 
   pk() {
     return "";

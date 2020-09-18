@@ -19,7 +19,7 @@ const Logs = styled.div`
 const JobLogs: React.FC<IProps> = ({ id }) => {
   const job = useResource(JobResource.detailShape(), { id });
 
-  if (!job.logs.stderr.length) {
+  if (!job.logs.logLines.length) {
     return (
       <Logs>
         <FormattedMessage id="sources.emptyLogs" />
@@ -30,7 +30,7 @@ const JobLogs: React.FC<IProps> = ({ id }) => {
   // now logs always empty. TODO: Test ui with data
   return (
     <Logs>
-      {job.logs.stderr.map((item, key) => (
+      {job.logs.logLines.map((item, key) => (
         <div key={`log-${id}-${key}`}>{item}</div>
       ))}
     </Logs>

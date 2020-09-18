@@ -24,7 +24,7 @@
 
 package io.dataline.scheduler;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -42,9 +42,12 @@ import io.dataline.config.JobOutput;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
+import io.dataline.workers.WorkerConstants;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -153,19 +156,24 @@ public class JobSubmitterTest {
 
   @Test
   void testMDC() throws Exception {
+    final AtomicReference<Map<String, String>> mdcMap = new AtomicReference<>();
     when(workerRun.call()).then(invocation -> {
-      assertEquals(
-          ImmutableMap.of(
-              "context", "worker",
-              "job_id", "1",
-              "job_root", workerRun.getJobRoot().toString()),
-          MDC.getCopyOfContextMap());
+      mdcMap.set(MDC.getCopyOfContextMap());
       return SUCCESS_OUTPUT;
     });
 
     jobSubmitter.run();
 
     verify(workerRun).call();
+
+    assertEquals(
+        ImmutableMap.of(
+            "context", "worker",
+            "job_id", "1",
+            "job_root", workerRun.getJobRoot().toString(),
+            "job_log_filename", WorkerConstants.LOG_FILENAME),
+        mdcMap.get());
+
     assertTrue(MDC.getCopyOfContextMap().isEmpty());
   }
 

@@ -1292,14 +1292,9 @@ components:
     LogRead:
       type: object
       required:
-        - stdout
-        - stderr
+        - logLines
       properties:
-        stdout:
-          type: array
-          items:
-            type: string
-        stderr:
+        logLines:
           type: array
           items:
             type: string
