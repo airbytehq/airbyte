@@ -9,9 +9,9 @@
     "additionalProperties": false,
     "properties": {
       "delimiter": {
-        "description": "Delimiter used to separate records.",
+        "description": "Delimiter used to separate fields.",
         "type": "string",
-        "examples": ["\t"]
+        "examples": [","]
       },
       "quotechar": {
         "description": "What character in the input should be treated as a quotation mark.",
