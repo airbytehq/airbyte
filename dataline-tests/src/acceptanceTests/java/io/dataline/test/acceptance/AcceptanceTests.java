@@ -169,6 +169,7 @@ public class AcceptanceTests {
     UUID postgresSourceSpecId = getPostgresSourceSpecId();
     UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
     Map<Object, Object> sourceDbConfig = getSourceDbConfig();
+
     SourceImplementationRead response = createSourceImplementation(
         dbName,
         defaultWorkspaceId,
@@ -248,9 +249,11 @@ public class AcceptanceTests {
     schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true))); // select all columns
     ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
     ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
-    ConnectionRead createdConnection = createConnection(connectionName, sourceImplId, destinationImplId, schema, connectionSchedule, syncMode);
 
-    Thread.sleep(Duration.of(90, SECONDS).toMillis());
+    createConnection(connectionName, sourceImplId, destinationImplId, schema, connectionSchedule, syncMode);
+
+    // When a new connection is created, Dataline might sync it immediately (before the sync interval). Then it will wait the sync interval.
+    Thread.sleep(Duration.of(30, SECONDS).toMillis());
     assertSourceAndTargetDbInSync(sourcePsql, targetPsql);
   }
 
