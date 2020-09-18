@@ -13,8 +13,20 @@ function error() {
   exit 1
 }
 
+function canAccessLocal() {
+  if [[ ! -d "/local" && ! -L "/local" ]] ; then
+    echo2 "Could not access path /local" && exit 1
+  fi
+}
+
+function mkdirOrThrow() {
+  mkdir -p "$@"
+  if [ $? -ne 0 ] ; then
+    echo2 "Could not create directory $@" && exit 1
+  fi
+}
+
 function main() {
-  echo "hi!"
   ARGS=
   while [ $# -ne 0 ]; do
     case "$1" in
@@ -34,16 +46,13 @@ function main() {
     esac
   done
 
-  echo "ARGS"
-  echo $ARGS
+  canAccessLocal
+  DESTINATION_PATH=$(jq -r '.destination_path' $PROCESSED_CONFIG_FILE)
+  mkdirOrThrow "$DESTINATION_PATH"
   if [[ "$ARGS" =~ .*"--discover".* ]]; then
     echo2 "Discovering..."
-    DESTINATION_PATH=$(jq -r '.destination_path' $PROCESSED_CONFIG_FILE)
-    if [[ ! -d "$DESTINATION_PATH" && ! -L "$DESTINATION_PATH" ]] ; then
-      echo2 "Could not access path $DESTINATION_PATH" && exit 1
-    fi
     # If connection check is successful write a fake catalog for the discovery worker to find
-    echo '{"streams":[]}' > "catalog.json"
+    echo '{"streams":[]}'
   else
     target-csv $ARGS
   fi

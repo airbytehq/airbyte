@@ -36,6 +36,7 @@ public class EnvConfigs implements Configs {
 
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
+  public static final String LOCAL_ROOT = "LOCAL_ROOT";
   public static final String LOCAL_DOCKER_MOUNT = "LOCAL_DOCKER_MOUNT";
   public static final String CONFIG_ROOT = "CONFIG_ROOT";
   public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
@@ -64,6 +65,11 @@ public class EnvConfigs implements Configs {
   @Override
   public Path getWorkspaceRoot() {
     return getPath(WORKSPACE_ROOT);
+  }
+
+  @Override
+  public Path getLocalRoot() {
+    return getPath(LOCAL_ROOT);
   }
 
   @Override
@@ -99,8 +105,8 @@ public class EnvConfigs implements Configs {
       return mount;
     }
 
-    LOGGER.info(LOCAL_DOCKER_MOUNT + " not found, defaulting to " + WORKSPACE_ROOT);
-    return getWorkspaceRoot().toString();
+    LOGGER.info(LOCAL_DOCKER_MOUNT + " not found, defaulting to " + LOCAL_ROOT);
+    return getLocalRoot().toString();
   }
 
   @Override

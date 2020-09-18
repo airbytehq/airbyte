@@ -32,6 +32,8 @@ public interface Configs {
 
   Path getWorkspaceRoot();
 
+  Path getLocalRoot();
+
   String getDatabaseUser();
 
   String getDatabasePassword();

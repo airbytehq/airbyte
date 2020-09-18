@@ -39,13 +39,13 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
   private static final Path LOCAL_MOUNT_DESTINATION = Path.of("/local");
 
-  private final String dataMountSource;
+  private final String workspaceMountSource;
   private final Path workspaceRoot;
   private String localMountSource;
   private final String networkName;
 
-  public DockerProcessBuilderFactory(Path workspaceRoot, String dataMountSource, String localMountSource, String networkName) {
-    this.dataMountSource = dataMountSource;
+  public DockerProcessBuilderFactory(Path workspaceRoot, String workspaceMountSource, String localMountSource, String networkName) {
+    this.workspaceMountSource = workspaceMountSource;
     this.workspaceRoot = workspaceRoot;
     this.localMountSource = localMountSource;
     this.networkName = networkName;
@@ -60,7 +60,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
             "--rm",
             "-i",
             "-v",
-            String.format("%s:%s", dataMountSource, DATA_MOUNT_DESTINATION),
+            String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION),
             "-v",
             String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
             "-w",

@@ -26,7 +26,6 @@ package io.dataline.integration_tests.destinations;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
@@ -102,12 +101,20 @@ class TestLocalCsvDestination {
   }
 
   @Test
-  public void testWithRelativePath() throws IOException, InterruptedException {
+  public void testWithRelativePathThatDoesExist() throws IOException, InterruptedException {
     final Path destinationPath = Path.of("users");
 
     final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
     Path javaDestinationPath = localRoot.resolve(destinationPath);
     javaDestinationPath.toFile().mkdirs();
+    assertProducesExpectedOutput(config, javaDestinationPath);
+  }
+
+  @Test
+  public void testWithRelativePathThatDoesNotExist() throws IOException, InterruptedException {
+    final Path destinationPath = Path.of("users");
+    final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
+    Path javaDestinationPath = localRoot.resolve(destinationPath);
     assertProducesExpectedOutput(config, javaDestinationPath);
   }
 
@@ -134,19 +141,7 @@ class TestLocalCsvDestination {
     assertProducesExpectedOutput(config, javaDestinationPath);
   }
 
-  // todo (cgarens) - part of the contract is that the path you put in, better already exist on
-  // your local filesystem. this contract is a sideffect of how the singer target-csv lib is
-  // implemented. in the future, we'd likely want our version of this to be able to create
-  // any directories necessary within the local root.
-  @Test
-  public void testWithRelativePathThatDoesNotExist() throws IOException, InterruptedException {
-    final Path destinationPath = Path.of("users");
-    final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
-    Path javaDestinationPath = localRoot.resolve(destinationPath);
-
-    assertThrows(Exception.class, () -> assertProducesExpectedOutput(config, javaDestinationPath));
-  }
-
+  // testConnection should always be successful unless the local filesystem was not mounted.
   @Test
   public void testConnectionSuccessful() {
     final Path destinationPath = Path.of("users");
@@ -160,19 +155,6 @@ class TestLocalCsvDestination {
     assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, run.getOutput().get().getStatus());
-  }
-
-  @Test
-  public void testConnectionUnsuccessful() {
-    final Path destinationPath = Path.of("users");
-
-    final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
-    SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
-    StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(config));
-    OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
-    assertEquals(JobStatus.FAILED, run.getStatus());
-    assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
   }
 
   private void assertProducesExpectedOutput(Map<String, Object> config, Path outputPathOnLocalFs) throws IOException, InterruptedException {
