@@ -24,16 +24,6 @@
 
 package io.dataline.workers.protocols.singer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.Lists;
 import io.dataline.commons.io.IOs;
 import io.dataline.commons.json.Jsons;
@@ -63,6 +53,16 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class DefaultSingerTapTest {
 
@@ -113,11 +113,11 @@ class DefaultSingerTapTest {
         jobRoot,
         IMAGE_NAME,
         "--config",
-        WorkerConstants.TAP_CONFIG_JSON_FILENAME,
+        jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME).toString(),
         "--properties",
-        WorkerConstants.CATALOG_JSON_FILENAME,
+        jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toString(),
         "--state",
-        WorkerConstants.INPUT_STATE_JSON_FILENAME)
+            jobRoot.resolve(WorkerConstants.INPUT_STATE_JSON_FILENAME).toString())
         .start()).thenReturn(process);
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);

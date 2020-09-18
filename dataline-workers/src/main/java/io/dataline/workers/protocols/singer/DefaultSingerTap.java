@@ -100,10 +100,10 @@ public class DefaultSingerTap implements SingerTap {
 
     String[] cmd = {
       "--config",
-      WorkerConstants.TAP_CONFIG_JSON_FILENAME,
+      jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME).toString(),
       // TODO support both --properties and --catalog depending on integration
       "--properties",
-      WorkerConstants.CATALOG_JSON_FILENAME
+        jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toString()
     };
 
     if (input.getState() != null) {

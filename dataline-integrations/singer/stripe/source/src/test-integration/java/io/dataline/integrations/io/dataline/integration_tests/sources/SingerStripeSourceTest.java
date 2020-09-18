@@ -24,9 +24,6 @@
 
 package io.dataline.integrations.io.dataline.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
@@ -55,6 +52,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SingerStripeSourceTest {
 
@@ -219,7 +219,7 @@ public class SingerStripeSourceTest {
         jobRoot,
         IMAGE_NAME,
         "--config",
-        configFileName,
+        jobRoot.resolve(configFileName).toString(),
         "--discover")
         .redirectOutput(catalogPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
@@ -231,9 +231,9 @@ public class SingerStripeSourceTest {
         jobRoot,
         IMAGE_NAME,
         "--config",
-        CONFIG,
+        jobRoot.resolve(CONFIG).toString(),
         "--catalog",
-        CATALOG)
+        jobRoot.resolve(CATALOG).toString())
         .redirectOutput(syncOutputPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();

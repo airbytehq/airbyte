@@ -58,8 +58,6 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
             "-i",
             "-v",
             String.format("%s:%s", mountSource, MOUNT_DESTINATION),
-            "-w",
-            rebasePath(jobRoot).toString(),
             "--network",
             networkName,
             imageName);
@@ -68,11 +66,6 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
     LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
 
     return new ProcessBuilder(cmd);
-  }
-
-  private Path rebasePath(final Path jobRoot) {
-    final Path relativePath = workspaceRoot.relativize(jobRoot);
-    return MOUNT_DESTINATION.resolve(relativePath);
   }
 
 }
