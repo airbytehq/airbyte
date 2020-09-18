@@ -33,8 +33,6 @@ import io.dataline.config.JobOutput;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.workers.CheckConnectionWorker;
-import io.dataline.workers.InvalidCatalogException;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import java.nio.file.Path;
@@ -43,7 +41,7 @@ import org.junit.jupiter.api.Test;
 public class JobOutputCheckConnectionWorkerTest {
 
   @Test
-  public void test() throws InvalidCredentialsException, InvalidCatalogException {
+  public void test() {
     StandardCheckConnectionInput input = mock(StandardCheckConnectionInput.class);
     Path jobRoot = Path.of("fakeroot");
     CheckConnectionWorker checkConnectionWorker = mock(CheckConnectionWorker.class);

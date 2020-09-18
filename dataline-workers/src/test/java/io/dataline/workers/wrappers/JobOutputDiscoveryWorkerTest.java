@@ -36,8 +36,6 @@ import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
 import io.dataline.config.Table;
 import io.dataline.workers.DiscoverSchemaWorker;
-import io.dataline.workers.InvalidCatalogException;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import java.nio.file.Path;
@@ -46,7 +44,7 @@ import org.junit.jupiter.api.Test;
 public class JobOutputDiscoveryWorkerTest {
 
   @Test
-  public void test() throws InvalidCredentialsException, InvalidCatalogException {
+  public void test() {
     StandardDiscoverSchemaInput input = mock(StandardDiscoverSchemaInput.class);
     Path jobRoot = Path.of("fakeroot");
     DiscoverSchemaWorker discoverWorker = mock(DiscoverSchemaWorker.class);
