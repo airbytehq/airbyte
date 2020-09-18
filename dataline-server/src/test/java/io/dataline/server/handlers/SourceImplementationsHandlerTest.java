@@ -231,7 +231,7 @@ class SourceImplementationsHandlerTest {
     final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody()
         .sourceImplementationId(sourceConnectionImplementation.getSourceImplementationId());
 
-    final StandardSync standardSync = ConnectionHelpers.generateSync(sourceConnectionImplementation.getSourceImplementationId());
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceImplId(sourceConnectionImplementation.getSourceImplementationId());
 
     final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
 

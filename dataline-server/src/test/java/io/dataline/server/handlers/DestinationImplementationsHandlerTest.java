@@ -32,6 +32,10 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import io.dataline.api.model.ConnectionRead;
+import io.dataline.api.model.ConnectionReadList;
+import io.dataline.api.model.ConnectionStatus;
+import io.dataline.api.model.ConnectionUpdate;
 import io.dataline.api.model.DestinationImplementationCreate;
 import io.dataline.api.model.DestinationImplementationIdRequestBody;
 import io.dataline.api.model.DestinationImplementationRead;
@@ -43,13 +47,16 @@ import io.dataline.commons.json.Jsons;
 import io.dataline.config.DestinationConnectionImplementation;
 import io.dataline.config.DestinationConnectionSpecification;
 import io.dataline.config.StandardDestination;
+import io.dataline.config.StandardSync;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
+import io.dataline.server.helpers.ConnectionHelpers;
 import io.dataline.server.helpers.DestinationHelpers;
 import io.dataline.server.helpers.DestinationImplementationHelpers;
 import io.dataline.server.helpers.DestinationSpecificationHelpers;
 import io.dataline.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,6 +69,8 @@ class DestinationImplementationsHandlerTest {
   private DestinationConnectionSpecification destinationConnectionSpecification;
   private DestinationConnectionImplementation destinationConnectionImplementation;
   private DestinationImplementationsHandler destinationImplementationsHandler;
+  private ConnectionsHandler connectionsHandler;
+
   private IntegrationSchemaValidation validator;
   private Supplier<UUID> uuidGenerator;
 
@@ -71,13 +80,14 @@ class DestinationImplementationsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     validator = mock(IntegrationSchemaValidation.class);
     uuidGenerator = mock(Supplier.class);
+    connectionsHandler = mock(ConnectionsHandler.class);
 
     standardDestination = DestinationHelpers.generateDestination();
     destinationConnectionSpecification = DestinationSpecificationHelpers.generateDestinationSpecification(standardDestination.getDestinationId());
     destinationConnectionImplementation = DestinationImplementationHelpers.generateDestinationImplementation(
         destinationConnectionSpecification.getDestinationSpecificationId());
 
-    destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, validator, uuidGenerator);
+    destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, validator, connectionsHandler, uuidGenerator);
   }
 
   @Test
@@ -124,6 +134,52 @@ class DestinationImplementationsHandlerTest {
   }
 
   @Test
+  void testDeleteDestinationImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final JsonNode newConfiguration = destinationConnectionImplementation.getConfiguration();
+    ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
+
+    final DestinationConnectionImplementation expectedDestinationConnectionImplementation = Jsons.clone(destinationConnectionImplementation)
+        .withTombstone(true);
+
+    when(configRepository.getDestinationConnectionImplementation(destinationConnectionImplementation.getDestinationImplementationId()))
+        .thenReturn(destinationConnectionImplementation)
+        .thenReturn(expectedDestinationConnectionImplementation);
+
+    when(configRepository.getDestinationConnectionSpecification(destinationConnectionSpecification.getDestinationSpecificationId()))
+        .thenReturn(destinationConnectionSpecification);
+
+    when(configRepository.getStandardDestination(destinationConnectionSpecification.getDestinationId()))
+        .thenReturn(standardDestination);
+
+    final DestinationImplementationIdRequestBody destinationImplementationId = new DestinationImplementationIdRequestBody()
+        .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId());
+
+    final StandardSync standardSync =
+        ConnectionHelpers.generateSyncWithDestinationImplId(destinationConnectionImplementation.getDestinationImplementationId());
+
+    final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+
+    ConnectionReadList connectionReadList = new ConnectionReadList()
+        .connections(Collections.singletonList(connectionRead));
+
+    final WorkspaceIdRequestBody workspaceIdRequestBody =
+        new WorkspaceIdRequestBody().workspaceId(destinationConnectionImplementation.getWorkspaceId());
+    when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
+    destinationImplementationsHandler.deleteDestinationImplementation(destinationImplementationId);
+
+    verify(configRepository).writeDestinationConnectionImplementation(expectedDestinationConnectionImplementation);
+
+    final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
+        .connectionId(connectionRead.getConnectionId())
+        .status(ConnectionStatus.DEPRECATED)
+        .syncSchema(connectionRead.getSyncSchema())
+        .schedule(connectionRead.getSchedule());
+
+    verify(connectionsHandler).listConnectionsForWorkspace(workspaceIdRequestBody);
+    verify(connectionsHandler).updateConnection(expectedConnectionUpdate);
+  }
+
+  @Test
   void testUpdateDestinationImplementation()
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final JsonNode newConfiguration = destinationConnectionImplementation.getConfiguration();
@@ -131,7 +187,8 @@ class DestinationImplementationsHandlerTest {
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
     final DestinationConnectionImplementation expectedDestinationConnectionImplementation = Jsons.clone(destinationConnectionImplementation)
-        .withConfiguration(newConfiguration);
+        .withConfiguration(newConfiguration)
+        .withTombstone(false);
 
     when(configRepository.getDestinationConnectionImplementation(destinationConnectionImplementation.getDestinationImplementationId()))
         .thenReturn(destinationConnectionImplementation)
