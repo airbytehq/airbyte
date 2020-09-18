@@ -127,7 +127,7 @@ class SchedulerHandlerTest {
 
   @Test
   void testSyncConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final StandardSync standardSync = ConnectionHelpers.generateSync(UUID.randomUUID());
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceImplId(UUID.randomUUID());
     final ConnectionIdRequestBody request = new ConnectionIdRequestBody().connectionId(standardSync.getConnectionId());
     SourceConnectionImplementation sourceImpl = SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID())
         .withSourceImplementationId(standardSync.getSourceImplementationId());

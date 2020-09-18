@@ -42,7 +42,7 @@ import java.util.UUID;
 
 public class ConnectionHelpers {
 
-  public static StandardSync generateSync(UUID sourceImplementationId) {
+  public static StandardSync generateSyncWithSourceImplId(UUID sourceImplementationId) {
     final UUID connectionId = UUID.randomUUID();
 
     return new StandardSync()
@@ -52,6 +52,19 @@ public class ConnectionHelpers {
         .withSchema(generateBasicPersistenceSchema())
         .withSourceImplementationId(sourceImplementationId)
         .withDestinationImplementationId(UUID.randomUUID())
+        .withSyncMode(StandardSync.SyncMode.FULL_REFRESH);
+  }
+
+  public static StandardSync generateSyncWithDestinationImplId(UUID destinationImplementationId) {
+    final UUID connectionId = UUID.randomUUID();
+
+    return new StandardSync()
+        .withConnectionId(connectionId)
+        .withName("presto to hudi")
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withSchema(generateBasicPersistenceSchema())
+        .withSourceImplementationId(UUID.randomUUID())
+        .withDestinationImplementationId(destinationImplementationId)
         .withSyncMode(StandardSync.SyncMode.FULL_REFRESH);
   }
 

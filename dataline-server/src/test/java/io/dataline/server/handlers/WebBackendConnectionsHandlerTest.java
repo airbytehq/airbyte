@@ -76,7 +76,7 @@ class WebBackendConnectionsHandlerTest {
     SourceConnectionImplementation sourceImplementation = SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID());
     sourceImplementationRead = SourceImplementationHelpers.getSourceImplementationRead(sourceImplementation, standardSource);
 
-    final StandardSync standardSync = ConnectionHelpers.generateSync(sourceImplementation.getSourceImplementationId());
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceImplId(sourceImplementation.getSourceImplementationId());
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
 
     final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody();

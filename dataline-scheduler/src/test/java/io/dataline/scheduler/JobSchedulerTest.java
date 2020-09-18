@@ -87,7 +87,8 @@ class JobSchedulerTest {
         .withWorkspaceId(workspaceId)
         .withDestinationSpecificationId(destinationSpecificationId)
         .withDestinationImplementationId(destinationImplementationId)
-        .withConfiguration(implementationJson);
+        .withConfiguration(implementationJson)
+        .withTombstone(false);
 
     final Column column = new Column()
         .withDataType(DataType.STRING)

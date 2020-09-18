@@ -75,7 +75,7 @@ class ConnectionsHandlerTest {
     uuidGenerator = mock(Supplier.class);
 
     sourceImplementation = SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID());
-    standardSync = ConnectionHelpers.generateSync(sourceImplementation.getSourceImplementationId());
+    standardSync = ConnectionHelpers.generateSyncWithSourceImplId(sourceImplementation.getSourceImplementationId());
     standardSyncSchedule = ConnectionHelpers.generateSchedule(standardSync.getConnectionId());
 
     connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator);
