@@ -102,7 +102,7 @@ public class SingerPostgresSourceTest {
   public void testReadFirstTime() throws Exception {
     Schema schema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), Schema.class);
 
-    // select all tables and all columns
+    // select all streams and all fields
     schema.getStreams().forEach(t -> t.setSelected(true));
     schema.getStreams().forEach(t -> t.getFields().forEach(c -> c.setSelected(true)));
 

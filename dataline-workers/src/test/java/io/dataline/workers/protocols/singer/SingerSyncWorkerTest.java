@@ -42,8 +42,8 @@ import org.junit.jupiter.api.Test;
 class SingerSyncWorkerTest {
 
   private static final Path WORKSPACE_ROOT = Path.of("/workspaces/10");
-  private static final String TABLE_NAME = "user_preferences";
-  private static final String COLUMN_NAME = "favorite_color";
+  private static final String STREAM_NAME = "user_preferences";
+  private static final String FIELD_NAME = "favorite_color";
 
   @SuppressWarnings("unchecked")
   @Test
@@ -64,8 +64,8 @@ class SingerSyncWorkerTest {
     final SingerTap tap = mock(DefaultSingerTap.class);
     final SingerTarget target = mock(DefaultSingerTarget.class);
 
-    SingerMessage recordMessage1 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue");
-    SingerMessage recordMessage2 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+    SingerMessage recordMessage1 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
+    SingerMessage recordMessage2 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
 
     when(tap.isFinished()).thenReturn(false, false, false, true);
     when(tap.attemptRead()).thenReturn(Optional.of(recordMessage1), Optional.empty(), Optional.of(recordMessage2));
