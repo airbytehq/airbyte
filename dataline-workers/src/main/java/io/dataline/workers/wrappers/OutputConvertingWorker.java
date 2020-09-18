@@ -24,8 +24,6 @@
 
 package io.dataline.workers.wrappers;
 
-import io.dataline.workers.InvalidCatalogException;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.Worker;
 import java.nio.file.Path;
@@ -34,7 +32,7 @@ import java.util.function.Function;
 class OutputConvertingWorker<InputType, OriginalOutputType, FinalOutputType> implements Worker<InputType, FinalOutputType> {
 
   private final Worker<InputType, OriginalOutputType> innerWorker;
-  private Function<OriginalOutputType, FinalOutputType> convertFn;
+  private final Function<OriginalOutputType, FinalOutputType> convertFn;
 
   public OutputConvertingWorker(Worker<InputType, OriginalOutputType> innerWorker, Function<OriginalOutputType, FinalOutputType> convertFn) {
     this.innerWorker = innerWorker;
@@ -42,10 +40,10 @@ class OutputConvertingWorker<InputType, OriginalOutputType, FinalOutputType> imp
   }
 
   @Override
-  public OutputAndStatus<FinalOutputType> run(InputType config, Path jobRoot) throws InvalidCredentialsException, InvalidCatalogException {
+  public OutputAndStatus<FinalOutputType> run(InputType config, Path jobRoot) {
     OutputAndStatus<OriginalOutputType> run = innerWorker.run(config, jobRoot);
     if (run.getOutput().isPresent()) {
-      return new OutputAndStatus<FinalOutputType>(run.getStatus(), convertFn.apply(run.getOutput().get()));
+      return new OutputAndStatus<>(run.getStatus(), convertFn.apply(run.getOutput().get()));
     } else {
       return new OutputAndStatus<>(run.getStatus());
     }

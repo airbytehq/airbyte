@@ -35,8 +35,6 @@ import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
 import io.dataline.db.DatabaseHelper;
-import io.dataline.workers.InvalidCatalogException;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.WorkerConstants;
 import io.dataline.workers.WorkerUtils;
@@ -114,7 +112,7 @@ class TestPostgresDestination {
   }
 
   @Test
-  public void testConnectionSuccessful() throws InvalidCredentialsException, InvalidCatalogException {
+  public void testConnectionSuccessful() {
     SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig()));
     OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
@@ -124,7 +122,7 @@ class TestPostgresDestination {
   }
 
   @Test
-  public void testConnectionUnsuccessfulInvalidCreds() throws InvalidCredentialsException, InvalidCatalogException {
+  public void testConnectionUnsuccessfulInvalidCreds() {
     SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
     Map<String, Object> dbConfig = getDbConfig();
     dbConfig.put("postgres_password", "superfakepassword_nowaythisworks");
@@ -158,6 +156,7 @@ class TestPostgresDestination {
     Files.writeString(Path.of(jobRoot.toString(), WorkerConstants.TARGET_CONFIG_JSON_FILENAME), fileContent);
   }
 
+  @SuppressWarnings("SameParameterValue")
   private void writeResourceToStdIn(String resourceName, Process process) throws IOException {
     Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(resourceName))
         .transferTo(process.getOutputStream());
