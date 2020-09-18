@@ -42,44 +42,25 @@ import org.junit.jupiter.params.provider.EnumSource;
 
 class ScheduleJobPredicateTest {
 
-  private static final StandardSyncSchedule SCHEDULE;
+  private static final StandardSyncSchedule SCHEDULE = new StandardSyncSchedule()
+      .withManual(false)
+      .withSchedule(new Schedule()
+          .withTimeUnit(Schedule.TimeUnit.DAYS)
+          .withUnits(1L));
 
   private ScheduleJobPredicate scheduleJobPredicate;
   private Instant now;
-
-  static {
-    final Schedule schedule = new Schedule()
-        .withTimeUnit(Schedule.TimeUnit.DAYS)
-        .withUnits(1L);
-
-    SCHEDULE = new StandardSyncSchedule()
-        .withManual(false)
-        .withSchedule(schedule);
-  }
+  private Job job;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() {
     Supplier<Instant> timeSupplier = mock(Supplier.class);
     scheduleJobPredicate = new ScheduleJobPredicate(timeSupplier);
-
+    job = mock(Job.class);
+    when(job.getId()).thenReturn(10L);
     now = Instant.now();
     when(timeSupplier.get()).thenReturn(now);
-  }
-
-  private static Optional<Job> generateJobWithStatusAndUpdatedAt(JobStatus status, Instant createdAt) {
-    return Optional.of(new Job(
-        10L,
-        "",
-        status,
-        null,
-        null,
-        null,
-        null,
-        0,
-        createdAt.getEpochSecond(),
-        null,
-        createdAt.getEpochSecond()));
   }
 
   @Test
@@ -95,24 +76,30 @@ class ScheduleJobPredicateTest {
 
   @Test
   public void testScheduleNotReady() {
-    final Optional<Job> jobOptional = generateJobWithStatusAndUpdatedAt(JobStatus.COMPLETED, now.minus(Duration.ofDays(1)));
-    assertFalse(scheduleJobPredicate.test(jobOptional, SCHEDULE));
+    when(job.getStatus()).thenReturn(JobStatus.COMPLETED);
+    when(job.getUpdatedAtInSecond()).thenReturn(now.minus(Duration.ofDays(1)).getEpochSecond());
+
+    assertFalse(scheduleJobPredicate.test(Optional.of(job), SCHEDULE));
   }
 
   @ParameterizedTest
   @EnumSource(value = JobStatus.class,
               names = {"COMPLETED", "CANCELLED"})
   public void testShouldScheduleBasedOnPreviousJobStatus(JobStatus status) {
-    final Optional<Job> jobOptionalCompleted = generateJobWithStatusAndUpdatedAt(status, now.minus(Duration.ofDays(2)));
-    assertTrue(scheduleJobPredicate.test(jobOptionalCompleted, SCHEDULE));
+    when(job.getStatus()).thenReturn(status);
+    when(job.getUpdatedAtInSecond()).thenReturn(now.minus(Duration.ofDays(2)).getEpochSecond());
+
+    assertTrue(scheduleJobPredicate.test(Optional.of(job), SCHEDULE));
   }
 
   @ParameterizedTest
   @EnumSource(value = JobStatus.class,
               names = {"FAILED", "PENDING", "RUNNING"})
   public void testScheduleShouldNotScheduleBasedOnPreviousJobStatus(JobStatus status) {
-    final Optional<Job> jobOptional = generateJobWithStatusAndUpdatedAt(status, now.minus(Duration.ofDays(1)));
-    assertFalse(scheduleJobPredicate.test(jobOptional, SCHEDULE));
+    when(job.getStatus()).thenReturn(status);
+    when(job.getUpdatedAtInSecond()).thenReturn(now.minus(Duration.ofDays(1)).getEpochSecond());
+
+    assertFalse(scheduleJobPredicate.test(Optional.of(job), SCHEDULE));
   }
 
 }

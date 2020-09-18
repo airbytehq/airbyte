@@ -66,9 +66,7 @@ public class JobHistoryHandler {
   public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
     Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
 
-    LogRead logRead = new LogRead()
-        .stdout(IOs.getTail(LOG_TAIL_SIZE, job.getStdoutPath()))
-        .stderr(IOs.getTail(LOG_TAIL_SIZE, job.getStderrPath()));
+    LogRead logRead = new LogRead().logLines(IOs.getTail(LOG_TAIL_SIZE, job.getLogPath()));
 
     return new JobInfoRead()
         .job(getJobRead(job))

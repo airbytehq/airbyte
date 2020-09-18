@@ -57,6 +57,7 @@ services:
     ports:
       - 8001:8001
     volumes:
+      - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
     depends_on:
       - db

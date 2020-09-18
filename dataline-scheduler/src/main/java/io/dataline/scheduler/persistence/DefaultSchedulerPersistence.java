@@ -38,10 +38,10 @@ import io.dataline.config.StandardSyncOutput;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.integrations.Integrations;
 import io.dataline.scheduler.Job;
-import io.dataline.scheduler.JobLogs;
 import io.dataline.scheduler.JobStatus;
 import io.dataline.scheduler.ScopeHelper;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -73,8 +73,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation)
-      throws IOException {
+  public long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation) throws IOException {
     final String scope =
         ScopeHelper.createScope(
             JobConfig.ConfigType.CHECK_CONNECTION_SOURCE,
@@ -93,8 +92,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation)
-      throws IOException {
+  public long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation) throws IOException {
     final String scope =
         ScopeHelper.createScope(
             JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION,
@@ -113,8 +111,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation)
-      throws IOException {
+  public long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation) throws IOException {
 
     final String scope = ScopeHelper.createScope(
         JobConfig.ConfigType.DISCOVER_SCHEMA,
@@ -171,16 +168,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
       final Record record = DatabaseHelper.query(
           connectionPool,
           ctx -> ctx.fetch(
-              "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, attempts, stdout_path, stderr_path) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?, ?, ?) RETURNING id",
+              "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, attempts) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?) RETURNING id",
               scope,
               now,
               now,
               JobStatus.PENDING.toString().toLowerCase(),
               Jsons.serialize(jobConfig),
               null,
-              0,
-              JobLogs.getLogDirectory(scope),
-              JobLogs.getLogDirectory(scope)))
+              0))
           .stream()
           .findFirst()
           .orElseThrow(() -> new RuntimeException("This should not happen"));
@@ -201,6 +196,22 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
           ctx -> ctx.execute(
               "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
               status.toString().toLowerCase(),
+              now,
+              jobId));
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public void updateLogPath(long jobId, Path logPath) throws IOException {
+    LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    try {
+      DatabaseHelper.query(
+          connectionPool,
+          ctx -> ctx.execute(
+              "UPDATE jobs SET log_path = ?, updated_at = ? WHERE id = ?",
+              logPath.toString(),
               now,
               jobId));
     } catch (SQLException e) {
@@ -348,22 +359,19 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
     return new Job(
         jobEntry.get("id", Long.class),
-        jobEntry.getValue("scope", String.class),
-        JobStatus.valueOf(jobEntry.getValue("status", String.class).toUpperCase()),
+        jobEntry.get("scope", String.class),
         jobConfig,
+        jobEntry.get("log_path", String.class),
         output,
-        jobEntry.get("stdout_path", String.class),
-        jobEntry.get("stderr_path", String.class),
         jobEntry.get("attempts", Integer.class),
+        JobStatus.valueOf(jobEntry.get("status", String.class).toUpperCase()),
+        Optional.ofNullable(jobEntry.get("started_at")).map(value -> getEpoch(jobEntry, "started_at")).orElse(null),
         getEpoch(jobEntry, "created_at"),
-        Optional.ofNullable(jobEntry.get("started_at"))
-            .map(value -> getEpoch(jobEntry, "started_at"))
-            .orElse(null),
         getEpoch(jobEntry, "updated_at"));
   }
 
   private static long getEpoch(Record record, String fieldName) {
-    return record.getValue(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
+    return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
   }
 
 }
