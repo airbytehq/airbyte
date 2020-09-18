@@ -35,9 +35,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.dataline.commons.json.Jsons;
-import io.dataline.config.Column;
 import io.dataline.config.DataType;
 import io.dataline.config.DestinationConnectionImplementation;
+import io.dataline.config.Field;
 import io.dataline.config.JobCheckConnectionConfig;
 import io.dataline.config.JobConfig;
 import io.dataline.config.JobDiscoverSchemaConfig;
@@ -46,7 +46,7 @@ import io.dataline.config.JobSyncConfig;
 import io.dataline.config.Schema;
 import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
-import io.dataline.config.Table;
+import io.dataline.config.Stream;
 import io.dataline.db.DatabaseHelper;
 import io.dataline.integrations.Integrations;
 import io.dataline.scheduler.Job;
@@ -113,18 +113,18 @@ class DefaultSchedulerPersistenceTest {
         .withConfiguration(implementationJson)
         .withTombstone(false);
 
-    final Column column = new Column()
+    final Field field = new Field()
         .withDataType(DataType.STRING)
         .withName("id")
         .withSelected(true);
 
-    final Table table = new Table()
+    final Stream stream = new Stream()
         .withName("users")
-        .withColumns(Lists.newArrayList(column))
+        .withFields(Lists.newArrayList(field))
         .withSelected(true);
 
     final Schema schema = new Schema()
-        .withTables(Lists.newArrayList(table));
+        .withStreams(Lists.newArrayList(stream));
 
     final UUID connectionId = UUID.randomUUID();
 

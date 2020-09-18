@@ -28,30 +28,30 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.Lists;
 import io.dataline.api.model.SourceSchema;
-import io.dataline.api.model.SourceSchemaColumn;
-import io.dataline.api.model.SourceSchemaTable;
+import io.dataline.api.model.SourceSchemaField;
+import io.dataline.api.model.SourceSchemaStream;
 import io.dataline.commons.enums.Enums;
-import io.dataline.config.Column;
 import io.dataline.config.DataType;
+import io.dataline.config.Field;
 import io.dataline.config.Schema;
-import io.dataline.config.Table;
+import io.dataline.config.Stream;
 import org.junit.jupiter.api.Test;
 
 class SchemaConverterTest {
 
   private static final Schema SCHEMA = new Schema()
-      .withTables(Lists.newArrayList(new Table()
+      .withStreams(Lists.newArrayList(new Stream()
           .withName("users")
           .withSelected(true)
-          .withColumns(Lists.newArrayList(new Column()
+          .withFields(Lists.newArrayList(new Field()
               .withDataType(DataType.STRING)
               .withName("id")
               .withSelected(true)))));
 
   private static final SourceSchema API_SCHEMA = new SourceSchema()
-      .tables(Lists.newArrayList(new SourceSchemaTable()
+      .streams(Lists.newArrayList(new SourceSchemaStream()
           .name("users")
-          .columns(Lists.newArrayList(new SourceSchemaColumn()
+          .fields(Lists.newArrayList(new SourceSchemaField()
               .dataType(io.dataline.api.model.DataType.STRING)
               .name("id")
               .selected(true)))));

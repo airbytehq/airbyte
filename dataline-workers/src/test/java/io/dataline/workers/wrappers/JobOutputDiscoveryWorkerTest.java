@@ -34,7 +34,7 @@ import io.dataline.config.JobOutput;
 import io.dataline.config.Schema;
 import io.dataline.config.StandardDiscoverSchemaInput;
 import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.config.Table;
+import io.dataline.config.Stream;
 import io.dataline.workers.DiscoverSchemaWorker;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
@@ -50,7 +50,7 @@ public class JobOutputDiscoveryWorkerTest {
     DiscoverSchemaWorker discoverWorker = mock(DiscoverSchemaWorker.class);
 
     StandardDiscoverSchemaOutput output = new StandardDiscoverSchemaOutput().withSchema(
-        new Schema().withTables(Lists.newArrayList(new Table().withName("table"))));
+        new Schema().withStreams(Lists.newArrayList(new Stream().withName("table"))));
 
     when(discoverWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, output));
     OutputAndStatus<JobOutput> run = new JobOutputDiscoverSchemaWorker(discoverWorker).run(input, jobRoot);

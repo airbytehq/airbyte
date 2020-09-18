@@ -1,9 +1,9 @@
 {
-  "tables": [
+  "streams": [
     {
       "name": "id_and_name",
       "selected": false,
-      "columns": [
+      "fields": [
         {
           "name": "name",
           "dataType": "string",

@@ -29,15 +29,15 @@ import io.dataline.api.model.ConnectionRead;
 import io.dataline.api.model.ConnectionSchedule;
 import io.dataline.api.model.ConnectionStatus;
 import io.dataline.api.model.SourceSchema;
-import io.dataline.api.model.SourceSchemaColumn;
-import io.dataline.api.model.SourceSchemaTable;
-import io.dataline.config.Column;
+import io.dataline.api.model.SourceSchemaField;
+import io.dataline.api.model.SourceSchemaStream;
 import io.dataline.config.DataType;
+import io.dataline.config.Field;
 import io.dataline.config.Schedule;
 import io.dataline.config.Schema;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.Table;
+import io.dataline.config.Stream;
 import java.util.UUID;
 
 public class ConnectionHelpers {
@@ -69,31 +69,31 @@ public class ConnectionHelpers {
   }
 
   public static Schema generateBasicPersistenceSchema() {
-    final Column column = new Column()
+    final Field field = new Field()
         .withDataType(DataType.STRING)
         .withName("id")
         .withSelected(true);
 
-    final Table table = new Table()
+    final Stream stream = new Stream()
         .withName("users")
-        .withColumns(Lists.newArrayList(column))
+        .withFields(Lists.newArrayList(field))
         .withSelected(true);
 
     return new Schema()
-        .withTables(Lists.newArrayList(table));
+        .withStreams(Lists.newArrayList(stream));
   }
 
   public static SourceSchema generateBasicApiSchema() {
-    final SourceSchemaColumn column = new SourceSchemaColumn()
+    final SourceSchemaField field = new SourceSchemaField()
         .dataType(io.dataline.api.model.DataType.STRING)
         .name("id")
         .selected(true);
 
-    final SourceSchemaTable table = new SourceSchemaTable()
+    final SourceSchemaStream stream = new SourceSchemaStream()
         .name("users")
-        .columns(Lists.newArrayList(column));
+        .fields(Lists.newArrayList(field));
 
-    return new SourceSchema().tables(Lists.newArrayList(table));
+    return new SourceSchema().streams(Lists.newArrayList(stream));
   }
 
   public static ConnectionSchedule generateBasicSchedule() {

@@ -29,22 +29,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.dataline.commons.json.JsonValidationException;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.Column;
 import io.dataline.config.DataType;
-import io.dataline.config.DestinationConnectionImplementation;
+import io.dataline.config.Field;
 import io.dataline.config.Schema;
-import io.dataline.config.SourceConnectionImplementation;
 import io.dataline.config.StandardSync;
 import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.Table;
+import io.dataline.config.Stream;
 import io.dataline.config.persistence.ConfigNotFoundException;
 import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.integrations.Integrations;
 import io.dataline.scheduler.job_factory.SyncJobFactory;
 import io.dataline.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
@@ -56,51 +50,27 @@ import org.junit.jupiter.api.Test;
 
 class JobSchedulerTest {
 
-  private static final SourceConnectionImplementation SOURCE_CONNECTION_IMPLEMENTATION;
-  private static final DestinationConnectionImplementation DESTINATION_CONNECTION_IMPLEMENTATION;
   private static final StandardSync STANDARD_SYNC;
   private static final StandardSyncSchedule STANDARD_SYNC_SCHEDULE;
   private static final long JOB_ID = 12L;
   private Job previousJob;
 
   static {
-    final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
-    final UUID sourceSpecificationId = Integrations.POSTGRES_TAP.getSpecId();
-
-    JsonNode implementationJson = Jsons.jsonNode(ImmutableMap.builder()
-        .put("apiKey", "123-abc")
-        .put("hostname", "dataline.io")
-        .build());
-
-    SOURCE_CONNECTION_IMPLEMENTATION = new SourceConnectionImplementation()
-        .withWorkspaceId(workspaceId)
-        .withSourceSpecificationId(sourceSpecificationId)
-        .withSourceImplementationId(sourceImplementationId)
-        .withConfiguration(implementationJson)
-        .withTombstone(false);
 
     final UUID destinationImplementationId = UUID.randomUUID();
-    final UUID destinationSpecificationId = Integrations.POSTGRES_TARGET.getSpecId();
 
-    DESTINATION_CONNECTION_IMPLEMENTATION = new DestinationConnectionImplementation()
-        .withWorkspaceId(workspaceId)
-        .withDestinationSpecificationId(destinationSpecificationId)
-        .withDestinationImplementationId(destinationImplementationId)
-        .withConfiguration(implementationJson)
-        .withTombstone(false);
-
-    final Column column = new Column()
+    final Field field = new Field()
         .withDataType(DataType.STRING)
         .withName("id")
         .withSelected(true);
 
-    final Table table = new Table()
+    final Stream stream = new Stream()
         .withName("users")
-        .withColumns(Lists.newArrayList(column))
+        .withFields(Lists.newArrayList(field))
         .withSelected(true);
 
-    final Schema schema = new Schema().withTables(Lists.newArrayList(table));
+    final Schema schema = new Schema().withStreams(Lists.newArrayList(stream));
 
     final UUID connectionId = UUID.randomUUID();
 

@@ -67,14 +67,14 @@ import org.junit.jupiter.api.Test;
 class DefaultSingerTapTest {
 
   private static final String IMAGE_NAME = "hudi:latest";
-  private static final String TABLE_NAME = "user_preferences";
-  private static final String COLUMN_NAME = "favorite_color";
+  private static final String STREAM_NAME = "user_preferences";
+  private static final String FIELD_NAME = "favorite_color";
 
   private static final SingerCatalog SINGER_CATALOG = new SingerCatalog()
       .withStreams(Collections.singletonList(new SingerStream()
           .withStream("hudi:latest")
           .withTapStreamId("workspace")
-          .withTableName(TABLE_NAME)
+          .withTableName(STREAM_NAME)
           .withSchema(new SingerTableSchema())));
 
   private static final StandardTapConfig TAP_CONFIG = WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
@@ -82,8 +82,8 @@ class DefaultSingerTapTest {
       .withConnectionConfiguration(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration());
 
   final List<SingerMessage> MESSAGES = Lists.newArrayList(
-      SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "blue"),
-      SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow"));
+      SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
+      SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
 
   private Path jobRoot;
   private SingerDiscoverSchemaWorker discoverSchemaWorker;

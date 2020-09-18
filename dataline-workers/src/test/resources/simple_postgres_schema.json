@@ -1,10 +1,10 @@
 {
   "schema": {
-    "tables": [
+    "streams": [
       {
         "name": "id_and_name",
         "selected": true,
-        "columns": [
+        "fields": [
           {
             "name": "name",
             "dataType": "string",

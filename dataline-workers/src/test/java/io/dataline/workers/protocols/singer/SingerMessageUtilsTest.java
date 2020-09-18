@@ -34,22 +34,22 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 class SingerMessageUtilsTest {
 
-  private static final String TABLE_NAME = "user_preferences";
-  private static final String COLUMN_NAME = "favorite_color";
-  private static final String COLUMN_VALUE = "aubergine";
+  private static final String STREAM_NAME = "user_preferences";
+  private static final String FIELD_NAME = "favorite_color";
+  private static final String FIELD_VALUE = "aubergine";
 
   @Test
   public void testCreateRecordMessageWithJsonNode() {
     final Instant now = Instant.now();
     final SingerMessage expectedMessage = new SingerMessage()
         .withType(SingerMessage.Type.RECORD)
-        .withStream(TABLE_NAME)
-        .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)))
+        .withStream(STREAM_NAME)
+        .withRecord(Jsons.jsonNode(ImmutableMap.of(FIELD_NAME, FIELD_VALUE)))
         .withTimeExtracted(SingerMessageUtils.SINGER_DATETIME_FORMATTER.format(now));
 
     final SingerMessage actualMessage = SingerMessageUtils.createRecordMessage(
-        TABLE_NAME,
-        Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)),
+        STREAM_NAME,
+        Jsons.jsonNode(ImmutableMap.of(FIELD_NAME, FIELD_VALUE)),
         now);
 
     assertEquals(expectedMessage, actualMessage);
@@ -59,10 +59,10 @@ class SingerMessageUtilsTest {
   public void testCreateRecordMessageWithMap() {
     final SingerMessage expectedMessage = new SingerMessage()
         .withType(SingerMessage.Type.RECORD)
-        .withStream(TABLE_NAME)
-        .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
+        .withStream(STREAM_NAME)
+        .withRecord(Jsons.jsonNode(ImmutableMap.of(FIELD_NAME, FIELD_VALUE)));
 
-    final SingerMessage actualMessage = SingerMessageUtils.createRecordMessage(TABLE_NAME, ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE));
+    final SingerMessage actualMessage = SingerMessageUtils.createRecordMessage(STREAM_NAME, ImmutableMap.of(FIELD_NAME, FIELD_VALUE));
 
     assertEquals(expectedMessage, actualMessage);
   }
@@ -71,10 +71,10 @@ class SingerMessageUtilsTest {
   public void testCreateRecordMessageWithSingleEntry() {
     final SingerMessage expectedMessage = new SingerMessage()
         .withType(SingerMessage.Type.RECORD)
-        .withStream(TABLE_NAME)
-        .withRecord(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, COLUMN_VALUE)));
+        .withStream(STREAM_NAME)
+        .withRecord(Jsons.jsonNode(ImmutableMap.of(FIELD_NAME, FIELD_VALUE)));
 
-    final SingerMessage actualMessage = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, COLUMN_VALUE);
+    final SingerMessage actualMessage = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, FIELD_VALUE);
 
     assertEquals(expectedMessage, actualMessage);
   }

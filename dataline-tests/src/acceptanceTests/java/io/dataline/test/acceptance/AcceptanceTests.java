@@ -77,8 +77,6 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -88,7 +86,6 @@ import org.testcontainers.utility.MountableFile;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
   private PostgreSQLContainer sourcePsql;
   private PostgreSQLContainer targetPsql;
 
@@ -236,7 +233,7 @@ public class AcceptanceTests {
     UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
     UUID destinationImplId = createPostgresDestinationImpl().getDestinationImplementationId();
     SourceSchema schema = discoverSourceSchema(sourceImplId);
-    schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true))); // select all columns
+    schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
     ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(100L).timeUnit(MINUTES);
     ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
 
@@ -255,7 +252,7 @@ public class AcceptanceTests {
     UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
     UUID destinationImplId = createPostgresDestinationImpl().getDestinationImplementationId();
     SourceSchema schema = discoverSourceSchema(sourceImplId);
-    schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true))); // select all columns
+    schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
     ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
     ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
 
@@ -276,12 +273,12 @@ public class AcceptanceTests {
     BasicDataSource sourceDbPool = getConnectionPool(sourceDb);
     BasicDataSource targetDbPool = getConnectionPool(targetDb);
 
-    Set<String> sourceTables = listTables(sourceDbPool);
-    Set<String> targetTables = listTables(targetDbPool);
-    assertEquals(sourceTables, targetTables);
+    Set<String> sourceStreams = listStreams(sourceDbPool);
+    Set<String> targetStreams = listStreams(targetDbPool);
+    assertEquals(sourceStreams, targetStreams);
 
-    for (String table : sourceTables) {
-      assertTablesEquivalent(sourceDbPool, targetDbPool, table);
+    for (String table : sourceStreams) {
+      assertStreamsEquivalent(sourceDbPool, targetDbPool, table);
     }
   }
 
@@ -290,7 +287,7 @@ public class AcceptanceTests {
         db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
-  private Set<String> listTables(BasicDataSource connectionPool) throws SQLException {
+  private Set<String> listStreams(BasicDataSource connectionPool) throws SQLException {
     return DatabaseHelper.query(
         connectionPool,
         context -> {
@@ -303,19 +300,19 @@ public class AcceptanceTests {
         });
   }
 
-  private void assertTablesEquivalent(
-                                      BasicDataSource sourceDbPool,
-                                      BasicDataSource targetDbPool,
-                                      String table)
+  private void assertStreamsEquivalent(
+                                       BasicDataSource sourceDbPool,
+                                       BasicDataSource targetDbPool,
+                                       String table)
       throws SQLException {
-    long sourceTableCount = getTableCount(sourceDbPool, table);
-    long targetTableCount = getTableCount(targetDbPool, table);
-    assertEquals(sourceTableCount, targetTableCount);
+    long sourceStreamCount = getStreamCount(sourceDbPool, table);
+    long targetStreamCount = getStreamCount(targetDbPool, table);
+    assertEquals(sourceStreamCount, targetStreamCount);
     Result<Record> allRecords =
         DatabaseHelper.query(
             sourceDbPool, context -> context.fetch(String.format("SELECT * FROM %s;", table)));
-    for (Record sourceTableRecord : allRecords) {
-      assertRecordInTable(sourceTableRecord, targetDbPool, table);
+    for (Record sourceStreamRecord : allRecords) {
+      assertRecordInStream(sourceStreamRecord, targetDbPool, table);
     }
   }
 
@@ -324,7 +321,7 @@ public class AcceptanceTests {
    * more) fields.
    */
   @SuppressWarnings("unchecked")
-  private void assertRecordInTable(Record record, BasicDataSource connectionPool, String tableName)
+  private void assertRecordInStream(Record record, BasicDataSource connectionPool, String tableName)
       throws SQLException {
 
     Set<Condition> conditions = new HashSet<>();
@@ -343,7 +340,7 @@ public class AcceptanceTests {
     assertEquals(1, presentRecords.size());
   }
 
-  private long getTableCount(BasicDataSource connectionPool, String tableName) throws SQLException {
+  private long getStreamCount(BasicDataSource connectionPool, String tableName) throws SQLException {
     return DatabaseHelper.query(
         connectionPool,
         context -> {
