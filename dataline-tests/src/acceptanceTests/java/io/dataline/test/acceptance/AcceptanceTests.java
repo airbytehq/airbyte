@@ -154,6 +154,7 @@ public class AcceptanceTests {
   @Order(2)
   public void testDestinationCheckConnection() throws ApiException {
     UUID destinationImplId = createPostgresDestinationImpl().getDestinationImplementationId();
+
     CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationImplementationApi()
         .checkConnectionToDestinationImplementation(
             new DestinationImplementationIdRequestBody().destinationImplementationId(destinationImplId))
@@ -186,8 +187,10 @@ public class AcceptanceTests {
   @Order(4)
   public void testSourceCheckConnection() throws ApiException {
     UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
+
     CheckConnectionRead checkConnectionRead = apiClient.getSourceImplementationApi()
         .checkConnectionToSourceImplementation(new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplId));
+
     assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkConnectionRead.getStatus());
   }
 
@@ -195,10 +198,10 @@ public class AcceptanceTests {
   @Order(5)
   public void testDiscoverSourceSchema() throws ApiException, IOException {
     UUID sourceImplementationId = createPostgresSourceImpl().getSourceImplementationId();
+
     SourceSchema actualSchema = discoverSourceSchema(sourceImplementationId);
 
     SourceSchema expectedSchema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), SourceSchema.class);
-
     assertEquals(expectedSchema, actualSchema);
   }
 
@@ -211,6 +214,7 @@ public class AcceptanceTests {
     String name = "test-connection-" + UUID.randomUUID().toString();
     ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
     ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
+
     ConnectionRead createdConnection = createConnection(name, sourceImplId, destinationImplId, schema, schedule, syncMode);
 
     assertEquals(sourceImplId, createdConnection.getSourceImplementationId());
@@ -231,6 +235,8 @@ public class AcceptanceTests {
     schema.getTables().forEach(table -> table.getColumns().forEach(c -> c.setSelected(true))); // select all columns
     ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(100L).timeUnit(MINUTES);
     ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
+    
+
     ConnectionRead createdConnection = createConnection(connectionName, sourceImplId, destinationImplId, schema, connectionSchedule, syncMode);
 
     ConnectionSyncRead connectionSyncRead =
