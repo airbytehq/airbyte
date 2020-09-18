@@ -26,6 +26,9 @@ package io.dataline.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.dataline.api.model.ConnectionRead;
+import io.dataline.api.model.ConnectionStatus;
+import io.dataline.api.model.ConnectionUpdate;
 import io.dataline.api.model.DestinationImplementationCreate;
 import io.dataline.api.model.DestinationImplementationIdRequestBody;
 import io.dataline.api.model.DestinationImplementationRead;
@@ -46,21 +49,25 @@ import java.util.function.Supplier;
 
 public class DestinationImplementationsHandler {
 
+  private ConnectionsHandler connectionsHandler;
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final IntegrationSchemaValidation validator;
 
   public DestinationImplementationsHandler(final ConfigRepository configRepository,
                                            final IntegrationSchemaValidation integrationSchemaValidation,
+                                           final ConnectionsHandler connectionsHandler,
                                            final Supplier<UUID> uuidGenerator) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
+    this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
   }
 
   public DestinationImplementationsHandler(final ConfigRepository configRepository,
-                                           final IntegrationSchemaValidation integrationSchemaValidation) {
-    this(configRepository, integrationSchemaValidation, UUID::randomUUID);
+                                           final IntegrationSchemaValidation integrationSchemaValidation,
+                                           final ConnectionsHandler connectionsHandler) {
+    this(configRepository, integrationSchemaValidation, connectionsHandler, UUID::randomUUID);
   }
 
   public DestinationImplementationRead createDestinationImplementation(final DestinationImplementationCreate destinationImplementationCreate)
@@ -77,30 +84,65 @@ public class DestinationImplementationsHandler {
         destinationImplementationCreate.getDestinationSpecificationId(),
         destinationImplementationCreate.getWorkspaceId(),
         destinationImplementationId,
-        destinationImplementationCreate.getConnectionConfiguration());
+        destinationImplementationCreate.getConnectionConfiguration(),
+        false);
 
     // read configuration from db
     return buildDestinationImplementationRead(destinationImplementationId);
   }
 
+  public void deleteDestinationImplementation(final DestinationImplementationIdRequestBody destinationImplementationIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    // get existing implementation
+    final DestinationImplementationRead destinationImpl =
+        buildDestinationImplementationRead(destinationImplementationIdRequestBody.getDestinationImplementationId());
+
+    // disable all connections associated with this destinationImplemenation
+    // Delete connections first in case it it fails in the middle, destination will still be visible
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destinationImpl.getWorkspaceId());
+    for (ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
+      if (!connectionRead.getDestinationImplementationId().equals(destinationImpl.getDestinationImplementationId())) {
+        continue;
+      }
+
+      final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+          .connectionId(connectionRead.getConnectionId())
+          .syncSchema(connectionRead.getSyncSchema())
+          .schedule(connectionRead.getSchedule())
+          .status(ConnectionStatus.DEPRECATED);
+
+      connectionsHandler.updateConnection(connectionUpdate);
+    }
+
+    // persist
+    persistDestinationConnectionImplementation(
+        destinationImpl.getName(),
+        destinationImpl.getDestinationSpecificationId(),
+        destinationImpl.getWorkspaceId(),
+        destinationImpl.getDestinationImplementationId(),
+        destinationImpl.getConnectionConfiguration(),
+        true);
+  }
+
   public DestinationImplementationRead updateDestinationImplementation(final DestinationImplementationUpdate destinationImplementationUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing implementation
-    final DestinationConnectionImplementation dci =
+    final DestinationConnectionImplementation currentDci =
         configRepository.getDestinationConnectionImplementation(destinationImplementationUpdate.getDestinationImplementationId());
 
     // validate configuration
     validateDestinationImplementation(
-        dci.getDestinationSpecificationId(),
+        currentDci.getDestinationSpecificationId(),
         destinationImplementationUpdate.getConnectionConfiguration());
 
     // persist
     persistDestinationConnectionImplementation(
         destinationImplementationUpdate.getName(),
-        dci.getDestinationSpecificationId(),
-        dci.getWorkspaceId(),
+        currentDci.getDestinationSpecificationId(),
+        currentDci.getWorkspaceId(),
         destinationImplementationUpdate.getDestinationImplementationId(),
-        destinationImplementationUpdate.getConnectionConfiguration());
+        destinationImplementationUpdate.getConnectionConfiguration(),
+        currentDci.getTombstone());
 
     // read configuration from db
     return buildDestinationImplementationRead(destinationImplementationUpdate.getDestinationImplementationId());
@@ -117,6 +159,10 @@ public class DestinationImplementationsHandler {
 
     for (DestinationConnectionImplementation dci : configRepository.listDestinationConnectionImplementations()) {
       if (!dci.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId())) {
+        continue;
+      }
+
+      if (dci.getTombstone()) {
         continue;
       }
 
@@ -137,14 +183,16 @@ public class DestinationImplementationsHandler {
                                                           final UUID destinationSpecificationId,
                                                           final UUID workspaceId,
                                                           final UUID destinationImplementationId,
-                                                          final JsonNode configurationJson)
+                                                          final JsonNode configurationJson,
+                                                          final boolean tombstone)
       throws JsonValidationException, IOException {
     final DestinationConnectionImplementation destinationConnectionImplementation = new DestinationConnectionImplementation()
         .withName(name)
         .withDestinationSpecificationId(destinationSpecificationId)
         .withWorkspaceId(workspaceId)
         .withDestinationImplementationId(destinationImplementationId)
-        .withConfiguration(configurationJson);
+        .withConfiguration(configurationJson)
+        .withTombstone(tombstone);
 
     configRepository.writeDestinationConnectionImplementation(destinationConnectionImplementation);
   }

@@ -105,7 +105,7 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
     sourceImplementationsHandler = new SourceImplementationsHandler(configRepository, integrationSchemaValidation, connectionsHandler);
     destinationsHandler = new DestinationsHandler(configRepository);
     destinationSpecificationsHandler = new DestinationSpecificationsHandler(configRepository);
-    destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, integrationSchemaValidation);
+    destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, integrationSchemaValidation, connectionsHandler);
     schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
@@ -148,7 +148,6 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   // SOURCE IMPLEMENTATION
-
   @Override
   public SourceImplementationRead createSourceImplementation(@Valid SourceImplementationCreate sourceImplementationCreate) {
     return execute(() -> sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate));
@@ -188,7 +187,6 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   // DESTINATION
-
   @Override
   public DestinationReadList listDestinations() {
     return execute(destinationsHandler::listDestinations);
@@ -200,16 +198,24 @@ public class ConfigurationApi implements io.dataline.api.V1Api {
   }
 
   // DESTINATION SPECIFICATION
-
   @Override
   public DestinationSpecificationRead getDestinationSpecification(@Valid DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> destinationSpecificationsHandler.getDestinationSpecification(destinationIdRequestBody));
   }
 
   // DESTINATION IMPLEMENTATION
+
   @Override
   public DestinationImplementationRead createDestinationImplementation(@Valid DestinationImplementationCreate destinationImplementationCreate) {
     return execute(() -> destinationImplementationsHandler.createDestinationImplementation(destinationImplementationCreate));
+  }
+
+  @Override
+  public void deleteDestinationImplementation(@Valid DestinationImplementationIdRequestBody destinationImplementationIdRequestBody) {
+    execute(() -> {
+      destinationImplementationsHandler.deleteDestinationImplementation(destinationImplementationIdRequestBody);
+      return null;
+    });
   }
 
   @Override
