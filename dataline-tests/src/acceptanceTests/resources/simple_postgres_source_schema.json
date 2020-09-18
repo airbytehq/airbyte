@@ -1,8 +1,8 @@
 {
-  "tables": [
+  "streams": [
     {
       "name": "id_and_name",
-      "columns": [
+      "fields": [
         {
           "name": "name",
           "dataType": "string",

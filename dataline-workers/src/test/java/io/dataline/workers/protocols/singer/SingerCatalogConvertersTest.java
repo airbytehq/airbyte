@@ -69,9 +69,9 @@ class SingerCatalogConvertersTest {
         Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
     final Schema expectedSchema =
         Jsons.deserialize(MoreResources.readResource("simple_postgres_schema.json"), StandardDiscoverSchemaOutput.class).getSchema();
-    expectedSchema.getTables().get(0).withSelected(false);
-    expectedSchema.getTables().get(0).getColumns().get(0).withSelected(true);
-    expectedSchema.getTables().get(0).getColumns().get(1).withSelected(true);
+    expectedSchema.getStreams().get(0).withSelected(false);
+    expectedSchema.getStreams().get(0).getFields().get(0).withSelected(true);
+    expectedSchema.getStreams().get(0).getFields().get(1).withSelected(true);
 
     final Schema actualSchema = SingerCatalogConverters.toDatalineSchema(catalog);
 
@@ -86,9 +86,9 @@ class SingerCatalogConvertersTest {
 
     final Schema expectedSchema =
         Jsons.deserialize(MoreResources.readResource("simple_postgres_schema.json"), StandardDiscoverSchemaOutput.class).getSchema();
-    expectedSchema.getTables().get(0).withSelected(true);
-    expectedSchema.getTables().get(0).getColumns().get(0).withSelected(true);
-    expectedSchema.getTables().get(0).getColumns().get(1).withSelected(true);
+    expectedSchema.getStreams().get(0).withSelected(true);
+    expectedSchema.getStreams().get(0).getFields().get(0).withSelected(true);
+    expectedSchema.getStreams().get(0).getFields().get(1).withSelected(true);
 
     final Schema actualSchema = SingerCatalogConverters.toDatalineSchema(catalog);
 

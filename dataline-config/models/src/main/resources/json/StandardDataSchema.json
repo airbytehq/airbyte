@@ -7,20 +7,20 @@
     "schema": {
       "description": "describes the available schema.",
       "type": "object",
-      "required": ["tables"],
+      "required": ["streams"],
       "additionalProperties": false,
       "properties": {
-        "tables": {
+        "streams": {
           "type": "array",
           "items": {
-            "$ref": "StandardDataSchema.json#/definitions/table"
+            "$ref": "StandardDataSchema.json#/definitions/stream"
           }
         }
       }
     },
-    "table": {
+    "stream": {
       "type": "object",
-      "required": ["name", "columns"],
+      "required": ["name", "fields"],
       "additionalProperties": false,
       "properties": {
         "name": {
@@ -29,15 +29,15 @@
         "selected": {
           "type": "boolean"
         },
-        "columns": {
+        "fields": {
           "type": "array",
           "items": {
-            "$ref": "StandardDataSchema.json#/definitions/column"
+            "$ref": "StandardDataSchema.json#/definitions/field"
           }
         }
       }
     },
-    "column": {
+    "field": {
       "type": "object",
       "required": ["name", "dataType", "selected"],
       "additionalProperties": false,
@@ -49,7 +49,7 @@
           "$ref": "DataType.json"
         },
         "selected": {
-          "description": "whether or not the column will be replicated.",
+          "description": "whether or not the field will be replicated.",
           "type": "boolean"
         }
       }

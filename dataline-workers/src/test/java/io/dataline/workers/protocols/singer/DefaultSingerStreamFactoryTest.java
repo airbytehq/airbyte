@@ -49,8 +49,8 @@ import org.slf4j.Logger;
 
 class DefaultSingerStreamFactoryTest {
 
-  private static final String TABLE_NAME = "user_preferences";
-  private static final String COLUMN_NAME = "favorite_color";
+  private static final String STREAM_NAME = "user_preferences";
+  private static final String FIELD_NAME = "favorite_color";
 
   private SingerProtocolPredicate singerProtocolPredicate;
   private Logger logger;
@@ -64,7 +64,7 @@ class DefaultSingerStreamFactoryTest {
 
   @Test
   public void testValid() {
-    final SingerMessage record1 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
+    final SingerMessage record1 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
 
     final Stream<SingerMessage> messageStream = stringToSingerMessageStream(Jsons.serialize(record1));
     final Stream<SingerMessage> expectedStream = Stream.of(record1);
@@ -113,8 +113,8 @@ class DefaultSingerStreamFactoryTest {
   @Test
   @Disabled
   public void testMissingNewLineBetweenValidRecords() {
-    final SingerMessage record1 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "green");
-    final SingerMessage record2 = SingerMessageUtils.createRecordMessage(TABLE_NAME, COLUMN_NAME, "yellow");
+    final SingerMessage record1 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
+    final SingerMessage record2 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
 
     final String inputString = Jsons.serialize(record1) + Jsons.serialize(record2);
 
