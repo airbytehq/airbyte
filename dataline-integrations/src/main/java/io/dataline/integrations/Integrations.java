@@ -45,7 +45,7 @@ public enum Integrations {
       new IntegrationMapping("dataline/integration-singer-bigquery-destination:0.1.1")),
   CSV_TARGET(
       UUID.fromString("8442ee76-cc1d-419a-bd8b-859a090366d4"),
-      new IntegrationMapping("dataline/integration-singer-csv-destination:dev"));
+      new IntegrationMapping("dataline/integration-singer-csv-destination:0.1.1"));
 
   private final UUID specId;
   private final IntegrationMapping integrationMapping;
