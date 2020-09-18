@@ -103,7 +103,7 @@ public class DefaultSingerTap implements SingerTap {
       jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME).toString(),
       // TODO support both --properties and --catalog depending on integration
       "--properties",
-        jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toString()
+      jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toString()
     };
 
     if (input.getState() != null) {
