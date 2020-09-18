@@ -37,36 +37,36 @@ def createLicenseWith = { licence ->
     return tmp
 }
 
-//spotless {
-//    java {
-//        target '**/*.java'
-//        targetExclude "**/build/**/*"
-//
-//        importOrder()
-//
-//        eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
-//
-//        licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
-//        removeUnusedImports()
-//        trimTrailingWhitespace()
-//    }
-//    groovyGradle {
-//        target '**/*.gradle'
-//        targetExclude "**/build/**/*"
-//    }
-//    sql {
-//        target '**/*.sql'
-//        targetExclude "**/build/**/*"
-//
-//        dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
-//    }
-//    format 'styling', {
-//        target '**/*.json', '**/*.yaml'
-//        targetExclude "**/build/**/*", "**/node_modules/**/*"
-//
-//        prettier()
-//    }
-//}
+spotless {
+    java {
+        target '**/*.java'
+        targetExclude "**/build/**/*"
+
+        importOrder()
+
+        eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
+
+        licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
+        removeUnusedImports()
+        trimTrailingWhitespace()
+    }
+    groovyGradle {
+        target '**/*.gradle'
+        targetExclude "**/build/**/*"
+    }
+    sql {
+        target '**/*.sql'
+        targetExclude "**/build/**/*"
+
+        dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
+    }
+    format 'styling', {
+        target '**/*.json', '**/*.yaml'
+        targetExclude "**/build/**/*", "**/node_modules/**/*"
+
+        prettier()
+    }
+}
 check.dependsOn 'spotlessApply'
 
 // Disabled because it generate an obnoxious warning
