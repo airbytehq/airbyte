@@ -39,7 +39,7 @@ jobs:
         run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
 
       - name: Ensure no file change
-        run: git diff-index --quiet HEAD
+        run: git diff-index --exit-code HEAD
 
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh
