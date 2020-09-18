@@ -33,8 +33,6 @@ import com.google.common.collect.ImmutableMap;
 import io.dataline.commons.json.Jsons;
 import io.dataline.config.StandardCheckConnectionInput;
 import io.dataline.config.StandardCheckConnectionOutput;
-import io.dataline.workers.InvalidCatalogException;
-import io.dataline.workers.InvalidCredentialsException;
 import io.dataline.workers.JobStatus;
 import io.dataline.workers.OutputAndStatus;
 import io.dataline.workers.WorkerConstants;
@@ -59,9 +57,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
-class TestCsvDestination {
+class TestLocalCsvDestination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TestCsvDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestLocalCsvDestination.class);
 
   private static final String IMAGE_NAME = "dataline/integration-singer-csv-destination:dev";
   private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
@@ -150,7 +148,7 @@ class TestCsvDestination {
   }
 
   @Test
-  public void testConnectionSuccessful() throws InvalidCredentialsException, InvalidCatalogException {
+  public void testConnectionSuccessful() {
     final Path destinationPath = Path.of("users");
     Path javaDestinationPath = localRoot.resolve(destinationPath);
     javaDestinationPath.toFile().mkdirs();
@@ -165,7 +163,7 @@ class TestCsvDestination {
   }
 
   @Test
-  public void testConnectionUnsuccessful() throws InvalidCredentialsException, InvalidCatalogException {
+  public void testConnectionUnsuccessful() {
     final Path destinationPath = Path.of("users");
 
     final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
