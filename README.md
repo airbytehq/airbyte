@@ -52,7 +52,7 @@ We love contributions to Airbyte, big or small. See our [Contributing Guide](htt
 
 For general help using Airbyte, please refer to the official Airbyte documentation. For additional help, you can use one of these channels to ask a question:
 
-* [Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-h5m88w3a-twQ_6AF9e8SnAzOIkHu2VQ) \(For live discussion with the Community and Airbyte team\)
+* [Slack](https://slack.airbyte.io) \(For live discussion with the Community and Airbyte team\)
 * [GitHub](https://github.com/airbytehq/airbyte) \(Bug reports, Contributions\)
 * [Twitter](https://twitter.com/airbytehq) \(Get the news fast\)
 
