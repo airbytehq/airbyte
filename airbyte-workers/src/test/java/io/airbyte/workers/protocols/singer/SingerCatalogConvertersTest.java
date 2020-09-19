@@ -22,16 +22,16 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.dataline.commons.json.Jsons;
-import io.dataline.commons.resources.MoreResources;
-import io.dataline.config.Schema;
-import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.singer.SingerCatalog;
-import io.dataline.singer.SingerMetadataChild;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.Schema;
+import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.singer.SingerCatalog;
+import io.airbyte.singer.SingerMetadataChild;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
@@ -41,11 +41,11 @@ class SingerCatalogConvertersTest {
   void applySchemaToDiscoveredCatalog() throws IOException {
     final SingerCatalog catalog =
         Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
-    final Schema datalineSchema =
+    final Schema airbyteSchema =
         Jsons.deserialize(MoreResources.readResource("simple_postgres_schema.json"), StandardDiscoverSchemaOutput.class).getSchema();
 
     final SingerCatalog actualCatalog =
-        SingerCatalogConverters.applySchemaToDiscoveredCatalog(catalog, datalineSchema);
+        SingerCatalogConverters.applySchemaToDiscoveredCatalog(catalog, airbyteSchema);
 
     final SingerCatalog expectedCatalog =
         Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);

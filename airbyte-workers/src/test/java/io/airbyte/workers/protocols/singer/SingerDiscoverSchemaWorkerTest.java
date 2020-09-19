@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,15 +35,15 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.dataline.commons.io.IOs;
-import io.dataline.commons.json.Jsons;
-import io.dataline.commons.resources.MoreResources;
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.WorkerConstants;
-import io.dataline.workers.process.ProcessBuilderFactory;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

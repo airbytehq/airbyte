@@ -22,14 +22,14 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler.persistence;
+package io.airbyte.scheduler.persistence;
 
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.JobConfig;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.StandardSync;
-import io.dataline.scheduler.Job;
-import io.dataline.scheduler.JobStatus;
+import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.JobConfig;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.StandardSync;
+import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.JobStatus;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;

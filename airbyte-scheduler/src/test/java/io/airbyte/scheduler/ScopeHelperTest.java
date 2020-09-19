@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.dataline.config.JobConfig;
+import io.airbyte.config.JobConfig;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 

@@ -52,7 +52,7 @@ This part assumes that you have access to a terminal on your workstation
 
 ```bash
 # In your workstation terminal
-SSH_KEY=~/Downloads/dataline-key.pem # or wherever you've downloaded the key
+SSH_KEY=~/Downloads/airbyte-key.pem # or wherever you've downloaded the key
 INSTANCE_IP=REPLACE_WITH_YOUR_INSTANCE_IP
 chmod 400 $SSH_KEY # or ssh will complain that the key has the wrong permissions
 ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
@@ -97,8 +97,8 @@ ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 
 ```bash
 # In your ssh session on the instance terminal
-mkdir dataline && cd dataline
-wget https://raw.githubusercontent.com/datalineio/dataline/master/{.env,docker-compose.yaml}
+mkdir airbyte && cd airbyte
+wget https://raw.githubusercontent.com/airbyteio/airbyte/master/{.env,docker-compose.yaml}
 docker-compose up -d
 ```
 
@@ -120,5 +120,5 @@ ssh -i $SSH_KEY -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f ec2-user@$IN
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [slack](https://join.slack.com/t/datalinehq/shared_invite/zt-h5m88w3a-twQ_6AF9e8SnAzOIkHu2VQ). Our community will help!
+If you encounter any issues, just connect to our [slack](https://join.slack.com/t/airbytehq/shared_invite/zt-h5m88w3a-twQ_6AF9e8SnAzOIkHu2VQ). Our community will help!
 

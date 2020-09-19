@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.integrations.io.dataline.integration_tests.sources;
+package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,10 +35,10 @@ import com.stripe.model.Customer;
 import com.stripe.net.RequestOptions;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerListParams;
-import io.dataline.commons.io.IOs;
-import io.dataline.commons.json.Jsons;
-import io.dataline.workers.process.DockerProcessBuilderFactory;
-import io.dataline.workers.process.ProcessBuilderFactory;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.workers.process.DockerProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -60,8 +60,8 @@ public class SingerStripeSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerStripeSourceTest.class);
 
-  private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
-  private static final String IMAGE_NAME = "dataline/integration-singer-stripe-source:dev";
+  private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
+  private static final String IMAGE_NAME = "airbyte/integration-singer-stripe-source:dev";
 
   private static final String CATALOG = "catalog.json";
   private static final String CONFIG = "config.json";

@@ -22,14 +22,14 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.dataline.commons.json.JsonSchemaValidator;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.ConfigSchema;
+import io.airbyte.commons.json.JsonSchemaValidator;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ConfigSchema;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

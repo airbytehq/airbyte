@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.concurrency;
+package io.airbyte.commons.concurrency;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.dataline.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedConsumer;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

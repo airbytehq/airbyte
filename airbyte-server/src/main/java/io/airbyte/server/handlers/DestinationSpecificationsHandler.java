@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.handlers;
+package io.airbyte.server.handlers;
 
-import io.dataline.api.model.DestinationIdRequestBody;
-import io.dataline.api.model.DestinationSpecificationRead;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.DestinationConnectionSpecification;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.server.errors.KnownException;
+import io.airbyte.api.model.DestinationIdRequestBody;
+import io.airbyte.api.model.DestinationSpecificationRead;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.DestinationConnectionSpecification;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.errors.KnownException;
 import java.io.IOException;
 import org.eclipse.jetty.http.HttpStatus;
 

@@ -17,4 +17,4 @@ COPY entrypoint.sh .
 
 ENTRYPOINT ["/singer/entrypoint.sh"]
 
-LABEL io.dataline.version=0.1.0
+LABEL io.airbyte.version=0.1.0

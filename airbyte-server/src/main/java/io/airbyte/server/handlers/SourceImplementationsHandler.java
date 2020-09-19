@@ -22,26 +22,26 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.handlers;
+package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.dataline.api.model.ConnectionRead;
-import io.dataline.api.model.ConnectionStatus;
-import io.dataline.api.model.ConnectionUpdate;
-import io.dataline.api.model.SourceImplementationCreate;
-import io.dataline.api.model.SourceImplementationIdRequestBody;
-import io.dataline.api.model.SourceImplementationRead;
-import io.dataline.api.model.SourceImplementationReadList;
-import io.dataline.api.model.SourceImplementationUpdate;
-import io.dataline.api.model.WorkspaceIdRequestBody;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.SourceConnectionSpecification;
-import io.dataline.config.StandardSource;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.server.validation.IntegrationSchemaValidation;
+import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.ConnectionStatus;
+import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.SourceImplementationCreate;
+import io.airbyte.api.model.SourceImplementationIdRequestBody;
+import io.airbyte.api.model.SourceImplementationRead;
+import io.airbyte.api.model.SourceImplementationReadList;
+import io.airbyte.api.model.SourceImplementationUpdate;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.SourceConnectionSpecification;
+import io.airbyte.config.StandardSource;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;

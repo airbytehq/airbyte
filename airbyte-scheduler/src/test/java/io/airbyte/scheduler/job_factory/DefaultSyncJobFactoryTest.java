@@ -22,20 +22,20 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler.job_factory;
+package io.airbyte.scheduler.job_factory;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.StandardSync;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

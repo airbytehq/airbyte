@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.wrappers;
+package io.airbyte.workers.wrappers;
 
-import io.dataline.config.JobOutput;
-import io.dataline.config.StandardCheckConnectionInput;
-import io.dataline.config.StandardCheckConnectionOutput;
-import io.dataline.workers.CheckConnectionWorker;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.workers.CheckConnectionWorker;
 
 public class JobOutputCheckConnectionWorker extends OutputConvertingWorker<StandardCheckConnectionInput, StandardCheckConnectionOutput, JobOutput> {
 

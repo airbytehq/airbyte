@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.helpers;
+package io.airbyte.server.helpers;
 
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.SourceConnectionSpecification;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.SourceConnectionSpecification;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,7 +41,7 @@ public class SourceSpecificationHelpers {
   public static SourceConnectionSpecification generateSourceSpecification(UUID sourceId) throws IOException {
     final UUID sourceSpecificationId = UUID.randomUUID();
 
-    final Path path = Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
+    final Path path = Paths.get("../airbyte-server/src/test/resources/json/TestSpecification.json");
 
     return new SourceConnectionSpecification()
         .withSourceId(sourceId)

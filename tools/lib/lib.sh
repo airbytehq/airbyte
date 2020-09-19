@@ -11,5 +11,5 @@ assert_root() {
 
 _get_docker_version() {
   local dockerfile=$1
-  cat "$dockerfile" | grep io.dataline.version | cut -d = -f2
+  cat "$dockerfile" | grep io.airbyte.version | cut -d = -f2
 }

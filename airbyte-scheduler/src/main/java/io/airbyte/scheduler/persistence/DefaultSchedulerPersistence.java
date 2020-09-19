@@ -22,24 +22,24 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler.persistence;
+package io.airbyte.scheduler.persistence;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.JobCheckConnectionConfig;
-import io.dataline.config.JobConfig;
-import io.dataline.config.JobDiscoverSchemaConfig;
-import io.dataline.config.JobOutput;
-import io.dataline.config.JobSyncConfig;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.StandardSync;
-import io.dataline.config.StandardSyncOutput;
-import io.dataline.db.DatabaseHelper;
-import io.dataline.integrations.Integrations;
-import io.dataline.scheduler.Job;
-import io.dataline.scheduler.JobStatus;
-import io.dataline.scheduler.ScopeHelper;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.JobCheckConnectionConfig;
+import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobDiscoverSchemaConfig;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.db.DatabaseHelper;
+import io.airbyte.integrations.Integrations;
+import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.JobStatus;
+import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;

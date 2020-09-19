@@ -22,18 +22,18 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.dataline.config.StandardSync;
-import io.dataline.config.StandardSyncInput;
-import io.dataline.config.StandardTapConfig;
-import io.dataline.config.StandardTargetConfig;
-import io.dataline.singer.SingerMessage;
-import io.dataline.workers.TestConfigHelpers;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardTapConfig;
+import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.singer.SingerMessage;
+import io.airbyte.workers.TestConfigHelpers;
 import java.nio.file.Path;
 import java.util.Optional;
 import org.apache.commons.lang3.tuple.ImmutablePair;

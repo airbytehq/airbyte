@@ -22,33 +22,33 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.handlers;
+package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.dataline.api.model.ConnectionIdRequestBody;
-import io.dataline.api.model.ConnectionRead;
-import io.dataline.api.model.ConnectionReadList;
-import io.dataline.api.model.JobConfigType;
-import io.dataline.api.model.JobListRequestBody;
-import io.dataline.api.model.JobRead;
-import io.dataline.api.model.JobReadList;
-import io.dataline.api.model.SourceImplementationIdRequestBody;
-import io.dataline.api.model.SourceImplementationRead;
-import io.dataline.api.model.WbConnectionRead;
-import io.dataline.api.model.WbConnectionReadList;
-import io.dataline.api.model.WorkspaceIdRequestBody;
-import io.dataline.commons.enums.Enums;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.StandardSource;
-import io.dataline.config.StandardSync;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.server.helpers.ConnectionHelpers;
-import io.dataline.server.helpers.SourceHelpers;
-import io.dataline.server.helpers.SourceImplementationHelpers;
+import io.airbyte.api.model.ConnectionIdRequestBody;
+import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.ConnectionReadList;
+import io.airbyte.api.model.JobConfigType;
+import io.airbyte.api.model.JobListRequestBody;
+import io.airbyte.api.model.JobRead;
+import io.airbyte.api.model.JobReadList;
+import io.airbyte.api.model.SourceImplementationIdRequestBody;
+import io.airbyte.api.model.SourceImplementationRead;
+import io.airbyte.api.model.WbConnectionRead;
+import io.airbyte.api.model.WbConnectionReadList;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.StandardSource;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.server.helpers.ConnectionHelpers;
+import io.airbyte.server.helpers.SourceHelpers;
+import io.airbyte.server.helpers.SourceImplementationHelpers;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;

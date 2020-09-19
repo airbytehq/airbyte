@@ -17,7 +17,7 @@ RUN add-apt-repository \
 RUN apt-get update && apt-get install -y docker-ce-cli
 
 ENV WAIT_VERSION=2.7.2
-ENV APPLICATION dataline-scheduler
+ENV APPLICATION airbyte-scheduler
 
 WORKDIR /app
 

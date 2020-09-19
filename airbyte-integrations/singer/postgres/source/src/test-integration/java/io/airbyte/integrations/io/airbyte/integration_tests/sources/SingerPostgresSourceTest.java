@@ -22,33 +22,33 @@
  * SOFTWARE.
  */
 
-package io.dataline.integrations.io.dataline.integration_tests.sources;
+package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.json.Jsons;
-import io.dataline.commons.resources.MoreResources;
-import io.dataline.config.Schema;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.StandardCheckConnectionInput;
-import io.dataline.config.StandardCheckConnectionOutput;
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.config.StandardSync;
-import io.dataline.config.StandardTapConfig;
-import io.dataline.singer.SingerMessage;
-import io.dataline.test.utils.PostgreSQLContainerHelper;
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.process.DockerProcessBuilderFactory;
-import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocols.singer.DefaultSingerTap;
-import io.dataline.workers.protocols.singer.SingerCheckConnectionWorker;
-import io.dataline.workers.protocols.singer.SingerDiscoverSchemaWorker;
-import io.dataline.workers.protocols.singer.SingerMessageTracker;
-import io.dataline.workers.protocols.singer.SingerTap;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.Schema;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardTapConfig;
+import io.airbyte.singer.SingerMessage;
+import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.process.DockerProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.protocols.singer.DefaultSingerTap;
+import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
+import io.airbyte.workers.protocols.singer.SingerDiscoverSchemaWorker;
+import io.airbyte.workers.protocols.singer.SingerMessageTracker;
+import io.airbyte.workers.protocols.singer.SingerTap;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -72,8 +72,8 @@ import org.testcontainers.utility.MountableFile;
 public class SingerPostgresSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerPostgresSourceTest.class);
-  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-source:dev";
-  private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
+  private static final String IMAGE_NAME = "airbyte/integration-singer-postgres-source:dev";
+  private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
 
   private PostgreSQLContainer psqlDb;
   private ProcessBuilderFactory pbf;
@@ -86,7 +86,7 @@ public class SingerPostgresSourceTest {
 
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), psqlDb);
     Files.createDirectories(TESTS_PATH);
-    Path workspaceRoot = Files.createTempDirectory(TESTS_PATH, "dataline-integration");
+    Path workspaceRoot = Files.createTempDirectory(TESTS_PATH, "airbyte-integration");
     jobRoot = workspaceRoot.resolve("job");
     Files.createDirectories(jobRoot);
 

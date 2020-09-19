@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.errors;
+package io.airbyte.server.errors;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.google.common.collect.ImmutableMap;
-import io.dataline.commons.json.Jsons;
+import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;

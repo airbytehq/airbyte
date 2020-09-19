@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/datalineio/dataline/blob/master/dataline-config/src/main/resources/json/StandardSync.json",
+  "$id": "https://github.com/airbyteio/airbyte/blob/master/airbyte-config/src/main/resources/json/StandardSync.json",
   "title": "StandardSync",
   "description": "configuration required for sync for ALL taps",
   "type": "object",

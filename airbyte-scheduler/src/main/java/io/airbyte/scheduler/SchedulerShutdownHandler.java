@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;

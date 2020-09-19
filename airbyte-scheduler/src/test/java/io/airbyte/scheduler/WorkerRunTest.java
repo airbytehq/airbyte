@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 
-import io.dataline.config.JobOutput;
-import io.dataline.workers.Worker;
+import io.airbyte.config.JobOutput;
+import io.airbyte.workers.Worker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

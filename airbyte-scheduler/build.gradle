@@ -6,17 +6,17 @@ plugins {
 }
 
 dependencies {
-    implementation project(':dataline-config:models')
-    implementation project(':dataline-config:persistence')
-    implementation project(':dataline-db')
-    implementation project(':dataline-integrations')
-    implementation project(':dataline-workers')
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-db')
+    implementation project(':airbyte-integrations')
+    implementation project(':airbyte-workers')
 
     testImplementation "org.testcontainers:postgresql:1.14.3"
 }
 
 application {
-    mainClass = 'io.dataline.scheduler.SchedulerApp'
+    mainClass = 'io.airbyte.scheduler.SchedulerApp'
 }
 
 Properties env = new Properties()
@@ -30,5 +30,5 @@ run {
     environment "VERSION", env.VERSION
     environment "DATABASE_USER", env.DATABASE_USER
     environment "DATABASE_PASSWORD", env.DATABASE_PASSWORD
-    environment "DATABASE_URL", "jdbc:postgresql://localhost:5432/dataline"
+    environment "DATABASE_URL", "jdbc:postgresql://localhost:5432/airbyte"
 }

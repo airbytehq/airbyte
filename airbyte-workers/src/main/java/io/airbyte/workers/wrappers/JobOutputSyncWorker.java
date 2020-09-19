@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.wrappers;
+package io.airbyte.workers.wrappers;
 
-import io.dataline.config.JobOutput;
-import io.dataline.config.StandardSyncInput;
-import io.dataline.config.StandardSyncOutput;
-import io.dataline.workers.SyncWorker;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.workers.SyncWorker;
 
 public class JobOutputSyncWorker extends OutputConvertingWorker<StandardSyncInput, StandardSyncOutput, JobOutput> {
 

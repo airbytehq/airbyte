@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.db;
+package io.airbyte.db;
 
 import static org.jooq.impl.DSL.field;
 
@@ -42,7 +42,7 @@ public class ServerUuid {
         connectionPool,
         ctx -> {
           Result<Record> result =
-              ctx.select().from("dataline_metadata").where(field("key").eq("server-uuid")).fetch();
+              ctx.select().from("airbyte_metadata").where(field("key").eq("server-uuid")).fetch();
           Optional<Record> first = result.stream().findFirst();
 
           if (first.isEmpty()) {

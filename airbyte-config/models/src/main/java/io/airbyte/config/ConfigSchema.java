@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package io.dataline.config;
+package io.airbyte.config;
 
-import io.dataline.commons.io.IOs;
-import io.dataline.commons.resources.MoreResources;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.resources.MoreResources;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

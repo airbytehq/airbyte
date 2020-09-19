@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.test.utils;
+package io.airbyte.test.utils;
 
 import java.io.IOException;
 import java.util.UUID;

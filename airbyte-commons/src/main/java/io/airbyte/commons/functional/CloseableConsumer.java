@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.functional;
+package io.airbyte.commons.functional;
 
 import java.util.function.Consumer;
 

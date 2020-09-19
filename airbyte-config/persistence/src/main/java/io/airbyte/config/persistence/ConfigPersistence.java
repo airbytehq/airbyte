@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.airbyte.config.persistence;
 
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.ConfigSchema;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.ConfigSchema;
 import java.io.IOException;
 import java.util.List;
 

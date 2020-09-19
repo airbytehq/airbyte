@@ -22,20 +22,20 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import io.dataline.commons.io.IOs;
-import io.dataline.commons.io.LineGobbler;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.StandardTargetConfig;
-import io.dataline.singer.SingerMessage;
-import io.dataline.workers.WorkerConstants;
-import io.dataline.workers.WorkerException;
-import io.dataline.workers.WorkerUtils;
-import io.dataline.workers.process.ProcessBuilderFactory;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.singer.SingerMessage;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;

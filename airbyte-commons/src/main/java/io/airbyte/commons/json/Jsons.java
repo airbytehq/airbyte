@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.json;
+package io.airbyte.commons.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

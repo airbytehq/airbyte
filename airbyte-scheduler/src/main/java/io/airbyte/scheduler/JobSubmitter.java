@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
-import io.dataline.commons.concurrency.LifecycledCallable;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.WorkerConstants;
+import io.airbyte.commons.concurrency.LifecycledCallable;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;

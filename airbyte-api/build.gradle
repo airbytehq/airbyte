@@ -17,9 +17,9 @@ task generateApiServer(type: GenerateTask) {
     inputSpec = specFile
     outputDir = serverOutputDir
 
-    apiPackage = "io.dataline.api"
-    invokerPackage = "io.dataline.api.invoker"
-    modelPackage = "io.dataline.api.model"
+    apiPackage = "io.airbyte.api"
+    invokerPackage = "io.airbyte.api.invoker"
+    modelPackage = "io.airbyte.api.model"
 
     importMappings = [
             'SourceSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
@@ -48,9 +48,9 @@ task generateApiClient(type: GenerateTask) {
     inputSpec = specFile
     outputDir = clientOutputDir
 
-    apiPackage = "io.dataline.api.client"
-    invokerPackage = "io.dataline.api.client.invoker"
-    modelPackage = "io.dataline.api.client.model"
+    apiPackage = "io.airbyte.api.client"
+    invokerPackage = "io.airbyte.api.client.invoker"
+    modelPackage = "io.airbyte.api.client.model"
 
     importMappings = [
             'SourceSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
@@ -79,9 +79,9 @@ task generateApiDocs(type: GenerateTask) {
     inputSpec = specFile
     outputDir = docsOutputDir
 
-    apiPackage = "io.dataline.api.client"
-    invokerPackage = "io.dataline.api.client.invoker"
-    modelPackage = "io.dataline.api.client.model"
+    apiPackage = "io.airbyte.api.client"
+    invokerPackage = "io.airbyte.api.client.invoker"
+    modelPackage = "io.airbyte.api.client.model"
 
     importMappings = [
             'SourceSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',

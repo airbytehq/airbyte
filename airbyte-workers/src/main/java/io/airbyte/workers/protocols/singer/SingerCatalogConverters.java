@@ -22,19 +22,19 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.DataType;
-import io.dataline.config.Field;
-import io.dataline.config.Schema;
-import io.dataline.config.Stream;
-import io.dataline.singer.SingerCatalog;
-import io.dataline.singer.SingerColumn;
-import io.dataline.singer.SingerMetadata;
-import io.dataline.singer.SingerMetadataChild;
-import io.dataline.singer.SingerStream;
-import io.dataline.singer.SingerType;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DataType;
+import io.airbyte.config.Field;
+import io.airbyte.config.Schema;
+import io.airbyte.config.Stream;
+import io.airbyte.singer.SingerCatalog;
+import io.airbyte.singer.SingerColumn;
+import io.airbyte.singer.SingerMetadata;
+import io.airbyte.singer.SingerMetadataChild;
+import io.airbyte.singer.SingerStream;
+import io.airbyte.singer.SingerType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,14 +43,14 @@ import java.util.stream.Collectors;
 public class SingerCatalogConverters {
 
   /**
-   * Takes in a singer catalog and a dataline schema. It then applies the dataline configuration to
-   * that catalog. e.g. If dataline says that a certain field should or should not be included in the
+   * Takes in a singer catalog and a airbyte schema. It then applies the airbyte configuration to
+   * that catalog. e.g. If airbyte says that a certain field should or should not be included in the
    * sync, this method applies that to the catalog. Thus we produce a valid singer catalog that
-   * contains configurations stored in dataline.
+   * contains configurations stored in airbyte.
    *
    * @param catalog - singer catalog
-   * @param schema - dataline schema
-   * @return singer catalog with dataline schema applied to it.
+   * @param schema - airbyte schema
+   * @return singer catalog with airbyte schema applied to it.
    */
   public static SingerCatalog applySchemaToDiscoveredCatalog(SingerCatalog catalog, Schema schema) {
     Map<String, Stream> streamNameToDatalineStream = schema.getStreams()
@@ -67,9 +67,9 @@ public class SingerCatalogConverters {
                   if (!streamNameToDatalineStream.containsKey(stream.getStream())) {
                     return stream;
                   }
-                  final Stream datalineStream = streamNameToDatalineStream.get(stream.getStream());
+                  final Stream airbyteStream = streamNameToDatalineStream.get(stream.getStream());
                   final Map<String, Field> fieldNameToField =
-                      datalineStream.getFields()
+                      airbyteStream.getFields()
                           .stream()
                           .collect(Collectors.toMap(Field::getName, field -> field));
 
@@ -99,7 +99,7 @@ public class SingerCatalogConverters {
 
                                   newSingerMetadata.getMetadata()
                                       .withReplicationMethod(SingerMetadataChild.ReplicationMethod.FULL_TABLE)
-                                      .withSelected(datalineStream.getSelected());
+                                      .withSelected(airbyteStream.getSelected());
                                 }
                                 return newSingerMetadata;
                               })

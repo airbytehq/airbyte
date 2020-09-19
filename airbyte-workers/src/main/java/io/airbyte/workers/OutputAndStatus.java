@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.airbyte.workers;
 
 import java.util.Objects;
 import java.util.Optional;

@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.dataline.commons.json.Jsons;
-import io.dataline.singer.SingerMessage;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.singer.SingerMessage;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;

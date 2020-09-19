@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.string;
+package io.airbyte.commons.string;
 
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Assertions;

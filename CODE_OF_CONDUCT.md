@@ -1,2 +1,2 @@
 # Code of conduct
-View in [docs.dataline.io](https://docs.dataline.io/contributing/contributing-to-dataline/code-of-conduct)
+View in [docs.airbyte.io](https://docs.airbyte.io/contributing/contributing-to-airbyte/code-of-conduct)

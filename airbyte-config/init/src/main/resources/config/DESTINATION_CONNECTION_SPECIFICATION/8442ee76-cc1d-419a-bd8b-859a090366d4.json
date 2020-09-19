@@ -19,7 +19,7 @@
         "examples": ["\""]
       },
       "destination_path": {
-        "description": "Path to write the data. This path will be concatenated onto the `LOCAL_ROOT`. e.g. If `LOCAL_ROOT = /tmp/dataline_local` and destination_path is `cars/models`, then the directory `/tmp/dataline_local/cars/models`. By default `LOCAL_ROOT` is `/tmp/dataline_local`.",
+        "description": "Path to write the data. This path will be concatenated onto the `LOCAL_ROOT`. e.g. If `LOCAL_ROOT = /tmp/airbyte_local` and destination_path is `cars/models`, then the directory `/tmp/airbyte_local/cars/models`. By default `LOCAL_ROOT` is `/tmp/airbyte_local`.",
         "type": "string"
       }
     }

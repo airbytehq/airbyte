@@ -22,39 +22,39 @@
  * SOFTWARE.
  */
 
-package io.dataline.test.acceptance;
+package io.airbyte.test.acceptance;
 
-import static io.dataline.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
+import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
-import io.dataline.api.client.DatalineApiClient;
-import io.dataline.api.client.invoker.ApiClient;
-import io.dataline.api.client.invoker.ApiException;
-import io.dataline.api.client.model.CheckConnectionRead;
-import io.dataline.api.client.model.ConnectionCreate;
-import io.dataline.api.client.model.ConnectionIdRequestBody;
-import io.dataline.api.client.model.ConnectionRead;
-import io.dataline.api.client.model.ConnectionSchedule;
-import io.dataline.api.client.model.ConnectionStatus;
-import io.dataline.api.client.model.ConnectionSyncRead;
-import io.dataline.api.client.model.ConnectionUpdate;
-import io.dataline.api.client.model.DestinationIdRequestBody;
-import io.dataline.api.client.model.DestinationImplementationCreate;
-import io.dataline.api.client.model.DestinationImplementationIdRequestBody;
-import io.dataline.api.client.model.DestinationImplementationRead;
-import io.dataline.api.client.model.SourceIdRequestBody;
-import io.dataline.api.client.model.SourceImplementationCreate;
-import io.dataline.api.client.model.SourceImplementationIdRequestBody;
-import io.dataline.api.client.model.SourceImplementationRead;
-import io.dataline.api.client.model.SourceSchema;
-import io.dataline.api.client.model.SourceSpecificationRead;
-import io.dataline.commons.json.Jsons;
-import io.dataline.commons.resources.MoreResources;
-import io.dataline.config.persistence.PersistenceConstants;
-import io.dataline.db.DatabaseHelper;
-import io.dataline.test.utils.PostgreSQLContainerHelper;
+import io.airbyte.api.client.DatalineApiClient;
+import io.airbyte.api.client.invoker.ApiClient;
+import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.model.CheckConnectionRead;
+import io.airbyte.api.client.model.ConnectionCreate;
+import io.airbyte.api.client.model.ConnectionIdRequestBody;
+import io.airbyte.api.client.model.ConnectionRead;
+import io.airbyte.api.client.model.ConnectionSchedule;
+import io.airbyte.api.client.model.ConnectionStatus;
+import io.airbyte.api.client.model.ConnectionSyncRead;
+import io.airbyte.api.client.model.ConnectionUpdate;
+import io.airbyte.api.client.model.DestinationIdRequestBody;
+import io.airbyte.api.client.model.DestinationImplementationCreate;
+import io.airbyte.api.client.model.DestinationImplementationIdRequestBody;
+import io.airbyte.api.client.model.DestinationImplementationRead;
+import io.airbyte.api.client.model.SourceIdRequestBody;
+import io.airbyte.api.client.model.SourceImplementationCreate;
+import io.airbyte.api.client.model.SourceImplementationIdRequestBody;
+import io.airbyte.api.client.model.SourceImplementationRead;
+import io.airbyte.api.client.model.SourceSchema;
+import io.airbyte.api.client.model.SourceSpecificationRead;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.persistence.PersistenceConstants;
+import io.airbyte.db.DatabaseHelper;
+import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Duration;

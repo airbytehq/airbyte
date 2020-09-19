@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -31,17 +31,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.JobConfig;
-import io.dataline.config.JobOutput;
-import io.dataline.config.StandardCheckConnectionInput;
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardSyncInput;
-import io.dataline.workers.Worker;
-import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.wrappers.JobOutputCheckConnectionWorker;
-import io.dataline.workers.wrappers.JobOutputDiscoverSchemaWorker;
-import io.dataline.workers.wrappers.JobOutputSyncWorker;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.workers.Worker;
+import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
+import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
+import io.airbyte.workers.wrappers.JobOutputSyncWorker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

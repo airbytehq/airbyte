@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.server;
+package io.airbyte.server;
 
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
-import io.dataline.server.apis.ConfigurationApi;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.server.apis.ConfigurationApi;
 import org.glassfish.hk2.api.Factory;
 
 public class ConfigurationApiFactory implements Factory<ConfigurationApi> {

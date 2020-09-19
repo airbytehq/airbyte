@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.io;
+package io.airbyte.commons.io;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.spy;

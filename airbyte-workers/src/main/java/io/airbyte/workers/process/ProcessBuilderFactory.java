@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.process;
+package io.airbyte.workers.process;
 
 import java.nio.file.Path;
 

@@ -22,17 +22,17 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.StandardSync;
-import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.scheduler.job_factory.DefaultSyncJobFactory;
-import io.dataline.scheduler.job_factory.SyncJobFactory;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.job_factory.DefaultSyncJobFactory;
+import io.airbyte.scheduler.job_factory.SyncJobFactory;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;

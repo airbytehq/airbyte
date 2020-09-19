@@ -7,8 +7,8 @@ Dataline uses `java 14` , `node 14` and `Docker`
 To compile the code and run unit tests:
 
 ```bash
-git clone git@github.com:datalineio/dataline.git
-cd dataline
+git clone git@github.com:airbyteio/airbyte.git
+cd airbyte
 ./gradlew clean build
 ```
 
@@ -39,12 +39,12 @@ To run acceptance \(end-to-end\) tests you must have the Dataline running locall
 ```bash
 ./gradlew build
 VERSION=dev docker-compose up
-./gradlew :dataline-tests:acceptanceTests
+./gradlew :airbyte-tests:acceptanceTests
 ```
 
 ## Develop on individual applications
 
-### Develop on `dataline-webapp`
+### Develop on `airbyte-webapp`
 
 * Spin up Dataline locally so the UI can make requests against the local API.
 
@@ -61,14 +61,14 @@ docker-compose stop webapp
 * Start up the react app.
 
 ```bash
-cd dataline-webapp
+cd airbyte-webapp
 npm install
 npm start
 ```
 
 * Happy Hacking!
 
-### Develop on `dataline-server` \(APIs\)
+### Develop on `airbyte-server` \(APIs\)
 
 * Spin up Dataline locally.
 
@@ -85,7 +85,7 @@ docker-compose stop server
 * Run the `server` with the command line. It will build and start a `server` with the current state of the code. You can also start the `server` from your IDE if you need to use a debugger.
 
 ```bash
-./gradlew :dataline-server:run
+./gradlew :airbyte-server:run
 ```
 
 * Make sure everything is working by testing out a call to the API.
@@ -100,7 +100,7 @@ curl -H "Content-Type: application/json"\
 
 _Note: We namespace most API calls with a workspace id. For now there is only ever one workspace that is hardcoded to the id used in this example. If you ever need a workspace id, just use this one._
 
-### Develop on `dataline-scheduler`
+### Develop on `airbyte-scheduler`
 
 * Spin up Dataline locally.
 
@@ -117,7 +117,7 @@ docker-compose stop scheduler
 * Run the `scheduler` with the command line. It will build and start a `scheduler` with the current state of the code. You can also start the `scheduler`from your IDE if you need to use a debugger.
 
 ```bash
-./gradlew :dataline-scheduler:run
+./gradlew :airbyte-scheduler:run
 ```
 
 * Happy Hacking!

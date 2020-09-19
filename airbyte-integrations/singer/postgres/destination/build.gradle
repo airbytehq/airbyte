@@ -4,7 +4,7 @@ plugins {
     id 'com.bmuschko.docker-remote-api' version '6.6.1'
 }
 
-def image = 'dataline/integration-singer-postgres-destination:dev'
+def image = 'airbyte/integration-singer-postgres-destination:dev'
 
 sourceSets {
     integrationTest {
@@ -30,9 +30,9 @@ dependencies {
     integrationTestImplementation "org.testcontainers:postgresql:1.14.3"
     integrationTestImplementation "org.postgresql:postgresql:42.2.16"
 
-    integrationTestImplementation project(':dataline-config:models')
-    integrationTestImplementation project(':dataline-workers')
-    integrationTestImplementation project(':dataline-db')
+    integrationTestImplementation project(':airbyte-config:models')
+    integrationTestImplementation project(':airbyte-workers')
+    integrationTestImplementation project(':airbyte-db')
 }
 
 task imageName {

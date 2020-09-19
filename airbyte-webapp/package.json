@@ -1,5 +1,5 @@
 {
-  "name": "dataline-webapp",
+  "name": "airbyte-webapp",
   "version": "0.1.0",
   "private": true,
   "scripts": {

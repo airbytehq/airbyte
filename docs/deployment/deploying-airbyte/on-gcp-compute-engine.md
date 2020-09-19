@@ -27,7 +27,7 @@ This part assumes that you have access to a terminal on your workstation
 ```bash
 # In your workstation terminal
 PROJECT_ID=PROJECT_ID_WHERE_YOU_CREATED_YOUR_INSTANCE
-INSTANCE_NAME=dataline # or anyother name that you've used
+INSTANCE_NAME=airbyte # or anyother name that you've used
 ```
 
 * Install `gcloud`
@@ -51,14 +51,14 @@ gcloud init # Follow instructions
 ```bash
 # Verify you can see your instance
 gcloud --project $PROJECT_ID compute instances list
-[...] # You should see the dataline instance you just created
+[...] # You should see the airbyte instance you just created
 ```
 
 * Connect to your instance
 
 ```bash
 # In your workstation terminal
-gcloud --project=$PROJECT_ID beta compute ssh dataline
+gcloud --project=$PROJECT_ID beta compute ssh airbyte
 ```
 
 * Install `docker`
@@ -97,15 +97,15 @@ logout
 
 ```bash
 # In your workstation terminal
-gcloud --project=$PROJECT_ID beta compute ssh dataline
+gcloud --project=$PROJECT_ID beta compute ssh airbyte
 ```
 
 * Install Dataline
 
 ```bash
 # In your ssh session on the instance terminal
-mkdir dataline && cd dataline
-wget https://raw.githubusercontent.com/datalineio/dataline/master/{.env,docker-compose.yaml}
+mkdir airbyte && cd airbyte
+wget https://raw.githubusercontent.com/airbyteio/airbyte/master/{.env,docker-compose.yaml}
 docker-compose up -d
 ```
 
@@ -119,7 +119,7 @@ For security reason we strongly recommend to not expose Dataline on Internet ava
 
 ```bash
 # In your workstation terminal
-gcloud --project=$PROJECT_ID beta compute ssh dataline -- -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f
+gcloud --project=$PROJECT_ID beta compute ssh airbyte -- -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f
 ```
 
 * In your browser, just visit [http://localhost:8000](http://localhost:8000)
@@ -127,5 +127,5 @@ gcloud --project=$PROJECT_ID beta compute ssh dataline -- -L 8000:localhost:8000
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [slack](https://join.slack.com/t/datalinehq/shared_invite/zt-h5m88w3a-twQ_6AF9e8SnAzOIkHu2VQ). Our community will help!
+If you encounter any issues, just connect to our [slack](https://join.slack.com/t/airbytehq/shared_invite/zt-h5m88w3a-twQ_6AF9e8SnAzOIkHu2VQ). Our community will help!
 

@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.airbyte.workers;
 
-import io.dataline.config.StandardSyncInput;
-import io.dataline.config.StandardTapConfig;
-import io.dataline.config.StandardTargetConfig;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardTapConfig;
+import io.airbyte.config.StandardTargetConfig;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

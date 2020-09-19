@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-package io.dataline.analytics;
+package io.airbyte.analytics;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.Configs;
-import io.dataline.config.StandardWorkspace;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.PersistenceConstants;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.Configs;
+import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.PersistenceConstants;
 import java.io.IOException;
 import java.util.function.Supplier;
 

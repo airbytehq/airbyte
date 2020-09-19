@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.functional;
+package io.airbyte.commons.functional;
 
 @FunctionalInterface
 public interface CheckedSupplier<T, E extends Throwable> {

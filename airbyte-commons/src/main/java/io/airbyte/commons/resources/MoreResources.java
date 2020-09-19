@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.resources;
+package io.airbyte.commons.resources;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;

@@ -4,7 +4,7 @@ plugins {
     id 'com.bmuschko.docker-remote-api' version '6.6.1'
 }
 
-def image = 'dataline/integration-singer-exchangerateapi_io-source:dev'
+def image = 'airbyte/integration-singer-exchangerateapi_io-source:dev'
 
 sourceSets {
     integrationTest {

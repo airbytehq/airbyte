@@ -3,7 +3,7 @@ FROM openjdk:14.0.2-slim AS server
 EXPOSE 8000
 
 ENV WAIT_VERSION=2.7.2
-ENV APPLICATION dataline-server
+ENV APPLICATION airbyte-server
 
 WORKDIR /app
 

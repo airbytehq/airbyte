@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.resources;
+package io.airbyte.commons.resources;
 
 import static org.junit.jupiter.api.Assertions.*;
 

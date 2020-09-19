@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
-import io.dataline.commons.functional.CheckedConsumer;
-import io.dataline.config.StandardTargetConfig;
-import io.dataline.singer.SingerMessage;
+import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.singer.SingerMessage;
 import java.nio.file.Path;
 
 public interface SingerTarget extends CheckedConsumer<SingerMessage, Exception>, AutoCloseable {

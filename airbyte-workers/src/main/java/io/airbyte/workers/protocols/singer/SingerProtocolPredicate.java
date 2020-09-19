@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.json.JsonSchemaValidator;
-import io.dataline.singer.SingerConfigSchema;
+import io.airbyte.commons.json.JsonSchemaValidator;
+import io.airbyte.singer.SingerConfigSchema;
 import java.util.function.Predicate;
 
 public class SingerProtocolPredicate implements Predicate<JsonNode> {

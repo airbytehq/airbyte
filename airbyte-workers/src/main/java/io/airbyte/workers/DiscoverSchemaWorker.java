@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.airbyte.workers;
 
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverSchemaOutput;
 
 public interface DiscoverSchemaWorker extends Worker<StandardDiscoverSchemaInput, StandardDiscoverSchemaOutput> {}

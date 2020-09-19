@@ -22,24 +22,24 @@
  * SOFTWARE.
  */
 
-package io.dataline.integration_tests.destinations;
+package io.airbyte.integration_tests.destinations;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.StandardCheckConnectionInput;
-import io.dataline.config.StandardCheckConnectionOutput;
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.WorkerConstants;
-import io.dataline.workers.WorkerUtils;
-import io.dataline.workers.process.DockerProcessBuilderFactory;
-import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocols.singer.SingerCheckConnectionWorker;
-import io.dataline.workers.protocols.singer.SingerDiscoverSchemaWorker;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.DockerProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
+import io.airbyte.workers.protocols.singer.SingerDiscoverSchemaWorker;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -60,8 +60,8 @@ class TestLocalCsvDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestLocalCsvDestination.class);
 
-  private static final String IMAGE_NAME = "dataline/integration-singer-csv-destination:dev";
-  private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
+  private static final String IMAGE_NAME = "airbyte/integration-singer-csv-destination:dev";
+  private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
   private static final List<String> EXPECTED_OUTPUT =
       Arrays.asList(("date,NZD,HKD\n" +
           "2020-08-29T00:00:00Z,0.12,2.13\n" +
@@ -80,8 +80,8 @@ class TestLocalCsvDestination {
   @BeforeEach
   public void setUp() throws IOException {
     Files.createDirectories(TESTS_PATH);
-    workspaceRoot = Files.createTempDirectory(TESTS_PATH, "dataline-integration");
-    localRoot = Files.createTempDirectory(TESTS_PATH, "dataline-local");
+    workspaceRoot = Files.createTempDirectory(TESTS_PATH, "airbyte-integration");
+    localRoot = Files.createTempDirectory(TESTS_PATH, "airbyte-local");
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
 

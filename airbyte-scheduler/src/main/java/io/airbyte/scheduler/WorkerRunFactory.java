@@ -22,25 +22,25 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
-import io.dataline.config.JobCheckConnectionConfig;
-import io.dataline.config.JobDiscoverSchemaConfig;
-import io.dataline.config.JobOutput;
-import io.dataline.config.JobSyncConfig;
-import io.dataline.config.StandardCheckConnectionInput;
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardSyncInput;
-import io.dataline.workers.Worker;
-import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocols.singer.DefaultSingerTap;
-import io.dataline.workers.protocols.singer.DefaultSingerTarget;
-import io.dataline.workers.protocols.singer.SingerCheckConnectionWorker;
-import io.dataline.workers.protocols.singer.SingerDiscoverSchemaWorker;
-import io.dataline.workers.protocols.singer.SingerSyncWorker;
-import io.dataline.workers.wrappers.JobOutputCheckConnectionWorker;
-import io.dataline.workers.wrappers.JobOutputDiscoverSchemaWorker;
-import io.dataline.workers.wrappers.JobOutputSyncWorker;
+import io.airbyte.config.JobCheckConnectionConfig;
+import io.airbyte.config.JobDiscoverSchemaConfig;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.workers.Worker;
+import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.protocols.singer.DefaultSingerTap;
+import io.airbyte.workers.protocols.singer.DefaultSingerTarget;
+import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
+import io.airbyte.workers.protocols.singer.SingerDiscoverSchemaWorker;
+import io.airbyte.workers.protocols.singer.SingerSyncWorker;
+import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
+import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
+import io.airbyte.workers.wrappers.JobOutputSyncWorker;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

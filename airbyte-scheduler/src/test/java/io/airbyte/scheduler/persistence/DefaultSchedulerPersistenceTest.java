@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler.persistence;
+package io.airbyte.scheduler.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -34,24 +34,24 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.DataType;
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.Field;
-import io.dataline.config.JobCheckConnectionConfig;
-import io.dataline.config.JobConfig;
-import io.dataline.config.JobDiscoverSchemaConfig;
-import io.dataline.config.JobOutput;
-import io.dataline.config.JobSyncConfig;
-import io.dataline.config.Schema;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.StandardSync;
-import io.dataline.config.Stream;
-import io.dataline.db.DatabaseHelper;
-import io.dataline.integrations.Integrations;
-import io.dataline.scheduler.Job;
-import io.dataline.scheduler.JobStatus;
-import io.dataline.scheduler.ScopeHelper;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DataType;
+import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.Field;
+import io.airbyte.config.JobCheckConnectionConfig;
+import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobDiscoverSchemaConfig;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.Schema;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.Stream;
+import io.airbyte.db.DatabaseHelper;
+import io.airbyte.integrations.Integrations;
+import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.JobStatus;
+import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -93,7 +93,7 @@ class DefaultSchedulerPersistenceTest {
 
     JsonNode implementationJson = Jsons.jsonNode(ImmutableMap.builder()
         .put("apiKey", "123-abc")
-        .put("hostname", "dataline.io")
+        .put("hostname", "airbyte.io")
         .build());
 
     SOURCE_CONNECTION_IMPLEMENTATION = new SourceConnectionImplementation()
@@ -144,14 +144,14 @@ class DefaultSchedulerPersistenceTest {
   @BeforeAll
   public static void dbSetup() throws IOException, InterruptedException {
     container = new PostgreSQLContainer("postgres:13-alpine")
-        .withDatabaseName("dataline")
+        .withDatabaseName("airbyte")
         .withUsername("docker")
         .withPassword("docker");
     container.start();
 
     container.copyFileToContainer(MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
     // execInContainer uses Docker's EXEC so it needs to be split up like this
-    container.execInContainer("psql", "-d", "dataline", "-U", "docker", "-a", "-f", "/etc/init.sql");
+    container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
     connectionPool =
         DatabaseHelper.getConnectionPool(

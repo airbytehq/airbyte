@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -38,11 +38,11 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.dataline.config.JobOutput;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.WorkerConstants;
+import io.airbyte.config.JobOutput;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
@@ -98,9 +98,9 @@ public class JobSubmitterTest {
     jobSubmitter.run();
 
     InOrder inOrder = inOrder(persistence);
-    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
+    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
     inOrder.verify(persistence).writeOutput(1L, new JobOutput());
-    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.COMPLETED);
+    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.COMPLETED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -111,8 +111,8 @@ public class JobSubmitterTest {
     jobSubmitter.run();
 
     InOrder inOrder = inOrder(persistence);
-    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
-    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.FAILED);
+    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
+    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -123,9 +123,9 @@ public class JobSubmitterTest {
     jobSubmitter.run();
 
     InOrder inOrder = inOrder(persistence);
-    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
+    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
     inOrder.verify(persistence).incrementAttempts(1L);
-    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.FAILED);
+    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -136,7 +136,7 @@ public class JobSubmitterTest {
     jobSubmitter.run();
 
     InOrder inOrder = inOrder(persistence);
-    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.FAILED);
+    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -148,9 +148,9 @@ public class JobSubmitterTest {
     jobSubmitter.run();
 
     InOrder inOrder = inOrder(persistence);
-    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.RUNNING);
+    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
     inOrder.verify(persistence).incrementAttempts(1L);
-    inOrder.verify(persistence).updateStatus(1L, io.dataline.scheduler.JobStatus.FAILED);
+    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 

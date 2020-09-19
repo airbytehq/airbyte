@@ -22,25 +22,25 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.dataline.commons.io.IOs;
-import io.dataline.commons.io.LineGobbler;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.config.StandardTapConfig;
-import io.dataline.singer.SingerCatalog;
-import io.dataline.singer.SingerMessage;
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.WorkerConstants;
-import io.dataline.workers.WorkerException;
-import io.dataline.workers.WorkerUtils;
-import io.dataline.workers.process.ProcessBuilderFactory;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardTapConfig;
+import io.airbyte.singer.SingerCatalog;
+import io.airbyte.singer.SingerMessage;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

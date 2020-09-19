@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.handlers;
+package io.airbyte.server.handlers;
 
-import io.dataline.api.model.SourceIdRequestBody;
-import io.dataline.api.model.SourceSpecificationRead;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.SourceConnectionSpecification;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.server.errors.KnownException;
+import io.airbyte.api.model.SourceIdRequestBody;
+import io.airbyte.api.model.SourceSpecificationRead;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.SourceConnectionSpecification;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.errors.KnownException;
 import java.io.IOException;
 
 public class SourceSpecificationsHandler {

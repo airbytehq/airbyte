@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,14 +34,14 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.StandardTargetConfig;
-import io.dataline.singer.SingerMessage;
-import io.dataline.workers.TestConfigHelpers;
-import io.dataline.workers.WorkerConstants;
-import io.dataline.workers.WorkerException;
-import io.dataline.workers.WorkerUtils;
-import io.dataline.workers.process.ProcessBuilderFactory;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.singer.SingerMessage;
+import io.airbyte.workers.TestConfigHelpers;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

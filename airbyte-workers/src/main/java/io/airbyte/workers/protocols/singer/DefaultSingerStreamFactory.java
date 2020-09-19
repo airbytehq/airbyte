@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.json.Jsons;
-import io.dataline.singer.SingerMessage;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.singer.SingerMessage;
 import java.io.BufferedReader;
 import java.util.Optional;
 import java.util.stream.Stream;

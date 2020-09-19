@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.airbyte.workers;
 
 import java.nio.file.Path;
 import org.slf4j.Logger;

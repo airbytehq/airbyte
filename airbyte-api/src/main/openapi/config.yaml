@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   description: |
     Dataline Configuration API
-    [https://dataline.io](https://dataline.io).
+    [https://airbyte.io](https://airbyte.io).
 
     This API is a collection HTTP RPC-style methods. While it is not a REST API, those familiar with REST should find the conventions of this API recognizable.
 
@@ -22,13 +22,13 @@ info:
   version: "1.0.0-oas3"
   title: Dataline Configuration API
   contact:
-    email: contact@dataline.io
+    email: contact@airbyte.io
   license:
     name: MIT
     url: "https://opensource.org/licenses/MIT"
 externalDocs:
   description: Find out more about Dataline
-  url: "https://dataline.io"
+  url: "https://airbyte.io"
 servers:
   - url: "localhost:8001"
 tags:

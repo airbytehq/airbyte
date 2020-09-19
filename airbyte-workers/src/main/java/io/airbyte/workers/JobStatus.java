@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.airbyte.workers;
 
 /**
  * Indicates whether the worker's underlying process was successful. E.g this should return

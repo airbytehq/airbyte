@@ -22,19 +22,19 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
-import io.dataline.config.StandardSyncInput;
-import io.dataline.config.StandardSyncOutput;
-import io.dataline.config.StandardSyncSummary;
-import io.dataline.config.StandardTapConfig;
-import io.dataline.config.StandardTargetConfig;
-import io.dataline.config.State;
-import io.dataline.singer.SingerMessage;
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.SyncWorker;
-import io.dataline.workers.WorkerUtils;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StandardTapConfig;
+import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.config.State;
+import io.airbyte.singer.SingerMessage;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.SyncWorker;
+import io.airbyte.workers.WorkerUtils;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;

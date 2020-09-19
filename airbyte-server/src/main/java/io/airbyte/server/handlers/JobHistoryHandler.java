@@ -22,22 +22,22 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.handlers;
+package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.dataline.api.model.JobConfigType;
-import io.dataline.api.model.JobIdRequestBody;
-import io.dataline.api.model.JobInfoRead;
-import io.dataline.api.model.JobListRequestBody;
-import io.dataline.api.model.JobRead;
-import io.dataline.api.model.JobReadList;
-import io.dataline.api.model.LogRead;
-import io.dataline.commons.enums.Enums;
-import io.dataline.commons.io.IOs;
-import io.dataline.config.JobConfig;
-import io.dataline.scheduler.Job;
-import io.dataline.scheduler.ScopeHelper;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.api.model.JobConfigType;
+import io.airbyte.api.model.JobIdRequestBody;
+import io.airbyte.api.model.JobInfoRead;
+import io.airbyte.api.model.JobListRequestBody;
+import io.airbyte.api.model.JobRead;
+import io.airbyte.api.model.JobReadList;
+import io.airbyte.api.model.LogRead;
+import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.config.JobConfig;
+import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.ScopeHelper;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -24,10 +24,10 @@ configurations {
 }
 
 dependencies {
-    acceptanceTestsImplementation project(':dataline-api')
-    acceptanceTestsImplementation project(':dataline-config:persistence')
-    acceptanceTestsImplementation project(':dataline-db')
-    acceptanceTestsImplementation project(':dataline-test-utils')
+    acceptanceTestsImplementation project(':airbyte-api')
+    acceptanceTestsImplementation project(':airbyte-config:persistence')
+    acceptanceTestsImplementation project(':airbyte-db')
+    acceptanceTestsImplementation project(':airbyte-test-utils')
 
     acceptanceTestsImplementation "org.testcontainers:postgresql:1.14.3"
     acceptanceTestsImplementation "org.postgresql:postgresql:42.2.16"

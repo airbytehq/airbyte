@@ -2,7 +2,7 @@
 
 ## Overview
 
-This destination writes data to a directory on the _local_ filesystem on the host running Dataline. By default, data is written to `/tmp/dataline_local`. To change this location, modify the `LOCAL_ROOT` environment variable for Dataline.
+This destination writes data to a directory on the _local_ filesystem on the host running Dataline. By default, data is written to `/tmp/airbyte_local`. To change this location, modify the `LOCAL_ROOT` environment variable for Dataline.
 
 ### Sync Overview
 #### Output schema
@@ -32,4 +32,4 @@ This integration will be constrained by the speed at which your filesystem accep
 ## Getting Started
 
 ### Requirements:
-* The `destination_path` field will be appended to `LOCAL_ROOT`. e.g. If `LOCAL_ROOT = /tmp/dataline_local` and the user provides the value `cars/models`, then data will be written to `/tmp/dataline_local/cars/models`. By default `LOCAL_ROOT = /tmp/dataline_local`.
+* The `destination_path` field will be appended to `LOCAL_ROOT`. e.g. If `LOCAL_ROOT = /tmp/airbyte_local` and the user provides the value `cars/models`, then data will be written to `/tmp/airbyte_local/cars/models`. By default `LOCAL_ROOT = /tmp/airbyte_local`.

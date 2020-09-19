@@ -22,16 +22,16 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
-import io.dataline.config.StandardCheckConnectionInput;
-import io.dataline.config.StandardCheckConnectionOutput;
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.workers.CheckConnectionWorker;
-import io.dataline.workers.DiscoverSchemaWorker;
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.workers.CheckConnectionWorker;
+import io.airbyte.workers.DiscoverSchemaWorker;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

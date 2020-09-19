@@ -15,7 +15,7 @@ We recommend that method for changes limited to one file \(typos, minor updates\
 ## Modify the repository
 
 ```bash
-$ git clone git@github.com:datalineio/dataline.git
+$ git clone git@github.com:airbyteio/airbyte.git
 ```
 
 All our docs are stored in the `docs` directory. You can use other files as example.
@@ -28,12 +28,12 @@ Once you're satisfied with your changes just follow the regular PR process.
 
 To update with GitBook, follow these instructions:
 
-1. Create a [new variant](https://docs.gitbook.com/editing-content/variants#create-a-variant). This will create a new branch on [GitHub](https://github.com/datalineio/dataline) with the same name
+1. Create a [new variant](https://docs.gitbook.com/editing-content/variants#create-a-variant). This will create a new branch on [GitHub](https://github.com/airbyteio/airbyte) with the same name
 2. Modify the documentation in that new variant
-3. Save & merge regularly. Each time you merge, your changes will propagated to your branch. It can take a couple minutes for the changes to show up in [GitHub](https://github.com/datalineio/dataline).
-4. Once you're satisfied, go on [GitHub](https://github.com/datalineio/dataline) and create a PR for your variant branch
+3. Save & merge regularly. Each time you merge, your changes will propagated to your branch. It can take a couple minutes for the changes to show up in [GitHub](https://github.com/airbyteio/airbyte).
+4. Once you're satisfied, go on [GitHub](https://github.com/airbyteio/airbyte) and create a PR for your variant branch
 5. After the PR is approved, your changes will be merged to `master`
 6. Don't forget to remove the branch and the variant once your change has been merged
 
-Just [contact us](mailto:hey@dataline.io) and we will invite you to our space.
+Just [contact us](mailto:hey@airbyte.io) and we will invite you to our space.
 

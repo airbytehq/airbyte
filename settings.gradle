@@ -1,28 +1,28 @@
 import groovy.io.FileType
 
-rootProject.name = 'dataline'
+rootProject.name = 'airbyte'
 
-include ':dataline-analytics'
-include ':dataline-api'
-include ':dataline-commons'
-include ':dataline-config:models'
-include ':dataline-config:init'
-include ':dataline-config:persistence'
-include ':dataline-db'
-include ':dataline-integrations'
-include ':dataline-scheduler'
-include ':dataline-server'
-include ':dataline-singer'
-include ':dataline-webapp'
-include ':dataline-workers'
-include ':dataline-tests'
-include ':dataline-test-utils'
+include ':airbyte-analytics'
+include ':airbyte-api'
+include ':airbyte-commons'
+include ':airbyte-config:models'
+include ':airbyte-config:init'
+include ':airbyte-config:persistence'
+include ':airbyte-db'
+include ':airbyte-integrations'
+include ':airbyte-scheduler'
+include ':airbyte-server'
+include ':airbyte-singer'
+include ':airbyte-webapp'
+include ':airbyte-workers'
+include ':airbyte-tests'
+include ':airbyte-test-utils'
 
 // include all integration subprojects
-def integrationsPath = rootDir.toPath().resolve('dataline-integrations')
+def integrationsPath = rootDir.toPath().resolve('airbyte-integrations')
 integrationsPath.eachFileRecurse(FileType.FILES) { path ->
     def relativizedPath = integrationsPath.relativize(path)
     if (path.endsWith('build.gradle') && !path.contains("build") && relativizedPath.getNameCount() > 1) {
-        include ":dataline-integrations:${relativizedPath.parent.join(':')}"
+        include ":airbyte-integrations:${relativizedPath.parent.join(':')}"
     }
 }

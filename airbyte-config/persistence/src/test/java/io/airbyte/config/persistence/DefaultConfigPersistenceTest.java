@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,12 +30,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.google.common.collect.Sets;
-import io.dataline.commons.json.JsonSchemaValidator;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.ConfigSchema;
-import io.dataline.config.Schema;
-import io.dataline.config.StandardSource;
-import io.dataline.config.StandardSync;
+import io.airbyte.commons.json.JsonSchemaValidator;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.Schema;
+import io.airbyte.config.StandardSource;
+import io.airbyte.config.StandardSync;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

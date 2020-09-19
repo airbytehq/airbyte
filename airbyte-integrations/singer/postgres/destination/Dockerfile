@@ -21,4 +21,4 @@ RUN apt-get update && \
 
 ENTRYPOINT ["/run.sh"]
 
-LABEL io.dataline.version=0.1.1
+LABEL io.airbyte.version=0.1.1

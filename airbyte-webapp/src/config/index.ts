@@ -3,8 +3,8 @@ const config: {
   apiUrl: string;
 } = {
   ui: {
-    helpLink: "https://dataline.io/community",
-    docsLink: "https://docs.dataline.io",
+    helpLink: "https://airbyte.io/community",
+    docsLink: "https://docs.airbyte.io",
     workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6"
   },
   apiUrl:

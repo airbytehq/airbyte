@@ -5,10 +5,10 @@
 
 ## Deployment
 
-* [Deploying Dataline](deployment/deploying-dataline/README.md)
-  * [On your workstation](deployment/deploying-dataline/with-docker.md)
-  * [On AWS \(EC2\)](deployment/deploying-dataline/on-aws-ec2.md)
-  * [On GCP \(Compute Engine\)](deployment/deploying-dataline/on-gcp-compute-engine.md)
+* [Deploying Dataline](deployment/deploying-airbyte/README.md)
+  * [On your workstation](deployment/deploying-airbyte/with-docker.md)
+  * [On AWS \(EC2\)](deployment/deploying-airbyte/on-aws-ec2.md)
+  * [On GCP \(Compute Engine\)](deployment/deploying-airbyte/on-gcp-compute-engine.md)
 
 ## Integrations
 
@@ -20,11 +20,11 @@
 
 ## Contributing
 
-* [Contributing to Dataline](contributing/contributing-to-dataline/README.md)
-  * [Developing Locally](contributing/contributing-to-dataline/developing-locally.md)
-  * [Code Style](contributing/contributing-to-dataline/code-style.md)
-  * [Updating Documentation](contributing/contributing-to-dataline/updating-documentation/README.md)
-    * [Source Documentation Template](contributing/contributing-to-dataline/updating-documentation/source-documentation-template.md)
+* [Contributing to Dataline](contributing/contributing-to-airbyte/README.md)
+  * [Developing Locally](contributing/contributing-to-airbyte/developing-locally.md)
+  * [Code Style](contributing/contributing-to-airbyte/code-style.md)
+  * [Updating Documentation](contributing/contributing-to-airbyte/updating-documentation/README.md)
+    * [Source Documentation Template](contributing/contributing-to-airbyte/updating-documentation/source-documentation-template.md)
 * [Code of Conduct](contributing/code-of-conduct.md)
 
 ## Architecture

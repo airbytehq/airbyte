@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import io.dataline.commons.json.Jsons;
-import io.dataline.singer.SingerMessage;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.singer.SingerMessage;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;

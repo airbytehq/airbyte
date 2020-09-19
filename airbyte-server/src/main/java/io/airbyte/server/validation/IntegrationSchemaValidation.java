@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.validation;
+package io.airbyte.server.validation;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.json.JsonSchemaValidator;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.DestinationConnectionSpecification;
-import io.dataline.config.SourceConnectionSpecification;
+import io.airbyte.commons.json.JsonSchemaValidator;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.DestinationConnectionSpecification;
+import io.airbyte.config.SourceConnectionSpecification;
 
 public class IntegrationSchemaValidation {
 

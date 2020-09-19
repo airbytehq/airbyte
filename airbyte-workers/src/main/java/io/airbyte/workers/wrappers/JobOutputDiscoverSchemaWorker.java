@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.wrappers;
+package io.airbyte.workers.wrappers;
 
-import io.dataline.config.JobOutput;
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.workers.DiscoverSchemaWorker;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.workers.DiscoverSchemaWorker;
 
 public class JobOutputDiscoverSchemaWorker extends OutputConvertingWorker<StandardDiscoverSchemaInput, StandardDiscoverSchemaOutput, JobOutput> {
 

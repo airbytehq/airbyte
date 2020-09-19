@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package io.dataline.api.client;
+package io.airbyte.api.client;
 
-import io.dataline.api.client.invoker.ApiClient;
+import io.airbyte.api.client.invoker.ApiClient;
 
 /**
  * This class is meant to consolidate all our API endpoints into a fluent-ish client. Currently, all

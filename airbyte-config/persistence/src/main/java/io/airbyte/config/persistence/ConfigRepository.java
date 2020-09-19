@@ -22,19 +22,19 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.airbyte.config.persistence;
 
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.ConfigSchema;
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.DestinationConnectionSpecification;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.SourceConnectionSpecification;
-import io.dataline.config.StandardDestination;
-import io.dataline.config.StandardSource;
-import io.dataline.config.StandardSync;
-import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.StandardWorkspace;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.DestinationConnectionSpecification;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.SourceConnectionSpecification;
+import io.airbyte.config.StandardDestination;
+import io.airbyte.config.StandardSource;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.StandardWorkspace;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;

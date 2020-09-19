@@ -22,26 +22,26 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.handlers;
+package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.dataline.api.model.ConnectionRead;
-import io.dataline.api.model.ConnectionStatus;
-import io.dataline.api.model.ConnectionUpdate;
-import io.dataline.api.model.DestinationImplementationCreate;
-import io.dataline.api.model.DestinationImplementationIdRequestBody;
-import io.dataline.api.model.DestinationImplementationRead;
-import io.dataline.api.model.DestinationImplementationReadList;
-import io.dataline.api.model.DestinationImplementationUpdate;
-import io.dataline.api.model.WorkspaceIdRequestBody;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.DestinationConnectionSpecification;
-import io.dataline.config.StandardDestination;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.server.validation.IntegrationSchemaValidation;
+import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.ConnectionStatus;
+import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.DestinationImplementationCreate;
+import io.airbyte.api.model.DestinationImplementationIdRequestBody;
+import io.airbyte.api.model.DestinationImplementationRead;
+import io.airbyte.api.model.DestinationImplementationReadList;
+import io.airbyte.api.model.DestinationImplementationUpdate;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.DestinationConnectionSpecification;
+import io.airbyte.config.StandardDestination;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;

@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.helpers;
+package io.airbyte.config.helpers;
 
-import io.dataline.config.Schedule;
+import io.airbyte.config.Schedule;
 import java.util.concurrent.TimeUnit;
 
 public class ScheduleHelpers {

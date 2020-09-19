@@ -22,18 +22,18 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.handlers;
+package io.airbyte.server.handlers;
 
-import io.dataline.analytics.TrackingClientSingleton;
-import io.dataline.api.model.SlugRequestBody;
-import io.dataline.api.model.WorkspaceIdRequestBody;
-import io.dataline.api.model.WorkspaceRead;
-import io.dataline.api.model.WorkspaceUpdate;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.StandardWorkspace;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.PersistenceConstants;
+import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.model.SlugRequestBody;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.WorkspaceRead;
+import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.PersistenceConstants;
 import java.io.IOException;
 import java.util.UUID;
 

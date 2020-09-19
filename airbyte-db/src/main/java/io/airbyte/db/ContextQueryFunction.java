@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.db;
+package io.airbyte.db;
 
 import java.sql.SQLException;
 import org.jooq.DSLContext;

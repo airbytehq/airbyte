@@ -2,37 +2,37 @@ version: "3.7"
 
 services:
   db:
-    image: dataline/db:dev
+    image: airbyte/db:dev
     build:
       dockerfile: Dockerfile
-      context: dataline-db
+      context: airbyte-db
       labels:
-        io.dataline.git-revision: ${GIT_REVISION}
+        io.airbyte.git-revision: ${GIT_REVISION}
   seed:
-    image: dataline/seed:dev
+    image: airbyte/seed:dev
     build:
       dockerfile: Dockerfile
-      context: dataline-config/init
+      context: airbyte-config/init
       labels:
-        io.dataline.git-revision: ${GIT_REVISION}
+        io.airbyte.git-revision: ${GIT_REVISION}
   scheduler:
-    image: dataline/scheduler:dev
+    image: airbyte/scheduler:dev
     build:
       dockerfile: Dockerfile
-      context: dataline-scheduler
+      context: airbyte-scheduler
       labels:
-        io.dataline.git-revision: ${GIT_REVISION}
+        io.airbyte.git-revision: ${GIT_REVISION}
   server:
-    image: dataline/server:dev
+    image: airbyte/server:dev
     build:
       dockerfile: Dockerfile
-      context: dataline-server
+      context: airbyte-server
       labels:
-        io.dataline.git-revision: ${GIT_REVISION}
+        io.airbyte.git-revision: ${GIT_REVISION}
   webapp:
-    image: dataline/webapp:dev
+    image: airbyte/webapp:dev
     build:
       dockerfile: Dockerfile
-      context: dataline-webapp
+      context: airbyte-webapp
       labels:
-        io.dataline.git-revision: ${GIT_REVISION}
+        io.airbyte.git-revision: ${GIT_REVISION}

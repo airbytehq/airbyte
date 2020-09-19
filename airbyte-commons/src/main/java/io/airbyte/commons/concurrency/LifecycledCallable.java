@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.concurrency;
+package io.airbyte.commons.concurrency;
 
-import io.dataline.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedConsumer;
 import java.util.concurrent.Callable;
 
 public class LifecycledCallable<T> implements Callable<T> {

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.concurrency;
+package io.airbyte.commons.concurrency;
 
 import java.util.concurrent.Callable;
 

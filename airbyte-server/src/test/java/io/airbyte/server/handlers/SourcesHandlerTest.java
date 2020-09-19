@@ -22,20 +22,20 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.handlers;
+package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.dataline.api.model.SourceIdRequestBody;
-import io.dataline.api.model.SourceRead;
-import io.dataline.api.model.SourceReadList;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.StandardSource;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
+import io.airbyte.api.model.SourceIdRequestBody;
+import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.SourceReadList;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.StandardSource;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

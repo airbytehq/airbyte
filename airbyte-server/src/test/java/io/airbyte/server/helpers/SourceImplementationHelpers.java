@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.helpers;
+package io.airbyte.server.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.api.model.SourceImplementationRead;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.StandardSource;
+import io.airbyte.api.model.SourceImplementationRead;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.StandardSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,7 +54,7 @@ public class SourceImplementationHelpers {
   }
 
   public static JsonNode getTestImplementationJson() throws IOException {
-    final Path path = Paths.get("../dataline-server/src/test/resources/json/TestImplementation.json");
+    final Path path = Paths.get("../airbyte-server/src/test/resources/json/TestImplementation.json");
     return Jsons.deserialize(Files.readString(path));
   }
 

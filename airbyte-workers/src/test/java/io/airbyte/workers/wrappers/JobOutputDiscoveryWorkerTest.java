@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.wrappers;
+package io.airbyte.workers.wrappers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,14 +30,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.dataline.config.JobOutput;
-import io.dataline.config.Schema;
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.config.Stream;
-import io.dataline.workers.DiscoverSchemaWorker;
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.Schema;
+import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.Stream;
+import io.airbyte.workers.DiscoverSchemaWorker;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 

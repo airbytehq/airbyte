@@ -22,19 +22,19 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.dataline.config.Configs;
-import io.dataline.config.EnvConfigs;
-import io.dataline.config.persistence.ConfigPersistence;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.DefaultConfigPersistence;
-import io.dataline.db.DatabaseHelper;
-import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
-import io.dataline.workers.process.DockerProcessBuilderFactory;
-import io.dataline.workers.process.ProcessBuilderFactory;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.DefaultConfigPersistence;
+import io.airbyte.db.DatabaseHelper;
+import io.airbyte.scheduler.persistence.DefaultSchedulerPersistence;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.workers.process.DockerProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;

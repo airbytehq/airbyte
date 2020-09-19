@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.helpers;
+package io.airbyte.server.helpers;
 
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.DestinationConnectionSpecification;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DestinationConnectionSpecification;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,7 +43,7 @@ public class DestinationSpecificationHelpers {
     final UUID destinationSpecificationId = UUID.randomUUID();
 
     final Path path =
-        Paths.get("../dataline-server/src/test/resources/json/TestSpecification.json");
+        Paths.get("../airbyte-server/src/test/resources/json/TestSpecification.json");
 
     return new DestinationConnectionSpecification()
         .withDestinationId(destinationId)

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.errors;
+package io.airbyte.server.errors;
 
 public class KnownException extends RuntimeException {
 

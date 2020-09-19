@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.io;
+package io.airbyte.commons.io;
 
-import io.dataline.commons.concurrency.VoidCallable;
+import io.airbyte.commons.concurrency.VoidCallable;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;

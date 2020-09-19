@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.enums;
+package io.airbyte.commons.enums;
 
-import static io.dataline.commons.enums.Enums.convertTo;
-import static io.dataline.commons.enums.Enums.isCompatible;
+import static io.airbyte.commons.enums.Enums.convertTo;
+import static io.airbyte.commons.enums.Enums.isCompatible;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

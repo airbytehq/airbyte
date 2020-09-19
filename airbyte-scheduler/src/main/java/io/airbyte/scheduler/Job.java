@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
-import io.dataline.config.JobConfig;
-import io.dataline.config.JobOutput;
+import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobOutput;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;

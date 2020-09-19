@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.airbyte.config.persistence;
 
-import io.dataline.config.ConfigSchema;
+import io.airbyte.config.ConfigSchema;
 
 public class ConfigNotFoundException extends Exception {
 

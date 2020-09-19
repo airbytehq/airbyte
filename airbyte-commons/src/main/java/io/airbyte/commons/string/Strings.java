@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.string;
+package io.airbyte.commons.string;
 
 import com.google.common.collect.Streams;
 import java.util.stream.Collectors;

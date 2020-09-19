@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.server;
+package io.airbyte.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

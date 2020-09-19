@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.dataline.config.Schedule;
-import io.dataline.config.StandardSyncSchedule;
+import io.airbyte.config.Schedule;
+import io.airbyte.config.StandardSyncSchedule;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;

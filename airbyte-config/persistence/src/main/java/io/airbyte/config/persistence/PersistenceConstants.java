@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.persistence;
+package io.airbyte.config.persistence;
 
 import java.util.UUID;
 

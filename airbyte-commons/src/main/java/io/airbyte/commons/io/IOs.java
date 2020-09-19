@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.io;
+package io.airbyte.commons.io;
 
 import com.google.common.base.Charsets;
 import java.io.BufferedReader;

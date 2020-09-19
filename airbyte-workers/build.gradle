@@ -9,10 +9,10 @@ configurations {
 dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
 
-    implementation project(":dataline-config:models")
-    implementation project(":dataline-db")
-    implementation project(":dataline-integrations")
-    implementation project(":dataline-singer")
+    implementation project(":airbyte-config:models")
+    implementation project(":airbyte-db")
+    implementation project(":airbyte-integrations")
+    implementation project(":airbyte-singer")
 
     testImplementation "org.mockito:mockito-inline:2.13.0"
     testImplementation "org.testcontainers:testcontainers:1.14.3"

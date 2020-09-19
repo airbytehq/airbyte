@@ -22,16 +22,16 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.converters;
+package io.airbyte.server.converters;
 
-import io.dataline.api.model.SourceSchema;
-import io.dataline.api.model.SourceSchemaField;
-import io.dataline.api.model.SourceSchemaStream;
-import io.dataline.commons.enums.Enums;
-import io.dataline.config.DataType;
-import io.dataline.config.Field;
-import io.dataline.config.Schema;
-import io.dataline.config.Stream;
+import io.airbyte.api.model.SourceSchema;
+import io.airbyte.api.model.SourceSchemaField;
+import io.airbyte.api.model.SourceSchemaStream;
+import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.DataType;
+import io.airbyte.config.Field;
+import io.airbyte.config.Schema;
+import io.airbyte.config.Stream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,7 +71,7 @@ public class SchemaConverter {
                           .map(
                               persistenceField -> new SourceSchemaField()
                                   .name(persistenceField.getName())
-                                  .dataType(Enums.convertTo(persistenceField.getDataType(), io.dataline.api.model.DataType.class))
+                                  .dataType(Enums.convertTo(persistenceField.getDataType(), io.airbyte.api.model.DataType.class))
                                   .selected(persistenceField.getSelected()))
                           .collect(Collectors.toList());
 

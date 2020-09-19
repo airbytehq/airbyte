@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import io.dataline.config.JobConfig;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.config.JobConfig;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;

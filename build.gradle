@@ -18,7 +18,7 @@ if (!env.containsKey('VERSION')) {
 }
 
 allprojects {
-    group = "io.dataline.${rootProject.name}"
+    group = "io.airbyte.${rootProject.name}"
     version = env.VERSION
 }
 
@@ -70,7 +70,7 @@ spotless {
 check.dependsOn 'spotlessApply'
 
 // Disabled because it generate an obnoxious warning
-// TODO: https://github.com/datalineio/dataline/issues/225
+// TODO: https://github.com/airbyteio/airbyte/issues/225
 //
 //    cpdCheck {
 //        ignoreFailures = true
@@ -90,7 +90,7 @@ allprojects {
 // Java projects common configurations
 subprojects {
 
-    if (project.name == 'dataline-webapp') {
+    if (project.name == 'airbyte-webapp') {
         return
     }
 
@@ -118,8 +118,8 @@ subprojects {
     }
 
     dependencies {
-        if (project.name != 'dataline-commons') {
-            implementation project(':dataline-commons')
+        if (project.name != 'airbyte-commons') {
+            implementation project(':airbyte-commons')
         }
 
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.10.4"))

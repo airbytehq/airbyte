@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package io.dataline.singer;
+package io.airbyte.singer;
 
 import com.google.common.collect.Lists;
-import io.dataline.commons.json.Jsons;
+import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

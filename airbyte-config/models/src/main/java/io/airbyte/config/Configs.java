@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.config;
+package io.airbyte.config;
 
 import java.nio.file.Path;
 

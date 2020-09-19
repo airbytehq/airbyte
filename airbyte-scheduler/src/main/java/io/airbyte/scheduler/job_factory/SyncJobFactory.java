@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler.job_factory;
+package io.airbyte.scheduler.job_factory;
 
 import java.util.UUID;
 

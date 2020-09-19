@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.airbyte.workers;
 
 public class WorkerException extends Exception {
 

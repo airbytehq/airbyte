@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.integration_tests.destinations;
+package io.airbyte.integration_tests.destinations;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
@@ -35,10 +35,10 @@ import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
-import io.dataline.commons.json.Jsons;
-import io.dataline.workers.WorkerUtils;
-import io.dataline.workers.process.DockerProcessBuilderFactory;
-import io.dataline.workers.process.ProcessBuilderFactory;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.DockerProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -64,8 +64,8 @@ class TestBigQueryDestination {
   private static final BigQuery BQ = BigQueryOptions.getDefaultInstance().getService();
   private static final Logger LOGGER = LoggerFactory.getLogger(TestBigQueryDestination.class);
 
-  private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
-  private static final String IMAGE_NAME = "dataline/integration-singer-bigquery-destination:dev";
+  private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
+  private static final String IMAGE_NAME = "airbyte/integration-singer-bigquery-destination:dev";
 
   protected Path jobRoot;
   protected Path workspaceRoot;
@@ -87,7 +87,7 @@ class TestBigQueryDestination {
 
     pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "", "host");
 
-    datasetName = "dataline_tests_" + RandomStringUtils.randomAlphanumeric(8);
+    datasetName = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
     DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetName).build();
     dataset = BQ.create(datasetInfo);
     LOGGER.info("BQ Dataset " + datasetName + " created...");

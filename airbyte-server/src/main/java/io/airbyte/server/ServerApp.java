@@ -22,26 +22,26 @@
  * SOFTWARE.
  */
 
-package io.dataline.server;
+package io.airbyte.server;
 
-import io.dataline.analytics.TrackingClientSingleton;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.Configs;
-import io.dataline.config.EnvConfigs;
-import io.dataline.config.StandardWorkspace;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.DefaultConfigPersistence;
-import io.dataline.config.persistence.PersistenceConstants;
-import io.dataline.db.DatabaseHelper;
-import io.dataline.scheduler.persistence.DefaultSchedulerPersistence;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
-import io.dataline.server.apis.ConfigurationApi;
-import io.dataline.server.errors.InvalidInputExceptionMapper;
-import io.dataline.server.errors.InvalidJsonExceptionMapper;
-import io.dataline.server.errors.InvalidJsonInputExceptionMapper;
-import io.dataline.server.errors.KnownExceptionMapper;
-import io.dataline.server.errors.UncaughtExceptionMapper;
+import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.DefaultConfigPersistence;
+import io.airbyte.config.persistence.PersistenceConstants;
+import io.airbyte.db.DatabaseHelper;
+import io.airbyte.scheduler.persistence.DefaultSchedulerPersistence;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.server.apis.ConfigurationApi;
+import io.airbyte.server.errors.InvalidInputExceptionMapper;
+import io.airbyte.server.errors.InvalidJsonExceptionMapper;
+import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
+import io.airbyte.server.errors.KnownExceptionMapper;
+import io.airbyte.server.errors.UncaughtExceptionMapper;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;

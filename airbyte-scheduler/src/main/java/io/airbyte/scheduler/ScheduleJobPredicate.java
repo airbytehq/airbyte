@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
-import io.dataline.config.Schedule;
-import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.helpers.ScheduleHelpers;
+import io.airbyte.config.Schedule;
+import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.helpers.ScheduleHelpers;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.function.BiPredicate;

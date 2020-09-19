@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.db;
+package io.airbyte.db;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,14 +45,14 @@ public class TestServerUuid {
   public static void dbSetup() throws IOException, InterruptedException {
     container =
         new PostgreSQLContainer("postgres:13-alpine")
-            .withDatabaseName("dataline")
+            .withDatabaseName("airbyte")
             .withUsername("docker")
             .withPassword("docker");
     container.start();
 
     container.copyFileToContainer(MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
     // execInContainer uses Docker's EXEC so it needs to be split up like this
-    container.execInContainer("psql", "-d", "dataline", "-U", "docker", "-a", "-f", "/etc/init.sql");
+    container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
     connectionPool = DatabaseHelper.getConnectionPool(container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }

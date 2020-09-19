@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.json;
+package io.airbyte.commons.json;
 
 public class JsonValidationException extends Exception {
 

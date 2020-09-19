@@ -22,22 +22,22 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.handlers;
+package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.dataline.api.model.SlugRequestBody;
-import io.dataline.api.model.WorkspaceIdRequestBody;
-import io.dataline.api.model.WorkspaceRead;
-import io.dataline.api.model.WorkspaceUpdate;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.StandardWorkspace;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.config.persistence.PersistenceConstants;
+import io.airbyte.api.model.SlugRequestBody;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.WorkspaceRead;
+import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.PersistenceConstants;
 import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +62,7 @@ class WorkspacesHandlerTest {
     return new StandardWorkspace()
         .withWorkspaceId(workspaceId)
         .withCustomerId(UUID.randomUUID())
-        .withEmail("test@dataline.io")
+        .withEmail("test@airbyte.io")
         .withName("test workspace")
         .withSlug("default")
         .withInitialSetupComplete(false);
@@ -115,7 +115,7 @@ class WorkspacesHandlerTest {
     final StandardWorkspace expectedWorkspace = new StandardWorkspace()
         .withWorkspaceId(workspace.getWorkspaceId())
         .withCustomerId(workspace.getCustomerId())
-        .withEmail("test@dataline.io")
+        .withEmail("test@airbyte.io")
         .withName("test workspace")
         .withSlug("default")
         .withAnonymousDataCollection(true)

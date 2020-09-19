@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
-import io.dataline.config.JobConfig;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.config.JobConfig;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;

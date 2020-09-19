@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.config.helpers;
+package io.airbyte.config.helpers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.dataline.config.Schedule;
+import io.airbyte.config.Schedule;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 

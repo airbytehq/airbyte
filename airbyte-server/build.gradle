@@ -12,18 +12,18 @@ dependencies {
     implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson'
     implementation group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation'
 
-    implementation project(':dataline-analytics')
-    implementation project(':dataline-api')
-    implementation project(':dataline-config:models')
-    implementation project(':dataline-config:persistence')
-    implementation project(':dataline-config:init')
-    implementation project(':dataline-db')
-    implementation project(':dataline-scheduler')
+    implementation project(':airbyte-analytics')
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-config:init')
+    implementation project(':airbyte-db')
+    implementation project(':airbyte-scheduler')
 
 }
 
 application {
-    mainClass = 'io.dataline.server.ServerApp'
+    mainClass = 'io.airbyte.server.ServerApp'
 }
 
 Properties env = new Properties()
@@ -36,5 +36,5 @@ run {
     environment "VERSION", env.VERSION
     environment "DATABASE_USER", env.DATABASE_USER
     environment "DATABASE_PASSWORD", env.DATABASE_PASSWORD
-    environment "DATABASE_URL", "jdbc:postgresql://localhost:5432/dataline"
+    environment "DATABASE_URL", "jdbc:postgresql://localhost:5432/airbyte"
 }

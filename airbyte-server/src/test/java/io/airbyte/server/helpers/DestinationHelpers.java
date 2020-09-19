@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.helpers;
+package io.airbyte.server.helpers;
 
-import io.dataline.config.StandardDestination;
+import io.airbyte.config.StandardDestination;
 import java.util.UUID;
 
 public class DestinationHelpers {

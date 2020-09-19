@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -35,22 +35,22 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.dataline.commons.io.IOs;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.config.StandardTapConfig;
-import io.dataline.singer.SingerCatalog;
-import io.dataline.singer.SingerMessage;
-import io.dataline.singer.SingerStream;
-import io.dataline.singer.SingerTableSchema;
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.TestConfigHelpers;
-import io.dataline.workers.WorkerConstants;
-import io.dataline.workers.WorkerException;
-import io.dataline.workers.WorkerUtils;
-import io.dataline.workers.process.ProcessBuilderFactory;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardTapConfig;
+import io.airbyte.singer.SingerCatalog;
+import io.airbyte.singer.SingerMessage;
+import io.airbyte.singer.SingerStream;
+import io.airbyte.singer.SingerTableSchema;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.TestConfigHelpers;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;

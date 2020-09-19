@@ -22,22 +22,22 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.helpers;
+package io.airbyte.server.helpers;
 
 import com.google.common.collect.Lists;
-import io.dataline.api.model.ConnectionRead;
-import io.dataline.api.model.ConnectionSchedule;
-import io.dataline.api.model.ConnectionStatus;
-import io.dataline.api.model.SourceSchema;
-import io.dataline.api.model.SourceSchemaField;
-import io.dataline.api.model.SourceSchemaStream;
-import io.dataline.config.DataType;
-import io.dataline.config.Field;
-import io.dataline.config.Schedule;
-import io.dataline.config.Schema;
-import io.dataline.config.StandardSync;
-import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.Stream;
+import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.ConnectionSchedule;
+import io.airbyte.api.model.ConnectionStatus;
+import io.airbyte.api.model.SourceSchema;
+import io.airbyte.api.model.SourceSchemaField;
+import io.airbyte.api.model.SourceSchemaStream;
+import io.airbyte.config.DataType;
+import io.airbyte.config.Field;
+import io.airbyte.config.Schedule;
+import io.airbyte.config.Schema;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.Stream;
 import java.util.UUID;
 
 public class ConnectionHelpers {
@@ -85,7 +85,7 @@ public class ConnectionHelpers {
 
   public static SourceSchema generateBasicApiSchema() {
     final SourceSchemaField field = new SourceSchemaField()
-        .dataType(io.dataline.api.model.DataType.STRING)
+        .dataType(io.airbyte.api.model.DataType.STRING)
         .name("id")
         .selected(true);
 

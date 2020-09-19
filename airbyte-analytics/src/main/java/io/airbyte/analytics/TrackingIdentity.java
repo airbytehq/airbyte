@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.analytics;
+package io.airbyte.analytics;
 
 import java.util.Objects;
 import java.util.Optional;

@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.errors;
+package io.airbyte.server.errors;
 
 import com.google.common.collect.ImmutableMap;
-import io.dataline.commons.json.Jsons;
+import io.airbyte.commons.json.Jsons;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;

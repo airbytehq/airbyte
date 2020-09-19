@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.analytics;
+package io.airbyte.analytics;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -40,7 +40,7 @@ import org.mockito.ArgumentCaptor;
 
 class SegmentTrackingClientTest {
 
-  private static final TrackingIdentity identity = new TrackingIdentity(UUID.randomUUID(), "a@dataline.io", false, false, true);
+  private static final TrackingIdentity identity = new TrackingIdentity(UUID.randomUUID(), "a@airbyte.io", false, false, true);
 
   private Analytics analytics;
   private SegmentTrackingClient segmentTrackingClient;

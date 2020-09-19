@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.analytics;
+package io.airbyte.analytics;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;

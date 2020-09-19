@@ -22,6 +22,6 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.airbyte.workers;
 
 public class SyncException extends Exception {}

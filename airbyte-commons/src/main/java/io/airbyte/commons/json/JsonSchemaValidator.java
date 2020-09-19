@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.json;
+package io.airbyte.commons.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -30,7 +30,7 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-import io.dataline.commons.string.Strings;
+import io.airbyte.commons.string.Strings;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;

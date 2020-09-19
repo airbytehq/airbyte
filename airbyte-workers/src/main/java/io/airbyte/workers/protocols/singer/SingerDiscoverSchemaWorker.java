@@ -22,23 +22,23 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.protocols.singer;
+package io.airbyte.workers.protocols.singer;
 
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
+import static io.airbyte.workers.JobStatus.FAILED;
+import static io.airbyte.workers.JobStatus.SUCCESSFUL;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.io.IOs;
-import io.dataline.commons.io.LineGobbler;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.StandardDiscoverSchemaInput;
-import io.dataline.config.StandardDiscoverSchemaOutput;
-import io.dataline.singer.SingerCatalog;
-import io.dataline.workers.DiscoverSchemaWorker;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.WorkerConstants;
-import io.dataline.workers.WorkerUtils;
-import io.dataline.workers.process.ProcessBuilderFactory;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.singer.SingerCatalog;
+import io.airbyte.workers.DiscoverSchemaWorker;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;

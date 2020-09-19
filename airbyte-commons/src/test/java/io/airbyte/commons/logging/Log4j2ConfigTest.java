@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.logging;
+package io.airbyte.commons.logging;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.dataline.commons.io.IOs;
+import io.airbyte.commons.io.IOs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.server.handlers;
+package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -30,24 +30,24 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.dataline.api.model.CheckConnectionRead;
-import io.dataline.api.model.ConnectionIdRequestBody;
-import io.dataline.api.model.DestinationImplementationIdRequestBody;
-import io.dataline.api.model.SourceImplementationIdRequestBody;
-import io.dataline.commons.enums.Enums;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.StandardCheckConnectionOutput;
-import io.dataline.config.StandardSync;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.scheduler.Job;
-import io.dataline.scheduler.JobStatus;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
-import io.dataline.server.helpers.ConnectionHelpers;
-import io.dataline.server.helpers.DestinationImplementationHelpers;
-import io.dataline.server.helpers.SourceImplementationHelpers;
+import io.airbyte.api.model.CheckConnectionRead;
+import io.airbyte.api.model.ConnectionIdRequestBody;
+import io.airbyte.api.model.DestinationImplementationIdRequestBody;
+import io.airbyte.api.model.SourceImplementationIdRequestBody;
+import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.JobStatus;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.server.helpers.ConnectionHelpers;
+import io.airbyte.server.helpers.DestinationImplementationHelpers;
+import io.airbyte.server.helpers.SourceImplementationHelpers;
 import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

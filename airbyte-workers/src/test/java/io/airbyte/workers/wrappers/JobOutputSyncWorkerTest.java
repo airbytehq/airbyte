@@ -22,20 +22,20 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers.wrappers;
+package io.airbyte.workers.wrappers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.dataline.config.JobOutput;
-import io.dataline.config.StandardSyncInput;
-import io.dataline.config.StandardSyncOutput;
-import io.dataline.config.State;
-import io.dataline.workers.JobStatus;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.SyncWorker;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.State;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.SyncWorker;
 import java.nio.file.Path;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

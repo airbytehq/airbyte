@@ -22,19 +22,19 @@
  * SOFTWARE.
  */
 
-package io.dataline.workers;
+package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.DataType;
-import io.dataline.config.DestinationConnectionImplementation;
-import io.dataline.config.Field;
-import io.dataline.config.Schema;
-import io.dataline.config.SourceConnectionImplementation;
-import io.dataline.config.StandardSync;
-import io.dataline.config.StandardSyncInput;
-import io.dataline.config.State;
-import io.dataline.config.Stream;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DataType;
+import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.Field;
+import io.airbyte.config.Schema;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.State;
+import io.airbyte.config.Stream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -64,7 +64,7 @@ public class TestConfigHelpers {
     final JsonNode destinationConnection =
         Jsons.jsonNode(
             Map.of(
-                "username", "dataline",
+                "username", "airbyte",
                 "token", "anau81b"));
 
     final SourceConnectionImplementation sourceConnectionConfig = new SourceConnectionImplementation()

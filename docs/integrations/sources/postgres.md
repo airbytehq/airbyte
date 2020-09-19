@@ -83,13 +83,13 @@ This step is optional but highly recommended to allow for better permission cont
 To create a dedicated database user, run the following commands against your database:
 
 ```sql
-CREATE USER dataline PASSWORD 'your_password_here';
+CREATE USER airbyte PASSWORD 'your_password_here';
 ```
 
 Then give it access to the relevant schema:
 
 ```sql
-GRANT USAGE ON SCHEMA <schema_name> TO dataline
+GRANT USAGE ON SCHEMA <schema_name> TO airbyte
 ```
 
 Note that to replicate data from multiple Postgres schemas, you can re-run the command above to grant access to all the relevant schemas, but you'll need to setup multiple sources connecting to the same db on multiple schemas.
@@ -97,10 +97,10 @@ Note that to replicate data from multiple Postgres schemas, you can re-run the c
 Next, grant the user read-only access to the relevant tables. The simplest way is to grant read access to all tables in the schema as follows:
 
 ```sql
-GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO dataline;
+GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO airbyte;
 
-# Allow dataline user to see tables created in the future
-ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO dataline;
+# Allow airbyte user to see tables created in the future
+ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO airbyte;
 ```
 
 Your database user should now be ready for use with Dataline.

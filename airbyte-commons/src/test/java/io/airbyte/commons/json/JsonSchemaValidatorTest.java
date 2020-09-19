@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.json;
+package io.airbyte.commons.json;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;

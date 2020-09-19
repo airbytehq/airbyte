@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
 import com.google.common.base.Preconditions;
-import io.dataline.config.JobConfig;
+import io.airbyte.config.JobConfig;
 
 public class ScopeHelper {
 

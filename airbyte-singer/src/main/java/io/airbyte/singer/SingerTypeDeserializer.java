@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.singer;
+package io.airbyte.singer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.type.ArrayType;
 import com.fasterxml.jackson.databind.type.SimpleType;
-import io.dataline.commons.json.Jsons;
+import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;

@@ -1,8 +1,8 @@
 -- database
  CREATE
-    DATABASE dataline;
+    DATABASE airbyte;
 
-\connect dataline;
+\connect airbyte;
 
 -- extensions
  CREATE
@@ -52,4 +52,4 @@ CREATE
 
 -- grants
  GRANT ALL ON
-DATABASE dataline TO docker;
+DATABASE airbyte TO docker;

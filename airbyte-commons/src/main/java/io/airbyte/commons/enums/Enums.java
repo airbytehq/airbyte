@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.commons.enums;
+package io.airbyte.commons.enums;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;

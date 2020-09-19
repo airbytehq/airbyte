@@ -22,26 +22,26 @@
  * SOFTWARE.
  */
 
-package io.dataline.integration_tests.destinations;
+package io.airbyte.integration_tests.destinations;
 
-import static io.dataline.workers.JobStatus.FAILED;
-import static io.dataline.workers.JobStatus.SUCCESSFUL;
+import static io.airbyte.workers.JobStatus.FAILED;
+import static io.airbyte.workers.JobStatus.SUCCESSFUL;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.dataline.commons.json.Jsons;
-import io.dataline.config.StandardCheckConnectionInput;
-import io.dataline.config.StandardCheckConnectionOutput;
-import io.dataline.db.DatabaseHelper;
-import io.dataline.workers.OutputAndStatus;
-import io.dataline.workers.WorkerConstants;
-import io.dataline.workers.WorkerUtils;
-import io.dataline.workers.process.DockerProcessBuilderFactory;
-import io.dataline.workers.process.ProcessBuilderFactory;
-import io.dataline.workers.protocols.singer.SingerCheckConnectionWorker;
-import io.dataline.workers.protocols.singer.SingerDiscoverSchemaWorker;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.db.DatabaseHelper;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.DockerProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
+import io.airbyte.workers.protocols.singer.SingerDiscoverSchemaWorker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,8 +60,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 class TestPostgresDestination {
 
-  private static final String IMAGE_NAME = "dataline/integration-singer-postgres-destination:dev";
-  private static final Path TESTS_PATH = Path.of("/tmp/dataline_integration_tests");
+  private static final String IMAGE_NAME = "airbyte/integration-singer-postgres-destination:dev";
+  private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
 
   protected Path jobRoot;
   protected Path workspaceRoot;
@@ -77,7 +77,7 @@ class TestPostgresDestination {
     PSQL.start();
 
     Files.createDirectories(TESTS_PATH);
-    workspaceRoot = Files.createTempDirectory(TESTS_PATH, "dataline-integration");
+    workspaceRoot = Files.createTempDirectory(TESTS_PATH, "airbyte-integration");
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
 

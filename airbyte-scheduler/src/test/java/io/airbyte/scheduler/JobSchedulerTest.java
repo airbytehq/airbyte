@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.dataline.scheduler;
+package io.airbyte.scheduler;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -30,17 +30,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.dataline.commons.json.JsonValidationException;
-import io.dataline.config.DataType;
-import io.dataline.config.Field;
-import io.dataline.config.Schema;
-import io.dataline.config.StandardSync;
-import io.dataline.config.StandardSyncSchedule;
-import io.dataline.config.Stream;
-import io.dataline.config.persistence.ConfigNotFoundException;
-import io.dataline.config.persistence.ConfigRepository;
-import io.dataline.scheduler.job_factory.SyncJobFactory;
-import io.dataline.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.DataType;
+import io.airbyte.config.Field;
+import io.airbyte.config.Schema;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.Stream;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.job_factory.SyncJobFactory;
+import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
