@@ -1,6 +1,6 @@
 # Roadmap
 
-You can access our short-term roadmap here on our [Github project](https://github.com/airbyteio/airbyte/projects/1).
+You can access our short-term roadmap here on our [Github project](https://github.com/airbytehq/airbyte/projects/1).
 
 You can also see our last release in our [changelog](https://docs.airbyte.io/changelog). We try to have a weekly release cadence.
 

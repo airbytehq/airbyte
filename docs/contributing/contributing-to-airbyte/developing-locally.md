@@ -7,7 +7,7 @@ Airbyte uses `java 14` , `node 14` and `Docker`
 To compile the code and run unit tests:
 
 ```bash
-git clone git@github.com:airbyteio/airbyte.git
+git clone git@github.com:airbytehq/airbyte.git
 cd airbyte
 ./gradlew clean build
 ```

@@ -1,6 +1,6 @@
 # Getting Started
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbyteio/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbyteio/airbyte)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)
 
 [![](docs/.gitbook/assets/airbyte_light-background.svg)](https://airbyte.io)
 
@@ -26,7 +26,7 @@ Airbyte is on a mission to make data integration pipelines a commodity.
 ### Quick start
 
 ```bash
-git clone git@github.com:airbyteio/airbyte.git
+git clone git@github.com:airbytehq/airbyte.git
 cd airbyte
 docker-compose up
 ```
@@ -46,19 +46,19 @@ Now visit [http://localhost:8000](http://localhost:8000)
 
 ## Contributing
 
-We love contributions to Airbyte, big or small. See our [Contributing Guide](https://docs.airbyte.io/contributing/contributing-to-airbyte) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbyteio/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
+We love contributions to Airbyte, big or small. See our [Contributing Guide](https://docs.airbyte.io/contributing/contributing-to-airbyte) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
 
 ## Community support
 
 For general help using Airbyte, please refer to the official Airbyte documentation. For additional help, you can use one of these channels to ask a question:
 
 * [Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-h5m88w3a-twQ_6AF9e8SnAzOIkHu2VQ) \(For live discussion with the Community and Airbyte team\)
-* [GitHub](https://github.com/airbyteio/airbyte) \(Bug reports, Contributions\)
+* [GitHub](https://github.com/airbytehq/airbyte) \(Bug reports, Contributions\)
 * [Twitter](https://twitter.com/airbytehq) \(Get the news fast\)
 
 ## Roadmap
 
-Check out our [roadmap](https://github.com/airbyteio/airbyte/projects/1) to get informed of the latest features released and the upcoming ones. You may also give us insights and vote for a specific feature. For our high-level roadmap and strategy, you can check [our handbook](https://docs.airbyte.io/company-handbook/company-handbook/roadmap).
+Check out our [roadmap](https://github.com/airbytehq/airbyte/projects/1) to get informed of the latest features released and the upcoming ones. You may also give us insights and vote for a specific feature. For our high-level roadmap and strategy, you can check [our handbook](https://docs.airbyte.io/company-handbook/company-handbook/roadmap).
 
 ## License
 

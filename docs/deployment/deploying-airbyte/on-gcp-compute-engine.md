@@ -105,7 +105,7 @@ gcloud --project=$PROJECT_ID beta compute ssh airbyte
 ```bash
 # In your ssh session on the instance terminal
 mkdir airbyte && cd airbyte
-wget https://raw.githubusercontent.com/airbyteio/airbyte/master/{.env,docker-compose.yaml}
+wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
 docker-compose up -d
 ```
 

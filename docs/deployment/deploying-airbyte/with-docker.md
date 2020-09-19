@@ -11,7 +11,7 @@ These instructions have been tested on MacOS
 
 ```bash
 # In your workstation terminal
-git clone git@github.com:airbyteio/airbyte.git
+git clone git@github.com:airbytehq/airbyte.git
 cd airbyte
 VERSION=dev docker-compose up -d
 ```

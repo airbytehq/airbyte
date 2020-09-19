@@ -70,7 +70,7 @@ spotless {
 check.dependsOn 'spotlessApply'
 
 // Disabled because it generate an obnoxious warning
-// TODO: https://github.com/airbyteio/airbyte/issues/225
+// TODO: https://github.com/airbytehq/airbyte/issues/225
 //
 //    cpdCheck {
 //        ignoreFailures = true
