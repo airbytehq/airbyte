@@ -1,6 +1,6 @@
 # Story
 
-Dataline was founded by Michel and John in December 2019.
+Airbyte was founded by Michel and John in December 2019.
 
 Our first idea was to help companies exchange data, starting by building a customer portal for data providers so their clients can easily evaluate and pull data however and wherever they want.
 
@@ -10,7 +10,7 @@ At the time, we were meeting with a lot of companies. As we were discussing thei
 
 There are more and more data products out there, event-based customer data pipelines a la Segment and batch data ingestion pipelines a la Fivetran. But they are cloud-based and entail moving your data out of your infrastructure. In addition to adding unnecessary costs, this poses a data privacy risk for more and more companies. In the end, engineers end up having to develop and maintain these connections themselves.
 
-That’s why we decided to build Dataline, a new self-hosted, open-source data integration engine.
+That’s why we decided to build Airbyte, a new self-hosted, open-source data integration engine.
 
 Open sourcing the core engine is a prerequisite to building a top class engine so that anyone can add their own integrations and extend the project with the features that serve their use cases.
 

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/airbytehq/airbyte/blob/master/airbyte-config/src/main/resources/json/StandardSyncSummary.json",
+  "title": "StandardSyncSummary",
+  "description": "standard information output by ALL taps for a sync step (our version of state.json)",
+  "type": "object",
+  "required": ["jobId", "recordsSynced", "status", "startTime", "endTime"],
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["completed", "failed", "cancelled"]
+    },
+    "recordsSynced": {
+      "type": "integer",
+      "minValue": 0
+    },
+    "startTime": {
+      "type": "integer"
+    },
+    "endTime": {
+      "type": "integer"
+    }
+  }
+}

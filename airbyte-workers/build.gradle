@@ -1,0 +1,21 @@
+plugins {
+    id 'java-library'
+}
+
+configurations {
+    jdbc
+}
+
+dependencies {
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+
+    implementation project(":airbyte-config:models")
+    implementation project(":airbyte-db")
+    implementation project(":airbyte-integrations")
+    implementation project(":airbyte-singer")
+
+    testImplementation "org.mockito:mockito-inline:2.13.0"
+    testImplementation "org.testcontainers:testcontainers:1.14.3"
+    testImplementation "org.testcontainers:postgresql:1.14.3"
+    testImplementation "org.postgresql:postgresql:42.2.16"
+}

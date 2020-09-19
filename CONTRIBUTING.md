@@ -1,2 +1,2 @@
 # Contributing
-View on [docs.dataline.io](https://docs.dataline.io/contributing/contributing-to-dataline)
+View on [docs.airbyte.io](https://docs.airbyte.io/contributing/contributing-to-airbyte)

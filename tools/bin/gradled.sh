@@ -4,7 +4,7 @@ set -e
 
 . tools/lib/lib.sh
 
-IMG_NAME=dataline/build-project:dev
+IMG_NAME=airbyte/build-project:dev
 TMP_VOLUME_NAME=gradlew-tmp
 
 main() {

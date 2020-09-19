@@ -1,0 +1,30 @@
+{
+  "short_name": "Airbyte",
+  "name": "Airbyte",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo112.png",
+      "type": "image/png",
+      "sizes": "112x112"
+    },
+    {
+      "src": "logo224.png",
+      "type": "image/png",
+      "sizes": "224x224"
+    },
+    {
+      "src": "logo336.png",
+      "type": "image/png",
+      "sizes": "336x336"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#625EFF",
+  "background_color": "#F8F8FF"
+}

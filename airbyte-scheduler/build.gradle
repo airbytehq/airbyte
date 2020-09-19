@@ -1,0 +1,34 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-db')
+    implementation project(':airbyte-integrations')
+    implementation project(':airbyte-workers')
+
+    testImplementation "org.testcontainers:postgresql:1.14.3"
+}
+
+application {
+    mainClass = 'io.airbyte.scheduler.SchedulerApp'
+}
+
+Properties env = new Properties()
+rootProject.file('.env.dev').withInputStream { env.load(it) }
+
+run {
+    // default for running on local machine.
+    environment "CONFIG_ROOT", "${env.DEV_ROOT}/data"
+    environment "WORKSPACE_ROOT", "${env.DEV_ROOT}/workspace"
+    environment "WORKSPACE_DOCKER_MOUNT", env.WORKSPACE_DOCKER_MOUNT
+    environment "VERSION", env.VERSION
+    environment "DATABASE_USER", env.DATABASE_USER
+    environment "DATABASE_PASSWORD", env.DATABASE_PASSWORD
+    environment "DATABASE_URL", "jdbc:postgresql://localhost:5432/airbyte"
+}

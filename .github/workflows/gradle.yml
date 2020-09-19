@@ -1,4 +1,4 @@
-name: Dataline CI
+name: Airbyte CI
 
 on: push
 
@@ -8,7 +8,7 @@ jobs:
       GRADLE_PATH: /tmp/gradle
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Dataline
+      - name: Checkout Airbyte
         uses: actions/checkout@v2
 
       - name: Cache java deps
@@ -62,7 +62,7 @@ jobs:
       - name: Push Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
         run: |
-          docker login -u datalinebot -p ${DOCKER_PASSWORD}
+          docker login -u airbytebot -p ${DOCKER_PASSWORD}
           docker-compose -f docker-compose.build.yaml push
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
