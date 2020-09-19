@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Dataline
+ * Copyright (c) 2020 Airbyte
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ import io.airbyte.api.client.invoker.ApiClient;
  *
  * This is currently manually maintained. We could look into autogenerating it if needed.
  */
-public class DatalineApiClient {
+public class AirbyteApiClient {
 
   private final ConnectionApi connectionApi;
   private final DestinationApi destinationApi;
@@ -50,7 +50,7 @@ public class DatalineApiClient {
   private final SourceSpecificationApi sourceSpecificationApi;
   private final WorkspaceApi workspaceApi;
 
-  public DatalineApiClient(ApiClient apiClient) {
+  public AirbyteApiClient(ApiClient apiClient) {
     connectionApi = new ConnectionApi(apiClient);
     destinationApi = new DestinationApi(apiClient);
     destinationImplementationApi = new DestinationImplementationApi(apiClient);

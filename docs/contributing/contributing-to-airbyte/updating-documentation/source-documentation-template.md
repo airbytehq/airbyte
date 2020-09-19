@@ -8,17 +8,17 @@
 
 Is the output schema fixed \(e.g: for an API like Stripe\)? If so, point to the source’s schema \(e.g: link to Stripe’s documentation\) or include it here directly.
 
-Describe how the source schema is mapped to Dataline concepts. An example description might be: “MagicDB tables become Dataline Streams and MagicDB columns become Dataline Fields. In addition, an extracted\_at column is appended to each row being read.”
+Describe how the source schema is mapped to Airbyte concepts. An example description might be: “MagicDB tables become Airbyte Streams and MagicDB columns become Airbyte Fields. In addition, an extracted\_at column is appended to each row being read.”
 
 #### Data Type Mapping
 
-This section should contain a table mapping each of the source's data types to Dataline types. At the moment, Dataline uses the same types used by Singer.
+This section should contain a table mapping each of the source's data types to Airbyte types. At the moment, Airbyte uses the same types used by Singer.
 
-| Source Type | Dataline Type | Notes |
+| Source Type | Airbyte Type | Notes |
 | :--- | :--- | :--- |
 
 
-Currently, Dataline uses the same types as Singer: `string`, `int`, `number`, `boolean`, `object`.
+Currently, Airbyte uses the same types as Singer: `string`, `int`, `number`, `boolean`, `object`.
 
 #### Features
 
@@ -51,5 +51,5 @@ Could this source hurt the user's data source or put too much strain on it in ce
 
 For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See the Postgres source guide for an example.
 
-For each major cloud provider we support, also add a follow-along guide for setting up Dataline to connect to that destination. See the Postgres destination guide for an example of what this should look like.
+For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
 

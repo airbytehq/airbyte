@@ -1,10 +1,10 @@
 ---
-description: 'We love contributions to Dataline, big or small.'
+description: 'We love contributions to Airbyte, big or small.'
 ---
 
-# Contributing to Dataline
+# Contributing to Airbyte
 
-We hope you are enjoying Dataline and look forward to hearing your feedback. Whether you want to raise a bug report, a feature/integration request or just request a correction to something, we really value our community input.
+We hope you are enjoying Airbyte and look forward to hearing your feedback. Whether you want to raise a bug report, a feature/integration request or just request a correction to something, we really value our community input.
 
 We do ask that you read this document and send us any issues or raise pull requests to make sure we understand clearly what you are asking for. This will help ensure we are making the right decisions and taking the right actions.
 
@@ -50,7 +50,7 @@ To see what has already been proposed by the community you can look [here](https
 
 ## **Reporting Bugs**
 
-**‌**Bug reports help us make Dataline better for everyone. We provide a preconfigured template for bugs to make it very clear what information we need.
+**‌**Bug reports help us make Airbyte better for everyone. We provide a preconfigured template for bugs to make it very clear what information we need.
 
 ‌Please search within our [already reported bugs](https://github.com/airbyteio/airbyte/issues?q=is%3Aissue+is%3Aopen+label%3Atype%2Fbug) before raising a new one to make sure you're not raising a duplicate.
 

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Dataline
+ * Copyright (c) 2020 Airbyte
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +64,7 @@ class SingerCatalogConvertersTest {
   }
 
   @Test
-  void toDatalineSchemaWithUnselectedTable() throws IOException {
+  void toAirbyteSchemaWithUnselectedTable() throws IOException {
     final SingerCatalog catalog =
         Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
     final Schema expectedSchema =
@@ -73,13 +73,13 @@ class SingerCatalogConvertersTest {
     expectedSchema.getStreams().get(0).getFields().get(0).withSelected(true);
     expectedSchema.getStreams().get(0).getFields().get(1).withSelected(true);
 
-    final Schema actualSchema = SingerCatalogConverters.toDatalineSchema(catalog);
+    final Schema actualSchema = SingerCatalogConverters.toAirbyteSchema(catalog);
 
     assertEquals(expectedSchema, actualSchema);
   }
 
   @Test
-  void toDatalineSchemaWithSelectedTable() throws IOException {
+  void toAirbyteSchemaWithSelectedTable() throws IOException {
     final SingerCatalog catalog =
         Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
     catalog.getStreams().get(0).getMetadata().get(0).getMetadata().withSelected(true);
@@ -90,7 +90,7 @@ class SingerCatalogConvertersTest {
     expectedSchema.getStreams().get(0).getFields().get(0).withSelected(true);
     expectedSchema.getStreams().get(0).getFields().get(1).withSelected(true);
 
-    final Schema actualSchema = SingerCatalogConverters.toDatalineSchema(catalog);
+    final Schema actualSchema = SingerCatalogConverters.toAirbyteSchema(catalog);
 
     assertEquals(expectedSchema, actualSchema);
   }

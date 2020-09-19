@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   description: |
-    Dataline Configuration API
+    Airbyte Configuration API
     [https://airbyte.io](https://airbyte.io).
 
     This API is a collection HTTP RPC-style methods. While it is not a REST API, those familiar with REST should find the conventions of this API recognizable.
@@ -20,14 +20,14 @@ info:
       * Adding new HTTP endpoints.
 
   version: "1.0.0-oas3"
-  title: Dataline Configuration API
+  title: Airbyte Configuration API
   contact:
     email: contact@airbyte.io
   license:
     name: MIT
     url: "https://opensource.org/licenses/MIT"
 externalDocs:
-  description: Find out more about Dataline
+  description: Find out more about Airbyte
   url: "https://airbyte.io"
 servers:
   - url: "localhost:8001"
@@ -125,7 +125,7 @@ paths:
     post:
       tags:
         - source
-      summary: List all of the sources that Dataline supports
+      summary: List all of the sources that Airbyte supports
       operationId: listSources
       responses:
         "200":
@@ -341,7 +341,7 @@ paths:
     post:
       tags:
         - destination
-      summary: List all of the destinations that Dataline supports
+      summary: List all of the destinations that Airbyte supports
       operationId: listDestinations
       responses:
         "200":

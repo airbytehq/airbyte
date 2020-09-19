@@ -15,7 +15,7 @@ As a community contributor, you will need access to a GCP project and BigQuery t
 1. Download this key as a JSON file
 1. Move and rename this file to `config/credentials.json`
 
-## Dataline Employee
+## Airbyte Employee
 
 1. Access the `BigQuery Integration Test User` secret on Rippling under the `Engineering` folder
 1. Create a file with the contents at `config/credentials.json`

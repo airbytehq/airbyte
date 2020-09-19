@@ -91,7 +91,7 @@ docker-compose --version
 logout
 ```
 
-## Install & Start Dataline
+## Install & Start Airbyte
 
 * Connect to your instance
 
@@ -100,7 +100,7 @@ logout
 gcloud --project=$PROJECT_ID beta compute ssh airbyte
 ```
 
-* Install Dataline
+* Install Airbyte
 
 ```bash
 # In your ssh session on the instance terminal
@@ -109,10 +109,10 @@ wget https://raw.githubusercontent.com/airbyteio/airbyte/master/{.env,docker-com
 docker-compose up -d
 ```
 
-## Connect to Dataline
+## Connect to Airbyte
 
 {% hint style="danger" %}
-For security reason we strongly recommend to not expose Dataline on Internet available ports. Future versions will add support for SSL & Authentication
+For security reason we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication
 {% endhint %}
 
 * Create ssh tunnel

@@ -17,7 +17,7 @@ Shrif was a senior engineer and tech lead on LiveRamp’s Data Segmentation plat
 
 ## **Jared Rhizor**
 
-Before joining Dataline, Jared built massive data pipelines at LiveRamp for five years, where he was the tech lead responsible for a PB-scale device graph.  
+Before joining Airbyte, Jared built massive data pipelines at LiveRamp for five years, where he was the tech lead responsible for a PB-scale device graph.  
 [**LinkedIn**](https://www.linkedin.com/in/jrhizor/) **\|** [**GitHub**](https://github.com/jrhizor) **\|** [**Website**](https://jrhizor.dev)
 
 ## **Charles Giardina**

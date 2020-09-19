@@ -2,7 +2,7 @@
 
 Welcome to our company handbook.
 
-This is where you will find all information about Dataline, its story, culture, strategy, roadmap, and how to contribute.
+This is where you will find all information about Airbyte, its story, culture, strategy, roadmap, and how to contribute.
 
 Transparency is one of our core values, which is why we make this handbook public.
 

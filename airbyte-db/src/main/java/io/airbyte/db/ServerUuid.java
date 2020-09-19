@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Dataline
+ * Copyright (c) 2020 Airbyte
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ import org.jooq.Record;
 import org.jooq.Result;
 
 /*
- * The server UUID identifies a specific database installation of Dataline for analytics purposes.
+ * The server UUID identifies a specific database installation of Airbyte for analytics purposes.
  */
 public class ServerUuid {
 

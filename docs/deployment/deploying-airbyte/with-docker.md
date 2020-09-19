@@ -4,7 +4,7 @@
 These instructions have been tested on MacOS
 {% endhint %}
 
-## Setup & Launch Dataline
+## Setup & Launch Airbyte
 
 * Install docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\)
 * Clone airbyte's repository and run `docker compose`

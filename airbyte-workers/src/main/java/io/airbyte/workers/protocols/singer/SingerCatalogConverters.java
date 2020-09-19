@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Dataline
+ * Copyright (c) 2020 Airbyte
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ public class SingerCatalogConverters {
    * @return singer catalog with airbyte schema applied to it.
    */
   public static SingerCatalog applySchemaToDiscoveredCatalog(SingerCatalog catalog, Schema schema) {
-    Map<String, Stream> streamNameToDatalineStream = schema.getStreams()
+    Map<String, Stream> streamNameToAirbyteStream = schema.getStreams()
         .stream()
         .collect(Collectors.toMap(Stream::getName, stream -> stream));
 
@@ -64,10 +64,10 @@ public class SingerCatalogConverters {
 
                   // recourse here is probably to run discovery again and update sync
                   // configuration. this method just outputs the original metadata.
-                  if (!streamNameToDatalineStream.containsKey(stream.getStream())) {
+                  if (!streamNameToAirbyteStream.containsKey(stream.getStream())) {
                     return stream;
                   }
-                  final Stream airbyteStream = streamNameToDatalineStream.get(stream.getStream());
+                  final Stream airbyteStream = streamNameToAirbyteStream.get(stream.getStream());
                   final Map<String, Field> fieldNameToField =
                       airbyteStream.getFields()
                           .stream()
@@ -122,7 +122,7 @@ public class SingerCatalogConverters {
   }
 
   // assumes discoverable input only.
-  public static Schema toDatalineSchema(SingerCatalog catalog) {
+  public static Schema toAirbyteSchema(SingerCatalog catalog) {
     Map<String, List<SingerMetadata>> streamNameToMetadata =
         getStreamNameToMetadataList(catalog.getStreams());
 

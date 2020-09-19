@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Dataline
+ * Copyright (c) 2020 Airbyte
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.api.client.DatalineApiClient;
+import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.CheckConnectionRead;
@@ -89,7 +89,7 @@ public class AcceptanceTests {
   private PostgreSQLContainer sourcePsql;
   private PostgreSQLContainer targetPsql;
 
-  private DatalineApiClient apiClient = new DatalineApiClient(
+  private AirbyteApiClient apiClient = new AirbyteApiClient(
       new ApiClient().setScheme("http")
           .setHost("localhost")
           .setPort(8001)
@@ -258,7 +258,7 @@ public class AcceptanceTests {
 
     createConnection(connectionName, sourceImplId, destinationImplId, schema, connectionSchedule, syncMode);
 
-    // When a new connection is created, Dataline might sync it immediately (before the sync interval).
+    // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
     // Then it will wait the sync interval.
     Thread.sleep(Duration.of(30, SECONDS).toMillis());
     assertSourceAndTargetDbInSync(sourcePsql, targetPsql);

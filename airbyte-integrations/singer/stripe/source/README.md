@@ -14,7 +14,7 @@ In order to test the Stripe source, you will need API credentials and the abilit
 }
 ```
 
-## Dataline Employee
+## Airbyte Employee
 
 1. Access the `Stripe Integration Test Config` secret on Rippling under the `Engineering` folder
 1. Create a file with the contents at `config/config.json`

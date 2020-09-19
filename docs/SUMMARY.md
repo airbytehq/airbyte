@@ -5,7 +5,7 @@
 
 ## Deployment
 
-* [Deploying Dataline](deployment/deploying-airbyte/README.md)
+* [Deploying Airbyte](deployment/deploying-airbyte/README.md)
   * [On your workstation](deployment/deploying-airbyte/with-docker.md)
   * [On AWS \(EC2\)](deployment/deploying-airbyte/on-aws-ec2.md)
   * [On GCP \(Compute Engine\)](deployment/deploying-airbyte/on-gcp-compute-engine.md)
@@ -20,7 +20,7 @@
 
 ## Contributing
 
-* [Contributing to Dataline](contributing/contributing-to-airbyte/README.md)
+* [Contributing to Airbyte](contributing/contributing-to-airbyte/README.md)
   * [Developing Locally](contributing/contributing-to-airbyte/developing-locally.md)
   * [Code Style](contributing/contributing-to-airbyte/code-style.md)
   * [Updating Documentation](contributing/contributing-to-airbyte/updating-documentation/README.md)

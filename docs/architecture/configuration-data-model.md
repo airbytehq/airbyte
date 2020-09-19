@@ -40,9 +40,9 @@ This section enumerates the full set of features we expect to give to these mode
 The basic flow will go as follows:
 
 * Insert credentials for a source.
-* Receive feedback on whether Dataline was able to reach the source with the given credentials.
+* Receive feedback on whether Airbyte was able to reach the source with the given credentials.
 * Insert credentials for a destination.
-* Receive feedback on whether Dataline was able to reach the destination with the given credentials.
+* Receive feedback on whether Airbyte was able to reach the destination with the given credentials.
 * Show intent to connect source to destination.
 * Receives schema of the source.
 * Selects which part of the schema will be synced.
@@ -54,7 +54,7 @@ The basic flow will go as follows:
 
 #### SourceConnectionConfiguration
 
-Any credentials needed to establish a connection with the data source. This configuration will look difference for each source. Dataline only enforces that it is valid json-schema. Here is an example of one might look like for a postgres tap.
+Any credentials needed to establish a connection with the data source. This configuration will look difference for each source. Airbyte only enforces that it is valid json-schema. Here is an example of one might look like for a postgres tap.
 
 ```javascript
 {

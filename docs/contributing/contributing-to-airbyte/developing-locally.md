@@ -2,7 +2,7 @@
 
 ## Build with `gradle`
 
-Dataline uses `java 14` , `node 14` and `Docker`
+Airbyte uses `java 14` , `node 14` and `Docker`
 
 To compile the code and run unit tests:
 
@@ -14,7 +14,7 @@ cd airbyte
 
 This will build all the code and run all the unit tests.
 
-`./gradle build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Dataline locally.
+`./gradle build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally.
 
 ## Run with `docker-compose`
 
@@ -23,9 +23,9 @@ This will build all the code and run all the unit tests.
 VERSION=dev docker-compose up
 ```
 
-The build will take a few minutes. Once it completes, Dataline compiled at current git revision will be running in your environment.
+The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in your environment.
 
-Dataline by default uses docker volumes for persisting data. If you'd like all persistence to use your local filesystem do the following instead. By default all data will be persisted to `/tmp/dev_root` .
+Airbyte by default uses docker volumes for persisting data. If you'd like all persistence to use your local filesystem do the following instead. By default all data will be persisted to `/tmp/dev_root` .
 
 ```bash
 ./gradlew build
@@ -34,7 +34,7 @@ docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.
 
 ## Run Acceptance Tests
 
-To run acceptance \(end-to-end\) tests you must have the Dataline running locally.
+To run acceptance \(end-to-end\) tests you must have the Airbyte running locally.
 
 ```bash
 ./gradlew build
@@ -46,7 +46,7 @@ VERSION=dev docker-compose up
 
 ### Develop on `airbyte-webapp`
 
-* Spin up Dataline locally so the UI can make requests against the local API.
+* Spin up Airbyte locally so the UI can make requests against the local API.
 
 ```bash
 docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up -d
@@ -70,7 +70,7 @@ npm start
 
 ### Develop on `airbyte-server` \(APIs\)
 
-* Spin up Dataline locally.
+* Spin up Airbyte locally.
 
 ```bash
 docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up -d
@@ -102,7 +102,7 @@ _Note: We namespace most API calls with a workspace id. For now there is only ev
 
 ### Develop on `airbyte-scheduler`
 
-* Spin up Dataline locally.
+* Spin up Airbyte locally.
 
 ```bash
 docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up -d

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Dataline
+ * Copyright (c) 2020 Airbyte
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,7 +93,7 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
       return new OutputAndStatus<>(
           SUCCESSFUL,
           new StandardDiscoverSchemaOutput()
-              .withSchema(SingerCatalogConverters.toDatalineSchema(catalog)));
+              .withSchema(SingerCatalogConverters.toAirbyteSchema(catalog)));
     } else {
       LOGGER.debug("Discovery job subprocess finished with exit code {}", exitCode);
       return new OutputAndStatus<>(FAILED);
