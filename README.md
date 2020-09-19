@@ -8,7 +8,7 @@
 
 The new open-source standard to sync data from applications & databases to warehouses.
 
-[![](docs/.gitbook/assets/deploy-locally.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/with-docker) [![](docs/.gitbook/assets/deploy-on-aws.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-aws-ec2) [![](docs/.gitbook/assets/deploy-on-gcp%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-gcp-compute-engine)
+[![](docs/.gitbook/assets/deploy-locally.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/with-docker) [![](docs/.gitbook/assets/deploy-on-aws.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-aws-ec2) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-gcp-compute-engine)
 
 ![](docs/.gitbook/assets/sources_list.png)
 
