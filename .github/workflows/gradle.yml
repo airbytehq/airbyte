@@ -62,7 +62,7 @@ jobs:
       - name: Push Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
         run: |
-          docker login -u datalinebot -p ${DOCKER_PASSWORD}
+          docker login -u airbytebot -p ${DOCKER_PASSWORD}
           docker-compose -f docker-compose.build.yaml push
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
