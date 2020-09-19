@@ -43,10 +43,10 @@ import java.util.stream.Collectors;
 public class SingerCatalogConverters {
 
   /**
-   * Takes in a singer catalog and a airbyte schema. It then applies the airbyte configuration to
-   * that catalog. e.g. If airbyte says that a certain field should or should not be included in the
-   * sync, this method applies that to the catalog. Thus we produce a valid singer catalog that
-   * contains configurations stored in airbyte.
+   * Takes in a singer catalog and a airbyte schema. It then applies the airbyte configuration to that
+   * catalog. e.g. If airbyte says that a certain field should or should not be included in the sync,
+   * this method applies that to the catalog. Thus we produce a valid singer catalog that contains
+   * configurations stored in airbyte.
    *
    * @param catalog - singer catalog
    * @param schema - airbyte schema
