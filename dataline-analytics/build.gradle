@@ -1,7 +1,0 @@
-dependencies {
-    implementation 'com.segment.analytics.java:analytics:2.1.1'
-
-
-    implementation project(':dataline-config:models')
-    implementation project(':dataline-config:persistence')
-}

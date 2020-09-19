@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/airbytehq/airbyte/blob/master/airbyte-config/src/main/resources/json/JobCheckConnectionConfig.json",
+  "title": "JobCheckConnectionConfig",
+  "description": "job check connection config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["connectionConfiguration", "dockerImage"],
+  "properties": {
+    "connectionConfiguration": {
+      "description": "Integration specific blob. Must be a valid JSON string.",
+      "type": "object",
+      "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
+    },
+    "dockerImage": {
+      "type": "string"
+    }
+  }
+}

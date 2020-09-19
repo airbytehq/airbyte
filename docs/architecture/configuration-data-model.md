@@ -40,9 +40,9 @@ This section enumerates the full set of features we expect to give to these mode
 The basic flow will go as follows:
 
 * Insert credentials for a source.
-* Receive feedback on whether Dataline was able to reach the source with the given credentials.
+* Receive feedback on whether Airbyte was able to reach the source with the given credentials.
 * Insert credentials for a destination.
-* Receive feedback on whether Dataline was able to reach the destination with the given credentials.
+* Receive feedback on whether Airbyte was able to reach the destination with the given credentials.
 * Show intent to connect source to destination.
 * Receives schema of the source.
 * Selects which part of the schema will be synced.
@@ -54,7 +54,7 @@ The basic flow will go as follows:
 
 #### SourceConnectionConfiguration
 
-Any credentials needed to establish a connection with the data source. This configuration will look difference for each source. Dataline only enforces that it is valid json-schema. Here is an example of one might look like for a postgres tap.
+Any credentials needed to establish a connection with the data source. This configuration will look difference for each source. Airbyte only enforces that it is valid json-schema. Here is an example of one might look like for a postgres tap.
 
 ```javascript
 {
@@ -120,7 +120,7 @@ Any credentials needed to establish a connection with the data source. This conf
 
 This is the output of the `testConnection` method. It is the same schema for ALL taps.
 
-The type declaration can be found [here](https://github.com/datalineio/dataline/tree/87e9c99aef3d859a8498cbc5a1a5d0f0db43b1fb/docs/dataline-config/src/main/resources/json/StandardConnectionStatus.json).
+The type declaration can be found [here](https://github.com/airbytehq/airbyte/tree/87e9c99aef3d859a8498cbc5a1a5d0f0db43b1fb/docs/airbyte-config/src/main/resources/json/StandardConnectionStatus.json).
 
 #### StandardDiscoveryOutput
 
@@ -128,7 +128,7 @@ This is the output of the `discoverSchema` method. It is the same schema for ALL
 
 The schema for the `schema` field. This will get reused elsewhere.
 
-The type declaration can be found [here](https://github.com/datalineio/dataline/tree/87e9c99aef3d859a8498cbc5a1a5d0f0db43b1fb/docs/dataline-config/src/main/resources/json/StandardDiscoveryOutput.json).
+The type declaration can be found [here](https://github.com/airbytehq/airbyte/tree/87e9c99aef3d859a8498cbc5a1a5d0f0db43b1fb/docs/airbyte-config/src/main/resources/json/StandardDiscoveryOutput.json).
 
 ### Source Methods
 
@@ -180,7 +180,7 @@ testConnection(DestinationConnectionConfiguration) => StandardConnectionStatus
 
 Configuration that is the SAME for all tap / target combinations. Describes the sync mode \(full refresh or append\) as well what part of the schema will be synced.
 
-The type declaration can be found [here](https://github.com/datalineio/dataline/tree/87e9c99aef3d859a8498cbc5a1a5d0f0db43b1fb/docs/dataline-config/src/main/resources/json/StandardSyncConfiguration.json).
+The type declaration can be found [here](https://github.com/airbytehq/airbyte/tree/87e9c99aef3d859a8498cbc5a1a5d0f0db43b1fb/docs/airbyte-config/src/main/resources/json/StandardSyncConfiguration.json).
 
 \(note: we may need to add some notion that some sources or destinations are only compatible with full\_refresh\)
 
@@ -188,7 +188,7 @@ The type declaration can be found [here](https://github.com/datalineio/dataline/
 
 This object tracks metadata on where the run ended. Our hope is that it can replace the State object \(see [below](configuration-data-model.md#State)\) entirely. The reason to define this type now is so that in the UI we can provide feedback to the user on where the sync has gotten to.
 
-The type declaration can be found [here](https://github.com/datalineio/dataline/tree/87e9c99aef3d859a8498cbc5a1a5d0f0db43b1fb/docs/dataline-config/src/main/resources/json/StandardSyncSummary.json).
+The type declaration can be found [here](https://github.com/airbytehq/airbyte/tree/87e9c99aef3d859a8498cbc5a1a5d0f0db43b1fb/docs/airbyte-config/src/main/resources/json/StandardSyncSummary.json).
 
 #### State
 
@@ -198,7 +198,7 @@ This field will be treated as a json blob that will _only_ be used inside the im
 
 This object defines the schedule for a given connection. It is the same for all taps / targets.
 
-The type declaration can be found [here](https://github.com/datalineio/dataline/tree/87e9c99aef3d859a8498cbc5a1a5d0f0db43b1fb/docs/dataline-config/src/main/resources/json/StandardSyncSchedule.json).
+The type declaration can be found [here](https://github.com/airbytehq/airbyte/tree/87e9c99aef3d859a8498cbc5a1a5d0f0db43b1fb/docs/airbyte-config/src/main/resources/json/StandardSyncSchedule.json).
 
 ### Connection Methods
 

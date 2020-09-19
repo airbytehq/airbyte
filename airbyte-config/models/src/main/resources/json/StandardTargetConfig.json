@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/airbytehq/airbyte/blob/master/airbyte-config/src/main/resources/json/StandardTargetConfig.json",
+  "title": "StandardTargetConfig",
+  "description": "StandardTargetConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sourceConnectionImplementation",
+    "destinationConnectionImplementation",
+    "standardSync"
+  ],
+  "properties": {
+    "destinationConnectionImplementation": {
+      "$ref": "DestinationConnectionImplementation.json"
+    },
+    "standardSync": {
+      "$ref": "StandardSync.json"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.31.v20200723'
+    implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.31.v20200723'
+
+    implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.3'
+    implementation group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet'
+    implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2'
+    implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson'
+    implementation group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation'
+
+    implementation project(':airbyte-analytics')
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-config:init')
+    implementation project(':airbyte-db')
+    implementation project(':airbyte-scheduler')
+
+}
+
+application {
+    mainClass = 'io.airbyte.server.ServerApp'
+}
+
+Properties env = new Properties()
+rootProject.file('.env.dev').withInputStream { env.load(it) }
+
+run {
+    // default for running on local machine.
+    environment "CONFIG_ROOT", "${env.DEV_ROOT}/data"
+    environment "WORKSPACE_ROOT", "${env.DEV_ROOT}/workspace"
+    environment "VERSION", env.VERSION
+    environment "DATABASE_USER", env.DATABASE_USER
+    environment "DATABASE_PASSWORD", env.DATABASE_PASSWORD
+    environment "DATABASE_URL", "jdbc:postgresql://localhost:5432/airbyte"
+}

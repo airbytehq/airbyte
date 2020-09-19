@@ -6,8 +6,8 @@ services:
   init:
     image: alpine
   db:
-    image: dataline/db:${VERSION}
-    container_name: dataline-db
+    image: airbyte/db:${VERSION}
+    container_name: airbyte-db
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
@@ -17,8 +17,8 @@ services:
     depends_on:
       - init
   seed:
-    image: dataline/seed:${VERSION}
-    container_name: dataline-data-seed
+    image: airbyte/seed:${VERSION}
+    container_name: airbyte-data-seed
     # Pre-populate the volume if it is empty.
     # See: https://docs.docker.com/storage/volumes/#populate-a-volume-using-a-container
     volumes:
@@ -26,8 +26,8 @@ services:
     depends_on:
       - init
   scheduler:
-    image: dataline/scheduler:${VERSION}
-    container_name: dataline-scheduler
+    image: airbyte/scheduler:${VERSION}
+    container_name: airbyte-scheduler
     environment:
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
@@ -46,8 +46,8 @@ services:
       - db
       - seed
   server:
-    image: dataline/server:${VERSION}
-    container_name: dataline-server
+    image: airbyte/server:${VERSION}
+    container_name: airbyte-server
     environment:
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
@@ -63,8 +63,8 @@ services:
     depends_on:
       - db
   webapp:
-    image: dataline/webapp:${VERSION}
-    container_name: dataline-webapp
+    image: airbyte/webapp:${VERSION}
+    container_name: airbyte-webapp
     ports:
       - 8000:80
     depends_on:
