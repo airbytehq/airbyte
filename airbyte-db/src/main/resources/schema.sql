@@ -21,7 +21,7 @@
 -- tables
  CREATE
     TABLE
-        DATALINE_METADATA(
+        AIRBYTE_METADATA(
             KEY VARCHAR(255) PRIMARY KEY,
             value VARCHAR(255)
         );
@@ -44,7 +44,7 @@ CREATE
 -- entries
  INSERT
     INTO
-        DATALINE_METADATA
+        AIRBYTE_METADATA
     VALUES(
         'server-uuid',
         uuid_generate_v4()
