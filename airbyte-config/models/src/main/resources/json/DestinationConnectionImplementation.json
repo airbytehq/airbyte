@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/airbytehq/airbyte/blob/master/airbyte-config/src/main/resources/json/DestinationConnectionImplementation.json",
+  "title": "DestinationConnectionImplementation",
+  "description": "information required for connection to a destination.",
+  "type": "object",
+  "required": [
+    "name",
+    "destinationSpecificationId",
+    "workspaceId",
+    "destinationImplementationId",
+    "configuration",
+    "tombstone"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "destinationSpecificationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "workspaceId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "destinationImplementationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "configuration": {
+      "description": "Integration specific blob. Must be a valid JSON string.",
+      "type": "object",
+      "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
+    },
+    "tombstone": {
+      "description": "if not set or false, the configuration is active. if true, then this configuration is permanently off.",
+      "type": "boolean"
+    }
+  }
+}

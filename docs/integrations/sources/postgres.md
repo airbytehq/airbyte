@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Postgres source supports Full Refresh syncs. That is, every time a sync is run, Dataline will copy all rows in the tables and columns you setup for replication into the destination in a new table.
+The Postgres source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you setup for replication into the destination in a new table.
 
 This Postgres source is based on the [Singer Postgres Tap](https://github.com/singer-io/tap-postgres).
 
@@ -67,29 +67,29 @@ Incremental sync \(copying only the data that has changed\) for this source is c
 ### Requirements:
 
 1. Postgres `v9.3.x` or above
-2. Allow connections from Dataline to your Postgres database \(if they exist in separate VPCs\)
-3. Create a dedicated read-only Dataline user with access to all tables needed for replication
+2. Allow connections from Airbyte to your Postgres database \(if they exist in separate VPCs\)
+3. Create a dedicated read-only Airbyte user with access to all tables needed for replication
 
 ### Setup Guide
 
-### 1. Make sure your database is accessible from the machine running Dataline
+### 1. Make sure your database is accessible from the machine running Airbyte
 
-This is dependent on your networking setup. The easiest way to verify if Dataline is able to connect to your Postgres instance is via the check connection tool in the UI.
+This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect to your Postgres instance is via the check connection tool in the UI.
 
 ### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
 
-This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Dataline with an existing user in your database.
+This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
 To create a dedicated database user, run the following commands against your database:
 
 ```sql
-CREATE USER dataline PASSWORD 'your_password_here';
+CREATE USER airbyte PASSWORD 'your_password_here';
 ```
 
 Then give it access to the relevant schema:
 
 ```sql
-GRANT USAGE ON SCHEMA <schema_name> TO dataline
+GRANT USAGE ON SCHEMA <schema_name> TO airbyte
 ```
 
 Note that to replicate data from multiple Postgres schemas, you can re-run the command above to grant access to all the relevant schemas, but you'll need to setup multiple sources connecting to the same db on multiple schemas.
@@ -97,11 +97,11 @@ Note that to replicate data from multiple Postgres schemas, you can re-run the c
 Next, grant the user read-only access to the relevant tables. The simplest way is to grant read access to all tables in the schema as follows:
 
 ```sql
-GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO dataline;
+GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO airbyte;
 
-# Allow dataline user to see tables created in the future
-ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO dataline;
+# Allow airbyte user to see tables created in the future
+ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO airbyte;
 ```
 
-Your database user should now be ready for use with Dataline.
+Your database user should now be ready for use with Airbyte.
 
