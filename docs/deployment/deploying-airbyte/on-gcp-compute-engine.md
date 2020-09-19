@@ -127,5 +127,5 @@ gcloud --project=$PROJECT_ID beta compute ssh airbyte -- -L 8000:localhost:8000 
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [slack](https://join.slack.com/t/airbytehq/shared_invite/zt-h5m88w3a-twQ_6AF9e8SnAzOIkHu2VQ). Our community will help!
+If you encounter any issues, just connect to our [slack](https://slack.airbyte.io). Our community will help!
 
