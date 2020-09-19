@@ -33,6 +33,7 @@ import io.airbyte.config.StandardDiscoverSchemaOutput;
 import io.airbyte.singer.SingerCatalog;
 import io.airbyte.singer.SingerMetadataChild;
 import java.io.IOException;
+import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 
 class SingerCatalogConvertersTest {
@@ -89,6 +90,23 @@ class SingerCatalogConvertersTest {
     expectedSchema.getStreams().get(0).withSelected(true);
     expectedSchema.getStreams().get(0).getFields().get(0).withSelected(true);
     expectedSchema.getStreams().get(0).getFields().get(1).withSelected(true);
+
+    final Schema actualSchema = SingerCatalogConverters.toAirbyteSchema(catalog);
+
+    assertEquals(expectedSchema, actualSchema);
+  }
+
+  @Test
+  void toAirbyteSchemaNoMetadataInSingerCatalog() throws IOException {
+    final SingerCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
+    // remove metadata from singer catalog
+    catalog.getStreams().forEach(stream -> stream.setMetadata(new ArrayList<>()));
+    final Schema expectedSchema =
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_schema.json"), StandardDiscoverSchemaOutput.class).getSchema();
+    expectedSchema.getStreams().get(0).withSelected(false);
+    expectedSchema.getStreams().get(0).getFields().get(0).withSelected(false);
+    expectedSchema.getStreams().get(0).getFields().get(1).withSelected(false);
 
     final Schema actualSchema = SingerCatalogConverters.toAirbyteSchema(catalog);
 

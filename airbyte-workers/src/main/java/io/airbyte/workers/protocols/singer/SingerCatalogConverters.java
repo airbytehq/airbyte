@@ -38,6 +38,7 @@ import io.airbyte.singer.SingerType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SingerCatalogConverters {
@@ -132,14 +133,13 @@ public class SingerCatalogConverters {
             stream -> {
               final Map<String, SingerMetadataChild> fieldNameToMetadata =
                   getFieldMetadataForStream(streamNameToMetadata, stream.getStream());
-              final SingerMetadata streamMetadata = streamNameToMetadata.get(stream.getStream())
+              final Optional<SingerMetadata> streamMetadata = streamNameToMetadata.get(stream.getStream())
                   .stream()
                   .filter(metadata -> metadata.getBreadcrumb().equals(new ArrayList<>()))
-                  .findFirst()
-                  .orElseThrow(() -> new RuntimeException("Could not find stream metadata"));
+                  .findFirst();
               return new Stream()
                   .withName(stream.getStream())
-                  .withSelected(isSelected(streamMetadata.getMetadata()))
+                  .withSelected(streamMetadata.map(metadata -> isSelected(metadata.getMetadata())).orElse(false))
                   .withFields(
                       stream
                           .getSchema()
@@ -170,6 +170,10 @@ public class SingerCatalogConverters {
   }
 
   private static boolean isSelected(SingerMetadataChild metadataChild) {
+    if (metadataChild == null) {
+      return false;
+    }
+
     Boolean selected = metadataChild.getSelected();
     if (selected != null) {
       return metadataChild.getSelected();
@@ -249,6 +253,8 @@ public class SingerCatalogConverters {
       case STRING:
         return DataType.STRING;
       case INTEGER:
+        return DataType.NUMBER;
+      case NUMBER:
         return DataType.NUMBER;
       case NULL:
         // noinspection DuplicateBranchesInSwitch
