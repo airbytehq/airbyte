@@ -6,7 +6,7 @@
 ## Deployment
 
 * [Deploying Airbyte](deployment/deploying-airbyte/README.md)
-  * [On your workstation](deployment/deploying-airbyte/with-docker.md)
+  * [On your workstation](deployment/deploying-airbyte/on-your-workstation.md)
   * [On AWS \(EC2\)](deployment/deploying-airbyte/on-aws-ec2.md)
   * [On GCP \(Compute Engine\)](deployment/deploying-airbyte/on-gcp-compute-engine.md)
 
@@ -23,15 +23,15 @@
 * [Contributing to Airbyte](contributing/contributing-to-airbyte/README.md)
   * [Developing Locally](contributing/contributing-to-airbyte/developing-locally.md)
   * [Code Style](contributing/contributing-to-airbyte/code-style.md)
-  * [Updating Documentation](contributing/contributing-to-airbyte/updating-documentation/README.md)
-    * [Source Documentation Template](contributing/contributing-to-airbyte/updating-documentation/source-documentation-template.md)
+  * [Updating Documentation](contributing/contributing-to-airbyte/updating-documentation.md)
+  * [Documentation Templates](contributing/contributing-to-airbyte/documentation-templates/README.md)
+    * [Source Template](contributing/contributing-to-airbyte/documentation-templates/source-template.md)
 * [Code of Conduct](contributing/code-of-conduct.md)
 
 ## Architecture
 
 * [High Level Overview](architecture/high-level-overview.md)
-* [Configuration Data Model](architecture/configuration-data-model.md)
-* [API](architecture/api.md)
+* [Technical Stack](architecture/tech-stack.md)
 
 ## Handbook <a id="company-handbook"></a>
 
