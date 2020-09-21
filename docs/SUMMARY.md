@@ -16,6 +16,7 @@
   * [Postgres](integrations/sources/postgres.md)
   * [Stripe](integrations/sources/stripe.md)
 * [Destinations](integrations/destinations/README.md)
+  * [Local CSV](integrations/destinations/local-csv.md)
   * [BigQuery](integrations/destinations/bigquery.md)
 
 ## Contributing
@@ -24,7 +25,7 @@
   * [Developing Locally](contributing/contributing-to-airbyte/developing-locally.md)
   * [Code Style](contributing/contributing-to-airbyte/code-style.md)
   * [Updating Documentation](contributing/contributing-to-airbyte/updating-documentation/README.md)
-    * [Source Documentation Template](contributing/contributing-to-airbyte/updating-documentation/source-documentation-template.md)
+    * [Integration Documentation Template](contributing/contributing-to-airbyte/updating-documentation/source-documentation-template.md)
 * [Code of Conduct](contributing/code-of-conduct.md)
 
 ## Architecture
