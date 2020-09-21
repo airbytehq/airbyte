@@ -10,6 +10,7 @@
 
 **Frontend**
 
+* [Node.js 14](https://nodejs.org/en/)
 * [TypeScript](https://www.typescriptlang.org/)
 * Web Framework/Library: [React](https://reactjs.org/)
 
