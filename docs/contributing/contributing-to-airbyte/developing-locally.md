@@ -1,6 +1,6 @@
 # Developing Locally
 
-Airbyte uses `java 14` , `node 14` and `Docker`
+Airbyte uses `java 14` , `node 14` and `docker`
 
 To start contributing:
 
@@ -37,9 +37,9 @@ The build will take a few minutes. Once it completes, Airbyte compiled at curren
 
 In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 
-## Run Acceptance Tests
+## Run acceptance tests
 
-To run acceptance \(end-to-end\) tests you must have the Airbyte running locally.
+To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
 
 ```bash
 ./gradlew build
