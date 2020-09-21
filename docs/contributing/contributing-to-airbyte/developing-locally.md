@@ -4,7 +4,7 @@ Airbyte uses `java 14` , `node 14` and `Docker`
 
 To start contributing:
 
-1. Start by forking the repository
+1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository
 2. Clone the fork on your workstation:
 
    ```bash

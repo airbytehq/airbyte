@@ -4,19 +4,17 @@ Our documentation uses [GitBook](https://gitbook.com) and all the [Markdown](htt
 
 There are 3 different ways you can update the documentation.
 
-## `Edit on GitHub` link
+## Modify on GitHub
 
-On the documentation page you want to update, just click the `Edit on GitHub` link in right panel.
+1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository
+2. Clone the fork on your workstation:
 
-That will get you directly to the file on GitHub. You can use GitHub's editor to update the file. Once you're satisfied with your change you can submit a PR.
+   ```bash
+   git clone git@github.com:{YOUR_USERNAME}/airbyte.git
+   cd airbyte
+   ```
 
-We recommend that method for changes limited to one file \(typos, minor updates\).
-
-## Modify the repository
-
-```bash
-$ git clone git@github.com:airbytehq/airbyte.git
-```
+3. Modify the documentation.
 
 All our docs are stored in the `docs` directory. You can use other files as example.
 
@@ -24,7 +22,9 @@ If you're adding new files, don't forget to update `docs/SUMMARY.md`.
 
 Once you're satisfied with your changes just follow the regular PR process.
 
-## Edit on GitBook
+## For Airbyte's employees
+
+### Edit on GitBook
 
 To update with GitBook, follow these instructions:
 
