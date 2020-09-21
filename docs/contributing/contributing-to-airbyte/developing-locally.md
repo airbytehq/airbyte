@@ -5,14 +5,14 @@ Airbyte uses `java 14` , `node 14` and `docker`
 To start contributing:
 
 1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository
-1. Clone the fork on your workstation:
+2. Clone the fork on your workstation:
 
    ```bash
    git clone git@github.com:{YOUR_USERNAME}/airbyte.git
    cd airbyte
    ```
 
-1. You're ready to start!
+3. You're ready to start!
 
 ## Build with `gradle`
 
@@ -113,3 +113,4 @@ docker-compose stop scheduler
 ```
 
 * Happy Hacking!
+
