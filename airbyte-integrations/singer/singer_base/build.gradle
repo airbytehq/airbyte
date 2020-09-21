@@ -1,0 +1,11 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation 'commons-cli:commons-cli:1.4'
+}
+
+application {
+    mainClass = 'io.airbyte.server.SingerBase'
+}
