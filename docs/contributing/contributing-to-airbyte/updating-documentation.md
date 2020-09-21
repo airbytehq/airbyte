@@ -5,14 +5,14 @@ Our documentation uses [GitBook](https://gitbook.com) and all the [Markdown](htt
 ## Modify on GitHub
 
 1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository.
-2. Clone the fork on your workstation:
+1. Clone the fork on your workstation:
 
    ```bash
    git clone git@github.com:{YOUR_USERNAME}/airbyte.git
    cd airbyte
    ```
 
-3. Modify the documentation.
+1. Modify the documentation.
 
 All our docs are stored in the `docs` directory. You can use other files as example.
 
@@ -34,4 +34,3 @@ To update with GitBook, follow these instructions:
 6. Don't forget to remove the branch and the variant once your change has been merged
 
 Just [contact us](mailto:hey@airbyte.io) and we will invite you to our space.
-
