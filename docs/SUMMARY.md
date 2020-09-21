@@ -6,7 +6,7 @@
 ## Deployment
 
 * [Deploying Airbyte](deployment/deploying-airbyte/README.md)
-  * [On your workstation](deployment/deploying-airbyte/with-docker.md)
+  * [On your workstation](deployment/deploying-airbyte/on-your-workstation.md)
   * [On AWS \(EC2\)](deployment/deploying-airbyte/on-aws-ec2.md)
   * [On GCP \(Compute Engine\)](deployment/deploying-airbyte/on-gcp-compute-engine.md)
 
