@@ -12,7 +12,7 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 
 * Select instance AMI
 
-![](../../.gitbook/assets/aws_ec2_ami%20%281%29.png)
+![](../../.gitbook/assets/aws_ec2_ami%20%282%29.png)
 
 * Select instance type
 

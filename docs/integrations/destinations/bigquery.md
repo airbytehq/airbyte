@@ -12,13 +12,13 @@ The Airbyte BigQuery destination allows you to sync data to BigQuery.
 
 This BigQuery destination is based on the [PipelineWise BigQuery Target](https://github.com/transferwise/pipelinewise-target-bigquery). 
 
-### Sync Overview
+### Sync overview
 
 #### Output schema
 
 Airbyte Streams and Fields are written as BigQuery Tables and Columns respectively, applying the type changes described below. No extra columns are added in the process. 
 
-#### Data Type Mapping
+#### Data type mapping
 
 | Airbyte Type | BigQuery Type | Notes |
 | :--- | :--- | :--- |
@@ -43,7 +43,7 @@ This section should contain a table with the following format:
 
 Could this source hurt the user's data source or put too much strain on it in certain circumstances? For example, if there are a lot of tables or rows in a table? What is the breaking point \(e.g: 100mm&gt; records\)? What can the user do to prevent this? \(e.g: use a read-only replica, or schedule frequent syncs, etc..\)
 
-## Getting Started
+## Getting started
 
 ### Requirements
 
@@ -56,9 +56,9 @@ To use the BigQuery destination, you'll need:
 
 See the setup guide for more information about how to create the required resources. 
 
-### Setup Guide
+### Setup guide
 
-#### Google Cloud Project
+#### Google cloud project
 
 If you have a Google Cloud Project with BigQuery enabled, skip to the "Create a Dataset" section.  
 
@@ -68,13 +68,13 @@ First, follow along the Google Cloud instructions to [Create a Project](https://
 
 BigQuery is typically enabled automatically in new projects. If this is not the case for your project, follow the "Before you begin" section in the [BigQuery QuickStart](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui) docs. 
 
-#### BigQuery Dataset for Airbyte Syncs
+#### BigQuery dataset for Airbyte syncs
 
 Airbyte needs a location in BigQuery to write the data being synced from your data sources. If you already have a Dataset into which Airbyte should sync data, skip this section. Otherwise, follow the Google Cloud guide for [Creating a Dataset via the Console UI](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui#create_a_dataset) to achieve this. 
 
 Note that queries written in BigQueries can only reference Datasets in the same physical location. So if you plan on combining the data Airbyte synced with data from other datasets in your queries, make sure you create the datasets in the same location on Google Cloud. See the [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro) section for more info on considerations around creating Datasets.
 
-#### Service Account 
+#### Service account 
 
 In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User" role, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata.We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions. 
 
@@ -84,7 +84,7 @@ Then, add the service account as a Member in your Google Cloud Project with the 
 
 At this point you should have a service account with the "BigQuery User" project-level permission.
 
-#### Service Account Key 
+#### Service account key 
 
 Service Account Keys are used to authenticate as Google Service Accounts. For Airbyte to leverage the permissions you granted to the Service Account in the previous step, you'll need to provide its Service Account Keys. See the [Google documentation](https://cloud.google.com/iam/docs/service-accounts#service_account_keys) for more information about Keys. 
 
