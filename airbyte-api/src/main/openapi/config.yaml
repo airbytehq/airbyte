@@ -30,7 +30,7 @@ externalDocs:
   description: Find out more about Airbyte
   url: "https://airbyte.io"
 servers:
-  - url: "localhost:8001"
+  - url: "http://localhost:8001"
 tags:
   - name: workspace
     description: Workspace related resources.
