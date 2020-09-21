@@ -2,8 +2,6 @@
 
 Our documentation uses [GitBook](https://gitbook.com) and all the [Markdown](https://guides.github.com/features/mastering-markdown/) files are stored in our Github repository.
 
-There are 3 different ways you can update the documentation.
-
 ## Modify on GitHub
 
 1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository.
