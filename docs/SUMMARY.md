@@ -24,8 +24,8 @@
   * [Developing Locally](contributing/contributing-to-airbyte/developing-locally.md)
   * [Code Style](contributing/contributing-to-airbyte/code-style.md)
   * [Updating Documentation](contributing/contributing-to-airbyte/updating-documentation.md)
-  * [Templates](contributing/contributing-to-airbyte/templates/README.md)
-    * [Source Template](contributing/contributing-to-airbyte/templates/source-template.md)
+  * [Documentation Templates](contributing/contributing-to-airbyte/documentation-templates/README.md)
+    * [Source Template](contributing/contributing-to-airbyte/documentation-templates/source-template.md)
 * [Code of Conduct](contributing/code-of-conduct.md)
 
 ## Architecture
