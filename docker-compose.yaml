@@ -5,6 +5,10 @@ services:
   # every root service (no depends_on) should depend on init
   init:
     image: alpine
+    command: /bin/sh -c "
+      echo ${LOCAL_ROOT};
+      mkdir -p ${LOCAL_ROOT};
+      "
   db:
     image: airbyte/db:${VERSION}
     container_name: airbyte-db

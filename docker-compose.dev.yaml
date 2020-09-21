@@ -10,6 +10,7 @@ services:
       mkdir -p ${DEV_ROOT}/workspace;
       mkdir -p ${DEV_ROOT}/data;
       mkdir -p ${DEV_ROOT}/db;
+      echo ${LOCAL_ROOT};
       mkdir -p ${LOCAL_ROOT};
       "
     environment:
