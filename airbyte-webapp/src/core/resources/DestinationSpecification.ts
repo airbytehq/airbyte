@@ -8,6 +8,7 @@ export interface DestinationSpecification {
     properties: any;
     required: [string];
   };
+  documentation: string;
 }
 
 export type specification = {
@@ -25,6 +26,7 @@ export default class DestinationSpecificationResource extends BaseResource
   implements DestinationSpecification {
   readonly destinationSpecificationId: string = "";
   readonly destinationId: string = "";
+  readonly documentation: string = "";
   readonly connectionSpecification: specification = {
     properties: {},
     required: [""]

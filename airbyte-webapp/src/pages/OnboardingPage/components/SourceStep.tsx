@@ -79,6 +79,7 @@ const SourceStep: React.FC<IProps> = ({
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
         specifications={specification?.connectionSpecification}
+        documentation={specification?.documentation}
       />
     </ContentCard>
   );

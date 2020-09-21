@@ -13,6 +13,7 @@ export type specification = {
 export interface SourceSpecification {
   sourceSpecificationId: string;
   sourceId: string;
+  documentation: string;
   connectionSpecification: specification;
 }
 
@@ -20,6 +21,7 @@ export default class SourceSpecificationResource extends BaseResource
   implements SourceSpecification {
   readonly sourceSpecificationId: string = "";
   readonly sourceId: string = "";
+  readonly documentation: string = "";
   readonly connectionSpecification: specification = {
     properties: {},
     required: []
