@@ -31,6 +31,7 @@
         <Logger name="com.github.dockerjava" level="INFO" />
         <Logger name="org.apache.hc" level="INFO" />
         <Logger name="org.jooq" level="INFO" />
+        <logger name="org.jooq.Constants" level="OFF" />
         <Logger name="com.networknt.schema" level="INFO" />
         <Logger name="me.andrz.jackson" level="INFO" />
 
