@@ -2,7 +2,7 @@
 
 ## Configure Java Style for IntelliJ
 
-First download the style configuration
+First, download the style configuration.
 
 ```text
 curl https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml -o ~/Downloads/intellij-java-google-style.xml

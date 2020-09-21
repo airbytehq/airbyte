@@ -2,7 +2,7 @@
 
 ## Build with `gradle`
 
-Airbyte uses `java 14` , `node 14` and `Docker`
+Airbyte uses `java 14` , `node 14` and `docker`
 
 To compile the code and run unit tests:
 
@@ -25,16 +25,16 @@ VERSION=dev docker-compose up
 
 The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in your environment.
 
-Airbyte by default uses docker volumes for persisting data. If you'd like all persistence to use your local filesystem do the following instead. By default all data will be persisted to `/tmp/dev_root` .
+Airbyte by default uses docker volumes for persisting data. If you'd like all persistence to use your local filesystem, do the following instead. By default, all data will be persisted to `/tmp/dev_root` .
 
 ```bash
 ./gradlew build
 docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up
 ```
 
-## Run Acceptance Tests
+## Run acceptance tests
 
-To run acceptance \(end-to-end\) tests you must have the Airbyte running locally.
+To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
 
 ```bash
 ./gradlew build
