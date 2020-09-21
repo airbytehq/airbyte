@@ -1,5 +1,7 @@
 package io.airbyte.singer_base;
 
+import com.google.common.base.Preconditions;
+import io.airbyte.commons.io.IOs;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 
 public class SingerBase {
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerBase.class);
+  private static final String SINGER_EXECUTABLE = "SINGER_EXECUTABLE";
 
   private enum Command {
     SPEC, CHECK, DISCOVER, READ, WRITE
@@ -58,7 +61,8 @@ public class SingerBase {
     final Map<String, String> newOptions = transformInput(options); // mapping from airbyte to singer structs, field mapping, etc.
     final String newArgs = toCli(newOptions);
 
-    final String singerExecutable = System.getenv("SINGER_EXECUTABLE");
+    final String singerExecutable = System.getenv(SINGER_EXECUTABLE);
+    Preconditions.checkNotNull(singerExecutable, SINGER_EXECUTABLE + " environment variable cannot be null.");
 
     final String cmd = singerExecutable + newArgs;
     final ProcessBuilder processBuilder = new ProcessBuilder(cmd);
@@ -72,12 +76,17 @@ public class SingerBase {
         .collect(Collectors.joining(" "));
   }
 
+  // no-op for now.
   private Map<String, String> transformInput(Map<String, String> parsedArgs) {
     return parsedArgs;
   }
 
-  private void transformOutput(InputStream inputStream, Map<String, String> parsedArgs) {
-    return;
+  // no-op for now.
+  private void transformOutput(InputStream inputStream, Map<String, String> parsedArgs) throws IOException {
+    int ch;
+    while ((ch = inputStream.read()) != -1)
+      System.out.write(ch);
+    System.out.flush();
   }
 
   private static Command parseCommand(String[] args) {
