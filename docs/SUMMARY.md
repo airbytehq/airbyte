@@ -24,7 +24,6 @@
 * [Contributing to Airbyte](contributing/contributing-to-airbyte/README.md)
   * [Developing Locally](contributing/contributing-to-airbyte/developing-locally.md)
   * [Code Style](contributing/contributing-to-airbyte/code-style.md)
-  * [Updating Documentation](contributing/contributing-to-airbyte/updating-documentation.md)
   * [Updating Documentation](contributing/contributing-to-airbyte/updating-documentation-1.md)
   * [Documentation Templates](contributing/contributing-to-airbyte/documentation-templates/README.md)
     * [Integration Doc Template](contributing/contributing-to-airbyte/documentation-templates/integration-documentation-template.md)
