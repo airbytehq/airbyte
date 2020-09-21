@@ -74,6 +74,11 @@ volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
   local:
-    name: ${LOCAL_DOCKER_MOUNT}
+    name: local
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${LOCAL_ROOT}
   data:
   db:
