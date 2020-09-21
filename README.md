@@ -26,7 +26,7 @@ Airbyte is on a mission to make data integration pipelines a commodity.
 ### Quick start
 
 ```bash
-git clone git@github.com:airbytehq/airbyte.git
+git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
 docker-compose up
 ```
