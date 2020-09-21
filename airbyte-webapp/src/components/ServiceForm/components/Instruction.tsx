@@ -29,10 +29,7 @@ const Instruction: React.FC<IProps> = ({
     dropDownData && dropDownData.find(item => item.value === serviceId);
 
   return service && documentationUrl ? (
-    <LinkToInstruction
-      href={documentationUrl ? documentationUrl : "https://docs.airbyte.io/"}
-      target="_blank"
-    >
+    <LinkToInstruction href={documentationUrl} target="_blank">
       <FormattedMessage
         id="onboarding.instructionsLink"
         values={{ name: service.text }}
