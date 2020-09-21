@@ -30,7 +30,7 @@
 ## Architecture
 
 * [High Level Overview](architecture/high-level-overview.md)
-* [Configuration Data Model](architecture/configuration-data-model.md)
+* [Tech Stack](architecture/tech-stack.md)
 * [API](architecture/api.md)
 
 ## Handbook <a id="company-handbook"></a>
