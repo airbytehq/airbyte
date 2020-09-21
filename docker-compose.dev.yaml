@@ -10,12 +10,15 @@ services:
       mkdir -p ${DEV_ROOT}/workspace;
       mkdir -p ${DEV_ROOT}/data;
       mkdir -p ${DEV_ROOT}/db;
+      echo ${LOCAL_ROOT};
       mkdir -p ${LOCAL_ROOT};
       "
     environment:
       - DEV_ROOT=${DEV_ROOT}
+      - LOCAL_ROOT=${LOCAL_ROOT}
     volumes:
       - ${DEV_ROOT}/..:/tmp
+      - ${LOCAL_ROOT}/..:/tmp
   seed:
   db:
     ports:
