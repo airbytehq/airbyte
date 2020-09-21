@@ -26,6 +26,7 @@ package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
@@ -125,6 +126,7 @@ public class ServerApp {
     server.setHandler(handler);
 
     server.start();
+    LOGGER.info(MoreResources.readResource("banner/banner.txt"));
     server.join();
   }
 
