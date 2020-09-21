@@ -20,7 +20,7 @@ type IProps = {
   values: { name: string; serviceType: string; frequency?: string };
   specifications?: specification;
   properties?: Array<string>;
-  documentation?: string;
+  documentationUrl?: string;
 };
 
 const FormItem = styled.div`
@@ -40,7 +40,7 @@ const FormContent: React.FC<IProps> = ({
   onDropDownSelect,
   specifications,
   properties,
-  documentation
+  documentationUrl
 }) => {
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
@@ -112,7 +112,7 @@ const FormContent: React.FC<IProps> = ({
           <Instruction
             serviceId={values.serviceType}
             dropDownData={dropDownData}
-            url={documentation}
+            documentationUrl={documentationUrl}
           />
         )}
       </FormItem>

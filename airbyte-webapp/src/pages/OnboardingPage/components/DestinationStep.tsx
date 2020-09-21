@@ -92,7 +92,7 @@ const DestinationStep: React.FC<IProps> = ({
           dropDownData={dropDownData}
           errorMessage={errorMessage}
           specifications={specification?.connectionSpecification}
-          documentation={specification?.documentation}
+          documentationUrl={specification?.documentationUrl}
         />
       </ContentCard>
     </>

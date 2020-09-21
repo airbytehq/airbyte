@@ -7,7 +7,7 @@ import { IDataItem } from "../../DropDown/components/ListItem";
 type IProps = {
   serviceId: string;
   dropDownData?: Array<IDataItem>;
-  url?: string;
+  documentationUrl?: string;
 };
 
 const LinkToInstruction = styled.a`
@@ -20,13 +20,17 @@ const LinkToInstruction = styled.a`
   color: ${({ theme }) => theme.primaryColor};
 `;
 
-const Instruction: React.FC<IProps> = ({ dropDownData, serviceId, url }) => {
+const Instruction: React.FC<IProps> = ({
+  dropDownData,
+  serviceId,
+  documentationUrl
+}) => {
   const service =
     dropDownData && dropDownData.find(item => item.value === serviceId);
 
-  return service ? (
+  return service && documentationUrl ? (
     <LinkToInstruction
-      href={url ? url : "https://docs.airbyte.io/"}
+      href={documentationUrl ? documentationUrl : "https://docs.airbyte.io/"}
       target="_blank"
     >
       <FormattedMessage

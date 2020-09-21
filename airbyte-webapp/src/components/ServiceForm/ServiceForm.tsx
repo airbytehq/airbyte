@@ -32,7 +32,7 @@ type IProps = {
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
   specifications?: specification;
-  documentation?: string;
+  documentationUrl?: string;
 };
 
 const FormContainer = styled(Form)`
@@ -49,7 +49,7 @@ const ServiceForm: React.FC<IProps> = ({
   successMessage,
   errorMessage,
   specifications,
-  documentation
+  documentationUrl
 }) => {
   const properties = Object.keys(specifications?.properties || {});
 
@@ -109,7 +109,7 @@ const ServiceForm: React.FC<IProps> = ({
             onDropDownSelect={onDropDownSelect}
             specifications={specifications}
             properties={properties}
-            documentation={documentation}
+            documentationUrl={documentationUrl}
           />
 
           {isEditMode ? (
