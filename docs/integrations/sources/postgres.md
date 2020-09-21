@@ -2,13 +2,13 @@
 
 ## Overview
 
-The Postgres source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you setup for replication into the destination in a new table.
+The Postgres source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
 
 This Postgres source is based on the [Singer Postgres Tap](https://github.com/singer-io/tap-postgres).
 
-### Sync Overview
+### Sync overview
 
-#### Resulting Schema
+#### Resulting schema
 
 The Postgres source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
@@ -62,21 +62,21 @@ Postgres data types are mapped to the following data types when synchronizing da
 
 Incremental sync \(copying only the data that has changed\) for this source is coming soon.
 
-## Getting Started
+## Getting started
 
-### Requirements:
+### Requirements
 
 1. Postgres `v9.3.x` or above
 2. Allow connections from Airbyte to your Postgres database \(if they exist in separate VPCs\)
 3. Create a dedicated read-only Airbyte user with access to all tables needed for replication
 
-### Setup Guide
+### Setup guide
 
-### 1. Make sure your database is accessible from the machine running Airbyte
+#### 1. Make sure your database is accessible from the machine running Airbyte
 
 This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect to your Postgres instance is via the check connection tool in the UI.
 
-### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
+#### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
 
 This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
@@ -92,7 +92,7 @@ Then give it access to the relevant schema:
 GRANT USAGE ON SCHEMA <schema_name> TO airbyte
 ```
 
-Note that to replicate data from multiple Postgres schemas, you can re-run the command above to grant access to all the relevant schemas, but you'll need to setup multiple sources connecting to the same db on multiple schemas.
+Note that to replicate data from multiple Postgres schemas, you can re-run the command above to grant access to all the relevant schemas, but you'll need to set up multiple sources connecting to the same db on multiple schemas.
 
 Next, grant the user read-only access to the relevant tables. The simplest way is to grant read access to all tables in the schema as follows:
 
