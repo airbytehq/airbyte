@@ -15,7 +15,7 @@
       "type": "string",
       "format": "uuid"
     },
-    "documentation": {
+    "documentationUrl": {
       "type": "string"
     },
     "specification": {

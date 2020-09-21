@@ -848,7 +848,7 @@ components:
           $ref: "#/components/schemas/SourceSpecificationId"
         sourceId:
           $ref: "#/components/schemas/SourceId"
-        documentation:
+        documentationUrl:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/SourceSpecification"
@@ -984,7 +984,7 @@ components:
           $ref: "#/components/schemas/DestinationSpecificationId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        documentation:
+        documentationUrl:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/DestinationSpecification"

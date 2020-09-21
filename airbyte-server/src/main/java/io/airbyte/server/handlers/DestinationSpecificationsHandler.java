@@ -64,7 +64,7 @@ public class DestinationSpecificationsHandler {
     return new DestinationSpecificationRead()
         .destinationId(dcs.getDestinationId())
         .destinationSpecificationId(dcs.getDestinationSpecificationId())
-        .documentation(dcs.getDocumentation())
+        .documentationUrl(dcs.getDocumentationUrl())
         .connectionSpecification(dcs.getSpecification());
   }
 
