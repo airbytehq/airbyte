@@ -1,4 +1,4 @@
-# Source Documentation Template
+# Source Template
 
 ## Sync overview
 
@@ -14,6 +14,7 @@ This section should contain a table mapping each of the source's data types to A
 
 | Source Type | Airbyte Type | Notes |
 | :--- | :--- | :--- |
+
 
 Currently, Airbyte uses the same types as Singer: `string`, `int`, `number`, `boolean`, `object`.
 
@@ -49,3 +50,4 @@ Could this source hurt the user's data source or put too much strain on it in ce
 For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See the Postgres source guide for an example.
 
 For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
+
