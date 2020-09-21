@@ -13,6 +13,11 @@ import SettingsView from "./components/SettingsView";
 import SchemaView from "./components/SchemaView";
 import ConnectionResource from "../../../../core/resources/Connection";
 import LoadingPage from "../../../../components/LoadingPage";
+import DestinationImplementationResource from "../../../../core/resources/DestinationImplementation";
+import config from "../../../../config";
+import DestinationResource from "../../../../core/resources/Destination";
+import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
+import FrequencyConfig from "../../../../data/FrequencyConfig.json";
 
 const Content = styled.div`
   overflow-y: auto;
@@ -35,6 +40,21 @@ const SourceItemPage: React.FC = () => {
     // @ts-ignore
     connectionId: query.id
   });
+
+  const { destinations } = useResource(
+    DestinationImplementationResource.listShape(),
+    {
+      workspaceId: config.ui.workspaceId
+    }
+  );
+  const currentDestination = destinations[0]; // Now we have only one destination. If we support multiple destinations we will fix this line
+  const destination = useResource(DestinationResource.detailShape(), {
+    destinationId: currentDestination.destinationId
+  });
+
+  const frequency = FrequencyConfig.find(
+    item => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
+  );
 
   const steps = [
     {
@@ -74,12 +94,48 @@ const SourceItemPage: React.FC = () => {
         status: connection.status === "active" ? "inactive" : "active"
       }
     );
+
+    AnalyticsService.track("Source - Action", {
+      user_id: config.ui.workspaceId,
+      action:
+        connection.status === "active"
+          ? "Disable connection"
+          : "Reenable connection",
+      connector_source: connection.source?.sourceName,
+      connector_destination: destination.name,
+      frequency: frequency?.text
+    });
+  };
+
+  const onAfterSaveSchema = () => {
+    AnalyticsService.track("Source - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Edit schema",
+      connector_source: connection.source?.sourceName,
+      connector_destination: destination.name,
+      frequency: frequency?.text
+    });
+  };
+
+  const onAfterDelete = () => {
+    AnalyticsService.track("Source - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Delete source",
+      connector_source: connection.source?.sourceName,
+      connector_destination: destination.name,
+      frequency: frequency?.text
+    });
   };
 
   const renderStep = () => {
     if (currentStep === "status") {
       return (
-        <StatusView sourceData={connection} onEnabledChange={onChangeStatus} />
+        <StatusView
+          sourceData={connection}
+          onEnabledChange={onChangeStatus}
+          destination={destination}
+          frequencyText={frequency?.text}
+        />
       );
     }
     if (currentStep === "schema") {
@@ -88,11 +144,12 @@ const SourceItemPage: React.FC = () => {
           syncSchema={connection.syncSchema}
           connectionId={connection.connectionId}
           connectionStatus={connection.status}
+          afterSave={onAfterSaveSchema}
         />
       );
     }
 
-    return <SettingsView sourceData={connection} />;
+    return <SettingsView sourceData={connection} afterDelete={onAfterDelete} />;
   };
 
   return (

@@ -10,6 +10,9 @@ import SourceResource, { Source } from "../../../core/resources/Source";
 import DestinationResource from "../../../core/resources/Destination";
 import Spinner from "../../../components/Spinner";
 import { SyncSchema } from "../../../core/resources/Schema";
+import { IDataItem } from "../../../components/DropDown/components/ListItem";
+import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
+import config from "../../../config";
 
 type IProps = {
   onSubmit: (values: {
@@ -55,6 +58,16 @@ const ConnectionStep: React.FC<IProps> = ({
     });
   };
 
+  const onSelectFrequency = (item: IDataItem) => {
+    AnalyticsService.track("New Connection - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Select a frequency",
+      frequency: item?.text,
+      connector_source: currentSource?.name,
+      connector_destination: currentDestination?.name
+    });
+  };
+
   const errorMessage =
     errorStatus === 0 ? null : errorStatus === 400 ? (
       <FormattedMessage id="form.validationError" />
@@ -76,6 +89,7 @@ const ConnectionStep: React.FC<IProps> = ({
           }
         >
           <ConnectionForm
+            onSelectFrequency={onSelectFrequency}
             onSubmit={onSubmitStep}
             errorMessage={errorMessage}
             sourceImplementationId={sourceImplementationId}

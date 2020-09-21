@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource, useFetcher } from "rest-hooks";
@@ -10,6 +10,7 @@ import DestinationImplementationResource from "../../core/resources/DestinationI
 import config from "../../config";
 import DestinationSpecificationResource from "../../core/resources/DestinationSpecification";
 import DestinationResource from "../../core/resources/Destination";
+import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 
 const Content = styled.div`
   width: 100%;
@@ -18,6 +19,10 @@ const Content = styled.div`
 `;
 
 const DestinationPage: React.FC = () => {
+  useEffect(() => {
+    AnalyticsService.page("Destination Page");
+  }, []);
+
   const { destinations } = useResource(
     DestinationImplementationResource.listShape(),
     {
