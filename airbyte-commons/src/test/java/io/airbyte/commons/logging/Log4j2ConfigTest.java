@@ -30,6 +30,10 @@ import io.airbyte.commons.io.IOs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -60,6 +64,40 @@ public class Log4j2ConfigTest {
     LOGGER.error("random message");
 
     assertTrue(IOs.readFile(root, filename).contains("random message"));
+  }
+
+  @Test
+  void testLogSeparateFiles() throws InterruptedException {
+    final String filename = "logs.log";
+    final Path root1 = root.resolve("1");
+    final Path root2 = root.resolve("2");
+
+    CountDownLatch latch = new CountDownLatch(2);
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+    executor.submit(() -> {
+      MDC.put("context", "worker");
+      MDC.put("job_root", root1.toString());
+      MDC.put("job_log_filename", filename);
+      MDC.put("job_id", "1");
+      LOGGER.error("random message 1");
+      latch.countDown();
+    });
+
+    executor.submit(() -> {
+      MDC.put("context", "worker");
+      MDC.put("job_root", root2.toString());
+      MDC.put("job_log_filename", filename);
+      MDC.put("job_id", "2");
+      LOGGER.error("random message 2");
+      latch.countDown();
+    });
+
+    executor.shutdown();
+    executor.awaitTermination(10, TimeUnit.SECONDS);
+    latch.await();
+
+    assertTrue(IOs.readFile(root1, filename).contains("random message 1"));
+    assertTrue(IOs.readFile(root2, filename).contains("random message 2"));
   }
 
 }

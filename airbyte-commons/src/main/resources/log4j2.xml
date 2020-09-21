@@ -9,9 +9,9 @@
         <Console name="Default" target="SYSTEM_OUT">
             <PatternLayout pattern="${default-pattern}"/>
         </Console>
-        <Routing name="Context">
-            <Routes pattern="${ctx:context}">
-                <Route key="worker">
+        <Routing name="LogSplit">
+            <Routes pattern="${ctx:context}-${ctx:job_root}">
+                <Route>
                     <File name="${ctx:context}-${ctx:job_id}" fileName="${ctx:job_root}/${ctx:job_log_filename}">
                         <PatternLayout pattern="${default-worker-file-pattern}"/>
                     </File>
@@ -24,7 +24,7 @@
     <Loggers>
         <Root level="DEBUG">
             <AppenderRef ref="Default"/>
-            <AppenderRef ref="Context"/>
+            <AppenderRef ref="LogSplit"/>
         </Root>
 
         <Logger name="org.eclipse.jetty" level="INFO" />
