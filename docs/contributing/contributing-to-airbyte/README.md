@@ -4,7 +4,7 @@ description: 'We love contributions to Airbyte, big or small.'
 
 # Contributing to Airbyte
 
-We hope you are enjoying Airbyte and we look forward to hearing your feedback. Whether you want to raise a bug report, a feature/integration request or just request a correction to something, we are eager to get  our community input.
+We hope you are enjoying Airbyte and we look forward to hearing your feedback. Whether you want to raise a bug report, a feature/integration request or just request a correction to something, we are eager to get input from our community.
 
 We do ask that you read this document and send us any issues or raise pull requests to make sure we understand clearly what you are asking for. This will help ensure we are making the right decisions and taking the right actions.
 
@@ -34,7 +34,7 @@ You are welcome to add your own reactions to the existing issues. We will take t
 
 ## **Requesting new features**
 
-You are welcome to create new issues on this project to request new features.
+To request new features, please create an issue on this project.
 
 If you would like to suggest a new feature, we ask that you please use our issue template. It contains a few essential questions that help us understand the problem you are looking to solve and how you think your recommendation will address it. We also tag incoming issues from this template with the "**community\_new**" label. This lets our teams quickly see what has been raised and better address the community recommendations.
 

@@ -5,14 +5,14 @@ Airbyte uses `java 14` , `node 14` and `docker`
 To start contributing:
 
 1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository
-2. Clone the fork on your workstation:
+1. Clone the fork on your workstation:
 
    ```bash
    git clone git@github.com:{YOUR_USERNAME}/airbyte.git
    cd airbyte
    ```
 
-3. You're ready to start!
+1. You're ready to start!
 
 ## Build with `gradle`
 
@@ -49,7 +49,7 @@ VERSION=dev docker-compose up
 
 ## Develop on individual applications
 
-The easiest way to work one of Airbyte's module is to spin up the whole Airbyte system on your workstation, and shutdown the module you want to work on.
+The easiest way to develop on one of Airbyte's modules is to spin up the whole Airbyte system on your workstation, and shutdown the module you want to work on.
 
 ### Develop on `airbyte-webapp`
 
@@ -113,4 +113,3 @@ docker-compose stop scheduler
 ```
 
 * Happy Hacking!
-
