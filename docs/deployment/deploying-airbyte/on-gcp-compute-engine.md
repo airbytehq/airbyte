@@ -91,7 +91,7 @@ docker-compose --version
 logout
 ```
 
-## Install & Start Airbyte
+## Install & start Airbyte
 
 * Connect to your instance
 
@@ -112,20 +112,19 @@ docker-compose up -d
 ## Connect to Airbyte
 
 {% hint style="danger" %}
-For security reason we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication
+For security reasons, we strongly recommend to not expose Airbyte on available Internet ports. Future versions will add support for SSL & Authentication.
 {% endhint %}
 
-* Create ssh tunnel
+* Create ssh tunnel.
 
 ```bash
 # In your workstation terminal
 gcloud --project=$PROJECT_ID beta compute ssh airbyte -- -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f
 ```
 
-* In your browser, just visit [http://localhost:8000](http://localhost:8000)
-* Start moving some data!
+* Just visit [http://localhost:8000](http://localhost:8000) in your browser to start moving some data!
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [slack](https://slack.airbyte.io). Our community will help!
+If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help!
 
