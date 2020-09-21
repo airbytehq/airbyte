@@ -1,8 +1,8 @@
 # Getting Started
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)[![StackShare](http://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](https://stackshare.io/airbyte/airbyte)
 
-[![](docs/.gitbook/assets/airbyte_white-background_dark-text%20%281%29.svg)](https://airbyte.io)
+![](docs/.gitbook/assets/airbyte_white-background%20%281%29.svg)
 
 ### Data integration made simple, secure and reliable.
 
@@ -14,14 +14,14 @@ The new open-source standard to sync data from applications & databases to wareh
 
 Airbyte is on a mission to make data integration pipelines a commodity.
 
-* **Maintenance-free connectors you can use in minutes**. Just authenticate your sources and warehouse, and get connectors that adapts to schema and API changes for you.
-* On a mission to **cover the long tail of integrations**, as Airbyte will be very active in maintaining the pipelines’ reliability. 
+* **Maintenance-free connectors you can use in minutes**. Just authenticate your sources and warehouse, and get connectors that adapt to schema and API changes for you.
+* Designed to **cover the long tail of integrations**, as Airbyte will be active in maintaining the pipelines’ reliability. 
 * **Building new integrations made trivial**. We make it very easy to add new integrations that you need, by offering scheduling and orchestration. 
 * **Your data stays in your cloud**. Have full control over your data, and the costs of your data transfers. 
 * **No more security compliance process** to go through as self-hosted. 
 * **No more pricing indexed on volume**, as cloud-based solutions offer. 
 
-## Getting Started
+## Getting started
 
 ### Quick start
 
@@ -37,10 +37,10 @@ Now visit [http://localhost:8000](http://localhost:8000)
 
 * **Normalized schemas**: Elegant, entirely customizable and a fully extensible admin panel.
 * **Full-grade scheduler**: Automate your replications with the frequency you need.
-* **Real-time Monitoring**: We log all errors to let you know about them.
+* **Real-time monitoring**: We log all errors in full detail to help you understand.
 * **Incremental updates**: Automated replications are based on incremental updates to reduce your data transfer costs.
 * **Manual full refresh**: Sometimes, you need to re-sync all your data to start again.
-* **Granular system logs**: No opacity whatsoever to let you control and trust.
+* **Debugging autonomy**: Modify and debug pipelines as you see fit, without waiting.
 
 [See more on our website.](https://airbyte.io/features/)
 
