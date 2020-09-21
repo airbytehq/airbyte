@@ -57,3 +57,4 @@ To see what has already been proposed by the community, you can look [here](http
 ## **Reporting security issues**
 
 Please do not create a public GitHub issue. If you've found a security issue, please email us directly at [security@airbyte.io](mailto:security@airbyte.io) instead of raising an issue.
+
