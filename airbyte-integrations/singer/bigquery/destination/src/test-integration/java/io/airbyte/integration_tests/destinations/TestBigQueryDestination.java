@@ -171,7 +171,6 @@ class TestBigQueryDestination {
     fullConfig.put("project_id", credentials.get("project_id").textValue());
     fullConfig.put("dataset_id", datasetName);
     fullConfig.put("credentials_json", credentialsJsonString);
-    fullConfig.put("default_target_schema", datasetName);
 
     Files.writeString(
         Path.of(jobRoot.toString(), "rendered_bigquery.json"), Jsons.serialize(fullConfig));
