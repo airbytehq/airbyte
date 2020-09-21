@@ -1,6 +1,6 @@
 # Getting Started
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)[![StackShare](http://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](https://stackshare.io/airbyte/airbyte)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte) [![StackShare](http://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](https://stackshare.io/airbyte/airbyte)
 
 ![](docs/.gitbook/assets/airbyte_white-background%20%281%29.svg)
 
@@ -63,4 +63,3 @@ Check out our [roadmap](https://github.com/airbytehq/airbyte/projects/1) to get 
 ## License
 
 Airbyte is licensed under the MIT license. See the [LICENSE](https://docs.airbyte.io/license) file for licensing information.
-

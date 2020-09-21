@@ -115,9 +115,8 @@ For security reasons, we strongly recommend to not expose Airbyte on Internet av
 ssh -i $SSH_KEY -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f ec2-user@$INSTANCE_IP
 ```
 
-* Just visit [http://localhost:8000](http://localhost:8000) in your browser to start moving some data!
+* Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
 
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help!
-
