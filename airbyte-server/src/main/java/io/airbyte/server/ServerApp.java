@@ -126,6 +126,7 @@ public class ServerApp {
     server.setHandler(handler);
 
     server.start();
+    LOGGER.info(MoreResources.readResource("banner/banner.txt"));
     server.join();
   }
 
@@ -171,7 +172,6 @@ public class ServerApp {
 
     LOGGER.info("Starting server...");
     new ServerApp(configRepository, schedulerPersistence).start();
-    LOGGER.info(MoreResources.readResource("banner/banner.txt"));
   }
 
 }
