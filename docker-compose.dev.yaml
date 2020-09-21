@@ -15,8 +15,10 @@ services:
       "
     environment:
       - DEV_ROOT=${DEV_ROOT}
+      - LOCAL_ROOT=${LOCAL_ROOT}
     volumes:
       - ${DEV_ROOT}/..:/tmp
+      - ${LOCAL_ROOT}/..:/tmp
   seed:
   db:
     ports:

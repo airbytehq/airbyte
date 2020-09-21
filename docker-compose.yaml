@@ -9,6 +9,10 @@ services:
       echo ${LOCAL_ROOT};
       mkdir -p ${LOCAL_ROOT};
       "
+    environment:
+      - LOCAL_ROOT=${LOCAL_ROOT}
+    volumes:
+      - ${LOCAL_ROOT}/..:/tmp
   db:
     image: airbyte/db:${VERSION}
     container_name: airbyte-db
@@ -45,6 +49,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
+      - local:${LOCAL_ROOT}
       - data:${CONFIG_ROOT}
     depends_on:
       - db
