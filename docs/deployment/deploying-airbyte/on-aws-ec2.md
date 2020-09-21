@@ -32,7 +32,7 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 * `Review and Launch`
 * `Launch`
 * Create a ssh key so you can connect to the instance
-  * Download the key \(and don't lose it or you wont be able to connect to the instance\)
+  * Download the key \(and don't lose it or you won't be able to connect to the instance\)
 
 ![](../../.gitbook/assets/aws_ec2_ssh_key%20%281%29.png)
 
@@ -84,7 +84,7 @@ docker-compose --version
 logout
 ```
 
-## Install & Start Airbyte
+## Install & start Airbyte
 
 * Connect to your instance
 
@@ -105,20 +105,18 @@ docker-compose up -d
 ## Connect to Airbyte
 
 {% hint style="danger" %}
-For security reason we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication
+For security reasons, we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication.
 {% endhint %}
 
-* Create ssh tunnel
+* Create ssh tunnel.
 
 ```bash
 # In your workstation terminal
 ssh -i $SSH_KEY -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f ec2-user@$INSTANCE_IP
 ```
 
-* In your browser, just visit [http://localhost:8000](http://localhost:8000)
-* Start moving some data!
+* Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [slack](https://slack.airbyte.io). Our community will help!
-
+If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help!

@@ -4,10 +4,10 @@
 These instructions have been tested on MacOS
 {% endhint %}
 
-## Setup & Launch Airbyte
+## Setup & launch Airbyte
 
-* Install docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\)
-* Clone airbyte's repository and run `docker compose`
+* Install Docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\)
+* Clone Airbyte's repository and run `docker compose`
 
 ```bash
 # In your workstation terminal
@@ -21,5 +21,5 @@ VERSION=dev docker-compose up -d
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [slack](https://slack.airbyte.io). Our community will help!
+If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help!
 
