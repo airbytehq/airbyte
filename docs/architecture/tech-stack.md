@@ -1,4 +1,4 @@
-# Tech Stack
+# Technical Stack
 
 ## Backend
 

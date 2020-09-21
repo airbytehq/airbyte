@@ -30,7 +30,7 @@
 ## Architecture
 
 * [High Level Overview](architecture/high-level-overview.md)
-* [Tech Stack](architecture/tech-stack.md)
+* [Technical Stack](architecture/tech-stack.md)
 
 ## Handbook <a id="company-handbook"></a>
 
