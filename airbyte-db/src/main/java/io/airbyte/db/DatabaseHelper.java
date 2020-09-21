@@ -24,13 +24,12 @@
 
 package io.airbyte.db;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-
-import java.sql.Connection;
-import java.sql.SQLException;
 
 public class DatabaseHelper {
 
