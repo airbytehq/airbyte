@@ -26,7 +26,7 @@ This will build all the code and run all the unit tests.
 
 `./gradle build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally.
 
-## Run with `dev` mode with `docker-compose`
+## Run in `dev` mode with `docker-compose`
 
 ```bash
 ./gradlew build
