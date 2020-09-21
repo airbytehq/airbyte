@@ -46,6 +46,7 @@ public class SourceSpecificationHelpers {
     return new SourceConnectionSpecification()
         .withSourceId(sourceId)
         .withSourceSpecificationId(sourceSpecificationId)
+        .withDocumentation("https://airbyte.io")
         .withSpecification(Jsons.deserialize(Files.readString(path)));
   }
 

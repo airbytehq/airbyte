@@ -44,13 +44,13 @@ class DestinationSpecificationsHandlerTest {
 
   private ConfigRepository configRepository;
   private DestinationConnectionSpecification destinationConnectionSpecification;
-  private DestinationSpecificationsHandler destinationSpecificationHandler;
+  private DestinationSpecificationsHandler handler;
 
   @BeforeEach
   void setUp() throws IOException {
     configRepository = mock(ConfigRepository.class);
     destinationConnectionSpecification = DestinationSpecificationHelpers.generateDestinationSpecification();
-    destinationSpecificationHandler = new DestinationSpecificationsHandler(configRepository);
+    handler = new DestinationSpecificationsHandler(configRepository);
   }
 
   @Test
@@ -58,18 +58,17 @@ class DestinationSpecificationsHandlerTest {
     when(configRepository.listDestinationConnectionSpecifications())
         .thenReturn(Lists.newArrayList(destinationConnectionSpecification));
 
-    DestinationSpecificationRead expectedDestinationSpecificationRead = new DestinationSpecificationRead();
-    expectedDestinationSpecificationRead.setDestinationId(destinationConnectionSpecification.getDestinationId());
-    expectedDestinationSpecificationRead.setDestinationSpecificationId(destinationConnectionSpecification.getDestinationSpecificationId());
-    expectedDestinationSpecificationRead.setConnectionSpecification(destinationConnectionSpecification.getSpecification());
+    DestinationSpecificationRead expected = new DestinationSpecificationRead()
+        .destinationId(destinationConnectionSpecification.getDestinationId())
+        .destinationSpecificationId(destinationConnectionSpecification.getDestinationSpecificationId())
+        .documentation(destinationConnectionSpecification.getDocumentation())
+        .connectionSpecification(destinationConnectionSpecification.getSpecification());
 
-    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody();
-    destinationIdRequestBody.setDestinationId(expectedDestinationSpecificationRead.getDestinationId());
+    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(expected.getDestinationId());
 
-    final DestinationSpecificationRead actualDestinationSpecificationRead =
-        destinationSpecificationHandler.getDestinationSpecification(destinationIdRequestBody);
+    final DestinationSpecificationRead actualDestinationSpecificationRead = handler.getDestinationSpecification(destinationIdRequestBody);
 
-    assertEquals(expectedDestinationSpecificationRead, actualDestinationSpecificationRead);
+    assertEquals(expected, actualDestinationSpecificationRead);
   }
 
 }
