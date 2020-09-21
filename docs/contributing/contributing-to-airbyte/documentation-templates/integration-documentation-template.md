@@ -4,7 +4,7 @@ description: >-
   integration.
 ---
 
-# Integration Doc Template
+# Integration documentation template
 
 ## Sync overview
 
@@ -38,7 +38,7 @@ This section should contain a table with the following format:
 
 ### Performance considerations
 
-Could this connector hurt the user's database/API/etc.. or put too much strain on it in certain circumstances? For example, if there are a lot of tables or rows in a table? What is the breaking point \(e.g: 100mm&gt; records\)? What can the user do to prevent this? \(e.g: use a read-only replica, or schedule frequent syncs, etc..\)
+Could this connector hurt the user's database/API/etc... or put too much strain on it in certain circumstances? For example, if there are a lot of tables or rows in a table? What is the breaking point \(e.g: 100mm&gt; records\)? What can the user do to prevent this? \(e.g: use a read-only replica, or schedule frequent syncs, etc..\)
 
 ## Getting started
 
