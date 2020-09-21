@@ -63,6 +63,7 @@ public class SourceSpecificationsHandler {
     return new SourceSpecificationRead()
         .sourceId(scs.getSourceId())
         .sourceSpecificationId(scs.getSourceSpecificationId())
+        .documentationUrl(scs.getDocumentationUrl())
         .connectionSpecification(scs.getSpecification());
   }
 
