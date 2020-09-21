@@ -1,14 +1,24 @@
 # Developing Locally
 
-## Build with `gradle`
-
 Airbyte uses `java 14` , `node 14` and `docker`
+
+To start contributing:
+
+1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository
+1. Clone the fork on your workstation:
+
+   ```bash
+   git clone git@github.com:{YOUR_USERNAME}/airbyte.git
+   cd airbyte
+   ```
+
+1. You're ready to start!
+
+## Build with `gradle`
 
 To compile the code and run unit tests:
 
 ```bash
-git clone git@github.com:airbytehq/airbyte.git
-cd airbyte
 ./gradlew clean build
 ```
 
@@ -16,21 +26,16 @@ This will build all the code and run all the unit tests.
 
 `./gradle build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally.
 
-## Run with `docker-compose`
-
-```bash
-./gradlew build
-VERSION=dev docker-compose up
-```
-
-The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in your environment.
-
-Airbyte by default uses docker volumes for persisting data. If you'd like all persistence to use your local filesystem, do the following instead. By default, all data will be persisted to `/tmp/dev_root` .
+## Run in `dev` mode with `docker-compose`
 
 ```bash
 ./gradlew build
 docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up
 ```
+
+The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in `dev` mode in your environment.
+
+In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 
 ## Run acceptance tests
 
@@ -44,14 +49,11 @@ VERSION=dev docker-compose up
 
 ## Develop on individual applications
 
+The easiest way to develop on one of Airbyte's modules is to spin up the whole Airbyte system on your workstation, and shutdown the module you want to work on.
+
 ### Develop on `airbyte-webapp`
 
 * Spin up Airbyte locally so the UI can make requests against the local API.
-
-```bash
-docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up -d
-```
-
 * Stop the `webapp`.
 
 ```bash
@@ -71,11 +73,6 @@ npm start
 ### Develop on `airbyte-server` \(APIs\)
 
 * Spin up Airbyte locally.
-
-```bash
-docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up -d
-```
-
 * Stop the `server`.
 
 ```bash
@@ -103,11 +100,6 @@ _Note: We namespace most API calls with a workspace id. For now there is only ev
 ### Develop on `airbyte-scheduler`
 
 * Spin up Airbyte locally.
-
-```bash
-docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up -d
-```
-
 * Stop the `scheduler`.
 
 ```bash
@@ -121,4 +113,3 @@ docker-compose stop scheduler
 ```
 
 * Happy Hacking!
-
