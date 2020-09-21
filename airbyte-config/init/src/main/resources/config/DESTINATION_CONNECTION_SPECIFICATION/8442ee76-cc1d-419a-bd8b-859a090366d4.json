@@ -12,12 +12,12 @@
       "delimiter": {
         "description": "Delimiter used to separate fields.",
         "type": "string",
-        "examples": ["Default Value: ,"]
+        "examples": ["Default value: ,"]
       },
       "quotechar": {
         "description": "The character used quote strings containing special characters in the CSV. Typically this will be '\"'. See <a href=\"https://docs.python.org/3/library/csv.html#csv.Dialect.quotechar\">python docs</a> for more details.",
         "type": "string",
-        "examples": ["Default Value: \""]
+        "examples": ["Default value: \""]
       },
       "destination_path": {
         "description": "Path to write the data. This path will be concatenated onto the `LOCAL_ROOT`. e.g. If `LOCAL_ROOT = /tmp/airbyte_local` and destination_path is `cars/models`, then the directory `/tmp/airbyte_local/cars/models`. By default `LOCAL_ROOT` is `/tmp/airbyte_local`.",
