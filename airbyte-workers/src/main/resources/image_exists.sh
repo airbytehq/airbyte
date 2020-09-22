@@ -24,7 +24,7 @@ main() {
   if [[ $LOCAL -eq 0 ]]; then
     # handle the case where the image exists in the remote and either has never been pulled or has already been pulled
     # and is already up to date.
-    RESULT=$(docker pull $imageName 2> /dev/null | awk '/Image is up to date/ || /Status: Downloaded newer image/')
+    RESULT=$(docker pull $imageName 2> /dev/null | awk '/Status: Image is up to date/ || /Status: Downloaded newer image/')
     [ -z "$RESULT" ] && _error "Image does not exist."
   fi
 
