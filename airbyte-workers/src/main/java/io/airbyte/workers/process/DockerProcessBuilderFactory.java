@@ -24,9 +24,11 @@
 
 package io.airbyte.workers.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.workers.WorkerException;
 import java.io.IOException;
@@ -108,10 +110,15 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
     return DATA_MOUNT_DESTINATION.resolve(relativePath);
   }
 
-  private boolean checkImageExists(String imageName) {
+  @VisibleForTesting
+  boolean checkImageExists(String imageName) {
     try {
       final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
+      LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+      LineGobbler.gobble(process.getInputStream(), LOGGER::info);
+
       process.waitFor(1, TimeUnit.MINUTES);
+
       return process.exitValue() == 0;
 
     } catch (IOException | InterruptedException e) {

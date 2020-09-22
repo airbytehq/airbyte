@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
@@ -41,12 +42,8 @@ import java.util.Date;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SingerExchangeRatesApiSourceTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerExchangeRatesApiSourceTest.class);
 
   private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
   private static final String IMAGE_NAME = "airbyte/integration-singer-exchangeratesapi_io-source:dev";
@@ -77,7 +74,7 @@ public class SingerExchangeRatesApiSourceTest {
   }
 
   @Test
-  public void testSuccessfulDiscover() throws IOException, InterruptedException {
+  public void testSuccessfulDiscover() throws IOException, InterruptedException, WorkerException {
     IOs.writeFile(jobRoot, CONFIG, "{}");
 
     Process process = createDiscoveryProcess(CONFIG);
@@ -92,7 +89,7 @@ public class SingerExchangeRatesApiSourceTest {
   }
 
   @Test
-  public void testSync() throws IOException, InterruptedException {
+  public void testSync() throws IOException, InterruptedException, WorkerException {
     final Date date = Date.from(Instant.now().minus(2, ChronoUnit.DAYS));
     final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -109,7 +106,7 @@ public class SingerExchangeRatesApiSourceTest {
     assertTrue(Jsons.deserialize(record.get()).get("record").get("CAD").asDouble() > 0);
   }
 
-  private Process createDiscoveryProcess(String configFileName) throws IOException {
+  private Process createDiscoveryProcess(String configFileName) throws IOException, WorkerException {
     return pbf.create(
         jobRoot,
         IMAGE_NAME,
@@ -121,7 +118,7 @@ public class SingerExchangeRatesApiSourceTest {
         .start();
   }
 
-  private Process createSyncProcess(Path syncOutputPath) throws IOException {
+  private Process createSyncProcess(Path syncOutputPath) throws IOException, WorkerException {
     return pbf.create(
         jobRoot,
         IMAGE_NAME,
