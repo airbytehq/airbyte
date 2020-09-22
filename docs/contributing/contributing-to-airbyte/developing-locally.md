@@ -29,8 +29,8 @@ This will build all the code and run all the unit tests.
 ## Run in `dev` mode with `docker-compose`
 
 ```bash
-./gradlew build
-docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up
+./gradlew build composeBuild
+VERSION=dev docker-compose up
 ```
 
 The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in `dev` mode in your environment.
@@ -42,7 +42,7 @@ In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
 
 ```bash
-./gradlew build
+./gradlew build composeBuild
 VERSION=dev docker-compose up
 ./gradlew :airbyte-tests:acceptanceTests
 ```
