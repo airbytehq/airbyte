@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { FormattedHTMLMessage } from "react-intl";
 
 type IProps = {
   error?: boolean;
@@ -46,7 +47,12 @@ const Label: React.FC<IProps> = props => (
     {props.message && (
       <span>
         {props.children && " - "}
-        <MessageText error={props.error}>{props.message}</MessageText>
+        <MessageText error={props.error}>
+          <FormattedHTMLMessage
+            id="1"
+            defaultMessage={(props.message as string) || ""}
+          />
+        </MessageText>
       </span>
     )}
   </Content>

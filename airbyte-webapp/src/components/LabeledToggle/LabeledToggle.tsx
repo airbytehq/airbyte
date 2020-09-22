@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-
+import { FormattedHTMLMessage } from "react-intl";
 import Toggle from "../Toggle";
 
 type IProps = {
@@ -28,16 +28,24 @@ const AdditionMessage = styled.span`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-const LabeledToggle: React.FC<IProps> = props => (
-  <ToggleContainer>
-    <Toggle {...props} id={`toggle-${props.name}`} />
-    <Label disabled={props.disabled} htmlFor={`toggle-${props.name}`}>
-      {props.label}
-      <AdditionMessage>
-        <FormattedHTMLMessage id="1" defaultMessage={props.message || ""} />
-      </AdditionMessage>
-    </Label>
-  </ToggleContainer>
-);
+const LabeledToggle: React.FC<IProps> = props => {
+  console.log("hello");
+  console.log(props);
+  console.log(props.message);
+  return (
+    <ToggleContainer>
+      <Toggle {...props} id={`toggle-${props.name}`} />
+      <Label disabled={props.disabled} htmlFor={`toggle-${props.name}`}>
+        {props.label}
+        <AdditionMessage>
+          <FormattedHTMLMessage
+            id="1"
+            defaultMessage={(props.message as string) || ""}
+          />
+        </AdditionMessage>
+      </Label>
+    </ToggleContainer>
+  );
+};
 
 export default LabeledToggle;
