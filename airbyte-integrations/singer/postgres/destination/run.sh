@@ -6,10 +6,10 @@ function echo_err() {
 function main() {
   # Singer's discovery is what we currently use to check connection
   if [[ "$*" =~ .*"--discover".* ]]; then
-    echo_err "Checking connection..."
+    echo "Checking connection..."
     python3 /check_connection.py "$@"
   else
-    echo_err "Running sync..."
+    echo "Running sync..."
     target-postgres "$@"
   fi
 }
