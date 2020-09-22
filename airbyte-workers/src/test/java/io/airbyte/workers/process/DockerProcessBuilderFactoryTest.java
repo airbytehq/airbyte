@@ -38,23 +38,6 @@ class DockerProcessBuilderFactoryTest {
     Path workspaceRoot = Files.createTempDirectory("pbf");
 
     final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
-    assertTrue(pbf.checkImageExists("airbyte/integration-singer-exchangeratesapi_io-source:0.1.2"));
+    assertTrue(pbf.checkImageExists("airbyte/scheduler:dev"));
   }
-
-  @Test
-  public void testImageExistsOnlyLocally() throws IOException {
-    Path workspaceRoot = Files.createTempDirectory("pbf");
-
-    final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
-    assertTrue(pbf.checkImageExists("cg/sched:blah"));
-  }
-
-  @Test
-  public void testImageDoesNotExist() throws IOException {
-    Path workspaceRoot = Files.createTempDirectory("pbf");
-
-    final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
-    assertFalse(pbf.checkImageExists("airbyte/fake:0.1.2"));
-  }
-
 }
