@@ -52,7 +52,7 @@ public class IOs {
   }
 
   public static String readFile(Path path, String fileName) {
-      return readFile(path.resolve(fileName));
+    return readFile(path.resolve(fileName));
   }
 
   public static String readFile(Path fullpath) {
