@@ -32,10 +32,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.workers.JobStatus;
-import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.*;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
@@ -101,7 +98,7 @@ class TestLocalCsvDestination {
   }
 
   @Test
-  public void testWithRelativePathThatDoesExist() throws IOException, InterruptedException {
+  public void testWithRelativePathThatDoesExist() throws IOException, InterruptedException, WorkerException {
     final Path destinationPath = Path.of("users");
 
     final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
@@ -111,7 +108,7 @@ class TestLocalCsvDestination {
   }
 
   @Test
-  public void testWithRelativePathThatDoesNotExist() throws IOException, InterruptedException {
+  public void testWithRelativePathThatDoesNotExist() throws IOException, InterruptedException, WorkerException {
     final Path destinationPath = Path.of("users");
     final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
     Path javaDestinationPath = localRoot.resolve(destinationPath);
@@ -122,7 +119,7 @@ class TestLocalCsvDestination {
   // but instead try to use it as a relative path, relative the localRoot. we test this here,
   // since we do not have a good way to validate this at the time of configuration.
   @Test
-  public void testWithAbsolutePath() throws IOException, InterruptedException {
+  public void testWithAbsolutePath() throws IOException, InterruptedException, WorkerException {
     final Path destinationPath = Path.of("/users");
     final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
     Path javaDestinationPath = localRoot.resolve(removeLeadingSlash(destinationPath));
@@ -132,7 +129,7 @@ class TestLocalCsvDestination {
   }
 
   @Test
-  public void testNoPath() throws IOException, InterruptedException {
+  public void testNoPath() throws IOException, InterruptedException, WorkerException {
     final Path destinationPath = Path.of("");
     final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
     Path javaDestinationPath = localRoot.resolve(destinationPath);
@@ -157,7 +154,8 @@ class TestLocalCsvDestination {
     assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, run.getOutput().get().getStatus());
   }
 
-  private void assertProducesExpectedOutput(Map<String, Object> config, Path outputPathOnLocalFs) throws IOException, InterruptedException {
+  private void assertProducesExpectedOutput(Map<String, Object> config, Path outputPathOnLocalFs)
+      throws IOException, InterruptedException, WorkerException {
     writeConfigFileToJobRoot(Jsons.serialize(config));
     process = startTarget();
 
@@ -170,7 +168,7 @@ class TestLocalCsvDestination {
     assertLinesMatch(EXPECTED_OUTPUT, actualList);
   }
 
-  private Process startTarget() throws IOException {
+  private Process startTarget() throws IOException, WorkerException {
     return pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
