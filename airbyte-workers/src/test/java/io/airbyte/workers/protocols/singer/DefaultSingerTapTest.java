@@ -92,7 +92,7 @@ class DefaultSingerTapTest {
   private SingerStreamFactory singerStreamFactory;
 
   @BeforeEach
-  public void setup() throws IOException {
+  public void setup() throws IOException, WorkerException {
     jobRoot = Files.createTempDirectory("test");
 
     discoverSchemaWorker = mock(SingerDiscoverSchemaWorker.class);
@@ -126,6 +126,7 @@ class DefaultSingerTapTest {
     singerStreamFactory = noop -> MESSAGES.stream();
   }
 
+  @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
   @Test
   public void testSuccessfulLifecycle() throws Exception {
     final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, singerStreamFactory, discoverSchemaWorker);
