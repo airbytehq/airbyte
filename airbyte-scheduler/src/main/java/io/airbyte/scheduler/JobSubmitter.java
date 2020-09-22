@@ -74,7 +74,6 @@ public class JobSubmitter implements Runnable {
           final Path logFilePath = workerRun.getJobRoot().resolve(WorkerConstants.LOG_FILENAME);
           persistence.updateLogPath(job.getId(), logFilePath);
           persistence.incrementAttempts(job.getId());
-          MDC.put("context", "worker");
           MDC.put("job_id", String.valueOf(job.getId()));
           MDC.put("job_root", logFilePath.getParent().toString());
           MDC.put("job_log_filename", logFilePath.getFileName().toString());
