@@ -1,4 +1,3 @@
 *
 !Dockerfile
 !build
-!src/main/resources/image_exists.sh

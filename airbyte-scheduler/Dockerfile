@@ -21,8 +21,6 @@ ENV APPLICATION airbyte-scheduler
 
 WORKDIR /app
 
-COPY src/main/resources/image_exists.sh image_exists.sh
-
 # Install wait
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/${WAIT_VERSION}/wait wait
 RUN chmod +x wait
