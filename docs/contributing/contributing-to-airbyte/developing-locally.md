@@ -64,8 +64,8 @@ docker-compose stop webapp
 
 ```bash
 cd airbyte-webapp
-npm install
-npm start
+yarn
+yarn start
 ```
 
 * Happy Hacking!

@@ -13,6 +13,7 @@ yarn_run_build {
     inputs.files fileTree('src')
     inputs.file 'package.json'
     inputs.file 'package-lock.json'
+    inputs.file 'yarn.lock'
 
     outputs.dir project.buildDir
 }
