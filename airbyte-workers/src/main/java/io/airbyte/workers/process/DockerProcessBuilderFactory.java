@@ -34,6 +34,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +112,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   private boolean checkImageExists(String imageName) {
     try {
       final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
-      process.waitFor();
+      process.waitFor(1, TimeUnit.MINUTES);
       return process.exitValue() == 0;
 
     } catch (IOException | InterruptedException e) {
