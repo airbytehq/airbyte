@@ -68,7 +68,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Slack Notification - Failure
-        if: failure() 
+        if: failure()
         uses: rtCamp/action-slack-notify@master
         env:
           SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
@@ -77,13 +77,4 @@ jobs:
           SLACK_COLOR: DC143C
           SLACK_TITLE: "Build failure"
           SLACK_FOOTER: ""
-
-      - name: Slack Notification - Success
-          if: success()
-          uses: rtCamp/action-slack-notify@master
-          env:
-            SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-            SLACK_USERNAME: Buildbot
-            SLACK_TITLE: "Build Success"
-            SLACK_FOOTER: ""
 
