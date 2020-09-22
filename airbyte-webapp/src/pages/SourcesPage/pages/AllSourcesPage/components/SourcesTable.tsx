@@ -94,7 +94,7 @@ const SourcesTable: React.FC = () => {
         frequency: frequency?.text
       });
     },
-    [connections, destination.name, updateConnection]
+    [connections, destination, updateConnection]
   );
 
   const columns = React.useMemo(
