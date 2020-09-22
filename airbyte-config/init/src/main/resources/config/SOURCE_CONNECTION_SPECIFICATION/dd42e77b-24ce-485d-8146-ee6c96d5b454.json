@@ -11,8 +11,8 @@
     "properties": {
       "client_secret": {
         "type": "string",
-        "pattern": "^sk_(live|test)_[a-zA-Z0-9]+$",
-        "description": "Stripe API key (starts with 'sk_live_' in production, see https://dashboard.stripe.com/apikeys)."
+        "pattern": "^(s|r)k_(live|test)_[a-zA-Z0-9]+$",
+        "description": "Stripe API key (usually starts with 'rk_live_' in production, see https://dashboard.stripe.com/apikeys)."
       },
       "account_id": {
         "type": "string",
