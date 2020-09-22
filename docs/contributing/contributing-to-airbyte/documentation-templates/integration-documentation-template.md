@@ -4,7 +4,7 @@ description: >-
   integration.
 ---
 
-# Integration documentation template
+# Integration Doc Template
 
 ## Sync overview
 
