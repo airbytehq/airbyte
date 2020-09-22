@@ -69,7 +69,7 @@ Incremental sync \(copying only the data that has changed\) for this source is c
 1. Postgres `v9.3.x` or above
 2. Allow connections from Airbyte to your Postgres database \(if they exist in separate VPCs\)
 3. Create a dedicated read-only Airbyte user with access to all tables needed for replication
-4. Configure the default Postgres client encoding to UTF8  
+4. If any of the data you want to replicate is UTF8 encoded, configure the default Postgres client encoding to UTF8  
 
 ### Setup guide
 
@@ -108,5 +108,5 @@ Your database user should now be ready for use with Airbyte.
 
 #### Set the default Postgres client encoding to UTF8
 
-This can be accomplished by adding the line  `client_encoding = utf8` to your database's `postgresql.conf` file . 
+If any of the data you want to replicate is UTF8 encoded, you'll need to set the default client encoding on your postgres DB to UTF8. This can be accomplished by adding the line  `client_encoding = utf8` to your database's `postgresql.conf` file . 
 
