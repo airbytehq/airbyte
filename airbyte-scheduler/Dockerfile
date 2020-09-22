@@ -14,12 +14,14 @@ RUN add-apt-repository \
        "deb [arch=amd64] https://download.docker.com/linux/debian \
        $(lsb_release -cs) \
        stable"
-RUN apt-get update && apt-get install -y docker-ce-cli
+RUN apt-get update && apt-get install -y docker-ce-cli jq
 
 ENV WAIT_VERSION=2.7.2
 ENV APPLICATION airbyte-scheduler
 
 WORKDIR /app
+
+COPY src/main/resources/image_exists.sh image_exists.sh
 
 # Install wait
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/${WAIT_VERSION}/wait wait

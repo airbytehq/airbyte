@@ -26,6 +26,7 @@ package io.airbyte.workers.process;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -53,6 +54,11 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
 
   @Override
   public ProcessBuilder create(final Path jobRoot, final String imageName, final String... args) {
+
+    if (!checkImageExists(imageName)) {
+      throw new IllegalStateException("Could not find image: " + imageName);
+    }
+
     final List<String> cmd =
         Lists.newArrayList(
             "docker",
@@ -80,4 +86,18 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
     return DATA_MOUNT_DESTINATION.resolve(relativePath);
   }
 
+  private boolean checkImageExists(String imageName) {
+    final String[] split = imageName.split(":");
+    final String basename = split[0];
+    final String tag = split.length > 1 ? split[1] : "";
+
+    try {
+      final Process checkProcess = new ProcessBuilder("./image_exists.sh", basename, tag).start();
+      checkProcess.waitFor();
+      return checkProcess.exitValue() == 0;
+
+    } catch (IOException | InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }
