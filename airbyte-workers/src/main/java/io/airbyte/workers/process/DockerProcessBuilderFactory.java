@@ -24,11 +24,19 @@
 
 package io.airbyte.workers.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.workers.WorkerException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,21 +46,43 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
 
   private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
   private static final Path LOCAL_MOUNT_DESTINATION = Path.of("/local");
+  private static final String IMAGE_EXISTS_SCRIPT = "image_exists.sh";
 
   private final String workspaceMountSource;
   private final Path workspaceRoot;
-  private String localMountSource;
+  private final String localMountSource;
   private final String networkName;
+  private final Path imageExistsScriptPath;
 
   public DockerProcessBuilderFactory(Path workspaceRoot, String workspaceMountSource, String localMountSource, String networkName) {
-    this.workspaceMountSource = workspaceMountSource;
     this.workspaceRoot = workspaceRoot;
+    this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
     this.networkName = networkName;
+    this.imageExistsScriptPath = prepareImageExistsScript();
+  }
+
+  private static Path prepareImageExistsScript() {
+    try {
+      final Path basePath = Files.createTempDirectory("scripts");
+      final String scriptContents = MoreResources.readResource(IMAGE_EXISTS_SCRIPT);
+      final Path scriptPath = IOs.writeFile(basePath, IMAGE_EXISTS_SCRIPT, scriptContents);
+      if (!scriptPath.toFile().setExecutable(true)) {
+        throw new RuntimeException(String.format("Could not set %s to executable", scriptPath));
+      }
+      return scriptPath;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public ProcessBuilder create(final Path jobRoot, final String imageName, final String... args) {
+  public ProcessBuilder create(final Path jobRoot, final String imageName, final String... args) throws WorkerException {
+
+    if (!checkImageExists(imageName)) {
+      throw new WorkerException("Could not find image: " + imageName);
+    }
+
     final List<String> cmd =
         Lists.newArrayList(
             "docker",
@@ -78,6 +108,22 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   private Path rebasePath(final Path jobRoot) {
     final Path relativePath = workspaceRoot.relativize(jobRoot);
     return DATA_MOUNT_DESTINATION.resolve(relativePath);
+  }
+
+  @VisibleForTesting
+  boolean checkImageExists(String imageName) {
+    try {
+      final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
+      LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+      LineGobbler.gobble(process.getInputStream(), LOGGER::info);
+
+      process.waitFor(1, TimeUnit.MINUTES);
+
+      return process.exitValue() == 0;
+
+    } catch (IOException | InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

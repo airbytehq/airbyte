@@ -22,14 +22,13 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.io.airbyte.integration_tests.sources;
+package io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Charsets;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.net.RequestOptions;
@@ -37,10 +36,11 @@ import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerListParams;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,16 +49,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SingerStripeSourceTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerStripeSourceTest.class);
 
   private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
   private static final String IMAGE_NAME = "airbyte/integration-singer-stripe-source:dev";
@@ -122,7 +117,7 @@ public class SingerStripeSourceTest {
   }
 
   @Test
-  public void testInvalidCredentialsDiscover() throws IOException, InterruptedException {
+  public void testInvalidCredentialsDiscover() throws IOException, InterruptedException, WorkerException {
     Process process = createDiscoveryProcess(INVALID_CONFIG);
     process.waitFor();
 
@@ -130,7 +125,7 @@ public class SingerStripeSourceTest {
   }
 
   @Test
-  public void testSuccessfulDiscover() throws IOException, InterruptedException {
+  public void testSuccessfulDiscover() throws IOException, InterruptedException, WorkerException {
     Process process = createDiscoveryProcess(CONFIG);
     process.waitFor();
 
@@ -144,9 +139,8 @@ public class SingerStripeSourceTest {
   }
 
   @Test
-  public void testSync() throws IOException, InterruptedException {
-    InputStream catalogStream = getClass().getClassLoader().getResourceAsStream(CATALOG);
-    String catalog = IOUtils.toString(catalogStream, Charsets.UTF_8);
+  public void testSync() throws IOException, InterruptedException, WorkerException {
+    String catalog = MoreResources.readResource(CATALOG);
     IOs.writeFile(catalogPath.getParent(), catalogPath.getFileName().toString(), catalog);
 
     // run syn process
@@ -161,8 +155,7 @@ public class SingerStripeSourceTest {
         .map(SingerStripeSourceTest::normalize)
         .collect(Collectors.toSet());
 
-    InputStream expectedStream = getClass().getClassLoader().getResourceAsStream("sync_output_subset.txt");
-    IOUtils.toString(expectedStream, Charsets.UTF_8).lines()
+    MoreResources.readResource("sync_output_subset.txt").lines()
         .map(Jsons::deserialize)
         .map(SingerStripeSourceTest::normalize)
         .forEach(record -> assertTrue(actualSyncOutput.contains(record)));
@@ -214,7 +207,7 @@ public class SingerStripeSourceTest {
         Path.of(jobRoot.toString(), INVALID_CONFIG), Jsons.serialize(fullConfig));
   }
 
-  private Process createDiscoveryProcess(String configFileName) throws IOException {
+  private Process createDiscoveryProcess(String configFileName) throws IOException, WorkerException {
     return pbf.create(
         jobRoot,
         IMAGE_NAME,
@@ -226,7 +219,7 @@ public class SingerStripeSourceTest {
         .start();
   }
 
-  private Process createSyncProcess(Path syncOutputPath) throws IOException {
+  private Process createSyncProcess(Path syncOutputPath) throws IOException, WorkerException {
     return pbf.create(
         jobRoot,
         IMAGE_NAME,

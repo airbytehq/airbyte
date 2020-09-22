@@ -68,7 +68,7 @@ class DefaultSingerTargetTest {
   private ByteArrayOutputStream outputStream;
 
   @BeforeEach
-  public void setup() throws IOException {
+  public void setup() throws IOException, WorkerException {
     jobRoot = Files.createTempDirectory(JOB_ROOT_PREFIX);
 
     process = mock(Process.class);
@@ -82,6 +82,7 @@ class DefaultSingerTargetTest {
         .thenReturn(process);
   }
 
+  @SuppressWarnings("BusyWait")
   @Test
   public void testSuccessfulLifecycle() throws Exception {
     final SingerTarget target = new DefaultSingerTarget(IMAGE_NAME, pbf);

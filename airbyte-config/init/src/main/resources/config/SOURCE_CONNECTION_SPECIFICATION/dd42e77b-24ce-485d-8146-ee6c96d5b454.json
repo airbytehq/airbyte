@@ -11,19 +11,19 @@
     "properties": {
       "client_secret": {
         "type": "string",
-        "pattern": "^sk_(live|test)_[a-zA-Z0-9]+$",
-        "description": "Stripe API key (starts with 'sk_live_' in production, see https://dashboard.stripe.com/apikeys)."
+        "pattern": "^(s|r)k_(live|test)_[a-zA-Z0-9]+$",
+        "description": "Stripe API key (usually starts with 'sk_live_'; find yours <a href=\"https://dashboard.stripe.com/apikeys\">here</a>)."
       },
       "account_id": {
         "type": "string",
         "pattern": "^acct_[a-zA-Z0-9]+$",
-        "description": "Your Stripe account ID (starts with 'acct_', see https://stripe.com/docs/api/accounts)."
+        "description": "Your Stripe account ID (starts with 'acct_', find yours <a href=\"https://dashboard.stripe.com/settings/account\">here</a>)."
       },
       "start_date": {
         "type": "string",
-        "default": "2009-01-01T00:00:00Z",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "description": "A UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated."
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "examples": ["2017-01-25T00:00:00Z"]
       }
     }
   }

@@ -89,7 +89,7 @@ public class AcceptanceTests {
   private PostgreSQLContainer sourcePsql;
   private PostgreSQLContainer targetPsql;
 
-  private AirbyteApiClient apiClient = new AirbyteApiClient(
+  private final AirbyteApiClient apiClient = new AirbyteApiClient(
       new ApiClient().setScheme("http")
           .setHost("localhost")
           .setPort(8001)
@@ -100,7 +100,7 @@ public class AcceptanceTests {
   private List<UUID> destinationImplIds;
 
   @BeforeEach
-  public void init() throws IOException, InterruptedException {
+  public void init() {
     sourceImplIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationImplIds = Lists.newArrayList();
@@ -228,7 +228,7 @@ public class AcceptanceTests {
 
   @Test
   @Order(7)
-  public void testManualSync() throws IOException, ApiException, SQLException, InterruptedException {
+  public void testManualSync() throws ApiException, SQLException {
     String connectionName = "test-connection";
     UUID sourceImplId = createPostgresSourceImpl().getSourceImplementationId();
     UUID destinationImplId = createPostgresDestinationImpl().getDestinationImplementationId();
@@ -340,6 +340,7 @@ public class AcceptanceTests {
     assertEquals(1, presentRecords.size());
   }
 
+  @SuppressWarnings("OptionalGetWithoutIsPresent")
   private long getStreamCount(BasicDataSource connectionPool, String tableName) throws SQLException {
     return DatabaseHelper.query(
         connectionPool,
@@ -348,10 +349,6 @@ public class AcceptanceTests {
               context.fetch(String.format("SELECT COUNT(*) FROM %s;", tableName));
           return (long) record.stream().findFirst().get().get(0);
         });
-  }
-
-  private void testRunManualSync(UUID connectionId) throws ApiException {
-
   }
 
   private ConnectionRead createConnection(String name,

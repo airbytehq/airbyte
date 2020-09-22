@@ -24,11 +24,31 @@
 
 package io.airbyte.workers.process;
 
-import io.airbyte.workers.WorkerException;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.Test;
 
-public interface ProcessBuilderFactory {
+// todo (cgardens) - these are not truly "unit" tests as they are check resources on the internet.
+// we should move them to "integration" tests, when we have facility to do so.
+class DockerProcessBuilderFactoryTest {
 
-  ProcessBuilder create(Path jobPath, String imageName, String... args) throws WorkerException;
+  @Test
+  public void testImageExists() throws IOException {
+    Path workspaceRoot = Files.createTempDirectory("pbf");
+
+    final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
+    assertTrue(pbf.checkImageExists("airbyte/scheduler:dev"));
+  }
+
+  @Test
+  public void testImageDoesNotExist() throws IOException {
+    Path workspaceRoot = Files.createTempDirectory("pbf");
+
+    final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
+    assertFalse(pbf.checkImageExists("airbyte/fake:0.1.2"));
+  }
 
 }
