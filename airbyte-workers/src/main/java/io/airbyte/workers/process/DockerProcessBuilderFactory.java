@@ -80,7 +80,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   public ProcessBuilder create(final Path jobRoot, final String imageName, final String... args) throws WorkerException {
 
     if (!checkImageExists(imageName)) {
-      throw new WorkerException("Could not find image: \"" + imageName + "\"");
+      throw new WorkerException("Could not find image: " + imageName);
     }
 
     final List<String> cmd =
