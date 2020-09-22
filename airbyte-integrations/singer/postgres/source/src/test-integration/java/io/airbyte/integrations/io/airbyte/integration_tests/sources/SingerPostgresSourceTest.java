@@ -43,6 +43,7 @@ import io.airbyte.singer.SingerMessage;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.singer.DefaultSingerTap;
@@ -141,7 +142,7 @@ public class SingerPostgresSourceTest {
   }
 
   @Test
-  public void verifyCanReadUtf8() throws IOException, InterruptedException {
+  public void verifyCanReadUtf8() throws IOException, InterruptedException, WorkerException {
     // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
     // default settings
     // are in another encoding
