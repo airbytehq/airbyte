@@ -14,7 +14,7 @@ RUN add-apt-repository \
        "deb [arch=amd64] https://download.docker.com/linux/debian \
        $(lsb_release -cs) \
        stable"
-RUN apt-get update && apt-get install -y docker-ce-cli jq
+RUN apt-get update && apt-get install -y docker-ce-cli
 
 ENV WAIT_VERSION=2.7.2
 ENV APPLICATION airbyte-scheduler
