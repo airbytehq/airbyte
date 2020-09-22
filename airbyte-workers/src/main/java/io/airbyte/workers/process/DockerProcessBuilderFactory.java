@@ -77,9 +77,9 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   @Override
   public ProcessBuilder create(final Path jobRoot, final String imageName, final String... args) throws WorkerException {
 
-    if (!checkImageExists(imageName)) {
-      throw new WorkerException("Could not find image: " + imageName);
-    }
+    // if (!checkImageExists(imageName)) {
+    // throw new WorkerException("Could not find image: " + imageName);
+    // }
 
     final List<String> cmd =
         Lists.newArrayList(
