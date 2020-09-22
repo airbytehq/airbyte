@@ -71,9 +71,11 @@ const StatusView: React.FC<IProps> = ({
   const onSync = () => {
     AnalyticsService.track("Source - Action", {
       user_id: config.ui.workspaceId,
-      action: "Full refresh syn",
+      action: "Full refresh sync",
       connector_source: sourceData.source?.sourceName,
+      connector_source_id: sourceData.source?.sourceId,
       connector_destination: destination.name,
+      connector_destination_id: destination.destinationId,
       frequency: frequencyText
     });
     SyncConnection({

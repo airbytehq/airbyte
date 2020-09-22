@@ -103,7 +103,8 @@ const OnboardingPage: React.FC = () => {
     AnalyticsService.track("New Source - Action", {
       user_id: config.ui.workspaceId,
       action: "Test a connector",
-      connector_source: sourceConnector?.name
+      connector_source: sourceConnector?.name,
+      connector_source_id: sourceConnector?.sourceId
     });
 
     try {
@@ -136,7 +137,8 @@ const OnboardingPage: React.FC = () => {
       AnalyticsService.track("New Source - Action", {
         user_id: config.ui.workspaceId,
         action: "Tested connector - success",
-        connector_source: sourceConnector?.name
+        connector_source: sourceConnector?.name,
+        connector_source_id: sourceConnector?.sourceId
       });
       setTimeout(() => {
         setSuccessRequest(false);
@@ -146,7 +148,8 @@ const OnboardingPage: React.FC = () => {
       AnalyticsService.track("New Source - Action", {
         user_id: config.ui.workspaceId,
         action: "Tested connector - failure",
-        connector_source: sourceConnector?.name
+        connector_source: sourceConnector?.name,
+        connector_source_id: sourceConnector?.sourceId
       });
       setErrorStatusRequest(e.status);
     }
@@ -261,7 +264,9 @@ const OnboardingPage: React.FC = () => {
         action: "Set up connection",
         frequency: frequencyData?.text,
         connector_source: sourceConnector?.name,
-        connector_destination: destinationConnector?.name
+        connector_source_id: sourceConnector?.sourceId,
+        connector_destination: destinationConnector?.name,
+        connector_destination_id: destinationConnector?.destinationId
       });
       push(Routes.Root);
     } catch (e) {

@@ -88,7 +88,9 @@ const SourcesTable: React.FC = () => {
             ? "Disable connection"
             : "Reenable connection",
         connector_source: connection?.source?.sourceName,
+        connector_source_id: connection?.source?.sourceId,
         connector_destination: destination.name,
+        connector_destination_id: destination.destinationId,
         frequency: frequency?.text
       });
     },

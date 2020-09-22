@@ -61,7 +61,8 @@ const SourceStep: React.FC<IProps> = ({
     AnalyticsService.track("New Source - Action", {
       user_id: config.ui.workspaceId,
       action: "Select a connector",
-      connector_source: connector?.name
+      connector_source: connector?.name,
+      connector_source_id: connector?.sourceId
     });
 
     setSourceId(sourceId);

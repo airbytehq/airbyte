@@ -102,7 +102,9 @@ const SourceItemPage: React.FC = () => {
           ? "Disable connection"
           : "Reenable connection",
       connector_source: connection.source?.sourceName,
+      connector_source_id: connection.source?.sourceId,
       connector_destination: destination.name,
+      connector_destination_id: destination.destinationId,
       frequency: frequency?.text
     });
   };
@@ -112,7 +114,9 @@ const SourceItemPage: React.FC = () => {
       user_id: config.ui.workspaceId,
       action: "Edit schema",
       connector_source: connection.source?.sourceName,
+      connector_source_id: connection.source?.sourceId,
       connector_destination: destination.name,
+      connector_destination_id: destination.destinationId,
       frequency: frequency?.text
     });
   };
@@ -122,7 +126,9 @@ const SourceItemPage: React.FC = () => {
       user_id: config.ui.workspaceId,
       action: "Delete source",
       connector_source: connection.source?.sourceName,
+      connector_source_id: connection.source?.sourceId,
       connector_destination: destination.name,
+      connector_destination_id: destination.destinationId,
       frequency: frequency?.text
     });
   };

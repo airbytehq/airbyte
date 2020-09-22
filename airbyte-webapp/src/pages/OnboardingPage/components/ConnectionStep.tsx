@@ -64,7 +64,9 @@ const ConnectionStep: React.FC<IProps> = ({
       action: "Select a frequency",
       frequency: item?.text,
       connector_source: currentSource?.name,
-      connector_destination: currentDestination?.name
+      connector_source_id: currentSource?.sourceId,
+      connector_destination: currentDestination?.name,
+      connector_destination_id: currentDestination?.destinationId
     });
   };
 

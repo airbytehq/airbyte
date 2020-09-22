@@ -45,10 +45,10 @@ const DeleteSource: React.FC<IProps> = ({
   const connectionDelete = useFetcher(ConnectionResource.deleteShape());
 
   const onDelete = async () => {
-    afterDelete();
     await sourceImplementationDelete({
       sourceImplementationId: sourceImplementationId || ""
     });
+    afterDelete();
     push(Routes.Root);
 
     await connectionDelete({
