@@ -82,7 +82,7 @@
       "stream": "id_and_name",
       "record": {
         "id": 5,
-        "name": "john"
+        "name": "\u2013 john"
       }
     }
   ]

@@ -81,7 +81,7 @@ public class SingerPostgresSourceTest {
 
   @BeforeEach
   public void init() throws IOException {
-    psqlDb = new PostgreSQLContainer();
+    psqlDb = (PostgreSQLContainer) new PostgreSQLContainer().withCommand("postgres -c client_encoding=sql_ascii");
     psqlDb.start();
 
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), psqlDb);
