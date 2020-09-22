@@ -99,7 +99,6 @@ task generateApiDocs(type: GenerateTask) {
     ]
 
     doLast {
-        delete rootProject.file("api_docs")
         copy {
             from outputDir
             include "**/*.html"
