@@ -24,7 +24,7 @@
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of the JSON service account key. This is the contents of the file path usually specified in GOOGLE_APPLICATION_CREDENTIALS. The service account for this key must have BigQuery User access to the specified project and dataset."
+        "description": "The contents of the JSON service account key. The service account for this key must have BigQuery User access to the specified project and dataset."
       }
     }
   }
