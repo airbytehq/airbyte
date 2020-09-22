@@ -1,14 +1,10 @@
 ### Updating an Integration
 1. Make your code changes to an integration
-1. Build the `dev` tagged image using `buildImage` to test the CLI:
-    ```
-    ./gradlew :airbyte-integrations:singer:postgres:source:buildImage
-    ```
-1. Update tests and run them:
+1. Bump the version in the `Dockerfile` of the integration (`LABEL io.airbyte.version=0.1.0`)
+1. Iterate by building the the `dev` tagged image and running tests:
     ```
     ./gradlew :airbyte-integrations:singer:postgres:source:integrationTest
     ```
-1. Update the version in the `Dockerfile` of the integration (`LABEL io.airbyte.version=0.1.0`)
 1. Build the integration with the semantic version tag locally:
     ```
     ./tools/integrations/manage.sh build airbyte-integrations/singer/postgres/source
