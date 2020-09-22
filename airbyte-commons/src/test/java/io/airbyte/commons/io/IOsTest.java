@@ -24,10 +24,6 @@
 
 package io.airbyte.commons.io;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import com.google.common.collect.Iterables;
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -42,6 +38,10 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 class IOsTest {
 
   @Test
@@ -51,9 +51,8 @@ class IOsTest {
     final Path filePath = IOs.writeFile(path, "file", "abc");
 
     assertEquals(path.resolve("file"), filePath);
-    assertEquals(
-        "abc",
-        IOs.readFile(path, "file"));
+    assertEquals("abc", IOs.readFile(path, "file"));
+    assertEquals("abc", IOs.readFile(path.resolve("file")));
   }
 
   @Test

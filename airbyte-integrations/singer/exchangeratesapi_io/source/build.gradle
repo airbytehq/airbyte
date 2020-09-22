@@ -24,6 +24,7 @@ configurations {
 }
 
 dependencies {
+    integrationTestImplementation project(':airbyte-workers')
 }
 
 task imageName {

@@ -41,12 +41,12 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
 
   private final String workspaceMountSource;
   private final Path workspaceRoot;
-  private String localMountSource;
+  private final String localMountSource;
   private final String networkName;
 
   public DockerProcessBuilderFactory(Path workspaceRoot, String workspaceMountSource, String localMountSource, String networkName) {
-    this.workspaceMountSource = workspaceMountSource;
     this.workspaceRoot = workspaceRoot;
+    this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
     this.networkName = networkName;
   }
