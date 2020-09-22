@@ -86,18 +86,15 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
     return DATA_MOUNT_DESTINATION.resolve(relativePath);
   }
 
-  private boolean checkImageExists(String imageName) {
-    final String[] split = imageName.split(":");
-    final String basename = split[0];
-    final String tag = split.length > 1 ? split[1] : "";
-
+  static boolean checkImageExists(String imageName) {
     try {
-      final Process checkProcess = new ProcessBuilder("./image_exists.sh", basename, tag).start();
-      checkProcess.waitFor();
-      return checkProcess.exitValue() == 0;
+      final Process process = new ProcessBuilder("./image_exists.sh", imageName).start();
+      process.waitFor();
+      return process.exitValue() == 0;
 
     } catch (IOException | InterruptedException e) {
       throw new RuntimeException(e);
     }
   }
+
 }
