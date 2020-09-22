@@ -24,7 +24,7 @@
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of the JSON service account key. The service account for this key must have BigQuery User access to the specified project and dataset."
+        "description": "The contents of the JSON service account key. Check out <a href\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key."
       }
     }
   }
