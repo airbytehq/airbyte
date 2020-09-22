@@ -12,7 +12,7 @@ Several output streams are available from this source \(customers, charges, invo
 
 ### Data type mapping
 
-This source casts fields from the [Stripe API](https://stripe.com/docs/api) into types [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types such as `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`.
+The [Stripe API](https://stripe.com/docs/api) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally (`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`), so no type conversions happen as part of this source. 
 
 ### Features
 
