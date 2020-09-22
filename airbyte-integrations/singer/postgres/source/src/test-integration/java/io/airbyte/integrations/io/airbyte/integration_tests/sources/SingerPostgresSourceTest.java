@@ -50,7 +50,6 @@ import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
 import io.airbyte.workers.protocols.singer.SingerDiscoverSchemaWorker;
 import io.airbyte.workers.protocols.singer.SingerMessageTracker;
 import io.airbyte.workers.protocols.singer.SingerTap;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,10 +60,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
 import org.apache.commons.compress.utils.Lists;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -145,7 +142,8 @@ public class SingerPostgresSourceTest {
 
   @Test
   public void verifyCanReadUtf8() throws IOException, InterruptedException {
-    // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when default settings
+    // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
+    // default settings
     // are in another encoding
     PostgreSQLContainer db = (PostgreSQLContainer) new PostgreSQLContainer().withCommand("postgres -c client_encoding=sql_ascii");
     db.start();
@@ -156,11 +154,10 @@ public class SingerPostgresSourceTest {
     writeFileToJobRoot(catalogFileName, MoreResources.readResource(catalogFileName));
     writeFileToJobRoot(configFileName, Jsons.serialize(getDbConfig(db)));
 
-    Process tapProcess = pbf.create(jobRoot, IMAGE_NAME, "--config", configFileName, "--properties", catalogFileName).
-        inheritIO()
+    Process tapProcess = pbf.create(jobRoot, IMAGE_NAME, "--config", configFileName, "--properties", catalogFileName).inheritIO()
         .start();
     tapProcess.waitFor();
-    if (tapProcess.exitValue() != 0){
+    if (tapProcess.exitValue() != 0) {
       fail("Docker container exited with non-zero exit code: " + tapProcess.exitValue());
     }
   }
