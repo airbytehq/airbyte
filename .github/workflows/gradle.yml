@@ -68,7 +68,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Slack Notification - Failure
-        if: failure() #&& github.ref == 'refs/heads/master'
+        if: failure() 
         uses: rtCamp/action-slack-notify@master
         env:
           SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
@@ -79,7 +79,7 @@ jobs:
           SLACK_FOOTER: ""
 
       - name: Slack Notification - Success
-          if: success() #&& github.ref == 'refs/heads/master'
+          if: success()
           uses: rtCamp/action-slack-notify@master
           env:
             SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
