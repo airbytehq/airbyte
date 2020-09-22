@@ -34,10 +34,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardDiscoverSchemaInput;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
 import io.airbyte.singer.SingerCatalog;
-import io.airbyte.workers.DiscoverSchemaWorker;
-import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.*;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -72,7 +69,7 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
   private OutputAndStatus<StandardDiscoverSchemaOutput> runInternal(final StandardDiscoverSchemaInput discoverSchemaInput,
                                                                     final Path jobRoot)
-      throws IOException {
+      throws IOException, WorkerException {
     final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
 
     IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));

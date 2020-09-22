@@ -28,6 +28,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.workers.WorkerException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,7 +64,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
       final Path basePath = Files.createTempDirectory("scripts");
       final String scriptContents = MoreResources.readResource(IMAGE_EXISTS_SCRIPT);
       final Path scriptPath = IOs.writeFile(basePath, IMAGE_EXISTS_SCRIPT, scriptContents);
-      if(!scriptPath.toFile().setExecutable(true)){
+      if (!scriptPath.toFile().setExecutable(true)) {
         throw new RuntimeException(String.format("Could not set %s to executable", scriptPath));
       }
       return scriptPath;
@@ -73,10 +74,10 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   }
 
   @Override
-  public ProcessBuilder create(final Path jobRoot, final String imageName, final String... args) {
+  public ProcessBuilder create(final Path jobRoot, final String imageName, final String... args) throws WorkerException {
 
     if (!checkImageExists(imageName)) {
-      throw new IllegalStateException("Could not find image: " + imageName);
+      throw new WorkerException("Could not find image: " + imageName);
     }
 
     final List<String> cmd =

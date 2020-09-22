@@ -37,6 +37,7 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.db.DatabaseHelper;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -91,7 +92,7 @@ class TestPostgresDestination {
   }
 
   @Test
-  public void runTest() throws IOException, InterruptedException, SQLException {
+  public void runTest() throws IOException, InterruptedException, SQLException, WorkerException {
     writeConfigFileToJobRoot(Jsons.serialize(getDbConfig()));
     process = startTarget();
 
@@ -134,7 +135,7 @@ class TestPostgresDestination {
     assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
   }
 
-  private Process startTarget() throws IOException {
+  private Process startTarget() throws IOException, WorkerException {
     return pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
