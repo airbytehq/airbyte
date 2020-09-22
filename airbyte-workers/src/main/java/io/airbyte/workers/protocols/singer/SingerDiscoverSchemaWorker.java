@@ -24,9 +24,6 @@
 
 package io.airbyte.workers.protocols.singer;
 
-import static io.airbyte.workers.JobStatus.FAILED;
-import static io.airbyte.workers.JobStatus.SUCCESSFUL;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
@@ -39,11 +36,15 @@ import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static io.airbyte.workers.JobStatus.FAILED;
+import static io.airbyte.workers.JobStatus.SUCCESSFUL;
 
 public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
@@ -82,7 +83,7 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
         .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
         .start();
 
-    LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+    LineGobbler.gobble(process.getErrorStream(), LOGGER, logger -> logger::error);
 
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 

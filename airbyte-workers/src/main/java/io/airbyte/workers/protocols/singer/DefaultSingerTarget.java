@@ -36,13 +36,14 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DefaultSingerTarget implements SingerTarget {
 
@@ -70,8 +71,8 @@ public class DefaultSingerTarget implements SingerTarget {
 
     LOGGER.info("Running Singer target...");
     targetProcess = pbf.create(jobRoot, imageName, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME).start();
-    LineGobbler.gobble(targetProcess.getInputStream(), LOGGER::info);
-    LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER::error);
+    LineGobbler.gobble(targetProcess.getInputStream(), LOGGER, logger -> logger::info);
+    LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER, logger -> logger::error);
 
     writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));
   }

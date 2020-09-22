@@ -25,17 +25,23 @@
 package io.airbyte.commons.io;
 
 import io.airbyte.commons.concurrency.VoidCallable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.function.Function;
 
 public class LineGobbler implements VoidCallable {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(LineGobbler.class);
+
+  public static void gobble(final InputStream is, final Logger logger, final Function<Logger, Consumer<String>> consumerFactory) {
+    gobble(is, new LogTypeMapper(logger, consumerFactory));
+  }
 
   public static void gobble(final InputStream is, final Consumer<String> consumer) {
     final ExecutorService executor = Executors.newSingleThreadExecutor();
