@@ -33,7 +33,9 @@ const LabeledToggle: React.FC<IProps> = props => (
     <Toggle {...props} id={`toggle-${props.name}`} />
     <Label disabled={props.disabled} htmlFor={`toggle-${props.name}`}>
       {props.label}
-      <AdditionMessage>{props.message}</AdditionMessage>
+      <AdditionMessage>
+        <FormattedHTMLMessage id="1" defaultMessage={props.message || ""} />
+      </AdditionMessage>
     </Label>
   </ToggleContainer>
 );
