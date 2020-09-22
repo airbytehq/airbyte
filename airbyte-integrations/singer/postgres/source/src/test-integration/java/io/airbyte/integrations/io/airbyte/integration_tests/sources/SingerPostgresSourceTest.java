@@ -26,6 +26,7 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
@@ -84,7 +85,7 @@ public class SingerPostgresSourceTest {
     psqlDb = new PostgreSQLContainer();
     psqlDb.start();
 
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), psqlDb);
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("init_ascii.sql"), psqlDb);
     Files.createDirectories(TESTS_PATH);
     Path workspaceRoot = Files.createTempDirectory(TESTS_PATH, "airbyte-integration");
     jobRoot = workspaceRoot.resolve("job");
@@ -99,8 +100,8 @@ public class SingerPostgresSourceTest {
   }
 
   @Test
-  public void testReadFirstTime() throws Exception {
-    Schema schema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), Schema.class);
+  public void testFullRefreshStatelessRead() throws Exception {
+    Schema schema = Jsons.deserialize(MoreResources.readResource("schema.json"), Schema.class);
 
     // select all streams and all fields
     schema.getStreams().forEach(t -> t.setSelected(true));
@@ -108,7 +109,7 @@ public class SingerPostgresSourceTest {
 
     StandardSync syncConfig = new StandardSync().withSyncMode(StandardSync.SyncMode.FULL_REFRESH).withSchema(schema);
     SourceConnectionImplementation sourceImpl =
-        new SourceConnectionImplementation().withConfiguration(Jsons.jsonNode(getDbConfig()));
+        new SourceConnectionImplementation().withConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
 
     StandardTapConfig tapConfig = new StandardTapConfig()
         .withStandardSync(syncConfig)
@@ -131,12 +132,34 @@ public class SingerPostgresSourceTest {
       LOGGER.info("{}", singerMessage);
     }
 
-    JsonNode expectedMessagesContainer = Jsons.deserialize(MoreResources.readResource("simple_schema_expected_messages.json")).get("messages");
+    JsonNode expectedMessagesContainer = Jsons.deserialize(MoreResources.readResource("expected_messages.json")).get("messages");
     List<SingerMessage> expectedMessages = StreamSupport.stream(expectedMessagesContainer.spliterator(), false)
         .map(msg -> Jsons.deserialize(Jsons.serialize(msg), SingerMessage.class))
         .collect(Collectors.toList());
 
     assertMessagesEquivalent(expectedMessages, actualMessages);
+  }
+
+  @Test
+  public void verifyCanReadUtf8() throws IOException, InterruptedException {
+    // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
+    // default settings
+    // are in another encoding
+    PostgreSQLContainer db = (PostgreSQLContainer) new PostgreSQLContainer().withCommand("postgres -c client_encoding=sql_ascii");
+    db.start();
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("init_utf8.sql"), db);
+
+    String configFileName = "config.json";
+    String catalogFileName = "catalog.json";
+    writeFileToJobRoot(catalogFileName, MoreResources.readResource(catalogFileName));
+    writeFileToJobRoot(configFileName, Jsons.serialize(getDbConfig(db)));
+
+    Process tapProcess = pbf.create(jobRoot, IMAGE_NAME, "--config", configFileName, "--properties", catalogFileName).inheritIO()
+        .start();
+    tapProcess.waitFor();
+    if (tapProcess.exitValue() != 0) {
+      fail("Docker container exited with non-zero exit code: " + tapProcess.exitValue());
+    }
   }
 
   private void assertMessagesEquivalent(Collection<SingerMessage> expected, Collection<SingerMessage> actual) {
@@ -169,10 +192,10 @@ public class SingerPostgresSourceTest {
   @Test
   public void testDiscover() throws IOException {
     StandardDiscoverSchemaInput inputConfig =
-        new StandardDiscoverSchemaInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig()));
+        new StandardDiscoverSchemaInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
     OutputAndStatus<StandardDiscoverSchemaOutput> run = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf).run(inputConfig, jobRoot);
 
-    Schema exepcted = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), Schema.class);
+    Schema exepcted = Jsons.deserialize(MoreResources.readResource("schema.json"), Schema.class);
     assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(exepcted, run.getOutput().get().getSchema());
@@ -180,7 +203,7 @@ public class SingerPostgresSourceTest {
 
   @Test
   public void testSuccessfulConnectionCheck() {
-    StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig()));
+    StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
     OutputAndStatus<StandardCheckConnectionOutput> run =
         new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf)).run(inputConfig, jobRoot);
 
@@ -191,7 +214,7 @@ public class SingerPostgresSourceTest {
 
   @Test
   public void testInvalidCredsFailedConnectionCheck() {
-    Map<String, Object> dbConfig = getDbConfig();
+    Map<String, Object> dbConfig = getDbConfig(psqlDb);
     dbConfig.put("password", "notarealpassword");
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(dbConfig));
     OutputAndStatus<StandardCheckConnectionOutput> run =
@@ -202,14 +225,18 @@ public class SingerPostgresSourceTest {
     assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
   }
 
-  private Map<String, Object> getDbConfig() {
+  private Map<String, Object> getDbConfig(PostgreSQLContainer containerDb) {
     Map<String, Object> confMap = new HashMap<>();
-    confMap.put("dbname", psqlDb.getDatabaseName());
-    confMap.put("user", psqlDb.getUsername());
-    confMap.put("password", psqlDb.getPassword());
-    confMap.put("port", psqlDb.getFirstMappedPort());
-    confMap.put("host", psqlDb.getHost());
+    confMap.put("dbname", containerDb.getDatabaseName());
+    confMap.put("user", containerDb.getUsername());
+    confMap.put("password", containerDb.getPassword());
+    confMap.put("port", containerDb.getFirstMappedPort());
+    confMap.put("host", containerDb.getHost());
     return confMap;
+  }
+
+  private void writeFileToJobRoot(String fileName, String contents) throws IOException {
+    Files.writeString(jobRoot.resolve(fileName), contents);
   }
 
 }
