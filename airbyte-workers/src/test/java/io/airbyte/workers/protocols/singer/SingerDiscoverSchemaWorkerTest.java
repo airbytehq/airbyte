@@ -43,6 +43,7 @@ import io.airbyte.config.StandardDiscoverSchemaOutput;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -79,6 +80,7 @@ public class SingerDiscoverSchemaWorkerTest {
     IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, MoreResources.readResource("simple_postgres_singer_catalog.json"));
   }
 
+  @SuppressWarnings("BusyWait")
   @Test
   public void testDiscoverSchema() throws Exception {
     final SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
@@ -106,6 +108,7 @@ public class SingerDiscoverSchemaWorkerTest {
     verify(process).waitFor(anyLong(), any());
   }
 
+  @SuppressWarnings("BusyWait")
   @Test
   public void testDiscoverSchemaProcessFail() throws Exception {
     when(process.exitValue()).thenReturn(1);
@@ -127,7 +130,7 @@ public class SingerDiscoverSchemaWorkerTest {
   }
 
   @Test
-  public void testDiscoverSchemaException() {
+  public void testDiscoverSchemaException() throws WorkerException {
     when(pbf.create(any(), any(), any())).thenThrow(new RuntimeException());
 
     final SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf);
