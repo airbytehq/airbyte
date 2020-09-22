@@ -29,5 +29,5 @@ INSERT
     ),
     (
         5,
-        E'\u2013 john' -- Add a UTF character to make sure the tap can read UTF
+        'john'
     );
