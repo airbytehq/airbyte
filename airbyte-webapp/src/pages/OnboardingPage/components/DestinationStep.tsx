@@ -69,7 +69,8 @@ const DestinationStep: React.FC<IProps> = ({
     AnalyticsService.track("New Destination - Action", {
       user_id: config.ui.workspaceId,
       action: "Select a connector",
-      connector_destination: destinationConnector?.name
+      connector_destination: destinationConnector?.name,
+      connector_destination_id: destinationConnector?.destinationId
     });
     setDestinationId(sourceId);
   };

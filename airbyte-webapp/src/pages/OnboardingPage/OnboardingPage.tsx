@@ -167,7 +167,8 @@ const OnboardingPage: React.FC = () => {
     AnalyticsService.track("New Destination - Action", {
       user_id: config.ui.workspaceId,
       action: "Test a connector",
-      connector_destination: destinationConnector?.name
+      connector_destination: destinationConnector?.name,
+      connector_destination_id: destinationConnector?.destinationId
     });
 
     try {
@@ -200,7 +201,8 @@ const OnboardingPage: React.FC = () => {
       AnalyticsService.track("New Destination - Action", {
         user_id: config.ui.workspaceId,
         action: "Tested connector - success",
-        connector_destination: destinationConnector?.name
+        connector_destination: destinationConnector?.name,
+        connector_destination_id: destinationConnector?.destinationId
       });
       setTimeout(() => {
         setSuccessRequest(false);
@@ -210,7 +212,8 @@ const OnboardingPage: React.FC = () => {
       AnalyticsService.track("New Destination - Action", {
         user_id: config.ui.workspaceId,
         action: "Tested connector - failure",
-        connector_destination: destinationConnector?.name
+        connector_destination: destinationConnector?.name,
+        connector_destination_id: destinationConnector?.destinationId
       });
       setErrorStatusRequest(e.status);
     }
