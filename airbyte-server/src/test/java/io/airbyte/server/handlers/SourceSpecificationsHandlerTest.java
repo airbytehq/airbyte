@@ -61,6 +61,7 @@ class SourceSpecificationsHandlerTest {
     SourceSpecificationRead expectedSourceSpecificationRead = new SourceSpecificationRead()
         .sourceId(sourceConnectionSpecification.getSourceId())
         .sourceSpecificationId(sourceConnectionSpecification.getSourceSpecificationId())
+        .documentationUrl(sourceConnectionSpecification.getDocumentationUrl())
         .connectionSpecification(sourceConnectionSpecification.getSpecification());
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(expectedSourceSpecificationRead.getSourceId());

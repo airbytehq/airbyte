@@ -1,0 +1,53 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+plugins {
+    id 'java'
+    id 'com.bmuschko.docker-remote-api' version '6.6.1'
+}
+
+def image = 'airbyte/integration-singer-exchangeratesapi_io-source:dev'
+
+sourceSets {
+    integrationTest {
+        java {
+            srcDir 'src/test-integration/java'
+        }
+        resources {
+            srcDir 'src/test-integration/resources'
+        }
+    }
+}
+test.dependsOn('compileIntegrationTestJava')
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+dependencies {
+    integrationTestImplementation project(':airbyte-workers')
+}
+
+task imageName {
+    doLast {
+        println "IMAGE $image"
+    }
+}
+
+task buildImage(type: DockerBuildImage) {
+    inputDir = projectDir
+    images.add(image)
+}
+
+task integrationTest(type: Test) {
+    testClassesDirs += sourceSets.integrationTest.output.classesDirs
+    classpath += sourceSets.integrationTest.runtimeClasspath
+
+    useJUnitPlatform()
+    testLogging() {
+        events "passed", "failed"
+        exceptionFormat "full"
+    }
+
+    mustRunAfter test
+    dependsOn(buildImage)
+}

@@ -36,6 +36,7 @@ import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -78,7 +79,7 @@ class TestBigQueryDestination {
   private boolean tornDown = true;
 
   @BeforeEach
-  public void setUpBigQuery() throws IOException {
+  public void setUpBigQuery() throws IOException, WorkerException {
 
     Files.createDirectories(TESTS_PATH);
     workspaceRoot = Files.createTempDirectory(TESTS_PATH, "bigquery");
@@ -151,7 +152,7 @@ class TestBigQueryDestination {
     assertLinesMatch(expectedList, actualList);
   }
 
-  private Process startTarget() throws IOException {
+  private Process startTarget() throws IOException, WorkerException {
     return pbf.create(
         jobRoot,
         IMAGE_NAME,
@@ -171,12 +172,12 @@ class TestBigQueryDestination {
     fullConfig.put("project_id", credentials.get("project_id").textValue());
     fullConfig.put("dataset_id", datasetName);
     fullConfig.put("credentials_json", credentialsJsonString);
-    fullConfig.put("default_target_schema", datasetName);
 
     Files.writeString(
         Path.of(jobRoot.toString(), "rendered_bigquery.json"), Jsons.serialize(fullConfig));
   }
 
+  @SuppressWarnings("SameParameterValue")
   private void writeResourceToStdIn(String resourceName, Process process) throws IOException {
     Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(resourceName))
         .transferTo(process.getOutputStream());
@@ -191,16 +192,13 @@ class TestBigQueryDestination {
 
     TableResult results = BQ.query(queryConfig);
 
-    List<String> resultList =
-        StreamSupport.stream(results.iterateAll().spliterator(), false)
-            .map(
-                x -> x.stream()
-                    .map(FieldValue::getValue)
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(",")))
-            .collect(toList());
-
-    return resultList;
+    return StreamSupport.stream(results.iterateAll().spliterator(), false)
+        .map(
+            x -> x.stream()
+                .map(FieldValue::getValue)
+                .map(String::valueOf)
+                .collect(Collectors.joining(",")))
+        .collect(toList());
   }
 
 }

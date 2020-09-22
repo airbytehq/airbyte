@@ -61,7 +61,7 @@ public class DefaultSingerTarget implements SingerTarget {
   }
 
   @Override
-  public void start(StandardTargetConfig targetConfig, Path jobRoot) throws IOException {
+  public void start(StandardTargetConfig targetConfig, Path jobRoot) throws IOException, WorkerException {
     Preconditions.checkState(targetProcess == null);
 
     final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();

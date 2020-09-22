@@ -30,10 +30,10 @@ public enum Integrations {
 
   POSTGRES_TAP(
       UUID.fromString("2168516a-5c9a-4582-90dc-5e3a01e3f607"),
-      new IntegrationMapping("airbyte/integration-singer-postgres-source:0.1.1")),
-  EXCHANGERATEAPI_IO_TAP(
+      new IntegrationMapping("airbyte/integration-singer-postgres-source:0.1.2")),
+  EXCHANGERATESAPI_IO_TAP(
       UUID.fromString("37eb2ebf-0899-4b22-aba8-8537ec88b5a8"),
-      new IntegrationMapping("airbyte/integration-singer-exchangerateapi_io-source:0.1.2")),
+      new IntegrationMapping("airbyte/integration-singer-exchangeratesapi_io-source:0.1.2")),
   STRIPE_TAP(
       UUID.fromString("dd42e77b-24ce-485d-8146-ee6c96d5b454"),
       new IntegrationMapping("airbyte/integration-singer-stripe-source:0.1.0")),
@@ -42,7 +42,7 @@ public enum Integrations {
       new IntegrationMapping("airbyte/integration-singer-postgres-destination:0.1.1")),
   BIGQUERY_TARGET(
       UUID.fromString("e28a1a10-214a-4051-8cf4-79b6f88719cd"),
-      new IntegrationMapping("airbyte/integration-singer-bigquery-destination:0.1.1")),
+      new IntegrationMapping("airbyte/integration-singer-bigquery-destination:0.1.2")),
   CSV_TARGET(
       UUID.fromString("8442ee76-cc1d-419a-bd8b-859a090366d4"),
       new IntegrationMapping("airbyte/integration-singer-csv-destination:0.1.0"));

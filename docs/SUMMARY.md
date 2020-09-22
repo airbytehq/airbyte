@@ -13,9 +13,11 @@
 ## Integrations
 
 * [Sources](integrations/sources/README.md)
+  * [exchangerates.io](integrations/sources/exchangerates-io.md)
   * [Postgres](integrations/sources/postgres.md)
   * [Stripe](integrations/sources/stripe.md)
 * [Destinations](integrations/destinations/README.md)
+  * [Local CSV](integrations/destinations/local-csv.md)
   * [BigQuery](integrations/destinations/bigquery.md)
 
 ## Contributing
@@ -25,7 +27,7 @@
   * [Code Style](contributing/contributing-to-airbyte/code-style.md)
   * [Updating Documentation](contributing/contributing-to-airbyte/updating-documentation.md)
   * [Documentation Templates](contributing/contributing-to-airbyte/documentation-templates/README.md)
-    * [Source Template](contributing/contributing-to-airbyte/documentation-templates/source-template.md)
+    * [Integration Doc Template](contributing/contributing-to-airbyte/documentation-templates/integration-documentation-template.md)
 * [Code of Conduct](contributing/code-of-conduct.md)
 
 ## Architecture

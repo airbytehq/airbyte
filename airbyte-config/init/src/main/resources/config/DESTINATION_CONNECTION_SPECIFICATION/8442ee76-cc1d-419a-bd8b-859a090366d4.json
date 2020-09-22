@@ -1,6 +1,7 @@
 {
   "destinationId": "8be1cf83-fde1-477f-a4ad-318d23c9f3c6",
   "destinationSpecificationId": "8442ee76-cc1d-419a-bd8b-859a090366d4",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/local-csv",
   "specification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Singer CSV Target Spec",
@@ -11,16 +12,17 @@
       "delimiter": {
         "description": "Delimiter used to separate fields.",
         "type": "string",
-        "examples": [","]
+        "examples": ["Default value: ,"]
       },
       "quotechar": {
-        "description": "The character used quote strings containing special characters in the CSV. Typically this will be '\"'. See <a href=\"https://docs.python.org/3/library/csv.html#csv.Dialect.quotechar\">python docs</a> for more details.",
+        "description": "The character used to quote strings containing special characters in the CSV. See <a href=\"https://docs.python.org/3/library/csv.html#csv.Dialect.quotechar\">python docs</a> for more details.",
         "type": "string",
-        "examples": ["\""]
+        "examples": ["Default value: \""]
       },
       "destination_path": {
-        "description": "Path to write the data. This path will be concatenated onto the `LOCAL_ROOT`. e.g. If `LOCAL_ROOT = /tmp/airbyte_local` and destination_path is `cars/models`, then the directory `/tmp/airbyte_local/cars/models`. By default `LOCAL_ROOT` is `/tmp/airbyte_local`.",
-        "type": "string"
+        "description": "Path to write the data. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/local-csv\">docs</a> for more details on the root of this path.",
+        "type": "string",
+        "examples": ["(Blank by default)"]
       }
     }
   }

@@ -51,9 +51,8 @@ class IOsTest {
     final Path filePath = IOs.writeFile(path, "file", "abc");
 
     assertEquals(path.resolve("file"), filePath);
-    assertEquals(
-        "abc",
-        IOs.readFile(path, "file"));
+    assertEquals("abc", IOs.readFile(path, "file"));
+    assertEquals("abc", IOs.readFile(path.resolve("file")));
   }
 
   @Test

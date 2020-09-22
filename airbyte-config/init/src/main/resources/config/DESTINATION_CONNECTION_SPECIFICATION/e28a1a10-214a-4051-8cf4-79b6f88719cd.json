@@ -1,6 +1,7 @@
 {
   "destinationId": "22f6c74f-5699-40ff-833c-4a879ea40133",
   "destinationSpecificationId": "e28a1a10-214a-4051-8cf4-79b6f88719cd",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
   "specification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
@@ -23,11 +24,7 @@
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of the JSON service account key. This is the contents of the file path usually specified in GOOGLE_APPLICATION_CREDENTIALS. The service account for this key must have BigQuery User access to the specified project and dataset."
-      },
-      "default_target_schema": {
-        "type": "string",
-        "description": "Name of the schema where the tables will be created. In most cases this should match the dataset_id."
+        "description": "The contents of the JSON service account key. Check out the <a href\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key."
       }
     }
   }

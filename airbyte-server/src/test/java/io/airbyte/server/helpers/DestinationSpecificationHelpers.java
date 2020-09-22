@@ -48,6 +48,7 @@ public class DestinationSpecificationHelpers {
     return new DestinationConnectionSpecification()
         .withDestinationId(destinationId)
         .withDestinationSpecificationId(destinationSpecificationId)
+        .withDocumentationUrl("https://airbyte.io")
         .withSpecification(Jsons.deserialize(Files.readString(path)));
   }
 

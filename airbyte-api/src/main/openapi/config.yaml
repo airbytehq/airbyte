@@ -30,7 +30,7 @@ externalDocs:
   description: Find out more about Airbyte
   url: "https://airbyte.io"
 servers:
-  - url: "localhost:8001"
+  - url: "http://localhost:8001"
 tags:
   - name: workspace
     description: Workspace related resources.
@@ -848,6 +848,8 @@ components:
           $ref: "#/components/schemas/SourceSpecificationId"
         sourceId:
           $ref: "#/components/schemas/SourceId"
+        documentationUrl:
+          type: string
         connectionSpecification:
           $ref: "#/components/schemas/SourceSpecification"
     # SOURCE IMPLEMENTATION
@@ -982,6 +984,8 @@ components:
           $ref: "#/components/schemas/DestinationSpecificationId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+        documentationUrl:
+          type: string
         connectionSpecification:
           $ref: "#/components/schemas/DestinationSpecification"
     # DESTINATION IMPLEMENTATION
