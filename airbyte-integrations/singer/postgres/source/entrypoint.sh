@@ -46,7 +46,7 @@ function main() {
     esac
   done
 
-  tap-postgres $ARGS
+  PGCLIENTENCODING=UTF8 tap-postgres $ARGS
 }
 
 main "$@"
