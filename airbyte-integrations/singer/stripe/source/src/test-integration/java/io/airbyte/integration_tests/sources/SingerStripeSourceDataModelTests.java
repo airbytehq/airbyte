@@ -35,7 +35,7 @@ import io.airbyte.singer.SingerMessage;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
-public class SingerStripeSourceUnitTests {
+public class SingerStripeSourceDataModelTests {
 
   @Test
   void canDeserializeStripeCatalog() throws IOException {
