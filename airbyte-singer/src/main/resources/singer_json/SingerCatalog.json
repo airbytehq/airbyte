@@ -56,8 +56,7 @@
       "description": "The JSON schema for the stream. This struct is weird because it's essentially modeling the properties field of a jsonschema object.",
       "properties": {
         "type": {
-          "type": "object",
-          "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
+          "$ref": "SingerCatalog.json#/definitions/SingerType"
         },
         "properties": {
           "$ref": "SingerCatalog.json#/definitions/SingerColumnMap"
@@ -105,6 +104,18 @@
           "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
         },
         "anyOf": {
+          "type": "array",
+          "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
+        },
+        "allOf": {
+          "type": "array",
+          "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
+        },
+        "oneOf": {
+          "type": "array",
+          "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
+        },
+        "not": {
           "type": "object",
           "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
         }
