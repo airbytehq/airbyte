@@ -6,7 +6,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Singer CSV Target Spec",
     "type": "object",
-    "required": ["delimiter", "quotechar", "destination_path"],
+    "required": ["delimiter", "quotechar"],
     "additionalProperties": false,
     "properties": {
       "delimiter": {
