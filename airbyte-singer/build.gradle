@@ -57,24 +57,18 @@ jsonSchema2Pojo {
 
 task postprocess {
     doFirst {
-        def original = new File(project.buildDir, 'generated/src/gen/java/io/airbyte/singer/SingerColumn.java')
-        def lines = original.readLines()
+        def files = ['generated/src/gen/java/io/airbyte/singer/SingerColumn.java', 'generated/src/gen/java/io/airbyte/singer/SingerTableSchema.java']
+        for (file in files) {
 
-        original.withWriter('utf-8') { writer ->
-            lines.each {
-                if (it.contains("private List<SingerType> type"))
-                    writer.writeLine("    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = io.airbyte.singer.SingerTypeDeserializer.class)")
-                writer.writeLine(it)
-            }
-        }
-        def original2 = new File(project.buildDir, 'generated/src/gen/java/io/airbyte/singer/SingerTableSchema.java')
-        def lines2 = original2.readLines()
+            def original = new File(project.buildDir, file)
+            def lines = original.readLines()
 
-        original2.withWriter('utf-8') { writer ->
-            lines2.each {
-                if (it.contains("private List<SingerType> type"))
-                    writer.writeLine("    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = io.airbyte.singer.SingerTypeDeserializer.class)")
-                writer.writeLine(it)
+            original.withWriter('utf-8') { writer ->
+                lines.each {
+                    if (it.contains("private List<SingerType> type"))
+                        writer.writeLine("    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = io.airbyte.singer.SingerTypeDeserializer.class)")
+                    writer.writeLine(it)
+                }
             }
         }
     }
