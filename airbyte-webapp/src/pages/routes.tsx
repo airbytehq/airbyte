@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Redirect,
@@ -16,6 +16,9 @@ import MainView from "../components/MainView";
 import config from "../config";
 import WorkspaceResource from "../core/resources/Workspace";
 import ConnectionResource from "../core/resources/Connection";
+import useSegment from "../components/hooks/useSegment";
+import { AnalyticsService } from "../core/analytics/AnalyticsService";
+import useRouter from "../components/hooks/useRouterHook";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -28,6 +31,20 @@ export enum Routes {
 }
 
 const MainViewRoutes = () => {
+  const { pathname } = useRouter();
+  useEffect(() => {
+    const itemPageRegex = new RegExp(`${Routes.Source}/.*`);
+    if (pathname === Routes.Destination) {
+      AnalyticsService.page("Destination Page");
+    } else if (pathname === Routes.Root) {
+      AnalyticsService.page("Sources Page");
+    } else if (pathname === `${Routes.Source}${Routes.SourceNew}`) {
+      AnalyticsService.page("Create Source Page");
+    } else if (pathname.match(itemPageRegex)) {
+      AnalyticsService.page("Source Item Page");
+    }
+  }, [pathname]);
+
   return (
     <MainView>
       <Suspense fallback={<LoadingPage />}>
@@ -71,6 +88,8 @@ const OnboardingsRoutes = () => {
 };
 
 export const Routing = () => {
+  useSegment(config.segment.token);
+
   const workspace = useResource(WorkspaceResource.detailShape(), {
     workspaceId: config.ui.workspaceId
   });

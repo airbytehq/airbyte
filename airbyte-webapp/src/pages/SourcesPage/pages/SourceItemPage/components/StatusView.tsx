@@ -14,10 +14,15 @@ import ConnectionResource, {
 } from "../../../../../core/resources/Connection";
 import JobResource from "../../../../../core/resources/Job";
 import JobsList from "./JobsList";
+import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
+import config from "../../../../../config";
+import { Destination } from "../../../../../core/resources/Destination";
 
 type IProps = {
   sourceData: Connection;
   onEnabledChange: () => void;
+  destination: Destination;
+  frequencyText?: string;
 };
 
 const Content = styled.div`
@@ -46,7 +51,12 @@ const SyncButton = styled(Button)`
   margin: -5px 0;
 `;
 
-const StatusView: React.FC<IProps> = ({ sourceData, onEnabledChange }) => {
+const StatusView: React.FC<IProps> = ({
+  sourceData,
+  onEnabledChange,
+  destination,
+  frequencyText
+}) => {
   const { jobs } = useResource(JobResource.listShape(), {
     configId: sourceData.connectionId,
     configType: "sync"
@@ -58,16 +68,28 @@ const StatusView: React.FC<IProps> = ({ sourceData, onEnabledChange }) => {
 
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
 
-  const onSync = () =>
+  const onSync = () => {
+    AnalyticsService.track("Source - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Full refresh sync",
+      connector_source: sourceData.source?.sourceName,
+      connector_source_id: sourceData.source?.sourceId,
+      connector_destination: destination.name,
+      connector_destination_id: destination.destinationId,
+      frequency: frequencyText
+    });
     SyncConnection({
       connectionId: sourceData.connectionId
     });
+  };
 
   return (
     <Content>
       <StatusMainInfo
         sourceData={sourceData}
         onEnabledChange={onEnabledChange}
+        destination={destination}
+        frequencyText={frequencyText}
       />
       <StyledContentCard
         title={

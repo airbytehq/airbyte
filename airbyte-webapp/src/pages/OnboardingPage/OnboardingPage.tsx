@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
@@ -19,6 +19,7 @@ import { Routes } from "../routes";
 import useRouter from "../../components/hooks/useRouterHook";
 import { Source } from "../../core/resources/Source";
 import { SyncSchema } from "../../core/resources/Schema";
+import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 
 const Content = styled.div`
   width: 100%;
@@ -53,6 +54,10 @@ const StepsCover = styled.div`
 `;
 
 const OnboardingPage: React.FC = () => {
+  useEffect(() => {
+    AnalyticsService.page("Onboarding Page");
+  }, []);
+
   const { push } = useRouter();
 
   const { sources } = useResource(SourceImplementationResource.listShape(), {
@@ -81,7 +86,9 @@ const OnboardingPage: React.FC = () => {
 
   const {
     sourcesDropDownData,
-    destinationsDropDownData
+    destinationsDropDownData,
+    getSourceById,
+    getDestinationById
   } = PrepareDropDownLists();
 
   const onSubmitSourceStep = async (values: {
@@ -91,6 +98,15 @@ const OnboardingPage: React.FC = () => {
     connectionConfiguration?: any;
   }) => {
     setErrorStatusRequest(0);
+
+    const sourceConnector = getSourceById(values.serviceType);
+    AnalyticsService.track("New Source - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Test a connector",
+      connector_source: sourceConnector?.name,
+      connector_source_id: sourceConnector?.sourceId
+    });
+
     try {
       await createSourcesImplementation(
         {},
@@ -118,11 +134,23 @@ const OnboardingPage: React.FC = () => {
       );
 
       setSuccessRequest(true);
+      AnalyticsService.track("New Source - Action", {
+        user_id: config.ui.workspaceId,
+        action: "Tested connector - success",
+        connector_source: sourceConnector?.name,
+        connector_source_id: sourceConnector?.sourceId
+      });
       setTimeout(() => {
         setSuccessRequest(false);
         setCurrentStep(StepsTypes.CREATE_DESTINATION);
       }, 2000);
     } catch (e) {
+      AnalyticsService.track("New Source - Action", {
+        user_id: config.ui.workspaceId,
+        action: "Tested connector - failure",
+        connector_source: sourceConnector?.name,
+        connector_source_id: sourceConnector?.sourceId
+      });
       setErrorStatusRequest(e.status);
     }
   };
@@ -134,6 +162,15 @@ const OnboardingPage: React.FC = () => {
     connectionConfiguration?: any;
   }) => {
     setErrorStatusRequest(0);
+
+    const destinationConnector = getDestinationById(values.serviceType);
+    AnalyticsService.track("New Destination - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Test a connector",
+      connector_destination: destinationConnector?.name,
+      connector_destination_id: destinationConnector?.destinationId
+    });
+
     try {
       await createDestinationsImplementation(
         {},
@@ -161,11 +198,23 @@ const OnboardingPage: React.FC = () => {
       );
 
       setSuccessRequest(true);
+      AnalyticsService.track("New Destination - Action", {
+        user_id: config.ui.workspaceId,
+        action: "Tested connector - success",
+        connector_destination: destinationConnector?.name,
+        connector_destination_id: destinationConnector?.destinationId
+      });
       setTimeout(() => {
         setSuccessRequest(false);
         setCurrentStep(StepsTypes.SET_UP_CONNECTION);
       }, 2000);
     } catch (e) {
+      AnalyticsService.track("New Destination - Action", {
+        user_id: config.ui.workspaceId,
+        action: "Tested connector - failure",
+        connector_destination: destinationConnector?.name,
+        connector_destination_id: destinationConnector?.destinationId
+      });
       setErrorStatusRequest(e.status);
     }
   };
@@ -178,6 +227,11 @@ const OnboardingPage: React.FC = () => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
+    const sourceConnector = getSourceById(sources[0].sourceId);
+    const destinationConnector = getDestinationById(
+      destinations[0].destinationId
+    );
+
     setErrorStatusRequest(0);
     try {
       await createConnection(
@@ -208,6 +262,15 @@ const OnboardingPage: React.FC = () => {
           ]
         ]
       );
+      AnalyticsService.track("New Connection - Action", {
+        user_id: config.ui.workspaceId,
+        action: "Set up connection",
+        frequency: frequencyData?.text,
+        connector_source: sourceConnector?.name,
+        connector_source_id: sourceConnector?.sourceId,
+        connector_destination: destinationConnector?.name,
+        connector_destination_id: destinationConnector?.destinationId
+      });
       push(Routes.Root);
     } catch (e) {
       setErrorStatusRequest(e.status);

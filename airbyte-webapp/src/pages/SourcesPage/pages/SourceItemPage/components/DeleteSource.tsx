@@ -14,6 +14,7 @@ import ConnectionResource from "../../../../../core/resources/Connection";
 type IProps = {
   sourceImplementationId?: string;
   connectionId: string;
+  afterDelete: () => void;
 };
 
 const DeleteBlock = styled(ContentCard)`
@@ -32,7 +33,8 @@ const Text = styled.div`
 
 const DeleteSource: React.FC<IProps> = ({
   sourceImplementationId,
-  connectionId
+  connectionId,
+  afterDelete
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { push } = useRouter();
@@ -46,6 +48,7 @@ const DeleteSource: React.FC<IProps> = ({
     await sourceImplementationDelete({
       sourceImplementationId: sourceImplementationId || ""
     });
+    afterDelete();
     push(Routes.Root);
 
     await connectionDelete({
