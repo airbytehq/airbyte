@@ -15,6 +15,7 @@ import SourceImplementationResource from "../../../../../core/resources/SourceIm
 
 type IProps = {
   sourceData: Connection;
+  afterDelete: () => void;
 };
 
 const Content = styled.div`
@@ -22,7 +23,7 @@ const Content = styled.div`
   margin: 18px auto;
 `;
 
-const SettingsView: React.FC<IProps> = ({ sourceData }) => {
+const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
   const [saved, setSaved] = useState(false);
 
   const updateConnection = useFetcher(ConnectionResource.updateShape());
@@ -117,6 +118,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
         />
       </ContentCard>
       <DeleteSource
+        afterDelete={afterDelete}
         sourceImplementationId={sourceData.source?.sourceImplementationId}
         connectionId={sourceData.connectionId}
       />

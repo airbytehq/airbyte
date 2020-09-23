@@ -19,6 +19,7 @@ type IProps = {
   connectionId: string;
   connectionStatus: string;
   syncSchema: SyncSchema;
+  afterSave: () => void;
 };
 
 const Content = styled.div`
@@ -38,7 +39,8 @@ const SaveButton = styled(Button)`
 const SchemaView: React.FC<IProps> = ({
   syncSchema,
   connectionId,
-  connectionStatus
+  connectionStatus,
+  afterSave
 }) => {
   const updateConnection = useFetcher(ConnectionResource.updateShape());
   const { formSyncSchema, initialChecked } = useMemo(
@@ -70,6 +72,7 @@ const SchemaView: React.FC<IProps> = ({
         syncSchema: newSyncSchema
       }
     );
+    afterSave();
   };
 
   return (
