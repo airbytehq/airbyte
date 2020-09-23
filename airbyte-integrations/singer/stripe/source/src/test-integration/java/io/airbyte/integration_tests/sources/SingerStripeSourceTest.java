@@ -225,7 +225,7 @@ public class SingerStripeSourceTest {
         IMAGE_NAME,
         "--config",
         CONFIG,
-        "--catalog",
+        "--properties",
         CATALOG)
         .redirectOutput(syncOutputPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)

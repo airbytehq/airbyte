@@ -24,16 +24,24 @@
 
 package io.airbyte.workers.protocols.singer;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.Stream;
 import io.airbyte.singer.SingerCatalog;
+import io.airbyte.singer.SingerMessage;
 import io.airbyte.singer.SingerMetadataChild;
+import io.airbyte.singer.SingerType;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 class SingerCatalogConvertersTest {
@@ -62,6 +70,16 @@ class SingerCatalogConvertersTest {
         .withReplicationMethod(SingerMetadataChild.ReplicationMethod.FULL_TABLE);
 
     assertEquals(expectedCatalog, actualCatalog);
+  }
+
+  @Test
+  void canDeserializeStripeCatalog() {
+    assertDoesNotThrow(() -> Jsons.deserialize(MoreResources.readResource("stripe_catalog.json"), SingerCatalog.class));
+  }
+
+  @Test
+  void singerTypeToAirbyte() {
+    Arrays.stream(SingerType.values()).forEach(singerType -> assertDoesNotThrow(() -> SingerCatalogConverters.singerTypeToDataType(singerType)));
   }
 
   @Test

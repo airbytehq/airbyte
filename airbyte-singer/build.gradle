@@ -36,6 +36,16 @@ task postprocess {
                 writer.writeLine(it)
             }
         }
+        def original2 = new File(project.buildDir, 'generated/src/gen/java/io/airbyte/singer/SingerTableSchema.java')
+        def lines2 = original2.readLines()
+
+        original2.withWriter('utf-8') { writer ->
+            lines2.each {
+                if (it.contains("private List<SingerType> type"))
+                    writer.writeLine("    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = io.airbyte.singer.SingerTypeDeserializer.class)")
+                writer.writeLine(it)
+            }
+        }
     }
 }
 

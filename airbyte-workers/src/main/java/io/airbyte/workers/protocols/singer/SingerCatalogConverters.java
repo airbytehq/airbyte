@@ -24,6 +24,7 @@
 
 package io.airbyte.workers.protocols.singer;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
@@ -248,7 +249,8 @@ public class SingerCatalogConverters {
    * @param singerType - singer's field data type
    * @return best match for our own data type
    */
-  private static DataType singerTypeToDataType(SingerType singerType) {
+  @VisibleForTesting
+  static DataType singerTypeToDataType(SingerType singerType) {
     switch (singerType) {
       case STRING:
         return DataType.STRING;
@@ -261,6 +263,10 @@ public class SingerCatalogConverters {
         return DataType.STRING; // todo (cgardens) - hackasaurus rex
       case BOOLEAN:
         return DataType.BOOLEAN;
+      case OBJECT:
+        return DataType.OBJECT;
+      case ARRAY:
+        return DataType.ARRAY;
       default:
         throw new RuntimeException(
             String.format("could not map SingerType: %s to DataType", singerType));

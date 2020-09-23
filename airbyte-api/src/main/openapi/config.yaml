@@ -1232,6 +1232,8 @@ components:
         - string
         - number
         - boolean
+        - object
+        - array
     # SCHEDULER
     JobId:
       type: integer
