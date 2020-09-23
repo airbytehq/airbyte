@@ -19,6 +19,7 @@ import SourceImplementationResource, {
 import FrequencyConfig from "../../../../data/FrequencyConfig.json";
 import ConnectionResource from "../../../../core/resources/Connection";
 import { SyncSchema } from "../../../../core/resources/Schema";
+import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
 
 const Content = styled.div`
   max-width: 638px;
@@ -84,7 +85,17 @@ const CreateSourcePage: React.FC = () => {
     specificationId?: string;
     connectionConfiguration?: any;
   }) => {
+    const connector = sources.find(
+      item => item.sourceId === values.serviceType
+    );
     setErrorStatusRequest(0);
+    AnalyticsService.track("New Source - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Test a connector",
+      connector_source: connector?.name,
+      connector_source_id: values.serviceType
+    });
+
     try {
       const result = await createSourcesImplementation(
         {},
@@ -97,11 +108,23 @@ const CreateSourcePage: React.FC = () => {
       );
       setCurrentSourceImplementation(result);
       setSuccessRequest(true);
+      AnalyticsService.track("New Source - Action", {
+        user_id: config.ui.workspaceId,
+        action: "Tested connector - success",
+        connector_source: connector?.name,
+        connector_source_id: values.serviceType
+      });
       setTimeout(() => {
         setSuccessRequest(false);
         setCurrentStep(StepsTypes.SET_UP_CONNECTION);
       }, 2000);
     } catch (e) {
+      AnalyticsService.track("New Source - Action", {
+        user_id: config.ui.workspaceId,
+        action: "Tested connector - failure",
+        connector_source: connector?.name,
+        connector_source_id: values.serviceType
+      });
       setErrorStatusRequest(e.status);
     }
   };
@@ -146,6 +169,17 @@ const CreateSourcePage: React.FC = () => {
           ]
         ]
       );
+
+      AnalyticsService.track("New Connection - Action", {
+        user_id: config.ui.workspaceId,
+        action: "Set up connection",
+        frequency: frequencyData?.text,
+        connector_source: sourceInfo?.name,
+        connector_source_id: sourceInfo?.sourceId,
+        connector_destination: currentDestination?.name,
+        connector_destination_id: currentDestination?.destinationId
+      });
+
       push(Routes.Root);
     } catch (e) {
       setErrorStatusRequest(e.status);

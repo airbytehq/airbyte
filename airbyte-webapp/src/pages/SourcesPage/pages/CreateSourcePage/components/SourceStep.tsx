@@ -9,6 +9,8 @@ import { Destination } from "../../../../../core/resources/Destination";
 import SourceSpecificationResource, {
   SourceSpecification
 } from "../../../../../core/resources/SourceSpecification";
+import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
+import config from "../../../../../config";
 
 type IProps = {
   onSubmit: (values: {
@@ -54,7 +56,17 @@ const CreateSourcePage: React.FC<IProps> = ({
 }) => {
   const [sourceId, setSourceId] = useState("");
   const specification = useSourceSpecificationLoad(sourceId || "");
-  const onDropDownSelect = (sourceId: string) => setSourceId(sourceId);
+  const onDropDownSelect = (sourceId: string) => {
+    setSourceId(sourceId);
+    const connector = dropDownData.find(item => item.value === sourceId);
+
+    AnalyticsService.track("New Source - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Select a connector",
+      connector_source: connector?.text,
+      connector_source_id: sourceId
+    });
+  };
 
   const onSubmitForm = async (values: {
     name: string;

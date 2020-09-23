@@ -64,6 +64,7 @@ services:
       - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS=db:5432
       - CONFIG_ROOT=${CONFIG_ROOT}
+      - TRACKING_STRATEGY=${TRACKING_STRATEGY}
     ports:
       - 8001:8001
     volumes:
@@ -78,6 +79,8 @@ services:
       - 8000:80
     depends_on:
       - server
+    environment:
+      - TRACKING_STRATEGY=${TRACKING_STRATEGY}
 
 volumes:
   workspace:

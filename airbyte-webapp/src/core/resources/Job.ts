@@ -1,6 +1,5 @@
 import { Resource, FetchOptions } from "rest-hooks";
 import BaseResource from "./BaseResource";
-import JobLogsResource from "./JobLogs";
 
 export interface Job {
   id: number;
@@ -45,7 +44,7 @@ export default class JobResource extends BaseResource implements Job {
       ...super.detailShape(),
       schema: {
         job: this.asSchema(),
-        logs: JobLogsResource.asSchema()
+        logs: { logLines: [] }
       }
     };
   }

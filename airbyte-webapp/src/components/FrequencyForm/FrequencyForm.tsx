@@ -9,12 +9,14 @@ import FrequencyConfig from "../../data/FrequencyConfig.json";
 import BottomBlock from "./components/BottomBlock";
 import Label from "../Label";
 import TreeView, { INode } from "../TreeView/TreeView";
+import { IDataItem } from "../DropDown/components/ListItem";
 
 type IProps = {
   className?: string;
   schema: INode[];
   errorMessage?: React.ReactNode;
   onSubmit: (values: { frequency: string }, checkedState: string[]) => void;
+  onDropDownSelect?: (item: IDataItem) => void;
   initialCheckedSchema: Array<string>;
 };
 
@@ -43,7 +45,8 @@ const FrequencyForm: React.FC<IProps> = ({
   className,
   errorMessage,
   schema,
-  initialCheckedSchema
+  initialCheckedSchema,
+  onDropDownSelect
 }) => {
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
@@ -108,7 +111,12 @@ const FrequencyForm: React.FC<IProps> = ({
                   id: "form.frequency.placeholder"
                 })}
                 data={dropdownData}
-                onSelect={item => setFieldValue("frequency", item.value)}
+                onSelect={item => {
+                  if (onDropDownSelect) {
+                    onDropDownSelect(item);
+                  }
+                  setFieldValue("frequency", item.value);
+                }}
               />
             )}
           </Field>

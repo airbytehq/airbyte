@@ -9,15 +9,18 @@ import {
   constructInitialSchemaState,
   constructNewSchema
 } from "../../../../../core/helpers";
+import { IDataItem } from "../../../../../components/DropDown/components/ListItem";
 
 type IProps = {
   onSubmit: (values: { frequency: string; syncSchema: SyncSchema }) => void;
   sourceImplementationId: string;
+  onSelectFrequency: (item: IDataItem) => void;
 };
 
 const ConnectionStep: React.FC<IProps> = ({
   onSubmit,
-  sourceImplementationId
+  sourceImplementationId,
+  onSelectFrequency
 }) => {
   const { schema } = useResource(SchemaResource.schemaShape(), {
     sourceImplementationId
@@ -40,6 +43,7 @@ const ConnectionStep: React.FC<IProps> = ({
       onSubmit={onSubmitForm}
       schema={formSyncSchema}
       initialCheckedSchema={initialChecked}
+      onDropDownSelect={onSelectFrequency}
     />
   );
 };

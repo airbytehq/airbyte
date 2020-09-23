@@ -14,6 +14,10 @@ import { Routes } from "../../../../routes";
 import useRouter from "../../../../../components/hooks/useRouterHook";
 import ConnectionResource from "../../../../../core/resources/Connection";
 import config from "../../../../../config";
+import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
+import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
+import DestinationImplementationResource from "../../../../../core/resources/DestinationImplementation";
+import DestinationResource from "../../../../../core/resources/Destination";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;
@@ -35,6 +39,16 @@ const SourcesTable: React.FC = () => {
     workspaceId: config.ui.workspaceId
   });
   const updateConnection = useFetcher(ConnectionResource.updateShape());
+  const { destinations } = useResource(
+    DestinationImplementationResource.listShape(),
+    {
+      workspaceId: config.ui.workspaceId
+    }
+  );
+  const currentDestination = destinations[0]; // Now we have only one destination. If we support multiple destinations we will fix this line
+  const destination = useResource(DestinationResource.detailShape(), {
+    destinationId: currentDestination.destinationId
+  });
 
   const data = connections.map(item => ({
     connectionId: item.connectionId,
@@ -61,8 +75,26 @@ const SourcesTable: React.FC = () => {
           status: connection?.status === "active" ? "inactive" : "active"
         }
       );
+
+      const frequency = FrequencyConfig.find(
+        item =>
+          JSON.stringify(item.config) === JSON.stringify(connection?.schedule)
+      );
+
+      AnalyticsService.track("Source - Action", {
+        user_id: config.ui.workspaceId,
+        action:
+          connection?.status === "active"
+            ? "Disable connection"
+            : "Reenable connection",
+        connector_source: connection?.source?.sourceName,
+        connector_source_id: connection?.source?.sourceId,
+        connector_destination: destination.name,
+        connector_destination_id: destination.destinationId,
+        frequency: frequency?.text
+      });
     },
-    [connections, updateConnection]
+    [connections, destination, updateConnection]
   );
 
   const columns = React.useMemo(

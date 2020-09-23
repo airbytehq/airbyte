@@ -1,11 +1,16 @@
 const config: {
   ui: { helpLink: string; docsLink: string; workspaceId: string };
+  segment: { token: string };
   apiUrl: string;
 } = {
   ui: {
     helpLink: "https://airbyte.io/community",
     docsLink: "https://docs.airbyte.io",
     workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6"
+  },
+  segment: {
+    token:
+      process.env.REACT_APP_SEGMENT_TOKEN || "6cxNSmQyGSKcATLdJ2pL6WsawkzEMDAN"
   },
   apiUrl:
     process.env.REACT_APP_API_URL ||
