@@ -26,6 +26,8 @@ package io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.singer.SingerCatalog;
@@ -39,7 +41,12 @@ public class SingerStripeSourceUnitTests {
   void canDeserializeStripeCatalog() throws IOException {
     final String input = MoreResources.readResource("stripe_catalog.json");
     final String canDeserializeStripeSchemaMessage = Jsons.serialize(Jsons.deserialize(input, SingerCatalog.class));
-    assertEquals(Jsons.deserialize(input), Jsons.deserialize(canDeserializeStripeSchemaMessage));
+
+    final JsonNode deserialize = Jsons.deserialize(input);
+    // our deserializer converts `type: "object"` => `type: ["object"]`. both are valid jsonschema.
+    ((ObjectNode) deserialize.get("streams").get(1).get("schema")).putArray("type").add("object");
+
+    assertEquals(deserialize, Jsons.deserialize(canDeserializeStripeSchemaMessage));
   }
 
   @Test
