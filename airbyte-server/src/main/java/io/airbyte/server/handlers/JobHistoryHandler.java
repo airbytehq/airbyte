@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 
 public class JobHistoryHandler {
 
-  private static final int LOG_TAIL_SIZE = 10;
+  private static final int LOG_TAIL_SIZE = 100;
   private final SchedulerPersistence schedulerPersistence;
 
   public JobHistoryHandler(SchedulerPersistence schedulerPersistence) {
