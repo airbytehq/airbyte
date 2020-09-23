@@ -31,7 +31,6 @@ import io.airbyte.api.model.SourceImplementationRead;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
-
 import java.io.IOException;
 
 public class WebBackendSourceImplementationHandler {
@@ -41,14 +40,14 @@ public class WebBackendSourceImplementationHandler {
   private final SchedulerHandler schedulerHandler;
 
   public WebBackendSourceImplementationHandler(
-      final SourceImplementationsHandler sourceImplementationsHandler,
-      final SchedulerHandler schedulerHandler) {
+                                               final SourceImplementationsHandler sourceImplementationsHandler,
+                                               final SchedulerHandler schedulerHandler) {
     this.sourceImplementationsHandler = sourceImplementationsHandler;
     this.schedulerHandler = schedulerHandler;
   }
 
   public SourceImplementationRead webBackendCreateSourceImplementationAndCheck(
-      SourceImplementationCreate sourceImplementationCreate)
+                                                                               SourceImplementationCreate sourceImplementationCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     SourceImplementationRead sourceImplementation = sourceImplementationsHandler
         .createSourceImplementation(sourceImplementationCreate);
