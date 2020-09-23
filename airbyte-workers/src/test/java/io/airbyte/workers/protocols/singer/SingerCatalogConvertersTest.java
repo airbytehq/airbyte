@@ -68,11 +68,6 @@ class SingerCatalogConvertersTest {
   }
 
   @Test
-  void canDeserializeStripeCatalog() {
-    assertDoesNotThrow(() -> Jsons.deserialize(MoreResources.readResource("stripe_catalog.json"), SingerCatalog.class));
-  }
-
-  @Test
   void singerTypeToAirbyte() {
     Arrays.stream(SingerType.values()).forEach(singerType -> assertDoesNotThrow(() -> SingerCatalogConverters.singerTypeToDataType(singerType)));
   }

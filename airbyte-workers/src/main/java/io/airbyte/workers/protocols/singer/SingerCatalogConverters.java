@@ -111,6 +111,7 @@ public class SingerCatalogConverters {
                       .withStream(stream.getStream())
                       .withTableName(stream.getTableName())
                       .withTapStreamId(stream.getTapStreamId())
+                      .withKeyProperties(stream.getKeyProperties())
                       // TODO
                       .withMetadata(newMetadata)
                       // todo (cgardens) - this will not work for legacy catalogs. want to handle this
@@ -157,7 +158,9 @@ public class SingerCatalogConverters {
 
                                 final Field field = new Field();
                                 field.withName(fieldName);
-                                field.withDataType(singerTypesToDataType(singerField.getType()));
+                                if (singerField.getType() != null) {
+                                  field.withDataType(singerTypesToDataType(singerField.getType()));
+                                }
                                 // in discovery, you can find fields that are replicated by
                                 // default. we set those to selected. the rest are not.
                                 field.withSelected(isSelected(singerFieldMetadata));

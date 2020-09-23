@@ -30,6 +30,7 @@ dependencies {
     integrationTestImplementation "com.stripe:stripe-java:20.6.0"
 
     integrationTestImplementation project(':airbyte-workers')
+    integrationTestImplementation project(':airbyte-singer')
 }
 
 task imageName {
