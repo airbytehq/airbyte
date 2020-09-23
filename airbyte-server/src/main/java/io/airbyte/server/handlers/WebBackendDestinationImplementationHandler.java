@@ -33,47 +33,47 @@ import java.io.IOException;
 
 public class WebBackendDestinationImplementationHandler {
 
-    private final DestinationImplementationsHandler destinationImplementationsHandler;
+  private final DestinationImplementationsHandler destinationImplementationsHandler;
 
-    private final SchedulerHandler schedulerHandler;
+  private final SchedulerHandler schedulerHandler;
 
-    public WebBackendDestinationImplementationHandler(
-            final DestinationImplementationsHandler destinationImplementationsHandler,
-            final SchedulerHandler schedulerHandler) {
-        this.destinationImplementationsHandler = destinationImplementationsHandler;
-        this.schedulerHandler = schedulerHandler;
+  public WebBackendDestinationImplementationHandler(
+      final DestinationImplementationsHandler destinationImplementationsHandler,
+      final SchedulerHandler schedulerHandler) {
+    this.destinationImplementationsHandler = destinationImplementationsHandler;
+    this.schedulerHandler = schedulerHandler;
+  }
+
+  public DestinationImplementationRead webBackendCreateDestinationImplementationAndCheck(
+      DestinationImplementationCreate destinationImplementationCreate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    DestinationImplementationRead destinationImplementation =
+        destinationImplementationsHandler
+            .createDestinationImplementation(destinationImplementationCreate);
+
+    final DestinationImplementationIdRequestBody destinationImplementationIdRequestBody = new DestinationImplementationIdRequestBody()
+        .destinationImplementationId(destinationImplementation.getDestinationImplementationId());
+
+    CheckConnectionRead checkConnectionRead = null;
+
+    boolean syncFailed;
+    try {
+      checkConnectionRead = schedulerHandler
+          .checkDestinationImplementationConnection(destinationImplementationIdRequestBody);
+    } finally {
+      syncFailed = checkConnectionRead == null
+          || CheckConnectionRead.StatusEnum.FAILURE == checkConnectionRead.getStatus();
+      if (syncFailed) {
+        destinationImplementationsHandler
+            .deleteDestinationImplementation(destinationImplementationIdRequestBody);
+      }
     }
 
-    public DestinationImplementationRead webBackendCreateDestinationImplementationAndCheck(
-            DestinationImplementationCreate destinationImplementationCreate)
-            throws ConfigNotFoundException, IOException, JsonValidationException {
-        DestinationImplementationRead destinationImplementation =
-                destinationImplementationsHandler
-                        .createDestinationImplementation(destinationImplementationCreate);
-
-        final DestinationImplementationIdRequestBody destinationImplementationIdRequestBody = new DestinationImplementationIdRequestBody()
-                .destinationImplementationId(destinationImplementation.getDestinationImplementationId());
-
-        CheckConnectionRead checkConnectionRead = null;
-
-        boolean syncFailed;
-        try {
-            checkConnectionRead = schedulerHandler
-                    .checkDestinationImplementationConnection(destinationImplementationIdRequestBody);
-        } finally {
-            syncFailed = checkConnectionRead == null
-                    || CheckConnectionRead.StatusEnum.FAILURE == checkConnectionRead.getStatus();
-            if (syncFailed) {
-                destinationImplementationsHandler
-                        .deleteDestinationImplementation(destinationImplementationIdRequestBody);
-            }
-        }
-
-        if (syncFailed) {
-            throw new KnownException(400, "Unable to connect to destination");
-        }
-
-        return destinationImplementation;
+    if (syncFailed) {
+      throw new KnownException(400, "Unable to connect to destination");
     }
+
+    return destinationImplementation;
+  }
 
 }

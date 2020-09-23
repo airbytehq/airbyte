@@ -36,45 +36,45 @@ import java.io.IOException;
 
 public class WebBackendSourceImplementationHandler {
 
-    private final SourceImplementationsHandler sourceImplementationsHandler;
+  private final SourceImplementationsHandler sourceImplementationsHandler;
 
-    private final SchedulerHandler schedulerHandler;
+  private final SchedulerHandler schedulerHandler;
 
-    public WebBackendSourceImplementationHandler(
-            final SourceImplementationsHandler sourceImplementationsHandler,
-            final SchedulerHandler schedulerHandler) {
-        this.sourceImplementationsHandler = sourceImplementationsHandler;
-        this.schedulerHandler = schedulerHandler;
+  public WebBackendSourceImplementationHandler(
+      final SourceImplementationsHandler sourceImplementationsHandler,
+      final SchedulerHandler schedulerHandler) {
+    this.sourceImplementationsHandler = sourceImplementationsHandler;
+    this.schedulerHandler = schedulerHandler;
+  }
+
+  public SourceImplementationRead webBackendCreateSourceImplementationAndCheck(
+      SourceImplementationCreate sourceImplementationCreate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    SourceImplementationRead sourceImplementation = sourceImplementationsHandler
+        .createSourceImplementation(sourceImplementationCreate);
+
+    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody()
+        .sourceImplementationId(sourceImplementation.getSourceImplementationId());
+
+    CheckConnectionRead checkConnectionRead = null;
+
+    boolean syncFailed;
+    try {
+      checkConnectionRead = schedulerHandler
+          .checkSourceImplementationConnection(sourceImplementationIdRequestBody);
+    } finally {
+      syncFailed = checkConnectionRead == null
+          || CheckConnectionRead.StatusEnum.FAILURE == checkConnectionRead.getStatus();
+      if (syncFailed) {
+        sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
+      }
     }
 
-    public SourceImplementationRead webBackendCreateSourceImplementationAndCheck(
-            SourceImplementationCreate sourceImplementationCreate)
-            throws ConfigNotFoundException, IOException, JsonValidationException {
-        SourceImplementationRead sourceImplementation = sourceImplementationsHandler
-                .createSourceImplementation(sourceImplementationCreate);
-
-        final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody()
-                .sourceImplementationId(sourceImplementation.getSourceImplementationId());
-
-        CheckConnectionRead checkConnectionRead = null;
-
-        boolean syncFailed;
-        try {
-            checkConnectionRead = schedulerHandler
-                    .checkSourceImplementationConnection(sourceImplementationIdRequestBody);
-        } finally {
-            syncFailed = checkConnectionRead == null
-                    || CheckConnectionRead.StatusEnum.FAILURE == checkConnectionRead.getStatus();
-            if (syncFailed) {
-                sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
-            }
-        }
-
-        if (syncFailed) {
-            throw new KnownException(400, "Unable to connect to source");
-        }
-
-        return sourceImplementation;
+    if (syncFailed) {
+      throw new KnownException(400, "Unable to connect to source");
     }
+
+    return sourceImplementation;
+  }
 
 }
