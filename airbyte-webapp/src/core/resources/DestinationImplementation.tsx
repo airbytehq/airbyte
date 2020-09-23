@@ -1,5 +1,5 @@
 import { Resource } from "rest-hooks";
-import BaseResource, { NetworkError } from "./BaseResource";
+import BaseResource from "./BaseResource";
 
 export interface DestinationImplementation {
   destinationImplementationId: string;
@@ -42,7 +42,28 @@ export default class DestinationImplementationResource extends BaseResource
   static updateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.partialUpdateShape(),
-      schema: this.asSchema()
+      fetch: async (
+        params: { destinationImplementationId: string },
+        body: any
+      ): Promise<any> => {
+        const destinationResult = await this.fetch(
+          "post",
+          `${this.url(params)}/update`,
+          body
+        );
+
+        const checkConnectionResult = await this.fetch(
+          "post",
+          `${this.url(params)}/check_connection`,
+          params
+        );
+
+        return {
+          destination: destinationResult,
+          ...checkConnectionResult
+        };
+      },
+      schema: { destination: this.asSchema(), status: "", message: "" }
     };
   }
 
@@ -61,34 +82,6 @@ export default class DestinationImplementationResource extends BaseResource
         return response;
       },
       schema: this.asSchema()
-    };
-  }
-
-  static checkConnectionShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.detailShape(),
-      getFetchKey: (params: { destinationImplementationId: string }) =>
-        `POST /destination_implementations/check_connection` +
-        JSON.stringify(params),
-      fetch: async (params: {
-        destinationImplementationId?: string;
-      }): Promise<any> => {
-        const a = await this.fetch(
-          "post",
-          `${this.url(params)}/check_connection`,
-          params
-        );
-
-        if (a.status === "failure") {
-          const e = new NetworkError(a);
-          e.message = a.message;
-          throw e;
-        }
-
-        return {
-          destinationImplementationId: params.destinationImplementationId
-        };
-      }
     };
   }
 }

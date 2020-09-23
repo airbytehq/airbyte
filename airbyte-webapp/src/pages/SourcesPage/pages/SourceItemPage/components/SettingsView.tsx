@@ -28,9 +28,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const updateConnection = useFetcher(ConnectionResource.updateShape());
-  const checkConnection = useFetcher(
-    SourceImplementationResource.checkConnectionShape()
-  );
+
   const updateStateConnection = useFetcher(
     ConnectionResource.updateStateShape()
   );
@@ -61,48 +59,46 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
       item => item.value === values.frequency
     );
     setErrorMessage("");
-    try {
-      if (values.frequency !== schedule?.value) {
-        await updateConnection(
-          {},
-          {
-            connectionId: sourceData.connectionId,
-            syncSchema: sourceData.syncSchema,
-            status: sourceData.status,
-            schedule: frequencyData?.config
-          }
-        );
-      }
-
-      await updateSourceImplementation(
+    if (values.frequency !== schedule?.value) {
+      await updateConnection(
         {},
         {
+          connectionId: sourceData.connectionId,
+          syncSchema: sourceData.syncSchema,
+          status: sourceData.status,
+          schedule: frequencyData?.config
+        }
+      );
+    }
+
+    const result = await updateSourceImplementation(
+      {
+        sourceImplementationId: sourceData.source?.sourceImplementationId || ""
+      },
+      {
+        name: values.name,
+        sourceImplementationId: sourceData.source?.sourceImplementationId,
+        connectionConfiguration: values.connectionConfiguration
+      }
+    );
+
+    await updateStateConnection(
+      {},
+      {
+        ...sourceData,
+        schedule: frequencyData?.config,
+        source: {
+          ...sourceData.source,
           name: values.name,
-          sourceImplementationId: sourceData.source?.sourceImplementationId,
           connectionConfiguration: values.connectionConfiguration
         }
-      );
+      }
+    );
 
-      await updateStateConnection(
-        {},
-        {
-          ...sourceData,
-          schedule: frequencyData?.config,
-          source: {
-            ...sourceData.source,
-            name: values.name,
-            connectionConfiguration: values.connectionConfiguration
-          }
-        }
-      );
-
-      await checkConnection({
-        sourceImplementationId: sourceData.source?.sourceImplementationId
-      });
-
+    if (result.status === "failure") {
+      setErrorMessage(result.message);
+    } else {
       setSaved(true);
-    } catch (e) {
-      setErrorMessage(e.message);
     }
   };
 

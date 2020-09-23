@@ -41,34 +41,29 @@ const DestinationPage: React.FC = () => {
     DestinationImplementationResource.updateShape()
   );
 
-  const checkConnection = useFetcher(
-    DestinationImplementationResource.checkConnectionShape()
-  );
-
   const onSubmitForm = async (values: {
     name: string;
     serviceType: string;
     connectionConfiguration?: any;
   }) => {
     setErrorMessage("");
-    try {
-      await updateDestination(
-        {},
-        {
-          name: values.name,
-          destinationImplementationId:
-            currentDestination.destinationImplementationId,
-          connectionConfiguration: values.connectionConfiguration
-        }
-      );
-      await checkConnection({
+    const result = await updateDestination(
+      {
         destinationImplementationId:
           currentDestination.destinationImplementationId
-      });
+      },
+      {
+        name: values.name,
+        destinationImplementationId:
+          currentDestination.destinationImplementationId,
+        connectionConfiguration: values.connectionConfiguration
+      }
+    );
 
+    if (result.status === "failure") {
+      setErrorMessage(result.message);
+    } else {
       setSaved(true);
-    } catch (e) {
-      setErrorMessage(e.message);
     }
   };
 
