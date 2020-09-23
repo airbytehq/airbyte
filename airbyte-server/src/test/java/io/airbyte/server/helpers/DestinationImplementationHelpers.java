@@ -25,8 +25,10 @@
 package io.airbyte.server.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.api.model.DestinationImplementationRead;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.StandardDestination;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,6 +58,19 @@ public class DestinationImplementationHelpers {
         .withDestinationImplementationId(destinationImplementationId)
         .withConfiguration(implementationJson)
         .withTombstone(false);
+  }
+
+  public static DestinationImplementationRead getDestinationImplementationRead(DestinationConnectionImplementation destinationImplementation,
+                                                                               StandardDestination standardDestination) {
+
+    return new DestinationImplementationRead()
+        .destinationId(standardDestination.getDestinationId())
+        .workspaceId(destinationImplementation.getWorkspaceId())
+        .destinationSpecificationId(destinationImplementation.getDestinationSpecificationId())
+        .destinationImplementationId(destinationImplementation.getDestinationImplementationId())
+        .connectionConfiguration(destinationImplementation.getConfiguration())
+        .name(destinationImplementation.getName())
+        .destinationName(standardDestination.getName());
   }
 
 }
