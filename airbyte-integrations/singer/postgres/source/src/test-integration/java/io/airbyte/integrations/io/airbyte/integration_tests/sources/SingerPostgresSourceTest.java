@@ -178,6 +178,8 @@ public class SingerPostgresSourceTest {
       // something we want a test to fail over.
       // So we copy those "irrelevant" fields to the message before checking for equality
       message.setTimeExtracted(containedMessage.getTimeExtracted());
+      message.setKeyProperties(containedMessage.getKeyProperties());
+      message.setBookmarkProperties(containedMessage.getBookmarkProperties());
       // the value field is used for state messages -- no need to compare the exact state messages
       message.setValue(containedMessage.getValue());
       // additional props are not part of the spec

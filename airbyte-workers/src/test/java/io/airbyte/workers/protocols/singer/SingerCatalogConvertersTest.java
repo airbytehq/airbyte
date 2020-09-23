@@ -24,6 +24,7 @@
 
 package io.airbyte.workers.protocols.singer;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.json.Jsons;
@@ -32,8 +33,10 @@ import io.airbyte.config.Schema;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
 import io.airbyte.singer.SingerCatalog;
 import io.airbyte.singer.SingerMetadataChild;
+import io.airbyte.singer.SingerType;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 class SingerCatalogConvertersTest {
@@ -62,6 +65,11 @@ class SingerCatalogConvertersTest {
         .withReplicationMethod(SingerMetadataChild.ReplicationMethod.FULL_TABLE);
 
     assertEquals(expectedCatalog, actualCatalog);
+  }
+
+  @Test
+  void singerTypeToAirbyte() {
+    Arrays.stream(SingerType.values()).forEach(singerType -> assertDoesNotThrow(() -> SingerCatalogConverters.singerTypeToDataType(singerType)));
   }
 
   @Test
