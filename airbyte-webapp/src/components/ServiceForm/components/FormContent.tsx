@@ -1,5 +1,5 @@
 import { Field, FieldProps } from "formik";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedHTMLMessage, FormattedMessage, useIntl } from "react-intl";
 import React from "react";
 import styled from "styled-components";
 
@@ -160,7 +160,14 @@ const FormContent: React.FC<IProps> = ({
                       />
                     )
                   }
-                  message={condition?.description}
+                  message={
+                    condition?.description ? (
+                      <FormattedHTMLMessage
+                        id="1"
+                        defaultMessage={condition?.description}
+                      />
+                    ) : null
+                  }
                   placeholder={
                     condition?.examples?.length ? condition?.examples[0] : ""
                   }
