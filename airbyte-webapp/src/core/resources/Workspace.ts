@@ -7,6 +7,9 @@ export interface Workspace {
   slug: string;
   initialSetupComplete: boolean;
   onboardingComplete: boolean;
+  anonymousDataCollection: boolean;
+  news: boolean;
+  securityUpdates: boolean;
 }
 
 export default class WorkspaceResource extends BaseResource
@@ -16,6 +19,9 @@ export default class WorkspaceResource extends BaseResource
   readonly slug: string = "";
   readonly initialSetupComplete: boolean = false;
   readonly onboardingComplete: boolean = false;
+  readonly anonymousDataCollection: boolean = false;
+  readonly news: boolean = false;
+  readonly securityUpdates: boolean = false;
 
   pk() {
     return this.workspaceId?.toString();

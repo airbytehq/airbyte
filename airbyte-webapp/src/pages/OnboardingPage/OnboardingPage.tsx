@@ -280,8 +280,12 @@ const OnboardingPage: React.FC = () => {
       await updateWorkspace(
         {},
         {
-          ...workspace,
-          onboardingComplete: true
+          workspaceId: workspace.workspaceId,
+          initialSetupComplete: workspace.initialSetupComplete,
+          onboardingComplete: workspace.onboardingComplete,
+          anonymousDataCollection: workspace.anonymousDataCollection,
+          news: workspace.news,
+          securityUpdates: workspace.securityUpdates
         }
       );
 
