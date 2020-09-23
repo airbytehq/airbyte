@@ -20,7 +20,7 @@ import useRouter from "../../components/hooks/useRouterHook";
 import { Source } from "../../core/resources/Source";
 import { SyncSchema } from "../../core/resources/Schema";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
-// import WorkspaceResource from "../../core/resources/Workspace";
+import WorkspaceResource from "../../core/resources/Workspace";
 
 const Content = styled.div`
   width: 100%;
@@ -84,10 +84,10 @@ const OnboardingPage: React.FC = () => {
     DestinationImplementationResource.createShape()
   );
   const createConnection = useFetcher(ConnectionResource.createShape());
-  // const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
-  // const workspace = useResource(WorkspaceResource.detailShape(), {
-  //   workspaceId: config.ui.workspaceId
-  // });
+  const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
+  const workspace = useResource(WorkspaceResource.detailShape(), {
+    workspaceId: config.ui.workspaceId
+  });
 
   const {
     sourcesDropDownData,
@@ -277,14 +277,13 @@ const OnboardingPage: React.FC = () => {
         connector_destination_id: destinationConnector?.destinationId
       });
 
-      // await updateWorkspace(
-      //     {},
-      //     {
-      //       workspaceId: config.ui.workspaceId,
-      //       onboardingComplete: true,
-      //       ...data
-      //     }
-      // );
+      await updateWorkspace(
+        {},
+        {
+          ...workspace,
+          onboardingComplete: true
+        }
+      );
 
       push(Routes.Root);
     } catch (e) {
