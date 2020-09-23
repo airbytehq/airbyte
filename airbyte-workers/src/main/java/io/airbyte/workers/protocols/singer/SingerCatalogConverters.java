@@ -24,6 +24,7 @@
 
 package io.airbyte.workers.protocols.singer;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
@@ -110,6 +111,7 @@ public class SingerCatalogConverters {
                       .withStream(stream.getStream())
                       .withTableName(stream.getTableName())
                       .withTapStreamId(stream.getTapStreamId())
+                      .withKeyProperties(stream.getKeyProperties())
                       // TODO
                       .withMetadata(newMetadata)
                       // todo (cgardens) - this will not work for legacy catalogs. want to handle this
@@ -156,7 +158,9 @@ public class SingerCatalogConverters {
 
                                 final Field field = new Field();
                                 field.withName(fieldName);
-                                field.withDataType(singerTypesToDataType(singerField.getType()));
+                                if (singerField.getType() != null) {
+                                  field.withDataType(singerTypesToDataType(singerField.getType()));
+                                }
                                 // in discovery, you can find fields that are replicated by
                                 // default. we set those to selected. the rest are not.
                                 field.withSelected(isSelected(singerFieldMetadata));
@@ -248,7 +252,8 @@ public class SingerCatalogConverters {
    * @param singerType - singer's field data type
    * @return best match for our own data type
    */
-  private static DataType singerTypeToDataType(SingerType singerType) {
+  @VisibleForTesting
+  static DataType singerTypeToDataType(SingerType singerType) {
     switch (singerType) {
       case STRING:
         return DataType.STRING;
@@ -261,6 +266,10 @@ public class SingerCatalogConverters {
         return DataType.STRING; // todo (cgardens) - hackasaurus rex
       case BOOLEAN:
         return DataType.BOOLEAN;
+      case OBJECT:
+        return DataType.OBJECT;
+      case ARRAY:
+        return DataType.ARRAY;
       default:
         throw new RuntimeException(
             String.format("could not map SingerType: %s to DataType", singerType));
