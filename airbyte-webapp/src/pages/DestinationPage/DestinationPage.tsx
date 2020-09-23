@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource, useFetcher } from "rest-hooks";
@@ -18,6 +18,9 @@ const Content = styled.div`
 `;
 
 const DestinationPage: React.FC = () => {
+  const [saved, setSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const { destinations } = useResource(
     DestinationImplementationResource.listShape(),
     {
@@ -38,20 +41,35 @@ const DestinationPage: React.FC = () => {
     DestinationImplementationResource.updateShape()
   );
 
+  const checkConnection = useFetcher(
+    DestinationImplementationResource.checkConnectionShape()
+  );
+
   const onSubmitForm = async (values: {
     name: string;
     serviceType: string;
     connectionConfiguration?: any;
   }) => {
-    await updateDestination(
-      {},
-      {
-        name: values.name,
+    setErrorMessage("");
+    try {
+      await updateDestination(
+        {},
+        {
+          name: values.name,
+          destinationImplementationId:
+            currentDestination.destinationImplementationId,
+          connectionConfiguration: values.connectionConfiguration
+        }
+      );
+      await checkConnection({
         destinationImplementationId:
-          currentDestination.destinationImplementationId,
-        connectionConfiguration: values.connectionConfiguration
-      }
-    );
+          currentDestination.destinationImplementationId
+      });
+
+      setSaved(true);
+    } catch (e) {
+      setErrorMessage(e.message);
+    }
   };
 
   return (
@@ -80,6 +98,10 @@ const DestinationPage: React.FC = () => {
               serviceType: destination.destinationId
             }}
             specifications={destinationSpecification.connectionSpecification}
+            successMessage={
+              saved && <FormattedMessage id="form.changesSaved" />
+            }
+            errorMessage={errorMessage}
           />
         </ContentCard>
       </Content>

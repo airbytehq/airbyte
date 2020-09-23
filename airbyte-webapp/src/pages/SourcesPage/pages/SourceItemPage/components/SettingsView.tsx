@@ -103,7 +103,6 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
       setSaved(true);
     } catch (e) {
       setErrorMessage(e.message);
-      console.log("ERROR", e, e.message, e.status);
     }
   };
 
