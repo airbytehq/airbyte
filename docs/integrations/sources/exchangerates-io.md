@@ -8,7 +8,7 @@ It pulls all its data from [https://exchangeratesapi.io/](https://exchangeratesa
 
 #### Output schema
 
-It contains one stream: `exchange_rate` 
+It contains one stream: `exchange_rate`
 
 Each record in the stream contains many fields:
 
