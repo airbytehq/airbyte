@@ -12,7 +12,7 @@ cd airbyte
 docker-compose up
 ```
 
-Once you see an Airbyte banner, the UI should be ready to go at [http://localhost:8000/](http://localhost:8000/). You should see an onboarding page. Enter your email if you want updates about Airbyte and continue.
+Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/](http://localhost:8000/). You should see an onboarding page. Enter your email if you want updates about Airbyte and continue.
 
 Now you will see a wizard that allows you choose the data you want to send through Airbyte. As of our alpha launch, we have one database source \(Postgres\), two API sources \(an exchange rate API and the Stripe API\), and a file source. We're currently building an integration framework that makes it easy to create sources and destinations, so you should expect many more soon. Please reach out to us if you need a specific integration or would like to help build one.
 
@@ -97,6 +97,5 @@ docker exec airbyte-destination psql -U postgres -c "SELECT (id, col1, col2) FRO
 And there you have it. You've taken data from one database and replicated it to another. All of the actual configuration for this replication only took place in the UI. That's it for the tutorial, but this is just the beginning of Airbyte. If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so If you see any rough edges or want to request an integration you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue. 
 
 Thank you and we hope you enjoy using Airbyte.
-
 
 
