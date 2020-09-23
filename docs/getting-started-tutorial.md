@@ -29,7 +29,7 @@ Add a table to the source database:
 docker exec -it airbyte-source psql -U postgres -c "CREATE TABLE users(id SERIAL PRIMARY KEY, col1 VARCHAR(200));"
 ```
 
-Run a loop which will add records to this table every few seconds:
+Let's add some data to this table. We will use a loop so each time we sync and inspect the contents of the destination database, we will see new data:
 
 ```text
 while true
