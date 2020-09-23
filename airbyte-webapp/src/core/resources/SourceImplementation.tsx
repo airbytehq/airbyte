@@ -1,5 +1,5 @@
 import { Resource } from "rest-hooks";
-import BaseResource from "./BaseResource";
+import BaseResource, { NetworkError } from "./BaseResource";
 
 export interface SourceImplementation {
   sourceImplementationId: string;
@@ -61,6 +61,34 @@ export default class SourceImplementationResource extends BaseResource
         return response;
       },
       schema: this.asSchema()
+    };
+  }
+
+  static checkConnectionShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      getFetchKey: (params: { sourceImplementationId: string }) =>
+        `POST /source_implementations/check_connection` +
+        JSON.stringify(params),
+      fetch: async (params: {
+        sourceImplementationId?: string;
+      }): Promise<any> => {
+        const a = await this.fetch(
+          "post",
+          `${this.url(params)}/check_connection`,
+          params
+        );
+
+        if (a.status === "failure") {
+          const e = new NetworkError(a);
+          e.message = a.message;
+          throw e;
+        }
+
+        return {
+          sourceImplementationId: params.sourceImplementationId
+        };
+      }
     };
   }
 }

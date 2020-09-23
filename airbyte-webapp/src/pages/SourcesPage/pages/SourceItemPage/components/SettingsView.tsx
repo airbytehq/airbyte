@@ -24,8 +24,12 @@ const Content = styled.div`
 
 const SettingsView: React.FC<IProps> = ({ sourceData }) => {
   const [saved, setSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const updateConnection = useFetcher(ConnectionResource.updateShape());
+  const checkConnection = useFetcher(
+    SourceImplementationResource.checkConnectionShape()
+  );
   const updateStateConnection = useFetcher(
     ConnectionResource.updateStateShape()
   );
@@ -55,42 +59,51 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
+    setErrorMessage("");
+    try {
+      if (values.frequency !== schedule?.value) {
+        await updateConnection(
+          {},
+          {
+            connectionId: sourceData.connectionId,
+            syncSchema: sourceData.syncSchema,
+            status: sourceData.status,
+            schedule: frequencyData?.config
+          }
+        );
+      }
 
-    if (values.frequency !== schedule?.value) {
-      await updateConnection(
+      await updateSourceImplementation(
         {},
         {
-          connectionId: sourceData.connectionId,
-          syncSchema: sourceData.syncSchema,
-          status: sourceData.status,
-          schedule: frequencyData?.config
-        }
-      );
-    }
-
-    await updateSourceImplementation(
-      {},
-      {
-        name: values.name,
-        sourceImplementationId: sourceData.source?.sourceImplementationId,
-        connectionConfiguration: values.connectionConfiguration
-      }
-    );
-
-    await updateStateConnection(
-      {},
-      {
-        ...sourceData,
-        schedule: frequencyData?.config,
-        source: {
-          ...sourceData.source,
           name: values.name,
+          sourceImplementationId: sourceData.source?.sourceImplementationId,
           connectionConfiguration: values.connectionConfiguration
         }
-      }
-    );
+      );
 
-    setSaved(true);
+      await updateStateConnection(
+        {},
+        {
+          ...sourceData,
+          schedule: frequencyData?.config,
+          source: {
+            ...sourceData.source,
+            name: values.name,
+            connectionConfiguration: values.connectionConfiguration
+          }
+        }
+      );
+
+      await checkConnection({
+        sourceImplementationId: sourceData.source?.sourceImplementationId
+      });
+
+      setSaved(true);
+    } catch (e) {
+      setErrorMessage(e.message);
+      console.log("ERROR", e, e.message, e.status);
+    }
   };
 
   return (
@@ -107,6 +120,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
             }
           ]}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
+          errorMessage={errorMessage}
           formValues={{
             ...sourceData.source?.connectionConfiguration,
             name: sourceData.source?.name,

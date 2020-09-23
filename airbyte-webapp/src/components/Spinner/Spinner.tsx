@@ -3,6 +3,7 @@ import styled, { keyframes } from "styled-components";
 
 type IProps = {
   backgroundColor?: string;
+  small?: boolean;
 };
 
 export const SpinAnimation = keyframes`
@@ -14,10 +15,10 @@ export const SpinAnimation = keyframes`
   }
 `;
 
-const SpinnerWheel = styled.div`
+const SpinnerWheel = styled.div<{ small?: boolean }>`
   display: inline-block;
-  height: 42px;
-  width: 42px;
+  height: ${({ small }) => (small ? 30 : 42)}px;
+  width: ${({ small }) => (small ? 30 : 42)}px;
   border-radius: 50%;
   border: 4px solid ${({ theme }) => theme.primaryColor12};
   position: relative;
@@ -34,8 +35,8 @@ const BreakRec = styled.div<IProps>`
   margin: 0 auto;
 `;
 
-const Spinner: React.FC<IProps> = ({ backgroundColor }) => (
-  <SpinnerWheel>
+const Spinner: React.FC<IProps> = ({ backgroundColor, small }) => (
+  <SpinnerWheel small={small}>
     <BreakRec backgroundColor={backgroundColor} />
   </SpinnerWheel>
 );
