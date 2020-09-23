@@ -18,5 +18,7 @@ GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml -f docker
 echo "Completed building and publishing..."
 
 echo "Tagging git revision..."
-git tag -a v"$VERSION" -m "Version $VERSION"
+TAG_NAME="v$VERSION"
+git tag -a "$TAG_NAME" -m "Version $VERSION"
+git push origin "$TAG_NAME"
 echo "Completed.."
