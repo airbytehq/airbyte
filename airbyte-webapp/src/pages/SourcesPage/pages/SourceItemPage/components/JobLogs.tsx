@@ -1,5 +1,5 @@
 import React from "react";
-import { useResource } from "rest-hooks";
+import { useResource, useSubscription } from "rest-hooks";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -18,8 +18,9 @@ const Logs = styled.div`
 
 const JobLogs: React.FC<IProps> = ({ id }) => {
   const job = useResource(JobResource.detailShape(), { id });
+  useSubscription(JobResource.detailShape(), { id });
 
-  if (!job.logs.logLines.length) {
+  if (!job.logs.logLines?.length) {
     return (
       <Logs>
         <FormattedMessage id="sources.emptyLogs" />
@@ -27,7 +28,6 @@ const JobLogs: React.FC<IProps> = ({ id }) => {
     );
   }
 
-  // now logs always empty. TODO: Test ui with data
   return (
     <Logs>
       {job.logs.logLines.map((item, key) => (
