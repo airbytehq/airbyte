@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 import { useFetcher } from "rest-hooks";
 
@@ -7,8 +7,13 @@ import { H1 } from "../../components/Titles";
 import PreferencesForm from "./components/PreferencesForm";
 import WorkspaceResource from "../../core/resources/Workspace";
 import config from "../../config";
+import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 
 const PreferencesPage: React.FC = () => {
+  useEffect(() => {
+    AnalyticsService.page("Preferences Page");
+  }, []);
+
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
 
   const onSubmit = async (data: {
@@ -25,6 +30,14 @@ const PreferencesPage: React.FC = () => {
         ...data
       }
     );
+
+    AnalyticsService.track("Specified Preferences", {
+      user_id: config.ui.workspaceId,
+      email: data.email,
+      anonymized: data.anonymousDataCollection,
+      subscribed_newsletter: data.news,
+      subscribed_security: data.securityUpdates
+    });
   };
 
   return (

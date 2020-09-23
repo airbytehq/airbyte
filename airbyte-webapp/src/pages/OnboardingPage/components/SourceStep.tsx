@@ -7,6 +7,9 @@ import ServiceForm from "../../../components/ServiceForm";
 import SourceSpecificationResource, {
   SourceSpecification
 } from "../../../core/resources/SourceSpecification";
+import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
+import config from "../../../config";
+import PrepareDropDownLists from "./PrepareDropDownLists";
 
 type IProps = {
   onSubmit: (values: {
@@ -50,8 +53,20 @@ const SourceStep: React.FC<IProps> = ({
 }) => {
   const [sourceId, setSourceId] = useState("");
   const specification = useSourceSpecificationLoad(sourceId);
+  const { getSourceById } = PrepareDropDownLists();
 
-  const onDropDownSelect = (sourceId: string) => setSourceId(sourceId);
+  const onDropDownSelect = (sourceId: string) => {
+    const connector = getSourceById(sourceId);
+
+    AnalyticsService.track("New Source - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Select a connector",
+      connector_source: connector?.name,
+      connector_source_id: connector?.sourceId
+    });
+
+    setSourceId(sourceId);
+  };
   const onSubmitForm = async (values: {
     name: string;
     serviceType: string;

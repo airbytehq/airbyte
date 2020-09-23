@@ -10,6 +10,9 @@ import SourceResource from "../../../../../core/resources/Source";
 import Spinner from "../../../../../components/Spinner";
 import { SyncSchema } from "../../../../../core/resources/Schema";
 import ConnectionForm from "./ConnectionForm";
+import { IDataItem } from "../../../../../components/DropDown/components/ListItem";
+import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
+import config from "../../../../../config";
 
 type IProps = {
   onSubmit: (values: { frequency: string; syncSchema: SyncSchema }) => void;
@@ -33,6 +36,18 @@ const CreateSourcePage: React.FC<IProps> = ({
     sourceId
   });
 
+  const onSelectFrequency = (item: IDataItem) => {
+    AnalyticsService.track("New Connection - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Select a frequency",
+      frequency: item?.text,
+      connector_source: source.name,
+      connector_source_id: source.sourceId,
+      connector_destination: destination.name,
+      connector_destination_id: destination.destinationId
+    });
+  };
+
   return (
     <>
       <ConnectionBlock
@@ -48,6 +63,7 @@ const CreateSourcePage: React.FC<IProps> = ({
           }
         >
           <ConnectionForm
+            onSelectFrequency={onSelectFrequency}
             onSubmit={onSubmit}
             sourceImplementationId={sourceImplementationId}
           />

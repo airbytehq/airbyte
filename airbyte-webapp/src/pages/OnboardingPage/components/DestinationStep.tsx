@@ -9,6 +9,9 @@ import DestinationSpecificationResource, {
   DestinationSpecification
 } from "../../../core/resources/DestinationSpecification";
 import SourceResource from "../../../core/resources/Source";
+import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
+import config from "../../../config";
+import PrepareDropDownLists from "./PrepareDropDownLists";
 
 type IProps = {
   dropDownData: Array<{ text: string; value: string; img?: string }>;
@@ -59,8 +62,18 @@ const DestinationStep: React.FC<IProps> = ({
   const currentSource = useResource(SourceResource.detailShape(), {
     sourceId: currentSourceId
   });
+  const { getDestinationById } = PrepareDropDownLists();
 
-  const onDropDownSelect = (sourceId: string) => setDestinationId(sourceId);
+  const onDropDownSelect = (sourceId: string) => {
+    const destinationConnector = getDestinationById(sourceId);
+    AnalyticsService.track("New Destination - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Select a connector",
+      connector_destination: destinationConnector?.name,
+      connector_destination_id: destinationConnector?.destinationId
+    });
+    setDestinationId(sourceId);
+  };
   const onSubmitForm = async (values: {
     name: string;
     serviceType: string;
