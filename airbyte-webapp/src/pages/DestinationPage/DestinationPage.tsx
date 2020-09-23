@@ -84,7 +84,7 @@ const DestinationPage: React.FC = () => {
         >
           <ServiceForm
             onSubmit={onSubmitForm}
-            formType="source"
+            formType="destination"
             dropDownData={[
               {
                 value: destination.destinationId,
