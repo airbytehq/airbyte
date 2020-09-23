@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for Dataline
+about: Suggest an idea for Airbyte
 title: ''
 labels: type/enhancement
 assignees: ''
@@ -11,7 +11,7 @@ assignees: ''
 What are you trying to do, and why is it hard? A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
 ## Describe the solution you’d like
-A clear and concise description of what you want to see happen or the change you would like to see
+A clear and concise description of what you want to see happen, or the change you would like to see
 
 ## Describe the alternative you’ve considered or used
 A clear and concise description of any alternative solutions or features you've considered or are using today.
