@@ -35,15 +35,15 @@ Run a loop which will add records to this table every few seconds:
 while true
 do
     COL1=$(cat /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
-	docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col1) VALUES('$COL1');"
-	sleep 3
+    docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col1) VALUES('$COL1');"
+    sleep 3
 done
 ```
 
-Return to the UI and configure a source Postgres database. Use the name `airbyte-source` for the name and `Postgres`as the type. Since Airbyte is running locally, we'll need to point to the Docker local host `host.docker.internal`. Fill in the configuration fields as follows:
+Return to the UI and configure a source Postgres database. Use the name `airbyte-source` for the name and `Postgres`as the type. Fill in the configuration fields as follows:
 
 ```text
-Host: host.docker.internal
+Host: localhost
 Port: 2000
 User: postgres
 Password: password
@@ -53,7 +53,7 @@ DB Name: postgres
 Click on `Set Up Source` and the wizard should move on to allow you to configure a destination. We currently support BigQuery, Postgres, and file output for debugging, but Redshift, Snowflake, and other destinations are coming soon. For now, configure the destination Postgres database:
 
 ```text
-Host: host.docker.internal
+Host: localhost
 Port: 3000
 User: postgres
 Password: password
@@ -62,9 +62,9 @@ DB Name: postgres
 
 After adding the destination, you can choose what tables and columns you want to sync. For this demo we recommend leaving the defaults and selecting "Every 5 Minutes" as the frequency. Click `Set Up Connection` to finish setting up the sync.
 
-You should now see a list of sources with the source you just added. Click on it to find more information about your connection. This is the page where you can update any settings about this source and how it syncs. 
+You should now see a list of sources with the source you just added. Click on it to find more information about your connection. This is the page where you can update any settings about this source and how it syncs.
 
-There should be a `Completed` job under the history section. If you click on that run, it will show logs from that run. One of biggest problems we've seen in tools like Fivetran is the lack of visibility when debugging. In Airbyte, allowing full log access and the ability to debug and fix integration problems is one of our highest priorities. We'll be working hard to make these logs accessible and understandable. 
+There should be a `Completed` job under the history section. If you click on that run, it will show logs from that run. One of biggest problems we've seen in tools like Fivetran is the lack of visibility when debugging. In Airbyte, allowing full log access and the ability to debug and fix integration problems is one of our highest priorities. We'll be working hard to make these logs accessible and understandable.
 
 Now let's verify that this worked. Let's output the contents of the destination db:
 
@@ -74,7 +74,7 @@ docker exec airbyte-destination psql -U postgres -c "SELECT (id, col1) FROM publ
 
 You should see the last few rows of the `users` table. You can issue a manual sync and run the above command once more to see more recent records.
 
-What happens when there are schema changes?  Stop the loop that you left running to generate rows with `Ctrl+C` and run the following command:
+What happens when there are schema changes? Stop the loop that you left running to generate rows with `Ctrl+C` and run the following command:
 
 ```text
 docker exec -it airbyte-source psql -U postgres -c "ALTER TABLE public.users ADD COLUMN col2 VARCHAR(200);"
@@ -94,7 +94,7 @@ Run the following command to see the new record in the destination Postgres data
 docker exec airbyte-destination psql -U postgres -c "SELECT (id, col1, col2) FROM public.users ORDER BY ID DESC LIMIT 5;"
 ```
 
-And there you have it. You've taken data from one database and replicated it to another. All of the actual configuration for this replication only took place in the UI. That's it for the tutorial, but this is just the beginning of Airbyte. If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so If you see any rough edges or want to request an integration you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue. 
+And there you have it. You've taken data from one database and replicated it to another. All of the actual configuration for this replication only took place in the UI. That's it for the tutorial, but this is just the beginning of Airbyte. If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so If you see any rough edges or want to request an integration you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
 
 Thank you and we hope you enjoy using Airbyte.
 
