@@ -11,7 +11,8 @@
       "postgres_port",
       "postgres_username",
       "postgres_password",
-      "postgres_database"
+      "postgres_database",
+      "postgres_schema"
     ],
     "additionalProperties": false,
     "properties": {
