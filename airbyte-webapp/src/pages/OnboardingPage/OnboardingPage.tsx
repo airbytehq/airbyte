@@ -282,7 +282,7 @@ const OnboardingPage: React.FC = () => {
         {
           workspaceId: workspace.workspaceId,
           initialSetupComplete: workspace.initialSetupComplete,
-          onboardingComplete: workspace.onboardingComplete,
+          onboardingComplete: true,
           anonymousDataCollection: workspace.anonymousDataCollection,
           news: workspace.news,
           securityUpdates: workspace.securityUpdates
