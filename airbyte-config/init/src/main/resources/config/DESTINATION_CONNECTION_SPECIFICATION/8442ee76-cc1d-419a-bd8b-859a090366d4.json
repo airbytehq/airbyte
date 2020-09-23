@@ -12,17 +12,16 @@
       "delimiter": {
         "description": "Delimiter used to separate fields.",
         "type": "string",
-        "examples": ["Default value: ,"]
+        "examples": [","]
       },
       "quotechar": {
         "description": "The character used to quote strings containing special characters in the CSV. See <a href=\"https://docs.python.org/3/library/csv.html#csv.Dialect.quotechar\">python docs</a> for more details.",
         "type": "string",
-        "examples": ["Default value: \""]
+        "examples": ["\""]
       },
       "destination_path": {
         "description": "Path to write the data. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/local-csv\">docs</a> for more details on the root of this path.",
-        "type": "string",
-        "examples": ["(Blank by default)"]
+        "type": "string"
       }
     }
   }
