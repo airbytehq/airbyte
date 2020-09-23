@@ -6,7 +6,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Singer CSV Target Spec",
     "type": "object",
-    "required": [],
+    "required": ["delimiter", "quotechar"],
     "additionalProperties": false,
     "properties": {
       "delimiter": {
@@ -20,7 +20,7 @@
         "examples": ["\""]
       },
       "destination_path": {
-        "description": "Path to write the data. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/local-csv\">docs</a> for more details on the root of this path.",
+        "description": "Path to the directory where csv files will be written. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/local-csv\">docs</a> for more details on the root of this path.",
         "type": "string"
       }
     }
