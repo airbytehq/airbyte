@@ -6,6 +6,7 @@ export interface Workspace {
   name: string;
   slug: string;
   initialSetupComplete: boolean;
+  onboardingComplete: boolean;
 }
 
 export default class WorkspaceResource extends BaseResource
@@ -14,6 +15,7 @@ export default class WorkspaceResource extends BaseResource
   readonly name: string = "";
   readonly slug: string = "";
   readonly initialSetupComplete: boolean = false;
+  readonly onboardingComplete: boolean = false;
 
   pk() {
     return this.workspaceId?.toString();
