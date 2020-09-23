@@ -13,7 +13,7 @@ These instructions have been tested on MacOS
 # In your workstation terminal
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up -d
+docker-compose up
 ```
 
 * In your browser, just visit [http://localhost:8000](http://localhost:8000)
