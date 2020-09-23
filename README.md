@@ -1,6 +1,6 @@
 # Getting Started
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte) [![StackShare](http://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](https://stackshare.io/airbyte/airbyte)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte) [![StackShare](https://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](https://stackshare.io/airbyte/airbyte)
 
 [![](docs/.gitbook/assets/airbyte_white-background%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29.svg)](https://airbyte.io)
 
