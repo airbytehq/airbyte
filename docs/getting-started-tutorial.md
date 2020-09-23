@@ -94,7 +94,7 @@ Run the following command to see the new record in the destination Postgres data
 docker exec airbyte-destination psql -U postgres -c "SELECT (id, col1, col2) FROM public.users ORDER BY ID DESC LIMIT 5;"
 ```
 
-And there you have it. You've taken data from one database and replicated it to another. All of the actual configuration for this replication only took place in the UI. That's it for the tutorial, but this is just the beginning of Airbyte. If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so If you see any rough edges or want to request an integration you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
+And there you have it. You've taken data from one database and replicated it to another. All of the actual configuration for this replication only took place in the UI. That's it for the tutorial, but this is just the beginning of Airbyte. If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request an integration you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
 
 Thank you and we hope you enjoy using Airbyte.
 
