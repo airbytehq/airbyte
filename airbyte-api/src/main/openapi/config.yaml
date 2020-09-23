@@ -759,6 +759,7 @@ components:
         - name
         - slug
         - initialSetupComplete
+        - onboardingComplete
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -770,11 +771,14 @@ components:
           type: string
         initialSetupComplete:
           type: boolean
+        onboardingComplete:
+          type: boolean
     WorkspaceUpdate:
       type: object
       required:
         - workspaceId
         - initialSetupComplete
+        - onboardingComplete
         - anonymousDataCollection
         - news
         - securityUpdates
@@ -785,6 +789,8 @@ components:
           type: string
           format: email
         initialSetupComplete:
+          type: boolean
+        onboardingComplete:
           type: boolean
         anonymousDataCollection:
           type: boolean

@@ -4,7 +4,13 @@
   "title": "StandardWorkspace",
   "description": "workspace configuration",
   "type": "object",
-  "required": ["workspaceId", "name", "slug", "initialSetupComplete"],
+  "required": [
+    "workspaceId",
+    "name",
+    "slug",
+    "initialSetupComplete",
+    "onboardingComplete"
+  ],
   "additionalProperties": false,
   "properties": {
     "workspaceId": {
@@ -26,6 +32,9 @@
       "format": "email"
     },
     "initialSetupComplete": {
+      "type": "boolean"
+    },
+    "onboardingComplete": {
       "type": "boolean"
     },
     "anonymousDataCollection": {

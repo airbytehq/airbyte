@@ -24,6 +24,7 @@
 
 package io.airbyte.server.handlers;
 
+import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -57,16 +58,17 @@ public class WorkspacesHandler {
     return buildWorkspaceReadFromId(PersistenceConstants.DEFAULT_WORKSPACE_ID);
   }
 
-  public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = workspaceUpdate.getWorkspaceId();
 
     final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceId);
 
-    if (workspaceUpdate.getEmail() != null && !workspaceUpdate.getEmail().equals("")) {
+    if (!Strings.isNullOrEmpty(workspaceUpdate.getEmail())) {
       persistedWorkspace.withEmail(workspaceUpdate.getEmail());
     }
-    persistedWorkspace.withInitialSetupComplete(workspaceUpdate.getInitialSetupComplete())
+    persistedWorkspace
+        .withOnboardingComplete(workspaceUpdate.getOnboardingComplete())
+        .withInitialSetupComplete(workspaceUpdate.getInitialSetupComplete())
         .withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection())
         .withNews(workspaceUpdate.getNews())
         .withSecurityUpdates(workspaceUpdate.getSecurityUpdates());
@@ -79,8 +81,7 @@ public class WorkspacesHandler {
     return buildWorkspaceReadFromId(workspaceUpdate.getWorkspaceId());
   }
 
-  private WorkspaceRead buildWorkspaceReadFromId(UUID workspaceId)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  private WorkspaceRead buildWorkspaceReadFromId(UUID workspaceId) throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId);
 
     return new WorkspaceRead()
@@ -88,7 +89,8 @@ public class WorkspacesHandler {
         .customerId(workspace.getCustomerId())
         .name(workspace.getName())
         .slug(workspace.getSlug())
-        .initialSetupComplete(workspace.getInitialSetupComplete());
+        .initialSetupComplete(workspace.getInitialSetupComplete())
+        .onboardingComplete(workspace.getOnboardingComplete());
   }
 
 }

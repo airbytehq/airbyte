@@ -65,7 +65,8 @@ class WorkspacesHandlerTest {
         .withEmail("test@airbyte.io")
         .withName("test workspace")
         .withSlug("default")
-        .withInitialSetupComplete(false);
+        .withInitialSetupComplete(false)
+        .withOnboardingComplete(true);
   }
 
   @Test
@@ -80,6 +81,7 @@ class WorkspacesHandlerTest {
         .customerId(workspace.getCustomerId())
         .name("test workspace")
         .slug("default")
+        .onboardingComplete(true)
         .initialSetupComplete(false);
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspace(workspaceIdRequestBody));
@@ -97,6 +99,7 @@ class WorkspacesHandlerTest {
         .customerId(workspace.getCustomerId())
         .name("test workspace")
         .slug("default")
+        .onboardingComplete(true)
         .initialSetupComplete(false);
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspaceBySlug(slugRequestBody));
@@ -110,6 +113,7 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(true)
         .securityUpdates(false)
         .news(false)
+        .onboardingComplete(false)
         .initialSetupComplete(true);
 
     final StandardWorkspace expectedWorkspace = new StandardWorkspace()
@@ -121,6 +125,7 @@ class WorkspacesHandlerTest {
         .withAnonymousDataCollection(true)
         .withSecurityUpdates(false)
         .withNews(false)
+        .withOnboardingComplete(false)
         .withInitialSetupComplete(true);
 
     when(configRepository.getStandardWorkspace(workspace.getWorkspaceId()))
@@ -134,6 +139,7 @@ class WorkspacesHandlerTest {
         .customerId(workspace.getCustomerId())
         .name("test workspace")
         .slug("default")
+        .onboardingComplete(false)
         .initialSetupComplete(true);
 
     verify(configRepository).writeStandardWorkspace(expectedWorkspace);
