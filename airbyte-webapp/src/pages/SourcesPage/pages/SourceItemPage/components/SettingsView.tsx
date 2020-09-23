@@ -15,6 +15,7 @@ import SourceImplementationResource from "../../../../../core/resources/SourceIm
 
 type IProps = {
   sourceData: Connection;
+  afterDelete: () => void;
 };
 
 const Content = styled.div`
@@ -22,10 +23,12 @@ const Content = styled.div`
   margin: 18px auto;
 `;
 
-const SettingsView: React.FC<IProps> = ({ sourceData }) => {
+const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
   const [saved, setSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const updateConnection = useFetcher(ConnectionResource.updateShape());
+
   const updateStateConnection = useFetcher(
     ConnectionResource.updateStateShape()
   );
@@ -55,7 +58,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
-
+    setErrorMessage("");
     if (values.frequency !== schedule?.value) {
       await updateConnection(
         {},
@@ -68,8 +71,10 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
       );
     }
 
-    await updateSourceImplementation(
-      {},
+    const result = await updateSourceImplementation(
+      {
+        sourceImplementationId: sourceData.source?.sourceImplementationId || ""
+      },
       {
         name: values.name,
         sourceImplementationId: sourceData.source?.sourceImplementationId,
@@ -90,7 +95,11 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
       }
     );
 
-    setSaved(true);
+    if (result.status === "failure") {
+      setErrorMessage(result.message);
+    } else {
+      setSaved(true);
+    }
   };
 
   return (
@@ -107,6 +116,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
             }
           ]}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
+          errorMessage={errorMessage}
           formValues={{
             ...sourceData.source?.connectionConfiguration,
             name: sourceData.source?.name,
@@ -117,6 +127,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData }) => {
         />
       </ContentCard>
       <DeleteSource
+        afterDelete={afterDelete}
         sourceImplementationId={sourceData.source?.sourceImplementationId}
         connectionId={sourceData.connectionId}
       />

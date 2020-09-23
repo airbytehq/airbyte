@@ -28,9 +28,17 @@ const PrepareDropDownLists = () => {
     [destinations]
   );
 
+  const getSourceById = (id: string) =>
+    sources.find(item => item.sourceId === id);
+
+  const getDestinationById = (id: string) =>
+    destinations.find(item => item.destinationId === id);
+
   return {
     sourcesDropDownData,
-    destinationsDropDownData
+    destinationsDropDownData,
+    getSourceById,
+    getDestinationById
   };
 };
 

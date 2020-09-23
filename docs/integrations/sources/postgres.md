@@ -53,7 +53,7 @@ Postgres data types are mapped to the following data types when synchronizing da
 | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental Sync | No |
-| Replicate Deletes | No |
+| Replicate Incremental Deletes | No |
 | Logical Replication \(WAL\) | No |
 | SSL Support | Yes |
 | SSH Tunnel Connection | No |

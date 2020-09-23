@@ -42,7 +42,28 @@ export default class DestinationImplementationResource extends BaseResource
   static updateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.partialUpdateShape(),
-      schema: this.asSchema()
+      fetch: async (
+        params: { destinationImplementationId: string },
+        body: any
+      ): Promise<any> => {
+        const destinationResult = await this.fetch(
+          "post",
+          `${this.url(params)}/update`,
+          body
+        );
+
+        const checkConnectionResult = await this.fetch(
+          "post",
+          `${this.url(params)}/check_connection`,
+          params
+        );
+
+        return {
+          destination: destinationResult,
+          ...checkConnectionResult
+        };
+      },
+      schema: { destination: this.asSchema(), status: "", message: "" }
     };
   }
 

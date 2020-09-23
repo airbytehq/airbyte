@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource, useFetcher } from "rest-hooks";
@@ -18,6 +18,9 @@ const Content = styled.div`
 `;
 
 const DestinationPage: React.FC = () => {
+  const [saved, setSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const { destinations } = useResource(
     DestinationImplementationResource.listShape(),
     {
@@ -43,8 +46,12 @@ const DestinationPage: React.FC = () => {
     serviceType: string;
     connectionConfiguration?: any;
   }) => {
-    await updateDestination(
-      {},
+    setErrorMessage("");
+    const result = await updateDestination(
+      {
+        destinationImplementationId:
+          currentDestination.destinationImplementationId
+      },
       {
         name: values.name,
         destinationImplementationId:
@@ -52,6 +59,12 @@ const DestinationPage: React.FC = () => {
         connectionConfiguration: values.connectionConfiguration
       }
     );
+
+    if (result.status === "failure") {
+      setErrorMessage(result.message);
+    } else {
+      setSaved(true);
+    }
   };
 
   return (
@@ -66,7 +79,7 @@ const DestinationPage: React.FC = () => {
         >
           <ServiceForm
             onSubmit={onSubmitForm}
-            formType="source"
+            formType="destination"
             dropDownData={[
               {
                 value: destination.destinationId,
@@ -80,6 +93,10 @@ const DestinationPage: React.FC = () => {
               serviceType: destination.destinationId
             }}
             specifications={destinationSpecification.connectionSpecification}
+            successMessage={
+              saved && <FormattedMessage id="form.changesSaved" />
+            }
+            errorMessage={errorMessage}
           />
         </ContentCard>
       </Content>

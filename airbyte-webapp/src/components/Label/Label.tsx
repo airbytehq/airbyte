@@ -23,6 +23,11 @@ const Content = styled.label<{ additionLength?: number | string }>`
       ${({ additionLength }) =>
         additionLength === 0 || additionLength ? additionLength : 30}px
   );
+
+  & a {
+    text-decoration: underline;
+    color: #625eff;
+  }
 `;
 
 const MessageText = styled.span<{ error?: boolean; success?: boolean }>`
