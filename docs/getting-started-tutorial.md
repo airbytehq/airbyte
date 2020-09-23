@@ -14,7 +14,7 @@ docker-compose up
 
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/](http://localhost:8000/). You should see an onboarding page. Enter your email if you want updates about Airbyte and continue.
 
-Now you will see a wizard that allows you choose the data you want to send through Airbyte. As of our alpha launch, we have one database source \(Postgres\), two API sources \(an exchange rate API and the Stripe API\), and a file source. We're currently building an integration framework that makes it easy to create sources and destinations, so you should expect many more soon. Please reach out to us if you need a specific integration or would like to help build one.
+Now you will see a wizard that allows you choose the data you want to send through Airbyte. As of our alpha launch, we have one database source \(Postgres\) and two API sources \(an exchange rate API and the Stripe API\). We're currently building an integration framework that makes it easy to create sources and destinations, so you should expect many more soon. Please reach out to us if you need a specific integration or would like to help build one.
 
 For now, we will start out with a Postgres source and destination. Before we configure anything in the UI, we need databases and data. Run the following commands in a new terminal window to start backgrounded source and destination databases:
 
