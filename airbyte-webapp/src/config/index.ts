@@ -9,7 +9,8 @@ const config: {
     workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6"
   },
   segment: {
-    token: process.env.REACT_APP_STRIPE_TOKEN || ""
+    token:
+      process.env.REACT_APP_SEGMENT_TOKEN || "6cxNSmQyGSKcATLdJ2pL6WsawkzEMDAN"
   },
   apiUrl:
     process.env.REACT_APP_API_URL ||
