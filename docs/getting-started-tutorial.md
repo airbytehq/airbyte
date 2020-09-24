@@ -23,21 +23,13 @@ docker run --rm --name airbyte-source -e POSTGRES_PASSWORD=password -p 2000:5432
 docker run --rm --name airbyte-destination -e POSTGRES_PASSWORD=password -p 3000:5432 -d postgres
 ```
 
-Add a table to the source database:
+Add a table with a few rows to the source database:
 
 ```text
 docker exec -it airbyte-source psql -U postgres -c "CREATE TABLE users(id SERIAL PRIMARY KEY, col1 VARCHAR(200));"
-```
-
-Let's add some data to this table. We will use a loop so each time we sync and inspect the contents of the destination database, we will see new data:
-
-```text
-while true
-do
-    COL1=$(cat /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
-    docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col1) VALUES('$COL1');"
-    sleep 3
-done
+docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col1) VALUES('record1');"
+docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col1) VALUES('record2');"
+docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col1) VALUES('record3');"
 ```
 
 Return to the UI and configure a source Postgres database. Use the name `airbyte-source` for the name and `Postgres`as the type. Fill in the configuration fields as follows:
@@ -69,30 +61,10 @@ There should be a `Completed` job under the history section. If you click on tha
 Now let's verify that this worked. Let's output the contents of the destination db:
 
 ```text
-docker exec airbyte-destination psql -U postgres -c "SELECT (id, col1) FROM public.users ORDER BY ID DESC LIMIT 5;"
+docker exec airbyte-destination psql -U postgres -c "SELECT * FROM public.users;"
 ```
 
-You should see the last few rows of the `users` table. You can issue a manual sync and run the above command once more to see more recent records.
-
-What happens when there are schema changes? Stop the loop that you left running to generate rows with `Ctrl+C` and run the following command:
-
-```text
-docker exec -it airbyte-source psql -U postgres -c "ALTER TABLE public.users ADD COLUMN col2 VARCHAR(200);"
-```
-
-Then generate a new record using the new schema:
-
-```text
-docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col1, col2) VALUES('col1value', 'col2value');"
-```
-
-Now, manually sync again. This sync will automatically detect that there was a schema change. It will update the destination database's schema before inserting the new record.
-
-Run the following command to see the new record in the destination Postgres database:
-
-```text
-docker exec airbyte-destination psql -U postgres -c "SELECT (id, col1, col2) FROM public.users ORDER BY ID DESC LIMIT 5;"
-```
+You should see the rows from the source database inside the destination database!
 
 And there you have it. You've taken data from one database and replicated it to another. All of the actual configuration for this replication only took place in the UI. That's it for the tutorial, but this is just the beginning of Airbyte. If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request an integration you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
 
