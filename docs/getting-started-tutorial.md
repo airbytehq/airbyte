@@ -1,6 +1,6 @@
 # Tutorial
 
-[Airbyte Tutorial Walkthrough - Watch Video![](https://cdn.loom.com/sessions/thumbnails/47805244695c4cb0a07bee46562a6879-with-play.gif)](https://www.loom.com/share/47805244695c4cb0a07bee46562a6879)
+[(https://cdn.loom.com/sessions/thumbnails/47805244695c4cb0a07bee46562a6879-with-play.gif)](https://www.loom.com/share/47805244695c4cb0a07bee46562a6879)
 
 Airbyte is an open source alternative to tools like Fivetran and Stitch. We help you sync data from databases, APIs, and files into data warehouses.
 
