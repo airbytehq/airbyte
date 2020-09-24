@@ -104,7 +104,7 @@ public class DefaultSingerTarget implements SingerTarget {
     }
 
     LOGGER.debug("Closing target process");
-    WorkerUtils.gentleClose(targetProcess, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(targetProcess, 5, TimeUnit.MINUTES);
     if (targetProcess.isAlive() || targetProcess.exitValue() != 0) {
       throw new WorkerException("target process wasn't successful");
     }
