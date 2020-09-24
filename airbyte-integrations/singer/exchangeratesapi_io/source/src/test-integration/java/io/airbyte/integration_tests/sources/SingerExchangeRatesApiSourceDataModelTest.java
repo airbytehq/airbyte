@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test;
 public class SingerExchangeRatesApiSourceDataModelTest {
 
   @Test
-  void canDeserializeStripeCatalog() throws IOException {
+  void testDeserializeCatalog() throws IOException {
     final String input = MoreResources.readResource("catalog.json");
 
     final JsonNode expected = Jsons.deserialize(input);
