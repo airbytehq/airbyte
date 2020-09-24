@@ -75,8 +75,9 @@ public class SingerCatalogConverters {
                           .stream()
                           .collect(Collectors.toMap(Field::getName, field -> field));
 
+                  final List<SingerMetadata> singerMetadataList = stream.getMetadata() != null ? stream.getMetadata() : new ArrayList<>();
                   final List<SingerMetadata> newMetadata =
-                      stream.getMetadata().stream()
+                      singerMetadataList.stream()
                           .map(
                               metadata -> {
                                 final SingerMetadata newSingerMetadata = Jsons.clone(metadata);
@@ -194,7 +195,7 @@ public class SingerCatalogConverters {
   private static Map<String, List<SingerMetadata>> getStreamNameToMetadataList(List<SingerStream> streams) {
     // todo (cgardens) - figure out if it's stream or stream id or stream name.
     return streams.stream()
-        .collect(Collectors.toMap(SingerStream::getStream, SingerStream::getMetadata));
+        .collect(Collectors.toMap(SingerStream::getStream, stream -> stream.getMetadata() != null ? stream.getMetadata() : new ArrayList<>()));
   }
 
   private static Map<String, SingerMetadataChild> getFieldMetadataForStream(Map<String, List<SingerMetadata>> streamNameToMetadata,
