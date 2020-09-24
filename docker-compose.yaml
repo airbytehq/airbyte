@@ -35,6 +35,10 @@ services:
       - init
   scheduler:
     image: airbyte/scheduler:${VERSION}
+    command: /bin/sh -c "
+      echo ${LOCAL_ROOT};
+      mkdir -p ${LOCAL_ROOT};
+      "
     container_name: airbyte-scheduler
     environment:
       - DATABASE_USER=${DATABASE_USER}
