@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.singer.SingerCatalog;
@@ -45,12 +46,12 @@ public class SingerPostgresSourceDataModelTest {
 
     final JsonNode expected = Jsons.deserialize(catalogString);
     final JsonNode actual = Jsons.deserialize(reserialized);
-    Jsons.mutateTypeToArrayStandard(expected.get("streams").get(0).get("schema"));
+    JsonSchemas.mutateTypeToArrayStandard(expected.get("streams").get(0).get("schema"));
     expected.get("streams")
         .get(0)
         .get("schema")
         .get("properties")
-        .forEach(Jsons::mutateTypeToArrayStandard);
+        .forEach(JsonSchemas::mutateTypeToArrayStandard);
 
     assertEquals(expected, actual);
   }

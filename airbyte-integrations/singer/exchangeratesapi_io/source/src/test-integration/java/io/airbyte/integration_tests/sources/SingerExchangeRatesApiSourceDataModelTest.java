@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Schema;
@@ -46,12 +47,12 @@ public class SingerExchangeRatesApiSourceDataModelTest {
 
     final JsonNode expected = Jsons.deserialize(input);
     // our deserializer converts `type: "object"` => `type: ["object"]`. both are valid jsonschema.
-    Jsons.mutateTypeToArrayStandard(expected.get("streams").get(0).get("schema"));
+    JsonSchemas.mutateTypeToArrayStandard(expected.get("streams").get(0).get("schema"));
     expected.get("streams")
         .get(0)
         .get("schema")
         .get("properties")
-        .forEach(Jsons::mutateTypeToArrayStandard);
+        .forEach(JsonSchemas::mutateTypeToArrayStandard);
 
     final SingerCatalog catalog = Jsons.deserialize(input, SingerCatalog.class);
 
