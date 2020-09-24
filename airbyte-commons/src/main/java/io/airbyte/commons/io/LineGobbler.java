@@ -27,11 +27,13 @@ package io.airbyte.commons.io;
 import io.airbyte.commons.concurrency.VoidCallable;
 import java.io.BufferedReader;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class LineGobbler implements VoidCallable {
 
@@ -39,21 +41,28 @@ public class LineGobbler implements VoidCallable {
 
   public static void gobble(final InputStream is, final Consumer<String> consumer) {
     final ExecutorService executor = Executors.newSingleThreadExecutor();
-    executor.submit(new LineGobbler(is, consumer, executor));
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
+    executor.submit(new LineGobbler(is, consumer, executor, mdc));
   }
 
   private final BufferedReader is;
   private final Consumer<String> consumer;
   private final ExecutorService executor;
+  private final Map<String, String> mdc;
 
-  LineGobbler(final InputStream is, final Consumer<String> consumer, final ExecutorService executor) {
+  LineGobbler(final InputStream is,
+              final Consumer<String> consumer,
+              final ExecutorService executor,
+              final Map<String, String> mdc) {
     this.is = IOs.newBufferedReader(is);
     this.consumer = consumer;
     this.executor = executor;
+    this.mdc = mdc;
   }
 
   @Override
   public void voidCall() {
+    MDC.setContextMap(mdc);
     try {
       String line;
       while ((line = is.readLine()) != null) {
