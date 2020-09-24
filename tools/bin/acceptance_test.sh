@@ -9,6 +9,10 @@ assert_root
 echo "Starting app..."
 #mkdir /tmp/airbyte_local
 #echo "Made the dir..."
+echo "docker --version"
+echo docker --version
+echo "docker-compose --version"
+echo docker-compose --version
 echo "ls /tmp"
 ls /tmp
 # Detach so we can run subsequent commands
