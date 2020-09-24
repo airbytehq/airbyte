@@ -1,4 +1,4 @@
 *
 !Dockerfile
-!bigquery-destination.sh
+!entrypoint.sh
 !requirements.txt
