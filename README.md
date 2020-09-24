@@ -1,4 +1,4 @@
-# Getting Started
+# Overview
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte) [![StackShare](https://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](https://stackshare.io/airbyte/airbyte)
 
@@ -21,9 +21,7 @@ Airbyte is on a mission to make data integration pipelines a commodity.
 * **No more security compliance process** to go through as Airbyte is self-hosted. 
 * **No more pricing indexed on volume**, as cloud-based solutions offer. 
 
-## Getting started
-
-### Quick start
+## Quick start
 
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
@@ -33,9 +31,7 @@ docker-compose up
 
 Now visit [http://localhost:8000](http://localhost:8000)
 
-### Tutorial
-
-Try loading data from a sample Postgres database into another database using Airbyte, all on your computer with this [step-by-step guide](docs/getting-started-tutorial.md).
+Here is a [step-by-step guide](docs/getting-started-tutorial.md) showing you how to load data from a sample Postgres database into another database using Airbyte, all on your computer.
 
 ## Features
 
