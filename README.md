@@ -1,16 +1,16 @@
-# Getting Started
+# Overview
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte) [![StackShare](https://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](https://stackshare.io/airbyte/airbyte)
 
-[![](docs/.gitbook/assets/airbyte_white-background%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29.svg)](https://airbyte.io)
+[![](docs/.gitbook/assets/airbyte_white-background%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29.svg)](https://airbyte.io)
 
 ### Data integration made simple, secure and reliable.
 
 The new open-source standard to sync data from applications & databases to warehouses.
 
-[![](docs/.gitbook/assets/deploy-locally%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/with-docker) [![](docs/.gitbook/assets/deploy-on-aws%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-aws-ec2) [![](docs/.gitbook/assets/deploy-on-gcp%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-gcp-compute-engine)
+[![](docs/.gitbook/assets/deploy-locally%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/with-docker) [![](docs/.gitbook/assets/deploy-on-aws%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-aws-ec2) [![](docs/.gitbook/assets/deploy-on-gcp%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-gcp-compute-engine)
 
-![](docs/.gitbook/assets/sources_list%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29.png)
+![](docs/.gitbook/assets/sources_list%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29.png)
 
 Airbyte is on a mission to make data integration pipelines a commodity.
 
@@ -21,9 +21,7 @@ Airbyte is on a mission to make data integration pipelines a commodity.
 * **No more security compliance process** to go through as Airbyte is self-hosted. 
 * **No more pricing indexed on volume**, as cloud-based solutions offer. 
 
-## Getting started
-
-### Quick start
+## Quick start
 
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
@@ -33,9 +31,7 @@ docker-compose up
 
 Now visit [http://localhost:8000](http://localhost:8000)
 
-### Tutorial
-
-Try loading data from a sample Postgres database into another database using Airbyte, all on your computer with this [step-by-step guide](docs/getting-started-tutorial.md).
+Here is a [step-by-step guide](docs/getting-started-tutorial.md) showing you how to load data from a sample Postgres database into another database using Airbyte, all on your computer.
 
 ## Features
 
