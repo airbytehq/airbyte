@@ -7,7 +7,7 @@ set -e
 assert_root
 
 echo "Starting app..."
-#mkdir /tmp/airbyte_local
+mkdir /tmp/airbyte_local
 echo "Made the dir..."
 # Detach so we can run subsequent commands
 VERSION=dev docker-compose up -d
