@@ -6,6 +6,10 @@ description: Start syncing data in minutes with Airbyte
 
 Let's see how you can spin up a local instance of Airbyte and syncing data from one Postgres database to another.
 
+Here's a 6-minute video showing you how you can do it.
+
+{% embed url="https://www.youtube.com/watch?v=Rcpt5SVsMpk" %}
+
 First of all, make sure you have Docker and Docker Compose installed. Then run the following commands:
 
 ```text
