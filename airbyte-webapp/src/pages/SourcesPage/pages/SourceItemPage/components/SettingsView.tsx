@@ -25,8 +25,10 @@ const Content = styled.div`
 
 const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
   const [saved, setSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const updateConnection = useFetcher(ConnectionResource.updateShape());
+
   const updateStateConnection = useFetcher(
     ConnectionResource.updateStateShape()
   );
@@ -56,7 +58,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
-
+    setErrorMessage("");
     if (values.frequency !== schedule?.value) {
       await updateConnection(
         {},
@@ -69,8 +71,10 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
       );
     }
 
-    await updateSourceImplementation(
-      {},
+    const result = await updateSourceImplementation(
+      {
+        sourceImplementationId: sourceData.source?.sourceImplementationId || ""
+      },
       {
         name: values.name,
         sourceImplementationId: sourceData.source?.sourceImplementationId,
@@ -91,7 +95,11 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
       }
     );
 
-    setSaved(true);
+    if (result.status === "failure") {
+      setErrorMessage(result.message);
+    } else {
+      setSaved(true);
+    }
   };
 
   return (
@@ -108,6 +116,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
             }
           ]}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
+          errorMessage={errorMessage}
           formValues={{
             ...sourceData.source?.connectionConfiguration,
             name: sourceData.source?.name,
