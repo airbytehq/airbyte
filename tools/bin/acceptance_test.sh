@@ -9,6 +9,8 @@ assert_root
 echo "Starting app..."
 #mkdir /tmp/airbyte_local
 #echo "Made the dir..."
+echo "ls /tmp"
+ls /tmp
 # Detach so we can run subsequent commands
 VERSION=dev docker-compose up
 trap "echo 'docker-compose logs:' && docker-compose logs -t --tail 150 && docker-compose down" EXIT
