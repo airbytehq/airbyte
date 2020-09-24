@@ -42,7 +42,7 @@ public enum Integrations {
       new IntegrationMapping("airbyte/integration-singer-postgres-destination:0.1.1")),
   BIGQUERY_TARGET(
       UUID.fromString("e28a1a10-214a-4051-8cf4-79b6f88719cd"),
-      new IntegrationMapping("airbyte/integration-singer-bigquery-destination:0.1.2")),
+      new IntegrationMapping("airbyte/integration-singer-bigquery-destination:0.1.3")),
   CSV_TARGET(
       UUID.fromString("8442ee76-cc1d-419a-bd8b-859a090366d4"),
       new IntegrationMapping("airbyte/integration-singer-csv-destination:0.1.0"));
