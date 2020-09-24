@@ -31,6 +31,7 @@ const useDestinationSpecificationLoad = (destinationId: string) => {
     destinationSpecification,
     setDestinationSpecification
   ] = useState<null | DestinationSpecification>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchSourceSpecification = useFetcher(
     DestinationSpecificationResource.detailShape(),
@@ -40,14 +41,16 @@ const useDestinationSpecificationLoad = (destinationId: string) => {
   useEffect(() => {
     (async () => {
       if (destinationId) {
+        setIsLoading(true);
         setDestinationSpecification(
           await fetchSourceSpecification({ destinationId })
         );
+        setIsLoading(false);
       }
     })();
   }, [fetchSourceSpecification, destinationId]);
 
-  return destinationSpecification;
+  return { destinationSpecification, isLoading };
 };
 
 const DestinationStep: React.FC<IProps> = ({
@@ -58,7 +61,10 @@ const DestinationStep: React.FC<IProps> = ({
   currentSourceId
 }) => {
   const [destinationId, setDestinationId] = useState("");
-  const specification = useDestinationSpecificationLoad(destinationId);
+  const {
+    destinationSpecification,
+    isLoading
+  } = useDestinationSpecificationLoad(destinationId);
   const currentSource = useResource(SourceResource.detailShape(), {
     sourceId: currentSourceId
   });
@@ -80,7 +86,7 @@ const DestinationStep: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      specificationId: specification?.destinationSpecificationId
+      specificationId: destinationSpecification?.destinationSpecificationId
     });
   };
 
@@ -104,8 +110,9 @@ const DestinationStep: React.FC<IProps> = ({
           formType="destination"
           dropDownData={dropDownData}
           errorMessage={errorMessage}
-          specifications={specification?.connectionSpecification}
-          documentationUrl={specification?.documentationUrl}
+          specifications={destinationSpecification?.connectionSpecification}
+          documentationUrl={destinationSpecification?.documentationUrl}
+          isLoading={isLoading}
         />
       </ContentCard>
     </>

@@ -28,6 +28,7 @@ const useSourceSpecificationLoad = (sourceId: string) => {
     sourceSpecification,
     setSourceSpecification
   ] = useState<null | SourceSpecification>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchSourceSpecification = useFetcher(
     SourceSpecificationResource.detailShape(),
@@ -37,12 +38,14 @@ const useSourceSpecificationLoad = (sourceId: string) => {
   useEffect(() => {
     (async () => {
       if (sourceId) {
+        setIsLoading(true);
         setSourceSpecification(await fetchSourceSpecification({ sourceId }));
+        setIsLoading(false);
       }
     })();
   }, [fetchSourceSpecification, sourceId]);
 
-  return sourceSpecification;
+  return { sourceSpecification, isLoading };
 };
 
 const SourceStep: React.FC<IProps> = ({
@@ -52,7 +55,9 @@ const SourceStep: React.FC<IProps> = ({
   errorStatus
 }) => {
   const [sourceId, setSourceId] = useState("");
-  const specification = useSourceSpecificationLoad(sourceId);
+  const { sourceSpecification, isLoading } = useSourceSpecificationLoad(
+    sourceId
+  );
   const { getSourceById } = PrepareDropDownLists();
 
   const onDropDownSelect = (sourceId: string) => {
@@ -73,7 +78,7 @@ const SourceStep: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      specificationId: specification?.sourceSpecificationId
+      specificationId: sourceSpecification?.sourceSpecificationId
     });
   };
 
@@ -93,8 +98,9 @@ const SourceStep: React.FC<IProps> = ({
         dropDownData={dropDownData}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
-        specifications={specification?.connectionSpecification}
-        documentationUrl={specification?.documentationUrl}
+        specifications={sourceSpecification?.connectionSpecification}
+        documentationUrl={sourceSpecification?.documentationUrl}
+        isLoading={isLoading}
       />
     </ContentCard>
   );
