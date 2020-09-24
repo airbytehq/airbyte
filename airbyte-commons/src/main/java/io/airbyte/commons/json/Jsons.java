@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -107,6 +108,20 @@ public class Jsons {
   @SuppressWarnings("unchecked")
   public static <T> T clone(final T object) {
     return (T) deserialize(serialize(object), object.getClass());
+  }
+
+  /**
+   * JsonSchema supports to ways of declaring type. `type: "string"` and `type: ["null", "string"]`.
+   * This method will mutate a JsonNode with a type field so that the output type is the array
+   * version.
+   *
+   * @param jsonNode - a json object with children that contain types.
+   */
+  public static void mutateTypeToArrayStandard(final JsonNode jsonNode) {
+    if (jsonNode.get("type") != null && !jsonNode.get("type").isArray()) {
+      final JsonNode type = jsonNode.get("type");
+      ((ObjectNode) jsonNode).putArray("type").add(type);
+    }
   }
 
 }

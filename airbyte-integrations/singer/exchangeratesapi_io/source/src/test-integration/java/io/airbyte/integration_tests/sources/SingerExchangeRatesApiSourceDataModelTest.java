@@ -25,6 +25,7 @@
 package io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,6 +34,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Schema;
 import io.airbyte.singer.SingerCatalog;
 import io.airbyte.workers.protocols.singer.SingerCatalogConverters;
+import io.airbyte.workers.protocols.singer.SingerProtocolPredicate;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
@@ -44,14 +46,12 @@ public class SingerExchangeRatesApiSourceDataModelTest {
 
     final JsonNode expected = Jsons.deserialize(input);
     // our deserializer converts `type: "object"` => `type: ["object"]`. both are valid jsonschema.
-    ((ObjectNode) expected.get("streams").get(0).get("schema")).putArray("type").add("object");
-    final JsonNode jsonNode = expected.get("streams").get(0).get("schema").get("properties");
-    jsonNode.elements().forEachRemaining(el -> {
-      if (!el.get("type").isArray()) {
-        final JsonNode type = el.get("type");
-        ((ObjectNode) el).putArray("type").add(type);
-      }
-    });
+    Jsons.mutateTypeToArrayStandard(expected.get("streams").get(0).get("schema"));
+    expected.get("streams")
+        .get(0)
+        .get("schema")
+        .get("properties")
+        .forEach(Jsons::mutateTypeToArrayStandard);
 
     final SingerCatalog catalog = Jsons.deserialize(input, SingerCatalog.class);
 
@@ -66,6 +66,12 @@ public class SingerExchangeRatesApiSourceDataModelTest {
     JsonNode expectedAfterSchemaApplied = Jsons.clone(expected);
     ((ObjectNode) expectedAfterSchemaApplied.get("streams").get(0)).putArray("metadata");
     assertEquals(expectedAfterSchemaApplied, Jsons.deserialize(Jsons.serialize(catalogWithSchemaApplied)));
+  }
+
+  @Test
+  void stripeSchemaMessageIsValid() throws IOException {
+    final String input = MoreResources.readResource("schema_message.json");
+    assertTrue(new SingerProtocolPredicate().test(Jsons.deserialize(input)));
   }
 
 }

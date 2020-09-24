@@ -22,48 +22,43 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integration_tests.sources;
+package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.singer.SingerCatalog;
-import io.airbyte.singer.SingerMessage;
 import io.airbyte.workers.protocols.singer.SingerProtocolPredicate;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
-public class SingerStripeSourceDataModelTests {
+public class SingerPostgresSourceDataModelTest {
 
   @Test
-  void canDeserializeStripeCatalog() throws IOException {
-    final String input = MoreResources.readResource("stripe_catalog.json");
-    final String canDeserializeStripeSchemaMessage = Jsons.serialize(Jsons.deserialize(input, SingerCatalog.class));
+  void testDeserializeCatalog() throws IOException {
+    final String catalogString = MoreResources.readResource("catalog.json");
+    final SingerCatalog singerCatalog = Jsons.deserialize(catalogString, SingerCatalog.class);
+    final String reserialized = Jsons.serialize(singerCatalog);
 
-    final JsonNode deserialize = Jsons.deserialize(input);
-    // our deserializer converts `type: "object"` => `type: ["object"]`. both are valid jsonschema.
-    ((ObjectNode) deserialize.get("streams").get(1).get("schema")).putArray("type").add("object");
+    final JsonNode expected = Jsons.deserialize(catalogString);
+    final JsonNode actual = Jsons.deserialize(reserialized);
+    Jsons.mutateTypeToArrayStandard(expected.get("streams").get(0).get("schema"));
+    expected.get("streams")
+        .get(0)
+        .get("schema")
+        .get("properties")
+        .forEach(Jsons::mutateTypeToArrayStandard);
 
-    assertEquals(deserialize, Jsons.deserialize(canDeserializeStripeSchemaMessage));
-  }
-
-  @Test
-  void canDeserializeStripeSchemaMessage() throws IOException {
-    final String input = MoreResources.readResource("stripe_schema_message.json");
-    final String reserialized = Jsons.serialize(Jsons.deserialize(input, SingerMessage.class));
-
-    assertEquals(Jsons.deserialize(input), Jsons.deserialize(reserialized));
+    assertEquals(expected, actual);
   }
 
   @Test
   void stripeSchemaMessageIsValid() throws IOException {
-    final String input = MoreResources.readResource("stripe_schema_message.json");
-    final SingerProtocolPredicate singerProtocolPredicate = new SingerProtocolPredicate();
-    assertTrue(singerProtocolPredicate.test(Jsons.deserialize(input)));
+    final String input = MoreResources.readResource("schema_message.json");
+    assertTrue(new SingerProtocolPredicate().test(Jsons.deserialize(input)));
   }
 
 }

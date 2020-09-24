@@ -26,6 +26,7 @@ package io.airbyte.commons.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.util.List;
@@ -167,11 +168,29 @@ class JsonsTest {
   }
 
   @Test
-  void testCopy() {
+  void testClone() {
     final ToClass expected = new ToClass("abc", 999, 888L);
     final ToClass actual = Jsons.clone(expected);
     Assertions.assertNotSame(expected, actual);
     Assertions.assertEquals(expected, actual);
+  }
+
+  @Test
+  void testMutateTypeToArrayStandard() {
+    final JsonNode expectedWithoutType = Jsons.deserialize("{\"test\":\"abc\"}");
+    final JsonNode actualWithoutType = Jsons.clone(expectedWithoutType);
+    Jsons.mutateTypeToArrayStandard(expectedWithoutType);
+    Assertions.assertEquals(expectedWithoutType, actualWithoutType);
+
+    final JsonNode expectedWithArrayType = Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
+    final JsonNode actualWithArrayType = Jsons.clone(expectedWithArrayType);
+    Jsons.mutateTypeToArrayStandard(actualWithArrayType);
+    Assertions.assertEquals(expectedWithoutType, actualWithoutType);
+
+    final JsonNode expectedWithoutArrayType = Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
+    final JsonNode actualWithStringType = Jsons.deserialize("{\"test\":\"abc\", \"type\":\"object\"}");
+    Jsons.mutateTypeToArrayStandard(actualWithStringType);
+    Assertions.assertEquals(expectedWithoutArrayType, actualWithStringType);
   }
 
   private static class ToClass {
