@@ -54,6 +54,7 @@ services:
     depends_on:
       - db
       - seed
+      - init
   server:
     image: airbyte/server:${VERSION}
     container_name: airbyte-server
