@@ -18,6 +18,7 @@ type formInitialValues = {
 };
 
 type IProps = {
+  isLoading?: boolean;
   dropDownData: Array<IDataItem>;
   onDropDownSelect?: (id: string) => void;
   onSubmit: (values: {
@@ -49,7 +50,8 @@ const ServiceForm: React.FC<IProps> = ({
   successMessage,
   errorMessage,
   specifications,
-  documentationUrl
+  documentationUrl,
+  isLoading
 }) => {
   const properties = Object.keys(specifications?.properties || {});
 
@@ -82,6 +84,7 @@ const ServiceForm: React.FC<IProps> = ({
       }}
       validateOnBlur={true}
       validateOnChange={true}
+      validateOnMount={true}
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting }) => {
         await onSubmit({
@@ -125,6 +128,7 @@ const ServiceForm: React.FC<IProps> = ({
             <BottomBlock
               isSubmitting={isSubmitting}
               isValid={isValid}
+              isLoadSchema={isLoading}
               dirty={dirty}
               formType={formType}
               hasSuccess={hasSuccess}
