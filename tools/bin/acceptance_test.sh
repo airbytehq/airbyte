@@ -12,7 +12,7 @@ echo "Starting app..."
 echo "ls /tmp"
 ls /tmp
 # Detach so we can run subsequent commands
-VERSION=dev docker-compose up
+VERSION=dev docker-compose up -d
 trap "echo 'docker-compose logs:' && docker-compose logs -t --tail 150 && docker-compose down" EXIT
 
 echo "Waiting for services to begin"
