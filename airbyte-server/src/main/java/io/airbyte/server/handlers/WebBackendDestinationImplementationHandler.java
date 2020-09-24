@@ -24,13 +24,22 @@
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.api.model.*;
+import static io.airbyte.api.model.CheckConnectionRead.StatusEnum.SUCCESS;
+
+import io.airbyte.api.model.CheckConnectionRead;
+import io.airbyte.api.model.DestinationImplementationCreate;
+import io.airbyte.api.model.DestinationImplementationIdRequestBody;
+import io.airbyte.api.model.DestinationImplementationRead;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WebBackendDestinationImplementationHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(WebBackendDestinationImplementationHandler.class);
 
   private final DestinationImplementationsHandler destinationImplementationsHandler;
 
@@ -53,26 +62,18 @@ public class WebBackendDestinationImplementationHandler {
     final DestinationImplementationIdRequestBody destinationImplementationIdRequestBody = new DestinationImplementationIdRequestBody()
         .destinationImplementationId(destinationImplementation.getDestinationImplementationId());
 
-    CheckConnectionRead checkConnectionRead = null;
-
-    boolean syncFailed;
     try {
-      checkConnectionRead = schedulerHandler
+      CheckConnectionRead checkConnectionRead = schedulerHandler
           .checkDestinationImplementationConnection(destinationImplementationIdRequestBody);
-    } finally {
-      syncFailed = checkConnectionRead == null
-          || CheckConnectionRead.StatusEnum.FAILURE == checkConnectionRead.getStatus();
-      if (syncFailed) {
-        destinationImplementationsHandler
-            .deleteDestinationImplementation(destinationImplementationIdRequestBody);
+      if (checkConnectionRead.getStatus() == SUCCESS) {
+        return destinationImplementation;
       }
+    } catch (Exception e) {
+      LOGGER.error("Error while checking connection", e);
     }
 
-    if (syncFailed) {
-      throw new KnownException(400, "Unable to connect to destination");
-    }
-
-    return destinationImplementation;
+    destinationImplementationsHandler.deleteDestinationImplementation(destinationImplementationIdRequestBody);
+    throw new KnownException(400, "Unable to connect to destination");
   }
 
 }

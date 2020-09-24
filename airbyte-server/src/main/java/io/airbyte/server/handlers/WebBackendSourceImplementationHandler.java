@@ -24,6 +24,8 @@
 
 package io.airbyte.server.handlers;
 
+import static io.airbyte.api.model.CheckConnectionRead.StatusEnum.SUCCESS;
+
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.SourceImplementationCreate;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
@@ -32,8 +34,12 @@ import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WebBackendSourceImplementationHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(WebBackendSourceImplementationHandler.class);
 
   private final SourceImplementationsHandler sourceImplementationsHandler;
 
@@ -55,25 +61,18 @@ public class WebBackendSourceImplementationHandler {
     final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody()
         .sourceImplementationId(sourceImplementation.getSourceImplementationId());
 
-    CheckConnectionRead checkConnectionRead = null;
-
-    boolean syncFailed;
     try {
-      checkConnectionRead = schedulerHandler
+      CheckConnectionRead checkConnectionRead = schedulerHandler
           .checkSourceImplementationConnection(sourceImplementationIdRequestBody);
-    } finally {
-      syncFailed = checkConnectionRead == null
-          || CheckConnectionRead.StatusEnum.FAILURE == checkConnectionRead.getStatus();
-      if (syncFailed) {
-        sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
+      if (checkConnectionRead.getStatus() == SUCCESS) {
+        return sourceImplementation;
       }
+    } catch (Exception e) {
+      LOGGER.error("Error while checking connection", e);
     }
 
-    if (syncFailed) {
-      throw new KnownException(400, "Unable to connect to source");
-    }
-
-    return sourceImplementation;
+    sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
+    throw new KnownException(400, "Unable to connect to destination");
   }
 
 }
