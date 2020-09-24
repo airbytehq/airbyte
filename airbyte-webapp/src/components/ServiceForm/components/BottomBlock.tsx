@@ -10,6 +10,7 @@ type IProps = {
   formType: "source" | "destination" | "connection";
   isSubmitting: boolean;
   hasSuccess?: boolean;
+  isLoadSchema?: boolean;
   isValid: boolean;
   dirty: boolean;
   errorMessage?: React.ReactNode;
@@ -69,7 +70,8 @@ const BottomBlock: React.FC<IProps> = ({
   dirty,
   formType,
   hasSuccess,
-  errorMessage
+  errorMessage,
+  isLoadSchema
 }) => {
   if (hasSuccess) {
     return (
@@ -104,7 +106,7 @@ const BottomBlock: React.FC<IProps> = ({
       ) : (
         <div />
       )}
-      <Button type="submit" disabled={!isValid || !dirty}>
+      <Button type="submit" disabled={!isValid || !dirty || isLoadSchema}>
         <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
       </Button>
     </ButtonContainer>
