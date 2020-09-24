@@ -42,13 +42,45 @@ export default class SourceImplementationResource extends BaseResource
   static updateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.partialUpdateShape(),
-      schema: this.asSchema()
+      fetch: async (
+        params: { sourceImplementationId: string },
+        body: any
+      ): Promise<any> => {
+        const sourceResult = await this.fetch(
+          "post",
+          `${this.url(params)}/update`,
+          body
+        );
+
+        const checkConnectionResult = await this.fetch(
+          "post",
+          `${this.url(params)}/check_connection`,
+          params
+        );
+
+        return {
+          source: sourceResult,
+          ...checkConnectionResult
+        };
+      },
+      schema: { source: this.asSchema(), status: "", message: "" }
     };
   }
 
   static createShape<T extends typeof Resource>(this: T) {
     return {
       ...super.createShape(),
+      fetch: async (
+        _: Readonly<Record<string, string | number>>,
+        body: Readonly<object>
+      ): Promise<any> => {
+        const response = await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/source_implementations/create`,
+          body
+        );
+        return response;
+      },
       schema: this.asSchema()
     };
   }

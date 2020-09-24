@@ -684,6 +684,48 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/source_implementations/create:
+    post:
+      tags:
+        - web_backend
+      summary: Create a source implementation
+      operationId: webBackendCreateSourceImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceImplementationCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceImplementationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/destination_implementations/create:
+    post:
+      tags:
+        - web_backend
+      summary: Create a destination implementation
+      operationId: webBackendCreateDestinationImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationImplementationCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationImplementationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/jobs/list:
     post:
       tags:
