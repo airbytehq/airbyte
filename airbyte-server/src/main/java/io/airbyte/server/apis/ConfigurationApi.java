@@ -75,6 +75,8 @@ import io.airbyte.server.handlers.SourceImplementationsHandler;
 import io.airbyte.server.handlers.SourceSpecificationsHandler;
 import io.airbyte.server.handlers.SourcesHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
+import io.airbyte.server.handlers.WebBackendDestinationImplementationHandler;
+import io.airbyte.server.handlers.WebBackendSourceImplementationHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
@@ -95,6 +97,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final SchedulerHandler schedulerHandler;
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
+  private final WebBackendSourceImplementationHandler webBackendSourceImplementationHandler;
+  private final WebBackendDestinationImplementationHandler webBackendDestinationImplementationHandler;
 
   public ConfigurationApi(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence) {
     final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation();
@@ -109,6 +113,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
+    webBackendSourceImplementationHandler = new WebBackendSourceImplementationHandler(sourceImplementationsHandler, schedulerHandler);
+    webBackendDestinationImplementationHandler = new WebBackendDestinationImplementationHandler(destinationImplementationsHandler, schedulerHandler);
   }
 
   // WORKSPACE
@@ -126,6 +132,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WorkspaceRead updateWorkspace(@Valid WorkspaceUpdate workspaceUpdate) {
     return execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
+  }
+
+  @Override
+  public DestinationImplementationRead webBackendCreateDestinationImplementation(@Valid DestinationImplementationCreate destinationImplementationCreate) {
+    return execute(
+        () -> webBackendDestinationImplementationHandler.webBackendCreateDestinationImplementationAndCheck(destinationImplementationCreate));
+  }
+
+  @Override
+  public SourceImplementationRead webBackendCreateSourceImplementation(@Valid SourceImplementationCreate sourceImplementationCreate) {
+    return execute(() -> webBackendSourceImplementationHandler.webBackendCreateSourceImplementationAndCheck(sourceImplementationCreate));
   }
 
   // SOURCE

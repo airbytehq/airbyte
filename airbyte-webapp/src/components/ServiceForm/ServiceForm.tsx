@@ -119,6 +119,7 @@ const ServiceForm: React.FC<IProps> = ({
               dirty={dirty}
               resetForm={resetForm}
               successMessage={successMessage}
+              errorMessage={errorMessage}
             />
           ) : (
             <BottomBlock
