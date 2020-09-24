@@ -25,6 +25,8 @@ configurations {
 
 dependencies {
     integrationTestImplementation project(':airbyte-workers')
+    integrationTestImplementation project(':airbyte-singer')
+    integrationTestImplementation project(':airbyte-config:models')
 }
 
 task imageName {
