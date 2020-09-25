@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 function echo_err() {
   echo >&2 "$@"
 }
