@@ -24,44 +24,37 @@
 
 package io.airbyte.server.handlers;
 
+import static java.util.stream.Collectors.toList;
+
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.DebugRead;
 import io.airbyte.integrations.Integrations;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static java.util.stream.Collectors.toList;
+import javax.annotation.Nullable;
+import org.apache.commons.io.IOUtils;
 
 public class DebugInfoHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DebugInfoHandler.class);
-
   public DebugRead getInfo() {
-    try {
-      List<Map<String, String>> integrationImages = Arrays.stream(Integrations.values())
-          .map(Integrations::getTaggedImage)
-          .map(image -> {
-            try {
-              String hash = getOutput(Lists.newArrayList("docker", "images", "--no-trunc", "--quiet", image));
-              Map<String, String> result = new HashMap<>();
-              result.put("hash", hash.isEmpty() ? null : hash.split(":")[1].substring(0, 12));
-              result.put("image", image);
-              return result;
-            } catch (IOException | InterruptedException e) {
-              throw new RuntimeException(e);
-            }
-          })
-          .collect(toList());
+    List<Map<String, String>> integrationImages = getIntegrationImages();
+    List<Map<String, String>> runningCoreImages = getRunningCoreImages();
 
-      String runningContainers = getOutput(
+    DebugRead result = new DebugRead();
+    result.info(Map.of(
+        "images", Map.of(
+            "running", runningCoreImages,
+            "integrations", integrationImages)));
+    return result;
+  }
+
+  private static List<Map<String, String>> getRunningCoreImages() {
+    try {
+      String runningAirbyteContainers = runAndGetOutput(
           Lists.newArrayList(
               "docker",
               "ps",
@@ -69,53 +62,54 @@ public class DebugInfoHandler {
               "name=airbyte",
               "-q"));
 
-      List<String> outputCommand = Lists.newArrayList(
+      List<String> inspectCommand = Lists.newArrayList(
           "docker",
           "inspect",
           "--format='{{.Image}} {{.Config.Image}}'");
 
-      outputCommand.addAll(Lists.newArrayList(runningContainers.split("\n")));
+      inspectCommand.addAll(Lists.newArrayList(runningAirbyteContainers.split("\n")));
 
-      LOGGER.error("outputCommand = " + outputCommand);
-
-      String output = getOutput(outputCommand).replaceAll("'", "");
-
-      LOGGER.error("output = " + output);
+      String output = runAndGetOutput(inspectCommand).replaceAll("'", "");
 
       List<String> coreOutput = Lists.newArrayList(output.split("\n"));
 
-      LOGGER.error("coreOutput = " + coreOutput);
+      return coreOutput.stream().map(entry -> {
+        String[] elements = entry.split(" ");
+        String shortHash = getShortHash(elements[0]);
+        String taggedImage = elements[1];
 
-      List<Map<String, String>> coreImages = coreOutput.stream().map(x -> {
-        LOGGER.error("x = " + x);
-
-        String[] s = x.split(" ");
-        String shortHash = s[0].split(":")[1].substring(0, 12);
-        String taggedImage = s[1];
-
-        return Map.of(
-            "image", taggedImage,
-            "hash", shortHash);
+        Map<String, String> result = new HashMap<>();
+        result.put("hash", shortHash);
+        result.put("image", taggedImage);
+        return result;
       }).collect(toList());
-
-      // todo: split into lines
-      // todo:get columns
-      // todo: format into map
-
-      // todo: list airbyte local images with docker
-
-      DebugRead result = new DebugRead();
-      result.info(Map.of(
-          "images",
-          Map.of("running", coreImages,
-              "integrations", integrationImages)));
-      return result;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private static String getOutput(List<String> cmd) throws IOException, InterruptedException {
+  private static List<Map<String, String>> getIntegrationImages() {
+    try {
+      return Arrays.stream(Integrations.values())
+          .map(Integrations::getTaggedImage)
+          .map(image -> {
+            try {
+              String hash = runAndGetOutput(Lists.newArrayList("docker", "images", "--no-trunc", "--quiet", image));
+              Map<String, String> result = new HashMap<>();
+              result.put("hash", getShortHash(hash));
+              result.put("image", image);
+              return result;
+            } catch (IOException | InterruptedException e) {
+              throw new RuntimeException(e);
+            }
+          })
+          .collect(toList());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected static String runAndGetOutput(List<String> cmd) throws IOException, InterruptedException {
     ProcessBuilder processBuilder = new ProcessBuilder(cmd);
     Process process = processBuilder.start();
     process.waitFor();
@@ -125,6 +119,16 @@ public class DebugInfoHandler {
     process.destroy();
 
     return output;
+  }
+
+  @Nullable
+  protected static String getShortHash(String sha256TaggedHash) {
+    if (sha256TaggedHash.isEmpty()) {
+      return null;
+    } else {
+      String fullHash = sha256TaggedHash.replace("sha256:", "");
+      return fullHash.substring(0, Math.min(12, fullHash.length()));
+    }
   }
 
 }
