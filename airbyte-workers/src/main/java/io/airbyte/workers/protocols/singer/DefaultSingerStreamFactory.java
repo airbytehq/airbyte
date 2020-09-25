@@ -75,13 +75,6 @@ public class DefaultSingerStreamFactory implements SingerStreamFactory {
         .filter(Optional::isPresent)
         .map(Optional::get)
         .filter(j -> {
-          // todo (cgardens) - hack. seems like the validation in the worker does not play well with
-          // the custom deserializer. it marks the type as object when really it is going to be an
-          // array. while the generate pojo is correct (using the custom serializer) the validator
-          // doesn't understand this annotation and fails because these fields are not objects.
-          if (j.get("type") != null && j.get("type").asText().equals("SCHEMA")) {
-            return true;
-          }
           boolean res = singerProtocolValidator.test(j);
           if (!res) {
             logger.error("Validation failed: {}", Jsons.serialize(j));
