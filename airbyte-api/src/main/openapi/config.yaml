@@ -776,7 +776,7 @@ paths:
     get:
       tags:
         - debugging
-      summary: Get miscellanious information for debugging
+      summary: Get miscellaneous information for debugging
       operationId: getDebuggingInfo
       responses:
         "200":
