@@ -31,6 +31,7 @@ import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSyncRead;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.DebugRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationCreate;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
@@ -66,6 +67,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.handlers.ConnectionsHandler;
+import io.airbyte.server.handlers.DebugInfoHandler;
 import io.airbyte.server.handlers.DestinationImplementationsHandler;
 import io.airbyte.server.handlers.DestinationSpecificationsHandler;
 import io.airbyte.server.handlers.DestinationsHandler;
@@ -94,6 +96,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final DestinationSpecificationsHandler destinationSpecificationsHandler;
   private final DestinationImplementationsHandler destinationImplementationsHandler;
   private final ConnectionsHandler connectionsHandler;
+  private final DebugInfoHandler debugInfoHandler;
   private final SchedulerHandler schedulerHandler;
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
@@ -115,6 +118,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
     webBackendSourceImplementationHandler = new WebBackendSourceImplementationHandler(sourceImplementationsHandler, schedulerHandler);
     webBackendDestinationImplementationHandler = new WebBackendDestinationImplementationHandler(destinationImplementationsHandler, schedulerHandler);
+    debugInfoHandler = new DebugInfoHandler();
   }
 
   // WORKSPACE
@@ -275,6 +279,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public ConnectionRead getConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> connectionsHandler.getConnection(connectionIdRequestBody));
+  }
+
+  @Override
+  public DebugRead getDebuggingInfo() {
+    return execute(debugInfoHandler::getInfo);
   }
 
   @Override
