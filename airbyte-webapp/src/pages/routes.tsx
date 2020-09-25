@@ -15,7 +15,6 @@ import LoadingPage from "../components/LoadingPage";
 import MainView from "../components/MainView";
 import config from "../config";
 import WorkspaceResource from "../core/resources/Workspace";
-import ConnectionResource from "../core/resources/Connection";
 import useSegment from "../components/hooks/useSegment";
 import { AnalyticsService } from "../core/analytics/AnalyticsService";
 import useRouter from "../components/hooks/useRouterHook";
@@ -94,16 +93,12 @@ export const Routing = () => {
     workspaceId: config.ui.workspaceId
   });
 
-  const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId
-  });
-
   return (
     <Router>
       <Suspense fallback={<LoadingPage />}>
         {!workspace.initialSetupComplete ? (
           <PreferencesRoutes />
-        ) : !connections.length && !workspace.onboardingComplete ? (
+        ) : !workspace.onboardingComplete ? (
           <OnboardingsRoutes />
         ) : (
           <MainViewRoutes />
