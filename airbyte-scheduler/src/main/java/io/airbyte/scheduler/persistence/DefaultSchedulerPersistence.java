@@ -82,7 +82,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(sourceImplementation.getConfiguration())
         .withDockerImage(Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
-            .getCheckConnectionImage());
+            .getTaggedImage());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE)
@@ -101,7 +101,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(destinationImplementation.getConfiguration())
         .withDockerImage(Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId())
-            .getCheckConnectionImage());
+            .getTaggedImage());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION)
@@ -118,7 +118,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
         sourceImplementation.getSourceImplementationId().toString());
 
     final String imageName = Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId())
-        .getDiscoverSchemaImage();
+        .getTaggedImage();
     final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig()
         .withConnectionConfiguration(sourceImplementation.getConfiguration())
         .withDockerImage(imageName);
@@ -139,8 +139,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
     final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
 
-    final String sourceImageName = Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId()).getSyncImage();
-    final String destinationImageName = Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId()).getSyncImage();
+    final String sourceImageName = Integrations.findBySpecId(sourceImplementation.getSourceSpecificationId()).getTaggedImage();
+    final String destinationImageName = Integrations.findBySpecId(destinationImplementation.getDestinationSpecificationId()).getTaggedImage();
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withSourceConnectionImplementation(sourceImplementation)
         .withSourceDockerImage(sourceImageName)

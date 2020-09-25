@@ -41,9 +41,10 @@ import io.airbyte.workers.protocols.singer.SingerSyncWorker;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.airbyte.workers.wrappers.JobOutputSyncWorker;
-import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.file.Path;
 
 /**
  * This class is a runnable that give a job id and db connection figures out how to run the
