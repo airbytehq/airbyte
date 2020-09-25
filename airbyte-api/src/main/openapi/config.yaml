@@ -772,6 +772,22 @@ paths:
           description: Job not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/debug:
+    get:
+      tags:
+        - debugging
+      summary: Get miscellaneous information for debugging
+      operationId: getDebuggingInfo
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DebugRead"
+        "404":
+          description: Debug info not found
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1362,6 +1378,13 @@ components:
           $ref: "#/components/schemas/JobRead"
         logs:
           $ref: "#/components/schemas/LogRead"
+    DebugRead:
+      type: object
+      required:
+        - info
+      properties:
+        info:
+          type: object
     LogRead:
       type: object
       required:
