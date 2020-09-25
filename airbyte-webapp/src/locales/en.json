@@ -98,6 +98,7 @@
   "sources.disabled": "Disabled",
   "sources.noSync": "No sync yet",
   "sources.emptySchema": "Schema is empty",
+  "sources.noSources": "Source list is empty",
   "sources.sourceSettings": "Source Settings",
   "sources.dataDelete": "No data will be deleted from your source.",
   "sources.deleteSource": "Delete this source",

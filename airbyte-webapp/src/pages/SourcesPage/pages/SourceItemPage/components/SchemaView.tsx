@@ -9,11 +9,11 @@ import TreeView from "../../../../../components/TreeView";
 import ConnectionResource, {
   SyncSchema
 } from "../../../../../core/resources/Connection";
-import EmptySyncHistory from "./EmptySyncHistory";
 import {
   constructInitialSchemaState,
   constructNewSchema
 } from "../../../../../core/helpers";
+import EmptyResource from "../../../components/EmptyResource";
 
 type IProps = {
   connectionId: string;
@@ -87,9 +87,7 @@ const SchemaView: React.FC<IProps> = ({
       </ButtonsContainer>
       <ContentCard>
         {!syncSchema.streams.length ? (
-          <EmptySyncHistory
-            text={<FormattedMessage id="sources.emptySchema" />}
-          />
+          <EmptyResource text={<FormattedMessage id="sources.emptySchema" />} />
         ) : (
           <TreeView
             nodes={formSyncSchema}

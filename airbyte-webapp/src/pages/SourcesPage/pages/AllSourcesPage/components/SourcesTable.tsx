@@ -12,7 +12,9 @@ import ConnectorCell from "./ConnectorCell";
 import NameCell from "./NameCell";
 import { Routes } from "../../../../routes";
 import useRouter from "../../../../../components/hooks/useRouterHook";
-import ConnectionResource from "../../../../../core/resources/Connection";
+import ConnectionResource, {
+  Connection
+} from "../../../../../core/resources/Connection";
 import config from "../../../../../config";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
@@ -22,6 +24,10 @@ import DestinationResource from "../../../../../core/resources/Destination";
 const Content = styled.div`
   margin: 0 32px 0 27px;
 `;
+
+type IProps = {
+  connections: Connection[];
+};
 
 type ITableDataItem = {
   connectionId: string;
@@ -33,11 +39,9 @@ type ITableDataItem = {
   error: boolean;
 };
 
-const SourcesTable: React.FC = () => {
+const SourcesTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
-  const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId
-  });
+
   const updateConnection = useFetcher(ConnectionResource.updateShape());
   const { destinations } = useResource(
     DestinationImplementationResource.listShape(),
@@ -94,7 +98,7 @@ const SourcesTable: React.FC = () => {
         frequency: frequency?.text
       });
     },
-    [connections, destination, updateConnection]
+    [connections, destination.destinationId, destination.name, updateConnection]
   );
 
   const columns = React.useMemo(
