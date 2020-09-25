@@ -79,6 +79,7 @@
   "onboarding.setUpConnection": "Set up connection",
   "onboarding.setConnection": "Set up the connection",
   "onboarding.instructionsLink": "See instructions how to connect {name}",
+  "onboarding.fetchingSchema": "We are fetching the schema of your data source.\nThis should take less than a minute...",
 
   "sources.newSource": "+ New source",
   "sources.newSourceTitle": "New Source",

@@ -26,6 +26,14 @@ const SpinnerBlock = styled.div`
   text-align: center;
 `;
 
+const FetchMessage = styled.div`
+  font-size: 14px;
+  line-height: 17px;
+  color: ${({ theme }) => theme.textColor};
+  margin-top: 15px;
+  white-space: pre-line;
+`;
+
 const CreateSourcePage: React.FC<IProps> = ({
   onSubmit,
   destination,
@@ -59,6 +67,9 @@ const CreateSourcePage: React.FC<IProps> = ({
           fallback={
             <SpinnerBlock>
               <Spinner />
+              <FetchMessage>
+                <FormattedMessage id="onboarding.fetchingSchema" />
+              </FetchMessage>
             </SpinnerBlock>
           }
         >
