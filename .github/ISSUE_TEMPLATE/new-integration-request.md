@@ -2,7 +2,7 @@
 name: New Integration request
 about: Suggest a new Integration
 title: ''
-labels: area/integration
+labels: area/integration, new-integration
 assignees: ''
 
 ---
