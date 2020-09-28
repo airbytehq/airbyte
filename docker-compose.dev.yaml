@@ -24,7 +24,11 @@ services:
     ports:
       - 5432:5432
   scheduler:
+    environment:
+      - INTEGRATION_OVERRIDE_VERSION=${INTEGRATION_OVERRIDE_VERSION}
   server:
+    environment:
+      - INTEGRATION_OVERRIDE_VERSION=${INTEGRATION_OVERRIDE_VERSION}
   webapp:
 # Allow us to access the volume content on the local filesystem
 volumes:

@@ -47,6 +47,8 @@ public enum Integrations {
       UUID.fromString("8442ee76-cc1d-419a-bd8b-859a090366d4"),
       new IntegrationMapping("airbyte/integration-singer-csv-destination", "0.1.0"));
 
+  private static final String INTEGRATION_OVERRIDE_VERSION = "INTEGRATION_OVERRIDE_VERSION";
+
   private final UUID specId;
   private final IntegrationMapping integrationMapping;
 
@@ -81,7 +83,14 @@ public enum Integrations {
 
     public IntegrationMapping(String image, String tag) {
       this.image = image;
-      this.tag = tag;
+
+      String overrideVersion = System.getenv(INTEGRATION_OVERRIDE_VERSION);
+
+      if (overrideVersion == null) {
+        this.tag = tag;
+      } else {
+        this.tag = overrideVersion;
+      }
     }
 
     public String getTaggedImage() {
