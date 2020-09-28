@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useFetcher } from "rest-hooks";
+import styled from "styled-components";
 
 import ContentCard from "../../../components/ContentCard";
 import ServiceForm from "../../../components/ServiceForm";
@@ -10,8 +11,11 @@ import SourceSpecificationResource, {
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import config from "../../../config";
 import PrepareDropDownLists from "./PrepareDropDownLists";
+import { SourceImplementation } from "../../../core/resources/SourceImplementation";
+import Spinner from "../../../components/Spinner";
 
 type IProps = {
+  sourceImplementation?: SourceImplementation;
   onSubmit: (values: {
     name: string;
     serviceType: string;
@@ -22,6 +26,11 @@ type IProps = {
   hasSuccess?: boolean;
   errorStatus?: number;
 };
+
+const LoaderContainer = styled.div`
+  text-align: center;
+  padding: 22px 0 23px;
+`;
 
 const useSourceSpecificationLoad = (sourceId: string) => {
   const [
@@ -52,7 +61,8 @@ const SourceStep: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
   hasSuccess,
-  errorStatus
+  errorStatus,
+  sourceImplementation
 }) => {
   const [sourceId, setSourceId] = useState("");
   const { sourceSpecification, isLoading } = useSourceSpecificationLoad(
@@ -89,19 +99,38 @@ const SourceStep: React.FC<IProps> = ({
       <FormattedMessage id="form.someError" />
     );
 
+  useEffect(() => setSourceId(sourceImplementation?.sourceId || ""), [
+    sourceImplementation
+  ]);
+
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
-      <ServiceForm
-        onDropDownSelect={onDropDownSelect}
-        onSubmit={onSubmitForm}
-        formType="source"
-        dropDownData={dropDownData}
-        hasSuccess={hasSuccess}
-        errorMessage={errorMessage}
-        specifications={sourceSpecification?.connectionSpecification}
-        documentationUrl={sourceSpecification?.documentationUrl}
-        isLoading={isLoading}
-      />
+      {sourceImplementation && isLoading ? (
+        <LoaderContainer>
+          <Spinner />
+        </LoaderContainer>
+      ) : (
+        <ServiceForm
+          onDropDownSelect={onDropDownSelect}
+          onSubmit={onSubmitForm}
+          formType="source"
+          dropDownData={dropDownData}
+          hasSuccess={hasSuccess}
+          errorMessage={errorMessage}
+          specifications={sourceSpecification?.connectionSpecification}
+          documentationUrl={sourceSpecification?.documentationUrl}
+          isLoading={isLoading}
+          formValues={
+            sourceImplementation
+              ? {
+                  ...sourceImplementation.connectionConfiguration,
+                  name: sourceImplementation.name,
+                  serviceType: sourceImplementation.sourceId
+                }
+              : null
+          }
+        />
+      )}
     </ContentCard>
   );
 };

@@ -306,6 +306,9 @@ const OnboardingPage: React.FC = () => {
           dropDownData={sourcesDropDownData}
           hasSuccess={successRequest}
           errorStatus={errorStatusRequest}
+          sourceImplementation={
+            sources.length && !successRequest ? sources[0] : undefined
+          }
         />
       );
     }
@@ -317,6 +320,9 @@ const OnboardingPage: React.FC = () => {
           hasSuccess={successRequest}
           errorStatus={errorStatusRequest}
           currentSourceId={sources[0].sourceId}
+          destinationImplementation={
+            destinations.length && !successRequest ? destinations[0] : undefined
+          }
         />
       );
     }
