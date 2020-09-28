@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 export enum StepsTypes {
@@ -8,21 +8,6 @@ export enum StepsTypes {
 }
 
 const StepsConfig = (hasSources: boolean, hasDestinations: boolean) => {
-  const steps = [
-    {
-      id: StepsTypes.CREATE_SOURCE,
-      name: <FormattedMessage id={"onboarding.createSource"} />
-    },
-    {
-      id: StepsTypes.CREATE_DESTINATION,
-      name: <FormattedMessage id={"onboarding.createDestination"} />
-    },
-    {
-      id: StepsTypes.SET_UP_CONNECTION,
-      name: <FormattedMessage id={"onboarding.setUpConnection"} />
-    }
-  ];
-
   const getInitialStep = () => {
     if (hasSources) {
       if (hasDestinations) {
@@ -36,6 +21,35 @@ const StepsConfig = (hasSources: boolean, hasDestinations: boolean) => {
   };
 
   const [currentStep, setCurrentStep] = useState(getInitialStep());
+
+  const steps = useMemo(
+    () => [
+      {
+        id: StepsTypes.CREATE_SOURCE,
+        name: <FormattedMessage id={"onboarding.createSource"} />,
+        onSelect: hasSources
+          ? () => setCurrentStep(StepsTypes.CREATE_SOURCE)
+          : undefined
+      },
+      {
+        id: StepsTypes.CREATE_DESTINATION,
+        name: <FormattedMessage id={"onboarding.createDestination"} />,
+        onSelect:
+          hasSources || hasDestinations
+            ? () => setCurrentStep(StepsTypes.CREATE_DESTINATION)
+            : undefined
+      },
+      {
+        id: StepsTypes.SET_UP_CONNECTION,
+        name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+        onSelect:
+          hasSources && hasDestinations
+            ? () => setCurrentStep(StepsTypes.SET_UP_CONNECTION)
+            : undefined
+      }
+    ],
+    [hasSources, hasDestinations]
+  );
 
   return {
     steps,

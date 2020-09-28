@@ -8,6 +8,7 @@ type IProps = {
   data: Array<{
     id: string;
     name: string | React.ReactNode;
+    onSelect?: () => void;
   }>;
   activeStep?: string;
   onSelect?: (id: string) => void;
@@ -33,7 +34,7 @@ const StepsMenu: React.FC<IProps> = ({
           key={item.id}
           num={key + 1}
           {...item}
-          onClick={onSelect}
+          onClick={item.onSelect || onSelect}
           isActive={activeStep === item.id}
         />
       ))}
