@@ -164,7 +164,10 @@ const CreateSourcePage: React.FC = () => {
               newConnectionId: string,
               connectionsIds: { connections: string[] }
             ) => ({
-              connections: [...connectionsIds.connections, newConnectionId]
+              connections: [
+                ...(connectionsIds?.connections || []),
+                newConnectionId
+              ]
             })
           ]
         ]
