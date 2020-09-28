@@ -12,19 +12,6 @@ This Postgres destination is based on the [Singer Postgres Target](https://githu
 
 Airbyte Streams and Fields are written as Postgres Tables and Columns respectively, applying the type changes described below. No extra columns are added in the process.
 
-#### Data type mapping
-
-| Airbyte Type | Postgres Type | Notes |
-| :--- | :--- | :--- |
-| `array` | `array` or `string` | arrays are converted into BigQuery arrays using the type mappings defined here. If the array's item type is not supported by Airbyte, the whole array is encoded as a string. |
-| `boolean` | `boolean` |  |
-| `date-time` | `timestamp` |  |
-| `integer` | `integer` |  |
-| `number` | `numeric` |  |
-| `object` | `struct`/`record` | fields of the written struct are converted according to the conversions in this table |
-| `string` | `string` |  |
-| Types not listed above | `string` |  |
-
 #### Features
 
 This section should contain a table with the following format:
