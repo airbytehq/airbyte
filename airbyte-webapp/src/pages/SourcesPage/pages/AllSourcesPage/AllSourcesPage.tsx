@@ -1,13 +1,13 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
+import { useResource } from "rest-hooks";
 
 import Button from "../../../../components/Button";
 import { Routes } from "../../../routes";
 import PageTitle from "../../../../components/PageTitle";
 import useRouter from "../../../../components/hooks/useRouterHook";
 import SourcesTable from "./components/SourcesTable";
-import { useResource } from "rest-hooks/lib/react-integration/hooks";
 import ConnectionResource from "../../../../core/resources/Connection";
 import config from "../../../../config";
 import ContentCard from "../../../../components/ContentCard";
