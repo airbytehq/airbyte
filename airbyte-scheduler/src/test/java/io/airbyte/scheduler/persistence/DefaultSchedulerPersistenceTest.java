@@ -190,7 +190,7 @@ class DefaultSchedulerPersistenceTest {
 
     final Record jobEntry = getJobRecord(jobId);
 
-    final String imageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getDiscoverSchemaImage();
+    final String imageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getTaggedImage();
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(SOURCE_CONNECTION_IMPLEMENTATION.getConfiguration())
         .withDockerImage(imageName);
@@ -209,7 +209,7 @@ class DefaultSchedulerPersistenceTest {
     final Record jobEntry = getJobRecord(jobId);
 
     final String imageName = Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId())
-        .getDiscoverSchemaImage();
+        .getTaggedImage();
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(DESTINATION_CONNECTION_IMPLEMENTATION.getConfiguration())
         .withDockerImage(imageName);
@@ -227,7 +227,7 @@ class DefaultSchedulerPersistenceTest {
 
     final Record jobEntry = getJobRecord(jobId);
 
-    final String imageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getDiscoverSchemaImage();
+    final String imageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getTaggedImage();
     final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig()
         .withConnectionConfiguration(SOURCE_CONNECTION_IMPLEMENTATION.getConfiguration())
         .withDockerImage(imageName);
@@ -248,9 +248,9 @@ class DefaultSchedulerPersistenceTest {
 
     final Record jobEntry = getJobRecord(jobId);
 
-    final String sourceImageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getSyncImage();
+    final String sourceImageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getTaggedImage();
     final String destinationImageName = Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId())
-        .getSyncImage();
+        .getTaggedImage();
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withSourceConnectionImplementation(SOURCE_CONNECTION_IMPLEMENTATION)
         .withSourceDockerImage(sourceImageName)
@@ -388,9 +388,9 @@ class DefaultSchedulerPersistenceTest {
 
     final Optional<Job> actual = schedulerPersistence.getLastSyncJob(STANDARD_SYNC.getConnectionId());
 
-    final String sourceImageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getSyncImage();
+    final String sourceImageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId()).getTaggedImage();
     final String destinationImageName =
-        Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId()).getSyncImage();
+        Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId()).getTaggedImage();
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withSourceConnectionImplementation(SOURCE_CONNECTION_IMPLEMENTATION)
         .withSourceDockerImage(sourceImageName)
@@ -491,9 +491,9 @@ class DefaultSchedulerPersistenceTest {
 
   private Job getExpectedJob(long jobId, JobStatus jobStatus) {
     final String sourceImageName = Integrations.findBySpecId(SOURCE_CONNECTION_IMPLEMENTATION.getSourceSpecificationId())
-        .getDiscoverSchemaImage();
+        .getTaggedImage();
     final String destinationImageName = Integrations.findBySpecId(DESTINATION_CONNECTION_IMPLEMENTATION.getDestinationSpecificationId())
-        .getDiscoverSchemaImage();
+        .getTaggedImage();
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withSourceDockerImage(sourceImageName)
