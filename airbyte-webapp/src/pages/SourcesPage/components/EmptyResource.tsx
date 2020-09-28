@@ -1,9 +1,8 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 type IProps = {
-  text?: React.ReactNode;
+  text: React.ReactNode;
 };
 
 const Content = styled.div`
@@ -24,13 +23,13 @@ const ImgBlock = styled.div`
   padding: 20px 0;
 `;
 
-const EmptySyncHistory: React.FC<IProps> = ({ text }) => (
+const EmptyResource: React.FC<IProps> = ({ text }) => (
   <Content>
     <ImgBlock>
       <img src="/cactus.png" height={40} alt={"cactus"} />
     </ImgBlock>
-    {text || <FormattedMessage id="sources.noSync" />}
+    {text}
   </Content>
 );
 
-export default EmptySyncHistory;
+export default EmptyResource;
