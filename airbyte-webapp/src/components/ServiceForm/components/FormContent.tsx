@@ -152,6 +152,7 @@ const FormContent: React.FC<IProps> = ({
               {({ field }: FieldProps<string>) => (
                 <LabeledInput
                   {...field}
+                  autoComplete="off"
                   label={
                     condition?.title || (
                       <FormattedMessage
