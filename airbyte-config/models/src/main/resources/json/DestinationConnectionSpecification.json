@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/airbytehq/airbyte/blob/master/airbyte-config/src/main/resources/json/DestinationSpecification.json",
+  "$id": "https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/json/DestinationSpecification.json",
   "title": "DestinationConnectionSpecification",
   "description": "specification for how to configure a connection to a destination",
   "type": "object",
