@@ -20,6 +20,7 @@
 * [Destinations](integrations/destinations/README.md)
   * [Local CSV](integrations/destinations/local-csv.md)
   * [BigQuery](integrations/destinations/bigquery.md)
+  * [Postgres](integrations/destinations/postgres.md)
 
 ## Contributing
 
