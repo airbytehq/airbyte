@@ -21,7 +21,3 @@ class SingerIntegration:
     # AirbyteSchema
     def discover(self, logger, config):
         pass
-
-    # Iterator<AirbyteMessage>
-    def read(self, logger, config, state=None):
-        pass
