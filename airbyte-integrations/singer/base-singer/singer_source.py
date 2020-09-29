@@ -7,4 +7,4 @@ class SingerSource(SingerIntegration):
 
     # Iterator<AirbyteMessage>
     def read(self, logger, config, state=None):
-        pass
+        raise Exception("invalid")

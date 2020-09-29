@@ -10,8 +10,15 @@
 # spec.loader.exec_module(module)
 # module.MyClass()
 
+import logging
+
 from source_implementation import SourceImplementation
 from singer_source import SingerSource
 
 source = SourceImplementation()
-source.__class__ = SingerSource
+
+if not isinstance(source, SingerSource):
+    raise Exception("invalid")
+
+source.spec()
+source.read(logging, "config")
