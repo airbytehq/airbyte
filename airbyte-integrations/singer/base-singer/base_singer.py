@@ -11,5 +11,7 @@
 # module.MyClass()
 
 from source_implementation import SourceImplementation
+from singer_source import SingerSource
 
-SourceImplementation()
+source = SourceImplementation()
+source.__class__ = SingerSource
