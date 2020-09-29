@@ -14,7 +14,7 @@ class AirbyteSchema():
     pass
 
 
-class SingerIntegration:
+class Integration:
     def __init__(self):
         pass
 
