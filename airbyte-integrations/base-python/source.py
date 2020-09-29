@@ -1,7 +1,7 @@
 from integration import Integration
 
 
-class Source(SingerIntegration):
+class Source(Integration):
     def __init__(self):
         pass
 
