@@ -38,6 +38,7 @@ task imageName {
 task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
+    dependsOn ":airbyte-integrations:singer:base-singer:buildImage"
 }
 
 task integrationTest(type: Test) {
