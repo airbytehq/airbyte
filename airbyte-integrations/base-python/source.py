@@ -1,4 +1,4 @@
-from singer_integration import SingerIntegration
+from integration import SingerIntegration
 
 
 class SingerSource(SingerIntegration):
