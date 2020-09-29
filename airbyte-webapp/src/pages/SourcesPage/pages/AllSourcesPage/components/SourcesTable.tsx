@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
-import { useFetcher, useResource } from "rest-hooks";
+import { useResource } from "rest-hooks";
 
 import Table from "../../../../../components/Table";
 import FrequencyCell from "./FrequencyCell";
@@ -12,14 +12,13 @@ import ConnectorCell from "./ConnectorCell";
 import NameCell from "./NameCell";
 import { Routes } from "../../../../routes";
 import useRouter from "../../../../../components/hooks/useRouterHook";
-import ConnectionResource, {
-  Connection
-} from "../../../../../core/resources/Connection";
+import { Connection } from "../../../../../core/resources/Connection";
 import config from "../../../../../config";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
 import DestinationImplementationResource from "../../../../../core/resources/DestinationImplementation";
 import DestinationResource from "../../../../../core/resources/Destination";
+import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;
@@ -42,7 +41,7 @@ type ITableDataItem = {
 const SourcesTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
 
-  const updateConnection = useFetcher(ConnectionResource.updateShape());
+  const { updateConnection } = useConnection();
   const { destinations } = useResource(
     DestinationImplementationResource.listShape(),
     {
@@ -70,15 +69,12 @@ const SourcesTable: React.FC<IProps> = ({ connections }) => {
         item => item.connectionId === connectionId
       );
 
-      await updateConnection(
-        {},
-        {
-          connectionId,
-          syncSchema: connection?.syncSchema,
-          schedule: connection?.schedule,
-          status: connection?.status === "active" ? "inactive" : "active"
-        }
-      );
+      await updateConnection({
+        connectionId,
+        syncSchema: connection?.syncSchema,
+        schedule: connection?.schedule || null,
+        status: connection?.status === "active" ? "inactive" : "active"
+      });
 
       const frequency = FrequencyConfig.find(
         item =>

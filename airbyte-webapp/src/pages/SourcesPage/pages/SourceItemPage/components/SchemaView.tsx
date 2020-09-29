@@ -1,24 +1,20 @@
 import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { useFetcher } from "rest-hooks";
 
 import ContentCard from "../../../../../components/ContentCard";
 import Button from "../../../../../components/Button";
 import TreeView from "../../../../../components/TreeView";
-import ConnectionResource, {
-  SyncSchema
-} from "../../../../../core/resources/Connection";
+import { Connection } from "../../../../../core/resources/Connection";
 import {
   constructInitialSchemaState,
   constructNewSchema
 } from "../../../../../core/helpers";
 import EmptyResource from "../../../components/EmptyResource";
+import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 
 type IProps = {
-  connectionId: string;
-  connectionStatus: string;
-  syncSchema: SyncSchema;
+  connection: Connection;
   afterSave: () => void;
 };
 
@@ -36,16 +32,11 @@ const SaveButton = styled(Button)`
   margin-left: 11px;
 `;
 
-const SchemaView: React.FC<IProps> = ({
-  syncSchema,
-  connectionId,
-  connectionStatus,
-  afterSave
-}) => {
-  const updateConnection = useFetcher(ConnectionResource.updateShape());
+const SchemaView: React.FC<IProps> = ({ connection, afterSave }) => {
+  const { updateConnection } = useConnection();
   const { formSyncSchema, initialChecked } = useMemo(
-    () => constructInitialSchemaState(syncSchema),
-    [syncSchema]
+    () => constructInitialSchemaState(connection.syncSchema),
+    [connection.syncSchema]
   );
 
   const [disabledButtons, setDisabledButtons] = useState(true);
@@ -62,16 +53,17 @@ const SchemaView: React.FC<IProps> = ({
   };
   const onSubmit = async () => {
     setDisabledButtons(true);
-    const newSyncSchema = constructNewSchema(syncSchema, checkedState);
-
-    await updateConnection(
-      {},
-      {
-        connectionId,
-        status: connectionStatus,
-        syncSchema: newSyncSchema
-      }
+    const newSyncSchema = constructNewSchema(
+      connection.syncSchema,
+      checkedState
     );
+
+    await updateConnection({
+      connectionId: connection.connectionId,
+      status: connection.status,
+      syncSchema: newSyncSchema,
+      schedule: connection.schedule
+    });
     afterSave();
   };
 
@@ -86,7 +78,7 @@ const SchemaView: React.FC<IProps> = ({
         </SaveButton>
       </ButtonsContainer>
       <ContentCard>
-        {!syncSchema.streams.length ? (
+        {!connection.syncSchema.streams.length ? (
           <EmptyResource text={<FormattedMessage id="sources.emptySchema" />} />
         ) : (
           <TreeView
