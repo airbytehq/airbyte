@@ -13,11 +13,11 @@
 import logging
 
 from source_implementation import SourceImplementation
-from singer_source import SingerSource
+from source import Source
 
 source = SourceImplementation()
 
-if not isinstance(source, SingerSource):
+if not isinstance(source, Source):
     raise Exception("invalid")
 
 source.spec()

@@ -1,8 +1,8 @@
-from singer_source import SingerSource
-from singer_integration import AirbyteSpec
+from source import Source
+from integration import AirbyteSpec
 
 
-class SourceImplementation(SingerSource):
+class SourceImplementation(Source):
     def __init__(self):
         print("working...")
         pass

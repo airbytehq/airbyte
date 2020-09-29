@@ -3,7 +3,7 @@ plugins {
     id 'com.bmuschko.docker-remote-api' version '6.6.1'
 }
 
-def image = 'airbyte/base-singer:dev'
+def image = 'airbyte/base-python:dev'
 
 task imageName {
     doLast {
@@ -14,5 +14,5 @@ task imageName {
 task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
-    dependsOn ":airbyte-integrations:base-python:buildImage"
+    dependsOn ":airbyte-integrations:base:buildImage"
 }

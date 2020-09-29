@@ -1,6 +1,3 @@
 *
 !Dockerfile
-!base_singer.py
-!singer_destination.py
-!singer_integration.py
-!singer_source.py
+!singer_helpers.py
