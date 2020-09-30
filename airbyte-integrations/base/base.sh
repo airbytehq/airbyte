@@ -48,8 +48,8 @@ function main() {
     eval "$AIRBYTE_DISCOVER_CMD" --config "$CONFIG_FILE"
     ;;
   read)
-    # todo: state should be optional
-    eval "$AIRBYTE_READ_CMD" --config "$CONFIG_FILE" --catalog "$CATALOG_FILE" --state "$STATE_FILE"
+    # todo: state should be optional: --state "$STATE_FILE"
+    eval "$AIRBYTE_READ_CMD" --config "$CONFIG_FILE" --catalog "$CATALOG_FILE"
     ;;
   *)
     error "Unknown command: $CMD"

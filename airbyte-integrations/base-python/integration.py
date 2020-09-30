@@ -2,31 +2,47 @@ import logging
 
 # todo: add type hints
 
-class AirbyteSpec():
-    pass
+class AirbyteSpec(object):
+    def __init__(self, spec_string):
+        self.spec_string = spec_string
 
 
-class AirbyteCheckResponse():
-    pass
+class AirbyteCheckResponse(object):
+    def __init__(self, successful, field_to_error):
+        self.successful = successful
+        self.field_to_error = field_to_error
 
 
-class AirbyteSchema():
-    pass
+class AirbyteSchema(object):
+    def __init__(self, schema):
+        self.schema = schema
 
 
-class Integration:
+class AirbyteConfig(object):
+    def __init__(self, config_string):
+        self.config_string = config_string
+
+
+class Integration(object):
     def __init__(self):
         pass
 
     def spec(self) -> AirbyteSpec:
-        raise Exception("invalid")
+        raise Exception("Not Implemented")
 
-    # CONFIG
-    def read_config(self):
-        raise Exception("invalid")
+    # default version reads the config_path to a string
+    # this will often be overwritten to add fields for easy consumption or to modify the string for delegating to singer
+    def read_config(self, config_path) -> AirbyteConfig:
+        with open(config_path, 'r') as file:
+            contents = file.read()
+        return AirbyteConfig(contents)
 
-    def check(self, logger, config) -> AirbyteCheckResponse:
-        raise Exception("invalid")
+    def render_config(self, config_object, rendered_config_path):
+        with open(rendered_config_path, 'w') as fh:
+            fh.write(config_object.config_string)
 
-    def discover(self, logger, config) -> AirbyteSchema:
-        raise Exception("invalid")
+    def check(self, logger, rendered_config_path) -> AirbyteCheckResponse:
+        raise Exception("Not Implemented")
+
+    def discover(self, logger, rendered_config_path) -> AirbyteSchema:
+        raise Exception("Not Implemented")

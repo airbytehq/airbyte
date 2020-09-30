@@ -14,4 +14,5 @@ task imageName {
 task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
+    outputs.upToDateWhen { false }
 }

@@ -7,4 +7,4 @@ class Source(Integration):
 
     # Iterator<AirbyteMessage>
     def read(self, logger, config, state=None):
-        raise Exception("invalid")
+        raise Exception("Not Implemented")
