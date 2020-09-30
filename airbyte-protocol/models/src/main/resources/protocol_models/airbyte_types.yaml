@@ -1,0 +1,21 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/protocol_models/airbyte_types.yaml
+title: AirbyteType
+description: Airbyte supported types
+type: string
+enum:
+- boolean
+- number
+- int8
+- int16
+- int32
+- int64
+- float
+- double
+- bytes
+- text
+- date
+- timestamp
+- datetime
+- json

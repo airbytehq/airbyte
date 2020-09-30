@@ -1,0 +1,35 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/protocol_models/airbyte_message.yaml
+title: AirbyteMessage
+description: 
+type: object
+additionalProperties: true
+required:
+- type
+properties:
+  type:
+    description: 'record, schema, and state message: used to determine record type.
+      used in all singer messages.'
+    type: string
+    enum:
+    - RECORD
+    - SCHEMA
+    - STATE
+  stream:
+    description: 'record AND schema message: name of stream'
+    type: string
+  time_extracted:
+    description: 'record message: timestamp'
+    type: string
+  record:
+    description: 'record message: must be a JSON object'
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  schema:
+    description: 'schema message: the schema'
+    "$ref": SingerCatalog.json#/definitions/SingerTableSchema
+  value:
+    description: 'value message: must be a JSON object'
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
