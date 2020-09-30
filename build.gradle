@@ -96,9 +96,6 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
-    test {
-
-    }
 
     repositories {
         mavenCentral()
