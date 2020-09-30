@@ -39,10 +39,6 @@ This section should contain a table with the following format:
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 
-#### Performance considerations
-
-Could this source hurt the user's data source or put too much strain on it in certain circumstances? For example, if there are a lot of tables or rows in a table? What is the breaking point \(e.g: 100mm&gt; records\)? What can the user do to prevent this? \(e.g: use a read-only replica, or schedule frequent syncs, etc..\)
-
 ## Getting started
 
 ### Requirements
