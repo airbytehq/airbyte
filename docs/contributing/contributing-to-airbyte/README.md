@@ -8,6 +8,8 @@ We hope you are enjoying Airbyte and we look forward to hearing your feedback. W
 
 We do ask that you read this document and send us any issues or raise pull requests to make sure we understand clearly what you are asking for. This will help ensure we are making the right decisions and taking the right actions.
 
+**Note that you are able to create integrations using the language you want, as Airbyte connections run as Docker containers.**  
+
 ## **Review process**
 
 **‌‌**If you are considering adding to the codebase or contributing a new integration, first a big thank you. We sincerely appreciate your help in our mission to solve the data integration problem!
