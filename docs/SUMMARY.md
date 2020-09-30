@@ -14,7 +14,7 @@
 ## Integrations
 
 * [Sources](integrations/sources/README.md)
-  * [exchangerates.io](integrations/sources/exchangerates-io.md)
+  * [exchangeratesapi.io](integrations/sources/exchangeratesapi-io.md)
   * [Postgres](integrations/sources/postgres.md)
   * [Stripe](integrations/sources/stripe.md)
 * [Destinations](integrations/destinations/README.md)

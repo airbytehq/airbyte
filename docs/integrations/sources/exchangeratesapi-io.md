@@ -1,4 +1,4 @@
-# exchangerates.io
+# exchangeratesapi.io
 
 ## Overview
 
