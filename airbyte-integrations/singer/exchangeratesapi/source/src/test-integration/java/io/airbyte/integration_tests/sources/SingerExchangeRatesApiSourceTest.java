@@ -46,7 +46,7 @@ import org.junit.jupiter.api.Test;
 public class SingerExchangeRatesApiSourceTest {
 
   private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
-  private static final String IMAGE_NAME = "airbyte/integration-singer-exchangeratesapi_io-source:dev";
+  private static final String IMAGE_NAME = "airbyte/source-exchangeratesapi-singer:dev";
 
   private static final String CATALOG = "catalog.json";
   private static final String CONFIG = "config.json";
