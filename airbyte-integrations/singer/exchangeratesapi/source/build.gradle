@@ -4,7 +4,7 @@ plugins {
     id 'com.bmuschko.docker-remote-api' version '6.6.1'
 }
 
-def image = 'airbyte/integration-singer-exchangeratesapi_io-source:dev'
+def image = 'airbyte/source-exchangerates-singer:dev'
 
 sourceSets {
     integrationTest {
@@ -38,6 +38,8 @@ task imageName {
 task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
+    dependsOn ":airbyte-integrations:singer:base-singer:buildImage"
+    outputs.upToDateWhen { false }
 }
 
 task integrationTest(type: Test) {
