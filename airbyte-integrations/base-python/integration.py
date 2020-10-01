@@ -1,7 +1,5 @@
 import logging
 
-# todo: add type hints
-
 class AirbyteSpec(object):
     def __init__(self, spec_string):
         self.spec_string = spec_string
@@ -22,6 +20,10 @@ class AirbyteConfig(object):
     def __init__(self, config_string):
         self.config_string = config_string
 
+class AirbyteMessage(object):
+    def __init__(self, message_string):
+        self.message_string = message_string
+
 
 class Integration(object):
     def __init__(self):
@@ -41,8 +43,8 @@ class Integration(object):
         with open(rendered_config_path, 'w') as fh:
             fh.write(config_object.config_string)
 
-    def check(self, logger, rendered_config_path) -> AirbyteCheckResponse:
+    def check(self, config_object, rendered_config_path) -> AirbyteCheckResponse:
         raise Exception("Not Implemented")
 
-    def discover(self, logger, rendered_config_path) -> AirbyteSchema:
+    def discover(self, config_object, rendered_config_path) -> AirbyteSchema:
         raise Exception("Not Implemented")

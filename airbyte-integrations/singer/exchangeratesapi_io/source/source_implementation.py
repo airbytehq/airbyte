@@ -2,8 +2,10 @@ from source import Source
 from integration import AirbyteSpec
 from integration import AirbyteCheckResponse
 from integration import AirbyteSchema
-import subprocess
+from integration import AirbyteMessage
 import urllib.request
+from typing import Generator
+from singer_helpers import SingerHelper
 
 
 class SourceImplementation(Source):
@@ -11,26 +13,15 @@ class SourceImplementation(Source):
         pass
 
     def spec(self) -> AirbyteSpec:
-        with open("/airbyte/spec.json") as file:
-            spec_text = file.read()
-        return AirbyteSpec(spec_text)
+        return SingerHelper.spec_from_file("/airbyte/spec.json")
 
-    def check(self, logger, config) -> AirbyteCheckResponse:
+    def check(self, config_object, rendered_config_path) -> AirbyteCheckResponse:
         code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
         return AirbyteCheckResponse(code == 200, {})
 
-    def discover(self, logger, config) -> AirbyteSchema:
-        completed_process = subprocess.run("tap-exchangeratesapi | grep '\"type\": \"SCHEMA\"' | head -1 | jq -c '{\"streams\":[{\"stream\": .stream, \"schema\": .schema}]}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        # todo: how do we propagate failure with completed_process.returncode != 0?
-        return AirbyteSchema(completed_process.stdout)
+    def discover(self, config_object, rendered_config_path) -> AirbyteSchema:
+        return SingerHelper.discover("tap-exchangeratesapi | grep '\"type\": \"SCHEMA\"' | head -1 | jq -c '{\"streams\":[{\"stream\": .stream, \"schema\": .schema}]}'")
 
-    # todo: should the config still be the filename or rendered filename or the actual string?
-    # should each read write that to a temp file?
-    # https://docs.python.org/3/library/tempfile.html
-    # process=subprocess.Popen([PathToProcess],stdin=subprocess.PIPE,stdout=subprocess.PIPE);
-    # process.stdin.write("\n")
     # todo: handle state
-    def read(self, logger, rendered_config_path, state=None):
-        with subprocess.Popen(f"tap-exchangeratesapi --config {rendered_config_path}", shell=True, stdout=subprocess.PIPE, bufsize=1, universal_newlines=True) as p:
-            for line in p.stdout:
-                yield (line)
+    def read(self, config_object, rendered_config_path, state=None) -> Generator[AirbyteMessage, None, None]:
+        return SingerHelper.read(f"tap-exchangeratesapi --config {rendered_config_path}")
