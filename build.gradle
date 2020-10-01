@@ -95,6 +95,7 @@ subprojects {
     }
 
     apply plugin: 'java'
+    apply plugin: 'jacoco'
 
     repositories {
         mavenCentral()
@@ -115,6 +116,11 @@ subprojects {
             exceptionFormat 'full'
             // showStandardStreams = true
         }
+        finalizedBy jacocoTestReport
+    }
+
+    jacocoTestReport {
+        dependsOn test
     }
 
     dependencies {

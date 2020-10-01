@@ -32,11 +32,11 @@ To use the Postgres destination, you'll need:
 
 #### Network Access
 
-Make sure your Postgres database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte. 
+Make sure your Postgres database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
 
 #### **Permissions**
 
-You need a Postgres user that can create tables and write rows. We highly recommend creating an Airbyte-specific user for this purpose. 
+You need a Postgres user that can create tables and write rows. We highly recommend creating an Airbyte-specific user for this purpose.
 
 #### Target Database
 
