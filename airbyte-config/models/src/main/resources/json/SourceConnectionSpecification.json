@@ -18,6 +18,9 @@
     "documentationUrl": {
       "type": "string"
     },
+    "changelogUrl": {
+      "type": "string"
+    },
     "specification": {
       "description": "Integration specific blob. Must be a valid JSON string.",
       "type": "object",
