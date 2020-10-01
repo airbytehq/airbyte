@@ -4,7 +4,7 @@ plugins {
     id 'com.bmuschko.docker-remote-api' version '6.6.1'
 }
 
-def image = 'airbyte/source-exchangerates-singer:dev'
+def image = 'airbyte/source-exchangeratesapi-singer:dev'
 
 sourceSets {
     integrationTest {
