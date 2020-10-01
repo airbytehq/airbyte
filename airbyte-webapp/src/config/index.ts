@@ -10,7 +10,10 @@ const config: {
   },
   segment: {
     token:
-      process.env.REACT_APP_SEGMENT_TOKEN || "6cxNSmQyGSKcATLdJ2pL6WsawkzEMDAN"
+      process.env.REACT_APP_TRACKING_STRATEGY === "segment"
+        ? process.env.REACT_APP_SEGMENT_TOKEN ||
+          "6cxNSmQyGSKcATLdJ2pL6WsawkzEMDAN"
+        : ""
   },
   apiUrl:
     process.env.REACT_APP_API_URL ||

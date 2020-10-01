@@ -80,7 +80,7 @@ services:
     depends_on:
       - server
     environment:
-      - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - REACT_APP_TRACKING_STRATEGY=${TRACKING_STRATEGY}
 
 volumes:
   workspace:
