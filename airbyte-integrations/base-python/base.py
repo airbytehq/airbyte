@@ -86,8 +86,8 @@ class AirbyteEntrypoint(object):
             elif cmd == "read":
                 # todo: pass in state
                 generator = source.read(logging, rendered_config_path)
-                for row in generator:
-                    print(row)
+                for message in generator:
+                    print(message.message_string)
                 sys.exit(1)
             else:
                 raise Exception("Unexpected command " + cmd)
