@@ -6,14 +6,14 @@ class NetworkErrorBoundary extends React.Component<
   {},
   { unReachServer: boolean }
 > {
-  constructor(props: any) {
+  constructor(props: Object) {
     super(props);
     this.state = { unReachServer: false };
   }
 
-  static getDerivedStateFromError(error: any) {
+  static getDerivedStateFromError(error: { message: string; status?: number }) {
     // Update state so the next render will show the fallback UI.
-    return { unReachServer: !!error };
+    return { unReachServer: error.message === "Failed to fetch" };
   }
 
   componentDidCatch() {}
