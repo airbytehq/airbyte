@@ -121,6 +121,43 @@ paths:
           description: Workspace not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/sources/create:
+    post:
+      tags:
+        - source
+      summary: List all of the sources that Airbyte supports
+      operationId: listSources
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/sources/update:
+    post:
+      tags:
+        - source
+      summary: Update a source
+      operationId: updateSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceUpdate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+        "404":
+          description: Source not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/sources/list:
     post:
       tags:
@@ -178,7 +215,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceSpecificationRead"
         "404":
-          description: Source Specification not found
+          description: Source not found
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/source_implementations/create:
@@ -875,15 +912,45 @@ components:
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
+    SourceCreate:
+      type: object
+      required:
+        - name
+        - defaultDockerRepository
+        - defaultDockerImageVersion
+      properties:
+        name:
+          type: string
+        defaultDockerRepository:
+          type: string
+        defaultDockerImageVersion:
+          type: string
+    SourceUpdate:
+      type: object
+      description: Update the source. Currently, the only allowed attribute to update is the default docker image version.
+      required:
+        - sourceId
+        - defaultDockerImageVersion
+      properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        defaultDockerImageVersion:
+          type: string
     SourceRead:
       type: object
       required:
         - sourceId
         - name
+        - defaultDockerRepository
+        - defaultDockerImageVersion
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
         name:
+          type: string
+        defaultDockerRepository:
+          type: string
+        defaultDockerImageVersion:
           type: string
     SourceReadList:
       type: object
@@ -1440,4 +1507,4 @@ components:
     InvalidInput:
       description: Invalid Input
 security:
-  - {}
+  - { }
