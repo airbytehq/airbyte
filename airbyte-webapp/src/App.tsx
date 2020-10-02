@@ -10,6 +10,7 @@ import { theme } from "./theme";
 
 import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
+import NetworkErrorBoundary from "./components/NetworkErrorBoundary";
 
 const App = () => {
   return (
@@ -19,7 +20,9 @@ const App = () => {
         <IntlProvider locale={"en"} messages={en}>
           <CacheProvider>
             <Suspense fallback={<LoadingPage />}>
-              <Routing />
+              <NetworkErrorBoundary>
+                <Routing />
+              </NetworkErrorBoundary>
             </Suspense>
           </CacheProvider>
         </IntlProvider>

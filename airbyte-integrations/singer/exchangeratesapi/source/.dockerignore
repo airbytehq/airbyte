@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!requirements.txt
+!entrypoint.sh
+!source_implementation.py
+!spec.json

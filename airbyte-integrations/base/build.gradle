@@ -1,0 +1,18 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+plugins {
+    id 'com.bmuschko.docker-remote-api' version '6.6.1'
+}
+
+def image = 'airbyte/base:dev'
+
+task imageName {
+    doLast {
+        println "IMAGE $image"
+    }
+}
+
+task buildImage(type: DockerBuildImage) {
+    inputDir = projectDir
+    images.add(image)
+    outputs.upToDateWhen { false }
+}
