@@ -895,21 +895,15 @@ components:
           items:
             $ref: "#/components/schemas/SourceRead"
     # SOURCE SPECIFICATION
-    SourceSpecificationId:
-      type: string
-      format: uuid
     SourceSpecification:
       description: The specification for what values are required to configure the source.
       example: { user: { type: string } }
     SourceSpecificationRead:
       type: object
       required:
-        - sourceSpecificationId
         - sourceId
         - specification
       properties:
-        sourceSpecificationId:
-          $ref: "#/components/schemas/SourceSpecificationId"
         sourceId:
           $ref: "#/components/schemas/SourceId"
         documentationUrl:
@@ -934,14 +928,14 @@ components:
       type: object
       required:
         - workspaceId
-        - sourceSpecificationId
+        - sourceId
         - connectionConfiguration
         - name
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        sourceSpecificationId:
-          $ref: "#/components/schemas/SourceSpecificationId"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
         name:
@@ -965,7 +959,6 @@ components:
         - sourceId
         - sourceImplementationId
         - workspaceId
-        - sourceSpecificationId
         - connectionConfiguration
         - name
         - sourceName
@@ -976,8 +969,6 @@ components:
           $ref: "#/components/schemas/SourceImplementationId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        sourceSpecificationId:
-          $ref: "#/components/schemas/SourceSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
         name:
@@ -1031,21 +1022,15 @@ components:
           items:
             $ref: "#/components/schemas/DestinationRead"
     # DESTINATION SPECIFICATION
-    DestinationSpecificationId:
-      type: string
-      format: uuid
     DestinationSpecification:
       description: The specification for what values are required to configure the destination.
       example: { user: { type: string } }
     DestinationSpecificationRead:
       type: object
       required:
-        - destinationSpecificationId
         - destinationId
         - specification
       properties:
-        destinationSpecificationId:
-          $ref: "#/components/schemas/DestinationSpecificationId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         documentationUrl:
@@ -1070,13 +1055,13 @@ components:
       type: object
       required:
         - workspaceId
-        - destinationSpecificationId
+        - destinationId
         - connectionConfiguration
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        destinationSpecificationId:
-          $ref: "#/components/schemas/DestinationSpecificationId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:
@@ -1100,7 +1085,6 @@ components:
         - destinationId
         - destinationImplementationId
         - workspaceId
-        - destinationSpecificationId
         - connectionConfiguration
         - name
         - destinationName
@@ -1111,8 +1095,6 @@ components:
           $ref: "#/components/schemas/DestinationImplementationId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        destinationSpecificationId:
-          $ref: "#/components/schemas/DestinationSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:
