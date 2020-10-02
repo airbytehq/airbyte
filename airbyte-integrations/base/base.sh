@@ -11,7 +11,7 @@ function error() {
   exit 1
 }
 
-# todo: make it easy to select source or destination and validate based on selection
+# todo: make it easy to select source or destination and validate based on selection by adding an integration type env variable.
 function main() {
   CMD="$1"
   shift 1
