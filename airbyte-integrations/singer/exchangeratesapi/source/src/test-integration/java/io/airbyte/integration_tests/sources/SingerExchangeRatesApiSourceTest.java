@@ -110,9 +110,9 @@ public class SingerExchangeRatesApiSourceTest {
     return pbf.create(
         jobRoot,
         IMAGE_NAME,
+        "discover",
         "--config",
-        configFileName,
-        "--discover")
+        configFileName)
         .redirectOutput(catalogPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
@@ -122,8 +122,11 @@ public class SingerExchangeRatesApiSourceTest {
     return pbf.create(
         jobRoot,
         IMAGE_NAME,
+        "read",
         "--config",
-        CONFIG)
+        CONFIG,
+        "--catalog",
+        "catalog.json")
         .redirectOutput(syncOutputPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();

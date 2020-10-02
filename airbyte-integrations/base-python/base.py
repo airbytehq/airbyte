@@ -88,7 +88,7 @@ class AirbyteEntrypoint(object):
                 generator = source.read(logging, rendered_config_path)
                 for message in generator:
                     print(message.message_string.strip())
-                sys.exit(1)
+                sys.exit(0)
             else:
                 raise Exception("Unexpected command " + cmd)
 
