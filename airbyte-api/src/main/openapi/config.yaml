@@ -125,8 +125,13 @@ paths:
     post:
       tags:
         - source
-      summary: List all of the sources that Airbyte supports
-      operationId: listSources
+      summary: Creates a source
+      operationId: createSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceCreate"
       responses:
         "200":
           description: Successful operation
