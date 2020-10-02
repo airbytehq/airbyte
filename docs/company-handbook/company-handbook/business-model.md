@@ -2,7 +2,7 @@
 
 Our business model is open core. We will have a community edition that will stay in MIT license, and a source-available enterprise edition.
 
-Note that t**he open-source codebase will never contain arbitrary limits** \(e.g., event volumes, user numbers\).
+Note that **the open-source codebase will never contain arbitrary limits** \(e.g., event volumes, user numbers\).
 
 ## **Community edition**
 
