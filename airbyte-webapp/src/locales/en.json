@@ -1,4 +1,6 @@
 {
+  "webapp.cannotReachServer": "Cannot reach server. The server may still be starting up.",
+
   "sidebar.sources": "Sources",
   "sidebar.destination": "Destination",
   "sidebar.help": "Help",
