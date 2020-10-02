@@ -39,6 +39,9 @@ export const EndBlock = styled.div`
 
 export const TitleBlock = styled(H3)`
   flex: 1 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const PageTitle: React.FC<IProps> = ({
