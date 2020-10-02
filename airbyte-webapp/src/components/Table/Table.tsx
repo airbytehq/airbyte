@@ -1,10 +1,16 @@
 import React, { memo } from "react";
 import styled from "styled-components";
-import { ColumnInstance, useTable, Column } from "react-table";
+import { ColumnInstance, useTable, Column, Cell } from "react-table";
 
 type IHeaderProps = {
   headerHighlighted?: boolean;
+  collapse?: boolean;
+  customWidth?: number;
 } & ColumnInstance;
+
+type ICellProps = {
+  column: IHeaderProps;
+} & Cell;
 
 type IProps = {
   columns: Array<IHeaderProps | Column>;
@@ -15,6 +21,8 @@ type IProps = {
 
 type IThProps = {
   highlighted?: boolean;
+  collapse?: boolean;
+  customWidth?: number;
 } & React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
 
 const TableView = styled.table`
@@ -37,7 +45,7 @@ const Tr = styled.tr<{
   cursor: ${({ hasClick }) => (hasClick ? "pointer" : "auto")};
 `;
 
-const Td = styled.td`
+const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
   padding: 19px 13px;
   font-size: 14px;
   line-height: 17px;
@@ -47,6 +55,8 @@ const Td = styled.td`
   overflow: hidden;
   text-overflow: ellipsis;
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
+  width: ${({ collapse, customWidth }) =>
+    customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto"};
 
   tr:last-child > & {
     border-bottom: none;
@@ -63,6 +73,8 @@ const Th = styled.th<IThProps>`
   opacity: ${({ highlighted }) => (highlighted ? 1 : 0.6)};
   color: ${({ theme }) => theme.darkPrimaryColor};
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
+  width: ${({ collapse, customWidth }) =>
+    customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto"};
 
   &:first-child {
     padding-left: 45px;
@@ -98,6 +110,8 @@ const Table: React.FC<IProps> = ({
               <Th
                 {...column.getHeaderProps()}
                 highlighted={column.headerHighlighted}
+                collapse={column.collapse}
+                customWidth={column.customWidth}
                 key={`table-column-${key}-${columnKey}`}
               >
                 {column.render("Header")}
@@ -119,10 +133,12 @@ const Table: React.FC<IProps> = ({
                 // @ts-ignore
                 erroredRows={erroredRows && row.original.error}
               >
-                {row.cells.map((cell, key) => {
+                {row.cells.map((cell: ICellProps, key) => {
                   return (
                     <Td
                       {...cell.getCellProps()}
+                      collapse={cell.column.collapse}
+                      customWidth={cell.column.customWidth}
                       key={`table-cell-${row.id}-${key}`}
                     >
                       {cell.render("Cell")}
