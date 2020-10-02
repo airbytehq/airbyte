@@ -1,3 +1,9 @@
+declare global {
+  interface Window {
+    TRACKING_STRATEGY?: string;
+  }
+}
+
 const config: {
   ui: { helpLink: string; docsLink: string; workspaceId: string };
   segment: { token: string };
@@ -10,7 +16,7 @@ const config: {
   },
   segment: {
     token:
-      process.env.REACT_APP_TRACKING_STRATEGY === "segment"
+      window.TRACKING_STRATEGY === "segment"
         ? process.env.REACT_APP_SEGMENT_TOKEN ||
           "6cxNSmQyGSKcATLdJ2pL6WsawkzEMDAN"
         : ""
