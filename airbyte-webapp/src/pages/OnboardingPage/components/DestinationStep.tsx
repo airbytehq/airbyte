@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource, useFetcher } from "rest-hooks";
-import styled from "styled-components";
 
 import ContentCard from "../../../components/ContentCard";
 import ServiceForm from "../../../components/ServiceForm";
@@ -14,7 +13,6 @@ import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import config from "../../../config";
 import PrepareDropDownLists from "./PrepareDropDownLists";
 import { DestinationImplementation } from "../../../core/resources/DestinationImplementation";
-import Spinner from "../../../components/Spinner";
 
 type IProps = {
   destinationImplementation?: DestinationImplementation;
@@ -29,11 +27,6 @@ type IProps = {
   errorStatus?: number;
   currentSourceId: string;
 };
-
-const LoaderContainer = styled.div`
-  text-align: center;
-  padding: 22px 0 23px;
-`;
 
 const useDestinationSpecificationLoad = (destinationId: string) => {
   const [
@@ -118,32 +111,27 @@ const DestinationStep: React.FC<IProps> = ({
       <ContentCard
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >
-        {destinationImplementation && isLoading ? (
-          <LoaderContainer>
-            <Spinner />
-          </LoaderContainer>
-        ) : (
-          <ServiceForm
-            onDropDownSelect={onDropDownSelect}
-            onSubmit={onSubmitForm}
-            hasSuccess={hasSuccess}
-            formType="destination"
-            dropDownData={dropDownData}
-            errorMessage={errorMessage}
-            specifications={destinationSpecification?.connectionSpecification}
-            documentationUrl={destinationSpecification?.documentationUrl}
-            isLoading={isLoading}
-            formValues={
-              destinationImplementation
-                ? {
-                    ...destinationImplementation.connectionConfiguration,
-                    name: destinationImplementation.name,
-                    serviceType: destinationImplementation.destinationId
-                  }
-                : null
-            }
-          />
-        )}
+        <ServiceForm
+          allowChangeConnector
+          onDropDownSelect={onDropDownSelect}
+          onSubmit={onSubmitForm}
+          hasSuccess={hasSuccess}
+          formType="destination"
+          dropDownData={dropDownData}
+          errorMessage={errorMessage}
+          specifications={destinationSpecification?.connectionSpecification}
+          documentationUrl={destinationSpecification?.documentationUrl}
+          isLoading={isLoading}
+          formValues={
+            destinationImplementation
+              ? {
+                  ...destinationImplementation.connectionConfiguration,
+                  name: destinationImplementation.name,
+                  serviceType: destinationImplementation.destinationId
+                }
+              : null
+          }
+        />
       </ContentCard>
     </>
   );

@@ -19,6 +19,7 @@ type formInitialValues = {
 
 type IProps = {
   isLoading?: boolean;
+  allowChangeConnector?: boolean;
   dropDownData: Array<IDataItem>;
   onDropDownSelect?: (id: string) => void;
   onSubmit: (values: {
@@ -51,7 +52,8 @@ const ServiceForm: React.FC<IProps> = ({
   errorMessage,
   specifications,
   documentationUrl,
-  isLoading
+  isLoading,
+  allowChangeConnector
 }) => {
   const properties = Object.keys(specifications?.properties || {});
 
@@ -76,12 +78,16 @@ const ServiceForm: React.FC<IProps> = ({
   const isEditMode = !!formValues;
   return (
     <Formik
-      initialValues={{
-        name: formValues?.name || "",
-        serviceType: formValues?.serviceType || "",
-        frequency: formValues?.frequency || "",
-        ...additionalFields
-      }}
+      initialValues={
+        formValues
+          ? formValues
+          : {
+              name: "",
+              serviceType: "",
+              frequency: "",
+              ...additionalFields
+            }
+      }
       validateOnBlur={true}
       validateOnChange={true}
       validateOnMount={true}
@@ -104,6 +110,7 @@ const ServiceForm: React.FC<IProps> = ({
       {({ isSubmitting, setFieldValue, isValid, dirty, values, resetForm }) => (
         <FormContainer>
           <FormContent
+            allowChangeConnector={allowChangeConnector}
             dropDownData={dropDownData}
             formType={formType}
             setFieldValue={setFieldValue}
@@ -113,6 +120,7 @@ const ServiceForm: React.FC<IProps> = ({
             specifications={specifications}
             properties={properties}
             documentationUrl={documentationUrl}
+            isLoadSchema={isLoading}
           />
 
           {isEditMode ? (
