@@ -1551,4 +1551,4 @@ components:
     InvalidInput:
       description: Invalid Input
 security:
-  - { }
+  - {}
