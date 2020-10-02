@@ -20,8 +20,8 @@ const Name = styled.div<{ enabled?: boolean }>`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 360px;
-  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inheret")};
+  max-width: 500px;
+  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
 `;
 
 const Space = styled.div`
