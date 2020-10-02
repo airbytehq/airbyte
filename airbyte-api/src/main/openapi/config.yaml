@@ -379,6 +379,29 @@ paths:
           description: Source Implementation not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/destinations/update:
+    post:
+      tags:
+        - destination
+      summary: Update destination
+      operationId: updateDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationRead"
+        "404":
+          description: Destination not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/destinations/list:
     post:
       tags:
@@ -1074,15 +1097,31 @@ components:
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+    DestinationUpdate:
+      type: object
+      required:
+        - destinationId
+        - destinationImageVersion
+      properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        defaultDockerImageVersion:
+          type: string
     DestinationRead:
       type: object
       required:
         - destinationId
         - name
+        - defaultDockerRepository
+        - defaultDockerImageVersion
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         name:
+          type: string
+        defaultDockerRepository:
+          type: string
+        defaultDockerImageVersion:
           type: string
     DestinationReadList:
       type: object
