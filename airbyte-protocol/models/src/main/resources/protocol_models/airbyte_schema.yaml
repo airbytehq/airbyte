@@ -12,8 +12,6 @@ properties:
     type: array
     items:
       "$ref": airbyte_schema.yaml#/definitions/AirbyteStream
-  metadata:
-    "$ref": airbyte_metadata.yaml#/definitions/AirbyteMetadata
 
 definitions:
 
@@ -21,13 +19,9 @@ definitions:
     type: object
     additionalProperties: false
     required:
-    - id
     - name
     - fields
     properties:
-      id:
-        type: string
-        description: Stream's unique identifier.
       name:
         type: string
         description: Stream's name.
@@ -35,8 +29,6 @@ definitions:
         type: array
         items:
           "$ref": airbyte_schema.yaml#/definitions/AirbyteField
-      metadata:
-        "$ref": airbyte_metadata.yaml#/definitions/AirbyteMetadata
 
   AirbyteField:
     type: object
@@ -54,5 +46,3 @@ definitions:
         description: Field's name.
       type:
         "$ref": airbyte_types.yaml
-      metadata:
-        "$ref": airbyte_metadata.yaml#/definitions/AirbyteMetadata

@@ -8,5 +8,4 @@ enum:
 - boolean
 - number
 - text
-- json
 - object

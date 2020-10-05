@@ -4,7 +4,7 @@
 title: AirbyteMessage
 description:
 type: object
-additionalProperties: true
+additionalProperties: false
 required:
 - type
 properties:
@@ -38,12 +38,10 @@ definitions:
         description: 'the record data'
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
-      extracted_at:
-        description: 'when the data was extracted'
+      emitted_at:
+        description: 'when the data was emitted from the source.'
         type: string
         format: date-time
-      metadata:
-        "$ref": airbyte_metadata.yaml#/definitions/AirbyteMetadata
 
   AirbyteStateMessage:
     type: object
