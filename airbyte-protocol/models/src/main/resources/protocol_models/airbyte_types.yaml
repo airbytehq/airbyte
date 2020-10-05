@@ -5,7 +5,7 @@ title: AirbyteType
 description: Airbyte supported types
 type: string
 enum:
-- boolean
-- number
-- text
-- object
+  - boolean
+  - number
+  - text
+  - object

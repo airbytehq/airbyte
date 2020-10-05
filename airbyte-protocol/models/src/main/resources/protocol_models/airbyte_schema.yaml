@@ -6,7 +6,7 @@ description: Airbyte stream schema catalog
 type: object
 additionalProperties: false
 required:
-- streams
+  - streams
 properties:
   streams:
     type: array
@@ -14,13 +14,12 @@ properties:
       "$ref": airbyte_schema.yaml#/definitions/AirbyteStream
 
 definitions:
-
   AirbyteStream:
     type: object
     additionalProperties: false
     required:
-    - name
-    - jsonschema
+      - name
+      - jsonschema
     properties:
       name:
         type: string
