@@ -1,8 +1,8 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/protocol_models/airbyte_schema.yaml
-title: AirbyteSchema
-description: Airbyte schema type definition
+title: AirbyteCatalog
+description: Airbyte stream schema catalog
 type: object
 additionalProperties: false
 required:
@@ -20,25 +20,12 @@ definitions:
     additionalProperties: false
     required:
     - name
-    - fields
+    - jsonschema
     properties:
       name:
         type: string
         description: Stream's name.
-      fields:
-        type: array
-        items:
-          "$ref": airbyte_schema.yaml#/definitions/AirbyteField
-
-  AirbyteField:
-    type: object
-    additionalProperties: false
-    required:
-    - name
-    - type
-    properties:
-      name:
-        type: string
-        description: Field's name.
-      type:
-        "$ref": airbyte_types.yaml
+      jsonschema:
+        description: Stream schema using Json Schema specs.
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode

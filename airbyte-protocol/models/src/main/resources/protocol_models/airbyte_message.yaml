@@ -17,13 +17,13 @@ properties:
     - LOG
   record:
     description: 'record message: the record'
-    "$ref": airbyte_message.yaml#/definitions/AirbyteRecordMessage
+    "$ref": "#/definitions/AirbyteRecordMessage"
   state:
     description: 'schema message: the state. Must be the last message produced. The platform uses this information'
-    "$ref": airbyte_message.yaml#/definitions/AirbyteStateMessage
+    "$ref": "#/definitions/AirbyteStateMessage"
   log:
     description: 'log message: any kind of logging you want the platform to know about.'
-    "$ref": airbyte_message.yaml#/definitions/AirbyteLogMessage
+    "$ref": "#/definitions/AirbyteLogMessage"
 
 definitions:
 
