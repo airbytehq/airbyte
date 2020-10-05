@@ -32,6 +32,7 @@
   "form.dataSync.message": "You’ll be able to change this later on.",
   "form.cancel": "Cancel",
   "form.delete": "Delete",
+  "form.change": "Change",
   "form.saveChanges": "Save changes",
   "form.discardChanges": "Discard changes",
   "form.every": "Every {value}",
@@ -122,5 +123,13 @@
 
   "admin.destinations": "Destinations",
   "admin.sources": "Sources",
-  "admin.newConnector": "+ New connector"
+  "admin.newConnector": "+ New connector",
+  "admin.manageSource": "Manage your source connectors",
+  "admin.availableSource": "Available source connectors",
+  "admin.manageDestination": "Manage your destination connectors",
+  "admin.supportMultipleDestinations": "We will soon support multiple destinations within a single Airbyte instance",
+  "admin.connectors": "Connectors",
+  "admin.image": "Image",
+  "admin.codeSource": "Code source",
+  "admin.version": "Version"
 }
