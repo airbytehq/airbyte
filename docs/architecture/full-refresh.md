@@ -1,10 +1,10 @@
 # Full Refresh
 
-These are two possible definitions we could adopt for this phrase. We should choose one as the convention for how to implement destinations moving forward. While in the future, we could support both and just be explicit about their difference, for now we should pick one to focus on.
+This readme describes Airbyte conventions around the "full refresh" concept. Out in the world, there are many ways to define this term. We want the behavior of Airbyte integrations to be predictable, so we are adopting a preferred definition. This readme also describes what behavior to fall back on if the preferred convention cannot be used.
 
 On the n<sup>th</sup> sync of a full refresh connection:
 
-### _Replace_ existing data new data. The connection does not create any new tables. 
+### PREFERRED: _Replace_ existing data with new data. The connection does not create any new tables.
 
 data in the destination _before_ the sync:
 
@@ -31,41 +31,45 @@ data in the destination _after_ the sync:
 
 Note: This is how Singer target-bigquery does it.
 
-### Add new data to a new table. Do not touch existing data.
+### FALLBACK: Add new data to a new table. Do not touch existing data.
 
 data in the destination _before_ the sync:
     
-| Languages  | 
+| Languages_\<timestamp X\> |
 |---|
-| Python  |
-| Java  |
+| Python |
+| Java |
 
 new data:
 
-| Languages  | 
+| Languages |
 |---|
-| Python  |
-| Java  |
-| Ruby  |
+| Python |
+| Java |
+| Ruby |
 
 data in the destination _after_ the sync:
 
-| Languages_\<timestamp\>  | 
+| Languages_\<timestamp X\> |
 |---|
-| Python  |
-| Java  |
+| Python |
+| Java |
 
-| Languages_\<new timestamp\>  | 
+| Languages_\<timestamp Y\> |
 |---|
-| Python  |
-| Java  |
-| Ruby  |
+| Python |
+| Java |
+| Ruby |
 
 Note: This is how Singer target-csv, target-postgres does it.
 
-### Caveats
+### In Practice
 
-Not all data warehouses will necessarily be able to adhere to both of these conventions. Once we choose the definition we prefer, someone developing a new integration should do the following:
-* If the destination supports our adopted definition it, they should use it. 
-* If it does not, then they should prefer the other definition and document it clearly. 
-* If that destination does not support either of these definitions, then they should document to the best of the ability the custom behaviour.
+Not all data warehouses will necessarily be able to adhere to either of these conventions. Given this convention, here is how implementing full refresh should be handled:
+* If the destination supports our _preferred_ definition of full refresh, use it. No extra documentation required as this is what users should expect as the default full refresh behavior. 
+* If it does not, then use the _fallback_ definition. Document exactly what the output format of the data will be as this will not meet the default expectation of an Airbyte user.
+* If that destination does not support either of these definitions, document the actual behavior. Keep in mind this will break all of the expectations of an Airbyte user, so be as exhaustive as possible in describing the format of the output data.
+
+### In the future
+
+We will consider making other flavors of full refresh configurable as first-class citizens in Airbyte. e.g. On new data, copy old data to a new table with a timestamp, and then replace the original table with the new data. As always, we will focus on adding these options in such a way that the behavior of each integration is both well documented and predictable.
