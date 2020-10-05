@@ -34,13 +34,9 @@ definitions:
     type: object
     additionalProperties: false
     required:
-    - id
     - name
     - type
     properties:
-      id:
-        type: string
-        description: Field's unique identifier.
       name:
         type: string
         description: Field's name.
