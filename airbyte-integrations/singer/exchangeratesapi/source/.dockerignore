@@ -1,7 +1,7 @@
 *
 !Dockerfile
-!requirements.txt
 !entrypoint.sh
-!source_implementation.py
+!source_implementation/source_implementation.py
+!source_implementation/__init__.py
 !spec.json
 !setup.py

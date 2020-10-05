@@ -5,7 +5,7 @@ from integration import AirbyteSchema
 from integration import AirbyteMessage
 import urllib.request
 from typing import Generator
-from singer_helpers import SingerHelper
+from base_singer import SingerHelper
 
 
 class SourceImplementation(Source):

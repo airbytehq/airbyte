@@ -1,6 +1,11 @@
 FROM airbyte/base:dev
 COPY --from=python:3.7-slim / /
 
+WORKDIR /airbyte
+ENV VIRTUAL_ENV=/airbyte/env
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 WORKDIR /airbyte/base-python
 COPY base.py .
 COPY destination.py .
