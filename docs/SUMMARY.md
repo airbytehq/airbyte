@@ -36,6 +36,7 @@
 
 * [High Level Overview](architecture/high-level-overview.md)
 * [Technical Stack](architecture/tech-stack.md)
+* [Full Refresh](architecture/full-refresh.md)
 
 ## Handbook <a id="company-handbook"></a>
 
