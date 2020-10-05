@@ -25,9 +25,11 @@ import logging
 import sys
 import tempfile
 import os.path
+import importlib
 
-from source_implementation import SourceImplementation
-from integration import AirbyteConfig
+module = importlib.import_module('source_implementation')
+SourceImplementation = getattr(module, 'SourceImplementation')
+
 from source import Source
 
 class AirbyteEntrypoint(object):
