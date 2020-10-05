@@ -13,7 +13,7 @@ class SourceImplementation(Source):
         pass
 
     def spec(self) -> AirbyteSpec:
-        return SingerHelper.spec_from_file("/airbyte/spec.json")
+        return SingerHelper.spec_from_file("/airbyte/exchangeratesapi-files/spec.json")
 
     def check(self, config_object, rendered_config_path) -> AirbyteCheckResponse:
         code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()

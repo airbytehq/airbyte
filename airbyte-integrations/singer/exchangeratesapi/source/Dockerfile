@@ -13,7 +13,13 @@ RUN python -m pip install --upgrade pip && \
 
 RUN apt-get update && apt-get install -y jq
 
-COPY source_implementation.py /airbyte
-COPY spec.json /airbyte
+COPY spec.json /airbyte/exchangeratesapi-files
+
+WORKDIR /airbyte/exchangeratesapi
+COPY source_implementation.py ./source_implementation/source_implementation.py
+COPY setup.py .
+RUN pip install .
+
+WORKDIR /singer
 
 LABEL io.airbyte.version=0.1.2

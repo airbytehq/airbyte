@@ -1,3 +1,4 @@
 *
 !Dockerfile
 !singer_helpers.py
+!setup.py
