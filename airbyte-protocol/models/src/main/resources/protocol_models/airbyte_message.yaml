@@ -2,34 +2,77 @@
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/protocol_models/airbyte_message.yaml
 title: AirbyteMessage
-description: 
+description:
 type: object
 additionalProperties: true
 required:
 - type
 properties:
   type:
-    description: 'record, schema, and state message: used to determine record type.
-      used in all singer messages.'
+    description: 'Message type'
     type: string
     enum:
     - RECORD
-    - SCHEMA
     - STATE
-  stream:
-    description: 'record AND schema message: name of stream'
-    type: string
-  time_extracted:
-    description: 'record message: timestamp'
-    type: string
+    - LOG
   record:
-    description: 'record message: must be a JSON object'
+    description: 'record message: the record'
+    "$ref": airbyte_message.json#/definitions/AirbyteSchema
+  state:
+    description: 'schema message: the state. Must be the last message produced. The platform uses this information'
+    "$ref": airbyte_schema.json#/definitions/AirbyteStateMessage
+  log:
+    description: 'log message: any kind of logging you want the platform to know about.'
+    "$ref": airbyte_message.json#/definitions/AirbyteLogMessage
+
+definitions:
+
+  AirbyteRecordMessage:
     type: object
-    existingJavaType: com.fasterxml.jackson.databind.JsonNode
-  schema:
-    description: 'schema message: the schema'
-    "$ref": SingerCatalog.json#/definitions/SingerTableSchema
-  value:
-    description: 'value message: must be a JSON object'
+    additionalProperties: false
+    required:
+    - data
+    - extracted_at
+    properties:
+      data:
+        description: 'the record data'
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      extracted_at:
+        description: 'when the data was extracted'
+        type: string
+        format: date-time
+      metadata:
+        "$ref": airbyte_metadata.yaml#/definitions/AirbyteMetadata
+
+  AirbyteStateMessage:
     type: object
-    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+    additionalProperties: false
+    required:
+    - data
+    properties:
+      data:
+        description: 'the state data'
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+
+  AirbyteLogMessage:
+    type: object
+    additionalProperties: false
+    required:
+    - level
+    - message
+    properties:
+      level:
+        description: 'the type of logging'
+        type: string
+        enum:
+        - FATAL
+        - ERROR
+        - WARN
+        - INFO
+        - DEBUG
+        - TRACE
+      message:
+        description: 'the log message'
+        type: string
