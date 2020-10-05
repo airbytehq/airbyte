@@ -1,0 +1,30 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+plugins {
+    id 'com.bmuschko.docker-remote-api' version '6.6.1'
+    id 'application'
+}
+dependencies {
+    implementation 'commons-cli:commons-cli:1.4'
+
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-singer')
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.javabase.IntegrationRunner'
+}
+
+def image = 'airbyte/base-java:dev'
+
+task imageName {
+    doLast {
+        println "IMAGE $image"
+    }
+}
+
+task buildImage(type: DockerBuildImage) {
+    inputDir = projectDir
+    images.add(image)
+    dependsOn ':airbyte-integrations:base:buildImage'
+    outputs.upToDateWhen { false }
+}
