@@ -25,6 +25,8 @@
 package io.airbyte.integrations.destination.template;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.DestinationConnectionSpecification;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -43,14 +45,12 @@ public class DestinationTemplate implements Destination {
 
   // todo - implement this method such that it returns the specification for the integration.
   // suggestion 1: save the jsonschema of the spec spec as a resource and just load it from disk.
-  // there is some code commented out below that does this.
+  // the code in this method uses this suggestion. replace it if you'd like to take a different approach.
   @Override
   public DestinationConnectionSpecification spec() throws IOException {
     // return a jsonschema representation of the spec for the integration.
-
-    // final String resourceString = MoreResources.readResource("spec.json");
-    // return Jsons.deserialize(resourceString, DestinationConnectionSpecification.class);
-    throw new RuntimeException("Not Implemented");
+    final String resourceString = MoreResources.readResource("spec.json");
+    return Jsons.deserialize(resourceString, DestinationConnectionSpecification.class);
   }
 
   // todo - implement this method such that it checks whether it can connect to the destination.
