@@ -6,5 +6,5 @@ setup(
     author='Airbyte',
     author_email='contact@airbyte.io',
     packages=['base_singer'],
-    install_requires=[]
+    install_requires=['airbyte_protocol']
 )

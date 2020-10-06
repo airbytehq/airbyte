@@ -1,7 +1,7 @@
 import subprocess
-from integration import AirbyteSpec
-from integration import AirbyteSchema
-from integration import AirbyteMessage
+from airbyte_protocol import AirbyteSpec
+from airbyte_protocol import AirbyteSchema
+from airbyte_protocol import AirbyteMessage
 from typing import Generator
 
 
