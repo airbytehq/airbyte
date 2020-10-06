@@ -1,19 +1,20 @@
 FROM airbyte/base-singer:dev
 
-WORKDIR /singer
-
-ENV VIRTUAL_ENV=/singer/env
-RUN python -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
-# Install dependencies:
-COPY requirements.txt .
-RUN python -m pip install --upgrade pip && \
-  pip install -r requirements.txt
-
 RUN apt-get update && apt-get install -y jq
 
-COPY source_implementation.py /airbyte
-COPY spec.json /airbyte
+COPY spec.json /airbyte/exchangeratesapi-files/spec.json
+
+WORKDIR /airbyte/source_exchangeratesapi_singer
+
+COPY source_exchangeratesapi_singer/__init__.py ./source_exchangeratesapi_singer/__init__.py
+COPY source_exchangeratesapi_singer/source_exchangeratesapi_singer.py ./source_exchangeratesapi_singer/source_exchangeratesapi_singer.py
+
+COPY setup.py .
+RUN pip install .
+
+WORKDIR /airbyte
+
+ENV AIRBYTE_IMPL_MODULE="source_exchangeratesapi_singer"
+ENV AIRBYTE_IMPL_PATH="SourceExchangeRatesApiSinger"
 
 LABEL io.airbyte.version=0.1.2

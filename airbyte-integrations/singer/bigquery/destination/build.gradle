@@ -2,7 +2,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import groovy.json.JsonSlurper
 plugins {
     id 'java'
-    id 'com.bmuschko.docker-remote-api' version '6.6.1'
+    id 'com.bmuschko.docker-remote-api'
 }
 
 def image = 'airbyte/integration-singer-bigquery-destination:dev'
