@@ -1,4 +1,5 @@
-import logging
+from typing import Generator
+
 
 class AirbyteSpec(object):
     def __init__(self, spec_string):
@@ -19,6 +20,7 @@ class AirbyteSchema(object):
 class AirbyteConfig(object):
     def __init__(self, config_string):
         self.config_string = config_string
+
 
 class AirbyteMessage(object):
     def __init__(self, message_string):
@@ -48,3 +50,15 @@ class Integration(object):
 
     def discover(self, config_object, rendered_config_path) -> AirbyteSchema:
         raise Exception("Not Implemented")
+
+class Source(Integration):
+    def __init__(self):
+        pass
+
+    # Iterator<AirbyteMessage>
+    def read(self, config_object, rendered_config_path, state=None) -> Generator[AirbyteMessage, None, None]:
+        raise Exception("Not Implemented")
+
+class Destination(Integration):
+    def __init__(self):
+        pass

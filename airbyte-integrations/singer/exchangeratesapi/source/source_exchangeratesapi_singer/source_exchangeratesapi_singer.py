@@ -1,8 +1,8 @@
-from source import Source
-from integration import AirbyteSpec
-from integration import AirbyteCheckResponse
-from integration import AirbyteSchema
-from integration import AirbyteMessage
+from airbyte_protocol import Source
+from airbyte_protocol import AirbyteSpec
+from airbyte_protocol import AirbyteCheckResponse
+from airbyte_protocol import AirbyteSchema
+from airbyte_protocol import AirbyteMessage
 import urllib.request
 from typing import Generator
 from base_singer import SingerHelper

@@ -6,11 +6,13 @@ ENV VIRTUAL_ENV=/airbyte/env
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+WORKDIR /airbyte/airbyte_protocol
+COPY airbyte_protocol/setup.py .
+COPY airbyte_protocol/airbyte_protocol/__init__.py ./airbyte_protocol/__init__.py
+RUN pip install .
+
 WORKDIR /airbyte/base-python
 COPY base.py .
-COPY destination.py .
-COPY integration.py .
-COPY source.py .
 
 ENV AIRBYTE_SPEC_CMD "python3 /airbyte/base-python/base.py spec"
 ENV AIRBYTE_CHECK_CMD "python3 /airbyte/base-python/base.py check"

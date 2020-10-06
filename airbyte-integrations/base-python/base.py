@@ -5,14 +5,13 @@ import tempfile
 import os.path
 import importlib
 
+from airbyte_protocol import Source
+
 impl_module = os.environ['AIRBYTE_IMPL_MODULE']
 impl_class = os.environ['AIRBYTE_IMPL_PATH']
 
 module = importlib.import_module(impl_module)
 impl = getattr(module, impl_class)
-
-from source import Source
-
 
 class AirbyteEntrypoint(object):
     def __init__(self, source):
