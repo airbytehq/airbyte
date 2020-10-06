@@ -10,7 +10,7 @@ dependencies {
 
 jsonSchema2Pojo {
     sourceType = SourceType.YAMLSCHEMA
-    source = files("${sourceSets.main.output.resourcesDir}/protocol_models")
+    source = files("${sourceSets.main.output.resourcesDir}/airbyte_protocol")
     targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
     removeOldOutput = true
 
