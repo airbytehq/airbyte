@@ -34,12 +34,47 @@ import io.airbyte.singer.SingerMessage;
 // todo (cgardens) - share common parts of this interface with source.
 public interface Destination {
 
+  /**
+   * Fetch the specification for the integration.
+   *
+   * @return specification.
+   * @throws Exception - any exception.
+   */
   DestinationConnectionSpecification spec() throws Exception;
 
+  /**
+   * Check whether, given the current configuration, the integration can connect to the destination.
+   *
+   * @param config - integration-specific configuration object as json.
+   *        e.g. { "username": "airbyte", "password": "super secure" }
+   * @return Whether or not the connection was successful. Optional message if it was not.
+   * @throws Exception - any exception.
+   */
   StandardCheckConnectionOutput check(JsonNode config) throws Exception;
 
+  /**
+   * Discover the current schema in the destination.
+   *
+   * @param config - integration-specific configuration object as json.
+   *        e.g. { "username": "airbyte", "password": "super secure" }
+   * @return Description of the schema.
+   * @throws Exception - any exception.
+   */
   StandardDiscoverSchemaOutput discover(JsonNode config) throws Exception;
 
+  /**
+   * Return a consumer that writes messages to the destination.
+   *
+   * @param config - integration-specific configuration object as json.
+   *        e.g. { "username": "airbyte", "password": "super secure" }
+   * @param schema - schema of the incoming messages.
+   * @return Consumer that accepts message. The {@link DestinationConsumer#accept(Object)} will be
+   *         called n times where n is the number of messages. {@link DestinationConsumer#complete()}
+   *         will be called once if all messages were accepted successfully.
+   *         {@link DestinationConsumer#close()} will always be called once regardless of success or
+   *         failure.
+   * @throws Exception - any exception.
+   */
   DestinationConsumer<SingerMessage> write(JsonNode config, Schema schema) throws Exception;
 
 }

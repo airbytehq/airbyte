@@ -25,7 +25,6 @@
 package io.airbyte.integrations.destination.template;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnectionSpecification;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -34,12 +33,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.singer.SingerMessage;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +42,8 @@ public class DestinationTemplate implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationTemplate.class);
 
   // todo - implement this method such that it returns the specification for the integration.
-  // suggestion 1: save the jsonschema of the spec spec as a resource and just load it from disk. there is some code commented out below that does this.
+  // suggestion 1: save the jsonschema of the spec spec as a resource and just load it from disk.
+  // there is some code commented out below that does this.
   @Override
   public DestinationConnectionSpecification spec() throws IOException {
     // return a jsonschema representation of the spec for the integration.
@@ -59,13 +54,17 @@ public class DestinationTemplate implements Destination {
   }
 
   // todo - implement this method such that it checks whether it can connect to the destination.
-  // this should return a StandardCheckConnectionOutput with the status field set to true if the connection succeeds and false if it does not. if false consider adding a message in the message field to help the user figure out what they need to do differently so that the connection will succeed.
+  // this should return a StandardCheckConnectionOutput with the status field set to true if the
+  // connection succeeds and false if it does not. if false consider adding a message in the message
+  // field to help the user figure out what they need to do differently so that the connection will
+  // succeed.
   @Override
   public StandardCheckConnectionOutput check(JsonNode config) {
     // if(success) {
-    //   return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
+    // return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
     // } else {
-    //   return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage("(optional) the reason it failed");
+    // return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage("(optional) the
+    // reason it failed");
     // }
     throw new RuntimeException("Not Implemented");
   }
@@ -76,7 +75,8 @@ public class DestinationTemplate implements Destination {
     throw new RuntimeException("Not Implemented");
   }
 
-  // todo - implement this method such that it returns a consumer that can push messages to the destination.
+  // todo - implement this method such that it returns a consumer that can push messages to the
+  // destination.
   @Override
   public DestinationConsumer<SingerMessage> write(JsonNode config, Schema schema) throws IOException {
     return new RecordConsumer();
@@ -92,7 +92,8 @@ public class DestinationTemplate implements Destination {
 
     @Override
     public void complete() throws Exception {
-      // todo - implement any logic for what should happen after all messages have been consume but before we close the connection to the destination.
+      // todo - implement any logic for what should happen after all messages have been consume but before
+      // we close the connection to the destination.
       throw new RuntimeException("Not Implemented");
     }
 
@@ -105,11 +106,13 @@ public class DestinationTemplate implements Destination {
   }
 
   public static void main(String[] args) throws Exception {
-    // todo - instantiate your implementation of the Destination interface and pass it to IntegrationRunner.
+    // todo - instantiate your implementation of the Destination interface and pass it to
+    // IntegrationRunner.
     final Destination destination = new DestinationTemplate();
     // this is airbyte's entrypoint into the integration. do not remove this line!
     LOGGER.info("starting destination: {}", DestinationTemplate.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", DestinationTemplate.class);
   }
+
 }

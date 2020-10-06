@@ -41,6 +41,8 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// todo (cgardens) - use argparse4j.github.io instead of org.apache.commons.cli to leverage better
+// sub-parser support.
 /**
  * Parses command line args to a type safe config object for each command type.
  */
@@ -130,6 +132,7 @@ public class IntegrationCliParser {
     for (final Option option : parsed.getOptions()) {
       argsMap.put(option.getLongOpt(), option.getValue());
     }
+    LOGGER.info("integration args: {}", argsMap);
 
     switch (command) {
       case SPEC -> {

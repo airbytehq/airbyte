@@ -25,7 +25,6 @@
 package io.airbyte.integrations.base;
 
 import io.airbyte.commons.functional.CheckedConsumer;
-import java.io.IOException;
 
 /**
  * Lifecyle: * Consumer object is instantiated. * It received messages via

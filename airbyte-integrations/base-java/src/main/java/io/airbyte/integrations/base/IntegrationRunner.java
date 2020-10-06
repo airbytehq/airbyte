@@ -29,8 +29,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Schema;
 import io.airbyte.singer.SingerMessage;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
@@ -93,4 +91,5 @@ public class IntegrationRunner {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
   }
+
 }
