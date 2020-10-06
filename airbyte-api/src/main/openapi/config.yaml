@@ -1419,6 +1419,7 @@ components:
         - syncSchema
         - status
         - source
+        - isSyncing
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -1445,6 +1446,8 @@ components:
           description: epoch time of last sync. null if no sync has taken place.
           type: integer
           format: int64
+        isSyncing:
+          type: boolean
     WbConnectionReadList:
       type: object
       required:
