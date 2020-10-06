@@ -33,7 +33,7 @@ Here is what we are working on right now:
 
 Here is the [UI we're building](https://www.figma.com/file/pO3Ob5W0yKUFOQzvg8TR3z/Airbyte?node-id=0%3A1) for that release, if you're curious :\)
 
-## 0.1.0 - 09/23/2020
+## 0.1.0 - delivered on 09/23/2020
 
 This is our very first release after 2 months of work.
 
