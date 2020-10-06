@@ -35,11 +35,11 @@ import java.io.IOException;
  *
  * @param <T> - type of the message to be consumed.
  */
-public interface DestinationConsumer<T> extends CheckedConsumer<T, IOException>, AutoCloseable {
+public interface DestinationConsumer<T> extends CheckedConsumer<T, Exception>, AutoCloseable {
 
   /**
    * Any operations that should be run after all messages have been _successfully_ consumed.
    */
-  void complete() throws IOException;
+  void complete() throws Exception;
 
 }
