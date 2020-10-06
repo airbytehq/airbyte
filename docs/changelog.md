@@ -4,7 +4,7 @@ description: Be sure to not miss out on new features and improvements!
 
 # Changelog
 
-Airbyte is not built on top of Singer, but is compatible with Singer's protocol. Airbyte's ambitions go beyond what Singer enables to do, so we are building our own protocol that will keep its compatibility with Singer's one. 
+Airbyte is not built on top of Singer, but is compatible with Singer's protocol. Airbyte's ambitions go beyond what Singer enables to do, so we are building our own protocol that will keep its compatibility with Singer's one.
 
 ## 0.4.0 - expected around 10/30/2020
 
@@ -24,7 +24,7 @@ Here is what we have in mind:
 
 ## 0.2.0 - expected around 10/16/2020
 
-Here is what we are working on right now: 
+Here is what we are working on right now:
 
 * **a new Admin section** to enable users to add their own connectors, in addition to upgrading the ones they currently use 
 * improve the developer experience \(DX\) for **contributing new connectors** with additional documentation and a connector protocol 
