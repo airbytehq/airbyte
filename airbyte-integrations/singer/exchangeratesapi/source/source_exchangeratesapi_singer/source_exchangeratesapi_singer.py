@@ -8,7 +8,7 @@ from typing import Generator
 from base_singer import SingerHelper
 
 
-class SourceImplementation(Source):
+class SourceExchangeRatesApiSinger(Source):
     def __init__(self):
         pass
 
