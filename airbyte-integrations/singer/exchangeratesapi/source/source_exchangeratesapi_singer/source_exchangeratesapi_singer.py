@@ -1,19 +1,19 @@
-from source import Source
-from integration import AirbyteSpec
-from integration import AirbyteCheckResponse
-from integration import AirbyteSchema
-from integration import AirbyteMessage
+from airbyte_protocol import Source
+from airbyte_protocol import AirbyteSpec
+from airbyte_protocol import AirbyteCheckResponse
+from airbyte_protocol import AirbyteSchema
+from airbyte_protocol import AirbyteMessage
 import urllib.request
 from typing import Generator
-from singer_helpers import SingerHelper
+from base_singer import SingerHelper
 
 
-class SourceImplementation(Source):
+class SourceExchangeRatesApiSinger(Source):
     def __init__(self):
         pass
 
     def spec(self) -> AirbyteSpec:
-        return SingerHelper.spec_from_file("/airbyte/spec.json")
+        return SingerHelper.spec_from_file("/airbyte/exchangeratesapi-files/spec.json")
 
     def check(self, config_object, rendered_config_path) -> AirbyteCheckResponse:
         code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
