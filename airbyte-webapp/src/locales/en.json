@@ -33,6 +33,7 @@
   "form.cancel": "Cancel",
   "form.delete": "Delete",
   "form.change": "Change",
+  "form.add": "Add",
   "form.saveChanges": "Save changes",
   "form.discardChanges": "Discard changes",
   "form.every": "Every {value}",
@@ -131,5 +132,12 @@
   "admin.connectors": "Connectors",
   "admin.image": "Image",
   "admin.codeSource": "Code source",
-  "admin.version": "Version"
+  "admin.version": "Version",
+  "admin.addNewConnector": "Add new connector",
+  "admin.connectorName": "Connector display name",
+  "admin.connectorName.placeholder": "Connector name",
+  "admin.dockerRepository": "Docker repository name",
+  "admin.dockerRepository.placeholder": "airbytehq/postgres",
+  "admin.locationOfDocker": "Input the location of the Docker image of your connector.",
+  "admin.learnMore": "Learn more from our documentation."
 }

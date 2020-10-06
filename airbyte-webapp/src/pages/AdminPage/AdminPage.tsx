@@ -5,10 +5,10 @@ import styled from "styled-components";
 import MainPageWithScroll from "../../components/MainPageWithScroll";
 import PageTitle from "../../components/PageTitle";
 import StepsMenu from "../../components/StepsMenu";
-import Button from "../../components/Button";
 import LoadingPage from "../../components/LoadingPage";
 import SourcesView from "./components/SourcesView";
 import DestinationsView from "./components/DestinationsView";
+import CreateConnector from "./components/CreateConnector";
 
 const Content = styled.div`
   margin: 4px 33px 0 27px;
@@ -55,11 +55,7 @@ const AdminPage: React.FC = () => {
             />
           }
           endComponent={
-            currentStep === StepsTypes.SOURCES && (
-              <Button>
-                <FormattedMessage id="admin.newConnector" />
-              </Button>
-            )
+            currentStep === StepsTypes.SOURCES && <CreateConnector />
           }
         />
       }
