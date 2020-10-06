@@ -29,6 +29,7 @@ import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobListRequestBody;
+import io.airbyte.api.model.JobRead.StatusEnum;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.api.model.SourceImplementationRead;
@@ -91,6 +92,8 @@ public class WebBackendConnectionsHandler {
         .source(sourceImplementation);
 
     final JobReadList jobReadList = jobHistoryHandler.listJobsFor(jobListRequestBody);
+    wbConnectionRead.setIsSyncing(
+        jobReadList.getJobs().stream().anyMatch(job -> job.getStatus() != StatusEnum.COMPLETED && job.getStatus() != StatusEnum.CANCELLED));
     jobReadList.getJobs().stream().findFirst().ifPresent(job -> wbConnectionRead.setLastSync(job.getCreatedAt()));
 
     return wbConnectionRead;
