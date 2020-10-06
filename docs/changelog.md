@@ -19,7 +19,7 @@ Here is what we have in mind:
 
 * new guides \(how to build scratch/singer\) 
 * our own **BigQuery** warehouse integration 
-* our own **Postgres** warehouse integration 
+* our own **PostGres** warehouse integration 
 * **5 additional Singer taps**
 
 ## 0.2.0 - expected around 10/16/2020
