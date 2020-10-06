@@ -34,4 +34,11 @@ export default class DestinationResource extends BaseResource
       schema: this.asSchema()
     };
   }
+
+  static updateShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.partialUpdateShape(),
+      schema: this.asSchema()
+    };
+  }
 }

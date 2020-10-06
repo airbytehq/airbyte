@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
-import { useResource } from "rest-hooks";
+import { useFetcher, useResource } from "rest-hooks";
 
 import Table from "../../../components/Table";
 import ConnectorCell from "./ConnectorCell";
@@ -9,7 +9,7 @@ import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
 import ConnectionResource from "../../../core/resources/Connection";
 import config from "../../../config";
-import { Block, Title } from "./PageComponents";
+import { Block, Title, FormContent } from "./PageComponents";
 import SourceResource from "../../../core/resources/Source";
 
 const SourcesView: React.FC = () => {
@@ -20,6 +20,24 @@ const SourcesView: React.FC = () => {
   const { sources } = useResource(SourceResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
+
+  const updateSource = useFetcher(SourceResource.updateShape());
+  const onUpdateVersion = async ({
+    id,
+    version
+  }: {
+    id: string;
+    version: string;
+  }) => {
+    await updateSource(
+      {},
+      {
+        sourceId: id,
+        defaultDockerImageVersion: version
+      }
+    );
+    // TODO: show feedback (success or fail)
+  };
 
   const columns = React.useMemo(
     () => [
@@ -49,10 +67,16 @@ const SourcesView: React.FC = () => {
         Header: <FormattedMessage id="admin.version" />,
         accessor: "defaultDockerImageVersion",
         collapse: true,
-        Cell: ({ cell }: CellProps<{}>) => <VersionCell version={cell.value} />
+        Cell: ({ cell, row }: CellProps<{ sourceId: string }>) => (
+          <VersionCell
+            version={cell.value}
+            id={row.original.sourceId}
+            onChange={onUpdateVersion}
+          />
+        )
       }
     ],
-    [columns]
+    [columns, onUpdateVersion]
   );
 
   const columnsAllSources = React.useMemo(
@@ -62,7 +86,7 @@ const SourcesView: React.FC = () => {
         Header: "",
         accessor: "version",
         collapse: true,
-        Cell: () => <VersionCell empty />
+        Cell: () => <FormContent />
       }
     ],
     [columns]
@@ -74,6 +98,7 @@ const SourcesView: React.FC = () => {
     );
     return {
       name: item.source?.sourceName,
+      sourceId: item.source?.sourceId,
       defaultDockerRepository: sourceInfo?.defaultDockerRepository,
       defaultDockerImageVersion: sourceInfo?.defaultDockerImageVersion
     };

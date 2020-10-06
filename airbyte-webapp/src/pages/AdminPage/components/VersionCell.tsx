@@ -5,36 +5,28 @@ import { FormattedMessage } from "react-intl";
 
 import Input from "../../../components/Input";
 import Button from "../../../components/Button";
+import { FormContent } from "./PageComponents";
 
 type IProps = {
-  version?: string;
-  empty?: boolean;
+  version: string;
+  id: string;
+  onChange: ({ version, id }: { version: string; id: string }) => void;
 };
-
-const FormContent = styled.div`
-  width: 270px;
-  margin: -10px 0;
-`;
 
 const VersionInput = styled(Input)`
   max-width: 145px;
   margin-right: 19px;
 `;
 
-const VersionCell: React.FC<IProps> = ({ version, empty }) => {
-  if (empty) {
-    return <FormContent />;
-  }
-
+const VersionCell: React.FC<IProps> = ({ version, id, onChange }) => {
   return (
     <FormContent>
       <Formik
         initialValues={{
           version
         }}
-        onSubmit={(values, { setSubmitting }) => {
-          // TODO: add real change action
-          console.log(values);
+        onSubmit={async (values, { setSubmitting }) => {
+          await onChange({ id, version: values.version });
           setSubmitting(false);
         }}
       >

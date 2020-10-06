@@ -33,4 +33,11 @@ export default class SourceResource extends BaseResource implements Source {
       schema: this.asSchema()
     };
   }
+
+  static updateShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.partialUpdateShape(),
+      schema: this.asSchema()
+    };
+  }
 }

@@ -1,13 +1,13 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { useFetcher, useResource } from "rest-hooks";
 
-import { Block, Title } from "./PageComponents";
+import { Block, Title, FormContent } from "./PageComponents";
 import Table from "../../../components/Table";
 import { CellProps } from "react-table";
 import ConnectorCell from "./ConnectorCell";
 import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
-import { useResource } from "rest-hooks/lib/react-integration/hooks";
 import config from "../../../config";
 import DestinationResource from "../../../core/resources/Destination";
 import DestinationImplementationResource from "../../../core/resources/DestinationImplementation";
@@ -25,6 +25,24 @@ const DestinationsView: React.FC = () => {
 
   // Now we have only one destination. If we support multiple destinations we will change it
   const currentDestination = destinationsImplementation.destinations[0];
+
+  const updateDestination = useFetcher(DestinationResource.updateShape());
+  const onUpdateVersion = async ({
+    id,
+    version
+  }: {
+    id: string;
+    version: string;
+  }) => {
+    await updateDestination(
+      {},
+      {
+        destinationId: id,
+        defaultDockerImageVersion: version
+      }
+    );
+    // TODO: show feedback (success or fail)
+  };
 
   const columns = React.useMemo(
     () => [
@@ -54,10 +72,16 @@ const DestinationsView: React.FC = () => {
         Header: <FormattedMessage id="admin.version" />,
         accessor: "defaultDockerImageVersion",
         collapse: true,
-        Cell: ({ cell }: CellProps<{}>) => <VersionCell version={cell.value} />
+        Cell: ({ cell, row }: CellProps<{ destinationId: string }>) => (
+          <VersionCell
+            version={cell.value}
+            id={row.original.destinationId}
+            onChange={onUpdateVersion}
+          />
+        )
       }
     ],
-    [columns]
+    [columns, onUpdateVersion]
   );
 
   const columnsAllDestinations = React.useMemo(
@@ -75,7 +99,7 @@ const DestinationsView: React.FC = () => {
         Header: "",
         accessor: "defaultDockerImageVersion",
         collapse: true,
-        Cell: () => <VersionCell empty />
+        Cell: () => <FormContent />
       }
     ],
     [columns]

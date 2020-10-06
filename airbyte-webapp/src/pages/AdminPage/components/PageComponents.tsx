@@ -10,4 +10,9 @@ const Block = styled.div`
   margin-bottom: 56px;
 `;
 
-export { Title, Block };
+const FormContent = styled.div`
+  width: 270px;
+  margin: -10px 0;
+`;
+
+export { Title, Block, FormContent };
