@@ -40,4 +40,11 @@ export default class SourceResource extends BaseResource implements Source {
       schema: this.asSchema()
     };
   }
+
+  static createShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.createShape(),
+      schema: this.asSchema()
+    };
+  }
 }

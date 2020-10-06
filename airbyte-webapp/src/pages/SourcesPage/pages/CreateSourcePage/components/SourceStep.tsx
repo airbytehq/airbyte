@@ -11,6 +11,7 @@ import SourceSpecificationResource, {
 } from "../../../../../core/resources/SourceSpecification";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import config from "../../../../../config";
+import useRouter from "../../../../../components/hooks/useRouterHook";
 
 type IProps = {
   onSubmit: (values: {
@@ -57,6 +58,8 @@ const CreateSourcePage: React.FC<IProps> = ({
   errorStatus,
   hasSuccess
 }) => {
+  const { location }: any = useRouter();
+
   const [sourceId, setSourceId] = useState("");
   const { sourceSpecification, isLoading } = useSourceSpecificationLoad(
     sourceId
@@ -103,6 +106,11 @@ const CreateSourcePage: React.FC<IProps> = ({
           hasSuccess={hasSuccess}
           errorMessage={errorMessage}
           isLoading={isLoading}
+          formValues={
+            location.state?.sourceId
+              ? { serviceType: location.state.sourceId, name: "" }
+              : undefined
+          }
         />
       </ContentCard>
     </>

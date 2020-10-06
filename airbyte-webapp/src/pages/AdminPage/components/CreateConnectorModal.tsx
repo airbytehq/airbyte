@@ -12,7 +12,7 @@ import config from "../../../config";
 
 export type IProps = {
   onClose: () => void;
-  onSubmit: () => void;
+  onSubmit: (source: { name: string; defaultDockerRepository: string }) => void;
 };
 
 const Content = styled.div`
@@ -47,7 +47,7 @@ const DocLink = styled(Link).attrs({ as: "a" })`
 
 const validationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),
-  image: yup.string().required("form.empty.error")
+  defaultDockerRepository: yup.string().required("form.empty.error")
 });
 
 const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
@@ -62,14 +62,13 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
         <Formik
           initialValues={{
             name: "",
-            image: ""
+            defaultDockerRepository: ""
           }}
           validateOnBlur={true}
           validateOnChange={true}
           validationSchema={validationSchema}
-          onSubmit={(values, { setSubmitting }) => {
-            // TODO: add real change action
-            console.log(values);
+          onSubmit={async (values, { setSubmitting }) => {
+            await onSubmit(values);
             setSubmitting(false);
           }}
         >
@@ -94,7 +93,7 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
                 </Field>
               </FieldContainer>
               <FieldContainer>
-                <Field name="image">
+                <Field name="defaultDockerRepository">
                   {({ field }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
@@ -128,7 +127,6 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
                 </ButtonWithMargin>
                 <Button
                   type="submit"
-                  onClick={onSubmit}
                   disabled={isSubmitting || !dirty || !isValid}
                 >
                   <FormattedMessage id="form.add" />
