@@ -1,17 +1,13 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 plugins {
-    id 'com.bmuschko.docker-remote-api' version '6.6.1'
-    id 'application'
+    id 'com.bmuschko.docker-remote-api'
+    id 'java-library'
 }
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-singer')
-}
-
-application {
-    mainClass = 'io.airbyte.integrations.base.IntegrationRunner'
 }
 
 def image = 'airbyte/base-java:dev'

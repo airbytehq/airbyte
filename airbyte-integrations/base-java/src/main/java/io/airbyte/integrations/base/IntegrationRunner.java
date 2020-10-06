@@ -47,7 +47,7 @@ public class IntegrationRunner {
     this.destination = destination;
   }
 
-  private void run(String[] args) throws Exception {
+  public void run(String[] args) throws Exception {
     final IntegrationConfig parsed = new IntegrationCliParser().parse(args);
 
     switch (parsed.getCommand()) {
@@ -93,25 +93,4 @@ public class IntegrationRunner {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
   }
-
-  public static void main(String[] args) {
-    try {
-
-      final String destinationClass = System.getenv().get(JavaBaseConstants.ENV_DESTINATION_CLASS);
-      final String destinationJarPath = System.getenv().get(JavaBaseConstants.ENV_DESTINATION_JAR_PATH);
-
-      LOGGER.info("destination class: {}", destinationClass);
-      LOGGER.info("destination jar path: {}", destinationJarPath);
-
-      // add the specific destination to the classpath.
-      final URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {Path.of(destinationJarPath).toUri().toURL()});
-      Class<?> clazz = Class.forName(destinationClass, true, urlClassLoader);
-      Destination destination = (Destination) clazz.getConstructor().newInstance();
-
-      new IntegrationRunner(destination).run(args);
-    } catch (Exception e) {
-      LOGGER.error("Integration Runner Failed", e);
-    }
-  }
-
 }

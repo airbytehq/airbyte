@@ -28,11 +28,10 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import java.io.IOException;
 
 /**
- * Lifecyle:
- * * Consumer object is instantiated.
- * * It received messages via {@link DestinationConsumer#accept(T)}
- * * Upon receiving the last message (assuming no failures) {@link DestinationConsumer#complete()}
- * * Always (on success or failure) finalize by calling {@link DestinationConsumer#close()}
+ * Lifecyle: * Consumer object is instantiated. * It received messages via
+ * {@link DestinationConsumer#accept(T)} * Upon receiving the last message (assuming no failures)
+ * {@link DestinationConsumer#complete()} * Always (on success or failure) finalize by calling
+ * {@link DestinationConsumer#close()}
  *
  * @param <T> - type of the message to be consumed.
  */

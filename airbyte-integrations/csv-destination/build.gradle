@@ -1,7 +1,7 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 plugins {
-    id 'com.bmuschko.docker-remote-api' version '6.6.1'
-    id 'java-library'
+    id 'com.bmuschko.docker-remote-api'
+    id 'application'
 }
 dependencies {
     implementation project(':airbyte-config:models')
@@ -9,8 +9,12 @@ dependencies {
     implementation project(':airbyte-integrations:base-java')
 }
 
+application {
+    mainClass = 'io.airbyte.integrations.destination.csv.CsvDestination'
+}
 
-def image = 'airbyte/airbyte-csv:dev'
+
+def image = 'airbyte/airbyte-csv-destination:dev'
 
 task imageName {
     doLast {

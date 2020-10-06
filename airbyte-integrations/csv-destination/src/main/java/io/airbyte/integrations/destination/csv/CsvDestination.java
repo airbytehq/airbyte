@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.DestinationConnectionSpecification;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -36,6 +37,7 @@ import io.airbyte.config.StandardDiscoverSchemaOutput;
 import io.airbyte.config.Stream;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.singer.SingerMessage;
 import java.io.FileWriter;
@@ -60,23 +62,10 @@ public class CsvDestination implements Destination {
 
   private static final String DESTINATION_PATH_FIELD = "destination_path";
 
-  // todo (cgardens) - hack to handle the fact that the resources of this jar aren't in original
-  // classpath. should try to find a way to handle this
-  // outside of the runtime.
-  private URLClassLoader getClassLoader() {
-    final String destinationJarPath = System.getenv().get(JavaBaseConstants.ENV_DESTINATION_JAR_PATH);
-
-    try {
-      return new URLClassLoader(new URL[] {Path.of(destinationJarPath).toUri().toURL()});
-    } catch (MalformedURLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   @SuppressWarnings("UnstableApiUsage")
   @Override
   public DestinationConnectionSpecification spec() throws IOException {
-    final String resourceString = Resources.toString(getClassLoader().findResource("spec.json"), StandardCharsets.UTF_8);
+    final String resourceString = MoreResources.readResource("spec.json");
     return Jsons.deserialize(resourceString, DestinationConnectionSpecification.class);
   }
 
@@ -187,4 +176,7 @@ public class CsvDestination implements Destination {
 
   }
 
+  public static void main(String[] args) throws Exception {
+    new IntegrationRunner(new CsvDestination()).run(args);
+  }
 }
