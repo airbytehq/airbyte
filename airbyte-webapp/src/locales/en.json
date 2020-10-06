@@ -1,4 +1,6 @@
 {
+  "webapp.cannotReachServer": "Cannot reach server. The server may still be starting up.",
+
   "sidebar.sources": "Sources",
   "sidebar.destination": "Destination",
   "sidebar.help": "Help",
@@ -79,6 +81,7 @@
   "onboarding.setUpConnection": "Set up connection",
   "onboarding.setConnection": "Set up the connection",
   "onboarding.instructionsLink": "See instructions how to connect {name}",
+  "onboarding.fetchingSchema": "We are fetching the schema of your data source.\nThis should take less than a minute...",
 
   "sources.newSource": "+ New source",
   "sources.newSourceTitle": "New Source",
@@ -98,6 +101,7 @@
   "sources.disabled": "Disabled",
   "sources.noSync": "No sync yet",
   "sources.emptySchema": "Schema is empty",
+  "sources.noSources": "Source list is empty",
   "sources.sourceSettings": "Source Settings",
   "sources.dataDelete": "No data will be deleted from your source.",
   "sources.deleteSource": "Delete this source",

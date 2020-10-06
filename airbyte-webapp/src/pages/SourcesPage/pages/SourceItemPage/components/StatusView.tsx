@@ -8,7 +8,6 @@ import { useFetcher, useSubscription, useResource } from "rest-hooks";
 import ContentCard from "../../../../../components/ContentCard";
 import Button from "../../../../../components/Button";
 import StatusMainInfo from "./StatusMainInfo";
-import EmptySyncHistory from "./EmptySyncHistory";
 import ConnectionResource, {
   Connection
 } from "../../../../../core/resources/Connection";
@@ -17,6 +16,7 @@ import JobsList from "./JobsList";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import config from "../../../../../config";
 import { Destination } from "../../../../../core/resources/Destination";
+import EmptyResource from "../../../components/EmptyResource";
 
 type IProps = {
   sourceData: Connection;
@@ -102,7 +102,11 @@ const StatusView: React.FC<IProps> = ({
           </Title>
         }
       >
-        {jobs.length ? <JobsList jobs={jobs} /> : <EmptySyncHistory />}
+        {jobs.length ? (
+          <JobsList jobs={jobs} />
+        ) : (
+          <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
+        )}
       </StyledContentCard>
     </Content>
   );

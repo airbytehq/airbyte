@@ -30,22 +30,22 @@ public enum Integrations {
 
   POSTGRES_TAP(
       UUID.fromString("2168516a-5c9a-4582-90dc-5e3a01e3f607"),
-      new IntegrationMapping("airbyte/integration-singer-postgres-source:0.1.2")),
+      new IntegrationMapping("airbyte/integration-singer-postgres-source", "0.1.2")),
   EXCHANGERATESAPI_IO_TAP(
       UUID.fromString("37eb2ebf-0899-4b22-aba8-8537ec88b5a8"),
-      new IntegrationMapping("airbyte/integration-singer-exchangeratesapi_io-source:0.1.2")),
+      new IntegrationMapping("airbyte/integration-singer-exchangeratesapi_io-source", "0.1.2")),
   STRIPE_TAP(
       UUID.fromString("dd42e77b-24ce-485d-8146-ee6c96d5b454"),
-      new IntegrationMapping("airbyte/integration-singer-stripe-source:0.1.1")),
+      new IntegrationMapping("airbyte/integration-singer-stripe-source", "0.1.1")),
   POSTGRES_TARGET(
       UUID.fromString("a6655e6a-838c-4ecb-a28f-ffdcd27ec710"),
-      new IntegrationMapping("airbyte/integration-singer-postgres-destination:0.1.1")),
+      new IntegrationMapping("airbyte/integration-singer-postgres-destination", "0.1.1")),
   BIGQUERY_TARGET(
       UUID.fromString("e28a1a10-214a-4051-8cf4-79b6f88719cd"),
-      new IntegrationMapping("airbyte/integration-singer-bigquery-destination:0.1.3")),
+      new IntegrationMapping("airbyte/integration-singer-bigquery-destination", "0.1.3")),
   CSV_TARGET(
       UUID.fromString("8442ee76-cc1d-419a-bd8b-859a090366d4"),
-      new IntegrationMapping("airbyte/integration-singer-csv-destination:0.1.0"));
+      new IntegrationMapping("airbyte/integration-singer-csv-destination", "0.1.0"));
 
   private final UUID specId;
   private final IntegrationMapping integrationMapping;
@@ -70,44 +70,30 @@ public enum Integrations {
     return specId;
   }
 
-  public String getCheckConnectionImage() {
-    return integrationMapping.getCheckConnection();
-  }
-
-  public String getDiscoverSchemaImage() {
-    return integrationMapping.getDiscoverSchema();
-  }
-
-  public String getSyncImage() {
-    return integrationMapping.getSync();
+  public String getTaggedImage() {
+    return integrationMapping.getTaggedImage();
   }
 
   public static class IntegrationMapping {
 
-    private final String checkConnection;
-    private final String discoverSchema;
-    private final String sync;
+    private final String image;
+    private final String tag;
 
-    public IntegrationMapping(String checkConnection, String discoverSchema, String sync) {
-      this.checkConnection = checkConnection;
-      this.discoverSchema = discoverSchema;
-      this.sync = sync;
+    public IntegrationMapping(String image, String tag) {
+      this.image = image;
+      this.tag = tag;
     }
 
-    public IntegrationMapping(String image) {
-      this(image, image, image);
+    public String getTaggedImage() {
+      return image + ":" + tag;
     }
 
-    public String getCheckConnection() {
-      return checkConnection;
+    public String getImage() {
+      return image;
     }
 
-    public String getDiscoverSchema() {
-      return discoverSchema;
-    }
-
-    public String getSync() {
-      return sync;
+    public String getTag() {
+      return tag;
     }
 
   }

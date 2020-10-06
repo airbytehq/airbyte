@@ -28,6 +28,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -46,7 +47,7 @@ class LineGobblerTest {
     final InputStream is = new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
     final ExecutorService executor = spy(MoreExecutors.newDirectExecutorService());
 
-    executor.submit(new LineGobbler(is, consumer, executor));
+    executor.submit(new LineGobbler(is, consumer, executor, ImmutableMap.of()));
 
     Mockito.verify(consumer).accept("test");
     Mockito.verify(consumer).accept("test2");
@@ -60,7 +61,7 @@ class LineGobblerTest {
     final InputStream is = new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
     final ExecutorService executor = spy(MoreExecutors.newDirectExecutorService());
 
-    executor.submit(new LineGobbler(is, consumer, executor));
+    executor.submit(new LineGobbler(is, consumer, executor, ImmutableMap.of()));
 
     Mockito.verify(consumer, Mockito.times(2)).accept(anyString());
     Mockito.verify(executor).shutdown();
@@ -74,7 +75,7 @@ class LineGobblerTest {
     final InputStream is = new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
     final ExecutorService executor = spy(MoreExecutors.newDirectExecutorService());
 
-    executor.submit(new LineGobbler(is, consumer, executor));
+    executor.submit(new LineGobbler(is, consumer, executor, ImmutableMap.of()));
 
     verify(consumer).accept(anyString());
     Mockito.verify(executor).shutdown();

@@ -1,7 +1,7 @@
 # Table of contents
 
-* [Getting Started](../README.md)
-* [Tutorial](getting-started-tutorial.md)
+* [Overview](../README.md)
+* [Getting Started](getting-started-tutorial.md)
 * [Changelog](changelog.md)
 
 ## Deployment
@@ -14,12 +14,13 @@
 ## Integrations
 
 * [Sources](integrations/sources/README.md)
-  * [exchangerates.io](integrations/sources/exchangerates-io.md)
+  * [exchangeratesapi.io](integrations/sources/exchangeratesapi-io.md)
   * [Postgres](integrations/sources/postgres.md)
   * [Stripe](integrations/sources/stripe.md)
 * [Destinations](integrations/destinations/README.md)
   * [Local CSV](integrations/destinations/local-csv.md)
   * [BigQuery](integrations/destinations/bigquery.md)
+  * [Postgres](integrations/destinations/postgres.md)
 
 ## Contributing
 
@@ -35,6 +36,7 @@
 
 * [High Level Overview](architecture/high-level-overview.md)
 * [Technical Stack](architecture/tech-stack.md)
+* [Full Refresh](architecture/full-refresh.md)
 
 ## Handbook <a id="company-handbook"></a>
 

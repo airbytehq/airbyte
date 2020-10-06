@@ -11,9 +11,10 @@ type IProps = {
 
 const Logs = styled.div`
   padding: 20px 42px;
-  font-size: 15px;
+  font-size: 12px;
   line-height: 18px;
   color: ${({ theme }) => theme.darkPrimaryColor};
+  font-family: ${({ theme }) => theme.codeFont};
 `;
 
 const JobLogs: React.FC<IProps> = ({ id }) => {

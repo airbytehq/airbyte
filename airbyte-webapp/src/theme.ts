@@ -34,5 +34,5 @@ export const theme = {
 
   regularFont: "Inter, Arial, sans-serif",
   highlightFont: "Montserrat, Arial, sans-serif",
-  codeFont: "Roboto Mono, Arial, sans-serif"
+  codeFont: "Courier Prime, Arial, sans-serif"
 };
