@@ -3,6 +3,7 @@ plugins {
     id 'java'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.3.0'
+    id 'com.bmuschko.docker-remote-api' version '6.6.1'
     // id 'de.aaschmid.cpd' version '3.1'
 }
 
@@ -167,3 +168,9 @@ task composeBuild {
     }
 }
 build.dependsOn(composeBuild)
+
+/*
+
+ */
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+tasks.withType(DockerBuildImage) { outputs.upToDateWhen { false } }
