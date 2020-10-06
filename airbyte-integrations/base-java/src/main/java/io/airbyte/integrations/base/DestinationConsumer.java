@@ -22,12 +22,25 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.javabase;
+package io.airbyte.integrations.base;
 
-public enum Command {
-  SPEC,
-  CHECK,
-  DISCOVER,
-  READ,
-  WRITE
+import io.airbyte.commons.functional.CheckedConsumer;
+import java.io.IOException;
+
+/**
+ * Lifecyle:
+ * * Consumer object is instantiated.
+ * * It received messages via {@link DestinationConsumer#accept(T)}
+ * * Upon receiving the last message (assuming no failures) {@link DestinationConsumer#complete()}
+ * * Always (on success or failure) finalize by calling {@link DestinationConsumer#close()}
+ *
+ * @param <T> - type of the message to be consumed.
+ */
+public interface DestinationConsumer<T> extends CheckedConsumer<T, IOException>, AutoCloseable {
+
+  /**
+   * Any operations that should be run after all messages have been _successfully_ consumed.
+   */
+  void complete() throws IOException;
+
 }

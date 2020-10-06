@@ -22,23 +22,24 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.javabase;
+package io.airbyte.integrations.base;
 
-import java.nio.file.Path;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.DestinationConnectionSpecification;
+import io.airbyte.config.Schema;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.singer.SingerMessage;
 
-public class JavaBaseConstants {
+// todo (cgardens) - share common parts of this interface with source.
+public interface Destination {
 
-  public static String ENV_DESTINATION_CLASS = "DESTINATION_CLASS";
-  public static String ENV_DESTINATION_JAR_PATH = "DESTINATION_JAR_PATH";
+  DestinationConnectionSpecification spec() throws Exception;
 
-  public static String ARGS_CONFIG_KEY = "config";
-  public static String ARGS_SCHEMA_KEY = "schema";
-  public static String ARGS_STATE_KEY = "state";
+  StandardCheckConnectionOutput check(JsonNode config) throws Exception;
 
-  public static String ARGS_CONFIG_DESC = "path to the json configuration file";
-  public static String ARGS_SCHEMA_DESC = "input path for the schema";
-  public static String ARGS_PATH_DESC = "path to the json-encoded state file";
+  StandardDiscoverSchemaOutput discover(JsonNode config) throws Exception;
 
-  public static Path LOCAL_MOUNT = Path.of("/local");
+  DestinationConsumer<SingerMessage> write(JsonNode config, Schema schema) throws Exception;
 
 }

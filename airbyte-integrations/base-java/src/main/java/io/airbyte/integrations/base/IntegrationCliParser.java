@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.javabase;
+package io.airbyte.integrations.base;
 
 import com.google.common.base.Preconditions;
 import java.io.IOException;
@@ -48,27 +48,27 @@ public class IntegrationCliParser {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationCliParser.class);
 
-  private static final OptionGroup commandGroup = new OptionGroup();
+  private static final OptionGroup COMMAND_GROUP = new OptionGroup();
 
   static {
-    commandGroup.setRequired(true);
-    commandGroup.addOption(Option.builder()
+    COMMAND_GROUP.setRequired(true);
+    COMMAND_GROUP.addOption(Option.builder()
         .longOpt(Command.SPEC.toString().toLowerCase())
         .desc("outputs the json configuration specification")
         .build());
-    commandGroup.addOption(Option.builder()
+    COMMAND_GROUP.addOption(Option.builder()
         .longOpt(Command.CHECK.toString().toLowerCase())
         .desc("checks the config can be used to connect")
         .build());
-    commandGroup.addOption(Option.builder()
+    COMMAND_GROUP.addOption(Option.builder()
         .longOpt(Command.DISCOVER.toString().toLowerCase())
         .desc("outputs a catalog describing the source's schema")
         .build());
-    commandGroup.addOption(Option.builder()
+    COMMAND_GROUP.addOption(Option.builder()
         .longOpt(Command.READ.toString().toLowerCase())
         .desc("reads the source and outputs messages to STDOUT")
         .build());
-    commandGroup.addOption(Option.builder()
+    COMMAND_GROUP.addOption(Option.builder()
         .longOpt(Command.WRITE.toString().toLowerCase())
         .desc("writes messages from STDIN to the integration")
         .build());
@@ -84,7 +84,7 @@ public class IntegrationCliParser {
     final HelpFormatter helpFormatter = new HelpFormatter();
 
     final Options options = new Options();
-    options.addOptionGroup(commandGroup);
+    options.addOptionGroup(COMMAND_GROUP);
 
     try {
       final CommandLine parsed = parser.parse(options, args);
@@ -99,7 +99,7 @@ public class IntegrationCliParser {
   private static IntegrationConfig parseOptions(String[] args, Command command) {
 
     final Options options = new Options();
-    options.addOptionGroup(commandGroup); // so that the parser does not throw an exception when encounter command args.
+    options.addOptionGroup(COMMAND_GROUP); // so that the parser does not throw an exception when encounter command args.
 
     switch (command) {
       case SPEC -> {
@@ -163,9 +163,8 @@ public class IntegrationCliParser {
     try {
       return parser.parse(options, args);
     } catch (ParseException e) {
-      LOGGER.error(e.toString());
       helpFormatter.printHelp(command.toString().toLowerCase(), options);
-      return null;
+      throw new RuntimeException(e);
     }
   }
 

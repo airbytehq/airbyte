@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.javabase;
+package io.airbyte.integrations.base;
 
 import com.google.common.base.Preconditions;
 

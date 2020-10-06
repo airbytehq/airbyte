@@ -11,7 +11,7 @@ dependencies {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.javabase.IntegrationRunner'
+    mainClass = 'io.airbyte.integrations.base.IntegrationRunner'
 }
 
 def image = 'airbyte/base-java:dev'
@@ -26,5 +26,4 @@ task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
     dependsOn ':airbyte-integrations:base:buildImage'
-    outputs.upToDateWhen { false }
 }

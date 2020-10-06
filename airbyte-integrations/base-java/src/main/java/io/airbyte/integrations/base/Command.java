@@ -22,25 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.javabase;
+package io.airbyte.integrations.base;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.DestinationConnectionSpecification;
-import io.airbyte.config.Schema;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
-import io.airbyte.singer.SingerMessage;
-import java.io.IOException;
-
-// todo (cgardens) - share common parts of this interface with source.
-public interface Destination {
-
-  DestinationConnectionSpecification spec() throws IOException;
-
-  StandardCheckConnectionOutput check(JsonNode config) throws IOException;
-
-  StandardDiscoverSchemaOutput discover(JsonNode config) throws IOException;
-
-  DestinationConsumer<SingerMessage> write(JsonNode config, Schema schema) throws IOException;
-
+public enum Command {
+  SPEC,
+  CHECK,
+  DISCOVER,
+  READ,
+  WRITE
 }

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.csv;
+package io.airbyte.integrations.destination.csv;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -34,9 +34,9 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
 import io.airbyte.config.Stream;
-import io.airbyte.integrations.javabase.Destination;
-import io.airbyte.integrations.javabase.DestinationConsumer;
-import io.airbyte.integrations.javabase.JavaBaseConstants;
+import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.singer.SingerMessage;
 import java.io.FileWriter;
 import java.io.IOException;

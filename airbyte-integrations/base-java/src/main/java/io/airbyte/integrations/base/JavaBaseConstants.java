@@ -22,25 +22,23 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.javabase;
+package io.airbyte.integrations.base;
 
-import io.airbyte.commons.functional.CheckedConsumer;
-import java.io.IOException;
+import java.nio.file.Path;
 
-/**
- * Lifecyle:
- * * Consumer object is instantiated.
- * * It received messages via {@link DestinationConsumer#accept(T)}
- * * Upon receiving the last message (assuming no failures) {@link DestinationConsumer#complete()}
- * * Always (on success or failure) finalize by calling {@link DestinationConsumer#close()}
- *
- * @param <T> - type of the message to be consumed.
- */
-public interface DestinationConsumer<T> extends CheckedConsumer<T, IOException>, AutoCloseable {
+public class JavaBaseConstants {
 
-  /**
-   * Any operations that should be run after all messages have been _successfully_ consumed.
-   */
-  void complete() throws IOException;
+  public static String ENV_DESTINATION_CLASS = "DESTINATION_CLASS";
+  public static String ENV_DESTINATION_JAR_PATH = "DESTINATION_JAR_PATH";
+
+  public static String ARGS_CONFIG_KEY = "config";
+  public static String ARGS_SCHEMA_KEY = "schema";
+  public static String ARGS_STATE_KEY = "state";
+
+  public static String ARGS_CONFIG_DESC = "path to the json configuration file";
+  public static String ARGS_SCHEMA_DESC = "input path for the schema";
+  public static String ARGS_PATH_DESC = "path to the json-encoded state file";
+
+  public static Path LOCAL_MOUNT = Path.of("/local");
 
 }

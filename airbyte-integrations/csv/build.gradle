@@ -22,5 +22,4 @@ task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
     dependsOn ':airbyte-integrations:base-java:buildImage'
-    outputs.upToDateWhen { false }
 }
