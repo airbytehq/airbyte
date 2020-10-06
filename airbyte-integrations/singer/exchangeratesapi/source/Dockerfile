@@ -13,4 +13,7 @@ RUN pip install .
 
 WORKDIR /airbyte
 
+ENV AIRBYTE_IMPL_MODULE="source_implementation"
+ENV AIRBYTE_IMPL_PATH="SourceImplementation"
+
 LABEL io.airbyte.version=0.1.2
