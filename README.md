@@ -4,9 +4,9 @@
 
 [![](docs/.gitbook/assets/airbyte_white-background.svg)](https://airbyte.io)
 
-### Data integration made simple, secure and reliable.
+### Data integration made simple, secure and extensible.
 
-The new open-source standard to sync data from applications & databases to warehouses.
+The new open-source standard to sync data from applications, APIs & databases to warehouses.
 
 [![](docs/.gitbook/assets/deploy-locally.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/with-docker) [![](docs/.gitbook/assets/deploy-on-aws.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-aws-ec2) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-gcp-compute-engine)
 
@@ -15,8 +15,8 @@ The new open-source standard to sync data from applications & databases to wareh
 Airbyte is on a mission to make data integration pipelines a commodity.
 
 * **Maintenance-free connectors you can use in minutes**. Just authenticate your sources and warehouse, and get connectors that adapt to schema and API changes for you.
-* Designed to **cover the long tail of integrations**, as Airbyte will be active in maintaining the pipelines’ reliability. 
-* **Building new integrations made trivial**. We make it very easy to add new integrations that you need, by offering scheduling and orchestration. 
+* **Building new integrations made trivial.** We make it very easy to add new integrations that you need, using the language of your choice, by offering scheduling and orchestration. 
+* Designed to **cover the long tail of integrations and needs**. Benefit from the community's battle-tested connectors and adapt them to your specific needs.
 * **Your data stays in your cloud**. Have full control over your data, and the costs of your data transfers. 
 * **No more security compliance process** to go through as Airbyte is self-hosted. 
 * **No more pricing indexed on volume**, as cloud-based solutions offer. 
@@ -35,6 +35,7 @@ Here is a [step-by-step guide](docs/getting-started-tutorial.md) showing you how
 
 ## Features
 
+* **Built for extensibility**: Adapt an existing integration to your needs or build a new one with ease.
 * **Normalized schemas**: Elegant, entirely customizable and a fully extensible admin panel.
 * **Full-grade scheduler**: Automate your replications with the frequency you need.
 * **Real-time monitoring**: We log all errors in full detail to help you understand.
@@ -47,6 +48,8 @@ Here is a [step-by-step guide](docs/getting-started-tutorial.md) showing you how
 ## Contributing
 
 We love contributions to Airbyte, big or small. See our [Contributing Guide](https://docs.airbyte.io/contributing/contributing-to-airbyte) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
+
+**Note that you are able to create integrations using the language you want, as Airbyte connections run as Docker containers.**
 
 ## Community support
 
