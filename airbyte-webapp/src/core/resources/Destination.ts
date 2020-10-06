@@ -4,12 +4,16 @@ import BaseResource from "./BaseResource";
 export interface Destination {
   destinationId: string;
   name: string;
+  defaultDockerRepository?: string;
+  defaultDockerImageVersion?: string;
 }
 
 export default class DestinationResource extends BaseResource
   implements Destination {
   readonly destinationId: string = "";
   readonly name: string = "";
+  readonly defaultDockerRepository: string = "";
+  readonly defaultDockerImageVersion: string = "";
 
   pk() {
     return this.destinationId?.toString();

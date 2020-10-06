@@ -10,9 +10,14 @@ import VersionCell from "./VersionCell";
 import ConnectionResource from "../../../core/resources/Connection";
 import config from "../../../config";
 import { Block, Title } from "./PageComponents";
+import SourceResource from "../../../core/resources/Source";
 
 const SourcesView: React.FC = () => {
   const { connections } = useResource(ConnectionResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
+
+  const { sources } = useResource(SourceResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
 
@@ -20,7 +25,7 @@ const SourcesView: React.FC = () => {
     () => [
       {
         Header: <FormattedMessage id="admin.connectors" />,
-        accessor: "connector",
+        accessor: "name",
         customWidth: 34,
         Cell: ({ cell }: CellProps<{}>) => (
           <ConnectorCell connectorName={cell.value} />
@@ -28,7 +33,7 @@ const SourcesView: React.FC = () => {
       },
       {
         Header: <FormattedMessage id="admin.image" />,
-        accessor: "image",
+        accessor: "defaultDockerRepository",
         customWidth: 36,
         Cell: ({ cell, row }: CellProps<{ imageLink: string }>) => (
           <ImageCell imageName={cell.value} link={row.original.imageLink} />
@@ -42,7 +47,7 @@ const SourcesView: React.FC = () => {
       ...columns,
       {
         Header: <FormattedMessage id="admin.version" />,
-        accessor: "version",
+        accessor: "defaultDockerImageVersion",
         collapse: true,
         Cell: ({ cell }: CellProps<{}>) => <VersionCell version={cell.value} />
       }
@@ -63,15 +68,16 @@ const SourcesView: React.FC = () => {
     [columns]
   );
 
-  // TODO: add real data from BE
-  const data = [
-    {
-      connector: "test",
-      image: "image/test",
-      imageLink: "https://github.com",
-      version: "11.1"
-    }
-  ];
+  const usedSources = connections.map(item => {
+    const sourceInfo = sources.find(
+      source => source.sourceId === item.source?.sourceId
+    );
+    return {
+      name: item.source?.sourceName,
+      defaultDockerRepository: sourceInfo?.defaultDockerRepository,
+      defaultDockerImageVersion: sourceInfo?.defaultDockerImageVersion
+    };
+  });
 
   return (
     <>
@@ -80,7 +86,7 @@ const SourcesView: React.FC = () => {
           <Title bold>
             <FormattedMessage id="admin.manageSource" />
           </Title>
-          <Table columns={columnsCurrentSources} data={data} />
+          <Table columns={columnsCurrentSources} data={usedSources} />
         </Block>
       ) : null}
 
@@ -88,7 +94,7 @@ const SourcesView: React.FC = () => {
         <Title bold>
           <FormattedMessage id="admin.availableSource" />
         </Title>
-        <Table columns={columnsAllSources} data={data} />
+        <Table columns={columnsAllSources} data={sources} />
       </Block>
     </>
   );
