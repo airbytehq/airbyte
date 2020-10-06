@@ -1,5 +1,5 @@
-FROM airbyte/base:dev
-COPY --from=python:3.7-slim / /
+FROM python:3.7-slim
+COPY --from=airbyte/base:dev /airbyte /airbyte
 
 WORKDIR /airbyte
 ENV VIRTUAL_ENV=/airbyte/env
@@ -18,3 +18,5 @@ ENV AIRBYTE_SPEC_CMD "python3 /airbyte/base-python/base.py spec"
 ENV AIRBYTE_CHECK_CMD "python3 /airbyte/base-python/base.py check"
 ENV AIRBYTE_DISCOVER_CMD "python3 /airbyte/base-python/base.py discover"
 ENV AIRBYTE_READ_CMD "python3 /airbyte/base-python/base.py read"
+
+ENTRYPOINT ["/airbyte/base.sh"]
