@@ -19,12 +19,12 @@ definitions:
     additionalProperties: false
     required:
       - name
-      - jsonschema
+      - schema
     properties:
       name:
         type: string
         description: Stream's name.
-      jsonschema:
+      schema:
         description: Stream schema using Json Schema specs.
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
