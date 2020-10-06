@@ -45,8 +45,8 @@ public interface Destination {
   /**
    * Check whether, given the current configuration, the integration can connect to the destination.
    *
-   * @param config - integration-specific configuration object as json.
-   *        e.g. { "username": "airbyte", "password": "super secure" }
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+   *        "password": "super secure" }
    * @return Whether or not the connection was successful. Optional message if it was not.
    * @throws Exception - any exception.
    */
@@ -55,8 +55,8 @@ public interface Destination {
   /**
    * Discover the current schema in the destination.
    *
-   * @param config - integration-specific configuration object as json.
-   *        e.g. { "username": "airbyte", "password": "super secure" }
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+   *        "password": "super secure" }
    * @return Description of the schema.
    * @throws Exception - any exception.
    */
@@ -65,8 +65,8 @@ public interface Destination {
   /**
    * Return a consumer that writes messages to the destination.
    *
-   * @param config - integration-specific configuration object as json.
-   *        e.g. { "username": "airbyte", "password": "super secure" }
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+   *        "password": "super secure" }
    * @param schema - schema of the incoming messages.
    * @return Consumer that accepts message. The {@link DestinationConsumer#accept(Object)} will be
    *         called n times where n is the number of messages. {@link DestinationConsumer#complete()}

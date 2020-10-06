@@ -39,13 +39,15 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// todo (cgardens) - parameterize by config type.
 public class DestinationTemplate implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationTemplate.class);
 
   // todo - implement this method such that it returns the specification for the integration.
   // suggestion 1: save the jsonschema of the spec spec as a resource and just load it from disk.
-  // the code in this method uses this suggestion. replace it if you'd like to take a different approach.
+  // the code in this method uses this suggestion. replace it if you'd like to take a different
+  // approach.
   @Override
   public DestinationConnectionSpecification spec() throws IOException {
     // return a jsonschema representation of the spec for the integration.

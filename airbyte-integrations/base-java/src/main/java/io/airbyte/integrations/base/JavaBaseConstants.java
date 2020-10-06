@@ -39,6 +39,8 @@ public class JavaBaseConstants {
   public static String ARGS_SCHEMA_DESC = "input path for the schema";
   public static String ARGS_PATH_DESC = "path to the json-encoded state file";
 
+  // todo (cgardens) - this mount path should be passed in by the worker and read as an arg or
+  // environment variable by the runner.
   public static Path LOCAL_MOUNT = Path.of("/local");
 
 }
