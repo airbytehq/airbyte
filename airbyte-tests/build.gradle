@@ -29,7 +29,7 @@ dependencies {
     acceptanceTestsImplementation project(':airbyte-db')
     acceptanceTestsImplementation project(':airbyte-test-utils')
 
-    acceptanceTestsImplementation "org.testcontainers:postgresql:1.14.3"
+    acceptanceTestsImplementation "org.testcontainers:postgresql:1.15.0-rc2"
     acceptanceTestsImplementation "org.postgresql:postgresql:42.2.16"
     acceptanceTestsImplementation "com.fasterxml.jackson.core:jackson-databind"
 }
