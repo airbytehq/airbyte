@@ -6,5 +6,5 @@ setup(
     author='Airbyte',
     author_email='contact@airbyte.io',
     packages=['source_exchangeratesapi_singer'],
-    install_requires=["tap-exchangeratesapi==0.1.1"]
+    install_requires=['tap-exchangeratesapi==0.1.1', 'base_singer']
 )
