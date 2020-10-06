@@ -2,13 +2,15 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte) [![StackShare](https://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](https://stackshare.io/airbyte/airbyte)
 
-[](https://airbyte.io)
+[![](docs/.gitbook/assets/airbyte_white-background.svg)](https://airbyte.io)
 
 ### Data integration made simple, secure and extensible.
 
 The new open-source standard to sync data from applications, APIs & databases to warehouses.
 
-[](https://docs.airbyte.io/deployment/deploying-airbyte/with-docker) [](https://docs.airbyte.io/deployment/deploying-airbyte/on-aws-ec2) [](https://docs.airbyte.io/deployment/deploying-airbyte/on-gcp-compute-engine)
+[![](docs/.gitbook/assets/deploy-locally.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/with-docker) [![](docs/.gitbook/assets/deploy-on-aws.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-aws-ec2) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-gcp-compute-engine)
+
+![](docs/.gitbook/assets/sources_list.png)
 
 Airbyte is on a mission to make data integration pipelines a commodity.
 

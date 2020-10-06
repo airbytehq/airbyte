@@ -8,7 +8,11 @@ The instructions have been tested on `Debian GNU/Linux 10 (buster)`
 
 * Launch a new instance
 
+![](../../.gitbook/assets/gcp_ce_launch.png)
+
 * Configure new instance
+
+![](../../.gitbook/assets/gcp_ce_configure.png)
 
 * `Create`
 
