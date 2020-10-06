@@ -1,3 +1,5 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
 plugins {
     id 'base'
     id 'java'
@@ -86,6 +88,15 @@ allprojects {
     afterEvaluate { project ->
         composeBuild.dependsOn(project.tasks.assemble)
     }
+
+    /*
+    Handles the case where there's an upstream dependency on a dev versioned image built by Gradle.
+    The plugin doesn't recognize changes to the base image as a change that requires rebuilding.
+    Docker will still cache the artifact, so it shouldn't be much slower.
+     */
+    tasks.withType(DockerBuildImage).all { task ->
+        task.outputs.upToDateWhen { false }
+    }
 }
 
 // Java projects common configurations
@@ -168,17 +179,3 @@ task composeBuild {
     }
 }
 build.dependsOn(composeBuild)
-
-/*
-Handles the case where there's an upstream dependency on a dev versioned image built by Gradle.
-The plugin doesn't recognize changes to the base image as a change that requires rebuilding.
-Here we set the outputs to out of date if it has an upstream dependency.
-This might have false positives if we depended on a Java build.
-However, Docker will still cache the artifact, so it shouldn't be much slower.
- */
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-tasks.withType(DockerBuildImage) {
-    task.dependsOn.forEach { dep ->
-        outputs.upToDateWhen { false }
-    }
-}
