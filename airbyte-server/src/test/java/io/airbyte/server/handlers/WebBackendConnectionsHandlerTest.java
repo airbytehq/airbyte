@@ -111,6 +111,7 @@ class WebBackendConnectionsHandlerTest {
     expected.setSchedule(connectionRead.getSchedule());
     expected.setSource(this.sourceImplementationRead);
     expected.setLastSync(now.getEpochSecond());
+    expected.isSyncing(false);
   }
 
   @Test
