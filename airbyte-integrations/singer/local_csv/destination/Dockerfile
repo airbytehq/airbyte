@@ -14,7 +14,8 @@ RUN python -m pip install --upgrade pip && \
   pip install -r requirements.txt
 
 COPY entrypoint.sh .
+COPY spec.json .
 
 ENTRYPOINT ["/singer/entrypoint.sh"]
 
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.1.1

@@ -14,7 +14,8 @@ RUN python -m pip install --upgrade pip && \
 RUN apk add --no-cache jq curl bash
 
 COPY entrypoint.sh .
+COPY spec.json .
 
 ENTRYPOINT ["/singer/entrypoint.sh"]
 
-LABEL io.airbyte.version=0.1.1
+LABEL io.airbyte.version=0.1.2

@@ -55,6 +55,8 @@ function main() {
     gcloud auth activate-service-account --key-file credentials.json 1>&2
     bq ls 1>&2 || error "Invalid credentials"
     echo '{"streams":[]}'
+  elif [[ "$ARGS" =~ .*"--spec".* ]]; then
+    cat ./spec.json
   else
     GOOGLE_APPLICATION_CREDENTIALS=credentials.json target-bigquery $ARGS
   fi

@@ -18,7 +18,8 @@ RUN python -m pip install --upgrade pip && \
 RUN apt-get autoremove -y gcc
 
 COPY entrypoint.sh .
+COPY spec.json .
 
 ENTRYPOINT ["/singer/entrypoint.sh"]
 
-LABEL io.airbyte.version=0.1.2
+LABEL io.airbyte.version=0.1.3

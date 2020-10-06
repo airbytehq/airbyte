@@ -64,11 +64,13 @@ function main() {
   echo2 $ARGS
   if [[ "$ARGS" =~ .*"--discover".* ]]; then
     echo2 "discover"
-    check_connection $ARGS
-    tap-stripe $ARGS
+    check_connection "$ARGS"
+    tap-stripe "$ARGS"
+  elif [[ "$ARGS" =~ .*"--spec".* ]]; then
+    cat ./spec.json
   else
     echo2 "sync"
-    tap-stripe $ARGS
+    tap-stripe "$ARGS"
   fi
 }
 

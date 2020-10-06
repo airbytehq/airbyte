@@ -14,6 +14,10 @@ function error() {
 }
 
 function main() {
+  if [[ "$ARGS" =~ .*"--spec".* ]]; then
+    cat ./spec.json
+  fi
+
   ARGS=
   while [ $# -ne 0 ]; do
     case "$1" in
