@@ -25,19 +25,20 @@
 package io.airbyte.integrations.base;
 
 import com.google.common.base.Preconditions;
+import java.util.Optional;
 
 public class IntegrationConfig {
 
   private final Command command;
-  private final String config;
-  private final String schema;
-  private final String state;
+  private final String configPath;
+  private final String schemaPath;
+  private final String statePath;
 
-  private IntegrationConfig(Command command, String config, String schema, String state) {
+  private IntegrationConfig(Command command, String configPath, String schemaPath, String statePath) {
     this.command = command;
-    this.config = config;
-    this.schema = schema;
-    this.state = state;
+    this.configPath = configPath;
+    this.schemaPath = schemaPath;
+    this.statePath = statePath;
   }
 
   public static IntegrationConfig spec() {
@@ -70,28 +71,28 @@ public class IntegrationConfig {
     return command;
   }
 
-  public String getConfig() {
+  public String getConfigPath() {
     Preconditions.checkState(command != Command.SPEC);
-    return config;
+    return configPath;
   }
 
-  public String getSchema() {
+  public String getSchemaPath() {
     Preconditions.checkState(command == Command.READ || command == Command.WRITE);
-    return schema;
+    return schemaPath;
   }
 
-  public String getState() {
+  public Optional<String> getStatePath() {
     Preconditions.checkState(command == Command.READ);
-    return state;
+    return Optional.ofNullable(statePath);
   }
 
   @Override
   public String toString() {
     return "IntegrationConfig{" +
         "command=" + command +
-        ", config='" + config + '\'' +
-        ", schema='" + schema + '\'' +
-        ", state='" + state + '\'' +
+        ", configPath='" + configPath + '\'' +
+        ", schemaPath='" + schemaPath + '\'' +
+        ", statePath='" + statePath + '\'' +
         '}';
   }
 

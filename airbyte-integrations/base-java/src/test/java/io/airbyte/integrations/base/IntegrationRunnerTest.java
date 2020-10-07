@@ -31,7 +31,6 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -152,7 +151,7 @@ class IntegrationRunnerTest {
     final SingerMessage singerMessage2 = new SingerMessage()
         .withType(SingerMessage.Type.RECORD)
         .withValue(Jsons.deserialize("{ \"color\": \"yellow\" }"));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1)+ "\n" + Jsons.serialize(singerMessage2)).getBytes()));
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
 
     final DestinationConsumer<SingerMessage> destinationConsumerMock = mock(DestinationConsumer.class);
     new IntegrationRunner(null).consumeWriteStream(destinationConsumerMock);
@@ -160,7 +159,6 @@ class IntegrationRunnerTest {
     InOrder inOrder = inOrder(destinationConsumerMock);
     inOrder.verify(destinationConsumerMock).accept(singerMessage1);
     inOrder.verify(destinationConsumerMock).accept(singerMessage2);
-    inOrder.verify(destinationConsumerMock).complete();
     inOrder.verify(destinationConsumerMock).close();
   }
 
@@ -173,13 +171,12 @@ class IntegrationRunnerTest {
     final SingerMessage singerMessage2 = new SingerMessage()
         .withType(SingerMessage.Type.RECORD)
         .withValue(Jsons.deserialize("{ \"color\": \"yellow\" }"));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1)+ "\n" + Jsons.serialize(singerMessage2)).getBytes()));
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
 
     final DestinationConsumer<SingerMessage> destinationConsumerMock = mock(DestinationConsumer.class);
     doThrow(new IOException("error")).when(destinationConsumerMock).accept(singerMessage1);
 
     assertThrows(IOException.class, () -> new IntegrationRunner(null).consumeWriteStream(destinationConsumerMock));
-
 
     InOrder inOrder = inOrder(destinationConsumerMock);
     inOrder.verify(destinationConsumerMock).accept(singerMessage1);

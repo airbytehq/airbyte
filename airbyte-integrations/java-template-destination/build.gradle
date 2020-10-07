@@ -10,7 +10,7 @@ dependencies {
 }
 
 application {
-    // todo - replace this with the fully qualified path to the new integration.
+    // fixme - replace this with the fully qualified path to the new integration.
     mainClass = 'io.airbyte.integrations.destination.template.DestinationTemplate'
 }
 

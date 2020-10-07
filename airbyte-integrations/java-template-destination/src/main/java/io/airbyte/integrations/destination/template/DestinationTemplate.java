@@ -39,12 +39,11 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// todo (cgardens) - parameterize by config type.
 public class DestinationTemplate implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationTemplate.class);
 
-  // todo - implement this method such that it returns the specification for the integration.
+  // fixme - implement this method such that it returns the specification for the integration.
   // suggestion 1: save the jsonschema of the spec spec as a resource and just load it from disk.
   // the code in this method uses this suggestion. replace it if you'd like to take a different
   // approach.
@@ -55,7 +54,7 @@ public class DestinationTemplate implements Destination {
     return Jsons.deserialize(resourceString, DestinationConnectionSpecification.class);
   }
 
-  // todo - implement this method such that it checks whether it can connect to the destination.
+  // fixme - implement this method such that it checks whether it can connect to the destination.
   // this should return a StandardCheckConnectionOutput with the status field set to true if the
   // connection succeeds and false if it does not. if false consider adding a message in the message
   // field to help the user figure out what they need to do differently so that the connection will
@@ -71,13 +70,13 @@ public class DestinationTemplate implements Destination {
     throw new RuntimeException("Not Implemented");
   }
 
-  // todo - implement this method such that it returns the current schema found in the destination.
+  // fixme - implement this method such that it returns the current schema found in the destination.
   @Override
   public StandardDiscoverSchemaOutput discover(JsonNode config) {
     throw new RuntimeException("Not Implemented");
   }
 
-  // todo - implement this method such that it returns a consumer that can push messages to the
+  // fixme - implement this method such that it returns a consumer that can push messages to the
   // destination.
   @Override
   public DestinationConsumer<SingerMessage> write(JsonNode config, Schema schema) throws IOException {
@@ -88,27 +87,20 @@ public class DestinationTemplate implements Destination {
 
     @Override
     public void accept(SingerMessage singerMessage) throws Exception {
-      // todo - implement how to write a message to the destination
-      throw new RuntimeException("Not Implemented");
-    }
-
-    @Override
-    public void complete() throws Exception {
-      // todo - implement any logic for what should happen after all messages have been consume but before
-      // we close the connection to the destination.
+      // fixme - implement how to write a message to the destination
       throw new RuntimeException("Not Implemented");
     }
 
     @Override
     public void close() throws Exception {
-      // todo - implement hot to close the connection to the destination.
+      // fixme - implement hot to close the connection to the destination.
       throw new RuntimeException("Not Implemented");
     }
 
   }
 
   public static void main(String[] args) throws Exception {
-    // todo - instantiate your implementation of the Destination interface and pass it to
+    // fixme - instantiate your implementation of the Destination interface and pass it to
     // IntegrationRunner.
     final Destination destination = new DestinationTemplate();
     // this is airbyte's entrypoint into the integration. do not remove this line!

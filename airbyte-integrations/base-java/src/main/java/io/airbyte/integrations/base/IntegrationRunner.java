@@ -67,11 +67,11 @@ public class IntegrationRunner {
     switch (parsed.getCommand()) {
       case SPEC -> stdoutConsumer.accept(Jsons.serialize(destination.spec()));
       case CHECK -> {
-        final JsonNode config = parseConfig(parsed.getConfig());
+        final JsonNode config = parseConfig(parsed.getConfigPath());
         stdoutConsumer.accept(Jsons.serialize(destination.check(config)));
       }
       case DISCOVER -> {
-        final JsonNode config = parseConfig(parsed.getConfig());
+        final JsonNode config = parseConfig(parsed.getConfigPath());
         stdoutConsumer.accept(Jsons.serialize(destination.discover(config)));
       }
       case READ ->
@@ -80,8 +80,8 @@ public class IntegrationRunner {
         // final State state = parseConfig(parsed.getState(), State.class);
         throw new RuntimeException("Not implemented");
       case WRITE -> {
-        final JsonNode config = parseConfig(parsed.getConfig());
-        final Schema schema = parseConfig(parsed.getSchema(), Schema.class);
+        final JsonNode config = parseConfig(parsed.getConfigPath());
+        final Schema schema = parseConfig(parsed.getSchemaPath(), Schema.class);
         final DestinationConsumer<SingerMessage> consumer = destination.write(config, schema);
         consumeWriteStream(consumer);
       }
@@ -95,12 +95,15 @@ public class IntegrationRunner {
     final Scanner input = new Scanner(System.in);
     try (consumer) {
       while (input.hasNextLine()) {
-        final Optional<SingerMessage> singerMessageOptional = Jsons.tryDeserialize(input.nextLine(), SingerMessage.class);
+        final String inputString = input.nextLine();
+        final Optional<SingerMessage> singerMessageOptional = Jsons.tryDeserialize(inputString, SingerMessage.class);
         if (singerMessageOptional.isPresent()) {
           consumer.accept(singerMessageOptional.get());
+        } else {
+          // todo (cgardens) - decide if we want to throw here instead.
+          LOGGER.error(inputString);
         }
       }
-      consumer.complete();
     }
   }
 

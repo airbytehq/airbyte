@@ -4,7 +4,7 @@
 1. Adjust the name directory structure to remove `java-template-destination` and `template` and use the integration name instead.
     1. e.g. 
         ```
-       mkdir -p airbyte-integrations/bigquery-destination/src/main/java/io/airbyte/integrations/destination/bigquqery
+       mkdir -p airbyte-integrations/bigquery-destination/src/main/java/io/airbyte/integrations/destination/bigquery
        mv airbyte-integrations/java-template-destination/src/main/java/io/airbyte/integrations/destination/template/DestinationTemplate.java airbyte-integrations/bigquery-destination/src/main/java/io/airbyte/integrations/destination/bigquery/DestinationTemplate.java
        rm -r airbyte-integrations/java-template-destination/src/main/java/io/airbyte/integrations/destination/template
         ``` 

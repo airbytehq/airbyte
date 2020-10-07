@@ -2,7 +2,7 @@ FROM airbyte/base-java:dev
 
 WORKDIR /airbyte
 
-# todo - replace java-template with the name of directory that this file is in.
+# fixme - replace java-template with the name of directory that this file is in.
 ENV APPLICATION java-template-destination
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
