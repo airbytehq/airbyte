@@ -27,9 +27,9 @@ package io.airbyte.integrations.base;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class StatefulConsumer<T> implements DestinationConsumer<T> {
+public abstract class FailureTrackingConsumer<T> implements DestinationConsumer<T> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(StatefulConsumer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FailureTrackingConsumer.class);
 
   private boolean hasFailed = false;
 

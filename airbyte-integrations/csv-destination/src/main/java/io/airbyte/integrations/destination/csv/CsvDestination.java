@@ -36,9 +36,9 @@ import io.airbyte.config.StandardDiscoverSchemaOutput;
 import io.airbyte.config.Stream;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.StatefulConsumer;
 import io.airbyte.singer.SingerMessage;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -142,7 +142,7 @@ public class CsvDestination implements Destination {
 
   }
 
-  public static class CsvConsumer extends StatefulConsumer<SingerMessage> {
+  public static class CsvConsumer extends FailureTrackingConsumer<SingerMessage> {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final Schema schema;
