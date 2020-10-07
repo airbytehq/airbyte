@@ -1,0 +1,30 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+plugins {
+    id 'com.bmuschko.docker-remote-api'
+    id 'application'
+}
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-singer')
+    implementation project(':airbyte-integrations:base-java')
+}
+
+application {
+    // fixme - replace this with the fully qualified path to the new integration.
+    mainClass = 'io.airbyte.integrations.destination.template.DestinationTemplate'
+}
+
+
+def image = 'airbyte/airbyte-java-template-destination:dev'
+
+task imageName {
+    doLast {
+        println "IMAGE $image"
+    }
+}
+
+task buildImage(type: DockerBuildImage) {
+    inputDir = projectDir
+    images.add(image)
+    dependsOn ':airbyte-integrations:base-java:buildImage'
+}

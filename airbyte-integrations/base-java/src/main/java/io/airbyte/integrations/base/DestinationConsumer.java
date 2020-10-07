@@ -22,8 +22,22 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.functional;
+package io.airbyte.integrations.base;
 
-import java.util.function.Consumer;
+import io.airbyte.commons.functional.CheckedConsumer;
 
-public interface CloseableConsumer<T> extends Consumer<T>, AutoCloseable {}
+/**
+ * Lifecyle:
+ * <p>
+ * 1. Consumer object is instantiated.
+ * </p>
+ * <p>
+ * 2. It received messages via {@link DestinationConsumer#accept(T)}
+ * </p>
+ * <p>
+ * 3. Always (on success or failure) finalize by calling {@link DestinationConsumer#close()}
+ * </p>
+ *
+ * @param <T> - type of the message to be consumed.
+ */
+public interface DestinationConsumer<T> extends CheckedConsumer<T, Exception>, AutoCloseable {}
