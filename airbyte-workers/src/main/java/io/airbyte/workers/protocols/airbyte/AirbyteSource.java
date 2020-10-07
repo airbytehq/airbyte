@@ -25,6 +25,7 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import io.airbyte.config.StandardTapConfig;
+import io.airbyte.protocol.models.AirbyteMessage;
 import java.nio.file.Path;
 import java.util.Optional;
 
