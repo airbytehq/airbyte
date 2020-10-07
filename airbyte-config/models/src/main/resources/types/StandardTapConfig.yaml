@@ -6,8 +6,8 @@ description: StandardTapConfig
 type: object
 additionalProperties: false
 required:
-- sourceConnectionImplementation
-- standardSync
+  - sourceConnectionImplementation
+  - standardSync
 properties:
   sourceConnectionImplementation:
     "$ref": SourceConnectionImplementation.yaml

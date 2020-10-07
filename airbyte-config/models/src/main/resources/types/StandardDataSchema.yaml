@@ -8,7 +8,7 @@ definitions:
     description: describes the available schema.
     type: object
     required:
-    - streams
+      - streams
     additionalProperties: false
     properties:
       streams:
@@ -18,8 +18,8 @@ definitions:
   stream:
     type: object
     required:
-    - name
-    - fields
+      - name
+      - fields
     additionalProperties: false
     properties:
       name:
@@ -33,9 +33,9 @@ definitions:
   field:
     type: object
     required:
-    - name
-    - dataType
-    - selected
+      - name
+      - dataType
+      - selected
     additionalProperties: false
     properties:
       name:

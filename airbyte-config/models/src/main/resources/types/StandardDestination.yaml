@@ -5,8 +5,8 @@ title: Source
 description: describes a destination
 type: object
 required:
-- destinationId
-- name
+  - destinationId
+  - name
 additionalProperties: false
 properties:
   destinationId:

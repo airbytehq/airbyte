@@ -6,15 +6,15 @@ description: job config
 type: object
 additionalProperties: false
 required:
-- configType
+  - configType
 properties:
   configType:
     type: string
     enum:
-    - checkConnectionSource
-    - checkConnectionDestination
-    - discoverSchema
-    - sync
+      - checkConnectionSource
+      - checkConnectionDestination
+      - discoverSchema
+      - sync
   checkConnection:
     "$ref": JobCheckConnectionConfig.yaml
   discoverSchema:

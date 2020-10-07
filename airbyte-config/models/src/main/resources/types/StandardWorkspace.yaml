@@ -5,11 +5,11 @@ title: StandardWorkspace
 description: workspace configuration
 type: object
 required:
-- workspaceId
-- name
-- slug
-- initialSetupComplete
-- onboardingComplete
+  - workspaceId
+  - name
+  - slug
+  - initialSetupComplete
+  - onboardingComplete
 additionalProperties: false
 properties:
   workspaceId:

@@ -1,13 +1,14 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardSyncSchedule.yaml
-description: ideally this should be a union but java codegen does not handle the union
+description:
+  ideally this should be a union but java codegen does not handle the union
   type properly.
 title: StandardScheduleConfiguration
 type: object
 required:
-- manual
-- connectionId
+  - manual
+  - connectionId
 additionalProperties: false
 properties:
   connectionId:
@@ -16,18 +17,18 @@ properties:
   schedule:
     type: object
     required:
-    - timeUnit
-    - units
+      - timeUnit
+      - units
     additionalProperties: false
     properties:
       timeUnit:
         type: string
         enum:
-        - minutes
-        - hours
-        - days
-        - weeks
-        - months
+          - minutes
+          - hours
+          - days
+          - weeks
+          - months
       units:
         type: integer
   manual:

@@ -5,9 +5,9 @@ title: StandardDiscoverSchemaOutput
 description: describes the standard output for any discovery run.
 type: object
 required:
-- schema
+  - schema
 additionalProperties: false
 properties:
   schema:
     description: describes the available schema.
-    "$ref": StandardDataSchema.json#/definitions/schema
+    "$ref": StandardDataSchema.yaml#/definitions/schema

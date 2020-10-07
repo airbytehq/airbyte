@@ -5,8 +5,8 @@ title: State
 description: information output by the connection.
 type: object
 required:
-- connectionId
-- state
+  - connectionId
+  - state
 additionalProperties: false
 properties:
   connectionId:

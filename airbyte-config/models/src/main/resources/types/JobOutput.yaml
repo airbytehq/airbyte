@@ -6,14 +6,14 @@ description: job output
 type: object
 additionalProperties: false
 required:
-- outputType
+  - outputType
 properties:
   outputType:
     type: string
     enum:
-    - checkConnection
-    - discoverSchema
-    - sync
+      - checkConnection
+      - discoverSchema
+      - sync
   checkConnection:
     "$ref": StandardCheckConnectionOutput.yaml
   discoverSchema:

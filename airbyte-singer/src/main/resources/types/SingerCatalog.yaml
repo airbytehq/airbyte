@@ -6,7 +6,7 @@ description: the schema of the singer catalog
 type: object
 additionalProperties: false
 required:
-- streams
+  - streams
 properties:
   streams:
     type: array
@@ -17,16 +17,17 @@ definitions:
     type: object
     additionalProperties: false
     required:
-    - tap_stream_id
-    - stream
-    - schema
+      - tap_stream_id
+      - stream
+      - schema
     properties:
       stream:
         type: string
         description: The name of the stream.
       tap_stream_id:
         type: string
-        description: The unique identifier for the stream. This is allowed to be different
+        description:
+          The unique identifier for the stream. This is allowed to be different
           from the name of the stream in order to allow for sources that have duplicate
           stream names.
       schema:
@@ -46,8 +47,9 @@ definitions:
     type: object
     additionalProperties: false
     required:
-    - properties
-    description: The JSON schema for the stream. This struct is weird because it's
+      - properties
+    description:
+      The JSON schema for the stream. This struct is weird because it's
       essentially modeling the properties field of a jsonschema object.
     properties:
       type:
@@ -55,7 +57,8 @@ definitions:
       properties:
         "$ref": "#/definitions/SingerColumnMap"
       definitions:
-        description: placeholder for definitions that are included since it is all
+        description:
+          placeholder for definitions that are included since it is all
           jsonchema.
   SingerColumnMap:
     type: object
@@ -70,7 +73,8 @@ definitions:
       format:
         type: string
       selected:
-        description: 'Deprecated: Some legacy Taps handle stream and field selection
+        description:
+          'Deprecated: Some legacy Taps handle stream and field selection
           by looking for "selected": true directly in the stream''s schema in the
           catalog.json file (called properties.json in legacy taps).'
         type: boolean
@@ -102,8 +106,8 @@ definitions:
     type: object
     additionalProperties: false
     required:
-    - metadata
-    - breadcrumb
+      - metadata
+      - breadcrumb
     properties:
       metadata:
         "$ref": "#/definitions/SingerMetadataChild"
@@ -117,85 +121,93 @@ definitions:
     required: []
     properties:
       selected:
-        description: 'Non-Discoverable: Indicates that this node in the schema has
-          been selected by the user for replication.'
+        description:
+          "Non-Discoverable: Indicates that this node in the schema has
+          been selected by the user for replication."
         type: boolean
       replication-method:
-        description: 'Non-Discoverable: Either FULL_TABLE, INCREMENTAL, or LOG_BASED.
-          The replication method to use for a stream.'
+        description:
+          "Non-Discoverable: Either FULL_TABLE, INCREMENTAL, or LOG_BASED.
+          The replication method to use for a stream."
         type: string
         enum:
-        - FULL_TABLE
-        - INCREMENTAL
-        - LOG_BASED
+          - FULL_TABLE
+          - INCREMENTAL
+          - LOG_BASED
       replication-key:
-        description: 'Non-Discoverable: The name of a property in the source to use
+        description:
+          'Non-Discoverable: The name of a property in the source to use
           as a "bookmark". For example, this will often be an "updated-at" field or
           an auto-incrementing primary key (requires replication-method'
         type: array
         items:
           type: string
       view-key-properties:
-        description: 'Non Discoverable: List of key properties for a database view.'
+        description: "Non Discoverable: List of key properties for a database view."
         type: array
         items:
           type: string
       inclusion:
-        description: 'Discoverable: available means the field is available for selection,
+        description:
+          'Discoverable: available means the field is available for selection,
           and the tap will only emit values for that field if it is marked with "selected":
           true. automatic means that the tap will emit values for the field. unsupported
           means that the field exists in the source data but the tap is unable to
           provide it.'
         type: string
         enum:
-        - available
-        - automatic
-        - unsupported
+          - available
+          - automatic
+          - unsupported
       selected-by-default:
-        description: 'Discoverable: Indicates if a node in the schema should be replicated
-          if a user has not expressed any opinion on whether or not to replicate it.'
+        description:
+          "Discoverable: Indicates if a node in the schema should be replicated
+          if a user has not expressed any opinion on whether or not to replicate it."
         type: boolean
       valid-replication-keys:
-        description: 'Discoverable: List of the fields that could be used as replication
-          keys.'
+        description:
+          "Discoverable: List of the fields that could be used as replication
+          keys."
         type: array
         items:
           type: string
       forced-replication-method:
-        description: 'Discoverable: Used to force the replication method to either
-          FULL_TABLE or INCREMENTAL.'
+        description:
+          "Discoverable: Used to force the replication method to either
+          FULL_TABLE or INCREMENTAL."
         type: string
       table-key-properties:
-        description: 'Discoverable: List of key properties for a database table.'
+        description: "Discoverable: List of key properties for a database table."
         type: array
         items:
           type: string
       schema-name:
-        description: 'Discoverable: The name of the stream.'
+        description: "Discoverable: The name of the stream."
         type: string
       is-view:
-        description: 'Discoverable: Indicates whether a stream corresponds to a database
-          view.'
+        description:
+          "Discoverable: Indicates whether a stream corresponds to a database
+          view."
         type: boolean
       row-count:
-        description: 'Discoverable: Number of rows in a database table/view.'
+        description: "Discoverable: Number of rows in a database table/view."
         type: integer
       database-name:
-        description: 'Discoverable: Name of database.'
+        description: "Discoverable: Name of database."
         type: string
       sql-datatype:
-        description: 'Discoverable: Represents the datatype of a database column.'
+        description: "Discoverable: Represents the datatype of a database column."
   SingerType:
     type:
-    - array
-    - string
+      - array
+      - string
     items:
       type: string
       enum:
-      - 'null'
-      - boolean
-      - object
-      - array
-      - number
-      - string
-      - integer
+        - "null"
+        - boolean
+        - object
+        - array
+        - number
+        - string
+        - integer

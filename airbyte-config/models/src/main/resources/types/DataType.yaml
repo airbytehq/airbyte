@@ -5,8 +5,8 @@ title: DataType
 description: standard data types.
 type: string
 enum:
-- string
-- number
-- boolean
-- object
-- array
+  - string
+  - number
+  - boolean
+  - object
+  - array

@@ -5,7 +5,7 @@ title: PublicCheckConnection
 description: information required for connection.
 type: object
 required:
-- connectionConfiguration
+  - connectionConfiguration
 additionalProperties: false
 properties:
   connectionConfiguration:

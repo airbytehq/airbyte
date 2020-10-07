@@ -6,9 +6,9 @@ description: StandardTargetConfig
 type: object
 additionalProperties: false
 required:
-- sourceConnectionImplementation
-- destinationConnectionImplementation
-- standardSync
+  - sourceConnectionImplementation
+  - destinationConnectionImplementation
+  - standardSync
 properties:
   destinationConnectionImplementation:
     "$ref": DestinationConnectionImplementation.yaml

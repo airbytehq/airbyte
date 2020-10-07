@@ -5,13 +5,13 @@ title: StandardCheckConnectionOutput
 description: describes the result of a 'check connection' action.
 type: object
 required:
-- status
+  - status
 additionalProperties: false
 properties:
   status:
     type: string
     enum:
-    - success
-    - failure
+      - success
+      - failure
   message:
     type: string

@@ -6,8 +6,8 @@ description: job sync config
 type: object
 additionalProperties: false
 required:
-- standardSyncSummary
-- state
+  - standardSyncSummary
+  - state
 properties:
   standardSyncSummary:
     "$ref": StandardSyncSummary.yaml

@@ -6,10 +6,10 @@ description: job sync config
 type: object
 additionalProperties: false
 required:
-- sourceConnectionImplementation
-- destinationConnectionImplementation
-- standardSync
-- state
+  - sourceConnectionImplementation
+  - destinationConnectionImplementation
+  - standardSync
+  - state
 properties:
   sourceConnectionImplementation:
     "$ref": SourceConnectionImplementation.yaml
@@ -20,6 +20,7 @@ properties:
   state:
     "$ref": State.yaml
   standardSyncSummary:
-    description: optional state of the previous run. this object is standard for any
+    description:
+      optional state of the previous run. this object is standard for any
       sync run.
     "$ref": StandardSyncSummary.yaml

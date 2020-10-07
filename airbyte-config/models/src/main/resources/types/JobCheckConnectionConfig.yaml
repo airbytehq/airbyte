@@ -6,8 +6,8 @@ description: job check connection config
 type: object
 additionalProperties: false
 required:
-- connectionConfiguration
-- dockerImage
+  - connectionConfiguration
+  - dockerImage
 properties:
   connectionConfiguration:
     description: Integration specific blob. Must be a valid JSON string.

@@ -6,11 +6,11 @@ description: job sync config
 type: object
 additionalProperties: false
 required:
-- sourceConnectionImplementation
-- destinationConnectionImplementation
-- standardSync
-- sourceDockerImage
-- destinationDockerImage
+  - sourceConnectionImplementation
+  - destinationConnectionImplementation
+  - standardSync
+  - sourceDockerImage
+  - destinationDockerImage
 properties:
   sourceConnectionImplementation:
     "$ref": SourceConnectionImplementation.yaml

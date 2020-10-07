@@ -5,8 +5,8 @@ title: Source
 description: describes a source
 type: object
 required:
-- sourceId
-- name
+  - sourceId
+  - name
 additionalProperties: false
 properties:
   sourceId:

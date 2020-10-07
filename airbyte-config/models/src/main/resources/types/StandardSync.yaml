@@ -5,11 +5,11 @@ title: StandardSync
 description: configuration required for sync for ALL taps
 type: object
 required:
-- sourceImplementationId
-- destinationImplementationId
-- name
-- syncMode
-- schema
+  - sourceImplementationId
+  - destinationImplementationId
+  - name
+  - syncMode
+  - schema
 additionalProperties: false
 properties:
   sourceImplementationId:
@@ -26,13 +26,13 @@ properties:
   syncMode:
     type: string
     enum:
-    - full_refresh
-    - append
+      - full_refresh
+      - append
   schema:
-    "$ref": StandardDataSchema.json#/definitions/schema
+    "$ref": StandardDataSchema.yaml#/definitions/schema
   status:
     type: string
     enum:
-    - active
-    - inactive
-    - deprecated
+      - active
+      - inactive
+      - deprecated
