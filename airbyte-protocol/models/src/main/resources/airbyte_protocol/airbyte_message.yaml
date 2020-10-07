@@ -1,37 +1,38 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.json
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml
 title: AirbyteMessage
-description: 
+description:
 type: object
 additionalProperties: false
 required:
-- type
+  - type
 properties:
   type:
     description: Message type
     type: string
     enum:
-    - RECORD
-    - STATE
-    - LOG
+      - RECORD
+      - STATE
+      - LOG
   record:
-    description: 'record message: the record'
+    description: "record message: the record"
     "$ref": "#/definitions/AirbyteRecordMessage"
   state:
-    description: 'schema message: the state. Must be the last message produced. The
-      platform uses this information'
+    description:
+      "schema message: the state. Must be the last message produced. The
+      platform uses this information"
     "$ref": "#/definitions/AirbyteStateMessage"
   log:
-    description: 'log message: any kind of logging you want the platform to know about.'
+    description: "log message: any kind of logging you want the platform to know about."
     "$ref": "#/definitions/AirbyteLogMessage"
 definitions:
   AirbyteRecordMessage:
     type: object
     additionalProperties: false
     required:
-    - data
-    - extracted_at
+      - data
+      - extracted_at
     properties:
       data:
         description: the record data
@@ -45,7 +46,7 @@ definitions:
     type: object
     additionalProperties: false
     required:
-    - data
+      - data
     properties:
       data:
         description: the state data
@@ -55,19 +56,19 @@ definitions:
     type: object
     additionalProperties: false
     required:
-    - level
-    - message
+      - level
+      - message
     properties:
       level:
         description: the type of logging
         type: string
         enum:
-        - FATAL
-        - ERROR
-        - WARN
-        - INFO
-        - DEBUG
-        - TRACE
+          - FATAL
+          - ERROR
+          - WARN
+          - INFO
+          - DEBUG
+          - TRACE
       message:
         description: the log message
         type: string

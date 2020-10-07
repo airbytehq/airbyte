@@ -1,12 +1,12 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_schema.json
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_schema.yaml
 title: AirbyteCatalog
 description: Airbyte stream schema catalog
 type: object
 additionalProperties: false
 required:
-- streams
+  - streams
 properties:
   streams:
     type: array
@@ -17,8 +17,8 @@ definitions:
     type: object
     additionalProperties: false
     required:
-    - name
-    - schema
+      - name
+      - schema
     properties:
       name:
         type: string
