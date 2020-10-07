@@ -56,10 +56,9 @@ import org.slf4j.LoggerFactory;
 
 public class CsvDestination implements Destination {
 
-  private static final String COLUMN_NAME = "data";
-
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
 
+  private static final String COLUMN_NAME = "data"; // we output all data as a blog to a single column calle data.
   private static final String DESTINATION_PATH_FIELD = "destination_path";
 
   @Override
@@ -78,6 +77,7 @@ public class CsvDestination implements Destination {
     return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
   }
 
+  // todo (cgardens) - we currently don't leverage discover in our destinations, so skipping implementing it... for now.
   @Override
   public StandardDiscoverSchemaOutput discover(JsonNode config) {
     throw new RuntimeException("Not Implemented");
@@ -183,6 +183,10 @@ public class CsvDestination implements Destination {
           Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
         }
       }
+      for (final WriteConfig writeConfig : writeConfigs.values()) {
+        Files.deleteIfExists(writeConfig.getTmpPath());
+      }
+
     }
 
   }
