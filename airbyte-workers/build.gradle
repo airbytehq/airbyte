@@ -12,6 +12,7 @@ dependencies {
     implementation project(":airbyte-config:models")
     implementation project(":airbyte-db")
     implementation project(":airbyte-integrations")
+    implementation project(":airbyte-protocol:models")
     implementation project(":airbyte-singer")
 
     testImplementation "org.mockito:mockito-inline:2.13.0"
