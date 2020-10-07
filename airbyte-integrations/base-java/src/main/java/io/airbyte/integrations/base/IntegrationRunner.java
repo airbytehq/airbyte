@@ -25,6 +25,7 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Schema;
@@ -32,6 +33,7 @@ import io.airbyte.singer.SingerMessage;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,29 +41,38 @@ public class IntegrationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunner.class);
 
+  private final IntegrationCliParser cliParser;
+  private Consumer<String> stdoutConsumer;
   private final Destination destination;
 
   public IntegrationRunner(Destination destination) {
+    this(new IntegrationCliParser(), System.out::println, destination);
+  }
+
+  @VisibleForTesting
+  IntegrationRunner(IntegrationCliParser cliParser, Consumer<String> stdoutConsumer, Destination destination) {
+    this.cliParser = cliParser;
+    this.stdoutConsumer = stdoutConsumer;
     this.destination = destination;
   }
 
   public void run(String[] args) throws Exception {
     LOGGER.info("Running integration: {}", destination.getClass().getName());
 
-    final IntegrationConfig parsed = new IntegrationCliParser().parse(args);
+    final IntegrationConfig parsed = cliParser.parse(args);
 
     LOGGER.info("Command: {}", parsed.getCommand());
     LOGGER.info("Integration config: {}", parsed);
 
     switch (parsed.getCommand()) {
-      case SPEC -> System.out.println(Jsons.serialize(destination.spec()));
+      case SPEC -> stdoutConsumer.accept(Jsons.serialize(destination.spec()));
       case CHECK -> {
         final JsonNode config = parseConfig(parsed.getConfig());
-        System.out.println(Jsons.serialize(destination.check(config)));
+        stdoutConsumer.accept(Jsons.serialize(destination.check(config)));
       }
       case DISCOVER -> {
         final JsonNode config = parseConfig(parsed.getConfig());
-        System.out.println(Jsons.serialize(destination.discover(config)));
+        stdoutConsumer.accept(Jsons.serialize(destination.discover(config)));
       }
       case READ ->
         // final JsonNode config = parseConfig(parsed.getConfig());
@@ -72,22 +83,25 @@ public class IntegrationRunner {
         final JsonNode config = parseConfig(parsed.getConfig());
         final Schema schema = parseConfig(parsed.getSchema(), Schema.class);
         final DestinationConsumer<SingerMessage> consumer = destination.write(config, schema);
-
-        final Scanner input = new Scanner(System.in);
-        try (consumer) {
-          while (input.hasNextLine()) {
-            final Optional<SingerMessage> singerMessageOptional = Jsons.tryDeserialize(input.nextLine(), SingerMessage.class);
-            if (singerMessageOptional.isPresent()) {
-              consumer.accept(singerMessageOptional.get());
-            }
-          }
-          consumer.complete();
-        }
+        consumeWriteStream(consumer);
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
     }
 
     LOGGER.info("Completed integration: {}", destination.getClass().getName());
+  }
+
+  void consumeWriteStream(DestinationConsumer<SingerMessage> consumer) throws Exception {
+    final Scanner input = new Scanner(System.in);
+    try (consumer) {
+      while (input.hasNextLine()) {
+        final Optional<SingerMessage> singerMessageOptional = Jsons.tryDeserialize(input.nextLine(), SingerMessage.class);
+        if (singerMessageOptional.isPresent()) {
+          consumer.accept(singerMessageOptional.get());
+        }
+      }
+      consumer.complete();
+    }
   }
 
   private static JsonNode parseConfig(String path) {
