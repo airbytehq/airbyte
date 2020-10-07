@@ -26,6 +26,7 @@ package io.airbyte.singer;
 
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.resources.MoreResources;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,46 +37,47 @@ import java.util.stream.Collectors;
 // todo (cgardens) - dedupe this with ConfigSchema.
 public enum SingerConfigSchema {
 
-  SINGER_MESSAGE("SingerMessage.json");
+    SINGER_MESSAGE("SingerMessage.yaml");
 
-  static final Path KNOWN_SCHEMAS_ROOT = prepareSchemas();
-  private static final String RESOURCE_DIR = "singer_json";
+    static final Path KNOWN_SCHEMAS_ROOT = prepareSchemas();
+    private static final String RESOURCE_DIR = "singer_types";
 
-  /*
-   * JsonReferenceProcessor relies on all of the json in consumes being in a file system (not in a
-   * jar). This method copies all of the json configs out of the jar into a temporary directory so
-   * that JsonReferenceProcessor can find them.
-   */
-  @SuppressWarnings("UnstableApiUsage")
-  private static Path prepareSchemas() {
-    try {
-      final List<String> filenames = MoreResources.listResources(SingerConfigSchema.class, RESOURCE_DIR)
-          .map(p -> p.getFileName().toString())
-          .filter(p -> p.endsWith(".json"))
-          .collect(Collectors.toList());
+    /*
+     * JsonReferenceProcessor relies on all of the json in consumes being in a file system (not in a
+     * jar). This method copies all of the json configs out of the jar into a temporary directory so
+     * that JsonReferenceProcessor can find them.
+     */
+    @SuppressWarnings("UnstableApiUsage")
+    private static Path prepareSchemas() {
+        try {
+            final List<String> filenames = MoreResources.listResources(SingerConfigSchema.class, RESOURCE_DIR)
+                    .map(p -> p.getFileName().toString())
+                    .peek(x -> System.out.println("x = " + x))
+                    .filter(p -> p.endsWith(".yaml"))
+                    .collect(Collectors.toList());
 
-      final Path configRoot = Files.createTempDirectory("schemas");
-      for (String filename : filenames) {
-        IOs.writeFile(
-            configRoot,
-            filename,
-            MoreResources.readResource(String.format("%s/%s", RESOURCE_DIR, filename)));
-      }
+            final Path configRoot = Files.createTempDirectory("schemas");
+            for (String filename : filenames) {
+                IOs.writeFile(
+                        configRoot,
+                        filename,
+                        MoreResources.readResource(String.format("%s/%s", RESOURCE_DIR, filename)));
+            }
 
-      return configRoot;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+            return configRoot;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
 
-  private final String schemaFilename;
+    private final String schemaFilename;
 
-  SingerConfigSchema(final String schemaFilename) {
-    this.schemaFilename = schemaFilename;
-  }
+    SingerConfigSchema(final String schemaFilename) {
+        this.schemaFilename = schemaFilename;
+    }
 
-  public File getFile() {
-    return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
-  }
+    public File getFile() {
+        return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
+    }
 
 }

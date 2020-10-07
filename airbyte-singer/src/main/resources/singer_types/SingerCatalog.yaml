@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-singer/src/main/resources/types/SingerCatalog.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-singer/src/main/resources/singer_types/SingerCatalog.yaml
 title: SingerCatalog
 description: the schema of the singer catalog
 type: object

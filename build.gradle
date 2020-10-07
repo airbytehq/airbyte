@@ -146,6 +146,7 @@ subprojects {
         // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
         implementation 'com.fasterxml.jackson.core:jackson-databind'
         implementation 'com.fasterxml.jackson.core:jackson-annotations'
+        implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
 
         implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 

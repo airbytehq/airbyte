@@ -14,7 +14,7 @@ jsonSchema2Pojo {
     //  we need to find a more graceful way of handling this issue, but for now this keeps
     //  us moving forward.
     sourceType = SourceType.YAMLSCHEMA
-    source = files("${sourceSets.main.output.resourcesDir}/types/")
+    source = files("${sourceSets.main.output.resourcesDir}/singer_types")
     targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
 
     targetPackage = 'io.airbyte.singer'
