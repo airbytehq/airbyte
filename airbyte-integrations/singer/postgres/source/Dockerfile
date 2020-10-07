@@ -18,7 +18,7 @@ RUN python -m pip install --upgrade pip && \
 RUN apt-get autoremove -y gcc
 
 COPY entrypoint.sh .
-COPY spec.json .
+COPY ./src/test-integration/resources/spec.json .
 
 ENTRYPOINT ["/singer/entrypoint.sh"]
 

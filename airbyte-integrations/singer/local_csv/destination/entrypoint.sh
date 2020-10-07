@@ -58,7 +58,7 @@ function main() {
     # If connection check is successful write a fake catalog for the discovery worker to find
     echo '{"streams":[]}'
   elif [[ "$ARGS" =~ .*"--spec".* ]]; then
-    cat ./spec.json
+    cat /singer/spec.json
   else
     target-csv $ARGS
   fi

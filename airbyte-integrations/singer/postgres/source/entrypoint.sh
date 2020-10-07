@@ -15,7 +15,7 @@ function error() {
 
 function main() {
   if [[ "$ARGS" =~ .*"--spec".* ]]; then
-    cat ./spec.json
+    cat spec.json
   fi
 
   ARGS=
@@ -43,6 +43,7 @@ function main() {
       ARGS="$ARGS --properties $2"
       shift 2
       ;;
+
     --spec)
       ARGS="$ARGS --spec"
       shift

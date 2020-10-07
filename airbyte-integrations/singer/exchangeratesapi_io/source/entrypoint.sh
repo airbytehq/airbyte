@@ -47,7 +47,8 @@ function main() {
   if [ "$DISCOVER" == 1 ]; then
     echo2 "Checking connection..."
     tap-exchangeratesapi | grep '"type": "SCHEMA"' | head -1 | jq -c '{"streams":[{"stream": .stream, "schema": .schema}]}'
-
+  elif [[ "$ARGS" =~ .*"--spec".* ]]; then
+    cat /singer/spec.json
   else
     echo2 "Running sync..."
     tap-exchangeratesapi $ARGS

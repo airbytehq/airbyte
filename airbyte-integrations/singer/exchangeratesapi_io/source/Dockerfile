@@ -14,7 +14,7 @@ RUN python -m pip install --upgrade pip && \
   pip install -r requirements.txt
 
 COPY entrypoint.sh .
-COPY spec.json .
+COPY ./src/test-integration/resources/spec.json .
 
 ENTRYPOINT ["/singer/entrypoint.sh"]
 

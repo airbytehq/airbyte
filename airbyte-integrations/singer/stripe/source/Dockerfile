@@ -14,7 +14,7 @@ RUN python -m pip install --upgrade pip && \
 RUN apk add --no-cache jq curl bash
 
 COPY entrypoint.sh .
-COPY spec.json .
+COPY ./src/test-integration/resources/spec.json .
 
 ENTRYPOINT ["/singer/entrypoint.sh"]
 

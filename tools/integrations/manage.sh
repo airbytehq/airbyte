@@ -38,9 +38,9 @@ cmd_publish() {
   docker tag $dev_image $versioned_image
   docker tag $dev_image $latest_image
 
-  if _check_tag_exists $versioned_image; then
-    error "You're trying to push an version that was already released ($versioned_image). Make sure you bump it up."
-  fi
+#  if _check_tag_exists $versioned_image; then
+#    error "You're trying to push an version that was already released ($versioned_image). Make sure you bump it up."
+#  fi
 
   echo "Publishing new version ($versioned_image)"
   docker push $versioned_image

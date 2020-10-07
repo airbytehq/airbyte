@@ -25,6 +25,7 @@
 package io.airbyte.integration_tests.destinations;
 
 import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,12 +37,15 @@ import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,9 +53,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -150,6 +156,16 @@ class TestBigQueryDestination {
 
     List<String> actualList = getExchangeRateTable();
     assertLinesMatch(expectedList, actualList);
+  }
+
+  @Test
+  public void testGetSpec() throws WorkerException, IOException, InterruptedException {
+    Process process = pbf.create(jobRoot, IMAGE_NAME, "--spec").start();
+    process.waitFor();
+    InputStream expectedSpecInputStream = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("spec.json"));
+    JsonNode expectedSpec = Jsons.deserialize(new String(expectedSpecInputStream.readAllBytes()));
+    JsonNode actualSpec = Jsons.deserialize(new String(process.getInputStream().readAllBytes()));
+    assertEquals(expectedSpec, actualSpec);
   }
 
   private Process startTarget() throws IOException, WorkerException {

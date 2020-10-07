@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -44,6 +45,7 @@ import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
 import io.airbyte.workers.protocols.singer.SingerDiscoverSchemaWorker;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -110,6 +112,16 @@ class TestPostgresDestination {
 
     List<String> actualList = getExchangeRateTable();
     assertLinesMatch(expectedList, actualList);
+  }
+
+  @Test
+  public void testGetSpec() throws WorkerException, IOException, InterruptedException {
+    Process process = pbf.create(jobRoot, IMAGE_NAME, "--spec").start();
+    process.waitFor();
+    InputStream expectedSpecInputStream = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("spec.json"));
+    JsonNode expectedSpec = Jsons.deserialize(new String(expectedSpecInputStream.readAllBytes()));
+    JsonNode actualSpec = Jsons.deserialize(new String(process.getInputStream().readAllBytes()));
+    assertEquals(expectedSpec, actualSpec);
   }
 
   @Test

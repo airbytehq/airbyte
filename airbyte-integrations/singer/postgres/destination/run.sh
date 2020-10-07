@@ -12,7 +12,7 @@ function main() {
     echo_err "Checking connection..."
     python3 /check_connection.py "$@"
   elif [[ "$ARGS" =~ .*"--spec".* ]]; then
-    cat ./spec.json
+    cat /singer/spec.json
   else
     echo_err "Running sync..."
     target-postgres "$@"

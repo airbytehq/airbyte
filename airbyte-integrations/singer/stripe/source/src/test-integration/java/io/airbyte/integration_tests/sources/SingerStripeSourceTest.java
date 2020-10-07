@@ -41,12 +41,14 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -114,6 +116,16 @@ public class SingerStripeSourceTest {
             requestOptions);
       }
     }
+  }
+
+  @Test
+  public void testGetSpec() throws WorkerException, IOException, InterruptedException {
+    Process process = pbf.create(jobRoot, IMAGE_NAME, "--spec").start();
+    process.waitFor();
+    InputStream expectedSpecInputStream = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("spec.json"));
+    JsonNode expectedSpec = Jsons.deserialize(new String(expectedSpecInputStream.readAllBytes()));
+    JsonNode actualSpec = Jsons.deserialize(new String(process.getInputStream().readAllBytes()));
+    assertEquals(expectedSpec, actualSpec);
   }
 
   @Test

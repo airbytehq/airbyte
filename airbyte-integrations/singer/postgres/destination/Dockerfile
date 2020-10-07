@@ -8,9 +8,9 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install dependencies:
 COPY requirements.txt .
-COPY ./run.sh /run.sh
-COPY ./spec.json /spec.json
-COPY ./check_connection.py /check_connection.py
+COPY ./run.sh .
+COPY ./src/test-integration/resources/spec.json .
+COPY ./check_connection.py .
 
 RUN apt-get update && \
   # https://github.com/datamill-co/target-postgres/issues/186
@@ -21,6 +21,6 @@ RUN apt-get update && \
   python -m pip install --upgrade pip && \
   pip install -r requirements.txt
 
-ENTRYPOINT ["/run.sh"]
+ENTRYPOINT ["/singer/run.sh"]
 
 LABEL io.airbyte.version=0.1.2

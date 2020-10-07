@@ -2,4 +2,4 @@
 !Dockerfile
 !requirements.txt
 !entrypoint.sh
-!spec.json
+!src/test-integration/resources/spec.json
