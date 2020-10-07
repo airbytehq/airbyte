@@ -25,7 +25,6 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import io.airbyte.config.StandardTapConfig;
-import io.airbyte.singer.SingerMessage;
 import java.nio.file.Path;
 import java.util.Optional;
 
