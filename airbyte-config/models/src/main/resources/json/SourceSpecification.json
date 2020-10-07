@@ -4,9 +4,7 @@
   "title": "SourceSpecification",
   "description": "Specification of a destination",
   "type": "object",
-  "required": [
-    "connectionSpecification"
-  ],
+  "required": ["connectionSpecification"],
   "additionalProperties": false,
   "properties": {
     "documentationUrl": {
