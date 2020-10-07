@@ -13,6 +13,7 @@
         "checkConnectionSource",
         "checkConnectionDestination",
         "discoverSchema",
+        "getSpec",
         "sync"
       ]
     },
@@ -24,6 +25,9 @@
     },
     "sync": {
       "$ref": "JobSyncConfig.json"
+    },
+    "getSpec": {
+      "$ref": "JobGetSpecConfig.json"
     }
   }
 }
