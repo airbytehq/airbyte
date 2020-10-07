@@ -24,10 +24,14 @@
 
 package io.airbyte.integrations.base;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,12 +45,14 @@ import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
 import io.airbyte.config.Stream;
 import io.airbyte.singer.SingerMessage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 class IntegrationRunnerTest {
@@ -135,6 +141,50 @@ class IntegrationRunnerTest {
 
     verify(destination).write(CONFIG, SCHEMA);
     verify(runner).consumeWriteStream(destinationConsumerMock);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testDestinationConsumerLifecycleSuccess() throws Exception {
+    final SingerMessage singerMessage1 = new SingerMessage()
+        .withType(SingerMessage.Type.RECORD)
+        .withValue(Jsons.deserialize("{ \"color\": \"blue\" }"));
+    final SingerMessage singerMessage2 = new SingerMessage()
+        .withType(SingerMessage.Type.RECORD)
+        .withValue(Jsons.deserialize("{ \"color\": \"yellow\" }"));
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1)+ "\n" + Jsons.serialize(singerMessage2)).getBytes()));
+
+    final DestinationConsumer<SingerMessage> destinationConsumerMock = mock(DestinationConsumer.class);
+    new IntegrationRunner(null).consumeWriteStream(destinationConsumerMock);
+
+    InOrder inOrder = inOrder(destinationConsumerMock);
+    inOrder.verify(destinationConsumerMock).accept(singerMessage1);
+    inOrder.verify(destinationConsumerMock).accept(singerMessage2);
+    inOrder.verify(destinationConsumerMock).complete();
+    inOrder.verify(destinationConsumerMock).close();
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testDestinationConsumerLifecycleFailure() throws Exception {
+    final SingerMessage singerMessage1 = new SingerMessage()
+        .withType(SingerMessage.Type.RECORD)
+        .withValue(Jsons.deserialize("{ \"color\": \"blue\" }"));
+    final SingerMessage singerMessage2 = new SingerMessage()
+        .withType(SingerMessage.Type.RECORD)
+        .withValue(Jsons.deserialize("{ \"color\": \"yellow\" }"));
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1)+ "\n" + Jsons.serialize(singerMessage2)).getBytes()));
+
+    final DestinationConsumer<SingerMessage> destinationConsumerMock = mock(DestinationConsumer.class);
+    doThrow(new IOException("error")).when(destinationConsumerMock).accept(singerMessage1);
+
+    assertThrows(IOException.class, () -> new IntegrationRunner(null).consumeWriteStream(destinationConsumerMock));
+
+
+    InOrder inOrder = inOrder(destinationConsumerMock);
+    inOrder.verify(destinationConsumerMock).accept(singerMessage1);
+    inOrder.verify(destinationConsumerMock).close();
+    inOrder.verifyNoMoreInteractions();
   }
 
 }
