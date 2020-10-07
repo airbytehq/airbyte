@@ -24,7 +24,6 @@ properties:
   log:
     description: "log message: any kind of logging you want the platform to know about."
     "$ref": "#/definitions/AirbyteLogMessage"
-
 definitions:
   AirbyteRecordMessage:
     type: object
@@ -41,7 +40,6 @@ definitions:
         description: "when the data was emitted from the source."
         type: string
         format: date-time
-
   AirbyteStateMessage:
     type: object
     additionalProperties: false
@@ -52,7 +50,6 @@ definitions:
         description: "the state data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
-
   AirbyteLogMessage:
     type: object
     additionalProperties: false

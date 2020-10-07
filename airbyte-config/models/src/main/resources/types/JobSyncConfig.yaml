@@ -1,0 +1,27 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/JobSyncConfig.yaml
+title: JobSyncConfig
+description: job sync config
+type: object
+additionalProperties: false
+required:
+  - sourceConnectionImplementation
+  - destinationConnectionImplementation
+  - standardSync
+  - sourceDockerImage
+  - destinationDockerImage
+properties:
+  sourceConnectionImplementation:
+    "$ref": SourceConnectionImplementation.yaml
+  destinationConnectionImplementation:
+    "$ref": DestinationConnectionImplementation.yaml
+  standardSync:
+    "$ref": StandardSync.yaml
+  sourceDockerImage:
+    type: string
+  destinationDockerImage:
+    type: string
+  state:
+    description: optional state of the previous run. this object is defined per integration.
+    "$ref": State.yaml
