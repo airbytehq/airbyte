@@ -1,3 +1,5 @@
+import org.jsonschema2pojo.SourceType
+
 plugins {
     id "com.github.eirnym.js2p" version "1.0"
 }
@@ -11,7 +13,8 @@ jsonSchema2Pojo {
     //  otherwise they clobber each other, when we are accessing them as java resources.
     //  we need to find a more graceful way of handling this issue, but for now this keeps
     //  us moving forward.
-    source = files("${sourceSets.main.output.resourcesDir}/singer_json")
+    sourceType = SourceType.YAMLSCHEMA
+    source = files("${sourceSets.main.output.resourcesDir}/singer_types")
     targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
 
     targetPackage = 'io.airbyte.singer'

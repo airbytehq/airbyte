@@ -36,27 +36,27 @@ import java.util.stream.Collectors;
 public enum ConfigSchema {
 
   // workspace
-  STANDARD_WORKSPACE("StandardWorkspace.json"),
+  STANDARD_WORKSPACE("StandardWorkspace.yaml"),
 
   // source
-  STANDARD_SOURCE("StandardSource.json"),
-  SOURCE_CONNECTION_SPECIFICATION("SourceConnectionSpecification.json"),
-  SOURCE_CONNECTION_IMPLEMENTATION("SourceConnectionImplementation.json"),
+  STANDARD_SOURCE("StandardSource.yaml"),
+  SOURCE_CONNECTION_SPECIFICATION("SourceConnectionSpecification.yaml"),
+  SOURCE_CONNECTION_IMPLEMENTATION("SourceConnectionImplementation.yaml"),
 
   // destination
-  STANDARD_DESTINATION("StandardDestination.json"),
-  DESTINATION_CONNECTION_SPECIFICATION("DestinationConnectionSpecification.json"),
-  DESTINATION_CONNECTION_IMPLEMENTATION("DestinationConnectionImplementation.json"),
+  STANDARD_DESTINATION("StandardDestination.yaml"),
+  DESTINATION_CONNECTION_SPECIFICATION("DestinationConnectionSpecification.yaml"),
+  DESTINATION_CONNECTION_IMPLEMENTATION("DestinationConnectionImplementation.yaml"),
 
   // sync
-  STANDARD_SYNC("StandardSync.json"),
-  STANDARD_SYNC_SUMMARY("StandardSyncSummary.json"),
-  STANDARD_SYNC_SCHEDULE("StandardSyncSchedule.json"),
+  STANDARD_SYNC("StandardSync.yaml"),
+  STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml"),
+  STANDARD_SYNC_SCHEDULE("StandardSyncSchedule.yaml"),
 
-  STATE("State.json");
+  STATE("State.yaml");
 
   static final Path KNOWN_SCHEMAS_ROOT = prepareSchemas();
-  private static final String RESOURCE_DIR = "json";
+  private static final String RESOURCE_DIR = "types";
 
   /*
    * JsonReferenceProcessor relies on all of the json in consumes being in a file system (not in a
@@ -68,7 +68,7 @@ public enum ConfigSchema {
     try {
       final List<String> filenames = MoreResources.listResources(ConfigSchema.class, RESOURCE_DIR)
           .map(p -> p.getFileName().toString())
-          .filter(p -> p.endsWith(".json"))
+          .filter(p -> p.endsWith(".yaml"))
           .collect(Collectors.toList());
 
       final Path configRoot = Files.createTempDirectory("schemas");
