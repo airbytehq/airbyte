@@ -1,6 +1,6 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/local-csv",
-  "specification": {
+  "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Singer CSV Target Spec",
     "type": "object",
