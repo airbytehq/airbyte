@@ -9,7 +9,7 @@ required:
   - type
 properties:
   type:
-    description: Message type
+    description: "Message type"
     type: string
     enum:
       - RECORD
@@ -19,9 +19,7 @@ properties:
     description: "record message: the record"
     "$ref": "#/definitions/AirbyteRecordMessage"
   state:
-    description:
-      "schema message: the state. Must be the last message produced. The
-      platform uses this information"
+    description: "schema message: the state. Must be the last message produced. The platform uses this information"
     "$ref": "#/definitions/AirbyteStateMessage"
   log:
     description: "log message: any kind of logging you want the platform to know about."
@@ -35,11 +33,11 @@ definitions:
       - extracted_at
     properties:
       data:
-        description: the record data
+        description: "the record data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       emitted_at:
-        description: when the data was emitted from the source.
+        description: "when the data was emitted from the source."
         type: string
         format: date-time
   AirbyteStateMessage:
@@ -49,7 +47,7 @@ definitions:
       - data
     properties:
       data:
-        description: the state data
+        description: "the state data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
   AirbyteLogMessage:
@@ -60,7 +58,7 @@ definitions:
       - message
     properties:
       level:
-        description: the type of logging
+        description: "the type of logging"
         type: string
         enum:
           - FATAL
@@ -70,5 +68,5 @@ definitions:
           - DEBUG
           - TRACE
       message:
-        description: the log message
+        description: "the log message"
         type: string
