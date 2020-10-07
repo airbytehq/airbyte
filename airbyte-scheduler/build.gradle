@@ -12,7 +12,7 @@ dependencies {
     implementation project(':airbyte-integrations')
     implementation project(':airbyte-workers')
 
-    testImplementation "org.testcontainers:postgresql:1.14.3"
+    testImplementation "org.testcontainers:postgresql:1.15.0-rc2"
 }
 
 application {

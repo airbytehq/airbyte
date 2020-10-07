@@ -1,0 +1,18 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+plugins {
+    id 'com.bmuschko.docker-remote-api'
+}
+
+def image = 'airbyte/base-singer:dev'
+
+task imageName {
+    doLast {
+        println "IMAGE $image"
+    }
+}
+
+task buildImage(type: DockerBuildImage) {
+    inputDir = projectDir
+    images.add(image)
+    dependsOn ":airbyte-integrations:base-python:buildImage"
+}

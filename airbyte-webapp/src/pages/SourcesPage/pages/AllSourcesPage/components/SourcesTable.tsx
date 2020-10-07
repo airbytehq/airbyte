@@ -103,6 +103,7 @@ const SourcesTable: React.FC<IProps> = ({ connections }) => {
         Header: <FormattedMessage id="sources.name" />,
         headerHighlighted: true,
         accessor: "name",
+        customWidth: 40,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <NameCell
             value={cell.value}
@@ -138,7 +139,6 @@ const SourcesTable: React.FC<IProps> = ({ connections }) => {
       {
         Header: <FormattedMessage id="sources.enabled" />,
         accessor: "enabled",
-        collapse: true,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <StatusCell
             enabled={cell.value}
