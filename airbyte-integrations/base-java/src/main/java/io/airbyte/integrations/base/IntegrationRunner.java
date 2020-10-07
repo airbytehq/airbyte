@@ -46,7 +46,12 @@ public class IntegrationRunner {
   }
 
   public void run(String[] args) throws Exception {
+    LOGGER.info("Running integration: {}", destination.getClass().getName());
+
     final IntegrationConfig parsed = new IntegrationCliParser().parse(args);
+
+    LOGGER.info("Command: {}", parsed.getCommand());
+    LOGGER.info("Integration config: {}", parsed);
 
     switch (parsed.getCommand()) {
       case SPEC -> System.out.println(Jsons.serialize(destination.spec()));
@@ -81,6 +86,8 @@ public class IntegrationRunner {
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
     }
+
+    LOGGER.info("Completed integration: {}", destination.getClass().getName());
   }
 
   private static JsonNode parseConfig(String path) {

@@ -85,4 +85,13 @@ public class IntegrationConfig {
     return state;
   }
 
+  @Override
+  public String toString() {
+    return "IntegrationConfig{" +
+        "command=" + command +
+        ", config='" + config + '\'' +
+        ", schema='" + schema + '\'' +
+        ", state='" + state + '\'' +
+        '}';
+  }
 }
