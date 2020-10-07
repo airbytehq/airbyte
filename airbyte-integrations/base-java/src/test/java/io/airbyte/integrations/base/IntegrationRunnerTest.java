@@ -100,7 +100,7 @@ class IntegrationRunnerTest {
 
   @Test
   void testCheck() throws Exception {
-    final IntegrationConfig intConfig = IntegrationConfig.check(configPath.toString());
+    final IntegrationConfig intConfig = IntegrationConfig.check(Path.of(configPath.toString()));
     final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage("it failed");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
@@ -114,7 +114,7 @@ class IntegrationRunnerTest {
 
   @Test
   void testDiscover() throws Exception {
-    final IntegrationConfig intConfig = IntegrationConfig.discover(configPath.toString());
+    final IntegrationConfig intConfig = IntegrationConfig.discover(Path.of(configPath.toString()));
     final StandardDiscoverSchemaOutput output = new StandardDiscoverSchemaOutput().withSchema(SCHEMA);
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
@@ -129,7 +129,7 @@ class IntegrationRunnerTest {
   @SuppressWarnings("unchecked")
   @Test
   void testWrite() throws Exception {
-    final IntegrationConfig intConfig = IntegrationConfig.write(configPath.toString(), schemaPath.toString());
+    final IntegrationConfig intConfig = IntegrationConfig.write(Path.of(configPath.toString()), Path.of(schemaPath.toString()));
     final DestinationConsumer<SingerMessage> destinationConsumerMock = mock(DestinationConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.write(CONFIG, SCHEMA)).thenReturn(destinationConsumerMock);

@@ -42,7 +42,7 @@ public class IntegrationRunner {
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunner.class);
 
   private final IntegrationCliParser cliParser;
-  private Consumer<String> stdoutConsumer;
+  private final Consumer<String> stdoutConsumer;
   private final Destination destination;
 
   public IntegrationRunner(Destination destination) {
@@ -107,11 +107,11 @@ public class IntegrationRunner {
     }
   }
 
-  private static JsonNode parseConfig(String path) {
-    return Jsons.deserialize(IOs.readFile(Path.of(path)));
+  private static JsonNode parseConfig(Path path) {
+    return Jsons.deserialize(IOs.readFile(path));
   }
 
-  private static <T> T parseConfig(String path, Class<T> klass) {
+  private static <T> T parseConfig(Path path, Class<T> klass) {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
   }

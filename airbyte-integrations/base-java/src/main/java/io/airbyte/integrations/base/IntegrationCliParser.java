@@ -26,6 +26,7 @@ package io.airbyte.integrations.base;
 
 import com.google.common.base.Preconditions;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -139,21 +140,21 @@ public class IntegrationCliParser {
         return IntegrationConfig.spec();
       }
       case CHECK -> {
-        return IntegrationConfig.check(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY));
+        return IntegrationConfig.check(Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)));
       }
       case DISCOVER -> {
-        return IntegrationConfig.discover(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY));
+        return IntegrationConfig.discover(Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)));
       }
       case READ -> {
         return IntegrationConfig.read(
-            argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY),
-            argsMap.get(JavaBaseConstants.ARGS_SCHEMA_KEY),
-            argsMap.get(JavaBaseConstants.ARGS_STATE_KEY));
+            Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)),
+            Path.of(argsMap.get(JavaBaseConstants.ARGS_SCHEMA_KEY)),
+            argsMap.containsKey(JavaBaseConstants.ARGS_STATE_KEY) ? Path.of(argsMap.get(JavaBaseConstants.ARGS_STATE_KEY)) : null);
       }
       case WRITE -> {
         return IntegrationConfig.write(
-            argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY),
-            argsMap.get(JavaBaseConstants.ARGS_SCHEMA_KEY));
+            Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)),
+            Path.of(argsMap.get(JavaBaseConstants.ARGS_SCHEMA_KEY)));
       }
       default -> throw new IllegalStateException("Unexpected value: " + command);
     }
