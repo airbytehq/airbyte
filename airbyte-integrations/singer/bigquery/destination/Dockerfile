@@ -22,8 +22,8 @@ COPY requirements.txt .
 RUN python -m pip install --upgrade pip && \
   pip install -r requirements.txt
 
-COPY entrypoint.sh /singer/entrypoint.sh
-COPY spec.json /singer/spec.json
+COPY entrypoint.sh .
+COPY spec.json .
 
 ENTRYPOINT ["sh", "/singer/entrypoint.sh"]
 

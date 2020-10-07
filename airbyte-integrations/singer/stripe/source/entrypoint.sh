@@ -14,6 +14,7 @@ function error() {
 # TODO: replace with more general version
 # hacky version that expects ordering of args "--config config.json --discover"
 function check_connection() {
+
   if [[ "$1" == "--config" ]]; then
     echo2 "Config provided, running check connection."
     CONFIG_FILE=$2
@@ -53,6 +54,10 @@ function main() {
       ARGS="$ARGS --catalog $2"
       shift 2
       ;;
+    --spec)
+      ARGS="$ARGS --spec"
+      shift
+      ;;
     *)
       error "Unknown option: $1"
       shift
@@ -64,13 +69,14 @@ function main() {
   echo2 $ARGS
   if [[ "$ARGS" =~ .*"--discover".* ]]; then
     echo2 "discover"
-    check_connection "$ARGS"
-    tap-stripe "$ARGS"
+    check_connection $ARGS
+    tap-stripe $ARGS
   elif [[ "$ARGS" =~ .*"--spec".* ]]; then
+    echo2 'spec'
     cat ./spec.json
   else
     echo2 "sync"
-    tap-stripe "$ARGS"
+    tap-stripe $ARGS
   fi
 }
 
