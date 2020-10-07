@@ -24,20 +24,31 @@
 
 package io.airbyte.integrations.base;
 
-import java.nio.file.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class JavaBaseConstants {
+public abstract class StatefulConsumer<T> implements DestinationConsumer<T> {
 
-  public static String ARGS_CONFIG_KEY = "config";
-  public static String ARGS_CATALOG_KEY = "catalog";
-  public static String ARGS_STATE_KEY = "state";
+  private static final Logger LOGGER = LoggerFactory.getLogger(StatefulConsumer.class);
 
-  public static String ARGS_CONFIG_DESC = "path to the json configuration file";
-  public static String ARGS_CATALOG_DESC = "input path for the catalog";
-  public static String ARGS_PATH_DESC = "path to the json-encoded state file";
+  private boolean hasFailed = false;
 
-  // todo (cgardens) - this mount path should be passed in by the worker and read as an arg or
-  // environment variable by the runner.
-  public static Path LOCAL_MOUNT = Path.of("/local");
+  protected abstract void acceptInternal(T t) throws Exception;
+
+  public void accept(T t) throws Exception {
+    try {
+      acceptInternal(t);
+    } catch (Exception e) {
+      hasFailed = true;
+      throw e;
+    }
+  }
+
+  protected abstract void close(boolean hasFailed) throws Exception;
+
+  public void close() throws Exception {
+    LOGGER.info("hasFailed: {}.", hasFailed);
+    close(hasFailed);
+  }
 
 }
