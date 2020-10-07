@@ -57,7 +57,7 @@ import org.mockito.Mockito;
 class IntegrationRunnerTest {
 
   private static final String CONFIG_FILE_NAME = "config.json";
-  private static final String SCHEMA_FILE_NAME = "schema.json";
+  private static final String CATALOG_FILE_NAME = "catalog.json";
 
   private static final String[] ARGS = new String[] {"args"};
 
@@ -70,7 +70,7 @@ class IntegrationRunnerTest {
   private Consumer<String> stdoutConsumer;
   private Destination destination;
   private Path configPath;
-  private Path schemaPath;
+  private Path catalogPath;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -81,7 +81,7 @@ class IntegrationRunnerTest {
     Path configDir = Files.createTempDirectory("test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
-    schemaPath = IOs.writeFile(configDir, SCHEMA_FILE_NAME, Jsons.serialize(SCHEMA));
+    catalogPath = IOs.writeFile(configDir, CATALOG_FILE_NAME, Jsons.serialize(SCHEMA));
   }
 
   @Test
@@ -129,7 +129,7 @@ class IntegrationRunnerTest {
   @SuppressWarnings("unchecked")
   @Test
   void testWrite() throws Exception {
-    final IntegrationConfig intConfig = IntegrationConfig.write(Path.of(configPath.toString()), Path.of(schemaPath.toString()));
+    final IntegrationConfig intConfig = IntegrationConfig.write(Path.of(configPath.toString()), Path.of(catalogPath.toString()));
     final DestinationConsumer<SingerMessage> destinationConsumerMock = mock(DestinationConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.write(CONFIG, SCHEMA)).thenReturn(destinationConsumerMock);

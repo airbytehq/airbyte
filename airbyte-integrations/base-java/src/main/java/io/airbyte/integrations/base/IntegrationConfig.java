@@ -33,13 +33,13 @@ public class IntegrationConfig {
 
   private final Command command;
   private final Path configPath;
-  private final Path schemaPath;
+  private final Path catalogPath;
   private final Path statePath;
 
-  private IntegrationConfig(Command command, Path configPath, Path schemaPath, Path statePath) {
+  private IntegrationConfig(Command command, Path configPath, Path catalogPath, Path statePath) {
     this.command = command;
     this.configPath = configPath;
-    this.schemaPath = schemaPath;
+    this.catalogPath = catalogPath;
     this.statePath = statePath;
   }
 
@@ -57,16 +57,16 @@ public class IntegrationConfig {
     return new IntegrationConfig(Command.DISCOVER, config, null, null);
   }
 
-  public static IntegrationConfig read(Path config, Path schema, Path state) {
-    Preconditions.checkNotNull(config);
-    Preconditions.checkNotNull(schema);
-    return new IntegrationConfig(Command.READ, config, schema, state);
+  public static IntegrationConfig read(Path configPath, Path catalogPath, Path statePath) {
+    Preconditions.checkNotNull(configPath);
+    Preconditions.checkNotNull(catalogPath);
+    return new IntegrationConfig(Command.READ, configPath, catalogPath, statePath);
   }
 
-  public static IntegrationConfig write(Path config, Path schema) {
-    Preconditions.checkNotNull(config);
-    Preconditions.checkNotNull(schema);
-    return new IntegrationConfig(Command.WRITE, config, schema, null);
+  public static IntegrationConfig write(Path configPath, Path catalogPath) {
+    Preconditions.checkNotNull(configPath);
+    Preconditions.checkNotNull(catalogPath);
+    return new IntegrationConfig(Command.WRITE, configPath, catalogPath, null);
   }
 
   public Command getCommand() {
@@ -78,9 +78,9 @@ public class IntegrationConfig {
     return configPath;
   }
 
-  public Path getSchemaPath() {
+  public Path getCatalogPath() {
     Preconditions.checkState(command == Command.READ || command == Command.WRITE);
-    return schemaPath;
+    return catalogPath;
   }
 
   public Optional<Path> getStatePath() {
@@ -93,7 +93,7 @@ public class IntegrationConfig {
     return "IntegrationConfig{" +
         "command=" + command +
         ", configPath='" + configPath + '\'' +
-        ", schemaPath='" + schemaPath + '\'' +
+        ", catalogPath='" + catalogPath + '\'' +
         ", statePath='" + statePath + '\'' +
         '}';
   }
@@ -109,13 +109,13 @@ public class IntegrationConfig {
     IntegrationConfig that = (IntegrationConfig) o;
     return command == that.command &&
         Objects.equals(configPath, that.configPath) &&
-        Objects.equals(schemaPath, that.schemaPath) &&
+        Objects.equals(catalogPath, that.catalogPath) &&
         Objects.equals(statePath, that.statePath);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(command, configPath, schemaPath, statePath);
+    return Objects.hash(command, configPath, catalogPath, statePath);
   }
 
 }

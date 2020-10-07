@@ -28,15 +28,12 @@ import java.nio.file.Path;
 
 public class JavaBaseConstants {
 
-  public static String ENV_DESTINATION_CLASS = "DESTINATION_CLASS";
-  public static String ENV_DESTINATION_JAR_PATH = "DESTINATION_JAR_PATH";
-
   public static String ARGS_CONFIG_KEY = "config";
-  public static String ARGS_SCHEMA_KEY = "schema";
+  public static String ARGS_CATALOG_KEY = "catalog";
   public static String ARGS_STATE_KEY = "state";
 
   public static String ARGS_CONFIG_DESC = "path to the json configuration file";
-  public static String ARGS_SCHEMA_DESC = "input path for the schema";
+  public static String ARGS_CATALOG_DESC = "input path for the catalog";
   public static String ARGS_PATH_DESC = "path to the json-encoded state file";
 
   // todo (cgardens) - this mount path should be passed in by the worker and read as an arg or
