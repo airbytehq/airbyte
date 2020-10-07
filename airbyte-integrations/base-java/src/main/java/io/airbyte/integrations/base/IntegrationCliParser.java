@@ -25,7 +25,6 @@
 package io.airbyte.integrations.base;
 
 import com.google.common.base.Preconditions;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,12 +76,12 @@ public class IntegrationCliParser {
         .build());
   }
 
-  public IntegrationConfig parse(final String[] args) throws IOException {
+  public IntegrationConfig parse(final String[] args) {
     final Command command = parseCommand(args);
     return parseOptions(args, command);
   }
 
-  private static Command parseCommand(String[] args) throws IOException {
+  private static Command parseCommand(String[] args) {
     final CommandLineParser parser = new RelaxedParser();
     final HelpFormatter helpFormatter = new HelpFormatter();
 
@@ -95,7 +94,7 @@ public class IntegrationCliParser {
       // if discover, then validate, etc...
     } catch (ParseException e) {
       helpFormatter.printHelp("java-base", options);
-      throw new IOException(e);
+      throw new IllegalArgumentException(e);
     }
   }
 
@@ -168,7 +167,7 @@ public class IntegrationCliParser {
       return parser.parse(options, args);
     } catch (ParseException e) {
       helpFormatter.printHelp(command.toString().toLowerCase(), options);
-      throw new RuntimeException(e);
+      throw new IllegalArgumentException(e);
     }
   }
 
