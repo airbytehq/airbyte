@@ -11,8 +11,7 @@ properties:
   streams:
     type: array
     items:
-      "$ref": airbyte_schema.yaml#/definitions/AirbyteStream
-
+      "$ref": "#/definitions/AirbyteStream"
 definitions:
   AirbyteStream:
     type: object
