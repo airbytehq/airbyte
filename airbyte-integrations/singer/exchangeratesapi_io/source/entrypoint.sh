@@ -32,6 +32,10 @@ function main() {
       # ignore
       shift 2
       ;;
+    --spec)
+      ARGS="$ARGS --spec"
+      shift
+      ;;
     *)
       error "Unknown option: $1"
       shift

@@ -39,6 +39,10 @@ function main() {
       ARGS="$ARGS --config $PROCESSED_CONFIG_FILE"
       shift 2
       ;;
+    --spec)
+      ARGS="$ARGS --spec"
+      shift
+      ;;
     *)
       error "Unknown option: $1"
       shift
