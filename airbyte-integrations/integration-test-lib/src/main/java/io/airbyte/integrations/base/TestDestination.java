@@ -159,6 +159,9 @@ public abstract class TestDestination {
     // todo (cgardens)
   }
 
+  /**
+   * Verify that the integration successfully writes records. Tests a wide variety of messages and schemas (aspirationally, anyway).
+   */
   @Test
   void testSync() throws Exception {
     final DefaultSingerTarget target = new DefaultSingerTarget(getImageName(), pbf);
@@ -178,6 +181,9 @@ public abstract class TestDestination {
     assertEquals(expected, actual);
   }
 
+  /**
+   * Verify that the integration overwrites the first sync with the second sync.
+   */
   @Test
   void testSecondSync() throws Exception {
     // todo (cgardens)
