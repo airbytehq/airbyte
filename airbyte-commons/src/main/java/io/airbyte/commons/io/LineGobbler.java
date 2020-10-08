@@ -24,7 +24,7 @@
 
 package io.airbyte.commons.io;
 
-import io.airbyte.commons.concurrency.VoidCallable;
+import io.airbyte.commons.functional.VoidCallable;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.util.Map;
