@@ -57,8 +57,8 @@ public class CsvDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
 
-  private static final String COLUMN_NAME = "data"; // we output all data as a blog to a single column calle data.
-  private static final String DESTINATION_PATH_FIELD = "destination_path";
+  static final String COLUMN_NAME = "data"; // we output all data as a blog to a single column.
+  static final String DESTINATION_PATH_FIELD = "destination_path";
 
   @Override
   public DestinationConnectionSpecification spec() throws IOException {
@@ -70,7 +70,7 @@ public class CsvDestination implements Destination {
   public StandardCheckConnectionOutput check(JsonNode config) {
     try {
       FileUtils.forceMkdir(getDestinationPath(config).toFile());
-    } catch (IOException e) {
+    } catch (Exception e) {
       return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage(e.getMessage());
     }
     return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
@@ -127,7 +127,7 @@ public class CsvDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  public static class CsvConsumer extends FailureTrackingConsumer<SingerMessage> {
+  private static class CsvConsumer extends FailureTrackingConsumer<SingerMessage> {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final Schema schema;
@@ -178,7 +178,7 @@ public class CsvDestination implements Destination {
 
   }
 
-  public static class WriteConfig {
+  private static class WriteConfig {
 
     private final CSVPrinter writer;
     private final Path tmpPath;
