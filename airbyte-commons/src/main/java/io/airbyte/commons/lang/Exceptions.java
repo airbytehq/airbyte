@@ -22,9 +22,8 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.exception;
+package io.airbyte.commons.lang;
 
-import io.airbyte.commons.functional.VoidCallable;
 import java.util.concurrent.Callable;
 
 public class Exceptions {
@@ -39,7 +38,7 @@ public class Exceptions {
     }
   }
 
-  public static void toRuntimeVoid(VoidCallable callable) {
+  public static void toRuntimeVoid(Procedure callable) {
     try {
       callable.call();
     } catch (RuntimeException e) {
@@ -47,6 +46,12 @@ public class Exceptions {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  };
+  }
+
+  public interface Procedure {
+
+    void call() throws Exception;
+
+  }
 
 }

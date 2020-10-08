@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.exception;
+package io.airbyte.commons.lang;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
