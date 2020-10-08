@@ -10,4 +10,3 @@ required:
 properties:
   specification:
     "$ref": ConnectorSpecification.yaml
-
