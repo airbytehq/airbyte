@@ -24,7 +24,6 @@
 
 package io.airbyte.config.persistence;
 
-import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.SourceConnectionImplementation;
@@ -33,6 +32,7 @@ import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;

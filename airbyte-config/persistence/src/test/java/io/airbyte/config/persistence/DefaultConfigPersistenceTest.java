@@ -30,12 +30,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.google.common.collect.Sets;
-import io.airbyte.commons.json.JsonSchemaValidator;
-import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
+import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
