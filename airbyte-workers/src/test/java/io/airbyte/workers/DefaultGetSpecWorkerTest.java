@@ -36,6 +36,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardGetSpecOutput;
+import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -49,19 +50,21 @@ class DefaultGetSpecWorkerTest {
   private static final String DUMMY_IMAGE_NAME = "airbyte/notarealimage:1.1";
 
   private DefaultGetSpecWorker worker;
-  private ProcessBuilderFactory pbf;
+  private IntegrationLauncher integrationLauncher;
   private Process process;
   private Path jobRoot;
   private JobGetSpecConfig config;
 
   @BeforeEach
-  public void setup() throws IOException {
+  public void setup() throws IOException, WorkerException {
+    jobRoot = Files.createTempDirectory("");
     config = new JobGetSpecConfig().withDockerImage(DUMMY_IMAGE_NAME);
-    pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
+    integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
-    jobRoot = Files.createTempDirectory("");
-    worker = new DefaultGetSpecWorker(pbf);
+    when(integrationLauncher.spec(jobRoot).start()).thenReturn(process);
+
+    worker = new DefaultGetSpecWorker(integrationLauncher);
   }
 
   @Test
@@ -70,7 +73,7 @@ class DefaultGetSpecWorkerTest {
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
-    when(pbf.create(jobRoot, DUMMY_IMAGE_NAME, "--spec").start()).thenReturn(process);
+
 
     OutputAndStatus<StandardGetSpecOutput> actualOutput = worker.run(config, jobRoot);
     OutputAndStatus<StandardGetSpecOutput> expectedOutput =
@@ -86,7 +89,6 @@ class DefaultGetSpecWorkerTest {
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
-    when(pbf.create(jobRoot, DUMMY_IMAGE_NAME, "--spec").start()).thenReturn(process);
 
     OutputAndStatus<StandardGetSpecOutput> actualOutput = worker.run(config, jobRoot);
     OutputAndStatus<StandardGetSpecOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
@@ -98,7 +100,6 @@ class DefaultGetSpecWorkerTest {
   public void testFailureOnNonzeroExitCode() throws InterruptedException, WorkerException, IOException {
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(1);
-    when(pbf.create(jobRoot, DUMMY_IMAGE_NAME, "--spec").start()).thenReturn(process);
 
     OutputAndStatus<StandardGetSpecOutput> actualOutput = worker.run(config, jobRoot);
     OutputAndStatus<StandardGetSpecOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);

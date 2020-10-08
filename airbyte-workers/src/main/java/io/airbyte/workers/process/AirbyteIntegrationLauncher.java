@@ -65,4 +65,12 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
     return pbf.create(jobRoot, imageName, arguments);
   }
+
+  @Override public ProcessBuilder write(Path jobRoot, String configFilename, String catalogFilename) throws WorkerException {
+    return pbf.create(jobRoot, imageName,
+        "write",
+        "--config", configFilename,
+        "--catalog", catalogFilename
+    );
+  }
 }

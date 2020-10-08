@@ -37,9 +37,11 @@ import io.airbyte.singer.SingerCatalog;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.SingerDiscoverSchemaWorker;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -58,27 +60,23 @@ public class DefaultSingerTap implements SingerTap {
   @VisibleForTesting
   static final String DISCOVERY_DIR = "discover";
 
-  private final String imageName;
-  private final ProcessBuilderFactory pbf;
+  private final IntegrationLauncher integrationLauncher;
   private final SingerStreamFactory streamFactory;
   private final SingerDiscoverSchemaWorker discoverSchemaWorker;
 
   private Process tapProcess = null;
   private Iterator<SingerMessage> messageIterator = null;
 
-  public DefaultSingerTap(final String imageName,
-                          final ProcessBuilderFactory pbf,
+  public DefaultSingerTap(final IntegrationLauncher integrationLauncher,
                           final SingerDiscoverSchemaWorker discoverSchemaWorker) {
-    this(imageName, pbf, new DefaultSingerStreamFactory(), discoverSchemaWorker);
+    this(integrationLauncher, new DefaultSingerStreamFactory(), discoverSchemaWorker);
   }
 
   @VisibleForTesting
-  DefaultSingerTap(final String imageName,
-                   final ProcessBuilderFactory pbf,
+  DefaultSingerTap(final IntegrationLauncher integrationLauncher,
                    final SingerStreamFactory streamFactory,
                    final SingerDiscoverSchemaWorker discoverSchemaWorker) {
-    this.imageName = imageName;
-    this.pbf = pbf;
+    this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.discoverSchemaWorker = discoverSchemaWorker;
   }
@@ -98,19 +96,10 @@ public class DefaultSingerTap implements SingerTap {
     IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(selectedCatalog));
     IOs.writeFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME, Jsons.serialize(input.getState()));
 
-    String[] cmd = {
-      "--config",
-      WorkerConstants.TAP_CONFIG_JSON_FILENAME,
-      // TODO support both --properties and --catalog depending on integration
-      "--properties",
-      WorkerConstants.CATALOG_JSON_FILENAME
-    };
-
-    if (input.getState() != null) {
-      cmd = ArrayUtils.addAll(cmd, "--state", WorkerConstants.INPUT_STATE_JSON_FILENAME);
-    }
-
-    tapProcess = pbf.create(jobRoot, imageName, cmd).start();
+    tapProcess = integrationLauncher.read(jobRoot,
+        WorkerConstants.TAP_CONFIG_JSON_FILENAME,
+        WorkerConstants.CATALOG_JSON_FILENAME,
+        input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME).start();
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
 

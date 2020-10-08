@@ -33,6 +33,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.singer.SingerMessage;
+import io.airbyte.workers.SingerSyncWorker;
 import io.airbyte.workers.TestConfigHelpers;
 import java.nio.file.Path;
 import java.util.Optional;

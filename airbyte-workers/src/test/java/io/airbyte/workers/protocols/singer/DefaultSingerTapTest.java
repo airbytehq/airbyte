@@ -24,16 +24,6 @@
 
 package io.airbyte.workers.protocols.singer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -46,11 +36,12 @@ import io.airbyte.singer.SingerStream;
 import io.airbyte.singer.SingerTableSchema;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.SingerDiscoverSchemaWorker;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,9 +55,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 class DefaultSingerTapTest {
 
-  private static final String IMAGE_NAME = "hudi:latest";
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
@@ -87,7 +87,7 @@ class DefaultSingerTapTest {
 
   private Path jobRoot;
   private SingerDiscoverSchemaWorker discoverSchemaWorker;
-  private ProcessBuilderFactory pbf;
+  private IntegrationLauncher integrationLauncher;
   private Process process;
   private SingerStreamFactory singerStreamFactory;
 
@@ -99,24 +99,20 @@ class DefaultSingerTapTest {
     when(discoverSchemaWorker.run(
         DISCOVER_SCHEMA_INPUT,
         jobRoot.resolve(DefaultSingerTap.DISCOVERY_DIR)))
-            .thenAnswer(invocation -> {
-              Files.writeString(
-                  jobRoot.resolve(DefaultSingerTap.DISCOVERY_DIR).resolve(WorkerConstants.CATALOG_JSON_FILENAME),
-                  Jsons.serialize(SINGER_CATALOG));
-              return new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverSchemaOutput());
-            });
+        .thenAnswer(invocation -> {
+          Files.writeString(
+              jobRoot.resolve(DefaultSingerTap.DISCOVERY_DIR).resolve(WorkerConstants.CATALOG_JSON_FILENAME),
+              Jsons.serialize(SINGER_CATALOG));
+          return new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverSchemaOutput());
+        });
 
-    pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
+    integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class, RETURNS_DEEP_STUBS);
     final InputStream inputStream = mock(InputStream.class);
-    when(pbf.create(
+    when(integrationLauncher.read(
         jobRoot,
-        IMAGE_NAME,
-        "--config",
         WorkerConstants.TAP_CONFIG_JSON_FILENAME,
-        "--properties",
         WorkerConstants.CATALOG_JSON_FILENAME,
-        "--state",
         WorkerConstants.INPUT_STATE_JSON_FILENAME)
         .start()).thenReturn(process);
     when(process.isAlive()).thenReturn(true);
@@ -129,7 +125,7 @@ class DefaultSingerTapTest {
   @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, singerStreamFactory, discoverSchemaWorker);
+    final SingerTap tap = new DefaultSingerTap(integrationLauncher, singerStreamFactory, discoverSchemaWorker);
     tap.start(TAP_CONFIG, jobRoot);
 
     final List<SingerMessage> messages = Lists.newArrayList();
@@ -168,7 +164,7 @@ class DefaultSingerTapTest {
 
   @Test
   public void testProcessFail() throws Exception {
-    final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, singerStreamFactory, discoverSchemaWorker);
+    final SingerTap tap = new DefaultSingerTap(integrationLauncher, singerStreamFactory, discoverSchemaWorker);
     tap.start(TAP_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
@@ -180,7 +176,7 @@ class DefaultSingerTapTest {
   public void testSchemaDiscoveryFail() {
     when(discoverSchemaWorker.run(any(), any())).thenReturn(new OutputAndStatus<>(JobStatus.FAILED));
 
-    final SingerTap tap = new DefaultSingerTap(IMAGE_NAME, pbf, singerStreamFactory, discoverSchemaWorker);
+    final SingerTap tap = new DefaultSingerTap(integrationLauncher, singerStreamFactory, discoverSchemaWorker);
     Assertions.assertThrows(WorkerException.class, () -> tap.start(TAP_CONFIG, jobRoot));
 
     assertFalse(Files.exists(jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME)));

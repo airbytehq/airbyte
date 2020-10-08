@@ -41,6 +41,7 @@ import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -55,7 +56,6 @@ import org.junit.jupiter.api.Test;
 
 class DefaultSingerTargetTest {
 
-  private static final String IMAGE_NAME = "spark_streaming:latest";
   private static final String JOB_ROOT_PREFIX = "workspace";
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
@@ -63,7 +63,7 @@ class DefaultSingerTargetTest {
   private static final StandardTargetConfig TARGET_CONFIG = WorkerUtils.syncToTargetConfig(TestConfigHelpers.createSyncConfig().getValue());
 
   private Path jobRoot;
-  private ProcessBuilderFactory pbf;
+  private IntegrationLauncher integrationLauncher;
   private Process process;
   private ByteArrayOutputStream outputStream;
 
@@ -77,15 +77,15 @@ class DefaultSingerTargetTest {
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream("input".getBytes(StandardCharsets.UTF_8)));
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("error".getBytes(StandardCharsets.UTF_8)));
 
-    pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME).start())
+    integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
+    when(integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, null).start())
         .thenReturn(process);
   }
 
   @SuppressWarnings("BusyWait")
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final SingerTarget target = new DefaultSingerTarget(IMAGE_NAME, pbf);
+    final SingerTarget target = new DefaultSingerTarget(integrationLauncher);
     target.start(TARGET_CONFIG, jobRoot);
 
     final SingerMessage recordMessage = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
@@ -118,7 +118,7 @@ class DefaultSingerTargetTest {
 
   @Test
   public void testCloseNotifiesLifecycle() throws Exception {
-    final SingerTarget target = new DefaultSingerTarget(IMAGE_NAME, pbf);
+    final SingerTarget target = new DefaultSingerTarget(integrationLauncher);
     target.start(TARGET_CONFIG, jobRoot);
 
     verify(outputStream, never()).close();
@@ -129,7 +129,7 @@ class DefaultSingerTargetTest {
 
   @Test
   public void testProcessFailLifecycle() throws Exception {
-    final SingerTarget target = new DefaultSingerTarget(IMAGE_NAME, pbf);
+    final SingerTarget target = new DefaultSingerTarget(integrationLauncher);
     target.start(TARGET_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);

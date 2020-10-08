@@ -35,7 +35,7 @@ import io.airbyte.singer.SingerMessage;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -48,16 +48,14 @@ public class DefaultSingerTarget implements SingerTarget {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerTarget.class);
 
-  private final String imageName;
-  private final ProcessBuilderFactory pbf;
+  private final IntegrationLauncher integrationLauncher;
 
   private Process targetProcess = null;
   private BufferedWriter writer = null;
   private boolean endOfStream = false;
 
-  public DefaultSingerTarget(final String imageName, final ProcessBuilderFactory pbf) {
-    this.imageName = imageName;
-    this.pbf = pbf;
+  public DefaultSingerTarget(final IntegrationLauncher integrationLauncher) {
+    this.integrationLauncher = integrationLauncher;
   }
 
   @Override
@@ -69,7 +67,7 @@ public class DefaultSingerTarget implements SingerTarget {
     IOs.writeFile(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     LOGGER.info("Running Singer target...");
-    targetProcess = pbf.create(jobRoot, imageName, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME).start();
+    targetProcess = integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, null).start();
     LineGobbler.gobble(targetProcess.getInputStream(), LOGGER::info);
     LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER::error);
 

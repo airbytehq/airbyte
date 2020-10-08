@@ -41,6 +41,7 @@ import io.airbyte.config.StandardDiscoverSchemaOutput;
 import io.airbyte.workers.DiscoverSchemaWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.SingerCheckConnectionWorker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

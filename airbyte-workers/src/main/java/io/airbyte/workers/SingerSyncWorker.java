@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols.singer;
+package io.airbyte.workers;
 
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
@@ -31,10 +31,9 @@ import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
 import io.airbyte.singer.SingerMessage;
-import io.airbyte.workers.JobStatus;
-import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.SyncWorker;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.protocols.singer.SingerMessageTracker;
+import io.airbyte.workers.protocols.singer.SingerTap;
+import io.airbyte.workers.protocols.singer.SingerTarget;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;

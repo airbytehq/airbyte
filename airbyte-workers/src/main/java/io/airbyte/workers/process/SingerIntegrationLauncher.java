@@ -12,8 +12,8 @@ public class SingerIntegrationLauncher implements IntegrationLauncher {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(SingerIntegrationLauncher.class);
 
-  private String imageName;
-  private ProcessBuilderFactory pbf;
+  private final String imageName;
+  private final ProcessBuilderFactory pbf;
 
   public SingerIntegrationLauncher(final String imageName, final ProcessBuilderFactory pbf) {
     this.imageName = imageName;
@@ -21,14 +21,13 @@ public class SingerIntegrationLauncher implements IntegrationLauncher {
   }
 
   @Override
-  public ProcessBuilder spec(Path jobRoot) throws WorkerException {
-
-    throw new NotImplementedException("getSpec doesn't exist for singer images");
+  public ProcessBuilder spec(Path jobRoot) {
+    throw new NotImplementedException("spec doesn't exist for singer images");
   }
 
   @Override
-  public ProcessBuilder check(final Path jobRoot, final String configFilename) throws WorkerException {
-    return discover(jobRoot, configFilename);
+  public ProcessBuilder check(final Path jobRoot, final String configFilename) {
+    throw new NotImplementedException("check doesn't exist for singer images");
   }
 
   @Override
@@ -56,7 +55,7 @@ public class SingerIntegrationLauncher implements IntegrationLauncher {
   }
 
   @Override
-  public ProcessBuilder write(Path jobRoot, String configFilename, String catalogFilename) throws WorkerException {
-    return pbf.create(jobRoot, imageName, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME);
+  public ProcessBuilder write(final Path jobRoot,final  String configFilename, final String catalogFilename) throws WorkerException {
+    return pbf.create(jobRoot, imageName, "--config", configFilename);
   }
 }

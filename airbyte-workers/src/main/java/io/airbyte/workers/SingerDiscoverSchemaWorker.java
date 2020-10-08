@@ -22,10 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols.singer;
-
-import static io.airbyte.workers.JobStatus.FAILED;
-import static io.airbyte.workers.JobStatus.SUCCESSFUL;
+package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
@@ -34,30 +31,27 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardDiscoverSchemaInput;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
 import io.airbyte.singer.SingerCatalog;
-import io.airbyte.workers.DiscoverSchemaWorker;
-import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.protocols.singer.SingerCatalogConverters;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.airbyte.workers.JobStatus.FAILED;
+import static io.airbyte.workers.JobStatus.SUCCESSFUL;
+
 public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoverSchemaWorker.class);
 
-  private final String imageName;
-  private final ProcessBuilderFactory pbf;
+  private final IntegrationLauncher integrationLauncher;
 
   private volatile Process process;
 
-  public SingerDiscoverSchemaWorker(final String imageName, final ProcessBuilderFactory pbf) {
-    this.imageName = imageName;
-    this.pbf = pbf;
+  public SingerDiscoverSchemaWorker(final IntegrationLauncher integrationLauncher) {
+    this.integrationLauncher = integrationLauncher;
   }
 
   @Override
@@ -78,7 +72,7 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
 
     IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
-    process = pbf.create(jobRoot, imageName, "--config", WorkerConstants.TAP_CONFIG_JSON_FILENAME, "--discover")
+    process = integrationLauncher.discover(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)
         // TODO: we shouldn't trust the tap does not pollute stdout
         .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
         .start();
