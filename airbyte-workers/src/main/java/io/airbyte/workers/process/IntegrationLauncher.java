@@ -53,6 +53,7 @@ public interface IntegrationLauncher {
                        final String catalogFilename)
       throws WorkerException;
 
+  // TODO: this version should be removed once we've moved away from singer protocol
   default ProcessBuilder write(final Path jobRoot,
                                final String configFilename)
       throws WorkerException {
