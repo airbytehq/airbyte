@@ -3,10 +3,30 @@ plugins {
     id 'com.bmuschko.docker-remote-api'
     id 'application'
 }
+
+sourceSets {
+    integrationTest {
+        java {
+            srcDir 'src/test-integration/java'
+        }
+        resources {
+            srcDir 'src/test-integration/resources'
+        }
+    }
+}
+test.dependsOn('compileIntegrationTestJava')
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
 dependencies {
     implementation project(':airbyte-config:models')
-    implementation project(':airbyte-singer')
     implementation project(':airbyte-integrations:base-java')
+    implementation project(':airbyte-singer')
+
+    integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
 
     implementation 'org.apache.commons:commons-csv:1.4'
 }
@@ -28,4 +48,18 @@ task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
     dependsOn ':airbyte-integrations:base-java:buildImage'
+}
+
+task integrationTest(type: Test) {
+    testClassesDirs += sourceSets.integrationTest.output.classesDirs
+    classpath += sourceSets.integrationTest.runtimeClasspath
+
+    useJUnitPlatform()
+    testLogging() {
+        events "passed", "failed"
+        exceptionFormat "full"
+    }
+
+    mustRunAfter test
+    dependsOn(buildImage)
 }
