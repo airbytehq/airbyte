@@ -24,6 +24,8 @@
 
 package io.airbyte.workers;
 
-public interface GetSpecWorker extends Worker<String, String> {
+import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.StandardGetSpecOutput;
 
+public interface GetSpecWorker extends Worker<JobGetSpecConfig, StandardGetSpecOutput> {
 }
