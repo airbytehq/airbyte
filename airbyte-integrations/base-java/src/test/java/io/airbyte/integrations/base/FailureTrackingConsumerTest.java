@@ -24,14 +24,48 @@
 
 package io.airbyte.integrations.base;
 
-public class JavaBaseConstants {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
-  public static String ARGS_CONFIG_KEY = "config";
-  public static String ARGS_CATALOG_KEY = "catalog";
-  public static String ARGS_STATE_KEY = "state";
+import org.junit.jupiter.api.Test;
 
-  public static String ARGS_CONFIG_DESC = "path to the json configuration file";
-  public static String ARGS_CATALOG_DESC = "input path for the catalog";
-  public static String ARGS_PATH_DESC = "path to the json-encoded state file";
+class FailureTrackingConsumerTest {
+
+  @Test
+  void testNoFailure() throws Exception {
+    final TestConsumer consumer = spy(new TestConsumer());
+    consumer.accept("");
+    consumer.close();
+
+    verify(consumer).close(false);
+  }
+
+  @Test
+  void testWithFailure() throws Exception {
+    final TestConsumer consumer = spy(new TestConsumer());
+    doThrow(new RuntimeException()).when(consumer).acceptTracked("");
+
+    // verify the exception still gets thrown.
+    assertThrows(RuntimeException.class, () -> consumer.accept(""));
+    consumer.close();
+
+    verify(consumer).close(true);
+  }
+
+  static class TestConsumer extends FailureTrackingConsumer<String> {
+
+    @Override
+    protected void acceptTracked(String s) {
+
+    }
+
+    @Override
+    protected void close(boolean hasFailed) {
+
+    }
+
+  }
 
 }
