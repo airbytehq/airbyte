@@ -78,8 +78,15 @@ class DefaultSingerTargetTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("error".getBytes(StandardCharsets.UTF_8)));
 
     pbf = mock(ProcessBuilderFactory.class, RETURNS_DEEP_STUBS);
-    when(pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME).start())
-        .thenReturn(process);
+    when(pbf.create(
+        jobRoot,
+        IMAGE_NAME,
+        "write",
+        "--config",
+        WorkerConstants.TARGET_CONFIG_JSON_FILENAME,
+        "--catalog",
+        WorkerConstants.CATALOG_JSON_FILENAME).start())
+            .thenReturn(process);
   }
 
   @SuppressWarnings("BusyWait")

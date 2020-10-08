@@ -1,0 +1,13 @@
+plugins {
+    id 'java-library'
+}
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-singer')
+    implementation project(':airbyte-workers')
+
+//    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+//    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
+//    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
+}

@@ -67,9 +67,16 @@ public class DefaultSingerTarget implements SingerTarget {
     final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
 
     IOs.writeFile(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(targetConfig.getStandardSync().getSchema()));
 
     LOGGER.info("Running Singer target...");
-    targetProcess = pbf.create(jobRoot, imageName, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME).start();
+    targetProcess = pbf.create(
+        jobRoot,
+        imageName,
+        "write",
+        "--config",
+        WorkerConstants.TARGET_CONFIG_JSON_FILENAME,
+        "--catalog", WorkerConstants.CATALOG_JSON_FILENAME).start();
     LineGobbler.gobble(targetProcess.getInputStream(), LOGGER::info);
     LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER::error);
 
