@@ -35,7 +35,7 @@ public interface AirbyteSource extends AutoCloseable {
 
   boolean isFinished();
 
-  Optional<io.airbyte.protocol.models.AirbyteMessage> attemptRead();
+  Optional<AirbyteMessage> attemptRead();
 
   @Override
   void close() throws Exception;

@@ -35,7 +35,7 @@ public interface AirbyteTarget extends CheckedConsumer<AirbyteMessage, Exception
   void start(StandardTargetConfig targetConfig, Path jobRoot) throws Exception;
 
   @Override
-  void accept(SingerMessage message) throws Exception;
+  void accept(AirbyteMessage message) throws Exception;
 
   void notifyEndOfStream() throws Exception;
 
