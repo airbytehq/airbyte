@@ -28,6 +28,13 @@ import java.util.concurrent.Callable;
 
 public class Exceptions {
 
+  /**
+   * Catch a checked exception and rethrow as a {@link RuntimeException}
+   *
+   * @param callable - function that throws a checked exception.
+   * @param <T> - return type of the function.
+   * @return object that the function returns.
+   */
   public static <T> T toRuntime(Callable<T> callable) {
     try {
       return callable.call();
@@ -38,9 +45,14 @@ public class Exceptions {
     }
   }
 
-  public static void toRuntimeVoid(Procedure callable) {
+  /**
+   * Catch a checked exception and rethrow as a {@link RuntimeException}.
+   *
+   * @param voidCallable - function that throws a checked exception.
+   */
+  public static void toRuntime(Procedure voidCallable) {
     try {
-      callable.call();
+      voidCallable.call();
     } catch (RuntimeException e) {
       throw e;
     } catch (Exception e) {

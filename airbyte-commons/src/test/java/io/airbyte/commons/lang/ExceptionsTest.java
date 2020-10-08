@@ -43,10 +43,10 @@ class ExceptionsTest {
   @Test
   void testToRuntimeVoid() {
     List<String> list = new ArrayList<>();
-    assertThrows(RuntimeException.class, () -> Exceptions.toRuntimeVoid(() -> voidCallable(list, "hello", true)));
+    assertThrows(RuntimeException.class, () -> Exceptions.toRuntime(() -> voidCallable(list, "hello", true)));
     assertEquals(0, list.size());
 
-    Exceptions.toRuntimeVoid(() -> voidCallable(list, "goodbye", false));
+    Exceptions.toRuntime(() -> voidCallable(list, "goodbye", false));
     assertEquals(1, list.size());
     assertEquals("goodbye", list.get(0));
   }
