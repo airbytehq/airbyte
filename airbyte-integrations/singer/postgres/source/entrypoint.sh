@@ -14,10 +14,6 @@ function error() {
 }
 
 function main() {
-  if [[ "$ARGS" =~ .*"--spec".* ]]; then
-    cat spec.json
-  fi
-
   ARGS=
   while [ $# -ne 0 ]; do
     case "$1" in
@@ -55,7 +51,12 @@ function main() {
     esac
   done
 
-  PGCLIENTENCODING=UTF8 tap-postgres $ARGS
+  if [[ "$ARGS" =~ .*"--spec".* ]]; then
+    cat /singer/spec.json
+    exit 0
+  else
+    PGCLIENTENCODING=UTF8 tap-postgres $ARGS
+  fi
 }
 
 main "$@"

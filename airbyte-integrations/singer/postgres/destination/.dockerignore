@@ -3,4 +3,4 @@
 !check_connection.py
 !requirements.txt
 !run.sh
-!spec.json
+!src/test-integration/resources/spec.json

@@ -36,6 +36,7 @@ function main() {
       ;;
     -b | --config)
       jq '.destination_path = "/local/" + .destination_path' $2 > $PROCESSED_CONFIG_FILE
+
       ARGS="$ARGS --config $PROCESSED_CONFIG_FILE"
       shift 2
       ;;
@@ -50,9 +51,6 @@ function main() {
     esac
   done
 
-  canAccessLocal
-  DESTINATION_PATH=$(jq -r '.destination_path' $PROCESSED_CONFIG_FILE)
-  mkdirOrThrow "$DESTINATION_PATH"
   if [[ "$ARGS" =~ .*"--discover".* ]]; then
     echo2 "Discovering..."
     # If connection check is successful write a fake catalog for the discovery worker to find
@@ -60,6 +58,9 @@ function main() {
   elif [[ "$ARGS" =~ .*"--spec".* ]]; then
     cat /singer/spec.json
   else
+    DESTINATION_PATH=$(jq -r '.destination_path' $PROCESSED_CONFIG_FILE)
+    mkdirOrThrow "$DESTINATION_PATH"
+    canAccessLocal
     target-csv $ARGS
   fi
 }
