@@ -27,6 +27,7 @@ package io.airbyte.integrations.base;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.exception.Exceptions;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -48,6 +49,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,24 +67,20 @@ public class TestDestination {
               new Field().withName("NZD").withDataType(DataType.NUMBER).withSelected(true),
               new Field().withName("HKD").withDataType(DataType.NUMBER).withSelected(true)))));
 
-  private final String imageName;
-  private final CheckedFunction<Path, List<JsonNode>, Exception> recordRetriever;
+  private final TestDestinationConfig testConfig;
   private final StandardTargetConfig targetConfig;
+  private final TestDestinationEnv testEnv;
 
   private Path jobRoot;
   protected Path destinationRoot;
   private ProcessBuilderFactory pbf;
 
-  public TestDestination(String imageName, JsonNode config, CheckedSupplier<List<JsonNode>, Exception> recordRetriever) {
-    this(imageName, config, (path) -> recordRetriever.get());
-  }
-
-  public TestDestination(String imageName, JsonNode config, CheckedFunction<Path, List<JsonNode>, Exception> recordRetriever) {
-    this.imageName = imageName;
-    this.recordRetriever = recordRetriever;
-    targetConfig = new StandardTargetConfig()
-        .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(config))
+  public TestDestination(TestDestinationConfig testConfig) {
+    this.testConfig = testConfig;
+    this.targetConfig = new StandardTargetConfig()
+        .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(testConfig.getConfig()))
         .withStandardSync(new StandardSync().withSchema(CATALOG));
+    this.testEnv = new TestDestinationEnv(destinationRoot);
   }
 
   @BeforeEach
@@ -94,7 +95,7 @@ public class TestDestination {
 
   @Test
   void testSync() throws Exception {
-    final DefaultSingerTarget target = new DefaultSingerTarget(imageName, pbf);
+    final DefaultSingerTarget target = new DefaultSingerTarget(testConfig.getImageName(), pbf);
     final List<SingerMessage> messages = MoreResources.readResource("messages.txt").lines()
         .map(record -> Jsons.deserialize(record, SingerMessage.class)).collect(Collectors.toList());
 
@@ -103,12 +104,99 @@ public class TestDestination {
     target.notifyEndOfStream();
     target.close();
 
-    final List<JsonNode> actual = recordRetriever.apply(destinationRoot);
+    final List<JsonNode> actual = testConfig.getRecordRetriever().apply(testEnv);
     final List<JsonNode> expected = messages.stream()
         .filter(message -> message.getType() == Type.RECORD)
         .map(SingerMessage::getRecord)
         .collect(Collectors.toList());
     assertEquals(expected, actual);
+  }
+
+  public static class TestDestinationEnv {
+    private final Path destinationRoot;
+
+    public TestDestinationEnv(Path destinationRoot) {
+      this.destinationRoot = destinationRoot;
+    }
+
+    public Path getDestinationRoot() {
+      return destinationRoot;
+    }
+  }
+
+  public static class TestDestinationConfig {
+    private final String imageName;
+    private final JsonNode config;
+    private final Function<TestDestinationEnv, List<JsonNode>> recordRetriever;
+    private final Consumer<TestDestinationEnv> setup;
+    private final Consumer<TestDestinationEnv> tearDown;
+
+    public TestDestinationConfig(
+        String imageName,
+        JsonNode config,
+        Function<TestDestinationEnv, List<JsonNode>> recordRetriever,
+        Consumer<TestDestinationEnv> setup,
+        Consumer<TestDestinationEnv> tearDown
+        ) {
+      this.imageName = imageName;
+      this.config = config;
+      this.setup = setup;
+      this.tearDown = tearDown;
+      this.recordRetriever = recordRetriever;
+    }
+
+    public String getImageName() {
+      return imageName;
+    }
+
+    public JsonNode getConfig() {
+      return config;
+    }
+
+    public Function<TestDestinationEnv, List<JsonNode>> getRecordRetriever() {
+      return recordRetriever;
+    }
+
+    public Optional<Consumer<TestDestinationEnv>> getSetup() {
+      return Optional.ofNullable(setup);
+    }
+
+    public Optional<Consumer<TestDestinationEnv>> getTearDown() {
+      return Optional.ofNullable(tearDown);
+    }
+
+    public static class Builder {
+      private final String imageName;
+      private final JsonNode config;
+      private final Function<TestDestinationEnv, List<JsonNode>> recordRetriever;
+      private Consumer<TestDestinationEnv> setup;
+      private Consumer<TestDestinationEnv> tearDown;
+
+      public Builder(String imageName, JsonNode config, Function<TestDestinationEnv, List<JsonNode>> recordRetriever) {
+        this.imageName = imageName;
+        this.config = config;
+        this.recordRetriever = recordRetriever;
+      }
+
+      public Builder(String imageName, JsonNode config, Supplier<List<JsonNode>> recordRetriever) {
+        this(imageName, config, (path) -> recordRetriever.get());
+      }
+
+      public void setSetup(Consumer<TestDestinationEnv> setup) {
+        this.setup = setup;
+      }
+
+      public void setTearDown(Consumer<TestDestinationEnv> tearDown) {
+        this.tearDown = tearDown;
+      }
+
+      public TestDestinationConfig build() {
+        Preconditions.checkNotNull(imageName);
+        Preconditions.checkNotNull(config);
+        Preconditions.checkNotNull(recordRetriever);
+        return new TestDestinationConfig(imageName, config, recordRetriever, setup, tearDown);
+      }
+    }
   }
 
 }
