@@ -52,12 +52,14 @@ import io.airbyte.workers.protocols.singer.SingerDiscoverSchemaWorker;
 import io.airbyte.workers.protocols.singer.SingerMessageTracker;
 import io.airbyte.workers.protocols.singer.SingerTap;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -161,6 +163,16 @@ public class SingerPostgresSourceTest {
     if (tapProcess.exitValue() != 0) {
       fail("Docker container exited with non-zero exit code: " + tapProcess.exitValue());
     }
+  }
+
+  @Test
+  public void testGetSpec() throws WorkerException, IOException, InterruptedException {
+    Process process = pbf.create(jobRoot, IMAGE_NAME, "--spec").start();
+    process.waitFor();
+    InputStream expectedSpecInputStream = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("spec.json"));
+    JsonNode expectedSpec = Jsons.deserialize(new String(expectedSpecInputStream.readAllBytes()));
+    JsonNode actualSpec = Jsons.deserialize(new String(process.getInputStream().readAllBytes()));
+    assertEquals(expectedSpec, actualSpec);
   }
 
   private void assertMessagesEquivalent(Collection<SingerMessage> expected, Collection<SingerMessage> actual) {
