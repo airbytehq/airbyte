@@ -25,7 +25,6 @@
 package io.airbyte.commons.concurrency;
 
 import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.commons.functional.VoidCallable;
 import java.util.concurrent.Callable;
 
 public class LifecycledCallable<T> implements Callable<T> {
