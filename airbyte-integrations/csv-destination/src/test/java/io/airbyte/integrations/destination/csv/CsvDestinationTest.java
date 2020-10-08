@@ -112,7 +112,7 @@ class CsvDestinationTest {
 
   @Test
   void testCheckFailure() throws IOException {
-    Path looksLikeADirectoryButIsAFile = destinationPath.resolve("file");
+    final Path looksLikeADirectoryButIsAFile = destinationPath.resolve("file");
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
     final ObjectNode config = objectMapper.createObjectNode().put(CsvDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString());
     final StandardCheckConnectionOutput actual = new CsvDestination().check(config);
@@ -154,12 +154,12 @@ class CsvDestinationTest {
     assertEquals(tasksActual, tasksExpected);
 
     // verify that the file is parsable as json (sanity check since the quoting is so goofy).
-    List<JsonNode> actualUsersJson = csvToJson(destinationPath.resolve(USERS_FILE));
-    List<JsonNode> expectedUsersJson = Lists.newArrayList(SINGER_MESSAGE_USERS1.getRecord(), SINGER_MESSAGE_USERS2.getRecord());
+    final List<JsonNode> actualUsersJson = csvToJson(destinationPath.resolve(USERS_FILE));
+    final List<JsonNode> expectedUsersJson = Lists.newArrayList(SINGER_MESSAGE_USERS1.getRecord(), SINGER_MESSAGE_USERS2.getRecord());
     assertEquals(expectedUsersJson, actualUsersJson);
 
-    List<JsonNode> actualTasksJson = csvToJson(destinationPath.resolve(TASKS_FILE));
-    List<JsonNode> expectedTasksJson = Lists.newArrayList(SINGER_MESSAGE_TASKS1.getRecord(), SINGER_MESSAGE_TASKS2.getRecord());
+    final List<JsonNode> actualTasksJson = csvToJson(destinationPath.resolve(TASKS_FILE));
+    final List<JsonNode> expectedTasksJson = Lists.newArrayList(SINGER_MESSAGE_TASKS1.getRecord(), SINGER_MESSAGE_TASKS2.getRecord());
     assertEquals(expectedTasksJson, actualTasksJson);
 
     // verify tmp files are cleaned up
@@ -187,8 +187,8 @@ class CsvDestinationTest {
   }
 
   private List<JsonNode> csvToJson(Path csvPath) throws IOException {
-    Reader in = new FileReader(csvPath.toFile());
-    Iterable<CSVRecord> records = CSVFormat.DEFAULT
+    final Reader in = new FileReader(csvPath.toFile());
+    final Iterable<CSVRecord> records = CSVFormat.DEFAULT
         .withHeader(CsvDestination.COLUMN_NAME)
         .withFirstRecordAsHeader()
         .parse(in);
