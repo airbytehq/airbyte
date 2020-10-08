@@ -90,7 +90,7 @@ class DefaultGetSpecWorkerTest {
 
     OutputAndStatus<StandardGetSpecOutput> actualOutput = worker.run(config, jobRoot);
     OutputAndStatus<StandardGetSpecOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
-    
+
     assertEquals(expectedOutput, actualOutput);
   }
 
