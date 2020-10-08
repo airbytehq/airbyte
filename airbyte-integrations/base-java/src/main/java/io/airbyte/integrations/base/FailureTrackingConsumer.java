@@ -33,11 +33,11 @@ public abstract class FailureTrackingConsumer<T> implements DestinationConsumer<
 
   private boolean hasFailed = false;
 
-  protected abstract void acceptInternal(T t) throws Exception;
+  protected abstract void acceptTracked(T t) throws Exception;
 
   public void accept(T t) throws Exception {
     try {
-      acceptInternal(t);
+      acceptTracked(t);
     } catch (Exception e) {
       hasFailed = true;
       throw e;

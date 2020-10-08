@@ -83,6 +83,13 @@ public class CsvDestination implements Destination {
     throw new RuntimeException("Not Implemented");
   }
 
+  /**
+   *
+   * @param config - csv destination config.
+   * @param schema - schema of the incoming messages.
+   * @return - a consumer to handle writing records to the filesystem.
+   * @throws IOException - exception throw in manipulating the filesytem.
+   */
   @Override
   public DestinationConsumer<SingerMessage> write(JsonNode config, Schema schema) throws IOException {
     final Path destinationDir = getDestinationPath(config);
@@ -115,32 +122,11 @@ public class CsvDestination implements Destination {
     return Path.of(destinationRelativePath);
   }
 
-  public static class WriteConfig {
-
-    private final CSVPrinter writer;
-    private final Path tmpPath;
-    private final Path finalPath;
-
-    public WriteConfig(CSVPrinter writer, Path tmpPath, Path finalPath) {
-      this.writer = writer;
-      this.tmpPath = tmpPath;
-      this.finalPath = finalPath;
-    }
-
-    public CSVPrinter getWriter() {
-      return writer;
-    }
-
-    public Path getTmpPath() {
-      return tmpPath;
-    }
-
-    public Path getFinalPath() {
-      return finalPath;
-    }
-
-  }
-
+  /**
+   * This consumer writes individual records to temporary files. If all of the messages are written
+   * successfully, it moves the tmp files to files named by their respective stream. If there are any
+   * failures, nothing is written.
+   */
   public static class CsvConsumer extends FailureTrackingConsumer<SingerMessage> {
 
     private final Map<String, WriteConfig> writeConfigs;
@@ -154,7 +140,7 @@ public class CsvDestination implements Destination {
     }
 
     @Override
-    protected void acceptInternal(SingerMessage singerMessage) throws Exception {
+    protected void acceptTracked(SingerMessage singerMessage) throws Exception {
       if (writeConfigs.containsKey(singerMessage.getStream())) {
         writeConfigs.get(singerMessage.getStream()).getWriter().printRecord(Jsons.serialize(singerMessage.getRecord()));
       } else {
@@ -177,15 +163,43 @@ public class CsvDestination implements Destination {
           LOGGER.error("failed to close writer for: {}.", entries.getKey());
         }
       }
+      // do not persist the data, if there are any failures.
       if (!hasFailed) {
         for (final WriteConfig writeConfig : writeConfigs.values()) {
           Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
         }
       }
+      // clean up tmp files.
       for (final WriteConfig writeConfig : writeConfigs.values()) {
         Files.deleteIfExists(writeConfig.getTmpPath());
       }
 
+    }
+
+  }
+
+  public static class WriteConfig {
+
+    private final CSVPrinter writer;
+    private final Path tmpPath;
+    private final Path finalPath;
+
+    public WriteConfig(CSVPrinter writer, Path tmpPath, Path finalPath) {
+      this.writer = writer;
+      this.tmpPath = tmpPath;
+      this.finalPath = finalPath;
+    }
+
+    public CSVPrinter getWriter() {
+      return writer;
+    }
+
+    public Path getTmpPath() {
+      return tmpPath;
+    }
+
+    public Path getFinalPath() {
+      return finalPath;
     }
 
   }
