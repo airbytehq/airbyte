@@ -30,6 +30,7 @@ import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobDiscoverSchemaConfig;
+import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnectionImplementation;
@@ -40,6 +41,7 @@ import io.airbyte.integrations.Integrations;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.ScopeHelper;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -51,6 +53,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.slf4j.Logger;
@@ -62,8 +65,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private final BasicDataSource connectionPool;
   private final Supplier<Instant> timeSupplier;
 
-  @VisibleForTesting
-  DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
+  @VisibleForTesting DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
     this.connectionPool = connectionPool;
     this.timeSupplier = timeSupplier;
   }
@@ -126,6 +128,19 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA)
         .withDiscoverSchema(jobDiscoverSchemaConfig);
+
+    return createPendingJob(scope, jobConfig);
+  }
+
+  @Override
+  public long createGetSpecJob(String integrationImage) throws IOException {
+    final String scope = ScopeHelper.createScope(
+        JobConfig.ConfigType.GET_SPEC,
+        integrationImage + ":" + System.currentTimeMillis());
+
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.GET_SPEC)
+        .withGetSpec(new JobGetSpecConfig().withDockerImage(integrationImage));
 
     return createPendingJob(scope, jobConfig);
   }

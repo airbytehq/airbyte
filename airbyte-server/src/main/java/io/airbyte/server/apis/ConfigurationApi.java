@@ -69,31 +69,28 @@ import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DebugInfoHandler;
 import io.airbyte.server.handlers.DestinationImplementationsHandler;
-import io.airbyte.server.handlers.DestinationSpecificationsHandler;
 import io.airbyte.server.handlers.DestinationsHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceImplementationsHandler;
-import io.airbyte.server.handlers.SourceSpecificationsHandler;
 import io.airbyte.server.handlers.SourcesHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendDestinationImplementationHandler;
 import io.airbyte.server.handlers.WebBackendSourceImplementationHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.validation.IntegrationSchemaValidation;
-import java.io.IOException;
-import javax.validation.Valid;
 import org.eclipse.jetty.http.HttpStatus;
+
+import javax.validation.Valid;
+import java.io.IOException;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   private final WorkspacesHandler workspacesHandler;
   private final SourcesHandler sourcesHandler;
-  private final SourceSpecificationsHandler sourceSpecificationsHandler;
   private final SourceImplementationsHandler sourceImplementationsHandler;
   private final DestinationsHandler destinationsHandler;
-  private final DestinationSpecificationsHandler destinationSpecificationsHandler;
   private final DestinationImplementationsHandler destinationImplementationsHandler;
   private final ConnectionsHandler connectionsHandler;
   private final DebugInfoHandler debugInfoHandler;
@@ -107,11 +104,9 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation();
     workspacesHandler = new WorkspacesHandler(configRepository);
     sourcesHandler = new SourcesHandler(configRepository);
-    sourceSpecificationsHandler = new SourceSpecificationsHandler(configRepository);
     connectionsHandler = new ConnectionsHandler(configRepository);
     sourceImplementationsHandler = new SourceImplementationsHandler(configRepository, integrationSchemaValidation, connectionsHandler);
     destinationsHandler = new DestinationsHandler(configRepository);
-    destinationSpecificationsHandler = new DestinationSpecificationsHandler(configRepository);
     destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, integrationSchemaValidation, connectionsHandler);
     schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
@@ -165,7 +160,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public SourceSpecificationRead getSourceSpecification(@Valid SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> sourceSpecificationsHandler.getSourceSpecification(sourceIdRequestBody));
+    return execute(() -> schedulerHandler.getSourceSpecification(sourceIdRequestBody));
   }
 
   // SOURCE IMPLEMENTATION
@@ -221,7 +216,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // DESTINATION SPECIFICATION
   @Override
   public DestinationSpecificationRead getDestinationSpecification(@Valid DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> destinationSpecificationsHandler.getDestinationSpecification(destinationIdRequestBody));
+    return execute(() -> schedulerHandler.getDestinationSpecification(destinationIdRequestBody));
   }
 
   // DESTINATION IMPLEMENTATION

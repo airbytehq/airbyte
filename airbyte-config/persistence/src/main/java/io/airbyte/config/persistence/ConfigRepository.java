@@ -35,9 +35,12 @@ import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.StandardWorkspace;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+
+import org.apache.logging.log4j.core.config.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,6 +100,24 @@ public class ConfigRepository {
         ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         sourceSpecificationId.toString(),
         SourceConnectionSpecification.class);
+  }
+
+  public SourceConnectionSpecification getSourceConnectionSpecificationFromSourceId(final UUID sourceId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    // since we are not querying on a the primary key, we have to list all of the specification objects and then
+    // filter.
+    return listSourceConnectionSpecifications().stream()
+        .filter(s -> s.getSourceId().equals(sourceId))
+        .findFirst()
+        .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION_SPECIFICATION, sourceId.toString()));
+  }
+
+  public DestinationConnectionSpecification getDestinationConnectionSpecificationFromDestinationId(final UUID destinationId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    return listDestinationConnectionSpecifications().stream()
+        .filter(d -> d.getDestinationId().equals(destinationId))
+        .findFirst()
+        .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION, destinationId.toString()));
   }
 
   public List<SourceConnectionSpecification> listSourceConnectionSpecifications()

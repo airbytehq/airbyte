@@ -92,6 +92,15 @@ class SchedulerHandlerTest {
   }
 
   @Test
+  void testGetSourceSpec(){
+    // TODO
+  }
+
+  void testGetDestinationSpec(){
+    // TODO
+  }
+
+  @Test
   void testCheckDestinationImplementationConnection() throws IOException, JsonValidationException, ConfigNotFoundException {
     DestinationConnectionImplementation destinationImpl = DestinationImplementationHelpers.generateDestinationImplementation(UUID.randomUUID());
     final DestinationImplementationIdRequestBody request =

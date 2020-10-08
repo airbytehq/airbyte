@@ -240,6 +240,11 @@ class DefaultSchedulerPersistenceTest {
   }
 
   @Test
+  public void testCreateGetSpecJob() {
+    // TODO
+  }
+
+  @Test
   public void testCreateSyncJob() throws IOException, SQLException {
     final long jobId = schedulerPersistence.createSyncJob(
         SOURCE_CONNECTION_IMPLEMENTATION,
