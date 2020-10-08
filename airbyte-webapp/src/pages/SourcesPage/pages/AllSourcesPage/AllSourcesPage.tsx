@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { useResource } from "rest-hooks";
+import { useResource, useSubscription } from "rest-hooks";
 
 import Button from "../../../../components/Button";
 import { Routes } from "../../../routes";
@@ -20,6 +20,9 @@ const Content = styled(ContentCard)`
 const AllSourcesPage: React.FC = () => {
   const { push } = useRouter();
   const { connections } = useResource(ConnectionResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
+  useSubscription(ConnectionResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
 
