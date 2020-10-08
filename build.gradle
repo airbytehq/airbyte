@@ -96,7 +96,7 @@ allprojects {
 
 allprojects {
     def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
-    group = "io.airbyte${sub.isEmpty() ? '' : ".$sub"}"
+    group = "io.${rootProject.name}${sub.isEmpty() ? '' : ".$sub"}"
     version = env.VERSION
 }
 
