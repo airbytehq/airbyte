@@ -119,8 +119,7 @@ public class WorkerRunFactory {
         return creator.create(
             jobRoot,
             getSpecInput,
-            new JobOutputGetSpecWorker(worker)
-        );
+            new JobOutputGetSpecWorker(worker));
       }
       default -> throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }

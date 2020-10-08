@@ -37,7 +37,6 @@ import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverSchemaInput;
-import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -126,7 +125,7 @@ class WorkerRunFactoryTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  void testGetSpec(){
+  void testGetSpec() {
     when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.GET_SPEC);
     JobGetSpecConfig expectedConfig = new JobGetSpecConfig().withDockerImage("notarealimage");
     when(job.getConfig().getGetSpec()).thenReturn(expectedConfig);
