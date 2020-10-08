@@ -137,7 +137,7 @@ class CsvDestinationTest {
 
     // verify contents of CSV file
     final List<String> usersActual = Files.readAllLines(destinationPath.resolve(USERS_FILE));
-    // csv add all of these goofy quotes.
+    // csv adds all of these goofy quotes.
     final List<String> usersExpected = Lists.newArrayList(
         CsvDestination.COLUMN_NAME,
         "\"{\"\"name\"\":\"\"john\"\",\"\"id\"\":\"\"10\"\"}\"",
@@ -181,7 +181,7 @@ class CsvDestinationTest {
     consumer.accept(SINGER_MESSAGE_USERS2);
     consumer.close();
 
-    // verify tmp files are cleaned up and no file are output
+    // verify tmp files are cleaned up and no files are output at all
     final Set<String> actualFilenames = Files.list(destinationPath).map(Path::getFileName).map(Path::toString).collect(Collectors.toSet());
     assertEquals(Collections.emptySet(), actualFilenames);
   }
