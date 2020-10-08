@@ -113,7 +113,8 @@ public abstract class TestDestination {
 
   /**
    * Function that performs any clean up of external resources required for the test. e.g. delete a
-   * postgres database. This function will be called after EACH test.
+   * postgres database. This function will be called after EACH test. It MUST remove all data in the
+   * destination so that there is no contamination across tests.
    *
    * @param testEnv - information about the test environment.
    * @throws Exception - can throw any exception, test framework will handle.
@@ -160,7 +161,8 @@ public abstract class TestDestination {
   }
 
   /**
-   * Verify that the integration successfully writes records. Tests a wide variety of messages and schemas (aspirationally, anyway).
+   * Verify that the integration successfully writes records. Tests a wide variety of messages and
+   * schemas (aspirationally, anyway).
    */
   @Test
   void testSync() throws Exception {
