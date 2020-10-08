@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.TestDestination;
 import java.io.FileReader;
@@ -42,32 +41,47 @@ import org.apache.commons.csv.CSVRecord;
 
 public class CsvDestinationIntegrationTest extends TestDestination {
 
-  private static final String IMAGE_NAME = "airbyte/airbyte-csv-destination:dev";
-  private static final Path RELATIVE_PATH = Path.of("integration_test/charles");
-  private static final JsonNode CONFIG = new ObjectMapper().createObjectNode()
-      .put("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString());
-  private static final JsonNode INVALID_CONFIG = new ObjectMapper().createObjectNode()
-      .put("destination_path", Path.of("/@").resolve(RELATIVE_PATH).toString());
+  private static final Path RELATIVE_PATH = Path.of("integration_test/test");
 
-  public CsvDestinationIntegrationTest() {
-    super(new TestDestinationConfig.Builder(IMAGE_NAME, CONFIG, INVALID_CONFIG, getSingerMessagesFunction()).build());
+  @Override
+  protected String getImageName() {
+    return "airbyte/airbyte-csv-destination:dev";
   }
 
-  static CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> getSingerMessagesFunction() {
-    return (testEnv) -> {
-      final List<Path> list = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
-      assertEquals(1, list.size());
+  @Override
+  protected JsonNode getConfig() {
+    return new ObjectMapper().createObjectNode().put("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString());
+  }
 
-      final FileReader in = new FileReader(list.get(0).toFile());
-      final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-          .withHeader(CsvDestination.COLUMN_NAME)
-          .withFirstRecordAsHeader()
-          .parse(in);
+  @Override
+  protected JsonNode getInvalidConfig() {
+    return new ObjectMapper().createObjectNode().put("destination_path", Path.of("/@").resolve(RELATIVE_PATH).toString());
+  }
 
-      return StreamSupport.stream(records.spliterator(), false)
-          .map(record -> Jsons.deserialize(record.toMap().get(CsvDestination.COLUMN_NAME)))
-          .collect(Collectors.toList());
-    };
+  @Override
+  protected List<JsonNode> recordRetriever(TestDestinationEnv testEnv) throws Exception {
+    final List<Path> list = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
+    assertEquals(1, list.size());
+
+    final FileReader in = new FileReader(list.get(0).toFile());
+    final Iterable<CSVRecord> records = CSVFormat.DEFAULT
+        .withHeader(CsvDestination.COLUMN_NAME)
+        .withFirstRecordAsHeader()
+        .parse(in);
+
+    return StreamSupport.stream(records.spliterator(), false)
+        .map(record -> Jsons.deserialize(record.toMap().get(CsvDestination.COLUMN_NAME)))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  protected void setup(TestDestinationEnv testEnv) throws Exception {
+    // no op
+  }
+
+  @Override
+  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+    // no op
   }
 
 }

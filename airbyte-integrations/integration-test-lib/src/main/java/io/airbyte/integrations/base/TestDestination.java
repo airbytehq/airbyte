@@ -27,11 +27,7 @@ package io.airbyte.integrations.base;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.commons.functional.CheckedFunction;
-import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -49,13 +45,12 @@ import io.airbyte.workers.protocols.singer.DefaultSingerTarget;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TestDestination {
+public abstract class TestDestination {
 
   private static final String STREAM_NAME = "exchange_rate";
   private static final Schema CATALOG = new Schema().withStreams(Lists.newArrayList(
@@ -65,45 +60,90 @@ public class TestDestination {
               new Field().withName("NZD").withDataType(DataType.NUMBER).withSelected(true),
               new Field().withName("HKD").withDataType(DataType.NUMBER).withSelected(true)))));
 
-  private final TestDestinationConfig testConfig;
-  private final StandardTargetConfig targetConfig;
+  private StandardTargetConfig targetConfig;
   private TestDestinationEnv testEnv;
 
   private Path jobRoot;
   protected Path localRoot;
   private ProcessBuilderFactory pbf;
 
-  public TestDestination(TestDestinationConfig testConfig) {
-    this.testConfig = testConfig;
-    this.targetConfig = new StandardTargetConfig()
-        .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(testConfig.getConfig()))
-        .withStandardSync(new StandardSync().withSchema(CATALOG));
-  }
+  /**
+   * Name of the docker image that the tests will run against.
+   *
+   * @return docker image name
+   */
+  protected abstract String getImageName();
+
+  /**
+   * Configuration specific to the integration. Will be passed to integration where appropriate in
+   * each test. Should be valid.
+   *
+   * @return integration-specific configuration
+   */
+  protected abstract JsonNode getConfig();
+
+  /**
+   * Configuration specific to the integration. Will be passed to integration where appropriate in
+   * tests that test behavior when configuration is invalid. e.g incorrect password. Should be
+   * invalid.
+   *
+   * @return integration-specific configuration
+   */
+  protected abstract JsonNode getInvalidConfig();
+
+  /**
+   * Function that returns all of the records in destination as json at the time this method is
+   * invoked. These will be used to check that the data actually written is what should actually be
+   * there.
+   *
+   * @param testEnv - information about the test environment.
+   * @return All of the records in the destination at the time this method is invoked.
+   * @throws Exception - can throw any exception, test framework will handle.
+   */
+  protected abstract List<JsonNode> recordRetriever(TestDestinationEnv testEnv) throws Exception;
+
+  /**
+   * Function that performs any setup of external resources required for the test. e.g. instantiate a
+   * postgres database. This function will be called before EACH test.
+   *
+   * @param testEnv - information about the test environment.
+   * @throws Exception - can throw any exception, test framework will handle.
+   */
+  protected abstract void setup(TestDestinationEnv testEnv) throws Exception;
+
+  /**
+   * Function that performs any clean up of external resources required for the test. e.g. delete a
+   * postgres database. This function will be called after EACH test.
+   *
+   * @param testEnv - information about the test environment.
+   * @throws Exception - can throw any exception, test framework will handle.
+   */
+  protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
   @BeforeEach
-  void setUp() throws Exception {
+  void setUpInternal() throws Exception {
+    this.targetConfig = new StandardTargetConfig()
+        .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(getConfig()))
+        .withStandardSync(new StandardSync().withSchema(CATALOG));
     Path workspaceRoot = Files.createTempDirectory("test");
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
     localRoot = Files.createTempDirectory("output");
     testEnv = new TestDestinationEnv(localRoot);
 
-    if(testConfig.getSetup().isPresent()) {
-      testConfig.getSetup().get().accept(testEnv);
-    }
+    setup(testEnv);
 
     pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host");
   }
 
   @AfterEach
-  void tearDown() throws Exception {
-    if(testConfig.getTearDown().isPresent()) {
-      testConfig.getTearDown().get().accept(testEnv);
-    }
+  void tearDownInternal() throws Exception {
+    tearDown(testEnv);
   }
 
   /**
-   * Verify that when given valid credentials, that check connection returns a success response. Assume that the {@link TestDestinationConfig#config} is valid.
+   * Verify that when given valid credentials, that check connection returns a success response.
+   * Assume that the {@link TestDestination#getConfig()} is valid.
    */
   @Test
   void testCheckConnection() {
@@ -111,7 +151,8 @@ public class TestDestination {
   }
 
   /**
-   * Verify that when given invalid credentials, that check connection returns a failed response. Assume that the {@link TestDestinationConfig#invalidConfig} is invalid.
+   * Verify that when given invalid credentials, that check connection returns a failed response.
+   * Assume that the {@link TestDestination#getInvalidConfig()} is invalid.
    */
   @Test
   void testCheckConnectionInvalidCredentials() {
@@ -120,7 +161,7 @@ public class TestDestination {
 
   @Test
   void testSync() throws Exception {
-    final DefaultSingerTarget target = new DefaultSingerTarget(testConfig.getImageName(), pbf);
+    final DefaultSingerTarget target = new DefaultSingerTarget(getImageName(), pbf);
     final List<SingerMessage> messages = MoreResources.readResource("messages.txt").lines()
         .map(record -> Jsons.deserialize(record, SingerMessage.class)).collect(Collectors.toList());
 
@@ -129,7 +170,7 @@ public class TestDestination {
     target.notifyEndOfStream();
     target.close();
 
-    final List<JsonNode> actual = testConfig.getRecordRetriever().apply(testEnv);
+    final List<JsonNode> actual = recordRetriever(testEnv);
     final List<JsonNode> expected = messages.stream()
         .filter(message -> message.getType() == Type.RECORD)
         .map(SingerMessage::getRecord)
@@ -143,6 +184,7 @@ public class TestDestination {
   }
 
   public static class TestDestinationEnv {
+
     private final Path localRoot;
 
     public TestDestinationEnv(Path localRoot) {
@@ -152,100 +194,7 @@ public class TestDestination {
     public Path getLocalRoot() {
       return localRoot;
     }
-  }
 
-  public static class TestDestinationConfig {
-    private final String imageName;
-    private final JsonNode config;
-    private final JsonNode invalidConfig;
-    private final CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever;
-    private final CheckedConsumer<TestDestinationEnv, Exception> setup;
-    private final CheckedConsumer<TestDestinationEnv, Exception> tearDown;
-
-    public TestDestinationConfig(
-        String imageName,
-        JsonNode config,
-        JsonNode invalidConfig,
-        CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever,
-        CheckedConsumer<TestDestinationEnv, Exception> setup,
-        CheckedConsumer<TestDestinationEnv, Exception> tearDown
-        ) {
-      this.imageName = imageName;
-      this.invalidConfig = invalidConfig;
-      this.config = config;
-      this.setup = setup;
-      this.tearDown = tearDown;
-      this.recordRetriever = recordRetriever;
-    }
-
-    public String getImageName() {
-      return imageName;
-    }
-
-    public JsonNode getConfig() {
-      return config;
-    }
-
-    public JsonNode getInvalidConfig() {
-      return invalidConfig;
-    }
-
-    public CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> getRecordRetriever() {
-      return recordRetriever;
-    }
-
-    public Optional<CheckedConsumer<TestDestinationEnv, Exception>> getSetup() {
-      return Optional.ofNullable(setup);
-    }
-
-    public Optional<CheckedConsumer<TestDestinationEnv, Exception>> getTearDown() {
-      return Optional.ofNullable(tearDown);
-    }
-
-    public static class Builder {
-      private final String imageName;
-      private final JsonNode config;
-      private final JsonNode invalidConfig;
-      private final CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever;
-      private CheckedConsumer<TestDestinationEnv, Exception> setup;
-      private CheckedConsumer<TestDestinationEnv, Exception> tearDown;
-
-      public Builder(
-          String imageName,
-          JsonNode config,
-          JsonNode invalidConfig,
-          CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever
-      ) {
-        this.imageName = imageName;
-        this.config = config;
-        this.invalidConfig = invalidConfig;
-        this.recordRetriever = recordRetriever;
-      }
-
-      public Builder(
-          String imageName,
-          JsonNode config,
-          JsonNode invalidConfig,
-          CheckedSupplier<List<JsonNode>, Exception> recordRetriever) {
-        this(imageName, config, invalidConfig, (path) -> recordRetriever.get());
-      }
-
-      public void setSetup(CheckedConsumer<TestDestinationEnv, Exception> setup) {
-        this.setup = setup;
-      }
-
-      public void setTearDown(CheckedConsumer<TestDestinationEnv, Exception> tearDown) {
-        this.tearDown = tearDown;
-      }
-
-      public TestDestinationConfig build() {
-        Preconditions.checkNotNull(imageName);
-        Preconditions.checkNotNull(config);
-        Preconditions.checkNotNull(invalidConfig);
-        Preconditions.checkNotNull(recordRetriever);
-        return new TestDestinationConfig(imageName, config, invalidConfig, recordRetriever, setup, tearDown);
-      }
-    }
   }
 
 }
