@@ -2,7 +2,9 @@ import subprocess
 from airbyte_protocol import AirbyteSpec
 from airbyte_protocol import AirbyteSchema
 from airbyte_protocol import AirbyteMessage
+from airbyte_protocol import AirbyteRecordMessage
 from typing import Generator
+from datetime import datetime
 
 
 # helper to delegate input and output to a piped command
@@ -31,7 +33,7 @@ class SingerHelper:
         return transform(completed_process.stdout)
 
     @staticmethod
-    def read(shell_command, is_message=(lambda x: True), transform=(lambda x: AirbyteMessage(x))) -> Generator[
+    def read(shell_command, is_message=(lambda x: True), transform=(lambda x: AirbyteMessage(type="RECORD", record=AirbyteRecordMessage(data={'value': x}, emitted_at=str(datetime.now()))))) -> Generator[
         AirbyteMessage, None, None]:
         with subprocess.Popen(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1,
                               universal_newlines=True) as p:

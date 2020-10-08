@@ -2,7 +2,7 @@
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml
 title: AirbyteMessage
-description:
+description: Airbyte message
 type: object
 additionalProperties: false
 required:
@@ -30,7 +30,7 @@ definitions:
     additionalProperties: false
     required:
       - data
-      - extracted_at
+      - emitted_at
     properties:
       data:
         description: "the record data"
