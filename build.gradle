@@ -20,11 +20,6 @@ if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
 }
 
-allprojects {
-    group = "io.airbyte.${rootProject.name}"
-    version = env.VERSION
-}
-
 def createLicenseWith = { licence ->
     def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
@@ -99,6 +94,12 @@ allprojects {
     }
 }
 
+allprojects {
+    def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
+    group = "io.${rootProject.name}${sub.isEmpty() ? '' : ".$sub"}"
+    version = env.VERSION
+}
+
 // Java projects common configurations
 subprojects {
 
@@ -146,6 +147,7 @@ subprojects {
         // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
         implementation 'com.fasterxml.jackson.core:jackson-databind'
         implementation 'com.fasterxml.jackson.core:jackson-annotations'
+        implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
 
         implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 

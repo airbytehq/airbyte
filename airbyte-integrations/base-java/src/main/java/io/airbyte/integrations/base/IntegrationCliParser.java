@@ -64,7 +64,7 @@ public class IntegrationCliParser {
         .build());
     COMMAND_GROUP.addOption(Option.builder()
         .longOpt(Command.DISCOVER.toString().toLowerCase())
-        .desc("outputs a catalog describing the source's schema")
+        .desc("outputs a catalog describing the source's catalog")
         .build());
     COMMAND_GROUP.addOption(Option.builder()
         .longOpt(Command.READ.toString().toLowerCase())
@@ -113,7 +113,7 @@ public class IntegrationCliParser {
         options.addOption(Option
             .builder().longOpt(JavaBaseConstants.ARGS_CONFIG_KEY).desc(JavaBaseConstants.ARGS_CONFIG_DESC).hasArg(true).required(true).build());
         options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_SCHEMA_KEY).desc(JavaBaseConstants.ARGS_SCHEMA_DESC).hasArg(true).build());
+            .builder().longOpt(JavaBaseConstants.ARGS_CATALOG_KEY).desc(JavaBaseConstants.ARGS_CATALOG_DESC).hasArg(true).build());
         options.addOption(Option
             .builder().longOpt(JavaBaseConstants.ARGS_STATE_KEY).desc(JavaBaseConstants.ARGS_PATH_DESC).hasArg(true).build());
       }
@@ -121,7 +121,7 @@ public class IntegrationCliParser {
         options.addOption(Option
             .builder().longOpt(JavaBaseConstants.ARGS_CONFIG_KEY).desc(JavaBaseConstants.ARGS_CONFIG_DESC).hasArg(true).required(true).build());
         options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_SCHEMA_KEY).desc(JavaBaseConstants.ARGS_SCHEMA_DESC).hasArg(true).build());
+            .builder().longOpt(JavaBaseConstants.ARGS_CATALOG_KEY).desc(JavaBaseConstants.ARGS_CATALOG_DESC).hasArg(true).build());
       }
       default -> throw new IllegalStateException("Unexpected value: " + command);
     }
@@ -147,13 +147,13 @@ public class IntegrationCliParser {
       case READ -> {
         return IntegrationConfig.read(
             Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)),
-            Path.of(argsMap.get(JavaBaseConstants.ARGS_SCHEMA_KEY)),
+            Path.of(argsMap.get(JavaBaseConstants.ARGS_CATALOG_KEY)),
             argsMap.containsKey(JavaBaseConstants.ARGS_STATE_KEY) ? Path.of(argsMap.get(JavaBaseConstants.ARGS_STATE_KEY)) : null);
       }
       case WRITE -> {
         return IntegrationConfig.write(
             Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)),
-            Path.of(argsMap.get(JavaBaseConstants.ARGS_SCHEMA_KEY)));
+            Path.of(argsMap.get(JavaBaseConstants.ARGS_CATALOG_KEY)));
       }
       default -> throw new IllegalStateException("Unexpected value: " + command);
     }

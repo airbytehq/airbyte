@@ -39,6 +39,11 @@ function main() {
       ARGS="$ARGS --properties $2"
       shift 2
       ;;
+
+    --spec)
+      ARGS="$ARGS --spec"
+      shift
+      ;;
     *)
       error "Unknown option: $1"
       shift
@@ -46,7 +51,12 @@ function main() {
     esac
   done
 
-  PGCLIENTENCODING=UTF8 tap-postgres $ARGS
+  if [[ "$ARGS" =~ .*"--spec".* ]]; then
+    cat /singer/spec.json
+    exit 0
+  else
+    PGCLIENTENCODING=UTF8 tap-postgres $ARGS
+  fi
 }
 
 main "$@"

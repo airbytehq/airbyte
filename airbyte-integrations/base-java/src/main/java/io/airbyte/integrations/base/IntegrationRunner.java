@@ -81,7 +81,7 @@ public class IntegrationRunner {
         throw new RuntimeException("Not implemented");
       case WRITE -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        final Schema schema = parseConfig(parsed.getSchemaPath(), Schema.class);
+        final Schema schema = parseConfig(parsed.getCatalogPath(), Schema.class);
         final DestinationConsumer<SingerMessage> consumer = destination.write(config, schema);
         consumeWriteStream(consumer);
       }
