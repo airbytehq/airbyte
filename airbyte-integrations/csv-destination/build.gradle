@@ -23,8 +23,8 @@ configurations {
 
 dependencies {
     implementation project(':airbyte-config:models')
-    implementation project(':airbyte-singer')
     implementation project(':airbyte-integrations:base-java')
+    implementation project(':airbyte-singer')
 
     integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
     integrationTestImplementation project(':airbyte-integrations:csv-destination')
