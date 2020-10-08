@@ -12,11 +12,13 @@ public class AirbyteSyncWorker implements SyncWorker {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(AirbyteSyncWorker.class);
 
-  @Override public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput standardSyncInput, Path jobRoot) {
+  @Override
+  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput standardSyncInput, Path jobRoot) {
     return null;
   }
 
-  @Override public void cancel() {
+  @Override
+  public void cancel() {
 
   }
 }

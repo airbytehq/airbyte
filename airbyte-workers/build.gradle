@@ -9,14 +9,14 @@ configurations {
 dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
 
-    implementation project(":airbyte-config:models")
-    implementation project(":airbyte-db")
-    implementation project(":airbyte-integrations")
-    implementation project(":airbyte-protocol:models")
-    implementation project(":airbyte-singer")
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-db')
+    implementation project(':airbyte-integrations')
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-singer')
 
-    testImplementation "org.mockito:mockito-inline:2.13.0"
-    testImplementation "org.testcontainers:testcontainers:1.14.3"
-    testImplementation "org.testcontainers:postgresql:1.15.0-rc2"
-    testImplementation "org.postgresql:postgresql:42.2.16"
+    testImplementation 'org.mockito:mockito-inline:2.13.0'
+    testImplementation 'org.testcontainers:testcontainers:1.14.3'
+    testImplementation 'org.testcontainers:postgresql:1.15.0-rc2'
+    testImplementation 'org.postgresql:postgresql:42.2.16'
 }

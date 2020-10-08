@@ -20,11 +20,6 @@ if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
 }
 
-allprojects {
-    group = "io.airbyte.${rootProject.name}"
-    version = env.VERSION
-}
-
 def createLicenseWith = { licence ->
     def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
@@ -97,6 +92,12 @@ allprojects {
     tasks.withType(DockerBuildImage).all { task ->
         task.outputs.upToDateWhen { false }
     }
+}
+
+allprojects {
+    def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
+    group = "io.airbyte${sub.isEmpty() ? '' : ".$sub"}"
+    version = env.VERSION
 }
 
 // Java projects common configurations
