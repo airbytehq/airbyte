@@ -77,8 +77,6 @@ class CsvDestinationTest {
       .withRecord(objectMapper.createObjectNode().put("goal", "announce the game."));
   private static final SingerMessage SINGER_MESSAGE_TASKS2 = new SingerMessage().withType(Type.RECORD).withStream(TASKS_STREAM_NAME)
       .withRecord(objectMapper.createObjectNode().put("goal", "ship some code."));
-  // todo (cgardens) - may want to codify this in the integration scaffold. like there's a setting
-  // that says it just ignores state.
   private static final SingerMessage SINGER_MESSAGE_RECORD = new SingerMessage().withType(Type.STATE)
       .withValue(objectMapper.createObjectNode().put("checkpoint", "now!"));
 
