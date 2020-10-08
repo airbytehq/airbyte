@@ -22,16 +22,9 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.workers;
 
-public class JavaBaseConstants {
+import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.StandardGetSpecOutput;
 
-  public static String ARGS_CONFIG_KEY = "config";
-  public static String ARGS_CATALOG_KEY = "catalog";
-  public static String ARGS_STATE_KEY = "state";
-
-  public static String ARGS_CONFIG_DESC = "path to the json configuration file";
-  public static String ARGS_CATALOG_DESC = "input path for the catalog";
-  public static String ARGS_PATH_DESC = "path to the json-encoded state file";
-
-}
+public interface GetSpecWorker extends Worker<JobGetSpecConfig, StandardGetSpecOutput> {}

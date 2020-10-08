@@ -24,14 +24,31 @@
 
 package io.airbyte.integrations.base;
 
-public class JavaBaseConstants {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-  public static String ARGS_CONFIG_KEY = "config";
-  public static String ARGS_CATALOG_KEY = "catalog";
-  public static String ARGS_STATE_KEY = "state";
+public abstract class FailureTrackingConsumer<T> implements DestinationConsumer<T> {
 
-  public static String ARGS_CONFIG_DESC = "path to the json configuration file";
-  public static String ARGS_CATALOG_DESC = "input path for the catalog";
-  public static String ARGS_PATH_DESC = "path to the json-encoded state file";
+  private static final Logger LOGGER = LoggerFactory.getLogger(FailureTrackingConsumer.class);
+
+  private boolean hasFailed = false;
+
+  protected abstract void acceptTracked(T t) throws Exception;
+
+  public void accept(T t) throws Exception {
+    try {
+      acceptTracked(t);
+    } catch (Exception e) {
+      hasFailed = true;
+      throw e;
+    }
+  }
+
+  protected abstract void close(boolean hasFailed) throws Exception;
+
+  public void close() throws Exception {
+    LOGGER.info("hasFailed: {}.", hasFailed);
+    close(hasFailed);
+  }
 
 }

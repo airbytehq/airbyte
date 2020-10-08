@@ -26,6 +26,7 @@ package io.airbyte.commons.concurrency;
 
 import java.util.concurrent.Callable;
 
+@FunctionalInterface
 public interface VoidCallable extends Callable<Void> {
 
   default @Override Void call() throws Exception {

@@ -22,16 +22,48 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.commons.lang;
 
-public class JavaBaseConstants {
+import java.util.concurrent.Callable;
 
-  public static String ARGS_CONFIG_KEY = "config";
-  public static String ARGS_CATALOG_KEY = "catalog";
-  public static String ARGS_STATE_KEY = "state";
+public class Exceptions {
 
-  public static String ARGS_CONFIG_DESC = "path to the json configuration file";
-  public static String ARGS_CATALOG_DESC = "input path for the catalog";
-  public static String ARGS_PATH_DESC = "path to the json-encoded state file";
+  /**
+   * Catch a checked exception and rethrow as a {@link RuntimeException}
+   *
+   * @param callable - function that throws a checked exception.
+   * @param <T> - return type of the function.
+   * @return object that the function returns.
+   */
+  public static <T> T toRuntime(Callable<T> callable) {
+    try {
+      return callable.call();
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Catch a checked exception and rethrow as a {@link RuntimeException}.
+   *
+   * @param voidCallable - function that throws a checked exception.
+   */
+  public static void toRuntime(Procedure voidCallable) {
+    try {
+      voidCallable.call();
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public interface Procedure {
+
+    void call() throws Exception;
+
+  }
 
 }
