@@ -147,7 +147,7 @@ public abstract class TestDestination {
    */
   @Test
   void testCheckConnection() {
-    // todo (cgardens) - can't implement until worker no longer calls discover internally.
+    // todo (cgardens)
   }
 
   /**
@@ -156,7 +156,7 @@ public abstract class TestDestination {
    */
   @Test
   void testCheckConnectionInvalidCredentials() {
-    // todo (cgardens) - can't implement until worker no longer calls discover internally.
+    // todo (cgardens)
   }
 
   @Test
