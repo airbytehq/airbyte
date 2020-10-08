@@ -43,8 +43,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.DestinationConnectionSpecification;
-import io.airbyte.config.JobConfig;
-import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.SourceConnectionSpecification;
@@ -122,7 +120,7 @@ class SchedulerHandlerTest {
         new ConnectorSpecification()
             .withDocumentationUrl(new URI("https://google.com"))
             .withChangelogUrl(new URI("https://google.com"))
-        .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
+            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
     JobOutput jobOutput = mock(JobOutput.class);
 
     when(jobOutput.getGetSpec()).thenReturn(specOutput);
