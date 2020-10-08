@@ -29,10 +29,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.exception.Exceptions;
+import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnectionImplementation;
@@ -45,15 +46,12 @@ import io.airbyte.singer.SingerMessage.Type;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.singer.DefaultSingerTarget;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -69,10 +67,10 @@ public class TestDestination {
 
   private final TestDestinationConfig testConfig;
   private final StandardTargetConfig targetConfig;
-  private final TestDestinationEnv testEnv;
+  private TestDestinationEnv testEnv;
 
   private Path jobRoot;
-  protected Path destinationRoot;
+  protected Path localRoot;
   private ProcessBuilderFactory pbf;
 
   public TestDestination(TestDestinationConfig testConfig) {
@@ -80,17 +78,28 @@ public class TestDestination {
     this.targetConfig = new StandardTargetConfig()
         .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(testConfig.getConfig()))
         .withStandardSync(new StandardSync().withSchema(CATALOG));
-    this.testEnv = new TestDestinationEnv(destinationRoot);
   }
 
   @BeforeEach
-  public void setUp() throws IOException {
+  void setUp() throws Exception {
     Path workspaceRoot = Files.createTempDirectory("test");
-    destinationRoot = Files.createTempDirectory("output");
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
+    localRoot = Files.createTempDirectory("output");
+    testEnv = new TestDestinationEnv(localRoot);
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), destinationRoot.toString(), "host");
+    if(testConfig.getSetup().isPresent()) {
+      testConfig.getSetup().get().accept(testEnv);
+    }
+
+    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host");
+  }
+
+  @AfterEach
+  void tearDown() throws Exception {
+    if(testConfig.getTearDown().isPresent()) {
+      testConfig.getTearDown().get().accept(testEnv);
+    }
   }
 
   @Test
@@ -100,7 +109,7 @@ public class TestDestination {
         .map(record -> Jsons.deserialize(record, SingerMessage.class)).collect(Collectors.toList());
 
     target.start(targetConfig, jobRoot);
-    messages.forEach(message -> Exceptions.toRuntimeVoid(() -> target.accept(message)));
+    messages.forEach(message -> Exceptions.toRuntime(() -> target.accept(message)));
     target.notifyEndOfStream();
     target.close();
 
@@ -113,30 +122,30 @@ public class TestDestination {
   }
 
   public static class TestDestinationEnv {
-    private final Path destinationRoot;
+    private final Path localRoot;
 
-    public TestDestinationEnv(Path destinationRoot) {
-      this.destinationRoot = destinationRoot;
+    public TestDestinationEnv(Path localRoot) {
+      this.localRoot = localRoot;
     }
 
-    public Path getDestinationRoot() {
-      return destinationRoot;
+    public Path getLocalRoot() {
+      return localRoot;
     }
   }
 
   public static class TestDestinationConfig {
     private final String imageName;
     private final JsonNode config;
-    private final Function<TestDestinationEnv, List<JsonNode>> recordRetriever;
-    private final Consumer<TestDestinationEnv> setup;
-    private final Consumer<TestDestinationEnv> tearDown;
+    private final CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever;
+    private final CheckedConsumer<TestDestinationEnv, Exception> setup;
+    private final CheckedConsumer<TestDestinationEnv, Exception> tearDown;
 
     public TestDestinationConfig(
         String imageName,
         JsonNode config,
-        Function<TestDestinationEnv, List<JsonNode>> recordRetriever,
-        Consumer<TestDestinationEnv> setup,
-        Consumer<TestDestinationEnv> tearDown
+        CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever,
+        CheckedConsumer<TestDestinationEnv, Exception> setup,
+        CheckedConsumer<TestDestinationEnv, Exception> tearDown
         ) {
       this.imageName = imageName;
       this.config = config;
@@ -153,40 +162,40 @@ public class TestDestination {
       return config;
     }
 
-    public Function<TestDestinationEnv, List<JsonNode>> getRecordRetriever() {
+    public CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> getRecordRetriever() {
       return recordRetriever;
     }
 
-    public Optional<Consumer<TestDestinationEnv>> getSetup() {
+    public Optional<CheckedConsumer<TestDestinationEnv, Exception>> getSetup() {
       return Optional.ofNullable(setup);
     }
 
-    public Optional<Consumer<TestDestinationEnv>> getTearDown() {
+    public Optional<CheckedConsumer<TestDestinationEnv, Exception>> getTearDown() {
       return Optional.ofNullable(tearDown);
     }
 
     public static class Builder {
       private final String imageName;
       private final JsonNode config;
-      private final Function<TestDestinationEnv, List<JsonNode>> recordRetriever;
-      private Consumer<TestDestinationEnv> setup;
-      private Consumer<TestDestinationEnv> tearDown;
+      private final CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever;
+      private CheckedConsumer<TestDestinationEnv, Exception> setup;
+      private CheckedConsumer<TestDestinationEnv, Exception> tearDown;
 
-      public Builder(String imageName, JsonNode config, Function<TestDestinationEnv, List<JsonNode>> recordRetriever) {
+      public Builder(String imageName, JsonNode config, CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever) {
         this.imageName = imageName;
         this.config = config;
         this.recordRetriever = recordRetriever;
       }
 
-      public Builder(String imageName, JsonNode config, Supplier<List<JsonNode>> recordRetriever) {
+      public Builder(String imageName, JsonNode config, CheckedSupplier<List<JsonNode>, Exception> recordRetriever) {
         this(imageName, config, (path) -> recordRetriever.get());
       }
 
-      public void setSetup(Consumer<TestDestinationEnv> setup) {
+      public void setSetup(CheckedConsumer<TestDestinationEnv, Exception> setup) {
         this.setup = setup;
       }
 
-      public void setTearDown(Consumer<TestDestinationEnv> tearDown) {
+      public void setTearDown(CheckedConsumer<TestDestinationEnv, Exception> tearDown) {
         this.tearDown = tearDown;
       }
 

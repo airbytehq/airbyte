@@ -48,12 +48,12 @@ public class CsvDestinationIntegrationTest extends TestDestination {
       .put("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString());
 
   public CsvDestinationIntegrationTest() {
-    super(IMAGE_NAME, CONFIG, getSingerMessagesFunction());
+    super(new TestDestinationConfig.Builder(IMAGE_NAME, CONFIG, getSingerMessagesFunction()).build());
   }
 
-  static CheckedFunction<Path, List<JsonNode>, Exception> getSingerMessagesFunction() {
-    return (destinationRoot) -> {
-      final List<Path> list = Files.list(destinationRoot.resolve(RELATIVE_PATH)).collect(Collectors.toList());
+  static CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> getSingerMessagesFunction() {
+    return (testEnv) -> {
+      final List<Path> list = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
       assertEquals(1, list.size());
 
       final FileReader in = new FileReader(list.get(0).toFile());
