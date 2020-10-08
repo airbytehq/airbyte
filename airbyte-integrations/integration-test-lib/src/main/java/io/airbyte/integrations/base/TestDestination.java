@@ -27,40 +27,40 @@ package io.airbyte.integrations.base;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnectionImplementation;
-import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.singer.SingerMessage.Type;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.singer.DefaultSingerTarget;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public abstract class TestDestination {
 
-  private static final String STREAM_NAME = "exchange_rate";
-  private static final Schema CATALOG = new Schema().withStreams(Lists.newArrayList(
-      new io.airbyte.config.Stream().withName(STREAM_NAME)
-          .withFields(Lists.newArrayList(new Field().withName("name").withDataType(DataType.STRING).withSelected(true),
-              new Field().withName("date").withDataType(DataType.STRING).withSelected(true),
-              new Field().withName("NZD").withDataType(DataType.NUMBER).withSelected(true),
-              new Field().withName("HKD").withDataType(DataType.NUMBER).withSelected(true)))));
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  private StandardTargetConfig targetConfig;
   private TestDestinationEnv testEnv;
 
   private Path jobRoot;
@@ -123,9 +123,6 @@ public abstract class TestDestination {
 
   @BeforeEach
   void setUpInternal() throws Exception {
-    this.targetConfig = new StandardTargetConfig()
-        .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(getConfig()))
-        .withStandardSync(new StandardSync().withSchema(CATALOG));
     Path workspaceRoot = Files.createTempDirectory("test");
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
@@ -160,27 +157,32 @@ public abstract class TestDestination {
     // todo (cgardens) - blocked on worker not calling discover worker.
   }
 
+  private static class DataArgumentsProvider implements ArgumentsProvider {
+
+    @Override
+    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+      return Stream.of(
+          Arguments.of("exchange_rate_messages.txt", "exchange_rate_catalog.json")
+      // todo - need to use the new protocol to capture this.
+      // Arguments.of("stripe_messages.txt", "stripe_schema.json")
+      );
+    }
+
+  }
+
   /**
    * Verify that the integration successfully writes records. Tests a wide variety of messages and
    * schemas (aspirationally, anyway).
    */
-  @Test
-  void testSync() throws Exception {
-    final DefaultSingerTarget target = new DefaultSingerTarget(getImageName(), pbf);
-    final List<SingerMessage> messages = MoreResources.readResource("messages.txt").lines()
+  @ParameterizedTest
+  @ArgumentsSource(DataArgumentsProvider.class)
+  void testSync(String messagesFilename, String catalogFilename) throws Exception {
+    final Schema catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), Schema.class);
+    final List<SingerMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, SingerMessage.class)).collect(Collectors.toList());
+    runSync(messages, catalog);
 
-    target.start(targetConfig, jobRoot);
-    messages.forEach(message -> Exceptions.toRuntime(() -> target.accept(message)));
-    target.notifyEndOfStream();
-    target.close();
-
-    final List<JsonNode> actual = recordRetriever(testEnv);
-    final List<JsonNode> expected = messages.stream()
-        .filter(message -> message.getType() == Type.RECORD)
-        .map(SingerMessage::getRecord)
-        .collect(Collectors.toList());
-    assertEquals(expected, actual);
+    assertSameMessages(messages, recordRetriever(testEnv));
   }
 
   /**
@@ -188,7 +190,40 @@ public abstract class TestDestination {
    */
   @Test
   void testSecondSync() throws Exception {
-    // todo (cgardens)
+    final Schema catalog = Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), Schema.class);
+    final List<SingerMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
+        .map(record -> Jsons.deserialize(record, SingerMessage.class)).collect(Collectors.toList());
+    runSync(firstSyncMessages, catalog);
+
+    List<SingerMessage> secondSyncMessages = Lists.newArrayList(new SingerMessage()
+        .withStream(catalog.getStreams().get(0).getName())
+        .withRecord(OBJECT_MAPPER.createObjectNode()
+            .put("date", "2020-03-31T00:00:00Z")
+            .put("HKD", 10)
+            .put("NZD", 700)));
+    runSync(secondSyncMessages, catalog);
+    assertSameMessages(secondSyncMessages, recordRetriever(testEnv));
+  }
+
+  private void runSync(List<SingerMessage> messages, Schema catalog) throws IOException, WorkerException {
+    final StandardTargetConfig targetConfig = new StandardTargetConfig()
+        .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(getConfig()))
+        .withStandardSync(new StandardSync().withSchema(catalog));
+
+    final DefaultSingerTarget target = new DefaultSingerTarget(getImageName(), pbf);
+
+    target.start(targetConfig, jobRoot);
+    messages.forEach(message -> Exceptions.toRuntime(() -> target.accept(message)));
+    target.notifyEndOfStream();
+    target.close();
+  }
+
+  private void assertSameMessages(List<SingerMessage> expected, List<JsonNode> actual) {
+    final List<JsonNode> expectedJson = expected.stream()
+        .filter(message -> message.getType() == Type.RECORD)
+        .map(SingerMessage::getRecord)
+        .collect(Collectors.toList());
+    assertEquals(expectedJson, actual);
   }
 
   public static class TestDestinationEnv {

@@ -1,0 +1,25 @@
+{
+  "streams": [
+    {
+      "name": "exchange_rate",
+      "selected": true,
+      "fields": [
+        {
+          "name": "date",
+          "dataType": "string",
+          "selected": true
+        },
+        {
+          "name": "HKD",
+          "dataType": "number",
+          "selected": true
+        },
+        {
+          "name": "NZD",
+          "dataType": "number",
+          "selected": true
+        }
+      ]
+    }
+  ]
+}
