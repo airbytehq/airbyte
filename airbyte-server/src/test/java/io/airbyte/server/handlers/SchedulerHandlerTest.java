@@ -92,11 +92,11 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testGetSourceSpec(){
+  void testGetSourceSpec() {
     // TODO
   }
 
-  void testGetDestinationSpec(){
+  void testGetDestinationSpec() {
     // TODO
   }
 

@@ -79,10 +79,9 @@ import io.airbyte.server.handlers.WebBackendDestinationImplementationHandler;
 import io.airbyte.server.handlers.WebBackendSourceImplementationHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.validation.IntegrationSchemaValidation;
-import org.eclipse.jetty.http.HttpStatus;
-
-import javax.validation.Valid;
 import java.io.IOException;
+import javax.validation.Valid;
+import org.eclipse.jetty.http.HttpStatus;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {

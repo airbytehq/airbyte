@@ -55,11 +55,9 @@ import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.server.converters.SchemaConverter;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

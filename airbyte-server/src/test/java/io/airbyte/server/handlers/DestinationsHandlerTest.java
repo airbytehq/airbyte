@@ -85,12 +85,12 @@ class DestinationsHandlerTest {
   }
 
   @Test
-  void testGetSourceSpecificationFromSourceId(){
+  void testGetSourceSpecificationFromSourceId() {
     // TODO
   }
 
   @Test
-  void testGetDestinationSpecificationFromDestinationId(){
+  void testGetDestinationSpecificationFromDestinationId() {
     // TODO
   }
 

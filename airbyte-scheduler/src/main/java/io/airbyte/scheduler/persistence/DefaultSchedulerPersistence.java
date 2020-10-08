@@ -41,7 +41,6 @@ import io.airbyte.integrations.Integrations;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.ScopeHelper;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -53,7 +52,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.slf4j.Logger;
@@ -65,7 +63,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private final BasicDataSource connectionPool;
   private final Supplier<Instant> timeSupplier;
 
-  @VisibleForTesting DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
+  @VisibleForTesting
+  DefaultSchedulerPersistence(BasicDataSource connectionPool, Supplier<Instant> timeSupplier) {
     this.connectionPool = connectionPool;
     this.timeSupplier = timeSupplier;
   }
