@@ -41,6 +41,7 @@ import io.airbyte.config.Field;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobDiscoverSchemaConfig;
+import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Schema;
@@ -240,8 +241,17 @@ class DefaultSchedulerPersistenceTest {
   }
 
   @Test
-  public void testCreateGetSpecJob() {
-    // TODO
+  public void testCreateGetSpecJob() throws IOException, SQLException {
+    String integrationImage = "thisdoesnotexist";
+    final long jobId = schedulerPersistence.createGetSpecJob(integrationImage);
+
+    final Record jobEntry = getJobRecord(jobId);
+
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.GET_SPEC)
+        .withGetSpec(new JobGetSpecConfig().withDockerImage(integrationImage));
+
+    assertJobConfigEqualJobDbRecord(jobId, integrationImage, jobConfig, jobEntry);
   }
 
   @Test

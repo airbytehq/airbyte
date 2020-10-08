@@ -135,7 +135,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   public long createGetSpecJob(String integrationImage) throws IOException {
     final String scope = ScopeHelper.createScope(
         JobConfig.ConfigType.GET_SPEC,
-        integrationImage + ":" + System.currentTimeMillis());
+        integrationImage);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.GET_SPEC)
