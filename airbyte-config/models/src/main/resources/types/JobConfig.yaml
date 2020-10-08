@@ -14,10 +14,13 @@ properties:
       - checkConnectionSource
       - checkConnectionDestination
       - discoverSchema
+      - getSpec
       - sync
   checkConnection:
     "$ref": JobCheckConnectionConfig.yaml
   discoverSchema:
     "$ref": JobDiscoverSchemaConfig.yaml
+  getSpec:
+    "$ref": JobGetSpecConfig.yaml
   sync:
     "$ref": JobSyncConfig.yaml
