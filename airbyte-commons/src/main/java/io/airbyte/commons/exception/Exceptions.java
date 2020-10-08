@@ -22,17 +22,31 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.concurrency;
+package io.airbyte.commons.exception;
 
+import io.airbyte.commons.functional.VoidCallable;
 import java.util.concurrent.Callable;
 
-public interface VoidCallable extends Callable<Void> {
+public class Exceptions {
 
-  default @Override Void call() throws Exception {
-    voidCall();
-    return null;
+  public static <T> T toRuntime(Callable<T> callable) {
+    try {
+      return callable.call();
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  void voidCall() throws Exception;
+  public static void toRuntimeVoid(VoidCallable callable) {
+    try {
+      callable.call();
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  };
 
 }
