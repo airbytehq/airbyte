@@ -38,7 +38,6 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.singer.SingerMessage;
 import java.io.FileWriter;
 import java.io.IOException;
