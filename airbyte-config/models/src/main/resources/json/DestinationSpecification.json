@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/json/DestinationSpecification.json",
+  "title": "DestinationSpecification",
+  "description": "Specification of a destination",
+  "type": "object",
+  "required": ["connectionSpecification"],
+  "additionalProperties": false,
+  "properties": {
+    "documentationUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "changelogUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "connectionSpecification": {
+      "description": "Integration specific blob. Must be a valid JSON string.",
+      "type": "object",
+      "existingJavaType": "com.fasterxml.jackson.databind.JsonNode"
+    }
+  }
+}
