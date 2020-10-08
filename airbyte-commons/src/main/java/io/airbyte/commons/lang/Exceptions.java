@@ -22,18 +22,48 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.concurrency;
+package io.airbyte.commons.lang;
 
 import java.util.concurrent.Callable;
 
-@FunctionalInterface
-public interface VoidCallable extends Callable<Void> {
+public class Exceptions {
 
-  default @Override Void call() throws Exception {
-    voidCall();
-    return null;
+  /**
+   * Catch a checked exception and rethrow as a {@link RuntimeException}
+   *
+   * @param callable - function that throws a checked exception.
+   * @param <T> - return type of the function.
+   * @return object that the function returns.
+   */
+  public static <T> T toRuntime(Callable<T> callable) {
+    try {
+      return callable.call();
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  void voidCall() throws Exception;
+  /**
+   * Catch a checked exception and rethrow as a {@link RuntimeException}.
+   *
+   * @param voidCallable - function that throws a checked exception.
+   */
+  public static void toRuntime(Procedure voidCallable) {
+    try {
+      voidCallable.call();
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public interface Procedure {
+
+    void call() throws Exception;
+
+  }
 
 }
