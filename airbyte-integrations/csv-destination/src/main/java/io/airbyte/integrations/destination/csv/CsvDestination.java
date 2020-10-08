@@ -39,6 +39,7 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.singer.SingerMessage;
+import io.airbyte.singer.SingerMessage.Type;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -84,7 +85,6 @@ public class CsvDestination implements Destination {
   }
 
   /**
-   *
    * @param config - csv destination config.
    * @param schema - schema of the incoming messages.
    * @return - a consumer to handle writing records to the filesystem.
@@ -141,12 +141,16 @@ public class CsvDestination implements Destination {
 
     @Override
     protected void acceptTracked(SingerMessage singerMessage) throws Exception {
-      if (writeConfigs.containsKey(singerMessage.getStream())) {
+
+      // ignore other message types.
+      if (singerMessage.getType() == Type.RECORD) {
+        if (!writeConfigs.containsKey(singerMessage.getStream())) {
+          throw new IllegalArgumentException(
+              String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+                  Jsons.serialize(schema), Jsons.serialize(singerMessage)));
+        }
+
         writeConfigs.get(singerMessage.getStream()).getWriter().printRecord(Jsons.serialize(singerMessage.getRecord()));
-      } else {
-        throw new IllegalArgumentException(
-            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                Jsons.serialize(schema), Jsons.serialize(singerMessage)));
       }
     }
 

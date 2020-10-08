@@ -50,11 +50,11 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FileUtils;
@@ -77,6 +77,10 @@ class CsvDestinationTest {
       .withRecord(objectMapper.createObjectNode().put("goal", "announce the game."));
   private static final SingerMessage SINGER_MESSAGE_TASKS2 = new SingerMessage().withType(Type.RECORD).withStream(TASKS_STREAM_NAME)
       .withRecord(objectMapper.createObjectNode().put("goal", "ship some code."));
+  // todo (cgardens) - may want to codify this in the integration scaffold. like there's a setting
+  // that says it just ignores state.
+  private static final SingerMessage SINGER_MESSAGE_RECORD = new SingerMessage().withType(Type.STATE)
+      .withValue(objectMapper.createObjectNode().put("checkpoint", "now!"));
 
   private static final Schema CATALOG = new Schema().withStreams(Lists.newArrayList(
       new Stream().withName(USERS_STREAM_NAME)
@@ -133,6 +137,7 @@ class CsvDestinationTest {
     consumer.accept(SINGER_MESSAGE_TASKS1);
     consumer.accept(SINGER_MESSAGE_USERS2);
     consumer.accept(SINGER_MESSAGE_TASKS2);
+    consumer.accept(SINGER_MESSAGE_RECORD);
     consumer.close();
 
     // verify contents of CSV file
@@ -193,11 +198,9 @@ class CsvDestinationTest {
         .withFirstRecordAsHeader()
         .parse(in);
 
-    final List<JsonNode> jsonRecords = new ArrayList<>();
-    for (final CSVRecord record : records) {
-      jsonRecords.add(Jsons.deserialize(record.toMap().get(CsvDestination.COLUMN_NAME)));
-    }
-    return jsonRecords;
+    return StreamSupport.stream(records.spliterator(), false)
+        .map(record -> Jsons.deserialize(record.toMap().get(CsvDestination.COLUMN_NAME)))
+        .collect(Collectors.toList());
   }
 
 }
