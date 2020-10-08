@@ -37,7 +37,6 @@ import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -73,7 +72,6 @@ class DefaultGetSpecWorkerTest {
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
-
 
     OutputAndStatus<StandardGetSpecOutput> actualOutput = worker.run(config, jobRoot);
     OutputAndStatus<StandardGetSpecOutput> expectedOutput =

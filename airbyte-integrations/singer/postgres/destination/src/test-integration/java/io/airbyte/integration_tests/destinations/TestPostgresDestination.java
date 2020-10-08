@@ -37,13 +37,14 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.db.DatabaseHelper;
 import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.SingerCheckConnectionWorker;
+import io.airbyte.workers.SingerDiscoverSchemaWorker;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
-import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.SingerCheckConnectionWorker;
-import io.airbyte.workers.SingerDiscoverSchemaWorker;
+import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.process.SingerIntegrationLauncher;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -68,7 +69,7 @@ class TestPostgresDestination {
 
   protected Path jobRoot;
   protected Path workspaceRoot;
-  protected ProcessBuilderFactory pbf;
+  private IntegrationLauncher integrationLauncher;
 
   private Process process;
 
@@ -84,7 +85,9 @@ class TestPostgresDestination {
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "", "host");
+    integrationLauncher = new SingerIntegrationLauncher(
+        IMAGE_NAME,
+        new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "", "host"));
   }
 
   @AfterEach
@@ -116,7 +119,7 @@ class TestPostgresDestination {
 
   @Test
   public void testGetSpec() throws WorkerException, IOException, InterruptedException {
-    Process process = pbf.create(jobRoot, IMAGE_NAME, "--spec").start();
+    Process process = integrationLauncher.spec(jobRoot).start();
     process.waitFor();
     InputStream expectedSpecInputStream = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("spec.json"));
     JsonNode expectedSpec = Jsons.deserialize(new String(expectedSpecInputStream.readAllBytes()));
@@ -126,7 +129,7 @@ class TestPostgresDestination {
 
   @Test
   public void testConnectionSuccessful() {
-    SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
+    SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(integrationLauncher));
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig()));
     OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
     assertEquals(SUCCESSFUL, run.getStatus());
@@ -136,7 +139,7 @@ class TestPostgresDestination {
 
   @Test
   public void testConnectionUnsuccessfulInvalidCreds() {
-    SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
+    SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(integrationLauncher));
     Map<String, Object> dbConfig = getDbConfig();
     dbConfig.put("postgres_password", "superfakepassword_nowaythisworks");
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(dbConfig));
@@ -148,7 +151,7 @@ class TestPostgresDestination {
   }
 
   private Process startTarget() throws IOException, WorkerException {
-    return pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
+    return integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();

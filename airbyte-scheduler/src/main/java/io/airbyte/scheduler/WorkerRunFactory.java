@@ -113,7 +113,8 @@ public class WorkerRunFactory {
                     new DefaultSingerTap(
                         new SingerIntegrationLauncher(
                             job.getConfig().getSync().getSourceDockerImage(),
-                            pbf), discoverSchemaWorker),
+                            pbf),
+                        discoverSchemaWorker),
                     new DefaultSingerTarget(
                         new SingerIntegrationLauncher(
                             job.getConfig().getSync().getDestinationDockerImage(),

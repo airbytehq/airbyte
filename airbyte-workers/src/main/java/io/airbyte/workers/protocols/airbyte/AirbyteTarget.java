@@ -27,7 +27,6 @@ package io.airbyte.workers.protocols.airbyte;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.singer.SingerMessage;
 import java.nio.file.Path;
 
 public interface AirbyteTarget extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {

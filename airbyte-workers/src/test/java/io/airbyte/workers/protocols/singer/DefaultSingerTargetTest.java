@@ -42,7 +42,6 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -78,8 +77,7 @@ class DefaultSingerTargetTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("error".getBytes(StandardCharsets.UTF_8)));
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
-    when(integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, null).start())
-        .thenReturn(process);
+    when(integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME).start()).thenReturn(process);
   }
 
   @SuppressWarnings("BusyWait")
