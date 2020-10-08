@@ -147,7 +147,7 @@ public abstract class TestDestination {
    */
   @Test
   void testCheckConnection() {
-    // todo (cgardens)
+    // todo (cgardens) - blocked on worker not calling discover worker.
   }
 
   /**
@@ -156,7 +156,7 @@ public abstract class TestDestination {
    */
   @Test
   void testCheckConnectionInvalidCredentials() {
-    // todo (cgardens)
+    // todo (cgardens) - blocked on worker not calling discover worker.
   }
 
   /**
