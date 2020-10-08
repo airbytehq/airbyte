@@ -25,8 +25,8 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.JsonSchemaValidator;
 import io.airbyte.protocol.models.AirbyteProtocolSchema;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.function.Predicate;
 
 public class AirbyteProtocolPredicate implements Predicate<JsonNode> {

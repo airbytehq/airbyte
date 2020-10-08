@@ -25,7 +25,6 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
@@ -43,6 +42,7 @@ import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
