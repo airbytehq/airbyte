@@ -77,7 +77,8 @@ public class CsvDestination implements Destination {
     return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
   }
 
-  // todo (cgardens) - we currently don't leverage discover in our destinations, so skipping implementing it... for now.
+  // todo (cgardens) - we currently don't leverage discover in our destinations, so skipping
+  // implementing it... for now.
   @Override
   public StandardDiscoverSchemaOutput discover(JsonNode config) {
     throw new RuntimeException("Not Implemented");
@@ -112,8 +113,7 @@ public class CsvDestination implements Destination {
     final String destinationRelativePath = config.get(DESTINATION_PATH_FIELD).asText();
     Preconditions.checkNotNull(destinationRelativePath);
 
-    // append destination path to the local mount.
-    return JavaBaseConstants.LOCAL_MOUNT.resolve(destinationRelativePath);
+    return Path.of(destinationRelativePath);
   }
 
   public static class WriteConfig {
