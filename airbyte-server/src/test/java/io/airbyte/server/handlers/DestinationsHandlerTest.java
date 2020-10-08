@@ -85,16 +85,6 @@ class DestinationsHandlerTest {
   }
 
   @Test
-  void testGetSourceSpecificationFromSourceId() {
-    // TODO
-  }
-
-  @Test
-  void testGetDestinationSpecificationFromDestinationId() {
-    // TODO
-  }
-
-  @Test
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.getStandardDestination(destination.getDestinationId()))
         .thenReturn(destination);
