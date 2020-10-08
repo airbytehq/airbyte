@@ -102,6 +102,22 @@ public class TestDestination {
     }
   }
 
+  /**
+   * Verify that when given valid credentials, that check connection returns a success response. Assume that the {@link TestDestinationConfig#config} is valid.
+   */
+  @Test
+  void testCheckConnection() {
+    // todo (cgardens) - can't implement until worker no longer calls discover internally.
+  }
+
+  /**
+   * Verify that when given invalid credentials, that check connection returns a failed response. Assume that the {@link TestDestinationConfig#invalidConfig} is invalid.
+   */
+  @Test
+  void testCheckConnectionInvalidCredentials() {
+    // todo (cgardens) - can't implement until worker no longer calls discover internally.
+  }
+
   @Test
   void testSync() throws Exception {
     final DefaultSingerTarget target = new DefaultSingerTarget(testConfig.getImageName(), pbf);
@@ -121,6 +137,11 @@ public class TestDestination {
     assertEquals(expected, actual);
   }
 
+  @Test
+  void testSecondSync() throws Exception {
+    // todo (cgardens)
+  }
+
   public static class TestDestinationEnv {
     private final Path localRoot;
 
@@ -136,6 +157,7 @@ public class TestDestination {
   public static class TestDestinationConfig {
     private final String imageName;
     private final JsonNode config;
+    private final JsonNode invalidConfig;
     private final CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever;
     private final CheckedConsumer<TestDestinationEnv, Exception> setup;
     private final CheckedConsumer<TestDestinationEnv, Exception> tearDown;
@@ -143,11 +165,13 @@ public class TestDestination {
     public TestDestinationConfig(
         String imageName,
         JsonNode config,
+        JsonNode invalidConfig,
         CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever,
         CheckedConsumer<TestDestinationEnv, Exception> setup,
         CheckedConsumer<TestDestinationEnv, Exception> tearDown
         ) {
       this.imageName = imageName;
+      this.invalidConfig = invalidConfig;
       this.config = config;
       this.setup = setup;
       this.tearDown = tearDown;
@@ -160,6 +184,10 @@ public class TestDestination {
 
     public JsonNode getConfig() {
       return config;
+    }
+
+    public JsonNode getInvalidConfig() {
+      return invalidConfig;
     }
 
     public CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> getRecordRetriever() {
@@ -177,18 +205,29 @@ public class TestDestination {
     public static class Builder {
       private final String imageName;
       private final JsonNode config;
+      private final JsonNode invalidConfig;
       private final CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever;
       private CheckedConsumer<TestDestinationEnv, Exception> setup;
       private CheckedConsumer<TestDestinationEnv, Exception> tearDown;
 
-      public Builder(String imageName, JsonNode config, CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever) {
+      public Builder(
+          String imageName,
+          JsonNode config,
+          JsonNode invalidConfig,
+          CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> recordRetriever
+      ) {
         this.imageName = imageName;
         this.config = config;
+        this.invalidConfig = invalidConfig;
         this.recordRetriever = recordRetriever;
       }
 
-      public Builder(String imageName, JsonNode config, CheckedSupplier<List<JsonNode>, Exception> recordRetriever) {
-        this(imageName, config, (path) -> recordRetriever.get());
+      public Builder(
+          String imageName,
+          JsonNode config,
+          JsonNode invalidConfig,
+          CheckedSupplier<List<JsonNode>, Exception> recordRetriever) {
+        this(imageName, config, invalidConfig, (path) -> recordRetriever.get());
       }
 
       public void setSetup(CheckedConsumer<TestDestinationEnv, Exception> setup) {
@@ -202,8 +241,9 @@ public class TestDestination {
       public TestDestinationConfig build() {
         Preconditions.checkNotNull(imageName);
         Preconditions.checkNotNull(config);
+        Preconditions.checkNotNull(invalidConfig);
         Preconditions.checkNotNull(recordRetriever);
-        return new TestDestinationConfig(imageName, config, recordRetriever, setup, tearDown);
+        return new TestDestinationConfig(imageName, config, invalidConfig, recordRetriever, setup, tearDown);
       }
     }
   }

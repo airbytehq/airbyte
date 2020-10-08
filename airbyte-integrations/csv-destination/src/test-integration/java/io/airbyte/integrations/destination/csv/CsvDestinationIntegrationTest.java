@@ -46,9 +46,11 @@ public class CsvDestinationIntegrationTest extends TestDestination {
   private static final Path RELATIVE_PATH = Path.of("integration_test/charles");
   private static final JsonNode CONFIG = new ObjectMapper().createObjectNode()
       .put("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString());
+  private static final JsonNode INVALID_CONFIG = new ObjectMapper().createObjectNode()
+      .put("destination_path", Path.of("/@").resolve(RELATIVE_PATH).toString());
 
   public CsvDestinationIntegrationTest() {
-    super(new TestDestinationConfig.Builder(IMAGE_NAME, CONFIG, getSingerMessagesFunction()).build());
+    super(new TestDestinationConfig.Builder(IMAGE_NAME, CONFIG, INVALID_CONFIG, getSingerMessagesFunction()).build());
   }
 
   static CheckedFunction<TestDestinationEnv, List<JsonNode>, Exception> getSingerMessagesFunction() {
