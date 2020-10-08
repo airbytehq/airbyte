@@ -58,7 +58,7 @@ public class CsvDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
 
-  static final String COLUMN_NAME = "data"; // we output all data as a blog to a single column.
+  static final String COLUMN_NAME = "data"; // we output all data as a blob to a single column.
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
   @Override
