@@ -75,8 +75,10 @@ class SingerHelper:
                                 # todo: remove type from record
                                 # todo: handle stream designation
                                 # todo: check that messages match the discovered schema
+                                stream_name = transformed_json['stream']
                                 del transformed_json['type']
-                                out_record = AirbyteRecordMessage(data=transformed_json, emitted_at=str(datetime.now()))
+                                del transformed_json['stream']
+                                out_record = AirbyteRecordMessage(stream=stream_name, data=transformed_json['record'], emitted_at=str(datetime.now()))
                                 out_message = AirbyteMessage(type="RECORD", record=out_record)
                                 yield transform(out_message)
                     elif out_line:
