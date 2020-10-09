@@ -41,11 +41,13 @@ import io.airbyte.api.model.DestinationImplementationUpdate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationSpecificationRead;
+import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.SlugRequestBody;
+import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceImplementationCreate;
 import io.airbyte.api.model.SourceImplementationDiscoverSchemaRead;
@@ -56,6 +58,7 @@ import io.airbyte.api.model.SourceImplementationUpdate;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceSpecificationRead;
+import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -156,14 +159,24 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> sourcesHandler.getSource(sourceIdRequestBody));
   }
 
+  @Override
+  public SourceRead createSource(@Valid SourceCreate sourceCreate) {
+    return execute(() -> sourcesHandler.createSource(sourceCreate));
+  }
+
+  @Override
+  public SourceRead updateSource(@Valid SourceUpdate sourceUpdate) {
+    return execute(() -> sourcesHandler.updateSource(sourceUpdate));
+  }
+
   // SOURCE SPECIFICATION
 
   @Override
   public SourceSpecificationRead getSourceSpecification(@Valid SourceIdRequestBody sourceIdRequestBody) {
     return execute(() -> schedulerHandler.getSourceSpecification(sourceIdRequestBody));
   }
-
   // SOURCE IMPLEMENTATION
+
   @Override
   public SourceImplementationRead createSourceImplementation(@Valid SourceImplementationCreate sourceImplementationCreate) {
     return execute(() -> sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate));
@@ -201,8 +214,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(@Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return execute(() -> schedulerHandler.discoverSchemaForSourceImplementation(sourceImplementationIdRequestBody));
   }
-
   // DESTINATION
+
   @Override
   public DestinationReadList listDestinations() {
     return execute(destinationsHandler::listDestinations);
@@ -213,7 +226,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> destinationsHandler.getDestination(destinationIdRequestBody));
   }
 
+  @Override
+  public DestinationRead updateDestination(@Valid DestinationUpdate destinationUpdate) {
+    return execute(() -> destinationsHandler.updateDestination(destinationUpdate));
+  }
+
   // DESTINATION SPECIFICATION
+
   @Override
   public DestinationSpecificationRead getDestinationSpecification(@Valid DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> schedulerHandler.getDestinationSpecification(destinationIdRequestBody));

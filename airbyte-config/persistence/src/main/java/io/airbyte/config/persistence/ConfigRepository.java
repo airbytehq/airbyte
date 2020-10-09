@@ -76,6 +76,13 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE, StandardSource.class);
   }
 
+  public void writeStandardSource(final StandardSource source) throws JsonValidationException, IOException {
+    persistence.writeConfig(
+        ConfigSchema.STANDARD_SOURCE,
+        source.getSourceId().toString(),
+        source);
+  }
+
   public StandardDestination getStandardDestination(final UUID destinationId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(
@@ -87,6 +94,13 @@ public class ConfigRepository {
   public List<StandardDestination> listStandardDestinations()
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION, StandardDestination.class);
+  }
+
+  public void writeStandardDestination(final StandardDestination destination) throws JsonValidationException, IOException {
+    persistence.writeConfig(
+        ConfigSchema.STANDARD_DESTINATION,
+        destination.getDestinationId().toString(),
+        destination);
   }
 
   public SourceConnectionImplementation getSourceConnectionImplementation(final UUID sourceImplementationId)

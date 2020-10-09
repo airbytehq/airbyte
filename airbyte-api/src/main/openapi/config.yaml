@@ -121,6 +121,48 @@ paths:
           description: Workspace not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/sources/create:
+    post:
+      tags:
+        - source
+      summary: Creates a source
+      operationId: createSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceCreate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/sources/update:
+    post:
+      tags:
+        - source
+      summary: Update a source
+      operationId: updateSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceUpdate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+        "404":
+          description: Source not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/sources/list:
     post:
       tags:
@@ -335,6 +377,29 @@ paths:
                 $ref: "#/components/schemas/SourceImplementationDiscoverSchemaRead"
         "404":
           description: Source Implementation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/destinations/update:
+    post:
+      tags:
+        - destination
+      summary: Update destination
+      operationId: updateDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationRead"
+        "404":
+          description: Destination not found
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/destinations/list:
@@ -881,6 +946,7 @@ components:
         - name
         - dockerRepository
         - dockerImageTag
+        - documentationUrl
       properties:
         name:
           type: string
@@ -888,6 +954,9 @@ components:
           type: string
         dockerImageTag:
           type: string
+        documentationUrl:
+          type: string
+          format: uri
     SourceUpdate:
       type: object
       description: Update the source. Currently, the only allowed attribute to update is the default docker image version.
@@ -905,7 +974,7 @@ components:
         - sourceId
         - name
         - dockerRepository
-        - dockerImageVersion
+        - dockerImageTag
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
@@ -913,8 +982,11 @@ components:
           type: string
         dockerRepository:
           type: string
-        dockerImageVersion:
+        dockerImageTag:
           type: string
+        documentationUrl:
+          type: string
+          format: uri
     SourceReadList:
       type: object
       required:
@@ -1049,6 +1121,7 @@ components:
         - name
         - dockerRepository
         - dockerImageTag
+        - documentationUrl
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
@@ -1058,6 +1131,9 @@ components:
           type: string
         dockerImageTag:
           type: string
+        documentationUrl:
+          type: string
+          format: uri
     DestinationReadList:
       type: object
       required:

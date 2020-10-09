@@ -24,22 +24,25 @@
 
 package io.airbyte.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import java.io.IOException;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DestinationsHandlerTest {
 
@@ -59,7 +62,10 @@ class DestinationsHandlerTest {
 
     return new StandardDestination()
         .withDestinationId(destinationId)
-        .withName("presto");
+        .withName("presto")
+        .withDockerImageTag("12.3")
+        .withDockerRepository("repo")
+        .withDocumentationUrl("https://hulu.com");
   }
 
   @Test
@@ -99,6 +105,21 @@ class DestinationsHandlerTest {
     final DestinationRead actualDestinationRead = destinationHandler.getDestination(destinationIdRequestBody);
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
+  }
+
+  @Test
+  void testUpdateDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
+    when(configRepository.getStandardDestination(destination.getDestinationId())).thenReturn(destination);
+    final String newDockerImageTag = "averydifferenttag";
+    String currentTag = destinationHandler.getDestination(
+        new DestinationIdRequestBody().destinationId(destination.getDestinationId())
+    ).getDockerImageTag();
+    assertNotEquals(newDockerImageTag, currentTag);
+
+    DestinationRead sourceRead = destinationHandler.updateDestination(
+        new DestinationUpdate().destinationId(destination.getDestinationId()).dockerImageTag(newDockerImageTag)
+    );
+    assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
   }
 
 }

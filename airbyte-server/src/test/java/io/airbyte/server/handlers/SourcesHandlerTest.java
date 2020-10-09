@@ -25,33 +25,46 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
+import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
+import java.util.function.Supplier;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 class SourcesHandlerTest {
 
   private ConfigRepository configRepository;
   private StandardSource source;
   private SourcesHandler sourceHandler;
+  private Supplier<UUID> uuidSupplier;
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
+    uuidSupplier = mock(Supplier.class);
+
     source = generateSource();
-    sourceHandler = new SourcesHandler(configRepository);
+    sourceHandler = new SourcesHandler(configRepository, uuidSupplier);
   }
 
   private StandardSource generateSource() {
@@ -59,7 +72,10 @@ class SourcesHandlerTest {
 
     return new StandardSource()
         .withSourceId(sourceId)
-        .withName("presto");
+        .withName("presto")
+        .withDocumentationUrl("https://netflix.com")
+        .withDockerRepository("dockerstuff")
+        .withDockerImageTag("12.3");
   }
 
   @Test
@@ -95,6 +111,40 @@ class SourcesHandlerTest {
     final SourceRead actualSourceRead = sourceHandler.getSource(sourceIdRequestBody);
 
     assertEquals(expectedSourceRead, actualSourceRead);
+  }
+
+  @Test
+  void testCreateSource() throws URISyntaxException, ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardSource source = generateSource();
+
+    when(uuidSupplier.get()).thenReturn(source.getSourceId());
+    final SourceCreate create = new SourceCreate()
+        .name(source.getName())
+        .dockerRepository(source.getDockerRepository())
+        .dockerImageTag(source.getDockerImageTag())
+        .documentationUrl(new URI(source.getDocumentationUrl()));
+
+    final SourceRead expectedRead = new SourceRead()
+        .name(source.getName())
+        .dockerRepository(source.getDockerRepository())
+        .dockerImageTag(source.getDockerImageTag())
+        .documentationUrl(new URI(source.getDocumentationUrl()))
+        .sourceId(source.getSourceId());
+
+    final SourceRead actualRead = sourceHandler.createSource(create);
+
+    assertEquals(expectedRead, actualRead);
+  }
+
+  @Test
+  void testUpdateSource() throws ConfigNotFoundException, IOException, JsonValidationException {
+    when(configRepository.getStandardSource(source.getSourceId())).thenReturn(source);
+    final String newDockerImageTag = "averydifferenttag";
+    String currentTag = sourceHandler.getSource(new SourceIdRequestBody().sourceId(source.getSourceId())).getDockerImageTag();
+    assertNotEquals(newDockerImageTag, currentTag);
+
+    SourceRead sourceRead = sourceHandler.updateSource(new SourceUpdate().sourceId(source.getSourceId()).dockerImageTag(newDockerImageTag));
+    assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
   }
 
 }
