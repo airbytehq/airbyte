@@ -22,16 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols.singer;
+package io.airbyte.workers;
 
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverSchemaInput;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
-import io.airbyte.workers.CheckConnectionWorker;
-import io.airbyte.workers.DiscoverSchemaWorker;
-import io.airbyte.workers.JobStatus;
-import io.airbyte.workers.OutputAndStatus;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

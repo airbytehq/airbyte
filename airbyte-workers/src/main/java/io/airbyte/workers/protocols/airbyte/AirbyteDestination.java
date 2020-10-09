@@ -22,18 +22,23 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.process;
+package io.airbyte.workers.protocols.airbyte;
 
-import io.airbyte.workers.WorkerException;
+import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.protocol.models.AirbyteMessage;
 import java.nio.file.Path;
-import java.util.List;
 
-public interface ProcessBuilderFactory {
+public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
 
-  ProcessBuilder create(final Path jobPath, final String imageName, final String... args) throws WorkerException;
+  void start(StandardTargetConfig targetConfig, Path jobRoot) throws Exception;
 
-  default ProcessBuilder create(final Path jobPath, final String imageName, final List<String> args) throws WorkerException {
-    return create(jobPath, imageName, args.toArray(new String[0]));
-  }
+  @Override
+  void accept(AirbyteMessage message) throws Exception;
+
+  void notifyEndOfStream() throws Exception;
+
+  @Override
+  void close() throws Exception;
 
 }

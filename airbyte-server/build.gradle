@@ -19,7 +19,6 @@ dependencies {
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-db')
     implementation project(':airbyte-scheduler')
-
 }
 
 application {

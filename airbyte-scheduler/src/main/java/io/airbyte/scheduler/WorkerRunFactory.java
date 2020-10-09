@@ -34,13 +34,14 @@ import io.airbyte.config.StandardDiscoverSchemaInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.GetSpecWorker;
+import io.airbyte.workers.SingerCheckConnectionWorker;
+import io.airbyte.workers.SingerDiscoverSchemaWorker;
+import io.airbyte.workers.SingerSyncWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.SingerIntegrationLauncher;
 import io.airbyte.workers.protocols.singer.DefaultSingerTap;
 import io.airbyte.workers.protocols.singer.DefaultSingerTarget;
-import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
-import io.airbyte.workers.protocols.singer.SingerDiscoverSchemaWorker;
-import io.airbyte.workers.protocols.singer.SingerSyncWorker;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
@@ -88,7 +89,10 @@ public class WorkerRunFactory {
             jobRoot,
             checkConnectionInput,
             new JobOutputCheckConnectionWorker(
-                new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf))));
+                new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(
+                    new SingerIntegrationLauncher(
+                        job.getConfig().getCheckConnection().getDockerImage(),
+                        pbf)))));
       }
       case DISCOVER_SCHEMA -> {
         final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
@@ -96,26 +100,35 @@ public class WorkerRunFactory {
             jobRoot,
             discoverSchemaInput,
             new JobOutputDiscoverSchemaWorker(
-                new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)));
+                new SingerDiscoverSchemaWorker(new SingerIntegrationLauncher(
+                    job.getConfig().getDiscoverSchema().getDockerImage(),
+                    pbf))));
       }
       case SYNC -> {
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
-        final SingerDiscoverSchemaWorker discoverSchemaWorker = new SingerDiscoverSchemaWorker(job.getConfig().getSync().getSourceDockerImage(), pbf);
+        final SingerDiscoverSchemaWorker discoverSchemaWorker = new SingerDiscoverSchemaWorker(
+            new SingerIntegrationLauncher(job.getConfig().getSync().getSourceDockerImage(), pbf));
         return creator.create(
             jobRoot,
             syncInput,
-            // todo (cgardens) - still locked into only using SingerTaps and Targets. Next step
-            // here is to create DefaultTap and DefaultTarget which will be able to
-            // interoperate with SingerTap and SingerTarget now that they are split and
-            // mediated in DefaultSyncWorker.
             new JobOutputSyncWorker(
                 new SingerSyncWorker(
-                    new DefaultSingerTap(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
-                    new DefaultSingerTarget(job.getConfig().getSync().getDestinationDockerImage(), pbf))));
+                    new DefaultSingerTap(
+                        new SingerIntegrationLauncher(
+                            job.getConfig().getSync().getSourceDockerImage(),
+                            pbf),
+                        discoverSchemaWorker),
+                    new DefaultSingerTarget(
+                        new SingerIntegrationLauncher(
+                            job.getConfig().getSync().getDestinationDockerImage(),
+                            pbf)))));
       }
       case GET_SPEC -> {
         final JobGetSpecConfig getSpecInput = job.getConfig().getGetSpec();
-        final GetSpecWorker worker = new DefaultGetSpecWorker(pbf);
+        final GetSpecWorker worker = new DefaultGetSpecWorker(
+            new SingerIntegrationLauncher(
+                job.getConfig().getGetSpec().getDockerImage(),
+                pbf));
         return creator.create(
             jobRoot,
             getSpecInput,

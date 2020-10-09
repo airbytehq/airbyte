@@ -33,11 +33,16 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.workers.*;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.SingerCheckConnectionWorker;
+import io.airbyte.workers.SingerDiscoverSchemaWorker;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
-import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
-import io.airbyte.workers.protocols.singer.SingerDiscoverSchemaWorker;
+import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.process.SingerIntegrationLauncher;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -72,7 +77,7 @@ class TestLocalCsvDestination {
   protected Path jobRoot;
   protected Path workspaceRoot;
   protected Path localRoot;
-  protected ProcessBuilderFactory pbf;
+  protected IntegrationLauncher integrationLauncher;
 
   private Process process;
 
@@ -84,7 +89,9 @@ class TestLocalCsvDestination {
     jobRoot = Path.of(workspaceRoot.toString(), "job");
     Files.createDirectories(jobRoot);
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host");
+    integrationLauncher = new SingerIntegrationLauncher(
+        IMAGE_NAME,
+        new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host"));
 
     LOGGER.debug("workspaceRoot - {}", workspaceRoot);
     LOGGER.debug("localRoot - {}", localRoot);
@@ -148,7 +155,7 @@ class TestLocalCsvDestination {
     javaDestinationPath.toFile().mkdirs();
 
     final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
-    SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(IMAGE_NAME, pbf));
+    SingerCheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(integrationLauncher));
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(config));
     OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
     assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
@@ -171,8 +178,8 @@ class TestLocalCsvDestination {
   }
 
   @Test
-  public void testGetSpec() throws WorkerException, IOException, InterruptedException {
-    Process process = pbf.create(jobRoot, IMAGE_NAME, "--spec").start();
+  public void testGetSpec() throws IOException, InterruptedException, WorkerException {
+    Process process = integrationLauncher.spec(jobRoot).start();
     process.waitFor();
     InputStream expectedSpecInputStream = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("spec.json"));
     JsonNode expectedSpec = Jsons.deserialize(new String(expectedSpecInputStream.readAllBytes()));
@@ -181,7 +188,7 @@ class TestLocalCsvDestination {
   }
 
   private Process startTarget() throws IOException, WorkerException {
-    return pbf.create(jobRoot, IMAGE_NAME, "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
+    return integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME)
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
