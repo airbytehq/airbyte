@@ -37,7 +37,7 @@ import java.util.UUID;
 
 public class SourceImplementationHelpers {
 
-  public static SourceConnectionImplementation generateSourceImplementation(UUID sourceSpecificationId)
+  public static SourceConnectionImplementation generateSourceImplementation(UUID sourceId)
       throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
@@ -47,7 +47,7 @@ public class SourceImplementationHelpers {
     return new SourceConnectionImplementation()
         .withName("my postgres db")
         .withWorkspaceId(workspaceId)
-        .withSourceSpecificationId(sourceSpecificationId)
+        .withSourceId(sourceId)
         .withSourceImplementationId(sourceImplementationId)
         .withConfiguration(implementationJson)
         .withTombstone(false);
@@ -64,7 +64,7 @@ public class SourceImplementationHelpers {
     return new SourceImplementationRead()
         .sourceId(standardSource.getSourceId())
         .workspaceId(sourceImplementation.getWorkspaceId())
-        .sourceSpecificationId(sourceImplementation.getSourceSpecificationId())
+        .sourceId(sourceImplementation.getSourceId())
         .sourceImplementationId(sourceImplementation.getSourceImplementationId())
         .connectionConfiguration(sourceImplementation.getConfiguration())
         .name(sourceImplementation.getName())

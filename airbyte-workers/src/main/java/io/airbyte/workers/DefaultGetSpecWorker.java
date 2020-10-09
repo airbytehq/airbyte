@@ -55,8 +55,9 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
       try (InputStream stdout = process.getInputStream()) {
-        // retrieving spec should generally be instantaneous
-        WorkerUtils.gentleClose(process, 10, TimeUnit.SECONDS);
+        // retrieving spec should generally be instantaneous, but since docker images might not be pulled
+        // it could take a while longer depending on internet conditions as well.
+        WorkerUtils.gentleClose(process, 2, TimeUnit.MINUTES);
 
         if (process.exitValue() == 0) {
           String specString = new String(stdout.readAllBytes());

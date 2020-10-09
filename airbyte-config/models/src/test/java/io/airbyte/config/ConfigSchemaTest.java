@@ -42,7 +42,7 @@ class ConfigSchemaTest {
   @Test
   void testPrepareKnownSchemas() {
     for (ConfigSchema value : ConfigSchema.values()) {
-      assertTrue(Files.exists(value.getFile().toPath()));
+      assertTrue(Files.exists(value.getFile().toPath()), value.getFile().toPath().toString() + " does not exist");
     }
   }
 
