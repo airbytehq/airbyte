@@ -86,7 +86,7 @@ class AirbyteEntrypoint(object):
                 # todo: pass in state
                 generator = source.read(logging, rendered_config_path)
                 for message in generator:
-                    print(message.serialize(sort_keys=True))
+                    print(message.serialize())
                 sys.exit(0)
             else:
                 raise Exception("Unexpected command " + cmd)
