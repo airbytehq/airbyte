@@ -24,6 +24,10 @@
 
 package io.airbyte.test.acceptance;
 
+import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.ApiClient;
@@ -48,6 +52,16 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.DatabaseHelper;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Condition;
@@ -62,21 +76,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
-
-import java.io.IOException;
-import java.sql.SQLException;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("rawtypes")
 // We order tests so that independent operations are first and operations dependent on them come
