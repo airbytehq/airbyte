@@ -103,7 +103,12 @@ public class SingerExchangeRatesApiSourceTest {
 
     final Optional<String> record = IOs.readFile(syncOutputPath).lines().filter(s -> s.contains("RECORD")).findFirst();
     assertTrue(record.isPresent());
-    assertTrue(Jsons.deserialize(record.get()).get("record").get("CAD").asDouble() > 0);
+
+    assertTrue(Jsons.deserialize(record.get())
+        .get("record")
+        .get("data")
+        .get("record")
+        .get("CAD").asDouble() > 0);
   }
 
   private Process createDiscoveryProcess(String configFileName) throws IOException, WorkerException {

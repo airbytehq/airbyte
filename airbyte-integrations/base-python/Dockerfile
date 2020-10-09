@@ -7,8 +7,7 @@ RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 WORKDIR /airbyte/airbyte_protocol
-COPY airbyte_protocol/setup.py .
-COPY airbyte_protocol/airbyte_protocol/__init__.py ./airbyte_protocol/__init__.py
+COPY airbyte_protocol .
 RUN pip install .
 
 WORKDIR /airbyte/base-python
