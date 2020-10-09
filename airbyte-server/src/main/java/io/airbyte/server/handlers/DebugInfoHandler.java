@@ -28,8 +28,6 @@ import static java.util.stream.Collectors.toList;
 
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.DebugRead;
-import io.airbyte.commons.docker.DockerUtils;
-import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.integrations.Integrations;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
