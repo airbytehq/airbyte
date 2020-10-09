@@ -107,11 +107,11 @@ class DefaultSchedulerPersistenceTest {
         .withTombstone(false);
 
     final UUID destinationImplementationId = UUID.randomUUID();
-    final UUID destinationSpecificationId = Integrations.POSTGRES_TARGET.getSpecId();
+    final UUID destinationId = UUID.randomUUID();
 
     DESTINATION_CONNECTION_IMPLEMENTATION = new DestinationConnectionImplementation()
         .withWorkspaceId(workspaceId)
-        .withDestinationId(destinationSpecificationId)
+        .withDestinationId(destinationId)
         .withDestinationImplementationId(destinationImplementationId)
         .withConfiguration(implementationJson)
         .withTombstone(false);
