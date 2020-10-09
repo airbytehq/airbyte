@@ -99,6 +99,26 @@ public class ConfigRepository {
         SourceConnectionSpecification.class);
   }
 
+  public SourceConnectionSpecification getSourceConnectionSpecificationFromSourceId(final UUID sourceId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    // since we are not querying on a the primary key, we have to list all of the specification objects
+    // and then filter.
+    return listSourceConnectionSpecifications().stream()
+        .filter(s -> s.getSourceId().equals(sourceId))
+        .findFirst()
+        .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION_SPECIFICATION, sourceId.toString()));
+  }
+
+  public DestinationConnectionSpecification getDestinationConnectionSpecificationFromDestinationId(final UUID destinationId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    // since we are not querying on a the primary key, we have to list all of the specification objects
+    // and then filter.
+    return listDestinationConnectionSpecifications().stream()
+        .filter(d -> d.getDestinationId().equals(destinationId))
+        .findFirst()
+        .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION, destinationId.toString()));
+  }
+
   public List<SourceConnectionSpecification> listSourceConnectionSpecifications()
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.listConfigs(

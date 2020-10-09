@@ -51,6 +51,9 @@ function main() {
     # todo: state should be optional: --state "$STATE_FILE"
     eval "$AIRBYTE_READ_CMD" --config "$CONFIG_FILE" --catalog "$CATALOG_FILE"
     ;;
+  write)
+    eval "$AIRBYTE_WRITE_CMD" --config "$CONFIG_FILE" --catalog "$CATALOG_FILE"
+    ;;
   *)
     error "Unknown command: $CMD"
     ;;

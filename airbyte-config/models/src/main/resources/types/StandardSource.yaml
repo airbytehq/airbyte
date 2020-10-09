@@ -7,10 +7,19 @@ type: object
 required:
   - sourceId
   - name
+  - dockerRepository
+  - dockerImageTag
+  - documentationUrl
 additionalProperties: false
 properties:
   sourceId:
     type: string
     format: uuid
   name:
+    type: string
+  dockerRepository:
+    type: string
+  dockerImageTag:
+    type: string
+  documentationUrl:
     type: string

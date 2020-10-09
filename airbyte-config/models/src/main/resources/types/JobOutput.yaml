@@ -13,10 +13,13 @@ properties:
     enum:
       - checkConnection
       - discoverSchema
+      - getSpec
       - sync
   checkConnection:
     "$ref": StandardCheckConnectionOutput.yaml
   discoverSchema:
     "$ref": StandardDiscoverSchemaOutput.yaml
+  getSpec:
+    "$ref": StandardGetSpecOutput.yaml
   sync:
     "$ref": StandardSyncOutput.yaml
