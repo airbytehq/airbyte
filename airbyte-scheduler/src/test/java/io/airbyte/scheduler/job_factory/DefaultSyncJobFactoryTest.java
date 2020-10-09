@@ -29,7 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.commons.docker.DockerUtil;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.SourceConnectionImplementation;
@@ -65,11 +65,11 @@ class DefaultSyncJobFactoryTest {
         new DestinationConnectionImplementation().withDestinationId(destinationId);
     final String srcDockerRepo = "srcrepo";
     final String srcDockerTag = "tag";
-    final String srcDockerImage = DockerUtil.getTaggedImageName(srcDockerRepo, srcDockerTag);
+    final String srcDockerImage = DockerUtils.getTaggedImageName(srcDockerRepo, srcDockerTag);
 
     final String dstDockerRepo = "dstrepo";
     final String dstDockerTag = "tag";
-    final String dstDockerImage = DockerUtil.getTaggedImageName(dstDockerRepo, dstDockerTag);
+    final String dstDockerImage = DockerUtils.getTaggedImageName(dstDockerRepo, dstDockerTag);
 
     when(configRepository.getStandardSync(connectionId)).thenReturn(standardSync);
     when(configRepository.getSourceConnectionImplementation(sourceImplId)).thenReturn(sourceConnectionImplementation);

@@ -24,7 +24,7 @@
 
 package io.airbyte.scheduler.job_factory;
 
-import io.airbyte.commons.docker.DockerUtil;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.SourceConnectionImplementation;
@@ -60,8 +60,8 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
       final StandardSource source = configRepository.getStandardSource(sourceConnectionImplementation.getSourceId());
       final StandardDestination destination = configRepository.getStandardDestination(destinationConnectionImplementation.getDestinationId());
 
-      final String sourceImageName = DockerUtil.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
-      final String destinationImageName = DockerUtil.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
+      final String sourceImageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
+      final String destinationImageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
 
       return schedulerPersistence.createSyncJob(
           sourceConnectionImplementation,

@@ -32,7 +32,10 @@ public class SourceHelpers {
   public static StandardSource generateSource() {
     return new StandardSource()
         .withSourceId(UUID.randomUUID())
-        .withName("marketo");
+        .withName("marketo")
+        .withDockerRepository("thebestrepo")
+        .withDockerImageTag("thelatesttag")
+        .withDocumentationUrl("https://wikipedia.org");
   }
 
 }

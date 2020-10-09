@@ -32,7 +32,10 @@ public class DestinationHelpers {
   public static StandardDestination generateDestination() {
     return new StandardDestination()
         .withDestinationId(UUID.randomUUID())
-        .withName("db2");
+        .withName("db2")
+        .withDockerRepository("thebestrepo")
+        .withDockerImageTag("thelatesttag")
+        .withDocumentationUrl("https://wikipedia.org");
   }
 
 }
