@@ -92,11 +92,6 @@ allprojects {
     tasks.withType(DockerBuildImage).all { task ->
         task.outputs.upToDateWhen { false }
     }
-
-    tasks.withType(JavaCompile) { 
-        sourceCompatibility = JavaVersion.VERSION_14
-        targetCompatibility = JavaVersion.VERSION_14 
-    }
 }
 
 allprojects {
@@ -114,6 +109,9 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
+
+    sourceCompatibility = JavaVersion.VERSION_14
+    targetCompatibility = JavaVersion.VERSION_14
 
     repositories {
         mavenCentral()
