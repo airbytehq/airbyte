@@ -41,6 +41,7 @@ import org.apache.commons.csv.CSVRecord;
 
 public class CsvDestinationIntegrationTest extends TestDestination {
 
+  private static final String COLUMN_NAME = "data";
   private static final Path RELATIVE_PATH = Path.of("integration_test/test");
 
   @Override
@@ -65,12 +66,12 @@ public class CsvDestinationIntegrationTest extends TestDestination {
 
     final FileReader in = new FileReader(list.get(0).toFile());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-        .withHeader(CsvDestination.COLUMN_NAME)
+        .withHeader(COLUMN_NAME)
         .withFirstRecordAsHeader()
         .parse(in);
 
     return StreamSupport.stream(records.spliterator(), false)
-        .map(record -> Jsons.deserialize(record.toMap().get(CsvDestination.COLUMN_NAME)))
+        .map(record -> Jsons.deserialize(record.toMap().get(COLUMN_NAME)))
         .collect(Collectors.toList());
   }
 
