@@ -44,7 +44,7 @@ public class DestinationImplementationHelpers {
     return Jsons.deserialize(Files.readString(path));
   }
 
-  public static DestinationConnectionImplementation generateDestinationImplementation(UUID destinationSpecificationId)
+  public static DestinationConnectionImplementation generateDestinationImplementation(UUID destinationId)
       throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID destinationImplementationId = UUID.randomUUID();
@@ -54,7 +54,7 @@ public class DestinationImplementationHelpers {
     return new DestinationConnectionImplementation()
         .withName("my db2 instance")
         .withWorkspaceId(workspaceId)
-        .withDestinationSpecificationId(destinationSpecificationId)
+        .withDestinationId(destinationId)
         .withDestinationImplementationId(destinationImplementationId)
         .withConfiguration(implementationJson)
         .withTombstone(false);
@@ -66,7 +66,7 @@ public class DestinationImplementationHelpers {
     return new DestinationImplementationRead()
         .destinationId(standardDestination.getDestinationId())
         .workspaceId(destinationImplementation.getWorkspaceId())
-        .destinationSpecificationId(destinationImplementation.getDestinationSpecificationId())
+        .destinationId(destinationImplementation.getDestinationId())
         .destinationImplementationId(destinationImplementation.getDestinationImplementationId())
         .connectionConfiguration(destinationImplementation.getConfiguration())
         .name(destinationImplementation.getName())

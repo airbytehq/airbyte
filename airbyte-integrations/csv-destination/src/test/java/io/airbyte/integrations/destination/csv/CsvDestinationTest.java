@@ -35,8 +35,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.DataType;
-import io.airbyte.config.DestinationConnectionSpecification;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -98,9 +98,9 @@ class CsvDestinationTest {
 
   @Test
   void testSpec() throws IOException {
-    final DestinationConnectionSpecification actual = new CsvDestination().spec();
+    final ConnectorSpecification actual = new CsvDestination().spec();
     final String resourceString = MoreResources.readResource("spec.json");
-    final DestinationConnectionSpecification expected = Jsons.deserialize(resourceString, DestinationConnectionSpecification.class);
+    final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
 
     assertEquals(expected, actual);
   }

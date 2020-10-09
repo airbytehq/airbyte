@@ -22,32 +22,19 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.helpers;
+package io.airbyte.commons.docker;
 
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.SourceConnectionSpecification;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SourceSpecificationHelpers {
+import org.junit.jupiter.api.Test;
 
-  public static SourceConnectionSpecification generateSourceSpecification() throws IOException {
-    return generateSourceSpecification(UUID.randomUUID());
-  }
+class DockerUtilsTest {
 
-  public static SourceConnectionSpecification generateSourceSpecification(UUID sourceId) throws IOException {
-    final UUID sourceSpecificationId = UUID.randomUUID();
-
-    final Path path = Paths.get("../airbyte-server/src/test/resources/json/TestSpecification.json");
-
-    return new SourceConnectionSpecification()
-        .withSourceId(sourceId)
-        .withSourceSpecificationId(sourceSpecificationId)
-        .withDocumentationUrl("https://airbyte.io")
-        .withSpecification(Jsons.deserialize(Files.readString(path)));
+  @Test
+  void testGetTaggedImageName() {
+    String repository = "airbyte/repo";
+    String tag = "12.3";
+    assertEquals("airbyte/repo:12.3", DockerUtils.getTaggedImageName(repository, tag));
   }
 
 }

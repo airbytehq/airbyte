@@ -6,7 +6,7 @@ description: information required for connection to a destination.
 type: object
 required:
   - name
-  - sourceSpecificationId
+  - sourceId
   - sourceImplementationId
   - workspaceId
   - configuration
@@ -15,7 +15,7 @@ additionalProperties: false
 properties:
   name:
     type: string
-  sourceSpecificationId:
+  sourceId:
     type: string
     format: uuid
   workspaceId:

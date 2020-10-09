@@ -24,18 +24,28 @@
 
 package io.airbyte.server.helpers;
 
-import io.airbyte.config.StandardDestination;
-import java.util.UUID;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ConnectorSpecification;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-public class DestinationHelpers {
+public class ConnectorSpecificationHelpers {
 
-  public static StandardDestination generateDestination() {
-    return new StandardDestination()
-        .withDestinationId(UUID.randomUUID())
-        .withName("db2")
-        .withDockerRepository("thebestrepo")
-        .withDockerImageTag("thelatesttag")
-        .withDocumentationUrl("https://wikipedia.org");
+  public static ConnectorSpecification generateConnectorSpecification() throws IOException {
+
+    final Path path = Paths.get("../airbyte-server/src/test/resources/json/TestSpecification.json");
+
+    try {
+      return new ConnectorSpecification()
+          .withDocumentationUrl(new URI("https://airbyte.io"))
+          .withConnectionSpecification(Jsons.deserialize(Files.readString(path)));
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

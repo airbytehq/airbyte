@@ -24,7 +24,12 @@
 
 package io.airbyte.scheduler.job_factory;
 
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.StandardDestination;
+import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -47,11 +52,24 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
   public Long create(final UUID connectionId) {
     try {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
+      final SourceConnectionImplementation sourceConnectionImplementation =
+          configRepository.getSourceConnectionImplementation(standardSync.getSourceImplementationId());
+      final DestinationConnectionImplementation destinationConnectionImplementation =
+          configRepository.getDestinationConnectionImplementation(standardSync.getDestinationImplementationId());
+
+      final StandardSource source = configRepository.getStandardSource(sourceConnectionImplementation.getSourceId());
+      final StandardDestination destination = configRepository.getStandardDestination(destinationConnectionImplementation.getDestinationId());
+
+      final String sourceImageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
+      final String destinationImageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
 
       return schedulerPersistence.createSyncJob(
-          configRepository.getSourceConnectionImplementation(standardSync.getSourceImplementationId()),
-          configRepository.getDestinationConnectionImplementation(standardSync.getDestinationImplementationId()),
-          standardSync);
+          sourceConnectionImplementation,
+          destinationConnectionImplementation,
+          standardSync,
+          sourceImageName,
+          destinationImageName);
+
     } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
       throw new RuntimeException(e);
     }

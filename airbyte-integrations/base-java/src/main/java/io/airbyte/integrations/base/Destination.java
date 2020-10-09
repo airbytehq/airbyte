@@ -25,7 +25,7 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.DestinationConnectionSpecification;
+import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
@@ -40,7 +40,7 @@ public interface Destination {
    * @return specification.
    * @throws Exception - any exception.
    */
-  DestinationConnectionSpecification spec() throws Exception;
+  ConnectorSpecification spec() throws Exception;
 
   /**
    * Check whether, given the current configuration, the integration can connect to the destination.
