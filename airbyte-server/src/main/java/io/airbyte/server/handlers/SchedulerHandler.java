@@ -29,20 +29,28 @@ import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionSyncRead;
+import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
+import io.airbyte.api.model.DestinationSpecificationRead;
+import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceImplementationDiscoverSchemaRead;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
+import io.airbyte.api.model.SourceSpecificationRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.DestinationConnectionSpecification;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.SourceConnectionSpecification;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.integrations.Integrations;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
@@ -132,6 +140,64 @@ public class SchedulerHandler {
         .build());
 
     return new SourceImplementationDiscoverSchemaRead().schema(SchemaConverter.toApiSchema(output.getSchema()));
+  }
+
+  public SourceSpecificationRead getSourceSpecification(SourceIdRequestBody sourceIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    UUID sourceId = sourceIdRequestBody.getSourceId();
+    // TODO this will be removed once specs no longer have dedicated IDs
+    final SourceConnectionSpecification sourceConnectionSpecification =
+        configRepository.getSourceConnectionSpecificationFromSourceId(sourceId);
+
+    final UUID specId = sourceConnectionSpecification.getSourceSpecificationId();
+    final String imageName = Integrations.findBySpecId(specId).getTaggedImage();
+    final long jobId = schedulerPersistence.createGetSpecJob(imageName);
+    LOGGER.debug("getSourceSpec jobId = {}", jobId);
+
+    Job job = waitUntilJobIsTerminalOrTimeout(jobId);
+
+    TrackingClientSingleton.get().track("get_source_spec", ImmutableMap.<String, Object>builder()
+        .put("source_specification_id", specId)
+        .put("source_id", sourceId)
+        .put("image_name", imageName)
+        .put("job_id", jobId)
+        .build());
+
+    final ConnectorSpecification spec = job.getOutput().orElseThrow().getGetSpec().getSpecification();
+    return new SourceSpecificationRead()
+        .connectionSpecification(spec.getConnectionSpecification())
+        .documentationUrl(spec.getDocumentationUrl().toString())
+        .sourceId(sourceId)
+        .sourceSpecificationId(specId);
+  }
+
+  public DestinationSpecificationRead getDestinationSpecification(DestinationIdRequestBody destinationIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    UUID destinationId = destinationIdRequestBody.getDestinationId();
+    // TODO this will be removed once specs no longer have dedicated IDs
+    final DestinationConnectionSpecification destinationSpec =
+        configRepository.getDestinationConnectionSpecificationFromDestinationId(destinationId);
+
+    final UUID specId = destinationSpec.getDestinationSpecificationId();
+    final String imageName = Integrations.findBySpecId(specId).getTaggedImage();
+    final long jobId = schedulerPersistence.createGetSpecJob(imageName);
+    LOGGER.debug("getSourceSpec jobId = {}", jobId);
+
+    Job job = waitUntilJobIsTerminalOrTimeout(jobId);
+
+    TrackingClientSingleton.get().track("get_source_spec", ImmutableMap.<String, Object>builder()
+        .put("destination_specification_id", specId)
+        .put("destination_id", destinationId)
+        .put("image_name", imageName)
+        .put("job_id", jobId)
+        .build());
+
+    final ConnectorSpecification spec = job.getOutput().orElseThrow().getGetSpec().getSpecification();
+    return new DestinationSpecificationRead()
+        .connectionSpecification(spec.getConnectionSpecification())
+        .documentationUrl(spec.getDocumentationUrl().toString())
+        .destinationId(destinationId)
+        .destinationSpecificationId(specId);
   }
 
   public ConnectionSyncRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
