@@ -68,16 +68,15 @@ class SingerHelper:
                             if transformed_json.get('type') == "SCHEMA":
                                 pass
                             elif transformed_json.get('type') == "STATE":
-                                del transformed_json['type']
-                                out_record = AirbyteStateMessage(data=transformed_json)
+                                out_record = AirbyteStateMessage(data=transformed_json["value"])
                                 out_message = AirbyteMessage(type="STATE", state=out_record)
                                 yield transform(out_message)
                             else:
                                 # todo: remove type from record
                                 # todo: handle stream designation
                                 # todo: check that messages match the discovered schema
-                                del transformed_json['type']
-                                out_record = AirbyteRecordMessage(data=transformed_json, emitted_at=str(datetime.now()))
+                                stream_name = transformed_json["stream"]
+                                out_record = AirbyteRecordMessage(stream=stream_name, data=transformed_json["record"], emitted_at=str(datetime.now()))
                                 out_message = AirbyteMessage(type="RECORD", record=out_record)
                                 yield transform(out_message)
                     elif out_line:
