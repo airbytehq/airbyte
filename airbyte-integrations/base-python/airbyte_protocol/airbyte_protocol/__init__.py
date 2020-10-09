@@ -10,6 +10,8 @@ def _load_classes(yaml_path: str):
     builder = pjs.ObjectBuilder(data)
     return builder.build_classes(standardize_names=False)
 
+
+# hide json schema version warnings
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=UserWarning)
     message_classes = _load_classes("types/airbyte_message.yaml")
