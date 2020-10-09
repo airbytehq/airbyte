@@ -110,6 +110,8 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
 
+    project.archivesBaseName = "${project.group}-${project.name}"
+
     repositories {
         mavenCentral()
     }
