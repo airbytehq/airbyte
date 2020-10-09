@@ -50,7 +50,6 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
   @Override
   public OutputAndStatus<StandardGetSpecOutput> run(JobGetSpecConfig config, Path jobRoot) {
-    String imageName = config.getDockerImage();
     try {
       process = integrationLauncher.spec(jobRoot).start();
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
@@ -69,7 +68,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
       }
 
     } catch (Exception e) {
-      LOGGER.error("Error while getting spec from image {}: {}", imageName, e);
+      LOGGER.error("Error while getting spec from image {}: {}", config.getDockerImage(), e);
       return new OutputAndStatus<>(JobStatus.FAILED);
     }
   }
