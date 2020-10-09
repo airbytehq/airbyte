@@ -42,6 +42,7 @@ import io.airbyte.config.StandardSource;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.validation.IntegrationSchemaValidation;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -52,36 +53,40 @@ public class SourceImplementationsHandler {
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final IntegrationSchemaValidation validator;
+  private SchedulerHandler schedulerHandler;
   private final ConnectionsHandler connectionsHandler;
 
   public SourceImplementationsHandler(final ConfigRepository configRepository,
                                       final IntegrationSchemaValidation integrationSchemaValidation,
+                                      final SchedulerHandler schedulerHandler,
                                       final ConnectionsHandler connectionsHandler,
                                       final Supplier<UUID> uuidGenerator) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
+    this.schedulerHandler = schedulerHandler;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
   }
 
   public SourceImplementationsHandler(final ConfigRepository configRepository,
                                       final IntegrationSchemaValidation integrationSchemaValidation,
+                                      final SchedulerHandler schedulerHandler,
                                       final ConnectionsHandler connectionsHandler) {
-    this(configRepository, integrationSchemaValidation, connectionsHandler, UUID::randomUUID);
+    this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID);
   }
 
   public SourceImplementationRead createSourceImplementation(SourceImplementationCreate sourceImplementationCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
     validateSourceImplementation(
-        sourceImplementationCreate.getSourceSpecificationId(),
+        sourceImplementationCreate.getSourceId(),
         sourceImplementationCreate.getConnectionConfiguration());
 
     // persist
     final UUID sourceImplementationId = uuidGenerator.get();
     persistSourceConnectionImplementation(
         sourceImplementationCreate.getName() != null ? sourceImplementationCreate.getName() : "default",
-        sourceImplementationCreate.getSourceSpecificationId(),
+        sourceImplementationCreate.getSourceId(),
         sourceImplementationCreate.getWorkspaceId(),
         sourceImplementationId,
         false,
@@ -99,13 +104,13 @@ public class SourceImplementationsHandler {
 
     // validate configuration
     validateSourceImplementation(
-        persistedSourceImplementation.getSourceSpecificationId(),
+        persistedSourceImplementation.getSourceId(),
         sourceImplementationUpdate.getConnectionConfiguration());
 
     // persist
     persistSourceConnectionImplementation(
         sourceImplementationUpdate.getName(),
-        persistedSourceImplementation.getSourceSpecificationId(),
+        persistedSourceImplementation.getSourceId(),
         persistedSourceImplementation.getWorkspaceId(),
         sourceImplementationUpdate.getSourceImplementationId(),
         persistedSourceImplementation.getTombstone(),
@@ -164,7 +169,7 @@ public class SourceImplementationsHandler {
     // persist
     persistSourceConnectionImplementation(
         sourceImplementation.getName(),
-        sourceImplementation.getSourceSpecificationId(),
+        sourceImplementation.getSourceId(),
         sourceImplementation.getWorkspaceId(),
         sourceImplementation.getSourceImplementationId(),
         true,
@@ -183,12 +188,12 @@ public class SourceImplementationsHandler {
 
   private void validateSourceImplementation(UUID sourceConnectionSpecificationId, JsonNode implementationJson)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    SourceConnectionSpecification scs = configRepository.getSourceConnectionSpecification(sourceConnectionSpecificationId);
+    SourceConnectionSpecification scs = schedulerHandler.getSourceConnectionSpecification(sourceConnectionSpecificationId);
     validator.validateConfig(scs, implementationJson);
   }
 
   private void persistSourceConnectionImplementation(final String name,
-                                                     final UUID sourceSpecificationId,
+                                                     final UUID sourceId,
                                                      final UUID workspaceId,
                                                      final UUID sourceImplementationId,
                                                      final boolean tombstone,
@@ -196,7 +201,7 @@ public class SourceImplementationsHandler {
       throws JsonValidationException, IOException {
     final SourceConnectionImplementation sourceConnectionImplementation = new SourceConnectionImplementation()
         .withName(name)
-        .withSourceId(sourceSpecificationId)
+        .withSourceId(sourceId)
         .withWorkspaceId(workspaceId)
         .withSourceImplementationId(sourceImplementationId)
         .withTombstone(tombstone)
@@ -212,7 +217,7 @@ public class SourceImplementationsHandler {
         .sourceName(standardSource.getName())
         .sourceImplementationId(sourceConnectionImplementation.getSourceImplementationId())
         .workspaceId(sourceConnectionImplementation.getWorkspaceId())
-        .sourceSpecificationId(sourceConnectionImplementation.getSourceSpecificationId())
+        .sourceId(sourceConnectionImplementation.getSourceId())
         .connectionConfiguration(sourceConnectionImplementation.getConfiguration())
         .name(sourceConnectionImplementation.getName());
   }

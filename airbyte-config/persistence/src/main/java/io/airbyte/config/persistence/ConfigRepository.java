@@ -91,27 +91,11 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION, StandardDestination.class);
   }
 
-  public SourceConnectionSpecification getSourceConnectionSpecification(final UUID sourceSpecificationId)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
-        sourceSpecificationId.toString(),
-        SourceConnectionSpecification.class);
-  }
-
   public List<SourceConnectionSpecification> listSourceConnectionSpecifications()
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.listConfigs(
         ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
         SourceConnectionSpecification.class);
-  }
-
-  public DestinationConnectionSpecification getDestinationConnectionSpecification(final UUID destinationSpecificationId)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
-        destinationSpecificationId.toString(),
-        DestinationConnectionSpecification.class);
   }
 
   public List<DestinationConnectionSpecification> listDestinationConnectionSpecifications()

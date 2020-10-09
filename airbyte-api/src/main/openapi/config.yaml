@@ -944,41 +944,41 @@ components:
       type: object
       required:
         - name
-        - defaultDockerRepository
-        - defaultDockerImageVersion
+        - dockerRepository
+        - dockerImageTag
       properties:
         name:
           type: string
-        defaultDockerRepository:
+        dockerRepository:
           type: string
-        defaultDockerImageVersion:
+        dockerImageTag:
           type: string
     SourceUpdate:
       type: object
       description: Update the source. Currently, the only allowed attribute to update is the default docker image version.
       required:
         - sourceId
-        - defaultDockerImageVersion
+        - dockerImageTag
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
-        defaultDockerImageVersion:
+        dockerImageTag:
           type: string
     SourceRead:
       type: object
       required:
         - sourceId
         - name
-        - defaultDockerRepository
-        - defaultDockerImageVersion
+        - dockerRepository
+        - dockerImageVersion
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
         name:
           type: string
-        defaultDockerRepository:
+        dockerRepository:
           type: string
-        defaultDockerImageVersion:
+        dockerImageVersion:
           type: string
     SourceReadList:
       type: object
@@ -997,7 +997,7 @@ components:
       type: object
       required:
         - sourceId
-        - specification
+        - connectionSpecification
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
@@ -1105,23 +1105,23 @@ components:
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        defaultDockerImageVersion:
+        dockerImageTag:
           type: string
     DestinationRead:
       type: object
       required:
         - destinationId
         - name
-        - defaultDockerRepository
-        - defaultDockerImageVersion
+        - dockerRepository
+        - dockerImageTag
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         name:
           type: string
-        defaultDockerRepository:
+        dockerRepository:
           type: string
-        defaultDockerImageVersion:
+        dockerImageTag:
           type: string
     DestinationReadList:
       type: object
@@ -1140,7 +1140,7 @@ components:
       type: object
       required:
         - destinationId
-        - specification
+        - connectionSpecification
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
