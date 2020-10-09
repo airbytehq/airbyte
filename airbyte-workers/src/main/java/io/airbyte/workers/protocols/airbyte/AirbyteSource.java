@@ -22,18 +22,22 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.process;
+package io.airbyte.workers.protocols.airbyte;
 
-import io.airbyte.workers.WorkerException;
+import io.airbyte.config.StandardTapConfig;
+import io.airbyte.protocol.models.AirbyteMessage;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Optional;
 
-public interface ProcessBuilderFactory {
+public interface AirbyteSource extends AutoCloseable {
 
-  ProcessBuilder create(final Path jobPath, final String imageName, final String... args) throws WorkerException;
+  void start(StandardTapConfig input, Path jobRoot) throws Exception;
 
-  default ProcessBuilder create(final Path jobPath, final String imageName, final List<String> args) throws WorkerException {
-    return create(jobPath, imageName, args.toArray(new String[0]));
-  }
+  boolean isFinished();
+
+  Optional<AirbyteMessage> attemptRead();
+
+  @Override
+  void close() throws Exception;
 
 }

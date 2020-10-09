@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols.singer;
+package io.airbyte.workers;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -33,7 +33,11 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.singer.SingerMessage;
-import io.airbyte.workers.TestConfigHelpers;
+import io.airbyte.workers.protocols.singer.DefaultSingerTap;
+import io.airbyte.workers.protocols.singer.DefaultSingerTarget;
+import io.airbyte.workers.protocols.singer.SingerMessageUtils;
+import io.airbyte.workers.protocols.singer.SingerTap;
+import io.airbyte.workers.protocols.singer.SingerTarget;
 import java.nio.file.Path;
 import java.util.Optional;
 import org.apache.commons.lang3.tuple.ImmutablePair;
