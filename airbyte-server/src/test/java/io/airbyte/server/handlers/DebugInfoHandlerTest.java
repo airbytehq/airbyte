@@ -24,17 +24,36 @@
 
 package io.airbyte.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.google.common.collect.Lists;
-import java.io.IOException;
+import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.StandardSource;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.helpers.DestinationHelpers;
+import io.airbyte.server.helpers.SourceHelpers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DebugInfoHandlerTest {
 
+  private ConfigRepository configRepository;
+
+  @BeforeEach
+  public void init(){
+    configRepository = mock(ConfigRepository.class);
+  }
+
   @Test
-  public void testNoFailures() {
-    new DebugInfoHandler().getInfo();
+  public void testNoFailures() throws ConfigNotFoundException, IOException, JsonValidationException {
+    when(configRepository.listStandardSources()).thenReturn(Lists.newArrayList(SourceHelpers.generateSource()));
+    when(configRepository.listStandardDestinations()).thenReturn(Lists.newArrayList(DestinationHelpers.generateDestination()));
+    new DebugInfoHandler(configRepository).getInfo();
   }
 
   @Test
