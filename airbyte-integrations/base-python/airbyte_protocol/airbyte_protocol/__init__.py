@@ -1,4 +1,28 @@
 from typing import Generator
+import yaml
+import pkgutil
+import warnings
+import python_jsonschema_objects as pjs
+
+
+def _load_classes(yaml_path: str):
+    data = yaml.load(pkgutil.get_data(__name__, yaml_path), Loader=yaml.FullLoader)
+    builder = pjs.ObjectBuilder(data)
+    return builder.build_classes(standardize_names=False)
+
+
+# hide json schema version warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=UserWarning)
+    message_classes = _load_classes("types/airbyte_message.yaml")
+    AirbyteMessage = message_classes.AirbyteMessage
+    AirbyteLogMessage = message_classes.AirbyteLogMessage
+    AirbyteRecordMessage = message_classes.AirbyteRecordMessage
+    AirbyteStateMessage = message_classes.AirbyteStateMessage
+
+    catalog_classes = _load_classes("types/airbyte_catalog.yaml")
+    AirbyteCatalog = catalog_classes.AirbyteCatalog
+    AirbyteStream = catalog_classes.AirbyteStream
 
 
 class AirbyteSpec(object):
@@ -20,11 +44,6 @@ class AirbyteSchema(object):
 class AirbyteConfig(object):
     def __init__(self, config_string):
         self.config_string = config_string
-
-
-class AirbyteMessage(object):
-    def __init__(self, message_string):
-        self.message_string = message_string
 
 
 class Integration(object):
@@ -51,6 +70,7 @@ class Integration(object):
     def discover(self, config_object, rendered_config_path) -> AirbyteSchema:
         raise Exception("Not Implemented")
 
+
 class Source(Integration):
     def __init__(self):
         pass
@@ -58,6 +78,7 @@ class Source(Integration):
     # Iterator<AirbyteMessage>
     def read(self, config_object, rendered_config_path, state=None) -> Generator[AirbyteMessage, None, None]:
         raise Exception("Not Implemented")
+
 
 class Destination(Integration):
     def __init__(self):
