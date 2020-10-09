@@ -36,10 +36,10 @@ import java.util.stream.Collectors;
 // todo (cgardens) - dedupe this with ConfigSchema.
 public enum SingerConfigSchema {
 
-  SINGER_MESSAGE("SingerMessage.json");
+  SINGER_MESSAGE("SingerMessage.yaml");
 
   static final Path KNOWN_SCHEMAS_ROOT = prepareSchemas();
-  private static final String RESOURCE_DIR = "singer_json";
+  private static final String RESOURCE_DIR = "singer_types";
 
   /*
    * JsonReferenceProcessor relies on all of the json in consumes being in a file system (not in a
@@ -51,7 +51,8 @@ public enum SingerConfigSchema {
     try {
       final List<String> filenames = MoreResources.listResources(SingerConfigSchema.class, RESOURCE_DIR)
           .map(p -> p.getFileName().toString())
-          .filter(p -> p.endsWith(".json"))
+          .peek(x -> System.out.println("x = " + x))
+          .filter(p -> p.endsWith(".yaml"))
           .collect(Collectors.toList());
 
       final Path configRoot = Files.createTempDirectory("schemas");

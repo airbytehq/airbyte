@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
-import { useResource } from "rest-hooks";
+import { useResource, useFetcher } from "rest-hooks";
 
 import Table from "../../../../../components/Table";
 import FrequencyCell from "./FrequencyCell";
@@ -12,7 +12,9 @@ import ConnectorCell from "./ConnectorCell";
 import NameCell from "./NameCell";
 import { Routes } from "../../../../routes";
 import useRouter from "../../../../../components/hooks/useRouterHook";
-import { Connection } from "../../../../../core/resources/Connection";
+import ConnectionResource, {
+  Connection
+} from "../../../../../core/resources/Connection";
 import config from "../../../../../config";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
@@ -36,10 +38,13 @@ type ITableDataItem = {
   lastSync: number;
   enabled: boolean;
   error: boolean;
+  isSyncing: boolean;
 };
 
 const SourcesTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
+
+  const SyncConnection = useFetcher(ConnectionResource.syncShape());
 
   const { updateConnection } = useConnection();
   const { destinations } = useResource(
@@ -60,7 +65,8 @@ const SourcesTable: React.FC<IProps> = ({ connections }) => {
     sourceId: item.source?.sourceId,
     sourceName: item.source?.sourceName,
     schedule: item.schedule,
-    lastSync: item.lastSync
+    lastSync: item.lastSync,
+    isSyncing: item.isSyncing
   }));
 
   const onChangeStatus = useCallback(
@@ -97,6 +103,28 @@ const SourcesTable: React.FC<IProps> = ({ connections }) => {
     [connections, destination.destinationId, destination.name, updateConnection]
   );
 
+  const onSync = useCallback(
+    (connectionId: string) => {
+      const connection = connections.find(
+        item => item.connectionId === connectionId
+      );
+
+      AnalyticsService.track("Source - Action", {
+        user_id: config.ui.workspaceId,
+        action: "Full refresh sync",
+        connector_source: connection?.source?.sourceName,
+        connector_source_id: connection?.source?.sourceId,
+        connector_destination: destination.name,
+        connector_destination_id: destination.destinationId,
+        frequency: "manual" // Only manual connections have this button
+      });
+      SyncConnection({
+        connectionId: connectionId
+      });
+    },
+    [SyncConnection, connections, destination.destinationId, destination.name]
+  );
+
   const columns = React.useMemo(
     () => [
       {
@@ -129,6 +157,7 @@ const SourcesTable: React.FC<IProps> = ({ connections }) => {
       {
         Header: <FormattedMessage id="sources.lastSync" />,
         accessor: "lastSync",
+        customWidth: 15,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <LastSyncCell
             timeInSecond={cell.value}
@@ -142,14 +171,16 @@ const SourcesTable: React.FC<IProps> = ({ connections }) => {
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <StatusCell
             enabled={cell.value}
-            error={row.original.error}
             connectionId={row.original.connectionId}
+            isSyncing={row.original.isSyncing}
+            isManual={!row.original.schedule}
             onChangeStatus={onChangeStatus}
+            onSync={onSync}
           />
         )
       }
     ],
-    [onChangeStatus]
+    [onChangeStatus, onSync]
   );
 
   const clickRow = (connection: any) =>

@@ -7,25 +7,32 @@ import styled from "styled-components";
 
 type IProps = {
   enabled?: boolean;
-  error?: boolean;
+  isSyncing?: boolean;
+  isManual?: boolean;
   connectionId: string;
   onChangeStatus: (connectionId: string) => void;
+  onSync: (connectionId: string) => void;
 };
 
 const SmallButton = styled(Button)`
   padding: 6px 8px 7px;
 `;
 
+const ProgressMessage = styled.div`
+  padding: 7px 0;
+`;
+
 const StatusCell: React.FC<IProps> = ({
   enabled,
-  error,
+  isManual,
   connectionId,
-  onChangeStatus
+  onChangeStatus,
+  isSyncing,
+  onSync
 }) => {
-  // TODO: add real actions
   const OnLaunch = (event: React.SyntheticEvent) => {
     event.stopPropagation();
-    console.log("Launch");
+    onSync(connectionId);
   };
 
   const OnToggleClick = (event: React.SyntheticEvent) => {
@@ -33,8 +40,16 @@ const StatusCell: React.FC<IProps> = ({
     onChangeStatus(connectionId);
   };
 
-  if (!error) {
+  if (!isManual) {
     return <Toggle checked={enabled} onChange={OnToggleClick} />;
+  }
+
+  if (isSyncing) {
+    return (
+      <ProgressMessage>
+        <FormattedMessage id="sources.progress" />
+      </ProgressMessage>
+    );
   }
 
   return (
