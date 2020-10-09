@@ -37,7 +37,6 @@ import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.db.DatabaseHelper;
-import io.airbyte.integrations.Integrations;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.ScopeHelper;
@@ -92,7 +91,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation, String dockerImageName) throws IOException {
+  public long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation, String dockerImageName)
+      throws IOException {
     final String scope =
         ScopeHelper.createScope(
             JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION,

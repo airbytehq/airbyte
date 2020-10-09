@@ -29,19 +29,20 @@ import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationCreate;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationRead;
 import io.airbyte.api.model.DestinationImplementationReadList;
 import io.airbyte.api.model.DestinationImplementationUpdate;
+import io.airbyte.api.model.DestinationSpecificationRead;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.commons.json.JsonSchemaValidator;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.DestinationConnectionImplementation;
-import io.airbyte.config.DestinationConnectionSpecification;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -49,39 +50,43 @@ import java.util.function.Supplier;
 
 public class DestinationImplementationsHandler {
 
-  private ConnectionsHandler connectionsHandler;
+  private final ConnectionsHandler connectionsHandler;
+  private final SchedulerHandler schedulerHandler;
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
-  private final IntegrationSchemaValidation validator;
+  private final JsonSchemaValidator validator;
 
   public DestinationImplementationsHandler(final ConfigRepository configRepository,
-                                           final IntegrationSchemaValidation integrationSchemaValidation,
+                                           final JsonSchemaValidator integrationSchemaValidation,
+                                           final SchedulerHandler schedulerHandler,
                                            final ConnectionsHandler connectionsHandler,
                                            final Supplier<UUID> uuidGenerator) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
+    this.schedulerHandler = schedulerHandler;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
   }
 
   public DestinationImplementationsHandler(final ConfigRepository configRepository,
-                                           final IntegrationSchemaValidation integrationSchemaValidation,
+                                           final JsonSchemaValidator integrationSchemaValidation,
+                                           final SchedulerHandler schedulerHandler,
                                            final ConnectionsHandler connectionsHandler) {
-    this(configRepository, integrationSchemaValidation, connectionsHandler, UUID::randomUUID);
+    this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID);
   }
 
   public DestinationImplementationRead createDestinationImplementation(final DestinationImplementationCreate destinationImplementationCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
     validateDestinationImplementation(
-        destinationImplementationCreate.getDestinationSpecificationId(),
+        destinationImplementationCreate.getDestinationId(),
         destinationImplementationCreate.getConnectionConfiguration());
 
     // persist
     final UUID destinationImplementationId = uuidGenerator.get();
     persistDestinationConnectionImplementation(
         destinationImplementationCreate.getName() != null ? destinationImplementationCreate.getName() : "default",
-        destinationImplementationCreate.getDestinationSpecificationId(),
+        destinationImplementationCreate.getDestinationId(),
         destinationImplementationCreate.getWorkspaceId(),
         destinationImplementationId,
         destinationImplementationCreate.getConnectionConfiguration(),
@@ -117,7 +122,7 @@ public class DestinationImplementationsHandler {
     // persist
     persistDestinationConnectionImplementation(
         destinationImpl.getName(),
-        destinationImpl.getDestinationSpecificationId(),
+        destinationImpl.getDestinationId(),
         destinationImpl.getWorkspaceId(),
         destinationImpl.getDestinationImplementationId(),
         destinationImpl.getConnectionConfiguration(),
@@ -132,13 +137,13 @@ public class DestinationImplementationsHandler {
 
     // validate configuration
     validateDestinationImplementation(
-        currentDci.getDestinationSpecificationId(),
+        currentDci.getDestinationId(),
         destinationImplementationUpdate.getConnectionConfiguration());
 
     // persist
     persistDestinationConnectionImplementation(
         destinationImplementationUpdate.getName(),
-        currentDci.getDestinationSpecificationId(),
+        currentDci.getDestinationId(),
         currentDci.getWorkspaceId(),
         destinationImplementationUpdate.getDestinationImplementationId(),
         destinationImplementationUpdate.getConnectionConfiguration(),
@@ -172,15 +177,15 @@ public class DestinationImplementationsHandler {
     return new DestinationImplementationReadList().destinations(reads);
   }
 
-  private void validateDestinationImplementation(final UUID destinationConnectionSpecificationId,
+  private void validateDestinationImplementation(final UUID destinationId,
                                                  final JsonNode implementationJson)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    DestinationConnectionSpecification dcs = configRepository.getDestinationConnectionSpecification(destinationConnectionSpecificationId);
-    validator.validateConfig(dcs, implementationJson);
+    DestinationSpecificationRead dcs = schedulerHandler.getDestinationSpecification(new DestinationIdRequestBody().destinationId(destinationId));
+    validator.validate(dcs.getConnectionSpecification(), implementationJson);
   }
 
   private void persistDestinationConnectionImplementation(final String name,
-                                                          final UUID destinationSpecificationId,
+                                                          final UUID destinationId,
                                                           final UUID workspaceId,
                                                           final UUID destinationImplementationId,
                                                           final JsonNode configurationJson,
@@ -188,7 +193,7 @@ public class DestinationImplementationsHandler {
       throws JsonValidationException, IOException {
     final DestinationConnectionImplementation destinationConnectionImplementation = new DestinationConnectionImplementation()
         .withName(name)
-        .withDestinationSpecificationId(destinationSpecificationId)
+        .withDestinationId(destinationId)
         .withWorkspaceId(workspaceId)
         .withDestinationImplementationId(destinationImplementationId)
         .withConfiguration(configurationJson)
@@ -201,9 +206,7 @@ public class DestinationImplementationsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
     final DestinationConnectionImplementation dci = configRepository.getDestinationConnectionImplementation(destinationImplementationId);
-
-    final UUID destinationId = configRepository.getDestinationConnectionSpecification(dci.getDestinationSpecificationId()).getDestinationId();
-    final StandardDestination standardDestination = configRepository.getStandardDestination(destinationId);
+    final StandardDestination standardDestination = configRepository.getStandardDestination(dci.getDestinationId());
     return buildDestinationImplementationRead(dci, standardDestination);
   }
 
@@ -213,7 +216,7 @@ public class DestinationImplementationsHandler {
         .destinationId(standardDestination.getDestinationId())
         .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId())
         .workspaceId(destinationConnectionImplementation.getWorkspaceId())
-        .destinationSpecificationId(destinationConnectionImplementation.getDestinationSpecificationId())
+        .destinationId(destinationConnectionImplementation.getDestinationId())
         .connectionConfiguration(destinationConnectionImplementation.getConfiguration())
         .name(destinationConnectionImplementation.getName())
         .destinationName(standardDestination.getName());

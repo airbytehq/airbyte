@@ -34,7 +34,6 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
-
 import java.io.IOException;
 import java.util.UUID;
 

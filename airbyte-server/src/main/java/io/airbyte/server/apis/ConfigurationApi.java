@@ -61,6 +61,7 @@ import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.commons.json.JsonSchemaValidator;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -78,7 +79,6 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendDestinationImplementationHandler;
 import io.airbyte.server.handlers.WebBackendSourceImplementationHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
-import io.airbyte.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
 import javax.validation.Valid;
 import org.eclipse.jetty.http.HttpStatus;
@@ -100,14 +100,15 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WebBackendDestinationImplementationHandler webBackendDestinationImplementationHandler;
 
   public ConfigurationApi(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence) {
-    final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation();
+    final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     workspacesHandler = new WorkspacesHandler(configRepository);
     sourcesHandler = new SourcesHandler(configRepository);
     connectionsHandler = new ConnectionsHandler(configRepository);
-    sourceImplementationsHandler = new SourceImplementationsHandler(configRepository, integrationSchemaValidation, connectionsHandler);
     destinationsHandler = new DestinationsHandler(configRepository);
-    destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, integrationSchemaValidation, connectionsHandler);
     schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
+    destinationImplementationsHandler =
+        new DestinationImplementationsHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
+    sourceImplementationsHandler = new SourceImplementationsHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
     webBackendSourceImplementationHandler = new WebBackendSourceImplementationHandler(sourceImplementationsHandler, schedulerHandler);

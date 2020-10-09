@@ -36,15 +36,14 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceImplementationDiscoverSchemaRead;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.api.model.SourceSpecificationRead;
+import io.airbyte.commons.docker.DockerUtil;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.DestinationConnectionImplementation;
-import io.airbyte.config.DestinationConnectionSpecification;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.SourceConnectionSpecification;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
@@ -52,17 +51,13 @@ import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.integrations.Integrations;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
-import io.airbyte.commons.docker.DockerUtil;
 import io.airbyte.server.converters.SchemaConverter;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,19 +151,14 @@ public class SchedulerHandler {
   public SourceSpecificationRead getSourceSpecification(SourceIdRequestBody sourceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     UUID sourceId = sourceIdRequestBody.getSourceId();
-    // TODO this will be removed once specs no longer have dedicated IDs
-    final SourceConnectionSpecification sourceConnectionSpecification =
-        configRepository.getSourceConnectionSpecificationFromSourceId(sourceId);
-
-    final UUID specId = sourceConnectionSpecification.getSourceSpecificationId();
-    final String imageName = Integrations.findBySpecId(specId).getTaggedImage();
+    StandardSource source = configRepository.getStandardSource(sourceId);
+    final String imageName = DockerUtil.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final long jobId = schedulerPersistence.createGetSpecJob(imageName);
     LOGGER.debug("getSourceSpec jobId = {}", jobId);
 
     Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
     TrackingClientSingleton.get().track("get_source_spec", ImmutableMap.<String, Object>builder()
-        .put("source_specification_id", specId)
         .put("source_id", sourceId)
         .put("image_name", imageName)
         .put("job_id", jobId)
@@ -178,26 +168,20 @@ public class SchedulerHandler {
     return new SourceSpecificationRead()
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
-        .sourceId(sourceId)
-        .sourceSpecificationId(specId);
+        .sourceId(sourceId);
   }
 
   public DestinationSpecificationRead getDestinationSpecification(DestinationIdRequestBody destinationIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     UUID destinationId = destinationIdRequestBody.getDestinationId();
-    // TODO this will be removed once specs no longer have dedicated IDs
-    final DestinationConnectionSpecification destinationSpec =
-        configRepository.getDestinationConnectionSpecificationFromDestinationId(destinationId);
-
-    final UUID specId = destinationSpec.getDestinationSpecificationId();
-    final String imageName = Integrations.findBySpecId(specId).getTaggedImage();
+    StandardDestination destination = configRepository.getStandardDestination(destinationId);
+    final String imageName = DockerUtil.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
     final long jobId = schedulerPersistence.createGetSpecJob(imageName);
     LOGGER.debug("getSourceSpec jobId = {}", jobId);
 
     Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
     TrackingClientSingleton.get().track("get_source_spec", ImmutableMap.<String, Object>builder()
-        .put("destination_specification_id", specId)
         .put("destination_id", destinationId)
         .put("image_name", imageName)
         .put("job_id", jobId)
@@ -207,8 +191,7 @@ public class SchedulerHandler {
     return new DestinationSpecificationRead()
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
-        .destinationId(destinationId)
-        .destinationSpecificationId(specId);
+        .destinationId(destinationId);
   }
 
   public ConnectionSyncRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
@@ -224,7 +207,7 @@ public class SchedulerHandler {
     StandardSource source = configRepository.getStandardSource(sourceConnectionImplementation.getSourceId());
     final String sourceImageName = DockerUtil.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
 
-    StandardSource destination = configRepository.getStandardSource(destinationConnectionImplementation.getDestinationId());
+    StandardDestination destination = configRepository.getStandardDestination(destinationConnectionImplementation.getDestinationId());
     final String destinationImageName = DockerUtil.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
 
     final long jobId = schedulerPersistence.createSyncJob(
@@ -232,8 +215,7 @@ public class SchedulerHandler {
         destinationConnectionImplementation,
         standardSync,
         sourceImageName,
-        destinationImageName
-    );
+        destinationImageName);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
     TrackingClientSingleton.get().track("sync", ImmutableMap.<String, Object>builder()
