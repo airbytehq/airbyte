@@ -24,14 +24,14 @@
 
 package io.airbyte.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,8 +40,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SingerExchangeRatesApiSourceTest {
 
@@ -103,7 +104,12 @@ public class SingerExchangeRatesApiSourceTest {
 
     final Optional<String> record = IOs.readFile(syncOutputPath).lines().filter(s -> s.contains("RECORD")).findFirst();
     assertTrue(record.isPresent());
-    assertTrue(Jsons.deserialize(record.get()).get("record").get("CAD").asDouble() > 0);
+
+    assertTrue(Jsons.deserialize(record.get())
+            .get("record")
+            .get("data")
+            .get("record")
+            .get("CAD").asDouble() > 0);
   }
 
   private Process createDiscoveryProcess(String configFileName) throws IOException, WorkerException {
