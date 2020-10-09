@@ -60,8 +60,8 @@ const OnboardingPage: React.FC = () => {
   }, []);
 
   const { push } = useRouter();
-  const { createSource, updateSource } = useSource();
-  const { createDestination, updateDestination } = useDestination();
+  const { createSource, recreateSource } = useSource();
+  const { createDestination, recreateDestination } = useDestination();
   const { createConnection } = useConnection();
 
   const { sources } = useResource(SourceImplementationResource.listShape(), {
@@ -76,9 +76,16 @@ const OnboardingPage: React.FC = () => {
 
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
+
+  const afterUpdateStep = () => {
+    setSuccessRequest(false);
+    setErrorStatusRequest(0);
+  };
+
   const { currentStep, steps, setCurrentStep } = StepsConfig(
     !!sources.length,
-    !!destinations.length
+    !!destinations.length,
+    afterUpdateStep
   );
 
   const {
@@ -99,14 +106,10 @@ const OnboardingPage: React.FC = () => {
 
     try {
       if (!!sources.length) {
-        const result = await updateSource({
+        await recreateSource({
           values,
           sourceImplementationId: sources[0].sourceImplementationId
         });
-        if (result.status === "failure") {
-          setErrorStatusRequest(400);
-          return;
-        }
       } else {
         await createSource({ values, sourceConnector });
       }
@@ -132,15 +135,11 @@ const OnboardingPage: React.FC = () => {
 
     try {
       if (!!destinations.length) {
-        const result = await updateDestination({
+        await recreateDestination({
           values,
           destinationImplementationId:
             destinations[0].destinationImplementationId
         });
-        if (result.status === "failure") {
-          setErrorStatusRequest(400);
-          return;
-        }
       } else {
         await createDestination({
           values,

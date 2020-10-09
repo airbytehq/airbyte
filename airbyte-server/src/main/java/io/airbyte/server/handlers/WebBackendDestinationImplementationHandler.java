@@ -30,6 +30,7 @@ import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.DestinationImplementationCreate;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationRead;
+import io.airbyte.api.model.DestinationImplementationRecreate;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
@@ -66,6 +67,40 @@ public class WebBackendDestinationImplementationHandler {
       CheckConnectionRead checkConnectionRead = schedulerHandler
           .checkDestinationImplementationConnection(destinationImplementationIdRequestBody);
       if (checkConnectionRead.getStatus() == SUCCESS) {
+        return destinationImplementation;
+      }
+    } catch (Exception e) {
+      LOGGER.error("Error while checking connection", e);
+    }
+
+    destinationImplementationsHandler.deleteDestinationImplementation(destinationImplementationIdRequestBody);
+    throw new KnownException(400, "Unable to connect to destination");
+  }
+
+  public DestinationImplementationRead webBackendRecreateDestinationImplementationAndCheck(
+                                                                                           DestinationImplementationRecreate destinationImplementationRecreate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    DestinationImplementationCreate destinationImplementationCreate = new DestinationImplementationCreate();
+    destinationImplementationCreate.setConnectionConfiguration(destinationImplementationRecreate.getConnectionConfiguration());
+    destinationImplementationCreate.setName(destinationImplementationRecreate.getName());
+    destinationImplementationCreate.setDestinationSpecificationId(destinationImplementationRecreate.getDestinationSpecificationId());
+    destinationImplementationCreate.setWorkspaceId(destinationImplementationRecreate.getWorkspaceId());
+
+    DestinationImplementationRead destinationImplementation =
+        destinationImplementationsHandler
+            .createDestinationImplementation(destinationImplementationCreate);
+
+    final DestinationImplementationIdRequestBody destinationImplementationIdRequestBody = new DestinationImplementationIdRequestBody()
+        .destinationImplementationId(destinationImplementation.getDestinationImplementationId());
+
+    try {
+      CheckConnectionRead checkConnectionRead = schedulerHandler
+          .checkDestinationImplementationConnection(destinationImplementationIdRequestBody);
+      if (checkConnectionRead.getStatus() == SUCCESS) {
+        final DestinationImplementationIdRequestBody destinationImplementationIdRequestBody1 = new DestinationImplementationIdRequestBody()
+            .destinationImplementationId(destinationImplementationRecreate.getDestinationImplementationId());
+
+        destinationImplementationsHandler.deleteDestinationImplementation(destinationImplementationIdRequestBody1);
         return destinationImplementation;
       }
     } catch (Exception e) {

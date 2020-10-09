@@ -23,6 +23,10 @@ const useSource = () => {
     SourceImplementationResource.updateShape()
   );
 
+  const recreateSourceImplementation = useFetcher(
+    SourceImplementationResource.recreateShape()
+  );
+
   const createSource = async ({
     values,
     sourceConnector
@@ -100,7 +104,39 @@ const useSource = () => {
     );
   };
 
-  return { createSource, updateSource };
+  const recreateSource = async ({
+    values,
+    sourceImplementationId
+  }: {
+    values: ValuesProps;
+    sourceImplementationId: string;
+  }) => {
+    return await recreateSourceImplementation(
+      {
+        sourceImplementationId: sourceImplementationId
+      },
+      {
+        name: values.name,
+        sourceImplementationId,
+        connectionConfiguration: values.connectionConfiguration,
+        workspaceId: config.ui.workspaceId,
+        sourceSpecificationId: values.specificationId
+      },
+      // Method used only in onboarding.
+      // Replace all SourceImplementation List to new item in UpdateParams (to change id)
+      [
+        [
+          SourceImplementationResource.listShape(),
+          { workspaceId: config.ui.workspaceId },
+          (newSourceImplementationId: string) => ({
+            sources: [newSourceImplementationId]
+          })
+        ]
+      ]
+    );
+  };
+
+  return { createSource, updateSource, recreateSource };
 };
 
 export default useSource;

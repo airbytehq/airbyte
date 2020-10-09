@@ -22,6 +22,10 @@ const useDestination = () => {
     DestinationImplementationResource.updateShape()
   );
 
+  const recreateDestinationImplementation = useFetcher(
+    DestinationImplementationResource.recreateShape()
+  );
+
   const createDestination = async ({
     values,
     destinationConnector
@@ -100,7 +104,39 @@ const useDestination = () => {
     );
   };
 
-  return { createDestination, updateDestination };
+  const recreateDestination = async ({
+    values,
+    destinationImplementationId
+  }: {
+    values: ValuesProps;
+    destinationImplementationId: string;
+  }) => {
+    return await recreateDestinationImplementation(
+      {
+        destinationImplementationId
+      },
+      {
+        name: values.name,
+        destinationImplementationId,
+        connectionConfiguration: values.connectionConfiguration,
+        workspaceId: config.ui.workspaceId,
+        destinationSpecificationId: values.specificationId
+      },
+      // Method used only in onboarding.
+      // Replace all DestinationImplementation List to new item in UpdateParams (to change id)
+      [
+        [
+          DestinationImplementationResource.listShape(),
+          { workspaceId: config.ui.workspaceId },
+          (newDestinationImplementationId: string) => ({
+            destinations: [newDestinationImplementationId]
+          })
+        ]
+      ]
+    );
+  };
+
+  return { createDestination, updateDestination, recreateDestination };
 };
 
 export default useDestination;

@@ -7,7 +7,11 @@ export enum StepsTypes {
   SET_UP_CONNECTION = "set-up-connection"
 }
 
-const StepsConfig = (hasSources: boolean, hasDestinations: boolean) => {
+const StepsConfig = (
+  hasSources: boolean,
+  hasDestinations: boolean,
+  afterUpdateStep?: () => void
+) => {
   const getInitialStep = () => {
     if (hasSources) {
       if (hasDestinations) {
@@ -21,6 +25,12 @@ const StepsConfig = (hasSources: boolean, hasDestinations: boolean) => {
   };
 
   const [currentStep, setCurrentStep] = useState(getInitialStep());
+  const updateStep = (step: StepsTypes) => {
+    setCurrentStep(step);
+    if (afterUpdateStep) {
+      afterUpdateStep();
+    }
+  };
 
   const steps = useMemo(
     () => [
@@ -28,7 +38,7 @@ const StepsConfig = (hasSources: boolean, hasDestinations: boolean) => {
         id: StepsTypes.CREATE_SOURCE,
         name: <FormattedMessage id={"onboarding.createSource"} />,
         onSelect: hasSources
-          ? () => setCurrentStep(StepsTypes.CREATE_SOURCE)
+          ? () => updateStep(StepsTypes.CREATE_SOURCE)
           : undefined
       },
       {
@@ -36,7 +46,7 @@ const StepsConfig = (hasSources: boolean, hasDestinations: boolean) => {
         name: <FormattedMessage id={"onboarding.createDestination"} />,
         onSelect:
           hasSources || hasDestinations
-            ? () => setCurrentStep(StepsTypes.CREATE_DESTINATION)
+            ? () => updateStep(StepsTypes.CREATE_DESTINATION)
             : undefined
       },
       {
@@ -44,7 +54,7 @@ const StepsConfig = (hasSources: boolean, hasDestinations: boolean) => {
         name: <FormattedMessage id={"onboarding.setUpConnection"} />,
         onSelect:
           hasSources && hasDestinations
-            ? () => setCurrentStep(StepsTypes.SET_UP_CONNECTION)
+            ? () => updateStep(StepsTypes.SET_UP_CONNECTION)
             : undefined
       }
     ],
@@ -54,7 +64,7 @@ const StepsConfig = (hasSources: boolean, hasDestinations: boolean) => {
   return {
     steps,
     currentStep,
-    setCurrentStep
+    setCurrentStep: updateStep
   };
 };
 

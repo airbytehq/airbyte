@@ -61,6 +61,8 @@ import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.api.model.DestinationImplementationRecreate;
+import io.airbyte.api.model.SourceImplementationRecreate;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -308,6 +310,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WbConnectionReadList webBackendListConnectionsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public DestinationImplementationRead webBackendRecreateDestinationImplementation(@Valid DestinationImplementationRecreate destinationImplementationRecreate) {
+    return execute(
+        () -> webBackendDestinationImplementationHandler.webBackendRecreateDestinationImplementationAndCheck(destinationImplementationRecreate));
+  }
+
+  @Override
+  public SourceImplementationRead webBackendRecreateSourceImplementation(@Valid SourceImplementationRecreate sourceImplementationRecreate) {
+    return execute(() -> webBackendSourceImplementationHandler.webBackendRecreateSourceImplementationAndCheck(sourceImplementationRecreate));
   }
 
   @Override
