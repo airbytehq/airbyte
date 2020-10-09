@@ -24,7 +24,6 @@
 
 package io.airbyte.server.handlers;
 
-import com.google.common.collect.Lists;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
@@ -109,4 +108,5 @@ public class SourcesHandler {
       throw new RuntimeException(e);
     }
   }
+
 }

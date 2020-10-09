@@ -26,7 +26,6 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -45,10 +44,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
 import java.util.function.Supplier;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
 
 class SourcesHandlerTest {
 
@@ -79,18 +76,24 @@ class SourcesHandlerTest {
   }
 
   @Test
-  void testListSources() throws JsonValidationException, IOException, ConfigNotFoundException {
+  void testListSources() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
     final StandardSource source2 = generateSource();
 
     when(configRepository.listStandardSources()).thenReturn(Lists.newArrayList(source, source2));
 
     SourceRead expectedSourceRead1 = new SourceRead()
         .sourceId(source.getSourceId())
-        .name(source.getName());
+        .name(source.getName())
+        .dockerRepository(source.getDockerRepository())
+        .dockerImageTag(source.getDockerImageTag())
+        .documentationUrl(new URI(source.getDocumentationUrl()));
 
     SourceRead expectedSourceRead2 = new SourceRead()
         .sourceId(source2.getSourceId())
-        .name(source2.getName());
+        .name(source2.getName())
+        .dockerRepository(source.getDockerRepository())
+        .dockerImageTag(source.getDockerImageTag())
+        .documentationUrl(new URI(source.getDocumentationUrl()));
 
     final SourceReadList actualSourceReadList = sourceHandler.listSources();
 
@@ -98,13 +101,16 @@ class SourcesHandlerTest {
   }
 
   @Test
-  void testGetSource() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testGetSource() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
     when(configRepository.getStandardSource(source.getSourceId()))
         .thenReturn(source);
 
     SourceRead expectedSourceRead = new SourceRead()
         .sourceId(source.getSourceId())
-        .name(source.getName());
+        .name(source.getName())
+        .dockerRepository(source.getDockerRepository())
+        .dockerImageTag(source.getDockerImageTag())
+        .documentationUrl(new URI(source.getDocumentationUrl()));
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(source.getSourceId());
 
