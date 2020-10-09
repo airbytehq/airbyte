@@ -121,6 +121,48 @@ paths:
           description: Workspace not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/sources/create:
+    post:
+      tags:
+        - source
+      summary: Creates a source
+      operationId: createSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceCreate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/sources/update:
+    post:
+      tags:
+        - source
+      summary: Update a source
+      operationId: updateSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceUpdate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+        "404":
+          description: Source not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/sources/list:
     post:
       tags:
@@ -178,7 +220,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceSpecificationRead"
         "404":
-          description: Source Specification not found
+          description: Source not found
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/source_implementations/create:
@@ -335,6 +377,29 @@ paths:
                 $ref: "#/components/schemas/SourceImplementationDiscoverSchemaRead"
         "404":
           description: Source Implementation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/destinations/update:
+    post:
+      tags:
+        - destination
+      summary: Update destination
+      operationId: updateDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationRead"
+        "404":
+          description: Destination not found
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/destinations/list:
@@ -875,15 +940,45 @@ components:
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
+    SourceCreate:
+      type: object
+      required:
+        - name
+        - defaultDockerRepository
+        - defaultDockerImageVersion
+      properties:
+        name:
+          type: string
+        defaultDockerRepository:
+          type: string
+        defaultDockerImageVersion:
+          type: string
+    SourceUpdate:
+      type: object
+      description: Update the source. Currently, the only allowed attribute to update is the default docker image version.
+      required:
+        - sourceId
+        - defaultDockerImageVersion
+      properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        defaultDockerImageVersion:
+          type: string
     SourceRead:
       type: object
       required:
         - sourceId
         - name
+        - defaultDockerRepository
+        - defaultDockerImageVersion
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
         name:
+          type: string
+        defaultDockerRepository:
+          type: string
+        defaultDockerImageVersion:
           type: string
     SourceReadList:
       type: object
@@ -895,21 +990,15 @@ components:
           items:
             $ref: "#/components/schemas/SourceRead"
     # SOURCE SPECIFICATION
-    SourceSpecificationId:
-      type: string
-      format: uuid
     SourceSpecification:
       description: The specification for what values are required to configure the source.
       example: { user: { type: string } }
     SourceSpecificationRead:
       type: object
       required:
-        - sourceSpecificationId
         - sourceId
         - specification
       properties:
-        sourceSpecificationId:
-          $ref: "#/components/schemas/SourceSpecificationId"
         sourceId:
           $ref: "#/components/schemas/SourceId"
         documentationUrl:
@@ -934,14 +1023,14 @@ components:
       type: object
       required:
         - workspaceId
-        - sourceSpecificationId
+        - sourceId
         - connectionConfiguration
         - name
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        sourceSpecificationId:
-          $ref: "#/components/schemas/SourceSpecificationId"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
         name:
@@ -965,7 +1054,6 @@ components:
         - sourceId
         - sourceImplementationId
         - workspaceId
-        - sourceSpecificationId
         - connectionConfiguration
         - name
         - sourceName
@@ -976,8 +1064,6 @@ components:
           $ref: "#/components/schemas/SourceImplementationId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        sourceSpecificationId:
-          $ref: "#/components/schemas/SourceSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
         name:
@@ -1011,15 +1097,31 @@ components:
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+    DestinationUpdate:
+      type: object
+      required:
+        - destinationId
+        - destinationImageVersion
+      properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        defaultDockerImageVersion:
+          type: string
     DestinationRead:
       type: object
       required:
         - destinationId
         - name
+        - defaultDockerRepository
+        - defaultDockerImageVersion
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         name:
+          type: string
+        defaultDockerRepository:
+          type: string
+        defaultDockerImageVersion:
           type: string
     DestinationReadList:
       type: object
@@ -1031,21 +1133,15 @@ components:
           items:
             $ref: "#/components/schemas/DestinationRead"
     # DESTINATION SPECIFICATION
-    DestinationSpecificationId:
-      type: string
-      format: uuid
     DestinationSpecification:
       description: The specification for what values are required to configure the destination.
       example: { user: { type: string } }
     DestinationSpecificationRead:
       type: object
       required:
-        - destinationSpecificationId
         - destinationId
         - specification
       properties:
-        destinationSpecificationId:
-          $ref: "#/components/schemas/DestinationSpecificationId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         documentationUrl:
@@ -1070,13 +1166,13 @@ components:
       type: object
       required:
         - workspaceId
-        - destinationSpecificationId
+        - destinationId
         - connectionConfiguration
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        destinationSpecificationId:
-          $ref: "#/components/schemas/DestinationSpecificationId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:
@@ -1100,7 +1196,6 @@ components:
         - destinationId
         - destinationImplementationId
         - workspaceId
-        - destinationSpecificationId
         - connectionConfiguration
         - name
         - destinationName
@@ -1111,8 +1206,6 @@ components:
           $ref: "#/components/schemas/DestinationImplementationId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        destinationSpecificationId:
-          $ref: "#/components/schemas/DestinationSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:
@@ -1308,7 +1401,6 @@ components:
         - check_connection_source
         - check_connection_destination
         - discover_schema
-        - get_spec
         - sync
     JobListRequestBody:
       type: object
@@ -1420,7 +1512,6 @@ components:
         - syncSchema
         - status
         - source
-        - isSyncing
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -1447,8 +1538,6 @@ components:
           description: epoch time of last sync. null if no sync has taken place.
           type: integer
           format: int64
-        isSyncing:
-          type: boolean
     WbConnectionReadList:
       type: object
       required:

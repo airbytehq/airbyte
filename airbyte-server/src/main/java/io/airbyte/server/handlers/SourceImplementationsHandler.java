@@ -176,10 +176,7 @@ public class SourceImplementationsHandler {
     // read configuration from db
     final SourceConnectionImplementation sourceConnectionImplementation = configRepository.getSourceConnectionImplementation(sourceImplementationId);
 
-    final UUID sourceId = configRepository
-        .getSourceConnectionSpecification(sourceConnectionImplementation.getSourceSpecificationId())
-        .getSourceId();
-    final StandardSource standardSource = configRepository.getStandardSource(sourceId);
+    final StandardSource standardSource = configRepository.getStandardSource(sourceConnectionImplementation.getSourceId());
 
     return toSourceImplementationRead(sourceConnectionImplementation, standardSource);
   }
@@ -199,7 +196,7 @@ public class SourceImplementationsHandler {
       throws JsonValidationException, IOException {
     final SourceConnectionImplementation sourceConnectionImplementation = new SourceConnectionImplementation()
         .withName(name)
-        .withSourceSpecificationId(sourceSpecificationId)
+        .withSourceId(sourceSpecificationId)
         .withWorkspaceId(workspaceId)
         .withSourceImplementationId(sourceImplementationId)
         .withTombstone(tombstone)

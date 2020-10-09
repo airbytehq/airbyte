@@ -56,6 +56,8 @@ import org.junit.jupiter.api.Test;
 class SchedulerHandlerTest {
 
   private static final long JOB_ID = 15L;
+  private static final String SOURCE_IMAGE_NAME = "srcimage";
+  private static final String DESTINATION_IMAGE_NAME = "dstimage";
   private SchedulerHandler schedulerHandler;
   private ConfigRepository configRepository;
   private SchedulerPersistence schedulerPersistence;
@@ -81,13 +83,13 @@ class SchedulerHandlerTest {
         new SourceImplementationIdRequestBody().sourceImplementationId(sourceImpl.getSourceImplementationId());
 
     when(configRepository.getSourceConnectionImplementation(sourceImpl.getSourceImplementationId())).thenReturn(sourceImpl);
-    when(schedulerPersistence.createSourceCheckConnectionJob(sourceImpl)).thenReturn(JOB_ID);
+    when(schedulerPersistence.createSourceCheckConnectionJob(sourceImpl, SOURCE_IMAGE_NAME)).thenReturn(JOB_ID);
     when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
 
     schedulerHandler.checkSourceImplementationConnection(request);
 
     verify(configRepository).getSourceConnectionImplementation(sourceImpl.getSourceImplementationId());
-    verify(schedulerPersistence).createSourceCheckConnectionJob(sourceImpl);
+    verify(schedulerPersistence).createSourceCheckConnectionJob(sourceImpl, SOURCE_IMAGE_NAME);
     verify(schedulerPersistence, times(2)).getJob(JOB_ID);
   }
 
@@ -98,13 +100,13 @@ class SchedulerHandlerTest {
         new DestinationImplementationIdRequestBody().destinationImplementationId(destinationImpl.getDestinationImplementationId());
 
     when(configRepository.getDestinationConnectionImplementation(destinationImpl.getDestinationImplementationId())).thenReturn(destinationImpl);
-    when(schedulerPersistence.createDestinationCheckConnectionJob(destinationImpl)).thenReturn(JOB_ID);
+    when(schedulerPersistence.createDestinationCheckConnectionJob(destinationImpl, DESTINATION_IMAGE_NAME)).thenReturn(JOB_ID);
     when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
 
     schedulerHandler.checkDestinationImplementationConnection(request);
 
     verify(configRepository).getDestinationConnectionImplementation(destinationImpl.getDestinationImplementationId());
-    verify(schedulerPersistence).createDestinationCheckConnectionJob(destinationImpl);
+    verify(schedulerPersistence).createDestinationCheckConnectionJob(destinationImpl, DESTINATION_IMAGE_NAME);
     verify(schedulerPersistence, times(2)).getJob(JOB_ID);
   }
 
@@ -115,13 +117,13 @@ class SchedulerHandlerTest {
         new SourceImplementationIdRequestBody().sourceImplementationId(sourceImpl.getSourceImplementationId());
 
     when(configRepository.getSourceConnectionImplementation(sourceImpl.getSourceImplementationId())).thenReturn(sourceImpl);
-    when(schedulerPersistence.createDiscoverSchemaJob(sourceImpl)).thenReturn(JOB_ID);
+    when(schedulerPersistence.createDiscoverSchemaJob(sourceImpl, SOURCE_IMAGE_NAME)).thenReturn(JOB_ID);
     when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
 
     schedulerHandler.discoverSchemaForSourceImplementation(request);
 
     verify(configRepository).getSourceConnectionImplementation(sourceImpl.getSourceImplementationId());
-    verify(schedulerPersistence).createDiscoverSchemaJob(sourceImpl);
+    verify(schedulerPersistence).createDiscoverSchemaJob(sourceImpl, SOURCE_IMAGE_NAME);
     verify(schedulerPersistence, times(2)).getJob(JOB_ID);
   }
 
@@ -137,7 +139,7 @@ class SchedulerHandlerTest {
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceConnectionImplementation(sourceImpl.getSourceImplementationId())).thenReturn(sourceImpl);
     when(configRepository.getDestinationConnectionImplementation(destinationImpl.getDestinationImplementationId())).thenReturn(destinationImpl);
-    when(schedulerPersistence.createSyncJob(sourceImpl, destinationImpl, standardSync)).thenReturn(JOB_ID);
+    when(schedulerPersistence.createSyncJob(sourceImpl, destinationImpl, standardSync, SOURCE_IMAGE_NAME, DESTINATION_IMAGE_NAME)).thenReturn(JOB_ID);
     when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
 
     schedulerHandler.syncConnection(request);
@@ -145,7 +147,7 @@ class SchedulerHandlerTest {
     verify(configRepository).getStandardSync(standardSync.getConnectionId());
     verify(configRepository).getSourceConnectionImplementation(standardSync.getSourceImplementationId());
     verify(configRepository).getDestinationConnectionImplementation(standardSync.getDestinationImplementationId());
-    verify(schedulerPersistence).createSyncJob(sourceImpl, destinationImpl, standardSync);
+    verify(schedulerPersistence).createSyncJob(sourceImpl, destinationImpl, standardSync, SOURCE_IMAGE_NAME, DESTINATION_IMAGE_NAME);
     verify(schedulerPersistence, times(2)).getJob(JOB_ID);
   }
 

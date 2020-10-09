@@ -39,17 +39,22 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardDestination;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.commons.docker.DockerUtil;
 import io.airbyte.server.converters.SchemaConverter;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,14 +77,16 @@ public class SchedulerHandler {
     final SourceConnectionImplementation connectionImplementation =
         configRepository.getSourceConnectionImplementation(sourceImplementationIdRequestBody.getSourceImplementationId());
 
-    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(connectionImplementation);
+    final StandardSource source = configRepository.getStandardSource(connectionImplementation.getSourceId());
+    final String imageName = DockerUtil.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
+    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
     final CheckConnectionRead checkConnectionRead = reportConnectionStatus(waitUntilJobIsTerminalOrTimeout(jobId));
 
     TrackingClientSingleton.get().track("check_connection", ImmutableMap.<String, Object>builder()
         .put("type", "source")
         .put("name", connectionImplementation.getName())
-        .put("source_specification_id", connectionImplementation.getSourceSpecificationId())
+        .put("source_id", connectionImplementation.getSourceId())
         .put("source_implementation_id", connectionImplementation.getSourceImplementationId())
         .put("check_connection_result", checkConnectionRead.getStatus())
         .put("job_id", jobId)
@@ -93,15 +100,17 @@ public class SchedulerHandler {
     final DestinationConnectionImplementation connectionImplementation =
         configRepository.getDestinationConnectionImplementation(destinationImplementationIdRequestBody.getDestinationImplementationId());
 
-    final long jobId = schedulerPersistence.createDestinationCheckConnectionJob(connectionImplementation);
+    final StandardDestination destination = configRepository.getStandardDestination(connectionImplementation.getDestinationId());
+    final String imageName = DockerUtil.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
+    final long jobId = schedulerPersistence.createDestinationCheckConnectionJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
     final CheckConnectionRead checkConnectionRead = reportConnectionStatus(waitUntilJobIsTerminalOrTimeout(jobId));
 
     TrackingClientSingleton.get().track("check_connection", ImmutableMap.<String, Object>builder()
         .put("type", "destination")
         .put("name", connectionImplementation.getName())
-        .put("destination_specification_id", connectionImplementation.getDestinationSpecificationId())
         .put("destination_implementation_id", connectionImplementation.getDestinationImplementationId())
+        .put("destination_id", connectionImplementation.getDestinationId())
         .put("check_connection_result", checkConnectionRead.getStatus())
         .put("job_id", jobId)
         .build());
@@ -114,7 +123,9 @@ public class SchedulerHandler {
     final SourceConnectionImplementation connectionImplementation =
         configRepository.getSourceConnectionImplementation(sourceImplementationIdRequestBody.getSourceImplementationId());
 
-    final long jobId = schedulerPersistence.createDiscoverSchemaJob(connectionImplementation);
+    StandardSource source = configRepository.getStandardSource(connectionImplementation.getSourceId());
+    final String imageName = DockerUtil.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
+    final long jobId = schedulerPersistence.createDiscoverSchemaJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
@@ -126,7 +137,7 @@ public class SchedulerHandler {
 
     TrackingClientSingleton.get().track("discover_schema", ImmutableMap.<String, Object>builder()
         .put("name", connectionImplementation.getName())
-        .put("source_specification_id", connectionImplementation.getSourceSpecificationId())
+        .put("source_id", connectionImplementation.getSourceId())
         .put("source_implementation_id", connectionImplementation.getSourceImplementationId())
         .put("job_id", jobId)
         .build());
@@ -144,17 +155,29 @@ public class SchedulerHandler {
     final DestinationConnectionImplementation destinationConnectionImplementation =
         configRepository.getDestinationConnectionImplementation(standardSync.getDestinationImplementationId());
 
-    final long jobId = schedulerPersistence.createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync);
+    StandardSource source = configRepository.getStandardSource(sourceConnectionImplementation.getSourceId());
+    final String sourceImageName = DockerUtil.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
+
+    StandardSource destination = configRepository.getStandardSource(destinationConnectionImplementation.getDestinationId());
+    final String destinationImageName = DockerUtil.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
+
+    final long jobId = schedulerPersistence.createSyncJob(
+        sourceConnectionImplementation,
+        destinationConnectionImplementation,
+        standardSync,
+        sourceImageName,
+        destinationImageName
+    );
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
     TrackingClientSingleton.get().track("sync", ImmutableMap.<String, Object>builder()
         .put("name", standardSync.getName())
         .put("connection_id", standardSync.getConnectionId())
         .put("sync_mode", standardSync.getSyncMode())
-        .put("source_specification_id", sourceConnectionImplementation.getSourceSpecificationId())
+        .put("source_id", sourceConnectionImplementation.getSourceId())
         .put("source_implementation_id", sourceConnectionImplementation.getSourceImplementationId())
-        .put("destination_specification_id", destinationConnectionImplementation.getDestinationSpecificationId())
         .put("destination_implementation_id", destinationConnectionImplementation.getDestinationImplementationId())
+        .put("destination_id", destinationConnectionImplementation.getDestinationId())
         .put("job_id", jobId)
         .build());
 
