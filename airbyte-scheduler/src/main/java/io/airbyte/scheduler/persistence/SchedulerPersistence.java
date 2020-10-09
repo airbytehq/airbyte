@@ -44,6 +44,8 @@ public interface SchedulerPersistence {
 
   long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation, String dockerImage) throws IOException;
 
+  long createGetSpecJob(String integrationImage) throws IOException;
+
   long createSyncJob(SourceConnectionImplementation sourceImplementation,
                      DestinationConnectionImplementation destinationImplementation,
                      StandardSync standardSync,

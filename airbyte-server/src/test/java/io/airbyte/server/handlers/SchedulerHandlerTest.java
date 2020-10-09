@@ -25,6 +25,7 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,16 +33,25 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
+import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
+import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.DestinationConnectionSpecification;
+import io.airbyte.config.JobOutput;
 import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.SourceConnectionSpecification;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.integrations.Integrations;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
@@ -49,6 +59,10 @@ import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationImplementationHelpers;
 import io.airbyte.server.helpers.SourceImplementationHelpers;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -91,6 +105,62 @@ class SchedulerHandlerTest {
     verify(configRepository).getSourceConnectionImplementation(sourceImpl.getSourceImplementationId());
     verify(schedulerPersistence).createSourceCheckConnectionJob(sourceImpl, SOURCE_IMAGE_NAME);
     verify(schedulerPersistence, times(2)).getJob(JOB_ID);
+  }
+
+  @Test
+  void testGetSourceSpec() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
+    // TODO remove dedicated spec IDs once specs no longer have them
+    UUID sourceId = UUID.randomUUID();
+    UUID postgresSpecId = Integrations.POSTGRES_TAP.getSpecId();
+    String postgresImage = Integrations.POSTGRES_TAP.getTaggedImage();
+    SourceConnectionSpecification spec = new SourceConnectionSpecification().withSourceSpecificationId(postgresSpecId);
+    when(configRepository.getSourceConnectionSpecificationFromSourceId(sourceId)).thenReturn(spec);
+    when(schedulerPersistence.createGetSpecJob(postgresImage)).thenReturn(JOB_ID);
+    when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+
+    StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
+        new ConnectorSpecification()
+            .withDocumentationUrl(new URI("https://google.com"))
+            .withChangelogUrl(new URI("https://google.com"))
+            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
+    JobOutput jobOutput = mock(JobOutput.class);
+
+    when(jobOutput.getGetSpec()).thenReturn(specOutput);
+    when(completedJob.getOutput()).thenReturn(Optional.of(jobOutput));
+
+    schedulerHandler.getSourceSpecification(new SourceIdRequestBody().sourceId(sourceId));
+
+    verify(schedulerPersistence).createGetSpecJob(postgresImage);
+    verify(configRepository).getSourceConnectionSpecificationFromSourceId(sourceId);
+    verify(schedulerPersistence, atLeast(2)).getJob(JOB_ID);
+  }
+
+  @Test
+  void testGetDestinationSpec() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
+    // TODO remove dedicated spec IDs once specs no longer have them
+    UUID destinationId = UUID.randomUUID();
+    UUID postgresSpecId = Integrations.POSTGRES_TARGET.getSpecId();
+    String postgresImage = Integrations.POSTGRES_TARGET.getTaggedImage();
+    DestinationConnectionSpecification spec = new DestinationConnectionSpecification().withDestinationSpecificationId(postgresSpecId);
+    when(configRepository.getDestinationConnectionSpecificationFromDestinationId(destinationId)).thenReturn(spec);
+    when(schedulerPersistence.createGetSpecJob(postgresImage)).thenReturn(JOB_ID);
+    when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+
+    StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
+        new ConnectorSpecification()
+            .withDocumentationUrl(new URI("https://google.com"))
+            .withChangelogUrl(new URI("https://google.com"))
+            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
+    JobOutput jobOutput = mock(JobOutput.class);
+
+    when(jobOutput.getGetSpec()).thenReturn(specOutput);
+    when(completedJob.getOutput()).thenReturn(Optional.of(jobOutput));
+
+    schedulerHandler.getDestinationSpecification(new DestinationIdRequestBody().destinationId(destinationId));
+
+    verify(schedulerPersistence).createGetSpecJob(postgresImage);
+    verify(configRepository).getDestinationConnectionSpecificationFromDestinationId(destinationId);
+    verify(schedulerPersistence, atLeast(2)).getJob(JOB_ID);
   }
 
   @Test

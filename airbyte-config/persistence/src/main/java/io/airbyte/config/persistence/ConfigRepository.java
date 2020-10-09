@@ -27,19 +27,18 @@ package io.airbyte.config.persistence;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnectionImplementation;
-import io.airbyte.config.DestinationConnectionSpecification;
 import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.SourceConnectionSpecification;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.StandardWorkspace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ConfigRepository {
 
@@ -89,20 +88,6 @@ public class ConfigRepository {
   public List<StandardDestination> listStandardDestinations()
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION, StandardDestination.class);
-  }
-
-  public List<SourceConnectionSpecification> listSourceConnectionSpecifications()
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.listConfigs(
-        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
-        SourceConnectionSpecification.class);
-  }
-
-  public List<DestinationConnectionSpecification> listDestinationConnectionSpecifications()
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.listConfigs(
-        ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
-        DestinationConnectionSpecification.class);
   }
 
   public SourceConnectionImplementation getSourceConnectionImplementation(final UUID sourceImplementationId)
