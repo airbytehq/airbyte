@@ -29,7 +29,7 @@ import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.nio.file.Path;
 
-public interface AirbyteTarget extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
+public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
 
   void start(StandardTargetConfig targetConfig, Path jobRoot) throws Exception;
 

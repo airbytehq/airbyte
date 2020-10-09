@@ -47,10 +47,10 @@ class SingerIntegrationLauncherTest {
   }
 
   @Test
-  void spec() {
-    Assertions.assertThrows(
-        NotImplementedException.class,
-        () -> launcher.spec(JOB_ROOT));
+  void spec() throws WorkerException {
+    launcher.spec(JOB_ROOT);
+
+    Mockito.verify(pbf).create(JOB_ROOT, FAKE_IMAGE, "--spec");
   }
 
   @Test

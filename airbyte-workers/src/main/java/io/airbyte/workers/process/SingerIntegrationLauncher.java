@@ -44,8 +44,8 @@ public class SingerIntegrationLauncher implements IntegrationLauncher {
   }
 
   @Override
-  public ProcessBuilder spec(Path jobRoot) {
-    throw new NotImplementedException("spec doesn't exist for singer images");
+  public ProcessBuilder spec(Path jobRoot) throws WorkerException {
+    return pbf.create(jobRoot, imageName, "--spec");
   }
 
   @Override
