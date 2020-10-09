@@ -1,0 +1,9 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    implementation 'com.squareup.tape2:tape:2.0.0-beta1'
+    implementation 'com.baidu:leansoft-bigqueue:0.7.3'
+
+}

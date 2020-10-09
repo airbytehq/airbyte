@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -109,4 +110,7 @@ public class Jsons {
     return (T) deserialize(serialize(object), object.getClass());
   }
 
+  public static byte[] toBytes(JsonNode jsonNode) {
+    return Jsons.serialize(jsonNode).getBytes(Charsets.UTF_8);
+  }
 }
