@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols.singer;
+package io.airbyte.workers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -38,9 +38,6 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverSchemaInput;
 import io.airbyte.config.StandardDiscoverSchemaOutput;
-import io.airbyte.workers.DiscoverSchemaWorker;
-import io.airbyte.workers.JobStatus;
-import io.airbyte.workers.OutputAndStatus;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
