@@ -16,7 +16,7 @@ task deleteProtocolDefinitions(type: Delete) {
 }
 
 task copyProtocolDefinitions(type: Copy) {
-    from file("$projectDir/../../airbyte-protocol/models/src/main/resources/airbyte_protocol").absolutePath
+    from file("$rootDir/airbyte-protocol/models/src/main/resources/airbyte_protocol").absolutePath
     into "airbyte_protocol/airbyte_protocol/types"
     dependsOn deleteProtocolDefinitions
 }
