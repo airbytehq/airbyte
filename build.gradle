@@ -84,19 +84,21 @@ allprojects {
         composeBuild.dependsOn(project.tasks.assemble)
     }
 
-    /*
-    Handles the case where there's an upstream dependency on a dev versioned image built by Gradle.
-    The plugin doesn't recognize changes to the base image as a change that requires rebuilding.
-    Docker will still cache the artifact, so it shouldn't be much slower.
-     */
+    // Handles the case where there's an upstream dependency on a dev versioned image built by Gradle.
+    // The plugin doesn't recognize changes to the base image as a change that requires rebuilding.
+    // Docker will still cache the artifact, so it shouldn't be much slower.
     tasks.withType(DockerBuildImage).all { task ->
         task.outputs.upToDateWhen { false }
     }
 }
 
 allprojects {
+    // by default gradle uses directory as the project name. That works very well in a single project environment but
+    // projects clobber each other in an environments with subprojects when projects are in directories named identically.
     def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
     group = "io.${rootProject.name}${sub.isEmpty() ? '' : ".$sub"}"
+    project.archivesBaseName = "${project.group}-${project.name}"
+
     version = env.VERSION
 }
 
