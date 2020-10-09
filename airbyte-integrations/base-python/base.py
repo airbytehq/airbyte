@@ -52,8 +52,8 @@ class AirbyteEntrypoint(object):
         # read
         read_parser = subparsers.add_parser("read", help="reads the source and outputs messages to STDOUT",
                                             parents=[parent_parser])
-        # todo: re-add state handling
-        # read_parser.add_argument('--state', type=str, required=False, help='path to the json-encoded state file')
+
+        read_parser.add_argument('--state', type=str, required=False, help='path to the json-encoded state file')
         required_read_parser = read_parser.add_argument_group('required named arguments')
         required_read_parser.add_argument('--config', type=str, required=True,
                                           help='path to the json configuration file')
@@ -88,12 +88,11 @@ class AirbyteEntrypoint(object):
                     log("ERROR", "Check failed")
                     sys.exit(1)
             elif cmd == "discover":
-                schema = source.discover(logging, rendered_config_path)
-                print(schema.schema)  # todo: print as serialized catalog message
+                catalog = source.discover(logging, rendered_config_path)
+                print(catalog.serialize())
                 sys.exit(0)
             elif cmd == "read":
-                # todo: pass in state
-                generator = source.read(logging, rendered_config_path)
+                generator = source.read(logging, rendered_config_path, parsed_args.state)
                 for message in generator:
                     print(message.serialize())
                 sys.exit(0)

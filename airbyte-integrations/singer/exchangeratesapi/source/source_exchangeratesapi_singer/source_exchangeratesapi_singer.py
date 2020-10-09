@@ -1,7 +1,7 @@
 from airbyte_protocol import Source
 from airbyte_protocol import AirbyteSpec
 from airbyte_protocol import AirbyteCheckResponse
-from airbyte_protocol import AirbyteSchema
+from airbyte_protocol import AirbyteCatalog
 from airbyte_protocol import AirbyteMessage
 import urllib.request
 from typing import Generator
@@ -19,9 +19,12 @@ class SourceExchangeRatesApiSinger(Source):
         code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
         return AirbyteCheckResponse(code == 200, {})
 
-    def discover(self, config_object, rendered_config_path) -> AirbyteSchema:
+    def discover(self, config_object, rendered_config_path) -> AirbyteCatalog:
         return SingerHelper.discover("tap-exchangeratesapi | grep '\"type\": \"SCHEMA\"' | head -1 | jq -c '{\"streams\":[{\"stream\": .stream, \"schema\": .schema}]}'")
 
     # todo: handle state
     def read(self, config_object, rendered_config_path, state=None) -> Generator[AirbyteMessage, None, None]:
-        return SingerHelper.read(f"tap-exchangeratesapi --config {rendered_config_path}")
+        if state:
+            return SingerHelper.read(f"tap-exchangeratesapi --config {rendered_config_path} --state {state}")
+        else:
+            return SingerHelper.read(f"tap-exchangeratesapi --config {rendered_config_path}")

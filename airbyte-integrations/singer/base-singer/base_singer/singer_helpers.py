@@ -1,7 +1,7 @@
 import json
 import subprocess
 from airbyte_protocol import AirbyteSpec
-from airbyte_protocol import AirbyteSchema
+from airbyte_protocol import AirbyteCatalog
 from airbyte_protocol import AirbyteMessage
 from airbyte_protocol import AirbyteLogMessage
 from airbyte_protocol import AirbyteRecordMessage
@@ -46,9 +46,10 @@ class SingerHelper:
 
     # todo: support stderr in the discover process
     @staticmethod
-    def discover(shell_command, transform=(lambda x: AirbyteSchema(x))) -> AirbyteSchema:
+    def discover(shell_command, transform=(lambda x: AirbyteCatalog(x))) -> AirbyteCatalog:
         completed_process = subprocess.run(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                            universal_newlines=True)
+        # todo: handle this
         return transform(completed_process.stdout)
 
     @staticmethod
