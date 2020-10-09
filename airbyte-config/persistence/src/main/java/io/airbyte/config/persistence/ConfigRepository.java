@@ -102,8 +102,7 @@ public class ConfigRepository {
   public SourceConnectionSpecification getSourceConnectionSpecificationFromSourceId(final UUID sourceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // since we are not querying on a the primary key, we have to list all of the specification objects
-    // and then
-    // filter.
+    // and then filter.
     return listSourceConnectionSpecifications().stream()
         .filter(s -> s.getSourceId().equals(sourceId))
         .findFirst()
@@ -112,6 +111,8 @@ public class ConfigRepository {
 
   public DestinationConnectionSpecification getDestinationConnectionSpecificationFromDestinationId(final UUID destinationId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+    // since we are not querying on a the primary key, we have to list all of the specification objects
+    // and then filter.
     return listDestinationConnectionSpecifications().stream()
         .filter(d -> d.getDestinationId().equals(destinationId))
         .findFirst()
