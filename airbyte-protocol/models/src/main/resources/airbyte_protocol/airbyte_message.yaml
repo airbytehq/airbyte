@@ -29,9 +29,13 @@ definitions:
     type: object
     additionalProperties: false
     required:
+      - stream
       - data
       - emitted_at
     properties:
+      stream:
+        description: "the name of the stream for this record"
+        type: string
       data:
         description: "the record data"
         type: object
