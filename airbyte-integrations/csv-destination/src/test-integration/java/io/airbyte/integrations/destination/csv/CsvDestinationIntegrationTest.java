@@ -77,6 +77,7 @@ public class CsvDestinationIntegrationTest extends TestDestination {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
+
     // no op
   }
 

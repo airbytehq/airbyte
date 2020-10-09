@@ -5,8 +5,8 @@
     1. e.g. 
         ```
        mkdir -p airbyte-integrations/bigquery-destination/src/main/java/io/airbyte/integrations/destination/bigquery
-       mv airbyte-integrations/java-template-destination/src/main/java/io/airbyte/integrations/destination/template/DestinationTemplate.java airbyte-integrations/bigquery-destination/src/main/java/io/airbyte/integrations/destination/bigquery/DestinationTemplate.java
-       rm -r airbyte-integrations/java-template-destination/src/main/java/io/airbyte/integrations/destination/template
+       mv airbyte-integrations/bigquery-destination/src/main/java/io/airbyte/integrations/destination/template/DestinationTemplate.java airbyte-integrations/bigquery-destination/src/main/java/io/airbyte/integrations/destination/bigquery/DestinationTemplate.java
+       rm -r airbyte-integrations/bigquery-destination/src/main/java/io/airbyte/integrations/destination/template
         ``` 
 1. Rename the template class to an appropriate name for your integration. 
     1. e.g. `DestinationTemplate.java` to `BigQueryDestination.java`.
