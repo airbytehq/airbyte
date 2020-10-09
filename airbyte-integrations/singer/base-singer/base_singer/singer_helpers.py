@@ -5,6 +5,7 @@ from airbyte_protocol import AirbyteSchema
 from airbyte_protocol import AirbyteMessage
 from airbyte_protocol import AirbyteLogMessage
 from airbyte_protocol import AirbyteRecordMessage
+from airbyte_protocol import AirbyteStateMessage
 from typing import Generator
 from datetime import datetime
 
@@ -63,12 +64,21 @@ class SingerHelper:
                     if out_json is not None and is_message(out_json):
                         transformed_json = transform(out_json)
                         if transformed_json is not None:
-                            # todo: switch on state
-                            # todo: remove type from record
-                            # todo: switch on schema
-                            out_record = AirbyteRecordMessage(data=transformed_json, emitted_at=str(datetime.now()))
-                            out_message = AirbyteMessage(type="RECORD", record=out_record)
-                            yield transform(out_message)
+                            if transformed_json.get('type') == "SCHEMA":
+                                pass
+                            elif transformed_json.get('type') == "STATE":
+                                del transformed_json['type']
+                                out_record = AirbyteStateMessage(data=transformed_json)
+                                out_message = AirbyteMessage(type="STATE", state=out_record)
+                                yield transform(out_message)
+                            else:
+                                # todo: remove type from record
+                                # todo: handle stream designation
+                                # todo: check that messages match the discovered schema
+                                del transformed_json['type']
+                                out_record = AirbyteRecordMessage(data=transformed_json, emitted_at=str(datetime.now()))
+                                out_message = AirbyteMessage(type="RECORD", record=out_record)
+                                yield transform(out_message)
                     elif out_line:
                         log_line(out_line, "INFO")
 
