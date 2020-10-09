@@ -55,6 +55,7 @@ class SingerHelper:
     def read(shell_command, is_message=(lambda x: True), transform=(lambda x: x)) -> Generator[AirbyteMessage, None, None]:
         with subprocess.Popen(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1,
                               universal_newlines=True) as p:
+            # todo: generate combined schema message from discovery and reading the catalog
             for tuple in zip(p.stdout, p.stderr):
                 out_line = tuple[0]
                 err_line = tuple[1]

@@ -6,12 +6,21 @@ import os.path
 import importlib
 
 from airbyte_protocol import Source
+from airbyte_protocol import AirbyteLogMessage
+from airbyte_protocol import AirbyteMessage
 
 impl_module = os.environ['AIRBYTE_IMPL_MODULE']
 impl_class = os.environ['AIRBYTE_IMPL_PATH']
 
 module = importlib.import_module(impl_module)
 impl = getattr(module, impl_class)
+
+
+def log(level, text):
+    log_message = AirbyteLogMessage(level=level, message=text)
+    message = AirbyteMessage(type="LOG", log=log_message)
+    print(message.serialize)
+
 
 class AirbyteEntrypoint(object):
     def __init__(self, source):
@@ -73,14 +82,14 @@ class AirbyteEntrypoint(object):
             if cmd == "check":
                 check_result = source.check(logging, rendered_config_path)
                 if check_result.successful:
-                    print("Check succeeded")
+                    log("INFO", "Check succeeded")
                     sys.exit(0)
                 else:
-                    print("Check failed")
+                    log("ERROR", "Check failed")
                     sys.exit(1)
             elif cmd == "discover":
                 schema = source.discover(logging, rendered_config_path)
-                print(schema.schema)
+                print(schema.schema)  # todo: print as serialized catalog message
                 sys.exit(0)
             elif cmd == "read":
                 # todo: pass in state
