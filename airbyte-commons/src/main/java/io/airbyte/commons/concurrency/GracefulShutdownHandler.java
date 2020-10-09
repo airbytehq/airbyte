@@ -22,25 +22,42 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+package io.airbyte.commons.concurrency;
 
 import java.util.concurrent.ExecutorService;
-import org.junit.jupiter.api.Test;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-class SchedulerShutdownHandlerTest {
+public class GracefulShutdownHandler extends Thread {
 
-  @Test
-  public void testRun() throws InterruptedException {
-    final ExecutorService executorService = mock(ExecutorService.class);
-    final SchedulerShutdownHandler schedulerShutdownHandler = new SchedulerShutdownHandler(executorService);
-    schedulerShutdownHandler.start();
-    schedulerShutdownHandler.join();
+  private static final Logger LOGGER = LoggerFactory.getLogger(GracefulShutdownHandler.class);
+  private final long terminationWaitTime;
+  private final TimeUnit terminateWaitTimeUnits;
+  private final ExecutorService[] threadPools;
 
-    verify(executorService).shutdown();
+  public GracefulShutdownHandler(
+      long terminationWaitTime,
+      TimeUnit terminateWaitTimeUnits,
+      final ExecutorService... threadPools) {
+    this.terminationWaitTime = terminationWaitTime;
+    this.terminateWaitTimeUnits = terminateWaitTimeUnits;
+    this.threadPools = threadPools;
+  }
+
+  @Override
+  public void run() {
+    for (ExecutorService threadPool : threadPools) {
+      threadPool.shutdown();
+
+      try {
+        if (!threadPool.awaitTermination(terminationWaitTime, terminateWaitTimeUnits)) {
+          LOGGER.error("Unable to kill threads by shutdown timeout.");
+        }
+      } catch (InterruptedException e) {
+        LOGGER.error("Wait for graceful thread shutdown interrupted.", e);
+      }
+    }
   }
 
 }

@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,6 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.DataType;
@@ -40,9 +42,19 @@ import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.Stream;
+import io.airbyte.db.DatabaseHelper;
+import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.singer.SingerMessage.Type;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.Record;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,7 +89,7 @@ class PostgresDestinationTest {
   private PostgreSQLContainer<?> db;
 
   @BeforeEach
-  void setup() throws IOException {
+  void setup() {
     db = new PostgreSQLContainer<>("postgres:13-alpine");
     db.start();
 
@@ -125,9 +137,50 @@ class PostgresDestinationTest {
   }
 
   @Test
-  void testWriteSuccess() throws Exception {}
+  void testWriteSuccess() throws Exception {
+    final DestinationConsumer<SingerMessage> consumer = new PostgresDestination().write(config, CATALOG);
+
+    consumer.accept(SINGER_MESSAGE_USERS1);
+    consumer.accept(SINGER_MESSAGE_TASKS1);
+    consumer.accept(SINGER_MESSAGE_USERS2);
+    consumer.accept(SINGER_MESSAGE_TASKS2);
+    consumer.accept(SINGER_MESSAGE_RECORD);
+    consumer.close();
+
+    // verify that the file is parsable as json (sanity check since the quoting is so goofy).
+    List<JsonNode> usersActual = recordRetriever(USERS_STREAM_NAME);
+    final List<JsonNode> expectedUsersJson = Lists.newArrayList(SINGER_MESSAGE_USERS1.getRecord(), SINGER_MESSAGE_USERS2.getRecord());
+    assertEquals(expectedUsersJson, usersActual);
+
+    List<JsonNode> tasksActual = recordRetriever(TASKS_STREAM_NAME);
+    final List<JsonNode> expectedTasksJson = Lists.newArrayList(SINGER_MESSAGE_TASKS1.getRecord(), SINGER_MESSAGE_TASKS2.getRecord());
+    assertEquals(expectedTasksJson, tasksActual);
+  }
 
   @Test
-  void testWriteFailure() throws Exception {}
+  void testWriteFailure() throws Exception {
+  }
 
+  private List<JsonNode> recordRetriever(String streamName) throws Exception {
+    BasicDataSource pool =
+        DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl());
+
+    return DatabaseHelper.query(
+        pool,
+        ctx -> ctx
+            .fetch(String.format("SELECT * FROM public.%s ORDER BY ab_inserted_at ASC;", streamName))
+//            .fetch(String.format("SELECT * FROM %s ORDER BY inserted_at ASC;", streamName))
+            .stream()
+            .map(Record::intoMap)
+            .map(r -> r.entrySet().stream().map(e -> {
+              // todo (cgardens) - bad in place mutation.
+              if (e.getValue().getClass().equals(org.jooq.JSONB.class)) {
+                e.setValue(e.getValue().toString());
+              }
+              return e;
+            }).collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
+            .map(r -> (String)r.get("data"))
+            .map(Jsons::deserialize)
+            .collect(toList()));
+  }
 }

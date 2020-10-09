@@ -25,6 +25,7 @@
 package io.airbyte.scheduler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -47,15 +48,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
- * them. The current implementation uses a thread pool on the scheduler's machine to launch the
- * jobs. One thread is reserved for the job submitter, which is responsible for finding and
- * launching new jobs.
+ * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch them. The current implementation uses a thread
+ * pool on the scheduler's machine to launch the jobs. One thread is reserved for the job submitter, which is responsible for finding and launching
+ * new jobs.
  */
 public class SchedulerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
+  private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
   private static final int MAX_WORKERS = 4;
   private static final long JOB_SUBMITTER_DELAY_MILLIS = 5000L;
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
@@ -66,9 +67,9 @@ public class SchedulerApp {
   private final ProcessBuilderFactory pbf;
 
   public SchedulerApp(BasicDataSource connectionPool,
-                      Path configRoot,
-                      Path workspaceRoot,
-                      ProcessBuilderFactory pbf) {
+      Path configRoot,
+      Path workspaceRoot,
+      ProcessBuilderFactory pbf) {
     this.connectionPool = connectionPool;
     this.configRoot = configRoot;
     this.workspaceRoot = workspaceRoot;
@@ -98,7 +99,7 @@ public class SchedulerApp {
         JOB_SUBMITTER_DELAY_MILLIS,
         TimeUnit.MILLISECONDS);
 
-    Runtime.getRuntime().addShutdownHook(new SchedulerShutdownHandler(workerThreadPool, scheduledPool));
+    Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(GRACEFUL_SHUTDOWN_SECONDS, TimeUnit.SECONDS, workerThreadPool, scheduledPool));
   }
 
   public static void main(String[] args) {

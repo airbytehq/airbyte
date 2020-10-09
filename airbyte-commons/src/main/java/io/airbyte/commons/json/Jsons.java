@@ -81,6 +81,11 @@ public class Jsons {
     return OBJECT_MAPPER.valueToTree(object);
   }
 
+  // todo (cgardens) - this is wrong. adding extra quotes.
+  public static <T> JsonNode jsonNode(final byte[] bytes) {
+    return OBJECT_MAPPER.valueToTree(new String(bytes, Charsets.UTF_8));
+  }
+
   public static <T> T object(final JsonNode jsonNode, final Class<T> klass) {
     return OBJECT_MAPPER.convertValue(jsonNode, klass);
   }
