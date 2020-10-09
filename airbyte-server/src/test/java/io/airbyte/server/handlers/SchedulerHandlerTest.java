@@ -37,7 +37,7 @@ import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
-import io.airbyte.commons.docker.DockerUtil;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.commons.json.Jsons;
@@ -73,11 +73,11 @@ class SchedulerHandlerTest {
 
   private static final String SOURCE_DOCKER_REPO = "srcimage";
   private static final String SOURCE_DOCKER_TAG = "tag";
-  private static final String SOURCE_DOCKER_IMAGE = DockerUtil.getTaggedImageName(SOURCE_DOCKER_REPO, SOURCE_DOCKER_TAG);
+  private static final String SOURCE_DOCKER_IMAGE = DockerUtils.getTaggedImageName(SOURCE_DOCKER_REPO, SOURCE_DOCKER_TAG);
 
   private static final String DESTINATION_DOCKER_REPO = "dstimage";
   private static final String DESTINATION_DOCKER_TAG = "tag";
-  private static final String DESTINATION_DOCKER_IMAGE = DockerUtil.getTaggedImageName(DESTINATION_DOCKER_REPO, DESTINATION_DOCKER_TAG);
+  private static final String DESTINATION_DOCKER_IMAGE = DockerUtils.getTaggedImageName(DESTINATION_DOCKER_REPO, DESTINATION_DOCKER_TAG);
 
   private SchedulerHandler schedulerHandler;
   private ConfigRepository configRepository;
