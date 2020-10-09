@@ -22,34 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.helpers;
+package io.airbyte.commons.docker;
 
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DestinationConnectionSpecification;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
+public class DockerUtils {
 
-public class DestinationSpecificationHelpers {
-
-  public static DestinationConnectionSpecification generateDestinationSpecification() throws IOException {
-    return generateDestinationSpecification(UUID.randomUUID());
-  }
-
-  public static DestinationConnectionSpecification generateDestinationSpecification(UUID destinationId)
-      throws IOException {
-    final UUID destinationSpecificationId = UUID.randomUUID();
-
-    final Path path =
-        Paths.get("../airbyte-server/src/test/resources/json/TestSpecification.json");
-
-    return new DestinationConnectionSpecification()
-        .withDestinationId(destinationId)
-        .withDestinationSpecificationId(destinationSpecificationId)
-        .withDocumentationUrl("https://airbyte.io")
-        .withSpecification(Jsons.deserialize(Files.readString(path)));
+  public static String getTaggedImageName(String dockerRepository, String tag) {
+    return String.join(":", dockerRepository, tag);
   }
 
 }
