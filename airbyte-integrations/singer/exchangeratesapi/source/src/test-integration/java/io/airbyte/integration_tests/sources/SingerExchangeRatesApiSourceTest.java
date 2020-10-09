@@ -107,7 +107,6 @@ public class SingerExchangeRatesApiSourceTest {
     assertTrue(Jsons.deserialize(record.get())
         .get("record")
         .get("data")
-        .get("record")
         .get("CAD").asDouble() > 0);
   }
 
