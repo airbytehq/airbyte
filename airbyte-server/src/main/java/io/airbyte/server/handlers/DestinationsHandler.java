@@ -27,11 +27,14 @@ package io.airbyte.server.handlers;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,12 +61,30 @@ public class DestinationsHandler {
     return buildDestinationRead(configRepository.getStandardDestination(destinationIdRequestBody.getDestinationId()));
   }
 
-  private static DestinationRead buildDestinationRead(StandardDestination standardDestination) {
-    final DestinationRead destinationRead = new DestinationRead();
-    destinationRead.setDestinationId(standardDestination.getDestinationId());
-    destinationRead.setName(standardDestination.getName());
+  public DestinationRead updateDestination(DestinationUpdate destinationUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
+    StandardDestination currentDestination = configRepository.getStandardDestination(destinationUpdate.getDestinationId());
+    StandardDestination newDestination = new StandardDestination()
+        .withDestinationId(currentDestination.getDestinationId())
+        .withDockerImageTag(destinationUpdate.getDockerImageTag())
+        .withDockerRepository(currentDestination.getDockerRepository())
+        .withName(currentDestination.getName())
+        .withDocumentationUrl(currentDestination.getDocumentationUrl());
 
-    return destinationRead;
+    configRepository.writeStandardDestination(newDestination);
+    return buildDestinationRead(newDestination);
+  }
+
+  private static DestinationRead buildDestinationRead(StandardDestination standardDestination) {
+    try {
+      return new DestinationRead()
+          .destinationId(standardDestination.getDestinationId())
+          .name(standardDestination.getName())
+          .dockerRepository(standardDestination.getDockerRepository())
+          .dockerImageTag(standardDestination.getDockerImageTag())
+          .documentationUrl(new URI(standardDestination.getDocumentationUrl()));
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

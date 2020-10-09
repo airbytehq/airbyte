@@ -40,13 +40,14 @@ public enum ConfigSchema {
 
   // source
   STANDARD_SOURCE("StandardSource.yaml"),
-  SOURCE_CONNECTION_SPECIFICATION("SourceConnectionSpecification.yaml"),
   SOURCE_CONNECTION_IMPLEMENTATION("SourceConnectionImplementation.yaml"),
 
   // destination
   STANDARD_DESTINATION("StandardDestination.yaml"),
-  DESTINATION_CONNECTION_SPECIFICATION("DestinationConnectionSpecification.yaml"),
   DESTINATION_CONNECTION_IMPLEMENTATION("DestinationConnectionImplementation.yaml"),
+
+  // specs
+  CONNECTOR_SPECIFICATION("ConnectorSpecification.yaml"),
 
   // sync
   STANDARD_SYNC("StandardSync.yaml"),
