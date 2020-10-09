@@ -26,11 +26,14 @@ package io.airbyte.scheduler;
 
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverSchemaConfig;
+import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverSchemaInput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.workers.DefaultGetSpecWorker;
+import io.airbyte.workers.GetSpecWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.singer.DefaultSingerTap;
@@ -40,6 +43,7 @@ import io.airbyte.workers.protocols.singer.SingerDiscoverSchemaWorker;
 import io.airbyte.workers.protocols.singer.SingerSyncWorker;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
+import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
 import io.airbyte.workers.wrappers.JobOutputSyncWorker;
 import java.nio.file.Path;
 import org.slf4j.Logger;
@@ -78,22 +82,23 @@ public class WorkerRunFactory {
     LOGGER.info("job root: {}", jobRoot);
 
     switch (job.getConfig().getConfigType()) {
-      case CHECK_CONNECTION_SOURCE:
-      case CHECK_CONNECTION_DESTINATION:
+      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> {
         final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(job.getConfig().getCheckConnection());
         return creator.create(
             jobRoot,
             checkConnectionInput,
             new JobOutputCheckConnectionWorker(
                 new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(job.getConfig().getCheckConnection().getDockerImage(), pbf))));
-      case DISCOVER_SCHEMA:
+      }
+      case DISCOVER_SCHEMA -> {
         final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
         return creator.create(
             jobRoot,
             discoverSchemaInput,
             new JobOutputDiscoverSchemaWorker(
                 new SingerDiscoverSchemaWorker(job.getConfig().getDiscoverSchema().getDockerImage(), pbf)));
-      case SYNC:
+      }
+      case SYNC -> {
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         final SingerDiscoverSchemaWorker discoverSchemaWorker = new SingerDiscoverSchemaWorker(job.getConfig().getSync().getSourceDockerImage(), pbf);
         return creator.create(
@@ -107,8 +112,16 @@ public class WorkerRunFactory {
                 new SingerSyncWorker(
                     new DefaultSingerTap(job.getConfig().getSync().getSourceDockerImage(), pbf, discoverSchemaWorker),
                     new DefaultSingerTarget(job.getConfig().getSync().getDestinationDockerImage(), pbf))));
-      default:
-        throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
+      }
+      case GET_SPEC -> {
+        final JobGetSpecConfig getSpecInput = job.getConfig().getGetSpec();
+        final GetSpecWorker worker = new DefaultGetSpecWorker(pbf);
+        return creator.create(
+            jobRoot,
+            getSpecInput,
+            new JobOutputGetSpecWorker(worker));
+      }
+      default -> throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
     }
 
   }

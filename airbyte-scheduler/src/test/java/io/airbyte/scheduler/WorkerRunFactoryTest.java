@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverSchemaInput;
@@ -41,6 +42,7 @@ import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
+import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
 import io.airbyte.workers.wrappers.JobOutputSyncWorker;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -119,6 +121,20 @@ class WorkerRunFactoryTest {
     ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputSyncWorker);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testGetSpec() {
+    when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.GET_SPEC);
+    JobGetSpecConfig expectedConfig = new JobGetSpecConfig().withDockerImage("notarealimage");
+    when(job.getConfig().getGetSpec()).thenReturn(expectedConfig);
+
+    factory.create(job);
+
+    ArgumentCaptor<Worker<JobGetSpecConfig, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedConfig), argument.capture());
+    Assertions.assertTrue(argument.getValue() instanceof JobOutputGetSpecWorker);
   }
 
 }
