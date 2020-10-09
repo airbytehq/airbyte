@@ -24,10 +24,17 @@
 
 package io.airbyte.commons.docker;
 
-public class DockerUtil {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-  public static String getTaggedImageName(String dockerRepository, String tag) {
-    return String.join(":", dockerRepository, tag);
+import org.junit.jupiter.api.Test;
+
+class DockerUtilsTest {
+
+  @Test
+  void testGetTaggedImageName() {
+    String repository = "airbyte/repo";
+    String tag = "12.3";
+    assertEquals("airbyte/repo:12.3", DockerUtils.getTaggedImageName(repository, tag));
   }
 
 }
