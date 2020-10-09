@@ -116,7 +116,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
     webBackendSourceImplementationHandler = new WebBackendSourceImplementationHandler(sourceImplementationsHandler, schedulerHandler);
     webBackendDestinationImplementationHandler = new WebBackendDestinationImplementationHandler(destinationImplementationsHandler, schedulerHandler);
-    debugInfoHandler = new DebugInfoHandler();
+    debugInfoHandler = new DebugInfoHandler(configRepository);
   }
 
   // WORKSPACE

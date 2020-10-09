@@ -28,17 +28,24 @@ import static java.util.stream.Collectors.toList;
 
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.DebugRead;
-import io.airbyte.integrations.Integrations;
+import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.apache.commons.io.IOUtils;
 
 public class DebugInfoHandler {
+
+  private ConfigRepository configRepository;
+
+  public DebugInfoHandler(ConfigRepository configRepository) {
+    this.configRepository = configRepository;
+  }
 
   public DebugRead getInfo() {
     List<Map<String, String>> integrationImages = getIntegrationImages();
@@ -88,10 +95,14 @@ public class DebugInfoHandler {
     }
   }
 
-  private static List<Map<String, String>> getIntegrationImages() {
+  private List<Map<String, String>> getIntegrationImages() {
     try {
-      return Arrays.stream(Integrations.values())
-          .map(Integrations::getTaggedImage)
+      Stream<String> sourceImages =
+          configRepository.listStandardSources().stream().map(s -> DockerUtils.getTaggedImageName(s.getDockerRepository(), s.getDockerImageTag()));
+      Stream<String> destinationImages =
+          configRepository.listStandardDestinations().stream()
+              .map(d -> DockerUtils.getTaggedImageName(d.getDockerRepository(), d.getDockerImageTag()));
+      return Stream.concat(sourceImages, destinationImages)
           .map(image -> {
             try {
               String hash = runAndGetOutput(Lists.newArrayList("docker", "images", "--no-trunc", "--quiet", image));
