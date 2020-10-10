@@ -30,12 +30,14 @@ import com.leansoft.bigqueue.IBigQueue;
 import java.io.IOException;
 import java.nio.file.Path;
 
-// BigQueue is threadsafe.
-public class BigQueueWrapper extends AbstractCloseableInputQueue<byte[]> implements CloseableInputQueue<byte[]> {
+/**
+ * Wraps BigQueueImpl behind Airbyte persistent queue interface. BigQueueImpl is threadsafe.
+ */
+public class BigQueue extends AbstractCloseableInputQueue<byte[]> implements CloseableInputQueue<byte[]> {
 
   private final IBigQueue queue;
 
-  public BigQueueWrapper(Path persistencePath, String queueName) throws IOException {
+  public BigQueue(Path persistencePath, String queueName) throws IOException {
     queue = new BigQueueImpl(persistencePath.toString(), queueName);
   }
 
@@ -76,6 +78,7 @@ public class BigQueueWrapper extends AbstractCloseableInputQueue<byte[]> impleme
 
   @Override
   protected void closeInternal() throws Exception {
+    // todo (cgardens) - this barfs out a huge warning. known issue with the lib: https://github.com/bulldog2011/bigqueue/issues/35.
     queue.close();
     queue.gc();
   }

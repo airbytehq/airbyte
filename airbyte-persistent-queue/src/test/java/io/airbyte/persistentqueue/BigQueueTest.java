@@ -41,13 +41,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class BigQueueWrapperTest {
+class BigQueueTest {
 
   private CloseableInputQueue<byte[]> queue;
 
   @BeforeEach
   void setup() throws IOException {
-    queue = new BigQueueWrapper(Files.createTempDirectory("qtest"), "test");
+    queue = new BigQueue(Files.createTempDirectory("qtest"), "test");
   }
 
   @AfterEach

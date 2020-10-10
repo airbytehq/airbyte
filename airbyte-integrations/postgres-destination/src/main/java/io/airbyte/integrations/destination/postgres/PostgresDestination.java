@@ -40,12 +40,11 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.persistentqueue.BigQueueWrapper;
+import io.airbyte.persistentqueue.BigQueue;
 import io.airbyte.persistentqueue.CloseableInputQueue;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.singer.SingerMessage.Type;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -143,7 +142,7 @@ public class PostgresDestination implements Destination {
               + ");",
           tmpTableName, COLUMN_NAME)));
 
-      final BigQueueWrapper writeBuffer = new BigQueueWrapper(Path.of(stream.getName()), stream.getName());
+      final BigQueue writeBuffer = new BigQueue(Path.of(stream.getName()), stream.getName());
       writeBuffers.put(stream.getName(), new WriteConfig(tableName, tmpTableName, writeBuffer));
     }
 
