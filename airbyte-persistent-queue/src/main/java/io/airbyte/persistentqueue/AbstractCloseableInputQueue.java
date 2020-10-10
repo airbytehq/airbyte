@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.persistentqueue;
 
 import com.google.common.base.Preconditions;
@@ -31,14 +55,11 @@ public abstract class AbstractCloseableInputQueue<E> extends AbstractQueue<E> im
   }
 
   /*
-   * (non javadoc comment to avoid autoformatting making this impossible to read).
-   * Blocking call to dequeue an element.
-   * | hasValue | inputClosed | behavior    |
-   * ----------------------------------------
-   * | true     | false       | return val  |
-   * | false    | false       | block until |
-   * | true     | true        | return val  |
-   * | false    | true        | return null |
+   * (non javadoc comment to avoid autoformatting making this impossible to read). Blocking call to
+   * dequeue an element. | hasValue | inputClosed | behavior |
+   * ---------------------------------------- | true | false | return val | | false | false | block
+   * until | | true | true | return val | | false | true | return null |
+   *
    * @return a value from the queue or null if the queue is empty and will not receive anymore data.
    */
   @Override
@@ -80,6 +101,7 @@ public abstract class AbstractCloseableInputQueue<E> extends AbstractQueue<E> im
     Preconditions.checkState(!closed.get());
 
     return new AbstractIterator<>() {
+
       @Override
       protected E computeNext() {
         final E poll = poll();
@@ -88,6 +110,7 @@ public abstract class AbstractCloseableInputQueue<E> extends AbstractQueue<E> im
         }
         return poll;
       }
+
     };
   }
 
@@ -96,4 +119,5 @@ public abstract class AbstractCloseableInputQueue<E> extends AbstractQueue<E> im
     closed.set(true);
     closeInternal();
   }
+
 }

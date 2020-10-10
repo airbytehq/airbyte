@@ -36,11 +36,11 @@ dependencies {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.postgres.PosgresDestination'
+    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
 }
 
 
-def image = 'airbyte/airbyte-java-template-destination:dev'
+def image = 'airbyte/airbyte-postgres-destination:dev'
 
 task imageName {
     doLast {

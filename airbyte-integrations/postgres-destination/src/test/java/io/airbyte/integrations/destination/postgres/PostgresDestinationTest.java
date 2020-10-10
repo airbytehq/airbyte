@@ -26,13 +26,16 @@ package io.airbyte.integrations.destination.postgres;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.DataType;
@@ -47,8 +50,8 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.singer.SingerMessage.Type;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.sql.SQLException;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -147,7 +150,6 @@ class PostgresDestinationTest {
     consumer.accept(SINGER_MESSAGE_RECORD);
     consumer.close();
 
-    // verify that the file is parsable as json (sanity check since the quoting is so goofy).
     List<JsonNode> usersActual = recordRetriever(USERS_STREAM_NAME);
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(SINGER_MESSAGE_USERS1.getRecord(), SINGER_MESSAGE_USERS2.getRecord());
     assertEquals(expectedUsersJson, usersActual);
@@ -155,32 +157,62 @@ class PostgresDestinationTest {
     List<JsonNode> tasksActual = recordRetriever(TASKS_STREAM_NAME);
     final List<JsonNode> expectedTasksJson = Lists.newArrayList(SINGER_MESSAGE_TASKS1.getRecord(), SINGER_MESSAGE_TASKS2.getRecord());
     assertEquals(expectedTasksJson, tasksActual);
+
+    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(Stream::getName).collect(Collectors.toList()));
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   void testWriteFailure() throws Exception {
+    // hack to force an exception to be thrown from within the consumer.
+    final SingerMessage spiedMessage = spy(SINGER_MESSAGE_USERS1);
+    doThrow(new RuntimeException()).when(spiedMessage).getStream();
+
+    final DestinationConsumer<SingerMessage> consumer = spy(new PostgresDestination().write(config, CATALOG));
+
+    assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
+    consumer.accept(SINGER_MESSAGE_USERS2);
+    consumer.close();
+
+    final List<String> tableNames = CATALOG.getStreams().stream().map(Stream::getName).collect(toList());
+    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(Stream::getName).collect(Collectors.toList()));
+    // assert that no tables were created.
+    assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tableNames.stream().anyMatch(tableName::startsWith)));
+  }
+
+  private List<String> fetchNamesOfTablesInDb() throws SQLException {
+    return DatabaseHelper.query(getDatabasePool(),
+        ctx -> ctx.fetch("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';"))
+        .stream()
+        .map(record -> (String) record.get("table_name")).collect(Collectors.toList());
+  }
+
+  private void assertTmpTablesNotPresent(List<String> tableNames) throws SQLException {
+    Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
+    assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
+  }
+
+  private BasicDataSource getDatabasePool() {
+    return DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
   private List<JsonNode> recordRetriever(String streamName) throws Exception {
-    BasicDataSource pool =
-        DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl());
 
     return DatabaseHelper.query(
-        pool,
+        getDatabasePool(),
         ctx -> ctx
-            .fetch(String.format("SELECT * FROM public.%s ORDER BY ab_inserted_at ASC;", streamName))
-//            .fetch(String.format("SELECT * FROM %s ORDER BY inserted_at ASC;", streamName))
+            .fetch(String.format("SELECT * FROM %s ORDER BY ab_inserted_at ASC;", streamName))
             .stream()
             .map(Record::intoMap)
             .map(r -> r.entrySet().stream().map(e -> {
-              // todo (cgardens) - bad in place mutation.
               if (e.getValue().getClass().equals(org.jooq.JSONB.class)) {
-                e.setValue(e.getValue().toString());
+                return new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue().toString());
               }
               return e;
             }).collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
-            .map(r -> (String)r.get("data"))
+            .map(r -> (String) r.get(PostgresDestination.COLUMN_NAME))
             .map(Jsons::deserialize)
             .collect(toList()));
   }
+
 }

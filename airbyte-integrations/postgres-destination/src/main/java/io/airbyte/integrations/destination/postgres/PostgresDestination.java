@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -59,6 +60,7 @@ import org.slf4j.LoggerFactory;
 public class PostgresDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
+  static final String COLUMN_NAME = "data";
 
   @Override
   public DestinationConnectionSpecification spec() throws IOException {
@@ -105,18 +107,20 @@ public class PostgresDestination implements Destination {
    * 2. Accumulate records in a buffer. One buffer per stream.
    * </p>
    * <p>
-   * 3. As records accumulate write them in batch to the database. We set a minimum numbers of records before writing to avoid wasteful record-wise
-   * writes.
+   * 3. As records accumulate write them in batch to the database. We set a minimum numbers of records
+   * before writing to avoid wasteful record-wise writes.
    * </p>
    * <p>
-   * 4. Once all records have been written to buffer, flush the buffer and write any remaining records to the database (regardless of how few are
-   * left).
+   * 4. Once all records have been written to buffer, flush the buffer and write any remaining records
+   * to the database (regardless of how few are left).
    * </p>
    * <p>
-   * 5. In a single transaction, delete the target tables if they exist and rename the temp tables to the final table name.
+   * 5. In a single transaction, delete the target tables if they exist and rename the temp tables to
+   * the final table name.
    * </p>
    *
-   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte", "password": "super secure" }
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+   *        "password": "super secure" }
    * @param schema - schema of the incoming messages.
    * @return consumer that writes singer messages to the database.
    * @throws Exception - anything could happen!
@@ -135,10 +139,10 @@ public class PostgresDestination implements Destination {
           "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";\n"
               + "CREATE TABLE \"%s\" ( \n"
               + "\"ab_id\" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),\n"
-              + "\"data\" jsonb,\n"
+              + "\"%s\" jsonb,\n"
               + "\"ab_inserted_at\" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
               + ");",
-          tmpTableName)));
+          tmpTableName, COLUMN_NAME)));
 
       // todo (cgardens) -temp dir should be in the job root.
       final BigQueueWrapper writeBuffer = new BigQueueWrapper(Files.createTempDirectory(stream.getName()), stream.getName());
@@ -157,7 +161,6 @@ public class PostgresDestination implements Destination {
     private static final long GRACEFUL_SHUTDOWN_MINUTES = 5L;
     private static final int MIN_RECORDS = 500;
     private static final int BATCH_SIZE = 500;
-
 
     private final ScheduledExecutorService writerPool;
     private final BasicDataSource connectionPool;
@@ -181,26 +184,26 @@ public class PostgresDestination implements Destination {
     }
 
     /**
-     * Write records from buffer to postgres in  batch.
+     * Write records from buffer to postgres in batch.
      *
-     * @param minRecords     - the minimum number of records in the buffer before writing. helps avoid wastefully writing one record at a time.
-     * @param batchSize      - the maximum number of records to write in a single query.
-     * @param writeBuffers   - map of stream name to its respective buffer.
+     * @param minRecords - the minimum number of records in the buffer before writing. helps avoid
+     *        wastefully writing one record at a time.
+     * @param batchSize - the maximum number of records to write in a single query.
+     * @param writeBuffers - map of stream name to its respective buffer.
      * @param connectionPool - connection to the db.
      */
     private static void writeStreamsWithNRecords(
-        int minRecords,
-        int batchSize,
-        Map<String, WriteConfig> writeBuffers, // todo can trim this down.
-        BasicDataSource connectionPool
-    ) {
+                                                 int minRecords,
+                                                 int batchSize,
+                                                 Map<String, WriteConfig> writeBuffers, // todo can trim this down.
+                                                 BasicDataSource connectionPool) {
       for (final Map.Entry<String, WriteConfig> entry : writeBuffers.entrySet()) {
         final String tmpTableName = entry.getValue().getTmpTableName();
         final CloseableInputQueue<byte[]> writeBuffer = entry.getValue().getWriteBuffer();
         while (writeBuffer.size() > minRecords) {
           try {
             DatabaseHelper.query(connectionPool, ctx -> {
-              final StringBuilder query = new StringBuilder(String.format("INSERT INTO %s(data)\n", tmpTableName))
+              final StringBuilder query = new StringBuilder(String.format("INSERT INTO %s(%s)\n", tmpTableName, COLUMN_NAME))
                   .append("VALUES \n");
               // todo (cgardens) - hack.
               boolean first = true;
@@ -214,12 +217,7 @@ public class PostgresDestination implements Destination {
                   } else {
                     query.append(", \n");
                   }
-//                  query.append("('{\"name\":\"john\",\"id\":\"10\"}')");
-                  final String a = Jsons.serialize(record);
-                  final String b = String.format("(%s)", Jsons.serialize(record));
-                  final String c = String.format("('%s')", Jsons.serialize(record));
-//                  query.append(String.format("('%s')", Jsons.serialize(Jsons.jsonNode(record))));
-                  query.append(String.format("('%s')", Jsons.serialize(Jsons.deserialize(new String(record)))));
+                  query.append(String.format("('%s')", new String(record, Charsets.UTF_8)));
                 }
               }
               query.append(";");
@@ -242,7 +240,8 @@ public class PostgresDestination implements Destination {
                   Jsons.serialize(schema), Jsons.serialize(singerMessage)));
         }
 
-        // todo (cgardens) - we should let this throw an io exception. Maybe we should be throwing known airbyte exceptions.
+        // todo (cgardens) - we should let this throw an io exception. Maybe we should be throwing known
+        // airbyte exceptions.
         writeConfigs.get(singerMessage.getStream()).getWriteBuffer().offer(Jsons.toBytes(singerMessage.getRecord()));
       }
     }
@@ -272,15 +271,16 @@ public class PostgresDestination implements Destination {
 
         // delete tables if already exist. copy new tables into their place.
         DatabaseHelper.query(connectionPool, ctx -> {
-          final StringBuilder query = new StringBuilder("");
-          // todo (cgardens) - need to actually do the transaction part. jooq doesn't want to except valid transaction sql syntax because it makes total sense to ruin sql.
-//          final StringBuilder query = new StringBuilder("BEGIN\n");
+          final StringBuilder query = new StringBuilder();
+          // todo (cgardens) - need to actually do the transaction part. jooq doesn't want to except valid
+          // transaction sql syntax because it makes total sense to ruin sql.
+          // final StringBuilder query = new StringBuilder("BEGIN\n");
           for (final WriteConfig writeConfig : writeConfigs.values()) {
             query.append(String.format("DROP TABLE IF EXISTS %s;\n", writeConfig.getTableName()));
 
             query.append(String.format("ALTER TABLE %s RENAME TO %s;\n", writeConfig.getTmpTableName(), writeConfig.getTableName()));
           }
-//          query.append("COMMIT");
+          // query.append("COMMIT");
           return ctx.execute(query.toString());
         });
 
@@ -302,6 +302,7 @@ public class PostgresDestination implements Destination {
         }
       }
     }
+
   }
 
   private static class WriteConfig {
@@ -327,6 +328,7 @@ public class PostgresDestination implements Destination {
     public CloseableInputQueue<byte[]> getWriteBuffer() {
       return writeBuffer;
     }
+
   }
 
   private BasicDataSource getConnectionPool(JsonNode config) {
@@ -338,7 +340,6 @@ public class PostgresDestination implements Destination {
             config.get("port").asText(),
             config.get("database").asText()));
   }
-
 
   public static void main(String[] args) throws Exception {
     final Destination destination = new PostgresDestination();

@@ -48,9 +48,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch them. The current implementation uses a thread
- * pool on the scheduler's machine to launch the jobs. One thread is reserved for the job submitter, which is responsible for finding and launching
- * new jobs.
+ * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
+ * them. The current implementation uses a thread pool on the scheduler's machine to launch the
+ * jobs. One thread is reserved for the job submitter, which is responsible for finding and
+ * launching new jobs.
  */
 public class SchedulerApp {
 
@@ -67,9 +68,9 @@ public class SchedulerApp {
   private final ProcessBuilderFactory pbf;
 
   public SchedulerApp(BasicDataSource connectionPool,
-      Path configRoot,
-      Path workspaceRoot,
-      ProcessBuilderFactory pbf) {
+                      Path configRoot,
+                      Path workspaceRoot,
+                      ProcessBuilderFactory pbf) {
     this.connectionPool = connectionPool;
     this.configRoot = configRoot;
     this.workspaceRoot = workspaceRoot;

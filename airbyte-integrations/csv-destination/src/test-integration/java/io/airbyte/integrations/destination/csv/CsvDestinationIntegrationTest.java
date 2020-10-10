@@ -60,7 +60,7 @@ public class CsvDestinationIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> recordRetriever(TestDestinationEnv testEnv) throws Exception {
+  protected List<JsonNode> recordRetriever(TestDestinationEnv testEnv, String streamName) throws Exception {
     final List<Path> list = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
     assertEquals(1, list.size());
 
@@ -77,7 +77,6 @@ public class CsvDestinationIntegrationTest extends TestDestination {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-
     // no op
   }
 

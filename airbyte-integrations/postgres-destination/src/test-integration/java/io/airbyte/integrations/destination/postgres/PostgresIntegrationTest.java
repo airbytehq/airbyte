@@ -31,8 +31,10 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DatabaseHelper;
 import io.airbyte.integrations.base.TestDestination;
+import java.util.AbstractMap;
 import java.util.List;
-import org.apache.commons.dbcp2.BasicDataSource;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import org.jooq.Record;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -66,21 +68,26 @@ public class PostgresIntegrationTest extends TestDestination {
         .put("schema", "public")
         .put("port", db.getFirstMappedPort())
         .put("database", db.getDatabaseName())
-        .build());  }
+        .build());
+  }
 
   @Override
-  protected List<JsonNode> recordRetriever(TestDestinationEnv testEnv, String streamName) throws Exception {
-    BasicDataSource pool =
-        DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl());
+  protected List<JsonNode> recordRetriever(TestDestinationEnv env, String streamName) throws Exception {
 
     return DatabaseHelper.query(
-        pool,
+        DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl()),
         ctx -> ctx
-            .fetch(String.format("SELECT * FROM public.%s ORDER BY inserted_at ASC;", streamName))
+            .fetch(String.format("SELECT * FROM %s ORDER BY ab_inserted_at ASC;", streamName))
             .stream()
-            .map(nestedRecords -> ((Record) nestedRecords.get(0))) // todo ?
             .map(Record::intoMap)
-            .map(Jsons::jsonNode)
+            .map(r -> r.entrySet().stream().map(e -> {
+              if (e.getValue().getClass().equals(org.jooq.JSONB.class)) {
+                return new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue().toString());
+              }
+              return e;
+            }).collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
+            .map(r -> (String) r.get(PostgresDestination.COLUMN_NAME))
+            .map(Jsons::deserialize)
             .collect(toList()));
   }
 

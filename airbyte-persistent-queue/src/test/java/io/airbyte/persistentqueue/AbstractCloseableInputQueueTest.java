@@ -1,5 +1,28 @@
-package io.airbyte.persistentqueue;
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
+package io.airbyte.persistentqueue;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,6 +42,7 @@ import org.junit.jupiter.api.Test;
  * Test the contract of {@link AbstractCloseableInputQueueTest} state machine.
  */
 class AbstractCloseableInputQueueTest {
+
   private CloseableInputQueue<String> queue;
 
   @BeforeEach
@@ -27,7 +51,7 @@ class AbstractCloseableInputQueueTest {
   }
 
   /*
-  OFFER CONTRACT
+   * OFFER CONTRACT
    */
   @Test
   void testOfferInputClosedFalse() {
@@ -41,7 +65,7 @@ class AbstractCloseableInputQueueTest {
   }
 
   /*
-  POLL CONTRACT
+   * POLL CONTRACT
    */
   @Test
   void testPollHasValueInputClosedFalse() {
@@ -74,9 +98,8 @@ class AbstractCloseableInputQueueTest {
     });
     getterThread.start();
 
-
     final Thread setterThread = new Thread(() -> {
-      while(!hasAttempted.get()) {
+      while (!hasAttempted.get()) {
         try {
           Thread.sleep(10);
         } catch (InterruptedException e) {
@@ -100,7 +123,7 @@ class AbstractCloseableInputQueueTest {
   }
 
   /*
-  ITERATOR CONTRACT
+   * ITERATOR CONTRACT
    */
   @Test
   void testIterator() {
@@ -115,7 +138,7 @@ class AbstractCloseableInputQueueTest {
   }
 
   /*
-  CLOSED CONTRACT
+   * CLOSED CONTRACT
    */
   @Test
   void testClosed() throws Exception {
@@ -127,7 +150,8 @@ class AbstractCloseableInputQueueTest {
     assertThrows(IllegalStateException.class, () -> queue.iterator());
   }
 
-  private static class TestQueue extends AbstractCloseableInputQueue<String>{
+  private static class TestQueue extends AbstractCloseableInputQueue<String> {
+
     private final List<String> list = new ArrayList<>();
 
     @Override
@@ -155,6 +179,7 @@ class AbstractCloseableInputQueueTest {
     public String peek() {
       return list.size() == 0 ? null : list.get(list.size() - 1);
     }
+
   }
 
 }
