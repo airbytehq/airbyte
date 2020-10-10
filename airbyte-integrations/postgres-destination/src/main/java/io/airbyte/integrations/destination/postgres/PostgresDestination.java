@@ -46,6 +46,7 @@ import io.airbyte.singer.SingerMessage;
 import io.airbyte.singer.SingerMessage.Type;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
@@ -85,7 +86,7 @@ public class PostgresDestination implements Destination {
 
       connectionPool.close();
     } catch (Exception e) {
-      // todo (cgardens) - better error messaging.
+      // todo (cgardens) - better error messaging for common cases. e.g. wrong password.
       return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage(e.getMessage());
     }
 
@@ -107,20 +108,18 @@ public class PostgresDestination implements Destination {
    * 2. Accumulate records in a buffer. One buffer per stream.
    * </p>
    * <p>
-   * 3. As records accumulate write them in batch to the database. We set a minimum numbers of records
-   * before writing to avoid wasteful record-wise writes.
+   * 3. As records accumulate write them in batch to the database. We set a minimum numbers of records before writing to avoid wasteful record-wise
+   * writes.
    * </p>
    * <p>
-   * 4. Once all records have been written to buffer, flush the buffer and write any remaining records
-   * to the database (regardless of how few are left).
+   * 4. Once all records have been written to buffer, flush the buffer and write any remaining records to the database (regardless of how few are
+   * left).
    * </p>
    * <p>
-   * 5. In a single transaction, delete the target tables if they exist and rename the temp tables to
-   * the final table name.
+   * 5. In a single transaction, delete the target tables if they exist and rename the temp tables to the final table name.
    * </p>
    *
-   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
-   *        "password": "super secure" }
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte", "password": "super secure" }
    * @param schema - schema of the incoming messages.
    * @return consumer that writes singer messages to the database.
    * @throws Exception - anything could happen!
@@ -144,8 +143,7 @@ public class PostgresDestination implements Destination {
               + ");",
           tmpTableName, COLUMN_NAME)));
 
-      // todo (cgardens) -temp dir should be in the job root.
-      final BigQueueWrapper writeBuffer = new BigQueueWrapper(Files.createTempDirectory(stream.getName()), stream.getName());
+      final BigQueueWrapper writeBuffer = new BigQueueWrapper(Path.of(stream.getName()), stream.getName());
       writeBuffers.put(stream.getName(), new WriteConfig(tableName, tmpTableName, writeBuffer));
     }
 
@@ -180,54 +178,60 @@ public class PostgresDestination implements Destination {
           THREAD_DELAY_MILLIS,
           THREAD_DELAY_MILLIS,
           TimeUnit.MILLISECONDS);
-
     }
 
     /**
      * Write records from buffer to postgres in batch.
      *
-     * @param minRecords - the minimum number of records in the buffer before writing. helps avoid
-     *        wastefully writing one record at a time.
-     * @param batchSize - the maximum number of records to write in a single query.
-     * @param writeBuffers - map of stream name to its respective buffer.
+     * @param minRecords     - the minimum number of records in the buffer before writing. helps avoid wastefully writing one record at a time.
+     * @param batchSize      - the maximum number of records to write in a single insert.
+     * @param writeBuffers   - map of stream name to its respective buffer.
      * @param connectionPool - connection to the db.
      */
     private static void writeStreamsWithNRecords(
-                                                 int minRecords,
-                                                 int batchSize,
-                                                 Map<String, WriteConfig> writeBuffers, // todo can trim this down.
-                                                 BasicDataSource connectionPool) {
+        int minRecords,
+        int batchSize,
+        Map<String, WriteConfig> writeBuffers,
+        BasicDataSource connectionPool) {
       for (final Map.Entry<String, WriteConfig> entry : writeBuffers.entrySet()) {
         final String tmpTableName = entry.getValue().getTmpTableName();
         final CloseableInputQueue<byte[]> writeBuffer = entry.getValue().getWriteBuffer();
         while (writeBuffer.size() > minRecords) {
           try {
-            DatabaseHelper.query(connectionPool, ctx -> {
-              final StringBuilder query = new StringBuilder(String.format("INSERT INTO %s(%s)\n", tmpTableName, COLUMN_NAME))
-                  .append("VALUES \n");
-              // todo (cgardens) - hack.
-              boolean first = true;
-              // todo (cgardens) - stop early if we are getting nulls.
-              for (int i = 0; i <= batchSize; i++) {
-                final byte[] record = writeBuffer.poll();
-                if (record != null) {
-                  // don't write comma before the first record.
-                  if (first) {
-                    first = false;
-                  } else {
-                    query.append(", \n");
-                  }
-                  query.append(String.format("('%s')", new String(record, Charsets.UTF_8)));
-                }
-              }
-              query.append(";");
-              return ctx.execute(query.toString());
-            });
+            DatabaseHelper.query(connectionPool, ctx -> ctx.execute(buildWriteQuery(batchSize, writeBuffer, tmpTableName)));
           } catch (SQLException e) {
             throw new RuntimeException(e);
           }
         }
       }
+    }
+
+    // build the following query:
+    // INSERT INTO <tableName>(data)
+    // VALUES
+    // ({ "my": "data" }),
+    // ({ "my": "data" });
+    private static String buildWriteQuery(int batchSize, CloseableInputQueue<byte[]> writeBuffer, String tmpTableName) {
+      final StringBuilder query = new StringBuilder(String.format("INSERT INTO %s(%s)\n", tmpTableName, COLUMN_NAME))
+          .append("VALUES \n");
+      boolean firstRecordInQuery = true;
+      for (int i = 0; i <= batchSize; i++) {
+        final byte[] record = writeBuffer.poll();
+        if (record == null) {
+          break;
+        }
+
+        // don't write comma before the first record.
+        if (firstRecordInQuery) {
+          firstRecordInQuery = false;
+        } else {
+          query.append(", \n");
+        }
+        query.append(String.format("('%s')", new String(record, Charsets.UTF_8)));
+      }
+      query.append(";");
+
+      return query.toString();
     }
 
     @Override
@@ -240,8 +244,6 @@ public class PostgresDestination implements Destination {
                   Jsons.serialize(schema), Jsons.serialize(singerMessage)));
         }
 
-        // todo (cgardens) - we should let this throw an io exception. Maybe we should be throwing known
-        // airbyte exceptions.
         writeConfigs.get(singerMessage.getStream()).getWriteBuffer().offer(Jsons.toBytes(singerMessage.getRecord()));
       }
     }
@@ -249,9 +251,7 @@ public class PostgresDestination implements Destination {
     @Override
     public void close(boolean hasFailed) throws Exception {
       // signal no more writes to buffers.
-      for (final WriteConfig writeConfig : writeConfigs.values()) {
-        writeConfig.getWriteBuffer().closeInput();
-      }
+      writeConfigs.values().forEach(writeConfig -> writeConfig.getWriteBuffer().closeInput());
 
       if (hasFailed) {
         LOGGER.error("executing on failed close procedure.");
@@ -270,17 +270,13 @@ public class PostgresDestination implements Destination {
         writeStreamsWithNRecords(0, 500, writeConfigs, connectionPool);
 
         // delete tables if already exist. copy new tables into their place.
-        DatabaseHelper.query(connectionPool, ctx -> {
+        DatabaseHelper.transaction(connectionPool, ctx -> {
           final StringBuilder query = new StringBuilder();
-          // todo (cgardens) - need to actually do the transaction part. jooq doesn't want to except valid
-          // transaction sql syntax because it makes total sense to ruin sql.
-          // final StringBuilder query = new StringBuilder("BEGIN\n");
           for (final WriteConfig writeConfig : writeConfigs.values()) {
             query.append(String.format("DROP TABLE IF EXISTS %s;\n", writeConfig.getTableName()));
 
             query.append(String.format("ALTER TABLE %s RENAME TO %s;\n", writeConfig.getTmpTableName(), writeConfig.getTableName()));
           }
-          // query.append("COMMIT");
           return ctx.execute(query.toString());
         });
 

@@ -54,11 +54,17 @@ public abstract class AbstractCloseableInputQueue<E> extends AbstractQueue<E> im
     return enqueueInternal(element);
   }
 
-  /*
-   * (non javadoc comment to avoid autoformatting making this impossible to read). Blocking call to
-   * dequeue an element. | hasValue | inputClosed | behavior |
-   * ---------------------------------------- | true | false | return val | | false | false | block
-   * until | | true | true | return val | | false | true | return null |
+  // Blocking call to dequeue an element.
+  // (comment is up here to avoid autoformat scrambling it up.)
+  // | hasValue | inputClosed | behavior    |
+  // ----------------------------------------
+  // | true     | false       | return val  |
+  // | false    | false       | block until |
+  // | true     | true        | return val  |
+  // | false    | true        | return null |
+
+  /**
+   * Blocking call to dequeue an element.
    *
    * @return a value from the queue or null if the queue is empty and will not receive anymore data.
    */

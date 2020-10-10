@@ -30,12 +30,14 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
+import org.jooq.*;
+import org.jooq.impl.*;
 
 public class DatabaseHelper {
 
   public static BasicDataSource getConnectionPool(String username,
-                                                  String password,
-                                                  String jdbcConnectionString) {
+      String password,
+      String jdbcConnectionString) {
 
     BasicDataSource connectionPool = new BasicDataSource();
     connectionPool.setDriverClassName("org.postgresql.Driver");
@@ -46,11 +48,21 @@ public class DatabaseHelper {
     return connectionPool;
   }
 
-  public static <T> T query(BasicDataSource connectionPool, ContextQueryFunction<T> transform)
-      throws SQLException {
+  public static <T> T query(BasicDataSource connectionPool, ContextQueryFunction<T> transform) throws SQLException {
+
     try (Connection connection = connectionPool.getConnection()) {
       DSLContext context = getContext(connection);
       return transform.apply(context);
+    }
+  }
+
+  public static <T> T transaction(BasicDataSource connectionPool, ContextQueryFunction<T> transform) throws SQLException {
+    try (Connection connection = connectionPool.getConnection()) {
+      DSLContext context = getContext(connection);
+      return context.transactionResult(configuration -> {
+        DSLContext transactionContext = DSL.using(configuration);
+        return transform.apply(transactionContext);
+      });
     }
   }
 
