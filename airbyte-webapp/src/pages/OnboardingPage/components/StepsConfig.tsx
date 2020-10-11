@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
 export enum StepsTypes {
@@ -25,12 +25,15 @@ const StepsConfig = (
   };
 
   const [currentStep, setCurrentStep] = useState(getInitialStep());
-  const updateStep = (step: StepsTypes) => {
-    setCurrentStep(step);
-    if (afterUpdateStep) {
-      afterUpdateStep();
-    }
-  };
+  const updateStep = useCallback(
+    (step: StepsTypes) => {
+      setCurrentStep(step);
+      if (afterUpdateStep) {
+        afterUpdateStep();
+      }
+    },
+    [setCurrentStep, afterUpdateStep]
+  );
 
   const steps = useMemo(
     () => [
