@@ -58,7 +58,7 @@ const StepsConfig = (
             : undefined
       }
     ],
-    [hasSources, hasDestinations]
+    [updateStep, hasSources, hasDestinations]
   );
 
   return {
