@@ -124,7 +124,8 @@ public class WebBackendSourceImplementationHandlerTest {
     sourceImplementationCreate.setSourceSpecificationId(sourceImplementationRead.getSourceSpecificationId());
     sourceImplementationCreate.setWorkspaceId(sourceImplementationRead.getWorkspaceId());
 
-    SourceImplementationRead newSourceImplementation = SourceImplementationHelpers.getSourceImplementationRead(SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID()),  SourceHelpers.generateSource());
+    SourceImplementationRead newSourceImplementation = SourceImplementationHelpers
+        .getSourceImplementationRead(SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID()), SourceHelpers.generateSource());
 
     when(sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate)).thenReturn(newSourceImplementation);
 
@@ -146,7 +147,8 @@ public class WebBackendSourceImplementationHandlerTest {
     SourceImplementationIdRequestBody oldSourceIdBody = new SourceImplementationIdRequestBody();
     oldSourceIdBody.setSourceImplementationId(sourceImplementationRead.getSourceImplementationId());
 
-    SourceImplementationRead returnedSource = wbSourceImplementationHandler.webBackendRecreateSourceImplementationAndCheck(sourceImplementationRecreate);
+    SourceImplementationRead returnedSource =
+        wbSourceImplementationHandler.webBackendRecreateSourceImplementationAndCheck(sourceImplementationRecreate);
 
     verify(sourceImplementationsHandler, times(1)).deleteSourceImplementation(Mockito.eq(oldSourceIdBody));
     assertEquals(newSourceImplementation, returnedSource);
@@ -160,7 +162,8 @@ public class WebBackendSourceImplementationHandlerTest {
     sourceImplementationCreate.setSourceSpecificationId(sourceImplementationRead.getSourceSpecificationId());
     sourceImplementationCreate.setWorkspaceId(sourceImplementationRead.getWorkspaceId());
 
-    SourceImplementationRead newSourceImplementation = SourceImplementationHelpers.getSourceImplementationRead(SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID()),  SourceHelpers.generateSource());
+    SourceImplementationRead newSourceImplementation = SourceImplementationHelpers
+        .getSourceImplementationRead(SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID()), SourceHelpers.generateSource());
 
     when(sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate)).thenReturn(newSourceImplementation);
 
@@ -180,7 +183,7 @@ public class WebBackendSourceImplementationHandlerTest {
     sourceImplementationRecreate.setSourceImplementationId(sourceImplementationRead.getSourceImplementationId());
 
     Assertions.assertThrows(KnownException.class,
-        () ->     wbSourceImplementationHandler.webBackendRecreateSourceImplementationAndCheck(sourceImplementationRecreate));
+        () -> wbSourceImplementationHandler.webBackendRecreateSourceImplementationAndCheck(sourceImplementationRecreate));
     verify(sourceImplementationsHandler, times(1)).deleteSourceImplementation(Mockito.eq(newSourceId));
   }
 

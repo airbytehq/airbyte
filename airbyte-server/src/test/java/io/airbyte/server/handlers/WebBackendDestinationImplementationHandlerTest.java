@@ -121,7 +121,6 @@ public class WebBackendDestinationImplementationHandlerTest {
     verify(destinationImplementationsHandler).deleteDestinationImplementation(destinationImplementationIdRequestBody);
   }
 
-
   @Test
   public void testReCreatesDestinationWhenCheckConnectionSucceeds() throws JsonValidationException, IOException, ConfigNotFoundException {
     DestinationImplementationCreate destinationImplementationCreate = new DestinationImplementationCreate();
@@ -130,8 +129,9 @@ public class WebBackendDestinationImplementationHandlerTest {
     destinationImplementationCreate.setDestinationSpecificationId(destinationImplementationRead.getDestinationSpecificationId());
     destinationImplementationCreate.setWorkspaceId(destinationImplementationRead.getWorkspaceId());
 
-    DestinationImplementationRead newDestinationImplementation = DestinationImplementationHelpers.getDestinationImplementationRead(DestinationImplementationHelpers.generateDestinationImplementation(UUID.randomUUID()),  DestinationHelpers
-        .generateDestination());
+    DestinationImplementationRead newDestinationImplementation = DestinationImplementationHelpers
+        .getDestinationImplementationRead(DestinationImplementationHelpers.generateDestinationImplementation(UUID.randomUUID()), DestinationHelpers
+            .generateDestination());
 
     when(destinationImplementationsHandler.createDestinationImplementation(destinationImplementationCreate)).thenReturn(newDestinationImplementation);
 
@@ -153,7 +153,8 @@ public class WebBackendDestinationImplementationHandlerTest {
     DestinationImplementationIdRequestBody oldDestinationIdBody = new DestinationImplementationIdRequestBody();
     oldDestinationIdBody.setDestinationImplementationId(destinationImplementationRead.getDestinationImplementationId());
 
-    DestinationImplementationRead returnedDestination = wbDestinationImplementationHandler.webBackendRecreateDestinationImplementationAndCheck(destinationImplementationRecreate);
+    DestinationImplementationRead returnedDestination =
+        wbDestinationImplementationHandler.webBackendRecreateDestinationImplementationAndCheck(destinationImplementationRecreate);
 
     verify(destinationImplementationsHandler, times(1)).deleteDestinationImplementation(Mockito.eq(oldDestinationIdBody));
     assertEquals(newDestinationImplementation, returnedDestination);
@@ -167,7 +168,8 @@ public class WebBackendDestinationImplementationHandlerTest {
     destinationImplementationCreate.setDestinationSpecificationId(destinationImplementationRead.getDestinationSpecificationId());
     destinationImplementationCreate.setWorkspaceId(destinationImplementationRead.getWorkspaceId());
 
-    DestinationImplementationRead newDestinationImplementation = DestinationImplementationHelpers.getDestinationImplementationRead(DestinationImplementationHelpers.generateDestinationImplementation(UUID.randomUUID()),  DestinationHelpers.generateDestination());
+    DestinationImplementationRead newDestinationImplementation = DestinationImplementationHelpers.getDestinationImplementationRead(
+        DestinationImplementationHelpers.generateDestinationImplementation(UUID.randomUUID()), DestinationHelpers.generateDestination());
 
     when(destinationImplementationsHandler.createDestinationImplementation(destinationImplementationCreate)).thenReturn(newDestinationImplementation);
 
@@ -187,7 +189,8 @@ public class WebBackendDestinationImplementationHandlerTest {
     destinationImplementationRecreate.setDestinationImplementationId(destinationImplementationRead.getDestinationImplementationId());
 
     Assertions.assertThrows(KnownException.class,
-        () ->     wbDestinationImplementationHandler.webBackendRecreateDestinationImplementationAndCheck(destinationImplementationRecreate));
+        () -> wbDestinationImplementationHandler.webBackendRecreateDestinationImplementationAndCheck(destinationImplementationRecreate));
     verify(destinationImplementationsHandler, times(1)).deleteDestinationImplementation(Mockito.eq(newDestinationId));
   }
+
 }
