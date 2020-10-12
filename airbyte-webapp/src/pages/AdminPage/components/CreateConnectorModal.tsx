@@ -47,10 +47,16 @@ const FieldContainer = styled.div`
   margin-bottom: 21px;
 `;
 
+const Subtitle = styled.div`
+  margin-bottom: 26px;
+  font-size: 14px;
+  line-height: 21px;
+  color: ${({ theme }) => theme.darkPrimaryColor};
+`;
+
 const DocLink = styled(Link).attrs({ as: "a" })`
-  margin-bottom: 8px;
   text-decoration: none;
-  display: block;
+  display: inline-block;
 `;
 
 const Error = styled(StatusIcon)`
@@ -80,7 +86,8 @@ const ErrorText = styled.div`
 const validationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),
   documentationUrl: yup.string().required("form.empty.error"),
-  dockerImageTag: yup.string().required("form.empty.error")
+  dockerImageTag: yup.string().required("form.empty.error"),
+  dockerRepository: yup.string().required("form.empty.error")
 });
 
 const CreateConnectorModal: React.FC<IProps> = ({
@@ -96,17 +103,30 @@ const CreateConnectorModal: React.FC<IProps> = ({
       title={<FormattedMessage id="admin.addNewConnector" />}
     >
       <Content>
+        <Subtitle>
+          <FormattedMessage
+            id="admin.learnMore"
+            values={{
+              lnk: (...lnk: React.ReactNode[]) => (
+                <DocLink target="_blank" href={config.ui.docsLink} as="a">
+                  {lnk}
+                </DocLink>
+              )
+            }}
+          />
+        </Subtitle>
         <Formik
           initialValues={{
             name: "",
             documentationUrl: "",
-            dockerImageTag: ""
+            dockerImageTag: "",
+            dockerRepository: ""
           }}
           validateOnBlur={true}
           validateOnChange={true}
           validationSchema={validationSchema}
           onSubmit={async (values, { setSubmitting }) => {
-            await onSubmit({ ...values, dockerRepository: "Test" }); // TODO: FIX IT
+            await onSubmit(values);
             setSubmitting(false);
           }}
         >
@@ -131,7 +151,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
                 </Field>
               </FieldContainer>
               <FieldContainer>
-                <Field name="documentationUrl">
+                <Field name="dockerRepository">
                   {({ field }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
@@ -141,19 +161,9 @@ const CreateConnectorModal: React.FC<IProps> = ({
                         id: "admin.dockerRepository.placeholder"
                       })}
                       label={
-                        <>
-                          <Label>
-                            <FormattedMessage id="admin.dockerRepository" />
-                          </Label>
-                          <FormattedMessage id="admin.locationOfDocker" />
-                          <DocLink
-                            as="a"
-                            href={config.ui.docsLink}
-                            target="_blank"
-                          >
-                            <FormattedMessage id="admin.learnMore" />
-                          </DocLink>
-                        </>
+                        <Label>
+                          <FormattedMessage id="admin.dockerRepository" />
+                        </Label>
                       }
                     />
                   )}
@@ -166,9 +176,31 @@ const CreateConnectorModal: React.FC<IProps> = ({
                       {...field}
                       type="text"
                       autoComplete="off"
+                      placeholder={formatMessage({
+                        id: "admin.dockerImageTag.placeholder"
+                      })}
                       label={
                         <Label>
-                          <FormattedMessage id="admin.version" />
+                          <FormattedMessage id="admin.dockerImageTag" />
+                        </Label>
+                      }
+                    />
+                  )}
+                </Field>
+              </FieldContainer>
+              <FieldContainer>
+                <Field name="documentationUrl">
+                  {({ field }: FieldProps<string>) => (
+                    <LabeledInput
+                      {...field}
+                      type="text"
+                      autoComplete="off"
+                      placeholder={formatMessage({
+                        id: "admin.documentationUrl.placeholder"
+                      })}
+                      label={
+                        <Label>
+                          <FormattedMessage id="admin.documentationUrl" />
                         </Label>
                       }
                     />

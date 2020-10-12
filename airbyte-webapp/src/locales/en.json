@@ -140,6 +140,9 @@
   "admin.connectorName.placeholder": "Connector name",
   "admin.dockerRepository": "Docker repository name",
   "admin.dockerRepository.placeholder": "airbytehq/postgres",
-  "admin.locationOfDocker": "Input the location of the Docker image of your connector.",
-  "admin.learnMore": "Learn more from our documentation."
+  "admin.dockerImageTag": "Docker image tag",
+  "admin.dockerImageTag.placeholder": "12.3",
+  "admin.documentationUrl": "Connector Documentation URL",
+  "admin.documentationUrl.placeholder": "https://hub.docker.com/r/airbyte/integration-singer-postgres-source",
+  "admin.learnMore": "<lnk>Learn more from our documentation</lnk> to understand how to fill these field."
 }
