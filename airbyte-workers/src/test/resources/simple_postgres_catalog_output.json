@@ -1,5 +1,5 @@
 {
-  "catalog": {
+  "schema": {
     "streams": [
       {
         "name": "id_and_name",
