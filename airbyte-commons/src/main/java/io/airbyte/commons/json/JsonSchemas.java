@@ -56,7 +56,7 @@ public class JsonSchemas {
    * that JsonReferenceProcessor can find them.
    */
   @SuppressWarnings("UnstableApiUsage")
-  public static <T>Path prepareSchemas(final String resourceDir, Class<T> klass) {
+  public static <T> Path prepareSchemas(final String resourceDir, Class<T> klass) {
     try {
       final List<String> filenames = MoreResources.listResources(klass, resourceDir)
           .map(p -> p.getFileName().toString())
