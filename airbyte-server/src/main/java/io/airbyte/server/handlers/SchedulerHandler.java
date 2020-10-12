@@ -154,22 +154,24 @@ public class SchedulerHandler {
     StandardSource source = configRepository.getStandardSource(sourceId);
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final ConnectorSpecification spec = getConnectorSpecification(imageName);
+
+    TrackingClientSingleton.get().track("get_source_spec", ImmutableMap.<String, Object>builder()
+        .put("source_id", source.getSourceId())
+        .put("source_name", source.getName())
+        .put("image_name", imageName)
+        .build());
+
     return new SourceSpecificationRead()
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
         .sourceId(sourceId);
   }
 
-  public ConnectorSpecification getConnectorSpecification(String imageName) throws IOException {
+  ConnectorSpecification getConnectorSpecification(String imageName) throws IOException {
     final long jobId = schedulerPersistence.createGetSpecJob(imageName);
     LOGGER.debug("getSourceSpec jobId = {}", jobId);
 
     Job job = waitUntilJobIsTerminalOrTimeout(jobId);
-
-    TrackingClientSingleton.get().track("get_source_spec", ImmutableMap.<String, Object>builder()
-        .put("image_name", imageName)
-        .put("job_id", jobId)
-        .build());
 
     return job.getOutput().orElseThrow().getGetSpec().getSpecification();
   }
@@ -180,6 +182,13 @@ public class SchedulerHandler {
     StandardDestination destination = configRepository.getStandardDestination(destinationId);
     final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
     final ConnectorSpecification spec = getConnectorSpecification(imageName);
+
+    TrackingClientSingleton.get().track("get_destination_spec", ImmutableMap.<String, Object>builder()
+        .put("image_name", imageName)
+        .put("destination_name", destination.getName())
+        .put("destination_id", destination.getDestinationId())
+        .build());
+
     return new DestinationSpecificationRead()
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
