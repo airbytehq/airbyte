@@ -9,10 +9,17 @@ import Link from "../../../components/Link";
 import { Field, FieldProps, Form, Formik } from "formik";
 import LabeledInput from "../../../components/LabeledInput";
 import config from "../../../config";
+import StatusIcon from "../../../components/StatusIcon";
 
 export type IProps = {
+  errorMessage?: string;
   onClose: () => void;
-  onSubmit: (source: { name: string; dockerRepository: string }) => void;
+  onSubmit: (source: {
+    name: string;
+    documentationUrl: string;
+    dockerImageTag: string;
+    dockerRepository: string;
+  }) => void;
 };
 
 const Content = styled.div`
@@ -22,7 +29,8 @@ const Content = styled.div`
 
 const ButtonContent = styled.div`
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const ButtonWithMargin = styled(Button)`
@@ -45,12 +53,41 @@ const DocLink = styled(Link).attrs({ as: "a" })`
   display: block;
 `;
 
+const Error = styled(StatusIcon)`
+  padding-top: 4px;
+  padding-left: 1px;
+  font-size: 17px;
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+`;
+
+const ErrorBlock = styled.div`
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 18px;
+  color: ${({ theme }) => theme.darkPrimaryColor};
+`;
+
+const ErrorText = styled.div`
+  font-weight: normal;
+  color: ${({ theme }) => theme.dangerColor};
+  max-width: 400px;
+`;
 const validationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),
-  dockerRepository: yup.string().required("form.empty.error")
+  documentationUrl: yup.string().required("form.empty.error"),
+  dockerImageTag: yup.string().required("form.empty.error")
 });
 
-const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
+const CreateConnectorModal: React.FC<IProps> = ({
+  onClose,
+  onSubmit,
+  errorMessage
+}) => {
   const formatMessage = useIntl().formatMessage;
 
   return (
@@ -62,13 +99,14 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
         <Formik
           initialValues={{
             name: "",
-            dockerRepository: ""
+            documentationUrl: "",
+            dockerImageTag: ""
           }}
           validateOnBlur={true}
           validateOnChange={true}
           validationSchema={validationSchema}
           onSubmit={async (values, { setSubmitting }) => {
-            await onSubmit(values);
+            await onSubmit({ ...values, dockerRepository: "Test" }); // TODO: FIX IT
             setSubmitting(false);
           }}
         >
@@ -93,7 +131,7 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
                 </Field>
               </FieldContainer>
               <FieldContainer>
-                <Field name="dockerRepository">
+                <Field name="documentationUrl">
                   {({ field }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
@@ -121,16 +159,44 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
                   )}
                 </Field>
               </FieldContainer>
+              <FieldContainer>
+                <Field name="dockerImageTag">
+                  {({ field }: FieldProps<string>) => (
+                    <LabeledInput
+                      {...field}
+                      type="text"
+                      autoComplete="off"
+                      label={
+                        <Label>
+                          <FormattedMessage id="admin.version" />
+                        </Label>
+                      }
+                    />
+                  )}
+                </Field>
+              </FieldContainer>
               <ButtonContent>
-                <ButtonWithMargin onClick={onClose} type="button" secondary>
-                  <FormattedMessage id="form.cancel" />
-                </ButtonWithMargin>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !dirty || !isValid}
-                >
-                  <FormattedMessage id="form.add" />
-                </Button>
+                {errorMessage ? (
+                  <ErrorBlock>
+                    <Error />
+                    <ErrorText>
+                      <FormattedMessage id={errorMessage} />
+                    </ErrorText>
+                  </ErrorBlock>
+                ) : (
+                  <div />
+                )}
+                <div>
+                  <ButtonWithMargin onClick={onClose} type="button" secondary>
+                    <FormattedMessage id="form.cancel" />
+                  </ButtonWithMargin>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !dirty || !isValid}
+                  >
+                    <FormattedMessage id="form.add" />
+                  </Button>
+                </div>
               </ButtonContent>
             </Form>
           )}
