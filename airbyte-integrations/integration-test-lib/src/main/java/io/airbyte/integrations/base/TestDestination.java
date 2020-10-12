@@ -25,6 +25,7 @@
 package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -93,13 +94,13 @@ public abstract class TestDestination {
   /**
    * Function that returns all of the records in destination as json at the time this method is
    * invoked. These will be used to check that the data actually written is what should actually be
-   * there.
+   * there. Note: this returns a set and does not test any order guarantees.
    *
    * @param testEnv - information about the test environment.
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv) throws Exception;
+  protected abstract List<JsonNode> recordRetriever(TestDestinationEnv testEnv, String streamName) throws Exception;
 
   /**
    * Function that performs any setup of external resources required for the test. e.g. instantiate a
@@ -180,7 +181,7 @@ public abstract class TestDestination {
         .map(record -> Jsons.deserialize(record, SingerMessage.class)).collect(Collectors.toList());
     runSync(messages, catalog);
 
-    assertSameMessages(messages, retrieveRecords(testEnv));
+    assertSameMessages(messages, recordRetriever(testEnv, catalog.getStreams().get(0).getName()));
   }
 
   /**
@@ -201,7 +202,7 @@ public abstract class TestDestination {
             .put("NZD", 700)
             .build())));
     runSync(secondSyncMessages, catalog);
-    assertSameMessages(secondSyncMessages, retrieveRecords(testEnv));
+    assertSameMessages(secondSyncMessages, recordRetriever(testEnv, catalog.getStreams().get(0).getName()));
   }
 
   private void runSync(List<SingerMessage> messages, Schema catalog) throws IOException, WorkerException {
@@ -222,7 +223,10 @@ public abstract class TestDestination {
         .filter(message -> message.getType() == Type.RECORD)
         .map(SingerMessage::getRecord)
         .collect(Collectors.toList());
-    assertEquals(expectedJson, actual);
+    // we want to ignore order in this comparison.
+    assertEquals(expectedJson.size(), actual.size());
+    assertTrue(expectedJson.containsAll(actual));
+    assertTrue(actual.containsAll(expectedJson));
   }
 
   public static class TestDestinationEnv {
