@@ -31,17 +31,17 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
 
-public class SingerConfigSchemaTest {
+public class SingerProtocolSchemaTest {
 
   @Test
   void testFile() throws IOException {
-    final String schema = Files.readString(SingerConfigSchema.SINGER_MESSAGE.getFile().toPath(), StandardCharsets.UTF_8);
+    final String schema = Files.readString(SingerProtocolSchema.SINGER_MESSAGE.getFile().toPath(), StandardCharsets.UTF_8);
     assertTrue(schema.contains("title"));
   }
 
   @Test
   void testPrepareKnownSchemas() {
-    for (SingerConfigSchema value : SingerConfigSchema.values()) {
+    for (SingerProtocolSchema value : SingerProtocolSchema.values()) {
       assertTrue(Files.exists(value.getFile().toPath()));
     }
   }
