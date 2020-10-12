@@ -41,7 +41,7 @@ import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.Stream;
 import io.airbyte.singer.SingerMessage;
 import java.io.ByteArrayInputStream;
@@ -116,7 +116,7 @@ class IntegrationRunnerTest {
   @Test
   void testDiscover() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.discover(Path.of(configPath.toString()));
-    final StandardDiscoverSchemaOutput output = new StandardDiscoverSchemaOutput().withSchema(SCHEMA);
+    final StandardDiscoverCatalogOutput output = new StandardDiscoverCatalogOutput().withSchema(SCHEMA);
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.discover(CONFIG)).thenReturn(output);

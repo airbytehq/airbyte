@@ -33,17 +33,15 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.singer.SingerMessage;
-import io.airbyte.workers.protocols.singer.DefaultSingerTap;
-import io.airbyte.workers.protocols.singer.DefaultSingerTarget;
-import io.airbyte.workers.protocols.singer.SingerMessageUtils;
-import io.airbyte.workers.protocols.singer.SingerTap;
-import io.airbyte.workers.protocols.singer.SingerTarget;
+import io.airbyte.workers.protocols.singer.SingerDestination;
+import io.airbyte.workers.protocols.singer.SingerMessageTracker;
+import io.airbyte.workers.protocols.singer.SingerSource;
 import java.nio.file.Path;
 import java.util.Optional;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
 
-class SingerSyncWorkerTest {
+class DefaultSyncWorkerTest {
 
   private static final Path WORKSPACE_ROOT = Path.of("/workspaces/10");
   private static final String STREAM_NAME = "user_preferences";
@@ -65,8 +63,8 @@ class SingerSyncWorkerTest {
         .withStandardSync(standardSync)
         .withDestinationConnectionImplementation(syncInput.getDestinationConnectionImplementation());
 
-    final SingerTap tap = mock(DefaultSingerTap.class);
-    final SingerTarget target = mock(DefaultSingerTarget.class);
+    final SingerSource tap = mock(SingerSource.class);
+    final SingerDestination target = mock(SingerDestination.class);
 
     SingerMessage recordMessage1 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
     SingerMessage recordMessage2 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
@@ -74,9 +72,9 @@ class SingerSyncWorkerTest {
     when(tap.isFinished()).thenReturn(false, false, false, true);
     when(tap.attemptRead()).thenReturn(Optional.of(recordMessage1), Optional.empty(), Optional.of(recordMessage2));
 
-    final SingerSyncWorker singerSyncWorker = new SingerSyncWorker(tap, target);
+    final DefaultSyncWorker<SingerMessage> defaultSyncWorker = new DefaultSyncWorker<>(tap, target, new SingerMessageTracker());
 
-    singerSyncWorker.run(syncInput, WORKSPACE_ROOT);
+    defaultSyncWorker.run(syncInput, WORKSPACE_ROOT);
 
     verify(tap).start(tapConfig, WORKSPACE_ROOT);
     verify(target).start(targetConfig, WORKSPACE_ROOT);
