@@ -41,7 +41,7 @@ definitions:
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       emitted_at:
-        description: "when the data was emitted from the source (epoch in second)."
+        description: "when the data was emitted from the source. epoch in second."
         type: integer
   AirbyteStateMessage:
     type: object
