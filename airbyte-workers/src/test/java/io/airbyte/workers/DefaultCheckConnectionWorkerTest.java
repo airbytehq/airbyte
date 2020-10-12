@@ -36,22 +36,22 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverSchemaInput;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class SingerCheckConnectionWorkerTest {
+public class DefaultCheckConnectionWorkerTest {
 
   private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
 
   private Path jobRoot;
   private StandardCheckConnectionInput input;
-  private StandardDiscoverSchemaInput discoverInput;
-  private DiscoverSchemaWorker discoverSchemaWorker;
+  private StandardDiscoverCatalogInput discoverInput;
+  private DiscoverCatalogWorker discoverCatalogWorker;
 
   @BeforeEach
   public void setup() throws IOException {
@@ -59,18 +59,18 @@ public class SingerCheckConnectionWorkerTest {
 
     input = new StandardCheckConnectionInput().withConnectionConfiguration(CREDS);
 
-    discoverInput = new StandardDiscoverSchemaInput().withConnectionConfiguration(CREDS);
+    discoverInput = new StandardDiscoverCatalogInput().withConnectionConfiguration(CREDS);
 
-    discoverSchemaWorker = mock(DiscoverSchemaWorker.class);
+    discoverCatalogWorker = mock(DiscoverCatalogWorker.class);
   }
 
   @Test
   public void testSuccessfulConnection() {
-    OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput =
-        new OutputAndStatus<>(JobStatus.SUCCESSFUL, mock(StandardDiscoverSchemaOutput.class));
-    when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
+    OutputAndStatus<StandardDiscoverCatalogOutput> discoverOutput =
+        new OutputAndStatus<>(JobStatus.SUCCESSFUL, mock(StandardDiscoverCatalogOutput.class));
+    when(discoverCatalogWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
-    final SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(discoverSchemaWorker);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(discoverCatalogWorker);
     final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
 
     assertEquals(JobStatus.SUCCESSFUL, output.getStatus());
@@ -78,15 +78,15 @@ public class SingerCheckConnectionWorkerTest {
     assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, output.getOutput().get().getStatus());
     assertNull(output.getOutput().get().getMessage());
 
-    verify(discoverSchemaWorker).run(discoverInput, jobRoot);
+    verify(discoverCatalogWorker).run(discoverInput, jobRoot);
   }
 
   @Test
   public void testFailedConnection() {
-    OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput = new OutputAndStatus<>(JobStatus.FAILED, null);
-    when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
+    OutputAndStatus<StandardDiscoverCatalogOutput> discoverOutput = new OutputAndStatus<>(JobStatus.FAILED, null);
+    when(discoverCatalogWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
-    final SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(discoverSchemaWorker);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(discoverCatalogWorker);
     final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
 
     assertEquals(JobStatus.FAILED, output.getStatus());
@@ -94,20 +94,20 @@ public class SingerCheckConnectionWorkerTest {
     assertEquals(StandardCheckConnectionOutput.Status.FAILURE, output.getOutput().get().getStatus());
     assertEquals("Failed to connect.", output.getOutput().get().getMessage());
 
-    verify(discoverSchemaWorker).run(discoverInput, jobRoot);
+    verify(discoverCatalogWorker).run(discoverInput, jobRoot);
   }
 
   @Test
   public void testCancel() {
-    OutputAndStatus<StandardDiscoverSchemaOutput> discoverOutput =
-        new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverSchemaOutput());
-    when(discoverSchemaWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
+    OutputAndStatus<StandardDiscoverCatalogOutput> discoverOutput =
+        new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverCatalogOutput());
+    when(discoverCatalogWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
-    final SingerCheckConnectionWorker worker = new SingerCheckConnectionWorker(discoverSchemaWorker);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(discoverCatalogWorker);
     worker.run(input, jobRoot);
     worker.cancel();
 
-    verify(discoverSchemaWorker).cancel();
+    verify(discoverCatalogWorker).cancel();
   }
 
 }

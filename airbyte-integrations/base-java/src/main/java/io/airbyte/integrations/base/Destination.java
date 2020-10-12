@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.singer.SingerMessage;
 
 // todo (cgardens) - share common parts of this interface with source.
@@ -60,7 +60,7 @@ public interface Destination {
    * @return Description of the schema.
    * @throws Exception - any exception.
    */
-  StandardDiscoverSchemaOutput discover(JsonNode config) throws Exception;
+  StandardDiscoverCatalogOutput discover(JsonNode config) throws Exception;
 
   /**
    * Return a consumer that writes messages to the destination.

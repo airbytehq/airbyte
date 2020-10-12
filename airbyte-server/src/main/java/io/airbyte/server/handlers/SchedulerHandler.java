@@ -46,7 +46,7 @@ import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestination;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -132,9 +132,9 @@ public class SchedulerHandler {
     LOGGER.debug("jobId = " + jobId);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
-    final StandardDiscoverSchemaOutput output = job.getOutput().map(JobOutput::getDiscoverSchema)
+    final StandardDiscoverCatalogOutput output = job.getOutput().map(JobOutput::getDiscoverSchema)
         // the job should always produce an output, but if does not, we fall back on an empty schema.
-        .orElse(new StandardDiscoverSchemaOutput().withSchema(new Schema().withStreams(Collections.emptyList())));
+        .orElse(new StandardDiscoverCatalogOutput().withSchema(new Schema().withStreams(Collections.emptyList())));
 
     LOGGER.debug("output = " + output);
 
