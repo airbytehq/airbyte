@@ -26,7 +26,9 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
@@ -34,7 +36,9 @@ import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationUpdate;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.JsonValidationException;
+import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -47,6 +51,7 @@ import org.junit.jupiter.api.Test;
 
 class DestinationsHandlerTest {
 
+  private SchedulerHandler schedulerHandler;
   private ConfigRepository configRepository;
   private StandardDestination destination;
   private DestinationsHandler destinationHandler;
@@ -54,8 +59,9 @@ class DestinationsHandlerTest {
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
+    schedulerHandler = mock(SchedulerHandler.class);
     destination = generateDestination();
-    destinationHandler = new DestinationsHandler(configRepository);
+    destinationHandler = new DestinationsHandler(configRepository, schedulerHandler);
   }
 
   private StandardDestination generateDestination() {
@@ -119,14 +125,39 @@ class DestinationsHandlerTest {
   @Test
   void testUpdateDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getStandardDestination(destination.getDestinationId())).thenReturn(destination);
+    DestinationRead currentDestination =
+        destinationHandler.getDestination(new DestinationIdRequestBody().destinationId(destination.getDestinationId()));
+    final String currentTag = currentDestination.getDockerImageTag();
+    final String currentRepo = currentDestination.getDockerRepository();
     final String newDockerImageTag = "averydifferenttag";
-    String currentTag = destinationHandler.getDestination(
-        new DestinationIdRequestBody().destinationId(destination.getDestinationId())).getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
-    DestinationRead sourceRead = destinationHandler.updateDestination(
-        new DestinationUpdate().destinationId(destination.getDestinationId()).dockerImageTag(newDockerImageTag));
+    String newImageName = DockerUtils.getTaggedImageName(currentRepo, newDockerImageTag);
+    when(schedulerHandler.getConnectorSpecification(newImageName)).thenReturn(new ConnectorSpecification());
+
+    final DestinationRead sourceRead = destinationHandler.updateDestination(
+        new DestinationUpdate().destinationId(this.destination.getDestinationId()).dockerImageTag(newDockerImageTag));
+
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
+    verify(schedulerHandler).getConnectorSpecification(newImageName);
+  }
+
+  @Test
+  void testUpdateDestinationWithInvalidDockerImage() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final String newTag = "newtag123";
+    final String newImageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), newTag);
+    when(configRepository.getStandardDestination(destination.getDestinationId())).thenReturn(destination);
+    when(schedulerHandler.getConnectorSpecification(newImageName)).thenThrow(new IllegalArgumentException());
+    try {
+      destinationHandler.updateDestination(new DestinationUpdate().destinationId(destination.getDestinationId()).dockerImageTag(newTag));
+      fail("Expected updating destination with invalid docker creds to fail.");
+    } catch (IOException | ConfigNotFoundException | JsonValidationException e) {
+      throw e;
+    } catch (Exception ignored) {
+
+    }
+
+    verify(schedulerHandler).getConnectorSpecification(newImageName);
   }
 
 }

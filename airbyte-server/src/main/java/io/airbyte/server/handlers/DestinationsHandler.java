@@ -28,22 +28,27 @@ import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationUpdate;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.errors.KnownException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DestinationsHandler {
 
   private final ConfigRepository configRepository;
+  private SchedulerHandler schedulerHandler;
 
-  public DestinationsHandler(final ConfigRepository configRepository) {
+  public DestinationsHandler(final ConfigRepository configRepository, SchedulerHandler schedulerHandler) {
     this.configRepository = configRepository;
+    this.schedulerHandler = schedulerHandler;
   }
 
   public DestinationReadList listDestinations()
@@ -63,6 +68,12 @@ public class DestinationsHandler {
 
   public DestinationRead updateDestination(DestinationUpdate destinationUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     StandardDestination currentDestination = configRepository.getStandardDestination(destinationUpdate.getDestinationId());
+    Optional<Exception> validationException =
+        assertDockerImageIsValidIntegration(currentDestination.getDockerRepository(), destinationUpdate.getDockerImageTag());
+    if (validationException.isPresent()) {
+      throw new KnownException(422, "Encountered issue while validating input docker image: " + validationException.get().getMessage());
+    }
+
     StandardDestination newDestination = new StandardDestination()
         .withDestinationId(currentDestination.getDestinationId())
         .withDockerImageTag(destinationUpdate.getDockerImageTag())
@@ -84,6 +95,22 @@ public class DestinationsHandler {
           .documentationUrl(new URI(standardDestination.getDocumentationUrl()));
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * @return If the input image is valid, an empty optional. Otherwise, an exception indicating the
+   *         issue with the provided docker image.
+   */
+  private Optional<Exception> assertDockerImageIsValidIntegration(String dockerRepo, String tag) {
+    // Validates that the docker image exists and can generate a compatible spec by running a getSpec
+    // job on the provided image.
+    String imageName = DockerUtils.getTaggedImageName(dockerRepo, tag);
+    try {
+      schedulerHandler.getConnectorSpecification(imageName);
+      return Optional.empty();
+    } catch (Exception e) {
+      return Optional.of(e);
     }
   }
 

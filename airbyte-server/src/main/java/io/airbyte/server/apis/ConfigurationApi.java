@@ -104,11 +104,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   public ConfigurationApi(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence) {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    workspacesHandler = new WorkspacesHandler(configRepository);
-    sourcesHandler = new SourcesHandler(configRepository);
-    connectionsHandler = new ConnectionsHandler(configRepository);
-    destinationsHandler = new DestinationsHandler(configRepository);
     schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
+    workspacesHandler = new WorkspacesHandler(configRepository);
+    sourcesHandler = new SourcesHandler(configRepository, schedulerHandler);
+    connectionsHandler = new ConnectionsHandler(configRepository);
+    destinationsHandler = new DestinationsHandler(configRepository, schedulerHandler);
     destinationImplementationsHandler =
         new DestinationImplementationsHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     sourceImplementationsHandler = new SourceImplementationsHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);

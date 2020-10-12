@@ -153,22 +153,25 @@ public class SchedulerHandler {
     UUID sourceId = sourceIdRequestBody.getSourceId();
     StandardSource source = configRepository.getStandardSource(sourceId);
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
+    final ConnectorSpecification spec = getConnectorSpecification(imageName);
+    return new SourceSpecificationRead()
+        .connectionSpecification(spec.getConnectionSpecification())
+        .documentationUrl(spec.getDocumentationUrl().toString())
+        .sourceId(sourceId);
+  }
+
+  public ConnectorSpecification getConnectorSpecification(String imageName) throws IOException {
     final long jobId = schedulerPersistence.createGetSpecJob(imageName);
     LOGGER.debug("getSourceSpec jobId = {}", jobId);
 
     Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
     TrackingClientSingleton.get().track("get_source_spec", ImmutableMap.<String, Object>builder()
-        .put("source_id", sourceId)
         .put("image_name", imageName)
         .put("job_id", jobId)
         .build());
 
-    final ConnectorSpecification spec = job.getOutput().orElseThrow().getGetSpec().getSpecification();
-    return new SourceSpecificationRead()
-        .connectionSpecification(spec.getConnectionSpecification())
-        .documentationUrl(spec.getDocumentationUrl().toString())
-        .sourceId(sourceId);
+    return job.getOutput().orElseThrow().getGetSpec().getSpecification();
   }
 
   public DestinationSpecificationRead getDestinationSpecification(DestinationIdRequestBody destinationIdRequestBody)
@@ -176,18 +179,7 @@ public class SchedulerHandler {
     UUID destinationId = destinationIdRequestBody.getDestinationId();
     StandardDestination destination = configRepository.getStandardDestination(destinationId);
     final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
-    final long jobId = schedulerPersistence.createGetSpecJob(imageName);
-    LOGGER.debug("getSourceSpec jobId = {}", jobId);
-
-    Job job = waitUntilJobIsTerminalOrTimeout(jobId);
-
-    TrackingClientSingleton.get().track("get_source_spec", ImmutableMap.<String, Object>builder()
-        .put("destination_id", destinationId)
-        .put("image_name", imageName)
-        .put("job_id", jobId)
-        .build());
-
-    final ConnectorSpecification spec = job.getOutput().orElseThrow().getGetSpec().getSpecification();
+    final ConnectorSpecification spec = getConnectorSpecification(imageName);
     return new DestinationSpecificationRead()
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())

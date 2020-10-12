@@ -29,30 +29,40 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceUpdate;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.errors.KnownException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.swing.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SourcesHandler {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(SourcesHandler.class);
+
+  private final SchedulerHandler schedulerHandler;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
 
-  public SourcesHandler(final ConfigRepository configRepository) {
-    this(configRepository, UUID::randomUUID);
+  public SourcesHandler(final ConfigRepository configRepository, SchedulerHandler schedulerHandler) {
+    this(configRepository, schedulerHandler, UUID::randomUUID);
   }
 
-  public SourcesHandler(final ConfigRepository configRepository, Supplier<UUID> uuidSupplier) {
+  public SourcesHandler(final ConfigRepository configRepository, SchedulerHandler schedulerHandler, Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
+    this.schedulerHandler = schedulerHandler;
   }
 
   public SourceReadList listSources() throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -67,8 +77,13 @@ public class SourcesHandler {
     return buildSourceRead(configRepository.getStandardSource(sourceIdRequestBody.getSourceId()));
   }
 
-  public SourceRead createSource(SourceCreate sourceCreate) throws JsonValidationException, IOException, ConfigNotFoundException {
-    // TODO add validation for the incoming docker image
+  public SourceRead createSource(SourceCreate sourceCreate) throws JsonValidationException, IOException {
+    Optional<Exception> validationException =
+        assertDockerImageIsValidIntegration(sourceCreate.getDockerRepository(), sourceCreate.getDockerImageTag());
+    if (validationException.isPresent()) {
+      throw new KnownException(422, "Encountered an issue while validating input docker image: " + validationException.get().getMessage());
+    }
+
     UUID id = uuidSupplier.get();
     StandardSource source = new StandardSource()
         .withSourceId(id)
@@ -83,8 +98,14 @@ public class SourcesHandler {
   }
 
   public SourceRead updateSource(SourceUpdate sourceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
-    // TODO add validation to ensure the incoming version exists
     StandardSource currentSource = configRepository.getStandardSource(sourceUpdate.getSourceId());
+
+    Optional<Exception> validationException =
+        assertDockerImageIsValidIntegration(currentSource.getDockerRepository(), sourceUpdate.getDockerImageTag());
+    if (validationException.isPresent()) {
+      throw new KnownException(422, "Issue validating input docker image: " + validationException.get().getMessage());
+    }
+
     StandardSource newSource = new StandardSource()
         .withSourceId(currentSource.getSourceId())
         .withDockerImageTag(sourceUpdate.getDockerImageTag())
@@ -94,6 +115,22 @@ public class SourcesHandler {
 
     configRepository.writeStandardSource(newSource);
     return buildSourceRead(newSource);
+  }
+
+  /**
+   * @return If the input image is valid, an empty optional. Otherwise, an exception indicating the
+   *         issue with the provided docker image.
+   */
+  private Optional<Exception> assertDockerImageIsValidIntegration(String dockerRepo, String tag) {
+    // Validates that the docker image exists and can generate a compatible spec by running a getSpec
+    // job on the provided image.
+    String imageName = DockerUtils.getTaggedImageName(dockerRepo, tag);
+    try {
+      schedulerHandler.getConnectorSpecification(imageName);
+      return Optional.empty();
+    } catch (Exception e) {
+      return Optional.of(e);
+    }
   }
 
   private static SourceRead buildSourceRead(StandardSource standardSource) {
