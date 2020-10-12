@@ -34,6 +34,7 @@ import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.errors.KnownException;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -68,12 +69,8 @@ public class DestinationsHandler {
 
   public DestinationRead updateDestination(DestinationUpdate destinationUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     StandardDestination currentDestination = configRepository.getStandardDestination(destinationUpdate.getDestinationId());
-    Optional<Exception> validationException =
-        assertDockerImageIsValidIntegration(currentDestination.getDockerRepository(), destinationUpdate.getDockerImageTag());
-    if (validationException.isPresent()) {
-      throw new KnownException(422, "Encountered issue while validating input docker image: " + validationException.get().getMessage());
-    }
-
+    assertDockerImageIsValidIntegration(currentDestination.getDockerRepository(), destinationUpdate.getDockerImageTag());
+    
     StandardDestination newDestination = new StandardDestination()
         .withDestinationId(currentDestination.getDestinationId())
         .withDockerImageTag(destinationUpdate.getDockerImageTag())
@@ -98,19 +95,14 @@ public class DestinationsHandler {
     }
   }
 
-  /**
-   * @return If the input image is valid, an empty optional. Otherwise, an exception indicating the
-   *         issue with the provided docker image.
-   */
-  private Optional<Exception> assertDockerImageIsValidIntegration(String dockerRepo, String tag) {
+  private void assertDockerImageIsValidIntegration(String dockerRepo, String tag) {
     // Validates that the docker image exists and can generate a compatible spec by running a getSpec
     // job on the provided image.
     String imageName = DockerUtils.getTaggedImageName(dockerRepo, tag);
     try {
       schedulerHandler.getConnectorSpecification(imageName);
-      return Optional.empty();
     } catch (Exception e) {
-      return Optional.of(e);
+      throw new KnownException(422, "Encountered an issue while validating input docker image: " + e.getMessage());
     }
   }
 

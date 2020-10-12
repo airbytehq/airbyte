@@ -35,6 +35,7 @@ import io.airbyte.config.StandardSource;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.errors.KnownException;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -44,6 +45,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.swing.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,11 +80,7 @@ public class SourcesHandler {
   }
 
   public SourceRead createSource(SourceCreate sourceCreate) throws JsonValidationException, IOException {
-    Optional<Exception> validationException =
-        assertDockerImageIsValidIntegration(sourceCreate.getDockerRepository(), sourceCreate.getDockerImageTag());
-    if (validationException.isPresent()) {
-      throw new KnownException(422, "Encountered an issue while validating input docker image: " + validationException.get().getMessage());
-    }
+    assertDockerImageIsValidIntegration(sourceCreate.getDockerRepository(), sourceCreate.getDockerImageTag());
 
     UUID id = uuidSupplier.get();
     StandardSource source = new StandardSource()
@@ -99,12 +97,7 @@ public class SourcesHandler {
 
   public SourceRead updateSource(SourceUpdate sourceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     StandardSource currentSource = configRepository.getStandardSource(sourceUpdate.getSourceId());
-
-    Optional<Exception> validationException =
-        assertDockerImageIsValidIntegration(currentSource.getDockerRepository(), sourceUpdate.getDockerImageTag());
-    if (validationException.isPresent()) {
-      throw new KnownException(422, "Issue validating input docker image: " + validationException.get().getMessage());
-    }
+    assertDockerImageIsValidIntegration(currentSource.getDockerRepository(), sourceUpdate.getDockerImageTag());
 
     StandardSource newSource = new StandardSource()
         .withSourceId(currentSource.getSourceId())
@@ -117,19 +110,14 @@ public class SourcesHandler {
     return buildSourceRead(newSource);
   }
 
-  /**
-   * @return If the input image is valid, an empty optional. Otherwise, an exception indicating the
-   *         issue with the provided docker image.
-   */
-  private Optional<Exception> assertDockerImageIsValidIntegration(String dockerRepo, String tag) {
+  private void assertDockerImageIsValidIntegration(String dockerRepo, String tag) {
     // Validates that the docker image exists and can generate a compatible spec by running a getSpec
     // job on the provided image.
     String imageName = DockerUtils.getTaggedImageName(dockerRepo, tag);
     try {
       schedulerHandler.getConnectorSpecification(imageName);
-      return Optional.empty();
     } catch (Exception e) {
-      return Optional.of(e);
+      throw new KnownException(422, "Encountered an issue while validating input docker image: " + e.getMessage());
     }
   }
 
