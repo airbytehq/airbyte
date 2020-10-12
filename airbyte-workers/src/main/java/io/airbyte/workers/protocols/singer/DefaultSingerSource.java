@@ -30,14 +30,15 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardDiscoverSchemaInput;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.singer.SingerCatalog;
 import io.airbyte.singer.SingerMessage;
+import io.airbyte.workers.DefaultDiscoverCatalogWorker;
+import io.airbyte.workers.DiscoverCatalogWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.SingerDiscoverSchemaWorker;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
@@ -51,32 +52,32 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultSingerTap implements SingerTap {
+public class DefaultSingerSource implements SingerSource {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerTap.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerSource.class);
 
   @VisibleForTesting
   static final String DISCOVERY_DIR = "discover";
 
   private final IntegrationLauncher integrationLauncher;
   private final SingerStreamFactory streamFactory;
-  private final SingerDiscoverSchemaWorker discoverSchemaWorker;
+  private final DiscoverCatalogWorker discoverCatalogWorker;
 
   private Process tapProcess = null;
   private Iterator<SingerMessage> messageIterator = null;
 
-  public DefaultSingerTap(final IntegrationLauncher integrationLauncher,
-                          final SingerDiscoverSchemaWorker discoverSchemaWorker) {
+  public DefaultSingerSource(final IntegrationLauncher integrationLauncher,
+                             final DiscoverCatalogWorker discoverSchemaWorker) {
     this(integrationLauncher, new DefaultSingerStreamFactory(), discoverSchemaWorker);
   }
 
   @VisibleForTesting
-  DefaultSingerTap(final IntegrationLauncher integrationLauncher,
-                   final SingerStreamFactory streamFactory,
-                   final SingerDiscoverSchemaWorker discoverSchemaWorker) {
+  DefaultSingerSource(final IntegrationLauncher integrationLauncher,
+                      final SingerStreamFactory streamFactory,
+                      final DiscoverCatalogWorker discoverSchemaWorker) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
-    this.discoverSchemaWorker = discoverSchemaWorker;
+    this.discoverCatalogWorker = discoverSchemaWorker;
   }
 
   @Override
@@ -132,19 +133,19 @@ public class DefaultSingerTap implements SingerTap {
   }
 
   private SingerCatalog runDiscovery(StandardTapConfig input, Path jobRoot) throws IOException, WorkerException {
-    StandardDiscoverSchemaInput discoveryInput = new StandardDiscoverSchemaInput()
+    StandardDiscoverCatalogInput discoveryInput = new StandardDiscoverCatalogInput()
         .withConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
 
     Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
     Files.createDirectory(discoverJobRoot);
 
-    final OutputAndStatus<StandardDiscoverSchemaOutput> output = discoverSchemaWorker.run(discoveryInput, discoverJobRoot);
+    final OutputAndStatus<StandardDiscoverCatalogOutput> output = discoverCatalogWorker.run(discoveryInput, discoverJobRoot);
     if (output.getStatus() == JobStatus.FAILED) {
       throw new WorkerException("Cannot discover schema");
     }
 
     // This is a hack because we need to have access to the original singer catalog
-    return SingerDiscoverSchemaWorker.readCatalog(discoverJobRoot);
+    return DefaultDiscoverCatalogWorker.readCatalog(discoverJobRoot);
   }
 
 }

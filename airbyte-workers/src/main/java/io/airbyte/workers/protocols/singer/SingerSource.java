@@ -22,19 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.wrappers;
+package io.airbyte.workers.protocols.singer;
 
-import io.airbyte.config.JobOutput;
-import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.workers.DiscoverCatalogWorker;
+import io.airbyte.singer.SingerMessage;
+import io.airbyte.workers.protocols.Source;
 
-public class JobOutputDiscoverSchemaWorker extends OutputConvertingWorker<StandardDiscoverCatalogInput, StandardDiscoverCatalogOutput, JobOutput> {
-
-  public JobOutputDiscoverSchemaWorker(DiscoverCatalogWorker innerWorker) {
-    super(
-        innerWorker,
-        output -> new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withDiscoverCatalog(output));
-  }
+public interface SingerSource extends Source<SingerMessage> {
 
 }

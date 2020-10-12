@@ -37,6 +37,7 @@ import static org.mockito.Mockito.when;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.singer.SingerMessage;
+import io.airbyte.workers.SingerMessageUtils;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
@@ -53,7 +54,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DefaultSingerTargetTest {
+class DefaultSingerDestinationTest {
 
   private static final String JOB_ROOT_PREFIX = "workspace";
   private static final String STREAM_NAME = "user_preferences";
@@ -83,7 +84,7 @@ class DefaultSingerTargetTest {
   @SuppressWarnings("BusyWait")
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final SingerTarget target = new DefaultSingerTarget(integrationLauncher);
+    final SingerDestination target = new DefaultSingerDestination(integrationLauncher);
     target.start(TARGET_CONFIG, jobRoot);
 
     final SingerMessage recordMessage = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
@@ -116,7 +117,7 @@ class DefaultSingerTargetTest {
 
   @Test
   public void testCloseNotifiesLifecycle() throws Exception {
-    final SingerTarget target = new DefaultSingerTarget(integrationLauncher);
+    final SingerDestination target = new DefaultSingerDestination(integrationLauncher);
     target.start(TARGET_CONFIG, jobRoot);
 
     verify(outputStream, never()).close();
@@ -127,7 +128,7 @@ class DefaultSingerTargetTest {
 
   @Test
   public void testProcessFailLifecycle() throws Exception {
-    final SingerTarget target = new DefaultSingerTarget(integrationLauncher);
+    final SingerDestination target = new DefaultSingerDestination(integrationLauncher);
     target.start(TARGET_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
