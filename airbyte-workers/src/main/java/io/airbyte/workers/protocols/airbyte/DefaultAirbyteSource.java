@@ -70,9 +70,10 @@ public class DefaultAirbyteSource implements AirbyteSource {
     this(integrationLauncher, new DefaultAirbyteStreamFactory(), discoverSchemaWorker);
   }
 
-  @VisibleForTesting DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                                          final AirbyteStreamFactory streamFactory,
-                                          final DiscoverCatalogWorker discoverSchemaWorker) {
+  @VisibleForTesting
+  DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
+                       final AirbyteStreamFactory streamFactory,
+                       final DiscoverCatalogWorker discoverSchemaWorker) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.discoverCatalogWorker = discoverSchemaWorker;

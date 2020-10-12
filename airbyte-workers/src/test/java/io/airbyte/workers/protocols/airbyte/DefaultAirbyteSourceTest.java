@@ -24,6 +24,16 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -33,7 +43,7 @@ import io.airbyte.config.StandardTapConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.workers.DefaultDiscoverCatalogWorker;
+import io.airbyte.workers.DiscoverCatalogWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.TestConfigHelpers;
@@ -53,16 +63,6 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class DefaultAirbyteSourceTest {
 
@@ -84,7 +84,7 @@ class DefaultAirbyteSourceTest {
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
 
   private Path jobRoot;
-  private DefaultDiscoverCatalogWorker discoverSchemaWorker;
+  private DiscoverCatalogWorker discoverSchemaWorker;
   private IntegrationLauncher integrationLauncher;
   private Process process;
   private AirbyteStreamFactory streamFactory;
@@ -93,16 +93,16 @@ class DefaultAirbyteSourceTest {
   public void setup() throws IOException, WorkerException {
     jobRoot = Files.createTempDirectory("test");
 
-    discoverSchemaWorker = mock(DefaultDiscoverCatalogWorker.class);
+    discoverSchemaWorker = mock(DiscoverCatalogWorker.class);
     when(discoverSchemaWorker.run(
         DISCOVER_SCHEMA_INPUT,
         jobRoot.resolve(DefaultAirbyteSource.DISCOVERY_DIR)))
-        .thenAnswer(invocation -> {
-          Files.writeString(
-              jobRoot.resolve(DefaultAirbyteSource.DISCOVERY_DIR).resolve(WorkerConstants.CATALOG_JSON_FILENAME),
-              Jsons.serialize(CATALOG));
-          return new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverCatalogOutput());
-        });
+            .thenAnswer(invocation -> {
+              Files.writeString(
+                  jobRoot.resolve(DefaultAirbyteSource.DISCOVERY_DIR).resolve(WorkerConstants.CATALOG_JSON_FILENAME),
+                  Jsons.serialize(CATALOG));
+              return new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverCatalogOutput().withCatalog(CATALOG));
+            });
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class, RETURNS_DEEP_STUBS);

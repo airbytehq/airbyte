@@ -60,7 +60,8 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     this.logger = logger;
   }
 
-  @Override public Stream<AirbyteMessage> create(BufferedReader bufferedReader) {
+  @Override
+  public Stream<AirbyteMessage> create(BufferedReader bufferedReader) {
     return bufferedReader
         .lines()
         .map(s -> {

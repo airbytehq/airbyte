@@ -24,12 +24,12 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AirbyteProtocolPredicateTest {
 
