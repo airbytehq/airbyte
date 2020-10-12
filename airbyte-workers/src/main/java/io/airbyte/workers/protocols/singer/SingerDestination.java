@@ -22,9 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.protocols.singer;
 
-import io.airbyte.config.StandardDiscoverSchemaInput;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.singer.SingerMessage;
+import io.airbyte.workers.protocols.Destination;
 
-public interface DiscoverSchemaWorker extends Worker<StandardDiscoverSchemaInput, StandardDiscoverSchemaOutput> {}
+public interface SingerDestination extends Destination<SingerMessage> {
+
+}

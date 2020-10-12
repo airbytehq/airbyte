@@ -30,7 +30,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -72,7 +72,7 @@ public class DestinationTemplate implements Destination {
 
   // fixme - implement this method such that it returns the current schema found in the destination.
   @Override
-  public StandardDiscoverSchemaOutput discover(JsonNode config) {
+  public StandardDiscoverCatalogOutput discover(JsonNode config) {
     throw new RuntimeException("Not Implemented");
   }
 

@@ -1,9 +1,9 @@
 {
-  "schema": {
+  "catalog": {
     "streams": [
       {
         "name": "id_and_name",
-        "selected": true,
+        "selected": false,
         "fields": [
           {
             "name": "name",

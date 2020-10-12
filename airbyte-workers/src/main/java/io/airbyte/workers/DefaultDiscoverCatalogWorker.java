@@ -31,8 +31,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardDiscoverSchemaInput;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.singer.SingerCatalog;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.protocols.singer.SingerCatalogConverters;
@@ -42,21 +42,21 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
+public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoverSchemaWorker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDiscoverCatalogWorker.class);
 
   private final IntegrationLauncher integrationLauncher;
 
   private volatile Process process;
 
-  public SingerDiscoverSchemaWorker(final IntegrationLauncher integrationLauncher) {
+  public DefaultDiscoverCatalogWorker(final IntegrationLauncher integrationLauncher) {
     this.integrationLauncher = integrationLauncher;
   }
 
   @Override
-  public OutputAndStatus<StandardDiscoverSchemaOutput> run(final StandardDiscoverSchemaInput discoverSchemaInput,
-                                                           final Path jobRoot) {
+  public OutputAndStatus<StandardDiscoverCatalogOutput> run(final StandardDiscoverCatalogInput discoverSchemaInput,
+                                                            final Path jobRoot) {
     try {
       return runInternal(discoverSchemaInput, jobRoot);
     } catch (final Exception e) {
@@ -65,8 +65,8 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
     }
   }
 
-  private OutputAndStatus<StandardDiscoverSchemaOutput> runInternal(final StandardDiscoverSchemaInput discoverSchemaInput,
-                                                                    final Path jobRoot)
+  private OutputAndStatus<StandardDiscoverCatalogOutput> runInternal(final StandardDiscoverCatalogInput discoverSchemaInput,
+                                                                     final Path jobRoot)
       throws IOException, WorkerException {
     final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
 
@@ -87,8 +87,8 @@ public class SingerDiscoverSchemaWorker implements DiscoverSchemaWorker {
       final SingerCatalog catalog = readCatalog(jobRoot);
       return new OutputAndStatus<>(
           SUCCESSFUL,
-          new StandardDiscoverSchemaOutput()
-              .withSchema(SingerCatalogConverters.toAirbyteSchema(catalog)));
+          new StandardDiscoverCatalogOutput()
+              .withCatalog(SingerCatalogConverters.toAirbyteSchema(catalog)));
     } else {
       LOGGER.debug("Discovery job subprocess finished with exit code {}", exitCode);
       return new OutputAndStatus<>(FAILED);

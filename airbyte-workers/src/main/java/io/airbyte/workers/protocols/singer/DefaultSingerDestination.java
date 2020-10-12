@@ -44,9 +44,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultSingerTarget implements SingerTarget {
+public class DefaultSingerDestination implements SingerDestination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerTarget.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSingerDestination.class);
 
   private final IntegrationLauncher integrationLauncher;
 
@@ -54,7 +54,7 @@ public class DefaultSingerTarget implements SingerTarget {
   private BufferedWriter writer = null;
   private boolean endOfStream = false;
 
-  public DefaultSingerTarget(final IntegrationLauncher integrationLauncher) {
+  public DefaultSingerDestination(final IntegrationLauncher integrationLauncher) {
     this.integrationLauncher = integrationLauncher;
   }
 

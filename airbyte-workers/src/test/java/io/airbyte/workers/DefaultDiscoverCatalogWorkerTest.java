@@ -38,8 +38,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.StandardDiscoverSchemaInput;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -50,14 +50,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class SingerDiscoverSchemaWorkerTest {
+public class DefaultDiscoverCatalogWorkerTest {
 
   private static final JsonNode CREDENTIALS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
 
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
   private Process process;
-  private StandardDiscoverSchemaInput input;
+  private StandardDiscoverCatalogInput input;
 
   @BeforeEach
   public void setup() throws Exception {
@@ -65,7 +65,7 @@ public class SingerDiscoverSchemaWorkerTest {
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 
-    input = new StandardDiscoverSchemaInput().withConnectionConfiguration(CREDENTIALS);
+    input = new StandardDiscoverCatalogInput().withConnectionConfiguration(CREDENTIALS);
 
     when(integrationLauncher.discover(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)
         .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
@@ -78,13 +78,13 @@ public class SingerDiscoverSchemaWorkerTest {
   @SuppressWarnings("BusyWait")
   @Test
   public void testDiscoverSchema() throws Exception {
-    final SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(integrationLauncher);
-    final OutputAndStatus<StandardDiscoverSchemaOutput> output = worker.run(input, jobRoot);
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher);
+    final OutputAndStatus<StandardDiscoverCatalogOutput> output = worker.run(input, jobRoot);
 
-    final OutputAndStatus<StandardDiscoverSchemaOutput> expectedOutput =
+    final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput =
         new OutputAndStatus<>(
             JobStatus.SUCCESSFUL,
-            Jsons.deserialize(MoreResources.readResource("simple_discovered_postgres_schema.json"), StandardDiscoverSchemaOutput.class));
+            Jsons.deserialize(MoreResources.readResource("simple_discovered_postgres_catalog_output.json"), StandardDiscoverCatalogOutput.class));
 
     assertEquals(expectedOutput, output);
 
@@ -108,10 +108,10 @@ public class SingerDiscoverSchemaWorkerTest {
   public void testDiscoverSchemaProcessFail() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
-    final SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(integrationLauncher);
-    final OutputAndStatus<StandardDiscoverSchemaOutput> output = worker.run(input, jobRoot);
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher);
+    final OutputAndStatus<StandardDiscoverCatalogOutput> output = worker.run(input, jobRoot);
 
-    final OutputAndStatus<StandardDiscoverSchemaOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
+    final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
 
     assertEquals(expectedOutput, output);
 
@@ -129,17 +129,17 @@ public class SingerDiscoverSchemaWorkerTest {
     when(integrationLauncher.discover(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME))
         .thenThrow(new RuntimeException());
 
-    final SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(integrationLauncher);
-    final OutputAndStatus<StandardDiscoverSchemaOutput> output = worker.run(input, jobRoot);
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher);
+    final OutputAndStatus<StandardDiscoverCatalogOutput> output = worker.run(input, jobRoot);
 
-    final OutputAndStatus<StandardDiscoverSchemaOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
+    final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
 
     assertEquals(expectedOutput, output);
   }
 
   @Test
   public void testCancel() {
-    SingerDiscoverSchemaWorker worker = new SingerDiscoverSchemaWorker(integrationLauncher);
+    DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher);
     worker.run(input, jobRoot);
 
     worker.cancel();

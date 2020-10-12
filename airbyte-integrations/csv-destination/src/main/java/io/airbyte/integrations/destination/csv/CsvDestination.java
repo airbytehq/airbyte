@@ -32,7 +32,7 @@ import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.Stream;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
@@ -80,7 +80,7 @@ public class CsvDestination implements Destination {
   // todo (cgardens) - we currently don't leverage discover in our destinations, so skipping
   // implementing it... for now.
   @Override
-  public StandardDiscoverSchemaOutput discover(JsonNode config) {
+  public StandardDiscoverCatalogOutput discover(JsonNode config) {
     throw new RuntimeException("Not Implemented");
   }
 

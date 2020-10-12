@@ -36,7 +36,7 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -100,8 +100,8 @@ class WorkerRunFactoryTest {
 
     factory.create(job);
 
-    StandardDiscoverSchemaInput expectedInput = new StandardDiscoverSchemaInput().withConnectionConfiguration(CONFIG);
-    ArgumentCaptor<Worker<StandardDiscoverSchemaInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    StandardDiscoverCatalogInput expectedInput = new StandardDiscoverCatalogInput().withConnectionConfiguration(CONFIG);
+    ArgumentCaptor<Worker<StandardDiscoverCatalogInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputDiscoverSchemaWorker);
   }

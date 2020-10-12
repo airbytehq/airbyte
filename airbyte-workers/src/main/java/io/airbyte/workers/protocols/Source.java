@@ -22,19 +22,21 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.wrappers;
+package io.airbyte.workers.protocols;
 
-import io.airbyte.config.JobOutput;
-import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.workers.DiscoverCatalogWorker;
+import io.airbyte.config.StandardTapConfig;
+import java.nio.file.Path;
+import java.util.Optional;
 
-public class JobOutputDiscoverSchemaWorker extends OutputConvertingWorker<StandardDiscoverCatalogInput, StandardDiscoverCatalogOutput, JobOutput> {
+public interface Source<T> extends AutoCloseable {
 
-  public JobOutputDiscoverSchemaWorker(DiscoverCatalogWorker innerWorker) {
-    super(
-        innerWorker,
-        output -> new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA).withDiscoverSchema(output));
-  }
+  void start(StandardTapConfig input, Path jobRoot) throws Exception;
+
+  boolean isFinished();
+
+  Optional<T> attemptRead();
+
+  @Override
+  void close() throws Exception;
 
 }
