@@ -91,6 +91,7 @@
   "sources.newSourceTitle": "New Source",
   "sources.selectSource": "Select a source",
   "sources.name": "Name",
+  "sources.progress": "In progress",
   "sources.connector": "Connector",
   "sources.frequency": "Frequency",
   "sources.lastSync": "Last Sync",

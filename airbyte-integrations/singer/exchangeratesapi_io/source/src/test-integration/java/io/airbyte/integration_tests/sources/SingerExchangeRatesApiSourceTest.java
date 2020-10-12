@@ -27,18 +27,21 @@ package io.airbyte.integration_tests.sources;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -104,6 +107,16 @@ public class SingerExchangeRatesApiSourceTest {
     final Optional<String> record = IOs.readFile(syncOutputPath).lines().filter(s -> s.contains("RECORD")).findFirst();
     assertTrue(record.isPresent());
     assertTrue(Jsons.deserialize(record.get()).get("record").get("CAD").asDouble() > 0);
+  }
+
+  @Test
+  public void testGetSpec() throws WorkerException, IOException, InterruptedException {
+    Process process = pbf.create(jobRoot, IMAGE_NAME, "--spec").start();
+    process.waitFor();
+    InputStream expectedSpecInputStream = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("spec.json"));
+    JsonNode expectedSpec = Jsons.deserialize(new String(expectedSpecInputStream.readAllBytes()));
+    JsonNode actualSpec = Jsons.deserialize(new String(process.getInputStream().readAllBytes()));
+    assertEquals(expectedSpec, actualSpec);
   }
 
   private Process createDiscoveryProcess(String configFileName) throws IOException, WorkerException {

@@ -34,20 +34,28 @@ function main() {
       # ignore
       shift 2
       ;;
+    --spec)
+      ARGS="$ARGS --spec"
+      shift
+      ;;
     *)
       error "Unknown option: $1"
       ;;
     esac
   done
 
+  if [[ "$ARGS" =~ .*"--spec".* ]]; then
+    cat /singer/spec.json
+    exit 0
+  else
+    # Set default_target_schema to the value of dataset_id
+    ORIGINAL_CONFIG_FILE="original_config.json"
+    mv "$CONFIG_FILE" "$ORIGINAL_CONFIG_FILE"
+    jq '.default_target_schema = .dataset_id' "$ORIGINAL_CONFIG_FILE" > "$CONFIG_FILE"
 
-  # Set default_target_schema to the value of dataset_id
-  ORIGINAL_CONFIG_FILE="original_config.json"
-  mv "$CONFIG_FILE" "$ORIGINAL_CONFIG_FILE"
-  jq '.default_target_schema = .dataset_id' "$ORIGINAL_CONFIG_FILE" > "$CONFIG_FILE"
-
-  # Extract credentials
-  cat "$CONFIG_FILE" | jq '.credentials_json | fromjson' > credentials.json
+    # Extract credentials
+    cat "$CONFIG_FILE" | jq '.credentials_json | fromjson' > credentials.json
+  fi
 
   # Singer's discovery is what we currently use to check connection
   if [ "$DISCOVER" == 1 ]; then

@@ -1,4 +1,4 @@
-import { Resource } from "rest-hooks";
+import { FetchOptions, Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
 export type ScheduleProperties = {
@@ -38,6 +38,7 @@ export interface Connection {
   syncSchema: SyncSchema;
   source?: SourceInformation;
   lastSync?: number | null;
+  isSyncing?: boolean;
 }
 
 export default class ConnectionResource extends BaseResource
@@ -52,12 +53,19 @@ export default class ConnectionResource extends BaseResource
   readonly source: SourceInformation | undefined = undefined;
   readonly lastSync: number | undefined | null = null;
   readonly syncSchema: SyncSchema = { streams: [] };
+  readonly isSyncing: boolean = false;
 
   pk() {
     return this.connectionId?.toString();
   }
 
   static urlRoot = "connections";
+
+  static getFetchOptions(): FetchOptions {
+    return {
+      pollFrequency: 2500 // every 2,5 seconds
+    };
+  }
 
   static detailShape<T extends typeof Resource>(this: T) {
     return {

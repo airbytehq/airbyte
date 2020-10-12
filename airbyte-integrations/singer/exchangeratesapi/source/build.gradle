@@ -1,7 +1,7 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 plugins {
     id 'java'
-    id 'com.bmuschko.docker-remote-api' version '6.6.1'
+    id 'com.bmuschko.docker-remote-api'
 }
 
 def image = 'airbyte/source-exchangeratesapi-singer:dev'
@@ -39,7 +39,6 @@ task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add(image)
     dependsOn ":airbyte-integrations:singer:base-singer:buildImage"
-    outputs.upToDateWhen { false }
 }
 
 task integrationTest(type: Test) {

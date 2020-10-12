@@ -4,7 +4,36 @@ description: Be sure to not miss out on new features and improvements!
 
 # Changelog
 
-## 0.1.0 - 09/23/2020
+Airbyte is not built on top of Singer, but is compatible with Singer's protocol. Airbyte's ambitions go beyond what Singer enables to do, so we are building our own protocol that will keep its compatibility with Singer's one.
+
+## 0.4.0 - expected around 10/30/2020
+
+Here is what we have in mind:
+
+* our own **Snowflake** warehouse integration
+* **10 additional Singer taps** 
+
+## 0.3.0 - expected around 10/23/2020
+
+Here is what we have in mind:
+
+* new guides \(how to build scratch/singer\) 
+* our own **BigQuery** warehouse integration 
+* our own **Postgres** warehouse integration 
+* **5 additional Singer taps**
+
+## 0.2.0 - expected around 10/16/2020
+
+Here is what we are working on right now:
+
+* **a new Admin section** to enable users to add their own connectors, in addition to upgrading the ones they currently use 
+* improve the developer experience \(DX\) for **contributing new connectors** with additional documentation and a connector protocol 
+* as a bonus if we can, update the onboarding experience with pre-filled demo data for the users who just want to see how Airbyte works with the least effort.
+* simplify the process of supporting new Singer taps, ideally make it a 1-day process
+
+Here is the [UI we're building](https://www.figma.com/file/pO3Ob5W0yKUFOQzvg8TR3z/Airbyte?node-id=0%3A1) for that release, if you're curious :\)
+
+## 0.1.0 - delivered on 09/23/2020
 
 This is our very first release after 2 months of work.
 

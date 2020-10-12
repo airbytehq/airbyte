@@ -1,25 +1,17 @@
-# todo: we can use something like this instead of fixed file names
-# import importlib.util
-# import os
-#
-# airbyte_singer_source_path = os.environ['AIRBYTE_SINGER_SOURCE_PATH']
-# airbyte_singer_source_module = os.environ['AIRBYTE_SINGER_SOURCE_MODULE']
-#
-# spec = importlib.util.spec_from_file_location(airbyte_singer_source_module, airbyte_singer_source_path)
-# module = importlib.util.module_from_spec(spec)
-# spec.loader.exec_module(module)
-# module.MyClass()
-
 import argparse
-import enum
 import logging
 import sys
 import tempfile
 import os.path
+import importlib
 
-from source_implementation import SourceImplementation
-from integration import AirbyteConfig
-from source import Source
+from airbyte_protocol import Source
+
+impl_module = os.environ['AIRBYTE_IMPL_MODULE']
+impl_class = os.environ['AIRBYTE_IMPL_PATH']
+
+module = importlib.import_module(impl_module)
+impl = getattr(module, impl_class)
 
 class AirbyteEntrypoint(object):
     def __init__(self, source):
@@ -35,22 +27,29 @@ class AirbyteEntrypoint(object):
         subparsers.add_parser("spec", help="outputs the json configuration specification", parents=[parent_parser])
 
         # check
-        check_parser = subparsers.add_parser("check", help="checks the config can be used to connect", parents=[parent_parser])
+        check_parser = subparsers.add_parser("check", help="checks the config can be used to connect",
+                                             parents=[parent_parser])
         required_check_parser = check_parser.add_argument_group('required named arguments')
-        required_check_parser.add_argument('--config', type=str, required=True, help='path to the json configuration file')
+        required_check_parser.add_argument('--config', type=str, required=True,
+                                           help='path to the json configuration file')
 
         # discover
-        discover_parser = subparsers.add_parser("discover", help="outputs a catalog describing the source's schema", parents=[parent_parser])
+        discover_parser = subparsers.add_parser("discover", help="outputs a catalog describing the source's schema",
+                                                parents=[parent_parser])
         required_discover_parser = discover_parser.add_argument_group('required named arguments')
-        required_discover_parser.add_argument('--config', type=str, required=True, help='path to the json configuration file')
+        required_discover_parser.add_argument('--config', type=str, required=True,
+                                              help='path to the json configuration file')
 
         # read
-        read_parser = subparsers.add_parser("read", help="reads the source and outputs messages to STDOUT", parents=[parent_parser])
+        read_parser = subparsers.add_parser("read", help="reads the source and outputs messages to STDOUT",
+                                            parents=[parent_parser])
         # todo: re-add state handling
         # read_parser.add_argument('--state', type=str, required=False, help='path to the json-encoded state file')
         required_read_parser = read_parser.add_argument_group('required named arguments')
-        required_read_parser.add_argument('--config', type=str, required=True, help='path to the json configuration file')
-        required_read_parser.add_argument('--catalog', type=str, required=True, help='path to the catalog used to determine which data to read')
+        required_read_parser.add_argument('--config', type=str, required=True,
+                                          help='path to the json configuration file')
+        required_read_parser.add_argument('--catalog', type=str, required=True,
+                                          help='path to the catalog used to determine which data to read')
 
         # parse the args
         parsed_args = main_parser.parse_args()
@@ -87,13 +86,14 @@ class AirbyteEntrypoint(object):
                 # todo: pass in state
                 generator = source.read(logging, rendered_config_path)
                 for message in generator:
-                    print(message.message_string.strip())
+                    print(message.serialize())
                 sys.exit(0)
             else:
                 raise Exception("Unexpected command " + cmd)
 
+
 # set up and run entrypoint
-source = SourceImplementation()
+source = impl()
 
 if not isinstance(source, Source):
     raise Exception("Source implementation provided does not implement Source class!")

@@ -38,15 +38,19 @@ import java.util.UUID;
 
 public interface SchedulerPersistence {
 
-  long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation) throws IOException;
+  long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation, String dockerImage) throws IOException;
 
-  long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation) throws IOException;
+  long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation, String dockerImage) throws IOException;
 
-  long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation) throws IOException;
+  long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation, String dockerImage) throws IOException;
+
+  long createGetSpecJob(String integrationImage) throws IOException;
 
   long createSyncJob(SourceConnectionImplementation sourceImplementation,
                      DestinationConnectionImplementation destinationImplementation,
-                     StandardSync standardSync)
+                     StandardSync standardSync,
+                     String sourceDockerImage,
+                     String destinationDockerImage)
       throws IOException;
 
   Job getJob(long jobId) throws IOException;

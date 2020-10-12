@@ -1,8 +1,11 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
 plugins {
     id 'base'
     id 'java'
     id 'pmd'
-    id 'com.diffplug.spotless' version '5.3.0'
+    id 'com.diffplug.spotless' version '5.4.0'
+    id 'com.bmuschko.docker-remote-api' version '6.6.1'
     // id 'de.aaschmid.cpd' version '3.1'
 }
 
@@ -15,11 +18,6 @@ rootProject.file('.env').withInputStream { env.load(it) }
 
 if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
-}
-
-allprojects {
-    group = "io.airbyte.${rootProject.name}"
-    version = env.VERSION
 }
 
 def createLicenseWith = { licence ->
@@ -85,6 +83,23 @@ allprojects {
     afterEvaluate { project ->
         composeBuild.dependsOn(project.tasks.assemble)
     }
+
+    // Handles the case where there's an upstream dependency on a dev versioned image built by Gradle.
+    // The plugin doesn't recognize changes to the base image as a change that requires rebuilding.
+    // Docker will still cache the artifact, so it shouldn't be much slower.
+    tasks.withType(DockerBuildImage).all { task ->
+        task.outputs.upToDateWhen { false }
+    }
+}
+
+allprojects {
+    // by default gradle uses directory as the project name. That works very well in a single project environment but
+    // projects clobber each other in an environments with subprojects when projects are in directories named identically.
+    def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
+    group = "io.${rootProject.name}${sub.isEmpty() ? '' : ".$sub"}"
+    project.archivesBaseName = "${project.group}-${project.name}"
+
+    version = env.VERSION
 }
 
 // Java projects common configurations
@@ -96,6 +111,9 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
+
+    sourceCompatibility = JavaVersion.VERSION_14
+    targetCompatibility = JavaVersion.VERSION_14
 
     repositories {
         mavenCentral()
@@ -134,6 +152,7 @@ subprojects {
         // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
         implementation 'com.fasterxml.jackson.core:jackson-databind'
         implementation 'com.fasterxml.jackson.core:jackson-annotations'
+        implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
 
         implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
