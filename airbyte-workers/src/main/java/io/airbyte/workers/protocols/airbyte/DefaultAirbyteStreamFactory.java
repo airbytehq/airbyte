@@ -36,27 +36,27 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Creates a stream from an input stream. The produced stream attempts to parse each line of the
- * InputStream into a SingerMessage. If the line cannot be parsed into a SingerMessage it is
+ * InputStream into a AirbyteMessage. If the line cannot be parsed into a AirbyteMessage it is
  * dropped. Each record MUST be new line separated.
  *
  * <p>
- * If a line starts with a SingerMessage and then has other characters after it, that SingerMessage
- * will still be parsed. If there are multiple SingerMessage records on the same line, only the
- * first will be parsed.
+ * If a line starts with a AirbyteMessage and then has other characters after it, that
+ * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
+ * line, only the first will be parsed.
  */
 public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteStreamFactory.class);
 
-  private final AirbyteProtocolPredicate singerProtocolValidator;
+  private final AirbyteProtocolPredicate protocolValidator;
   private final Logger logger;
 
   public DefaultAirbyteStreamFactory() {
     this(new AirbyteProtocolPredicate(), LOGGER);
   }
 
-  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate singerProtocolPredicate, final Logger logger) {
-    singerProtocolValidator = singerProtocolPredicate;
+  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate, final Logger logger) {
+    protocolValidator = protocolPredicate;
     this.logger = logger;
   }
 
@@ -78,7 +78,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .map(Optional::get)
         // filter invalid messages
         .filter(j -> {
-          boolean res = singerProtocolValidator.test(j);
+          boolean res = protocolValidator.test(j);
           if (!res) {
             logger.error("Validation failed: {}", Jsons.serialize(j));
           }

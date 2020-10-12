@@ -55,7 +55,7 @@ public class JobOutputDiscoveryWorkerTest {
     when(discoverWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, output));
     OutputAndStatus<JobOutput> run = new JobOutputDiscoverSchemaWorker(discoverWorker).run(input, jobRoot);
 
-    JobOutput expected = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA).withDiscoverSchema(output);
+    JobOutput expected = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withDiscoverCatalog(output);
     assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(expected, run.getOutput().get());
