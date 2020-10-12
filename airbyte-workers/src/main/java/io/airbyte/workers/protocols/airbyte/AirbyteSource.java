@@ -24,20 +24,9 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
-import io.airbyte.config.StandardTapConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
-import java.nio.file.Path;
-import java.util.Optional;
+import io.airbyte.workers.protocols.Source;
 
-public interface AirbyteSource extends AutoCloseable {
-
-  void start(StandardTapConfig input, Path jobRoot) throws Exception;
-
-  boolean isFinished();
-
-  Optional<AirbyteMessage> attemptRead();
-
-  @Override
-  void close() throws Exception;
+public interface AirbyteSource extends Source<AirbyteMessage> {
 
 }

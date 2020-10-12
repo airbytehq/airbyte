@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols.singer;
+package io.airbyte.workers.protocols.airbyte;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +34,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.singer.SingerMessage;
+import io.airbyte.protocol.models.AirbyteLogMessage;
+import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -47,27 +48,27 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
-class DefaultSingerStreamFactoryTest {
+class DefaultAirbyteStreamFactoryTest {
 
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
-  private SingerProtocolPredicate singerProtocolPredicate;
+  private AirbyteProtocolPredicate protocolPredicate;
   private Logger logger;
 
   @BeforeEach
   public void setup() {
-    singerProtocolPredicate = mock(SingerProtocolPredicate.class);
-    when(singerProtocolPredicate.test(any())).thenReturn(true);
+    protocolPredicate = mock(AirbyteProtocolPredicate.class);
+    when(protocolPredicate.test(any())).thenReturn(true);
     logger = mock(Logger.class);
   }
 
   @Test
   public void testValid() {
-    final SingerMessage record1 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
+    final AirbyteMessage record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
 
-    final Stream<SingerMessage> messageStream = stringToSingerMessageStream(Jsons.serialize(record1));
-    final Stream<SingerMessage> expectedStream = Stream.of(record1);
+    final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(record1));
+    final Stream<AirbyteMessage> expectedStream = Stream.of(record1);
 
     assertEquals(expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
     verifyNoInteractions(logger);
@@ -77,7 +78,7 @@ class DefaultSingerStreamFactoryTest {
   public void testLoggingLine() {
     final String invalidRecord = "invalid line";
 
-    final Stream<SingerMessage> messageStream = stringToSingerMessageStream(invalidRecord);
+    final Stream<AirbyteMessage> messageStream = stringToMessageStream(invalidRecord);
 
     assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
     verify(logger).info(anyString());
@@ -85,12 +86,23 @@ class DefaultSingerStreamFactoryTest {
   }
 
   @Test
+  public void testLoggingLevel() {
+    final AirbyteMessage logMessage = AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning");
+
+    final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(logMessage));
+
+    assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
+    verify(logger).warn("warning");
+    verifyNoMoreInteractions(logger);
+  }
+
+  @Test
   public void testFailValidation() {
     final String invalidRecord = "{ \"fish\": \"tuna\"}";
 
-    when(singerProtocolPredicate.test(Jsons.deserialize(invalidRecord))).thenReturn(false);
+    when(protocolPredicate.test(Jsons.deserialize(invalidRecord))).thenReturn(false);
 
-    final Stream<SingerMessage> messageStream = stringToSingerMessageStream(invalidRecord);
+    final Stream<AirbyteMessage> messageStream = stringToMessageStream(invalidRecord);
 
     assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
     verify(logger).error(anyString(), anyString());
@@ -101,9 +113,9 @@ class DefaultSingerStreamFactoryTest {
   public void testFailDeserialization() {
     final String invalidRecord = "{ \"type\": \"abc\"}";
 
-    when(singerProtocolPredicate.test(Jsons.deserialize(invalidRecord))).thenReturn(true);
+    when(protocolPredicate.test(Jsons.deserialize(invalidRecord))).thenReturn(true);
 
-    final Stream<SingerMessage> messageStream = stringToSingerMessageStream(invalidRecord);
+    final Stream<AirbyteMessage> messageStream = stringToMessageStream(invalidRecord);
 
     assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
     verify(logger).error(anyString(), anyString());
@@ -113,22 +125,22 @@ class DefaultSingerStreamFactoryTest {
   @Test
   @Disabled
   public void testMissingNewLineBetweenValidRecords() {
-    final SingerMessage record1 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
-    final SingerMessage record2 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
+    final AirbyteMessage record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
+    final AirbyteMessage record2 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
 
     final String inputString = Jsons.serialize(record1) + Jsons.serialize(record2);
 
-    final Stream<SingerMessage> messageStream = stringToSingerMessageStream(inputString);
+    final Stream<AirbyteMessage> messageStream = stringToMessageStream(inputString);
 
     assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
     verify(logger).error(anyString(), anyString());
     verifyNoMoreInteractions(logger);
   }
 
-  private Stream<SingerMessage> stringToSingerMessageStream(String inputString) {
+  private Stream<AirbyteMessage> stringToMessageStream(String inputString) {
     InputStream inputStream = new ByteArrayInputStream(inputString.getBytes());
     final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-    return new DefaultSingerStreamFactory(singerProtocolPredicate, logger).create(bufferedReader);
+    return new DefaultAirbyteStreamFactory(protocolPredicate, logger).create(bufferedReader);
   }
 
 }
