@@ -215,7 +215,7 @@ public class SingerPostgresSourceTest {
     Schema expected = Jsons.deserialize(MoreResources.readResource("schema.json"), Schema.class);
     assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(expected, run.getOutput().get().getCatalog());
+    assertEquals(expected, run.getOutput().get().getSchema());
   }
 
   @Test

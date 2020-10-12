@@ -116,7 +116,7 @@ class IntegrationRunnerTest {
   @Test
   void testDiscover() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.discover(Path.of(configPath.toString()));
-    final StandardDiscoverCatalogOutput output = new StandardDiscoverCatalogOutput().withCatalog(SCHEMA);
+    final StandardDiscoverCatalogOutput output = new StandardDiscoverCatalogOutput().withSchema(SCHEMA);
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.discover(CONFIG)).thenReturn(output);

@@ -134,7 +134,7 @@ public class SchedulerHandler {
 
     final StandardDiscoverCatalogOutput output = job.getOutput().map(JobOutput::getDiscoverSchema)
         // the job should always produce an output, but if does not, we fall back on an empty schema.
-        .orElse(new StandardDiscoverCatalogOutput().withCatalog(new Schema().withStreams(Collections.emptyList())));
+        .orElse(new StandardDiscoverCatalogOutput().withSchema(new Schema().withStreams(Collections.emptyList())));
 
     LOGGER.debug("output = " + output);
 
@@ -145,7 +145,7 @@ public class SchedulerHandler {
         .put("job_id", jobId)
         .build());
 
-    return new SourceImplementationDiscoverSchemaRead().schema(SchemaConverter.toApiSchema(output.getCatalog()));
+    return new SourceImplementationDiscoverSchemaRead().schema(SchemaConverter.toApiSchema(output.getSchema()));
   }
 
   public SourceSpecificationRead getSourceSpecification(SourceIdRequestBody sourceIdRequestBody)

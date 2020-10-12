@@ -5,9 +5,9 @@ title: StandardDiscoverCatalogOuutput
 description: describes the standard output for any discovery run.
 type: object
 required:
-  - catalog
+  - schema
 additionalProperties: false
 properties:
-  catalog:
+  schema:
     description: describes the available schemas.
     "$ref": StandardDataSchema.yaml#/definitions/schema
