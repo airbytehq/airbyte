@@ -60,7 +60,6 @@ public class JsonSchemas {
     try {
       final List<String> filenames = MoreResources.listResources(klass, resourceDir)
           .map(p -> p.getFileName().toString())
-          .peek(x -> System.out.println("x = " + x))
           .filter(p -> p.endsWith(".yaml"))
           .collect(Collectors.toList());
 
