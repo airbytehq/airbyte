@@ -22,45 +22,28 @@
  * SOFTWARE.
  */
 
-package io.airbyte.config;
+package io.airbyte.singer;
 
-import io.airbyte.commons.json.JsonSchemas;
-import java.io.File;
-import java.nio.file.Path;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public enum ConfigSchema {
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import org.junit.jupiter.api.Test;
 
-  // workspace
-  STANDARD_WORKSPACE("StandardWorkspace.yaml"),
+public class SingerProtocolSchemaTest {
 
-  // source
-  STANDARD_SOURCE("StandardSource.yaml"),
-  SOURCE_CONNECTION_IMPLEMENTATION("SourceConnectionImplementation.yaml"),
-
-  // destination
-  STANDARD_DESTINATION("StandardDestination.yaml"),
-  DESTINATION_CONNECTION_IMPLEMENTATION("DestinationConnectionImplementation.yaml"),
-
-  // specs
-  CONNECTOR_SPECIFICATION("ConnectorSpecification.yaml"),
-
-  // sync
-  STANDARD_SYNC("StandardSync.yaml"),
-  STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml"),
-  STANDARD_SYNC_SCHEDULE("StandardSyncSchedule.yaml"),
-
-  STATE("State.yaml");
-
-  static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("types", ConfigSchema.class);
-
-  private final String schemaFilename;
-
-  ConfigSchema(final String schemaFilename) {
-    this.schemaFilename = schemaFilename;
+  @Test
+  void testFile() throws IOException {
+    final String schema = Files.readString(SingerProtocolSchema.SINGER_MESSAGE.getFile().toPath(), StandardCharsets.UTF_8);
+    assertTrue(schema.contains("title"));
   }
 
-  public File getFile() {
-    return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
+  @Test
+  void testPrepareKnownSchemas() {
+    for (SingerProtocolSchema value : SingerProtocolSchema.values()) {
+      assertTrue(Files.exists(value.getFile().toPath()));
+    }
   }
 
 }

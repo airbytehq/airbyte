@@ -22,40 +22,22 @@
  * SOFTWARE.
  */
 
-package io.airbyte.config;
+package io.airbyte.protocol.models;
 
 import io.airbyte.commons.json.JsonSchemas;
 import java.io.File;
 import java.nio.file.Path;
 
-public enum ConfigSchema {
+public enum AirbyteProtocolSchema {
 
-  // workspace
-  STANDARD_WORKSPACE("StandardWorkspace.yaml"),
+  MESSAGE("airbyte_message.yaml"),
+  CATALOG("airbyte_catalog.yaml");
 
-  // source
-  STANDARD_SOURCE("StandardSource.yaml"),
-  SOURCE_CONNECTION_IMPLEMENTATION("SourceConnectionImplementation.yaml"),
-
-  // destination
-  STANDARD_DESTINATION("StandardDestination.yaml"),
-  DESTINATION_CONNECTION_IMPLEMENTATION("DestinationConnectionImplementation.yaml"),
-
-  // specs
-  CONNECTOR_SPECIFICATION("ConnectorSpecification.yaml"),
-
-  // sync
-  STANDARD_SYNC("StandardSync.yaml"),
-  STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml"),
-  STANDARD_SYNC_SCHEDULE("StandardSyncSchedule.yaml"),
-
-  STATE("State.yaml");
-
-  static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("types", ConfigSchema.class);
+  static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("airbyte_protocol", AirbyteProtocolSchema.class);
 
   private final String schemaFilename;
 
-  ConfigSchema(final String schemaFilename) {
+  AirbyteProtocolSchema(final String schemaFilename) {
     this.schemaFilename = schemaFilename;
   }
 

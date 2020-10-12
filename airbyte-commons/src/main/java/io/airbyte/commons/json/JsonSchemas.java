@@ -26,6 +26,13 @@ package io.airbyte.commons.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.resources.MoreResources;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class JsonSchemas {
 
@@ -40,6 +47,33 @@ public class JsonSchemas {
     if (jsonNode.get("type") != null && !jsonNode.get("type").isArray()) {
       final JsonNode type = jsonNode.get("type");
       ((ObjectNode) jsonNode).putArray("type").add(type);
+    }
+  }
+
+  /*
+   * JsonReferenceProcessor relies on all of the json in consumes being in a file system (not in a
+   * jar). This method copies all of the json configs out of the jar into a temporary directory so
+   * that JsonReferenceProcessor can find them.
+   */
+  @SuppressWarnings("UnstableApiUsage")
+  public static <T> Path prepareSchemas(final String resourceDir, Class<T> klass) {
+    try {
+      final List<String> filenames = MoreResources.listResources(klass, resourceDir)
+          .map(p -> p.getFileName().toString())
+          .filter(p -> p.endsWith(".yaml"))
+          .collect(Collectors.toList());
+
+      final Path configRoot = Files.createTempDirectory("schemas");
+      for (String filename : filenames) {
+        IOs.writeFile(
+            configRoot,
+            filename,
+            MoreResources.readResource(String.format("%s/%s", resourceDir, filename)));
+      }
+
+      return configRoot;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
