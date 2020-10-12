@@ -29,7 +29,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
-import io.airbyte.config.JobDiscoverSchemaConfig;
+import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
@@ -116,13 +116,13 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
         JobConfig.ConfigType.DISCOVER_SCHEMA,
         sourceImplementation.getSourceImplementationId().toString());
 
-    final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig()
+    final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
         .withConnectionConfiguration(sourceImplementation.getConfiguration())
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA)
-        .withDiscoverSchema(jobDiscoverSchemaConfig);
+        .withDiscoverCatalog(jobDiscoverCatalogConfig);
 
     return createPendingJob(scope, jobConfig);
   }

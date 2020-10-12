@@ -96,7 +96,7 @@ class WorkerRunFactoryTest {
   @Test
   void testSchema() {
     when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.DISCOVER_SCHEMA);
-    when(job.getConfig().getDiscoverSchema().getConnectionConfiguration()).thenReturn(CONFIG);
+    when(job.getConfig().getDiscoverCatalog().getConnectionConfiguration()).thenReturn(CONFIG);
 
     factory.create(job);
 
