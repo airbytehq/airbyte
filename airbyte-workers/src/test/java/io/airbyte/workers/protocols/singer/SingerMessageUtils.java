@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
