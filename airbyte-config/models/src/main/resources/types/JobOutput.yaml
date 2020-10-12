@@ -12,12 +12,12 @@ properties:
     type: string
     enum:
       - checkConnection
-      - discoverSchema
+      - discoverCatalog
       - getSpec
       - sync
   checkConnection:
     "$ref": StandardCheckConnectionOutput.yaml
-  discoverSchema:
+  discoverCatalog:
     "$ref": StandardDiscoverCatalogOutput.yaml
   getSpec:
     "$ref": StandardGetSpecOutput.yaml
