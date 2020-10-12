@@ -88,7 +88,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       return new OutputAndStatus<>(
           SUCCESSFUL,
           new StandardDiscoverCatalogOutput()
-              .withDeprecatedCatalog(SingerCatalogConverters.toAirbyteSchema(catalog)));
+              .withSchema(SingerCatalogConverters.toAirbyteSchema(catalog)));
     } else {
       LOGGER.debug("Discovery job subprocess finished with exit code {}", exitCode);
       return new OutputAndStatus<>(FAILED);
