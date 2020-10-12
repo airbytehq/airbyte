@@ -78,7 +78,7 @@ const SourceStep: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      specificationId: sourceSpecification?.sourceSpecificationId
+      specificationId: sourceSpecification?.sourceId
     });
   };
 

@@ -2,7 +2,6 @@ import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
 export interface DestinationSpecification {
-  destinationSpecificationId: string;
   destinationId: string;
   connectionSpecification: {
     properties: any;
@@ -16,15 +15,8 @@ export type specification = {
   required: [string];
 };
 
-export interface DestinationSpecification {
-  destinationSpecificationId: string;
-  destinationId: string;
-  connectionSpecification: specification;
-}
-
 export default class DestinationSpecificationResource extends BaseResource
   implements DestinationSpecification {
-  readonly destinationSpecificationId: string = "";
   readonly destinationId: string = "";
   readonly documentationUrl: string = "";
   readonly connectionSpecification: specification = {
@@ -33,7 +25,7 @@ export default class DestinationSpecificationResource extends BaseResource
   };
 
   pk() {
-    return this.destinationSpecificationId?.toString();
+    return this.destinationId?.toString();
   }
 
   static urlRoot = "destination_specifications";

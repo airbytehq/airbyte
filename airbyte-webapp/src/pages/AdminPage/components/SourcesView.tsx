@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import { useFetcher, useResource } from "rest-hooks";
@@ -9,7 +9,7 @@ import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
 import ConnectionResource from "../../../core/resources/Connection";
 import config from "../../../config";
-import { Block, Title, FormContent } from "./PageComponents";
+import { Block, Title, FormContent, FormContentTitle } from "./PageComponents";
 import SourceResource from "../../../core/resources/Source";
 
 const SourcesView: React.FC = () => {
@@ -21,6 +21,8 @@ const SourcesView: React.FC = () => {
     workspaceId: config.ui.workspaceId
   });
 
+  const [feedbackList, setFeedbackList] = useState<any>({});
+
   const updateSource = useFetcher(SourceResource.updateShape());
   const onUpdateVersion = async ({
     id,
@@ -29,14 +31,18 @@ const SourcesView: React.FC = () => {
     id: string;
     version: string;
   }) => {
-    await updateSource(
-      {},
-      {
-        sourceId: id,
-        defaultDockerImageVersion: version
-      }
-    );
-    // TODO: show feedback (success or fail)
+    try {
+      await updateSource(
+        {},
+        {
+          sourceId: id,
+          dockerImageTag: version
+        }
+      );
+      setFeedbackList({ ...feedbackList, [id]: "success" });
+    } catch (e) {
+      setFeedbackList({ ...feedbackList, [id]: "error" });
+    }
   };
 
   const columns = React.useMemo(
@@ -51,10 +57,13 @@ const SourcesView: React.FC = () => {
       },
       {
         Header: <FormattedMessage id="admin.image" />,
-        accessor: "defaultDockerRepository",
+        accessor: "dockerRepository",
         customWidth: 36,
-        Cell: ({ cell, row }: CellProps<{ imageLink: string }>) => (
-          <ImageCell imageName={cell.value} link={row.original.imageLink} />
+        Cell: ({ cell, row }: CellProps<{ documentationUrl: string }>) => (
+          <ImageCell
+            imageName={cell.value}
+            link={row.original.documentationUrl}
+          />
         )
       }
     ],
@@ -64,19 +73,24 @@ const SourcesView: React.FC = () => {
     () => [
       ...columns,
       {
-        Header: <FormattedMessage id="admin.version" />,
-        accessor: "defaultDockerImageVersion",
+        Header: (
+          <FormContentTitle>
+            <FormattedMessage id="admin.version" />
+          </FormContentTitle>
+        ),
+        accessor: "dockerImageTag",
         collapse: true,
         Cell: ({ cell, row }: CellProps<{ sourceId: string }>) => (
           <VersionCell
             version={cell.value}
             id={row.original.sourceId}
             onChange={onUpdateVersion}
+            feedback={feedbackList[row.original.sourceId]}
           />
         )
       }
     ],
-    [columns, onUpdateVersion]
+    [columns, feedbackList, onUpdateVersion]
   );
 
   const columnsAllSources = React.useMemo(
@@ -92,17 +106,23 @@ const SourcesView: React.FC = () => {
     [columns]
   );
 
-  const usedSources = connections.map(item => {
-    const sourceInfo = sources.find(
-      source => source.sourceId === item.source?.sourceId
-    );
-    return {
-      name: item.source?.sourceName,
-      sourceId: item.source?.sourceId,
-      defaultDockerRepository: sourceInfo?.defaultDockerRepository,
-      defaultDockerImageVersion: sourceInfo?.defaultDockerImageVersion
-    };
-  });
+  const usedSources = useMemo(
+    () =>
+      connections.map(item => {
+        const sourceInfo = sources.find(
+          source => source.sourceId === item.source?.sourceId
+        );
+        return {
+          name: item.source?.sourceName,
+          sourceId: item.source?.sourceId,
+          dockerRepository: sourceInfo?.dockerRepository,
+          dockerImageTag: sourceInfo?.dockerImageTag,
+          documentationUrl: sourceInfo?.documentationUrl,
+          feedback: ""
+        };
+      }),
+    [connections, sources]
+  );
 
   return (
     <>

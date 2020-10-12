@@ -86,7 +86,7 @@ const DestinationStep: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      specificationId: destinationSpecification?.destinationSpecificationId
+      specificationId: destinationSpecification?.destinationId
     });
   };
 

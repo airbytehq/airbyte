@@ -102,7 +102,7 @@ const CreateSourcePage: React.FC = () => {
         {
           name: values.name,
           workspaceId: config.ui.workspaceId,
-          sourceSpecificationId: values.specificationId,
+          sourceId: values.specificationId,
           connectionConfiguration: values.connectionConfiguration
         }
       );

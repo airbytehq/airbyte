@@ -12,7 +12,12 @@ const Block = styled.div`
 
 const FormContent = styled.div`
   width: 270px;
-  margin: -10px 0;
+  margin: -10px 0 -10px 118px;
+  position: relative;
 `;
 
-export { Title, Block, FormContent };
+const FormContentTitle = styled(FormContent)`
+  margin: 0 0 0 118px;
+`;
+
+export { Title, Block, FormContent, FormContentTitle };

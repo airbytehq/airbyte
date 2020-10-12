@@ -5,7 +5,6 @@ export interface DestinationImplementation {
   destinationImplementationId: string;
   name: string;
   workspaceId: string;
-  destinationSpecificationId: string;
   destinationId: string;
   connectionConfiguration: any; // TODO: fix type
 }
@@ -16,7 +15,6 @@ export default class DestinationImplementationResource extends BaseResource
   readonly name: string = "";
   readonly workspaceId: string = "";
   readonly destinationId: string = "";
-  readonly destinationSpecificationId: string = "";
   readonly connectionConfiguration: any = [];
 
   pk() {

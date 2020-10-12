@@ -12,7 +12,7 @@ import config from "../../../config";
 
 export type IProps = {
   onClose: () => void;
-  onSubmit: (source: { name: string; defaultDockerRepository: string }) => void;
+  onSubmit: (source: { name: string; dockerRepository: string }) => void;
 };
 
 const Content = styled.div`
@@ -47,7 +47,7 @@ const DocLink = styled(Link).attrs({ as: "a" })`
 
 const validationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),
-  defaultDockerRepository: yup.string().required("form.empty.error")
+  dockerRepository: yup.string().required("form.empty.error")
 });
 
 const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
@@ -62,7 +62,7 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
         <Formik
           initialValues={{
             name: "",
-            defaultDockerRepository: ""
+            dockerRepository: ""
           }}
           validateOnBlur={true}
           validateOnChange={true}
@@ -93,7 +93,7 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
                 </Field>
               </FieldContainer>
               <FieldContainer>
-                <Field name="defaultDockerRepository">
+                <Field name="dockerRepository">
                   {({ field }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}

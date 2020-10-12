@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
 
@@ -23,6 +23,7 @@ const DestinationsView: React.FC = () => {
     }
   );
 
+  const [feedback, setFeedback] = useState(""); // only one destination !
   // Now we have only one destination. If we support multiple destinations we will change it
   const currentDestination = destinationsImplementation.destinations[0];
 
@@ -34,14 +35,18 @@ const DestinationsView: React.FC = () => {
     id: string;
     version: string;
   }) => {
-    await updateDestination(
-      {},
-      {
-        destinationId: id,
-        defaultDockerImageVersion: version
-      }
-    );
-    // TODO: show feedback (success or fail)
+    try {
+      await updateDestination(
+        {},
+        {
+          destinationId: id,
+          dockerImageTag: version
+        }
+      );
+      setFeedback("success");
+    } catch (e) {
+      setFeedback("error");
+    }
   };
 
   const columns = React.useMemo(
@@ -62,26 +67,30 @@ const DestinationsView: React.FC = () => {
       ...columns,
       {
         Header: <FormattedMessage id="admin.codeSource" />,
-        accessor: "defaultDockerRepository",
+        accessor: "dockerRepository",
         customWidth: 36,
-        Cell: ({ cell, row }: CellProps<{ imageLink: string }>) => (
-          <ImageCell imageName={cell.value} link={row.original.imageLink} />
+        Cell: ({ cell, row }: CellProps<{ documentationUrl: string }>) => (
+          <ImageCell
+            imageName={cell.value}
+            link={row.original.documentationUrl}
+          />
         )
       },
       {
         Header: <FormattedMessage id="admin.version" />,
-        accessor: "defaultDockerImageVersion",
+        accessor: "dockerImageTag",
         collapse: true,
         Cell: ({ cell, row }: CellProps<{ destinationId: string }>) => (
           <VersionCell
             version={cell.value}
             id={row.original.destinationId}
             onChange={onUpdateVersion}
+            feedback={feedback}
           />
         )
       }
     ],
-    [columns, onUpdateVersion]
+    [columns, feedback, onUpdateVersion]
   );
 
   const columnsAllDestinations = React.useMemo(
@@ -89,15 +98,18 @@ const DestinationsView: React.FC = () => {
       ...columns,
       {
         Header: <FormattedMessage id="admin.image" />,
-        accessor: "defaultDockerRepository",
+        accessor: "dockerRepository",
         customWidth: 36,
-        Cell: ({ cell, row }: CellProps<{ imageLink: string }>) => (
-          <ImageCell imageName={cell.value} link={row.original.imageLink} />
+        Cell: ({ cell, row }: CellProps<{ documentationUrl: string }>) => (
+          <ImageCell
+            imageName={cell.value}
+            link={row.original.documentationUrl}
+          />
         )
       },
       {
         Header: "",
-        accessor: "defaultDockerImageVersion",
+        accessor: "dockerImageTag",
         collapse: true,
         Cell: () => <FormContent />
       }

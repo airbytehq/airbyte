@@ -17,7 +17,6 @@ import PrepareDropDownLists from "./components/PrepareDropDownLists";
 import FrequencyConfig from "../../data/FrequencyConfig.json";
 import { Routes } from "../routes";
 import useRouter from "../../components/hooks/useRouterHook";
-import { Source } from "../../core/resources/Source";
 import { SyncSchema } from "../../core/resources/Schema";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import WorkspaceResource from "../../core/resources/Workspace";
@@ -118,7 +117,7 @@ const OnboardingPage: React.FC = () => {
         {
           name: values.name,
           workspaceId: config.ui.workspaceId,
-          sourceSpecificationId: values.specificationId,
+          sourceId: values.specificationId,
           connectionConfiguration: values.connectionConfiguration
         },
         [
@@ -182,7 +181,7 @@ const OnboardingPage: React.FC = () => {
         {
           name: values.name,
           workspaceId: config.ui.workspaceId,
-          destinationSpecificationId: values.specificationId,
+          destinationId: values.specificationId,
           connectionConfiguration: values.connectionConfiguration
         },
         [
@@ -227,7 +226,10 @@ const OnboardingPage: React.FC = () => {
   const onSubmitConnectionStep = async (values: {
     frequency: string;
     syncSchema: SyncSchema;
-    source?: Source;
+    source?: {
+      name: string;
+      sourceId: string;
+    };
   }) => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency

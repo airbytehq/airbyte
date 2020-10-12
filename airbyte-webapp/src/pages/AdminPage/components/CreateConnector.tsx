@@ -18,7 +18,7 @@ const CreateConnector: React.FC = () => {
   const createSource = useFetcher(SourceResource.createShape());
   const onSubmit = async (source: {
     name: string;
-    defaultDockerRepository: string;
+    dockerRepository: string;
   }) => {
     const result = await createSource({}, source, [
       [

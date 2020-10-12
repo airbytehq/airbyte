@@ -11,6 +11,7 @@ type IProps = {
   version: string;
   id: string;
   onChange: ({ version, id }: { version: string; id: string }) => void;
+  feedback?: "success" | string;
 };
 
 const VersionInput = styled(Input)`
@@ -18,7 +19,25 @@ const VersionInput = styled(Input)`
   margin-right: 19px;
 `;
 
-const VersionCell: React.FC<IProps> = ({ version, id, onChange }) => {
+const SuccessMessage = styled.div`
+  color: ${({ theme }) => theme.successColor};
+  font-size: 12px;
+  line-height: 18px;
+  position: absolute;
+  text-align: right;
+  width: 105px;
+  left: -118px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  white-space: break-spaces;
+`;
+
+const ErrorMessage = styled(SuccessMessage)`
+  color: ${({ theme }) => theme.dangerColor};
+`;
+
+const VersionCell: React.FC<IProps> = ({ version, id, onChange, feedback }) => {
   return (
     <FormContent>
       <Formik
@@ -32,6 +51,15 @@ const VersionCell: React.FC<IProps> = ({ version, id, onChange }) => {
       >
         {({ isSubmitting, dirty }) => (
           <Form>
+            {!feedback || dirty ? null : feedback === "success" ? (
+              <SuccessMessage>
+                <FormattedMessage id="form.savedChange" />
+              </SuccessMessage>
+            ) : (
+              <ErrorMessage>
+                <FormattedMessage id="form.someError" />
+              </ErrorMessage>
+            )}
             <Field name="version">
               {({ field }: FieldProps<string>) => (
                 <VersionInput {...field} type="text" autoComplete="off" />
