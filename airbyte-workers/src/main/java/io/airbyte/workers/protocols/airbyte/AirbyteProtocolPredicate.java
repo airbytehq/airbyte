@@ -26,7 +26,7 @@ package io.airbyte.workers.protocols.airbyte;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.JsonSchemaValidator;
-import io.airbyte.singer.SingerConfigSchema;
+import io.airbyte.protocol.models.AirbyteProtocolSchema;
 import java.util.function.Predicate;
 
 public class AirbyteProtocolPredicate implements Predicate<JsonNode> {
@@ -36,7 +36,7 @@ public class AirbyteProtocolPredicate implements Predicate<JsonNode> {
 
   public AirbyteProtocolPredicate() {
     jsonSchemaValidator = new JsonSchemaValidator();
-    schema = JsonSchemaValidator.getSchema(SingerConfigSchema.SINGER_MESSAGE.getFile());
+    schema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.MESSAGE.getFile());
   }
 
   @Override

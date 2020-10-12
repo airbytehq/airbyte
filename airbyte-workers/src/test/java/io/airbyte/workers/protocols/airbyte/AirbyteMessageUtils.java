@@ -37,17 +37,13 @@ public class AirbyteMessageUtils {
   public static AirbyteMessage createRecordMessage(final String tableName,
                                                    final JsonNode record,
                                                    final Instant timeExtracted) {
-    final AirbyteMessage airbyteMessage = new AirbyteMessage()
+
+    return new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withData(record)
-            .withStream(tableName));
-
-    if (timeExtracted != null) {
-      airbyteMessage.getRecord().setEmittedAt(timeExtracted.getEpochSecond());
-    }
-
-    return airbyteMessage;
+            .withStream(tableName)
+            .withEmittedAt(timeExtracted.getEpochSecond()));
   }
 
   public static AirbyteMessage createRecordMessage(final String tableName,
@@ -58,7 +54,7 @@ public class AirbyteMessageUtils {
 
   public static AirbyteMessage createRecordMessage(final String tableName,
                                                    final Map<String, String> record) {
-    return createRecordMessage(tableName, Jsons.jsonNode(record), null);
+    return createRecordMessage(tableName, Jsons.jsonNode(record), Instant.EPOCH);
   }
 
 }

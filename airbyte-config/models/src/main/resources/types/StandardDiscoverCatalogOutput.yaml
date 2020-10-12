@@ -8,7 +8,7 @@ required:
   - catalog
 additionalProperties: false
 properties:
-  deprecatedCatalog:
+  schema:
     description: describes the available schemas.
     "$ref": StandardDataSchema.yaml#/definitions/schema
   catalog:
