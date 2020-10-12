@@ -22,17 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols.singer;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+package io.airbyte.workers.protocols.airbyte;
 
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
@@ -40,11 +30,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardTapConfig;
-import io.airbyte.singer.SingerCatalog;
-import io.airbyte.singer.SingerMessage;
-import io.airbyte.singer.SingerStream;
-import io.airbyte.singer.SingerTableSchema;
-import io.airbyte.workers.DiscoverCatalogWorker;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.TestConfigHelpers;
@@ -65,46 +54,55 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DefaultSingerSourceTest {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+class DefaultAirbyteSourceTest {
 
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
-  private static final SingerCatalog SINGER_CATALOG = new SingerCatalog()
-      .withStreams(Collections.singletonList(new SingerStream()
-          .withStream("hudi:latest")
-          .withTapStreamId("workspace")
-          .withTableName(STREAM_NAME)
-          .withSchema(new SingerTableSchema())));
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
+      .withStreams(Collections.singletonList(
+          new AirbyteStream()
+              .withName("hudi:latest")
+              .withSchema(Jsons.deserialize("{}"))));
 
   private static final StandardTapConfig TAP_CONFIG = WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
   private static final StandardDiscoverCatalogInput DISCOVER_SCHEMA_INPUT = new StandardDiscoverCatalogInput()
       .withConnectionConfiguration(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration());
 
-  final List<SingerMessage> MESSAGES = Lists.newArrayList(
-      SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
-      SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
+  final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
+      AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
+      AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
 
   private Path jobRoot;
-  private DiscoverCatalogWorker discoverSchemaWorker;
+  private DefaultDiscoverCatalogWorker discoverSchemaWorker;
   private IntegrationLauncher integrationLauncher;
   private Process process;
-  private SingerStreamFactory singerStreamFactory;
+  private AirbyteStreamFactory streamFactory;
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
     jobRoot = Files.createTempDirectory("test");
 
-    discoverSchemaWorker = mock(DiscoverCatalogWorker.class);
+    discoverSchemaWorker = mock(DefaultDiscoverCatalogWorker.class);
     when(discoverSchemaWorker.run(
         DISCOVER_SCHEMA_INPUT,
-        jobRoot.resolve(DefaultSingerSource.DISCOVERY_DIR)))
-            .thenAnswer(invocation -> {
-              Files.writeString(
-                  jobRoot.resolve(DefaultSingerSource.DISCOVERY_DIR).resolve(WorkerConstants.CATALOG_JSON_FILENAME),
-                  Jsons.serialize(SINGER_CATALOG));
-              return new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverCatalogOutput());
-            });
+        jobRoot.resolve(DefaultAirbyteSource.DISCOVERY_DIR)))
+        .thenAnswer(invocation -> {
+          Files.writeString(
+              jobRoot.resolve(DefaultAirbyteSource.DISCOVERY_DIR).resolve(WorkerConstants.CATALOG_JSON_FILENAME),
+              Jsons.serialize(CATALOG));
+          return new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverCatalogOutput());
+        });
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class, RETURNS_DEEP_STUBS);
@@ -119,16 +117,16 @@ class DefaultSingerSourceTest {
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
 
-    singerStreamFactory = noop -> MESSAGES.stream();
+    streamFactory = noop -> MESSAGES.stream();
   }
 
   @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final SingerSource tap = new DefaultSingerSource(integrationLauncher, singerStreamFactory, discoverSchemaWorker);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, discoverSchemaWorker);
     tap.start(TAP_CONFIG, jobRoot);
 
-    final List<SingerMessage> messages = Lists.newArrayList();
+    final List<AirbyteMessage> messages = Lists.newArrayList();
 
     assertFalse(tap.isFinished());
     messages.add(tap.attemptRead().get());
@@ -148,7 +146,7 @@ class DefaultSingerSourceTest {
         Jsons.jsonNode(TAP_CONFIG.getState()),
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME)));
     assertEquals(
-        Jsons.jsonNode(SINGER_CATALOG),
+        Jsons.jsonNode(CATALOG),
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME)));
 
     assertEquals(MESSAGES, messages);
@@ -164,7 +162,7 @@ class DefaultSingerSourceTest {
 
   @Test
   public void testProcessFail() throws Exception {
-    final SingerSource tap = new DefaultSingerSource(integrationLauncher, singerStreamFactory, discoverSchemaWorker);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, discoverSchemaWorker);
     tap.start(TAP_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
@@ -176,7 +174,7 @@ class DefaultSingerSourceTest {
   public void testSchemaDiscoveryFail() {
     when(discoverSchemaWorker.run(any(), any())).thenReturn(new OutputAndStatus<>(JobStatus.FAILED));
 
-    final SingerSource tap = new DefaultSingerSource(integrationLauncher, singerStreamFactory, discoverSchemaWorker);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, discoverSchemaWorker);
     Assertions.assertThrows(WorkerException.class, () -> tap.start(TAP_CONFIG, jobRoot));
 
     assertFalse(Files.exists(jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME)));

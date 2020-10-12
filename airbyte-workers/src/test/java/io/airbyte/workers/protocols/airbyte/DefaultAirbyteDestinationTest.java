@@ -22,21 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols.singer;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+package io.airbyte.workers.protocols.airbyte;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardTargetConfig;
-import io.airbyte.singer.SingerMessage;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
@@ -53,7 +43,17 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DefaultSingerDestinationTest {
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+class DefaultAirbyteDestinationTest {
 
   private static final String JOB_ROOT_PREFIX = "workspace";
   private static final String STREAM_NAME = "user_preferences";
@@ -83,10 +83,10 @@ class DefaultSingerDestinationTest {
   @SuppressWarnings("BusyWait")
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final SingerDestination target = new DefaultSingerDestination(integrationLauncher);
+    final AirbyteDestination target = new DefaultAirbyteDestination(integrationLauncher);
     target.start(TARGET_CONFIG, jobRoot);
 
-    final SingerMessage recordMessage = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
+    final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
     target.accept(recordMessage);
 
     verify(outputStream, never()).close();
@@ -116,7 +116,7 @@ class DefaultSingerDestinationTest {
 
   @Test
   public void testCloseNotifiesLifecycle() throws Exception {
-    final SingerDestination target = new DefaultSingerDestination(integrationLauncher);
+    final AirbyteDestination target = new DefaultAirbyteDestination(integrationLauncher);
     target.start(TARGET_CONFIG, jobRoot);
 
     verify(outputStream, never()).close();
@@ -127,7 +127,7 @@ class DefaultSingerDestinationTest {
 
   @Test
   public void testProcessFailLifecycle() throws Exception {
-    final SingerDestination target = new DefaultSingerDestination(integrationLauncher);
+    final AirbyteDestination target = new DefaultAirbyteDestination(integrationLauncher);
     target.start(TARGET_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);

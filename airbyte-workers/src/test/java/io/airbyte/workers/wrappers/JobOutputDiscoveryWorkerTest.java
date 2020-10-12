@@ -49,7 +49,7 @@ public class JobOutputDiscoveryWorkerTest {
     Path jobRoot = Path.of("fakeroot");
     DiscoverCatalogWorker discoverWorker = mock(DiscoverCatalogWorker.class);
 
-    StandardDiscoverCatalogOutput output = new StandardDiscoverCatalogOutput().withCatalog(
+    StandardDiscoverCatalogOutput output = new StandardDiscoverCatalogOutput().withDeprecatedCatalog(
         new Schema().withStreams(Lists.newArrayList(new Stream().withName("table"))));
 
     when(discoverWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, output));

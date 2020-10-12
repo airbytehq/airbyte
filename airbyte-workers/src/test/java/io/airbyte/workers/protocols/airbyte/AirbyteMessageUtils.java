@@ -22,45 +22,42 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.protocols.airbyte;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.singer.SingerMessage;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.Optional;
 
-public class SingerMessageUtils {
+public class AirbyteMessageUtils {
 
-  @VisibleForTesting
-  static final DateTimeFormatter SINGER_DATETIME_FORMATTER =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.of("UTC"));
+  public static AirbyteMessage createRecordMessage(final String tableName,
+                                                   final JsonNode record,
+                                                   final Instant timeExtracted) {
+    final AirbyteMessage airbyteMessage = new AirbyteMessage()
+        .withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withData(record)
+            .withStream(tableName));
 
-  public static SingerMessage createRecordMessage(String tableName,
-                                                  JsonNode record,
-                                                  Instant timeExtracted) {
-    final SingerMessage singerMessage = new SingerMessage()
-        .withType(SingerMessage.Type.RECORD)
-        .withRecord(record)
-        .withStream(tableName);
+    if (timeExtracted != null) {
+      airbyteMessage.getRecord().setEmittedAt(timeExtracted.getEpochSecond());
+    }
 
-    Optional.ofNullable(timeExtracted)
-        .ifPresent(
-            instant -> singerMessage.withTimeExtracted(SINGER_DATETIME_FORMATTER.format(instant)));
-
-    return singerMessage;
+    return airbyteMessage;
   }
 
-  public static SingerMessage createRecordMessage(String tableName, String key, String value) {
+  public static AirbyteMessage createRecordMessage(final String tableName,
+                                                   final String key,
+                                                   final String value) {
     return createRecordMessage(tableName, ImmutableMap.of(key, value));
   }
 
-  public static SingerMessage createRecordMessage(String tableName, Map<String, String> record) {
+  public static AirbyteMessage createRecordMessage(final String tableName,
+                                                   final Map<String, String> record) {
     return createRecordMessage(tableName, Jsons.jsonNode(record), null);
   }
 

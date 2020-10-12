@@ -22,16 +22,18 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols.singer;
+package io.airbyte.workers.protocols.airbyte;
+
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.workers.protocols.singer.SingerMessageUtils;
+import io.airbyte.workers.protocols.singer.SingerProtocolPredicate;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.airbyte.commons.json.Jsons;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-class SingerProtocolPredicateTest {
+class AirbyteProtocolPredicateTest {
 
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";

@@ -35,6 +35,7 @@ import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.workers.protocols.singer.SingerDestination;
 import io.airbyte.workers.protocols.singer.SingerMessageTracker;
+import io.airbyte.workers.protocols.singer.SingerMessageUtils;
 import io.airbyte.workers.protocols.singer.SingerSource;
 import java.nio.file.Path;
 import java.util.Optional;
