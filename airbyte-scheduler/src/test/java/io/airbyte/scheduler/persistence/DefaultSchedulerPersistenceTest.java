@@ -344,7 +344,7 @@ class DefaultSchedulerPersistenceTest {
         DESTINATION_IMAGE_NAME);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
-    final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA);
+    final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG);
     schedulerPersistence.writeOutput(jobId, jobOutput);
 
     final Job updated = schedulerPersistence.getJob(jobId);

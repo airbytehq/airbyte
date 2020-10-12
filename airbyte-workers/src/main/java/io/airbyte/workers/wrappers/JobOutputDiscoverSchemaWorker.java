@@ -34,7 +34,7 @@ public class JobOutputDiscoverSchemaWorker extends OutputConvertingWorker<Standa
   public JobOutputDiscoverSchemaWorker(DiscoverCatalogWorker innerWorker) {
     super(
         innerWorker,
-        output -> new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA).withDiscoverSchema(output));
+        output -> new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withDiscoverCatalog(output));
   }
 
 }

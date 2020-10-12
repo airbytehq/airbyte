@@ -132,7 +132,7 @@ public class SchedulerHandler {
     LOGGER.debug("jobId = " + jobId);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
-    final StandardDiscoverCatalogOutput output = job.getOutput().map(JobOutput::getDiscoverSchema)
+    final StandardDiscoverCatalogOutput output = job.getOutput().map(JobOutput::getDiscoverCatalog)
         // the job should always produce an output, but if does not, we fall back on an empty schema.
         .orElse(new StandardDiscoverCatalogOutput().withSchema(new Schema().withStreams(Collections.emptyList())));
 
