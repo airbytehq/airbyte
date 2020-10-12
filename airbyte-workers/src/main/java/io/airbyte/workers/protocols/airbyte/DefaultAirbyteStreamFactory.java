@@ -40,9 +40,9 @@ import org.slf4j.LoggerFactory;
  * dropped. Each record MUST be new line separated.
  *
  * <p>
- * If a line starts with a AirbyteMessage and then has other characters after it, that AirbyteMessage
- * will still be parsed. If there are multiple AirbyteMessage records on the same line, only the
- * first will be parsed.
+ * If a line starts with a AirbyteMessage and then has other characters after it, that
+ * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
+ * line, only the first will be parsed.
  */
 public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
