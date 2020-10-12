@@ -38,11 +38,11 @@ import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.DefaultSyncWorker;
 import io.airbyte.workers.GetSpecWorker;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.process.SingerIntegrationLauncher;
-import io.airbyte.workers.protocols.singer.DefaultSingerDestination;
-import io.airbyte.workers.protocols.singer.DefaultSingerSource;
-import io.airbyte.workers.protocols.singer.SingerMessageTracker;
+import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
@@ -91,7 +91,7 @@ public class WorkerRunFactory {
             checkConnectionInput,
             new JobOutputCheckConnectionWorker(
                 new DefaultCheckConnectionWorker(new DefaultDiscoverCatalogWorker(
-                    new SingerIntegrationLauncher(
+                    new AirbyteIntegrationLauncher(
                         job.getConfig().getCheckConnection().getDockerImage(),
                         pbf)))));
       }
@@ -101,34 +101,34 @@ public class WorkerRunFactory {
             jobRoot,
             discoverSchemaInput,
             new JobOutputDiscoverSchemaWorker(
-                new DefaultDiscoverCatalogWorker(new SingerIntegrationLauncher(
+                new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(
                     job.getConfig().getDiscoverSchema().getDockerImage(),
                     pbf))));
       }
       case SYNC -> {
         final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
         final DefaultDiscoverCatalogWorker discoverSchemaWorker = new DefaultDiscoverCatalogWorker(
-            new SingerIntegrationLauncher(job.getConfig().getSync().getSourceDockerImage(), pbf));
+            new AirbyteIntegrationLauncher(job.getConfig().getSync().getSourceDockerImage(), pbf));
         return creator.create(
             jobRoot,
             syncInput,
             new JobOutputSyncWorker(
                 new DefaultSyncWorker<>(
-                    new DefaultSingerSource(
-                        new SingerIntegrationLauncher(
+                    new DefaultAirbyteSource(
+                        new AirbyteIntegrationLauncher(
                             job.getConfig().getSync().getSourceDockerImage(),
                             pbf),
                         discoverSchemaWorker),
-                    new DefaultSingerDestination(
-                        new SingerIntegrationLauncher(
+                    new DefaultAirbyteDestination(
+                        new AirbyteIntegrationLauncher(
                             job.getConfig().getSync().getDestinationDockerImage(),
                             pbf)),
-                    new SingerMessageTracker())));
+                    new AirbyteMessageTracker())));
       }
       case GET_SPEC -> {
         final JobGetSpecConfig getSpecInput = job.getConfig().getGetSpec();
         final GetSpecWorker worker = new DefaultGetSpecWorker(
-            new SingerIntegrationLauncher(
+            new AirbyteIntegrationLauncher(
                 job.getConfig().getGetSpec().getDockerImage(),
                 pbf));
         return creator.create(
