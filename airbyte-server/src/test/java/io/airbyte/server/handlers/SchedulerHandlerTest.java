@@ -178,6 +178,25 @@ class SchedulerHandlerTest {
   }
 
   @Test
+  public void testGetConnectorSpec() throws IOException, URISyntaxException {
+    when(schedulerPersistence.createGetSpecJob(SOURCE_DOCKER_IMAGE)).thenReturn(JOB_ID);
+    when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+    StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
+        new ConnectorSpecification()
+            .withDocumentationUrl(new URI("https://google.com"))
+            .withChangelogUrl(new URI("https://google.com"))
+            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
+    JobOutput jobOutput = mock(JobOutput.class);
+    when(jobOutput.getGetSpec()).thenReturn(specOutput);
+    when(completedJob.getOutput()).thenReturn(Optional.of(jobOutput));
+
+    schedulerHandler.getConnectorSpecification(SOURCE_DOCKER_IMAGE);
+
+    verify(schedulerPersistence).createGetSpecJob(SOURCE_DOCKER_IMAGE);
+    verify(schedulerPersistence, atLeast(2)).getJob(JOB_ID);
+  }
+
+  @Test
   void testCheckDestinationImplementationConnection() throws IOException, JsonValidationException, ConfigNotFoundException {
     DestinationConnectionImplementation destinationImpl = DestinationImplementationHelpers.generateDestinationImplementation(UUID.randomUUID());
     final DestinationImplementationIdRequestBody request =
