@@ -30,29 +30,32 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
-import io.airbyte.singer.SingerMessage;
-import io.airbyte.workers.protocols.singer.SingerMessageTracker;
-import io.airbyte.workers.protocols.singer.SingerTap;
-import io.airbyte.workers.protocols.singer.SingerTarget;
+import io.airbyte.workers.protocols.Destination;
+import io.airbyte.workers.protocols.MessageTracker;
+import io.airbyte.workers.protocols.Source;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingerSyncWorker implements SyncWorker {
+public class DefaultSyncWorker<T> implements SyncWorker {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerSyncWorker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSyncWorker.class);
 
-  private final SingerTap singerTap;
-  private final SingerTarget singerTarget;
+  private final Source<T> source;
+  private final Destination<T> destination;
+  private final MessageTracker<T> messageTracker;
 
   private final AtomicBoolean cancelled;
 
-  public SingerSyncWorker(SingerTap singerTap,
-                          SingerTarget singerTarget) {
-    this.singerTap = singerTap;
-    this.singerTarget = singerTarget;
+  public DefaultSyncWorker(final Source<T> source,
+                           final Destination<T> destination,
+                           final MessageTracker<T> messageTracker) {
+    this.source = source;
+    this.destination = destination;
+    this.messageTracker = messageTracker;
+
     this.cancelled = new AtomicBoolean(false);
   }
 
@@ -63,23 +66,21 @@ public class SingerSyncWorker implements SyncWorker {
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
     final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
 
-    final SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
+    try (destination; source) {
 
-    try (singerTarget; singerTap) {
+      destination.start(targetConfig, jobRoot);
+      source.start(tapConfig, jobRoot);
 
-      singerTarget.start(targetConfig, jobRoot);
-      singerTap.start(tapConfig, jobRoot);
-
-      while (!cancelled.get() && !singerTap.isFinished()) {
-        final Optional<SingerMessage> maybeMessage = singerTap.attemptRead();
+      while (!cancelled.get() && !source.isFinished()) {
+        final Optional<T> maybeMessage = source.attemptRead();
         if (maybeMessage.isPresent()) {
-          final SingerMessage message = maybeMessage.get();
-          singerMessageTracker.accept(message);
-          singerTarget.accept(message);
+          final T message = maybeMessage.get();
+          messageTracker.accept(message);
+          destination.accept(message);
         }
       }
 
-      singerTarget.notifyEndOfStream();
+      destination.notifyEndOfStream();
 
     } catch (Exception e) {
       LOGGER.error("Sync worker failed.", e);
@@ -88,15 +89,15 @@ public class SingerSyncWorker implements SyncWorker {
     }
 
     StandardSyncSummary summary = new StandardSyncSummary()
-        .withRecordsSynced(singerMessageTracker.getRecordCount())
+        .withRecordsSynced(messageTracker.getRecordCount())
         .withStartTime(startTime)
         .withEndTime(System.currentTimeMillis());
 
     final StandardSyncOutput output = new StandardSyncOutput().withStandardSyncSummary(summary);
-    singerMessageTracker.getOutputState().ifPresent(singerState -> {
+    messageTracker.getOutputState().ifPresent(capturedState -> {
       final State state = new State()
           .withConnectionId(tapConfig.getStandardSync().getConnectionId())
-          .withState(singerState);
+          .withState(capturedState);
       output.withState(state);
     });
 

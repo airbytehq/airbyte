@@ -28,6 +28,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.workers.SingerMessageUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
