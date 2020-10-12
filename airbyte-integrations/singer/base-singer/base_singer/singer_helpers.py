@@ -75,7 +75,10 @@ class SingerHelper:
                                 # todo: handle stream designation
                                 # todo: check that messages match the discovered schema
                                 stream_name = transformed_json["stream"]
-                                out_record = AirbyteRecordMessage(stream=stream_name, data=transformed_json["record"], emitted_at=str(datetime.now()))
+                                out_record = AirbyteRecordMessage(
+                                    stream=stream_name,
+                                    data=transformed_json["record"],
+                                    emitted_at=int(datetime.now().timestamp()) * 1000)
                                 out_message = AirbyteMessage(type="RECORD", record=out_record)
                                 yield transform(out_message)
                     elif out_line:
