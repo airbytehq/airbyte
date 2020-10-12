@@ -5,7 +5,7 @@ title: StandardDiscoverCatalogOutput
 description: describes the standard output for any discovery run.
 type: object
 required:
-  - catalog
+#  - catalog
 additionalProperties: false
 properties:
   schema:

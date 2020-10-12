@@ -25,8 +25,6 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.workers.protocols.singer.SingerMessageUtils;
-import io.airbyte.workers.protocols.singer.SingerProtocolPredicate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
