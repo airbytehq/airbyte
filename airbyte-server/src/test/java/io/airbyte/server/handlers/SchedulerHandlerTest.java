@@ -124,6 +124,7 @@ class SchedulerHandlerTest {
     SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(UUID.randomUUID());
     when(configRepository.getStandardSource(sourceIdRequestBody.getSourceId()))
         .thenReturn(new StandardSource()
+            .withName("name")
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
             .withSourceId(sourceIdRequestBody.getSourceId()));
@@ -153,6 +154,7 @@ class SchedulerHandlerTest {
 
     when(configRepository.getStandardDestination(destinationIdRequestBody.getDestinationId()))
         .thenReturn(new StandardDestination()
+            .withName("name")
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
             .withDestinationId(destinationIdRequestBody.getDestinationId()));
