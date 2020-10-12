@@ -48,15 +48,15 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteStreamFactory.class);
 
-  private final AirbyteProtocolPredicate singerProtocolValidator;
+  private final AirbyteProtocolPredicate protocolValidator;
   private final Logger logger;
 
   public DefaultAirbyteStreamFactory() {
     this(new AirbyteProtocolPredicate(), LOGGER);
   }
 
-  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate singerProtocolPredicate, final Logger logger) {
-    singerProtocolValidator = singerProtocolPredicate;
+  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate, final Logger logger) {
+    protocolValidator = protocolPredicate;
     this.logger = logger;
   }
 
@@ -78,7 +78,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .map(Optional::get)
         // filter invalid messages
         .filter(j -> {
-          boolean res = singerProtocolValidator.test(j);
+          boolean res = protocolValidator.test(j);
           if (!res) {
             logger.error("Validation failed: {}", Jsons.serialize(j));
           }
