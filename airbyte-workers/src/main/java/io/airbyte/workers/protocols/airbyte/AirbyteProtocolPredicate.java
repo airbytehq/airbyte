@@ -24,9 +24,24 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.protocols.Destination;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.JsonSchemaValidator;
+import io.airbyte.protocol.models.AirbyteProtocolSchema;
+import java.util.function.Predicate;
 
-public interface AirbyteDestination extends Destination<AirbyteMessage> {
+public class AirbyteProtocolPredicate implements Predicate<JsonNode> {
+
+  private final JsonSchemaValidator jsonSchemaValidator;
+  private final JsonNode schema;
+
+  public AirbyteProtocolPredicate() {
+    jsonSchemaValidator = new JsonSchemaValidator();
+    schema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.MESSAGE.getFile());
+  }
+
+  @Override
+  public boolean test(JsonNode s) {
+    return jsonSchemaValidator.test(schema, s);
+  }
 
 }

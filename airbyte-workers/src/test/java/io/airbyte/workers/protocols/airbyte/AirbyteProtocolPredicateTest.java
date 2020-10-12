@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols.singer;
+package io.airbyte.workers.protocols.airbyte;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,21 +31,21 @@ import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class SingerProtocolPredicateTest {
+class AirbyteProtocolPredicateTest {
 
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
-  private SingerProtocolPredicate predicate;
+  private AirbyteProtocolPredicate predicate;
 
   @BeforeEach
   void setup() {
-    predicate = new SingerProtocolPredicate();
+    predicate = new AirbyteProtocolPredicate();
   }
 
   @Test
   void testValid() {
-    assertTrue(predicate.test(Jsons.jsonNode(SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))));
+    assertTrue(predicate.test(Jsons.jsonNode(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))));
   }
 
   @Test
@@ -56,16 +56,18 @@ class SingerProtocolPredicateTest {
   @Test
   void testConcatenatedValid() {
     final String concatenated =
-        Jsons.serialize(SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))
-            + Jsons.serialize(SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
+        Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))
+            + Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
+
     assertTrue(predicate.test(Jsons.deserialize(concatenated)));
   }
 
   @Test
   void testMissingNewLineAndLineStartsWithValidRecord() {
     final String concatenated =
-        Jsons.serialize(SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))
+        Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))
             + "{ \"fish\": \"tuna\"}";
+
     assertTrue(predicate.test(Jsons.deserialize(concatenated)));
   }
 
@@ -73,7 +75,8 @@ class SingerProtocolPredicateTest {
   void testMissingNewLineAndLineStartsWithInvalidRecord() {
     final String concatenated =
         "{ \"fish\": \"tuna\"}"
-            + Jsons.serialize(SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"));
+            + Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"));
+
     assertFalse(predicate.test(Jsons.deserialize(concatenated)));
   }
 

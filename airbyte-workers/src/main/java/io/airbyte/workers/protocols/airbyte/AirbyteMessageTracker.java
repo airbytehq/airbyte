@@ -24,9 +24,39 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.protocols.Destination;
+import io.airbyte.workers.protocols.MessageTracker;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
-public interface AirbyteDestination extends Destination<AirbyteMessage> {
+public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
+
+  private final AtomicLong recordCount;
+  private final AtomicReference<JsonNode> outputState;
+
+  public AirbyteMessageTracker() {
+    this.recordCount = new AtomicLong();
+    this.outputState = new AtomicReference<>();
+  }
+
+  @Override
+  public void accept(AirbyteMessage message) {
+    if (message.getType() == AirbyteMessage.Type.RECORD) {
+      recordCount.incrementAndGet();
+    }
+    if (message.getType() == AirbyteMessage.Type.STATE) {
+      outputState.set(message.getState().getData());
+    }
+  }
+
+  public long getRecordCount() {
+    return recordCount.get();
+  }
+
+  public Optional<JsonNode> getOutputState() {
+    return Optional.ofNullable(outputState.get());
+  }
 
 }

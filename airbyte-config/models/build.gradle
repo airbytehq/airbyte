@@ -4,6 +4,10 @@ plugins {
     id "com.github.eirnym.js2p" version "1.0"
 }
 
+dependencies {
+    implementation project(':airbyte-protocol:models')
+}
+
 jsonSchema2Pojo {
 	sourceType = SourceType.YAMLSCHEMA
     source = files("${sourceSets.main.output.resourcesDir}/types")

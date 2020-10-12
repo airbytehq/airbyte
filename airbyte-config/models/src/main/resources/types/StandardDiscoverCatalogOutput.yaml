@@ -6,8 +6,13 @@ description: describes the standard output for any discovery run.
 type: object
 required:
   - schema
+#  - catalog
 additionalProperties: false
 properties:
   schema:
     description: describes the available schemas.
     "$ref": StandardDataSchema.yaml#/definitions/schema
+  catalog:
+    description: describes the available schemas.
+    type: object
+    existingJavaType: io.airbyte.protocol.models.AirbyteCatalog
