@@ -26,6 +26,7 @@ package io.airbyte.workers.protocols.airbyte;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
 import java.util.Optional;
@@ -74,6 +75,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         })
         .filter(Optional::isPresent)
         .map(Optional::get)
+        // filter invalid messages
         .filter(j -> {
           boolean res = singerProtocolValidator.test(j);
           if (!res) {
@@ -89,7 +91,25 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
           return m;
         })
         .filter(Optional::isPresent)
-        .map(Optional::get);
+        .map(Optional::get)
+        // filter logs
+        .filter(m -> {
+          boolean isLog = m.getType() == AirbyteMessage.Type.LOG;
+          if (isLog) {
+            internalLog(m.getLog());
+          }
+          return !isLog;
+        });
+  }
+
+  private void internalLog(AirbyteLogMessage logMessage) {
+    switch (logMessage.getLevel()) {
+      case FATAL, ERROR -> logger.error(logMessage.getMessage());
+      case WARN -> logger.warn(logMessage.getMessage());
+      case INFO -> logger.info(logMessage.getMessage());
+      case DEBUG -> logger.debug(logMessage.getMessage());
+      case TRACE -> logger.trace(logMessage.getMessage());
+    }
   }
 
 }

@@ -27,6 +27,7 @@ package io.airbyte.workers.protocols.airbyte;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.time.Instant;
@@ -44,6 +45,16 @@ public class AirbyteMessageUtils {
             .withData(record)
             .withStream(tableName)
             .withEmittedAt(timeExtracted.getEpochSecond()));
+  }
+
+  public static AirbyteMessage createLogMessage(final AirbyteLogMessage.Level level,
+                                                final String message) {
+
+    return new AirbyteMessage()
+        .withType(AirbyteMessage.Type.LOG)
+        .withLog(new AirbyteLogMessage()
+            .withLevel(level)
+            .withMessage(message));
   }
 
   public static AirbyteMessage createRecordMessage(final String tableName,

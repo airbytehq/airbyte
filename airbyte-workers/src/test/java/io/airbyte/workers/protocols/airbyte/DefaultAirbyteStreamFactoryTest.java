@@ -25,6 +25,7 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -81,6 +82,17 @@ class DefaultAirbyteStreamFactoryTest {
 
     assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
     verify(logger).info(anyString());
+    verifyNoMoreInteractions(logger);
+  }
+
+  @Test
+  public void testLoggingLevel() {
+    final AirbyteMessage logMessage = AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning");
+
+    final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(logMessage));
+
+    assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
+    verify(logger).warn("warning");
     verifyNoMoreInteractions(logger);
   }
 
