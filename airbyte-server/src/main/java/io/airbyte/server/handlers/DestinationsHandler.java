@@ -28,14 +28,11 @@ import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationUpdate;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.validators.DockerImageValidator;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -94,4 +91,5 @@ public class DestinationsHandler {
       throw new RuntimeException(e);
     }
   }
+
 }

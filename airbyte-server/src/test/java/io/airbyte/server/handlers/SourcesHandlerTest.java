@@ -26,8 +26,6 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,15 +41,12 @@ import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-
+import io.airbyte.server.validators.DockerImageValidator;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
 import java.util.function.Supplier;
-
-import io.airbyte.server.errors.KnownException;
-import io.airbyte.server.validators.DockerImageValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -156,14 +151,13 @@ class SourcesHandlerTest {
   void testUpdateSource() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getStandardSource(source.getSourceId())).thenReturn(source);
     final String newDockerImageTag = "averydifferenttag";
-    final String newDockerImage = DockerUtils.getTaggedImageName(source.getDockerRepository(), newDockerImageTag);
     final String currentTag = sourceHandler.getSource(new SourceIdRequestBody().sourceId(source.getSourceId())).getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
     SourceRead sourceRead = sourceHandler.updateSource(new SourceUpdate().sourceId(source.getSourceId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
-    verify(dockerImageValidator).assertValidIntegrationImage(source.getDockerRepository(), source.getDockerImageTag());
+    verify(dockerImageValidator).assertValidIntegrationImage(source.getDockerRepository(), newDockerImageTag);
   }
 
 }

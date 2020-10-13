@@ -82,10 +82,9 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendDestinationImplementationHandler;
 import io.airbyte.server.handlers.WebBackendSourceImplementationHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
+import io.airbyte.server.validators.DockerImageValidator;
 import java.io.IOException;
 import javax.validation.Valid;
-
-import io.airbyte.server.validators.DockerImageValidator;
 import org.eclipse.jetty.http.HttpStatus;
 
 @javax.ws.rs.Path("/v1")
