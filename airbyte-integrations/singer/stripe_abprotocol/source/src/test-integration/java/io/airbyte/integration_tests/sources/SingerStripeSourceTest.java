@@ -136,8 +136,16 @@ public class SingerStripeSourceTest {
   }
 
   @Test
-  public void testInvalidCredentialsDiscover() throws IOException, InterruptedException, WorkerException {
-    Process process = createDiscoveryProcess(INVALID_CONFIG);
+  public void testSuccessfulCheck() throws IOException, InterruptedException, WorkerException {
+    Process process = createCheckProcess(CONFIG);
+    process.waitFor();
+
+    assertEquals(0, process.exitValue());
+  }
+
+  @Test
+  public void testInvalidCredentialsCheck() throws IOException, InterruptedException, WorkerException {
+    Process process = createCheckProcess(INVALID_CONFIG);
     process.waitFor();
 
     assertNotEquals(0, process.exitValue());
@@ -223,6 +231,13 @@ public class SingerStripeSourceTest {
     fullConfig.put("start_date", "2017-01-01T00:00:00Z");
 
     Files.writeString(Path.of(jobRoot.toString(), INVALID_CONFIG), Jsons.serialize(fullConfig));
+  }
+
+  private Process createCheckProcess(String configFileName) throws IOException, WorkerException {
+    return launcher.check(jobRoot, configFileName)
+            .redirectOutput(catalogPath.toFile())
+            .redirectError(ProcessBuilder.Redirect.INHERIT)
+            .start();
   }
 
   private Process createDiscoveryProcess(String configFileName) throws IOException, WorkerException {
