@@ -35,8 +35,6 @@ import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.singer.SingerCatalog;
 import io.airbyte.singer.SingerMessage;
-import io.airbyte.workers.DefaultDiscoverCatalogWorker;
-import io.airbyte.workers.DiscoverCatalogWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
@@ -61,20 +59,20 @@ public class DefaultSingerSource implements SingerSource {
 
   private final IntegrationLauncher integrationLauncher;
   private final SingerStreamFactory streamFactory;
-  private final DiscoverCatalogWorker discoverCatalogWorker;
+  private final SingerDiscoverCatalogWorker discoverCatalogWorker;
 
   private Process tapProcess = null;
   private Iterator<SingerMessage> messageIterator = null;
 
   public DefaultSingerSource(final IntegrationLauncher integrationLauncher,
-                             final DiscoverCatalogWorker discoverSchemaWorker) {
+                             final SingerDiscoverCatalogWorker discoverSchemaWorker) {
     this(integrationLauncher, new DefaultSingerStreamFactory(), discoverSchemaWorker);
   }
 
   @VisibleForTesting
   DefaultSingerSource(final IntegrationLauncher integrationLauncher,
                       final SingerStreamFactory streamFactory,
-                      final DiscoverCatalogWorker discoverSchemaWorker) {
+                      final SingerDiscoverCatalogWorker discoverSchemaWorker) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.discoverCatalogWorker = discoverSchemaWorker;
@@ -145,7 +143,7 @@ public class DefaultSingerSource implements SingerSource {
     }
 
     // This is a hack because we need to have access to the original singer catalog
-    return DefaultDiscoverCatalogWorker.readCatalog(discoverJobRoot);
+    return SingerDiscoverCatalogWorker.readCatalog(discoverJobRoot);
   }
 
 }
