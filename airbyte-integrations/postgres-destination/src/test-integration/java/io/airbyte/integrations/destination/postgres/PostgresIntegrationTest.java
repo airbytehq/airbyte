@@ -38,6 +38,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresIntegrationTest extends TestDestination {
 
+  private static final String COLUMN_NAME = "data";
   private PostgreSQLContainer<?> db;
 
   @Override
@@ -86,7 +87,7 @@ public class PostgresIntegrationTest extends TestDestination {
               }
               return e;
             }).collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
-            .map(r -> (String) r.get(PostgresDestination.COLUMN_NAME))
+            .map(r -> (String) r.get(COLUMN_NAME))
             .map(Jsons::deserialize)
             .collect(Collectors.toList()));
   }

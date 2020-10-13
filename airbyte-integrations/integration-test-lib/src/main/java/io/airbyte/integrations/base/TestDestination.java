@@ -39,12 +39,10 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.singer.SingerMessage.Type;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.singer.DefaultSingerDestination;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -80,7 +78,7 @@ public abstract class TestDestination {
    *
    * @return integration-specific configuration
    */
-  protected abstract JsonNode getConfig();
+  protected abstract JsonNode getConfig() throws Exception;
 
   /**
    * Configuration specific to the integration. Will be passed to integration where appropriate in
@@ -89,7 +87,7 @@ public abstract class TestDestination {
    *
    * @return integration-specific configuration
    */
-  protected abstract JsonNode getFailCheckConfig();
+  protected abstract JsonNode getFailCheckConfig() throws Exception;
 
   /**
    * Function that returns all of the records in destination as json at the time this method is
@@ -205,7 +203,7 @@ public abstract class TestDestination {
     assertSameMessages(secondSyncMessages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
-  private void runSync(List<SingerMessage> messages, Schema catalog) throws IOException, WorkerException {
+  private void runSync(List<SingerMessage> messages, Schema catalog) throws Exception {
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
         .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(getConfig()))
         .withStandardSync(new StandardSync().withSchema(catalog));
