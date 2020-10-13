@@ -44,7 +44,6 @@ import io.airbyte.singer.SingerCatalog;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.singer.SingerStream;
 import io.airbyte.singer.SingerTableSchema;
-import io.airbyte.workers.DiscoverCatalogWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.TestConfigHelpers;
@@ -86,7 +85,7 @@ class DefaultSingerSourceTest {
       SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
 
   private Path jobRoot;
-  private DiscoverCatalogWorker discoverSchemaWorker;
+  private SingerDiscoverCatalogWorker discoverSchemaWorker;
   private IntegrationLauncher integrationLauncher;
   private Process process;
   private SingerStreamFactory singerStreamFactory;
@@ -95,7 +94,7 @@ class DefaultSingerSourceTest {
   public void setup() throws IOException, WorkerException {
     jobRoot = Files.createTempDirectory("test");
 
-    discoverSchemaWorker = mock(DiscoverCatalogWorker.class);
+    discoverSchemaWorker = mock(SingerDiscoverCatalogWorker.class);
     when(discoverSchemaWorker.run(
         DISCOVER_SCHEMA_INPUT,
         jobRoot.resolve(DefaultSingerSource.DISCOVERY_DIR)))

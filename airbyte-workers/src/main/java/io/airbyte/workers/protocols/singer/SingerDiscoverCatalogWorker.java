@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.protocols.singer;
 
 import static io.airbyte.workers.JobStatus.FAILED;
 import static io.airbyte.workers.JobStatus.SUCCESSFUL;
@@ -33,7 +33,12 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.singer.SingerCatalog;
+import io.airbyte.workers.DiscoverCatalogWorker;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -41,15 +46,15 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
+public class SingerDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDiscoverCatalogWorker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingerDiscoverCatalogWorker.class);
 
   private final IntegrationLauncher integrationLauncher;
 
   private volatile Process process;
 
-  public DefaultDiscoverCatalogWorker(final IntegrationLauncher integrationLauncher) {
+  public SingerDiscoverCatalogWorker(final IntegrationLauncher integrationLauncher) {
     this.integrationLauncher = integrationLauncher;
   }
 
@@ -86,7 +91,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       return new OutputAndStatus<>(
           SUCCESSFUL,
           new StandardDiscoverCatalogOutput()
-              .withCatalog(readCatalog(jobRoot)));
+              .withSchema(SingerCatalogConverters.toAirbyteSchema(readCatalog(jobRoot))));
     } else {
       LOGGER.debug("Discovery job subprocess finished with exit code {}", exitCode);
       return new OutputAndStatus<>(FAILED);
@@ -98,8 +103,8 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
     WorkerUtils.cancelProcess(process);
   }
 
-  public static AirbyteCatalog readCatalog(Path jobRoot) {
-    return Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME), AirbyteCatalog.class);
+  public static SingerCatalog readCatalog(Path jobRoot) {
+    return Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME), SingerCatalog.class);
   }
 
 }

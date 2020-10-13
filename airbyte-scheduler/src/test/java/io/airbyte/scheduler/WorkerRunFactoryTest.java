@@ -56,7 +56,7 @@ import org.mockito.ArgumentCaptor;
 
 class WorkerRunFactoryTest {
 
-  private static JsonNode CONFIG = Jsons.jsonNode(1);
+  private static final JsonNode CONFIG = Jsons.jsonNode(1);
 
   private Job job;
   private Path rootPath;
@@ -96,7 +96,7 @@ class WorkerRunFactoryTest {
   @Test
   void testSchema() {
     when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.DISCOVER_SCHEMA);
-    when(job.getConfig().getDiscoverSchema().getConnectionConfiguration()).thenReturn(CONFIG);
+    when(job.getConfig().getDiscoverCatalog().getConnectionConfiguration()).thenReturn(CONFIG);
 
     factory.create(job);
 

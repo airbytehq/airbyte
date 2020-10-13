@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.protocols.singer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,6 +40,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -50,7 +54,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DefaultDiscoverCatalogWorkerTest {
+public class SingerDiscoverCatalogWorkerTest {
 
   private static final JsonNode CREDENTIALS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
 
@@ -72,19 +76,19 @@ public class DefaultDiscoverCatalogWorkerTest {
         .start())
             .thenReturn(process);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("data".getBytes(StandardCharsets.UTF_8)));
-    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, MoreResources.readResource("airbyte_postgres_catalog.json"));
+    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, MoreResources.readResource("singer_postgres_catalog.json"));
   }
 
   @SuppressWarnings("BusyWait")
   @Test
   public void testDiscoverSchema() throws Exception {
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher);
+    final SingerDiscoverCatalogWorker worker = new SingerDiscoverCatalogWorker(integrationLauncher);
     final OutputAndStatus<StandardDiscoverCatalogOutput> output = worker.run(input, jobRoot);
 
     final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput =
         new OutputAndStatus<>(
             JobStatus.SUCCESSFUL,
-            Jsons.deserialize(MoreResources.readResource("airbyte_discovered_postgres_catalog_output.json"), StandardDiscoverCatalogOutput.class));
+            Jsons.deserialize(MoreResources.readResource("singer_discovered_postgres_catalog_output.json"), StandardDiscoverCatalogOutput.class));
 
     assertEquals(expectedOutput, output);
 
@@ -108,7 +112,7 @@ public class DefaultDiscoverCatalogWorkerTest {
   public void testDiscoverSchemaProcessFail() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher);
+    final SingerDiscoverCatalogWorker worker = new SingerDiscoverCatalogWorker(integrationLauncher);
     final OutputAndStatus<StandardDiscoverCatalogOutput> output = worker.run(input, jobRoot);
 
     final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
@@ -129,7 +133,7 @@ public class DefaultDiscoverCatalogWorkerTest {
     when(integrationLauncher.discover(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME))
         .thenThrow(new RuntimeException());
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher);
+    final SingerDiscoverCatalogWorker worker = new SingerDiscoverCatalogWorker(integrationLauncher);
     final OutputAndStatus<StandardDiscoverCatalogOutput> output = worker.run(input, jobRoot);
 
     final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
@@ -139,7 +143,7 @@ public class DefaultDiscoverCatalogWorkerTest {
 
   @Test
   public void testCancel() {
-    DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher);
+    SingerDiscoverCatalogWorker worker = new SingerDiscoverCatalogWorker(integrationLauncher);
     worker.run(input, jobRoot);
 
     worker.cancel();
