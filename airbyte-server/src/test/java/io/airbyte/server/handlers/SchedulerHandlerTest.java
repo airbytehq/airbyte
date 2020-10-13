@@ -124,6 +124,7 @@ class SchedulerHandlerTest {
     SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(UUID.randomUUID());
     when(configRepository.getStandardSource(sourceIdRequestBody.getSourceId()))
         .thenReturn(new StandardSource()
+            .withName("name")
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
             .withSourceId(sourceIdRequestBody.getSourceId()));
@@ -153,6 +154,7 @@ class SchedulerHandlerTest {
 
     when(configRepository.getStandardDestination(destinationIdRequestBody.getDestinationId()))
         .thenReturn(new StandardDestination()
+            .withName("name")
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
             .withDestinationId(destinationIdRequestBody.getDestinationId()));
@@ -172,6 +174,25 @@ class SchedulerHandlerTest {
 
     verify(configRepository).getStandardDestination(destinationIdRequestBody.getDestinationId());
     verify(schedulerPersistence).createGetSpecJob(DESTINATION_DOCKER_IMAGE);
+    verify(schedulerPersistence, atLeast(2)).getJob(JOB_ID);
+  }
+
+  @Test
+  public void testGetConnectorSpec() throws IOException, URISyntaxException {
+    when(schedulerPersistence.createGetSpecJob(SOURCE_DOCKER_IMAGE)).thenReturn(JOB_ID);
+    when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+    StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
+        new ConnectorSpecification()
+            .withDocumentationUrl(new URI("https://google.com"))
+            .withChangelogUrl(new URI("https://google.com"))
+            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
+    JobOutput jobOutput = mock(JobOutput.class);
+    when(jobOutput.getGetSpec()).thenReturn(specOutput);
+    when(completedJob.getOutput()).thenReturn(Optional.of(jobOutput));
+
+    schedulerHandler.getConnectorSpecification(SOURCE_DOCKER_IMAGE);
+
+    verify(schedulerPersistence).createGetSpecJob(SOURCE_DOCKER_IMAGE);
     verify(schedulerPersistence, atLeast(2)).getJob(JOB_ID);
   }
 
