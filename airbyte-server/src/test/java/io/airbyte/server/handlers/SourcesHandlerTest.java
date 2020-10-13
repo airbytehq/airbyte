@@ -36,7 +36,6 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceUpdate;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.persistence.ConfigNotFoundException;
