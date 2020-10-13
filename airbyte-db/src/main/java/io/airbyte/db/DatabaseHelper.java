@@ -46,11 +46,21 @@ public class DatabaseHelper {
     return connectionPool;
   }
 
-  public static <T> T query(BasicDataSource connectionPool, ContextQueryFunction<T> transform)
-      throws SQLException {
+  public static <T> T query(BasicDataSource connectionPool, ContextQueryFunction<T> transform) throws SQLException {
+
     try (Connection connection = connectionPool.getConnection()) {
       DSLContext context = getContext(connection);
       return transform.apply(context);
+    }
+  }
+
+  public static <T> T transaction(BasicDataSource connectionPool, ContextQueryFunction<T> transform) throws SQLException {
+    try (Connection connection = connectionPool.getConnection()) {
+      DSLContext context = getContext(connection);
+      return context.transactionResult(configuration -> {
+        DSLContext transactionContext = DSL.using(configuration);
+        return transform.apply(transactionContext);
+      });
     }
   }
 
