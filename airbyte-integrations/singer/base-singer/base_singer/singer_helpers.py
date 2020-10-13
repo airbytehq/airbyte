@@ -6,6 +6,7 @@ from airbyte_protocol import AirbyteMessage
 from airbyte_protocol import AirbyteLogMessage
 from airbyte_protocol import AirbyteRecordMessage
 from airbyte_protocol import AirbyteStateMessage
+from airbyte_protocol import AirbyteStream
 from typing import Generator
 from datetime import datetime
 
@@ -44,13 +45,26 @@ class SingerHelper:
             spec_text = file.read()
         return AirbyteSpec(spec_text)
 
-    # todo: support stderr in the discover process
+
     @staticmethod
-    def discover(shell_command, transform=(lambda x: AirbyteCatalog(x))) -> AirbyteCatalog:
+    def discover(shell_command, transform=(lambda catalog: catalog)) -> AirbyteCatalog:
         completed_process = subprocess.run(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                            universal_newlines=True)
-        # todo: handle this
-        return transform(completed_process.stdout)
+
+        for line in completed_process.stderr.splitlines():
+            log_line(line, "ERROR")
+
+        airbyte_streams = []
+        obj = json.loads(completed_process.stdout)
+
+        for stream in obj.get("streams"):
+            name = stream.get("stream")
+            schema = stream.get("schema").get("properties")
+            airbyte_streams += [AirbyteStream(name=name, schema=schema)]
+
+        catalog = AirbyteCatalog(streams=airbyte_streams)
+
+        return transform(catalog)
 
     @staticmethod
     def read(shell_command, is_message=(lambda x: True), transform=(lambda x: x)) -> Generator[AirbyteMessage, None, None]:
@@ -73,8 +87,6 @@ class SingerHelper:
                                 out_message = AirbyteMessage(type="STATE", state=out_record)
                                 yield transform(out_message)
                             else:
-                                # todo: remove type from record
-                                # todo: handle stream designation
                                 # todo: check that messages match the discovered schema
                                 stream_name = transformed_json["stream"]
                                 out_record = AirbyteRecordMessage(stream=stream_name, data=transformed_json["record"], emitted_at=str(datetime.now()))
