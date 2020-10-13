@@ -6,10 +6,10 @@ WORKDIR /airbyte
 COPY javabase.sh .
 
 # airbyte base commands
-ENV AIRBYTE_SPEC_CMD "./javabase.sh --spec"
-ENV AIRBYTE_CHECK_CMD "./javabase.sh --check"
-ENV AIRBYTE_DISCOVER_CMD "./javabase.sh --discover"
-ENV AIRBYTE_READ_CMD "./javabase.sh --read"
-ENV AIRBYTE_WRITE_CMD "./javabase.sh --write"
+ENV AIRBYTE_SPEC_CMD "/airbyte/javabase.sh --spec"
+ENV AIRBYTE_CHECK_CMD "/airbyte/javabase.sh --check"
+ENV AIRBYTE_DISCOVER_CMD "/airbyte/javabase.sh --discover"
+ENV AIRBYTE_READ_CMD "/airbyte/javabase.sh --read"
+ENV AIRBYTE_WRITE_CMD "/airbyte/javabase.sh --write"
 
 ENTRYPOINT ["/airbyte/base.sh"]
