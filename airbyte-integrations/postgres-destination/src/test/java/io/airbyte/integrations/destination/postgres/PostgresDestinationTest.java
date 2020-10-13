@@ -207,6 +207,8 @@ class PostgresDestinationTest {
             .map(Record::intoMap)
             .map(r -> r.entrySet().stream().map(e -> {
               if (e.getValue().getClass().equals(org.jooq.JSONB.class)) {
+                // jooq needs more configuration to handle jsonb natively. coerce it to a string for now and handle
+                // deserializing later.
                 return new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue().toString());
               }
               return e;

@@ -133,7 +133,7 @@ public class PostgresDestination implements Destination {
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
       DatabaseHelper.query(connectionPool, ctx -> ctx.execute(String.format(
           "CREATE TABLE \"%s\" ( \n"
-              + "\"ab_id\" VARCHAR PRIMARY KEY DEFAULT uuid_generate_v4(),\n"
+              + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
               + "\"%s\" JSONB,\n"
               + "\"ab_inserted_at\" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
               + ");",
