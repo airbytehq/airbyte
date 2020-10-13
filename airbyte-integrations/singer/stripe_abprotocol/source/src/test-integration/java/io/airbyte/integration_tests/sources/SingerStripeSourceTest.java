@@ -152,7 +152,7 @@ public class SingerStripeSourceTest {
 
     final String catalog = IOs.readFile(jobRoot, catalogPath.toString());
 
-    assertTrue(catalog.lines().count() > 10000);
+    assertTrue(catalog.length() > 20000);
     assertTrue(catalog.contains("customer"));
     assertTrue(catalog.contains("address_zip_check"));
   }
