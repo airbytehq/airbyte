@@ -35,17 +35,17 @@ jobs:
         with:
           node-version: '14.7'
 
-      - name: Build
-        run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
-
-      - name: Ensure no file change
-        run: test -z "$(git status --porcelain)"
-
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh
         env:
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
           STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
+
+      - name: Build
+        run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
+
+      - name: Ensure no file change
+        run: test -z "$(git status --porcelain)"
 
       - name: Run Integration Tests
         run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}

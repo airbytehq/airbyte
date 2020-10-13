@@ -23,23 +23,23 @@ configurations {
 
 dependencies {
     implementation project(':airbyte-config:models')
-    implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:base-java')
     implementation project(':airbyte-queue')
     implementation project(':airbyte-singer')
 
-    testImplementation "org.testcontainers:postgresql:1.15.0-rc2"
+    implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
+    implementation 'org.apache.commons:commons-lang3:3.11'
 
     integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
-    integrationTestImplementation "org.testcontainers:postgresql:1.15.0-rc2"
+
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
+    mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
 }
 
 
-def image = 'airbyte/airbyte-postgres-destination:dev'
+def image = 'airbyte/airbyte-bigquery-destination:dev'
 
 task imageName {
     doLast {
