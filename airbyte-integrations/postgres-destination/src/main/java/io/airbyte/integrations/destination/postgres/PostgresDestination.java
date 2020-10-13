@@ -30,11 +30,11 @@ import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.DestinationConnectionSpecification;
+import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.Stream;
 import io.airbyte.db.DatabaseHelper;
 import io.airbyte.integrations.base.Destination;
@@ -64,10 +64,10 @@ public class PostgresDestination implements Destination {
   static final String COLUMN_NAME = "data";
 
   @Override
-  public DestinationConnectionSpecification spec() throws IOException {
+  public ConnectorSpecification spec() throws IOException {
     // return a jsonschema representation of the spec for the integration.
     final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, DestinationConnectionSpecification.class);
+    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
   }
 
   @Override
@@ -89,7 +89,7 @@ public class PostgresDestination implements Destination {
   }
 
   @Override
-  public StandardDiscoverSchemaOutput discover(JsonNode config) {
+  public StandardDiscoverCatalogOutput discover(JsonNode config) {
     throw new RuntimeException("Not Implemented");
   }
 
