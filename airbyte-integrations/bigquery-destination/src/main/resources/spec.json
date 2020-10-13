@@ -1,7 +1,6 @@
 {
-  "destinationId": "",
-  "destinationSpecificationId": "",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
+  "changelogUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
   "specification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",

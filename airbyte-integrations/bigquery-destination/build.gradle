@@ -37,7 +37,7 @@ application {
 }
 
 
-def image = 'airbyte/airbyte-postgres-destination:dev'
+def image = 'airbyte/airbyte-bigquery-destination:dev'
 
 task imageName {
     doLast {

@@ -45,8 +45,8 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.DataType;
-import io.airbyte.config.DestinationConnectionSpecification;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -176,9 +176,9 @@ class BigQueryDestinationTest {
   // todo - same test as csv destination
   @Test
   void testSpec() throws IOException {
-    final DestinationConnectionSpecification actual = new BigQueryDestination().spec();
+    final ConnectorSpecification actual = new BigQueryDestination().spec();
     final String resourceString = MoreResources.readResource("spec.json");
-    final DestinationConnectionSpecification expected = Jsons.deserialize(resourceString, DestinationConnectionSpecification.class);
+    final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
 
     assertEquals(expected, actual);
   }
