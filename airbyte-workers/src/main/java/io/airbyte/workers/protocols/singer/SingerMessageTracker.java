@@ -26,12 +26,12 @@ package io.airbyte.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.singer.SingerMessage;
+import io.airbyte.workers.protocols.MessageTracker;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
-public class SingerMessageTracker implements Consumer<SingerMessage> {
+public class SingerMessageTracker implements MessageTracker<SingerMessage> {
 
   private final AtomicLong recordCount;
   private final AtomicReference<JsonNode> outputState;

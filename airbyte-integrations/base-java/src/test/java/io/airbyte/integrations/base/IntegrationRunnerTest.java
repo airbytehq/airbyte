@@ -37,15 +37,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DestinationConnectionSpecification;
+import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.Stream;
 import io.airbyte.singer.SingerMessage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
@@ -87,7 +88,7 @@ class IntegrationRunnerTest {
   @Test
   void testSpec() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.spec();
-    final DestinationConnectionSpecification output = new DestinationConnectionSpecification().withDocumentationUrl("https://docs.airbyte.io/");
+    final ConnectorSpecification output = new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.spec()).thenReturn(output);
@@ -115,7 +116,7 @@ class IntegrationRunnerTest {
   @Test
   void testDiscover() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.discover(Path.of(configPath.toString()));
-    final StandardDiscoverSchemaOutput output = new StandardDiscoverSchemaOutput().withSchema(SCHEMA);
+    final StandardDiscoverCatalogOutput output = new StandardDiscoverCatalogOutput().withSchema(SCHEMA);
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.discover(CONFIG)).thenReturn(output);

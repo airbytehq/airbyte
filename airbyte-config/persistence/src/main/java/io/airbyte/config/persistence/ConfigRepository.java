@@ -27,9 +27,7 @@ package io.airbyte.config.persistence;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnectionImplementation;
-import io.airbyte.config.DestinationConnectionSpecification;
 import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.SourceConnectionSpecification;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
@@ -78,6 +76,13 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE, StandardSource.class);
   }
 
+  public void writeStandardSource(final StandardSource source) throws JsonValidationException, IOException {
+    persistence.writeConfig(
+        ConfigSchema.STANDARD_SOURCE,
+        source.getSourceId().toString(),
+        source);
+  }
+
   public StandardDestination getStandardDestination(final UUID destinationId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(
@@ -91,54 +96,11 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION, StandardDestination.class);
   }
 
-  public SourceConnectionSpecification getSourceConnectionSpecification(final UUID sourceSpecificationId)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
-        sourceSpecificationId.toString(),
-        SourceConnectionSpecification.class);
-  }
-
-  public SourceConnectionSpecification getSourceConnectionSpecificationFromSourceId(final UUID sourceId)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    // since we are not querying on a the primary key, we have to list all of the specification objects
-    // and then filter.
-    return listSourceConnectionSpecifications().stream()
-        .filter(s -> s.getSourceId().equals(sourceId))
-        .findFirst()
-        .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION_SPECIFICATION, sourceId.toString()));
-  }
-
-  public DestinationConnectionSpecification getDestinationConnectionSpecificationFromDestinationId(final UUID destinationId)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    // since we are not querying on a the primary key, we have to list all of the specification objects
-    // and then filter.
-    return listDestinationConnectionSpecifications().stream()
-        .filter(d -> d.getDestinationId().equals(destinationId))
-        .findFirst()
-        .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION, destinationId.toString()));
-  }
-
-  public List<SourceConnectionSpecification> listSourceConnectionSpecifications()
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.listConfigs(
-        ConfigSchema.SOURCE_CONNECTION_SPECIFICATION,
-        SourceConnectionSpecification.class);
-  }
-
-  public DestinationConnectionSpecification getDestinationConnectionSpecification(final UUID destinationSpecificationId)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
-        destinationSpecificationId.toString(),
-        DestinationConnectionSpecification.class);
-  }
-
-  public List<DestinationConnectionSpecification> listDestinationConnectionSpecifications()
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.listConfigs(
-        ConfigSchema.DESTINATION_CONNECTION_SPECIFICATION,
-        DestinationConnectionSpecification.class);
+  public void writeStandardDestination(final StandardDestination destination) throws JsonValidationException, IOException {
+    persistence.writeConfig(
+        ConfigSchema.STANDARD_DESTINATION,
+        destination.getDestinationId().toString(),
+        destination);
   }
 
   public SourceConnectionImplementation getSourceConnectionImplementation(final UUID sourceImplementationId)

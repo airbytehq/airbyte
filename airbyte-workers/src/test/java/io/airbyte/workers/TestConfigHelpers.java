@@ -49,9 +49,9 @@ public class TestConfigHelpers {
 
   public static ImmutablePair<StandardSync, StandardSyncInput> createSyncConfig() {
     final UUID workspaceId = UUID.randomUUID();
-    final UUID sourceSpecificationId = UUID.randomUUID();
+    final UUID sourceId = UUID.randomUUID();
     final UUID sourceImplementationId = UUID.randomUUID();
-    final UUID destinationSpecificationId = UUID.randomUUID();
+    final UUID destinationId = UUID.randomUUID();
     final UUID destinationImplementationId = UUID.randomUUID();
     final UUID connectionId = UUID.randomUUID();
 
@@ -70,14 +70,14 @@ public class TestConfigHelpers {
     final SourceConnectionImplementation sourceConnectionConfig = new SourceConnectionImplementation()
         .withConfiguration(sourceConnection)
         .withWorkspaceId(workspaceId)
-        .withSourceSpecificationId(sourceSpecificationId)
+        .withSourceId(sourceId)
         .withSourceImplementationId(sourceImplementationId)
         .withTombstone(false);
 
     final DestinationConnectionImplementation destinationConnectionConfig = new DestinationConnectionImplementation()
         .withConfiguration(destinationConnection)
         .withWorkspaceId(workspaceId)
-        .withDestinationSpecificationId(destinationSpecificationId)
+        .withDestinationId(destinationId)
         .withDestinationImplementationId(destinationImplementationId)
         .withTombstone(false);
 

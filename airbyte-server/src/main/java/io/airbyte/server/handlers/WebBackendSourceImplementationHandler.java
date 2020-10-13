@@ -30,6 +30,7 @@ import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.SourceImplementationCreate;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.api.model.SourceImplementationRead;
+import io.airbyte.api.model.SourceImplementationRecreate;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
@@ -72,7 +73,40 @@ public class WebBackendSourceImplementationHandler {
     }
 
     sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
-    throw new KnownException(400, "Unable to connect to destination");
+    throw new KnownException(400, "Unable to connect to source");
+  }
+
+  public SourceImplementationRead webBackendRecreateSourceImplementationAndCheck(
+                                                                                 SourceImplementationRecreate sourceImplementationRecreate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate();
+    sourceImplementationCreate.setConnectionConfiguration(sourceImplementationRecreate.getConnectionConfiguration());
+    sourceImplementationCreate.setName(sourceImplementationRecreate.getName());
+    sourceImplementationCreate.setSourceSpecificationId(sourceImplementationRecreate.getSourceSpecificationId());
+    sourceImplementationCreate.setWorkspaceId(sourceImplementationRecreate.getWorkspaceId());
+
+    SourceImplementationRead sourceImplementation = sourceImplementationsHandler
+        .createSourceImplementation(sourceImplementationCreate);
+
+    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody()
+        .sourceImplementationId(sourceImplementation.getSourceImplementationId());
+
+    try {
+      CheckConnectionRead checkConnectionRead = schedulerHandler
+          .checkSourceImplementationConnection(sourceImplementationIdRequestBody);
+      if (checkConnectionRead.getStatus() == SUCCESS) {
+        final SourceImplementationIdRequestBody sourceImplementationIdRequestBody1 = new SourceImplementationIdRequestBody()
+            .sourceImplementationId(sourceImplementationRecreate.getSourceImplementationId());
+
+        sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody1);
+        return sourceImplementation;
+      }
+    } catch (Exception e) {
+      LOGGER.error("Error while checking connection", e);
+    }
+
+    sourceImplementationsHandler.deleteSourceImplementation(sourceImplementationIdRequestBody);
+    throw new KnownException(400, "Unable to connect to source");
   }
 
 }

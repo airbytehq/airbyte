@@ -37,30 +37,36 @@ import io.airbyte.api.model.DestinationImplementationCreate;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationRead;
 import io.airbyte.api.model.DestinationImplementationReadList;
+import io.airbyte.api.model.DestinationImplementationRecreate;
 import io.airbyte.api.model.DestinationImplementationUpdate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationSpecificationRead;
+import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.SlugRequestBody;
+import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceImplementationCreate;
 import io.airbyte.api.model.SourceImplementationDiscoverSchemaRead;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.api.model.SourceImplementationRead;
 import io.airbyte.api.model.SourceImplementationReadList;
+import io.airbyte.api.model.SourceImplementationRecreate;
 import io.airbyte.api.model.SourceImplementationUpdate;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceSpecificationRead;
+import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.commons.json.JsonSchemaValidator;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -78,7 +84,6 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendDestinationImplementationHandler;
 import io.airbyte.server.handlers.WebBackendSourceImplementationHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
-import io.airbyte.server.validation.IntegrationSchemaValidation;
 import java.io.IOException;
 import javax.validation.Valid;
 import org.eclipse.jetty.http.HttpStatus;
@@ -100,19 +105,20 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WebBackendDestinationImplementationHandler webBackendDestinationImplementationHandler;
 
   public ConfigurationApi(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence) {
-    final IntegrationSchemaValidation integrationSchemaValidation = new IntegrationSchemaValidation();
+    final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     workspacesHandler = new WorkspacesHandler(configRepository);
     sourcesHandler = new SourcesHandler(configRepository);
     connectionsHandler = new ConnectionsHandler(configRepository);
-    sourceImplementationsHandler = new SourceImplementationsHandler(configRepository, integrationSchemaValidation, connectionsHandler);
     destinationsHandler = new DestinationsHandler(configRepository);
-    destinationImplementationsHandler = new DestinationImplementationsHandler(configRepository, integrationSchemaValidation, connectionsHandler);
     schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
+    destinationImplementationsHandler =
+        new DestinationImplementationsHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
+    sourceImplementationsHandler = new SourceImplementationsHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
     webBackendSourceImplementationHandler = new WebBackendSourceImplementationHandler(sourceImplementationsHandler, schedulerHandler);
     webBackendDestinationImplementationHandler = new WebBackendDestinationImplementationHandler(destinationImplementationsHandler, schedulerHandler);
-    debugInfoHandler = new DebugInfoHandler();
+    debugInfoHandler = new DebugInfoHandler(configRepository);
   }
 
   // WORKSPACE
@@ -155,14 +161,24 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> sourcesHandler.getSource(sourceIdRequestBody));
   }
 
+  @Override
+  public SourceRead createSource(@Valid SourceCreate sourceCreate) {
+    return execute(() -> sourcesHandler.createSource(sourceCreate));
+  }
+
+  @Override
+  public SourceRead updateSource(@Valid SourceUpdate sourceUpdate) {
+    return execute(() -> sourcesHandler.updateSource(sourceUpdate));
+  }
+
   // SOURCE SPECIFICATION
 
   @Override
   public SourceSpecificationRead getSourceSpecification(@Valid SourceIdRequestBody sourceIdRequestBody) {
     return execute(() -> schedulerHandler.getSourceSpecification(sourceIdRequestBody));
   }
-
   // SOURCE IMPLEMENTATION
+
   @Override
   public SourceImplementationRead createSourceImplementation(@Valid SourceImplementationCreate sourceImplementationCreate) {
     return execute(() -> sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate));
@@ -200,8 +216,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   public SourceImplementationDiscoverSchemaRead discoverSchemaForSourceImplementation(@Valid SourceImplementationIdRequestBody sourceImplementationIdRequestBody) {
     return execute(() -> schedulerHandler.discoverSchemaForSourceImplementation(sourceImplementationIdRequestBody));
   }
-
   // DESTINATION
+
   @Override
   public DestinationReadList listDestinations() {
     return execute(destinationsHandler::listDestinations);
@@ -212,7 +228,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> destinationsHandler.getDestination(destinationIdRequestBody));
   }
 
+  @Override
+  public DestinationRead updateDestination(@Valid DestinationUpdate destinationUpdate) {
+    return execute(() -> destinationsHandler.updateDestination(destinationUpdate));
+  }
+
   // DESTINATION SPECIFICATION
+
   @Override
   public DestinationSpecificationRead getDestinationSpecification(@Valid DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> schedulerHandler.getDestinationSpecification(destinationIdRequestBody));
@@ -302,6 +324,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WbConnectionReadList webBackendListConnectionsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public DestinationImplementationRead webBackendRecreateDestinationImplementation(@Valid DestinationImplementationRecreate destinationImplementationRecreate) {
+    return execute(
+        () -> webBackendDestinationImplementationHandler.webBackendRecreateDestinationImplementationAndCheck(destinationImplementationRecreate));
+  }
+
+  @Override
+  public SourceImplementationRead webBackendRecreateSourceImplementation(@Valid SourceImplementationRecreate sourceImplementationRecreate) {
+    return execute(() -> webBackendSourceImplementationHandler.webBackendRecreateSourceImplementationAndCheck(sourceImplementationRecreate));
   }
 
   @Override

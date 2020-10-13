@@ -22,8 +22,8 @@ include ':airbyte-test-utils'
 // include all integration subprojects
 def integrationsPath = rootDir.toPath().resolve('airbyte-integrations')
 integrationsPath.eachFileRecurse(FileType.FILES) { path ->
-    def relativizedPath = integrationsPath.relativize(path)
-    if (path.endsWith('build.gradle') && !path.contains("build") && relativizedPath.getNameCount() > 1) {
-        include ":airbyte-integrations:${relativizedPath.parent.join(':')}"
+    def relativePath = integrationsPath.relativize(path)
+    if (path.endsWith('build.gradle') && !path.contains("build") && relativePath.getNameCount() > 1) {
+        include ":airbyte-integrations:${relativePath.parent.join(':')}"
     }
 }

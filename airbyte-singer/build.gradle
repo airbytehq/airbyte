@@ -60,7 +60,11 @@ jsonSchema2Pojo {
 
 task postprocess {
     doFirst {
-        def files = ['generated/src/gen/java/io/airbyte/singer/SingerColumn.java', 'generated/src/gen/java/io/airbyte/singer/SingerTableSchema.java']
+        def files = [
+                'generated/src/gen/java/io/airbyte/singer/SingerColumn.java',
+                'generated/src/gen/java/io/airbyte/singer/SingerTableSchema.java'
+        ]
+
         for (file in files) {
 
             def original = new File(project.buildDir, file)

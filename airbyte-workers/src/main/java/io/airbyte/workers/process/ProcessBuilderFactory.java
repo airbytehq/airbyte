@@ -26,9 +26,14 @@ package io.airbyte.workers.process;
 
 import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
+import java.util.List;
 
 public interface ProcessBuilderFactory {
 
-  ProcessBuilder create(Path jobPath, String imageName, String... args) throws WorkerException;
+  ProcessBuilder create(final Path jobPath, final String imageName, final String... args) throws WorkerException;
+
+  default ProcessBuilder create(final Path jobPath, final String imageName, final List<String> args) throws WorkerException {
+    return create(jobPath, imageName, args.toArray(new String[0]));
+  }
 
 }

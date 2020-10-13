@@ -27,10 +27,10 @@ package io.airbyte.integrations.destination.template;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.DestinationConnectionSpecification;
+import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -48,10 +48,10 @@ public class DestinationTemplate implements Destination {
   // the code in this method uses this suggestion. replace it if you'd like to take a different
   // approach.
   @Override
-  public DestinationConnectionSpecification spec() throws IOException {
+  public ConnectorSpecification spec() throws IOException {
     // return a jsonschema representation of the spec for the integration.
     final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, DestinationConnectionSpecification.class);
+    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
   }
 
   // fixme - implement this method such that it checks whether it can connect to the destination.
@@ -72,7 +72,7 @@ public class DestinationTemplate implements Destination {
 
   // fixme - implement this method such that it returns the current schema found in the destination.
   @Override
-  public StandardDiscoverSchemaOutput discover(JsonNode config) {
+  public StandardDiscoverCatalogOutput discover(JsonNode config) {
     throw new RuntimeException("Not Implemented");
   }
 

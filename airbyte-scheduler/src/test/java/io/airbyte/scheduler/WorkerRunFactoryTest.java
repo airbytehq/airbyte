@@ -36,7 +36,7 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -56,7 +56,7 @@ import org.mockito.ArgumentCaptor;
 
 class WorkerRunFactoryTest {
 
-  private static JsonNode CONFIG = Jsons.jsonNode(1);
+  private static final JsonNode CONFIG = Jsons.jsonNode(1);
 
   private Job job;
   private Path rootPath;
@@ -96,12 +96,12 @@ class WorkerRunFactoryTest {
   @Test
   void testSchema() {
     when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.DISCOVER_SCHEMA);
-    when(job.getConfig().getDiscoverSchema().getConnectionConfiguration()).thenReturn(CONFIG);
+    when(job.getConfig().getDiscoverCatalog().getConnectionConfiguration()).thenReturn(CONFIG);
 
     factory.create(job);
 
-    StandardDiscoverSchemaInput expectedInput = new StandardDiscoverSchemaInput().withConnectionConfiguration(CONFIG);
-    ArgumentCaptor<Worker<StandardDiscoverSchemaInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    StandardDiscoverCatalogInput expectedInput = new StandardDiscoverCatalogInput().withConnectionConfiguration(CONFIG);
+    ArgumentCaptor<Worker<StandardDiscoverCatalogInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputDiscoverSchemaWorker);
   }

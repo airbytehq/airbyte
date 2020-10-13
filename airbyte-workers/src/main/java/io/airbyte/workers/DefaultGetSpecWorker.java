@@ -29,7 +29,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardGetSpecOutput;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
@@ -40,24 +40,24 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultGetSpecWorker.class);
 
-  private final ProcessBuilderFactory processBuilderFactory;
+  private final IntegrationLauncher integrationLauncher;
 
   private Process process;
 
-  public DefaultGetSpecWorker(ProcessBuilderFactory processBuilderFactory) {
-    this.processBuilderFactory = processBuilderFactory;
+  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher) {
+    this.integrationLauncher = integrationLauncher;
   }
 
   @Override
   public OutputAndStatus<StandardGetSpecOutput> run(JobGetSpecConfig config, Path jobRoot) {
-    String imageName = config.getDockerImage();
     try {
-      process = processBuilderFactory.create(jobRoot, imageName, "--spec").start();
+      process = integrationLauncher.spec(jobRoot).start();
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
       try (InputStream stdout = process.getInputStream()) {
-        // retrieving spec should generally be instantaneous
-        WorkerUtils.gentleClose(process, 10, TimeUnit.SECONDS);
+        // retrieving spec should generally be instantaneous, but since docker images might not be pulled
+        // it could take a while longer depending on internet conditions as well.
+        WorkerUtils.gentleClose(process, 2, TimeUnit.MINUTES);
 
         if (process.exitValue() == 0) {
           String specString = new String(stdout.readAllBytes());
@@ -69,7 +69,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
       }
 
     } catch (Exception e) {
-      LOGGER.error("Error while getting spec from image {}: {}", imageName, e);
+      LOGGER.error("Error while getting spec from image {}: {}", config.getDockerImage(), e);
       return new OutputAndStatus<>(JobStatus.FAILED);
     }
   }
