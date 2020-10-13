@@ -42,7 +42,6 @@ import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
@@ -116,8 +115,8 @@ class BigQueryDestinationTest {
       throw new IllegalStateException(
           "Must provide path to a big query credentials file. By default {module-root}/config/credentials.json. Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
-    JsonNode credentialsJson = Jsons.deserialize(IOs.readFile(CREDENTIALS_PATH));
-    String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
 
     final String projectId = credentialsJson.get(BigQueryDestination.CONFIG_PROJECT_ID).asText();
     final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsJsonString.getBytes()));
@@ -133,9 +132,9 @@ class BigQueryDestinationTest {
     dataset = bigquery.create(datasetInfo);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("project_id", projectId)
-        .put("credentials_json", credentialsJsonString)
-        .put("dataset_id", datasetId)
+        .put(BigQueryDestination.CONFIG_PROJECT_ID, projectId)
+        .put(BigQueryDestination.CONFIG_CREDS, credentialsJsonString)
+        .put(BigQueryDestination.CONFIG_DATASET_ID, datasetId)
         .build());
 
     tornDown = false;
@@ -159,11 +158,11 @@ class BigQueryDestinationTest {
     tearDownBigQuery();
   }
 
-  public void tearDownBigQuery() {
+  private void tearDownBigQuery() {
     // allows deletion of a dataset that has contents
-    BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
+    final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 
-    boolean success = bigquery.delete(dataset.getDatasetId(), option);
+    final boolean success = bigquery.delete(dataset.getDatasetId(), option);
     if (success) {
       LOGGER.info("BQ Dataset " + dataset + " deleted...");
     } else {
@@ -193,7 +192,7 @@ class BigQueryDestinationTest {
 
   @Test
   void testCheckFailure() {
-    ((ObjectNode) config).put("project_id", "fake");
+    ((ObjectNode) config).put(BigQueryDestination.CONFIG_PROJECT_ID, "fake");
     final StandardCheckConnectionOutput actual = new BigQueryDestination().check(config);
     final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILURE)
         .withMessage("Access Denied: Project fake: User does not have bigquery.jobs.create permission in project fake.");
@@ -211,12 +210,12 @@ class BigQueryDestinationTest {
     consumer.accept(STATE_MESSAGE);
     consumer.close();
 
-    List<JsonNode> usersActual = retrieveRecords(USERS_STREAM_NAME);
+    final List<JsonNode> usersActual = retrieveRecords(USERS_STREAM_NAME);
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(SINGER_MESSAGE_USERS1.getRecord(), SINGER_MESSAGE_USERS2.getRecord());
     assertEquals(expectedUsersJson.size(), usersActual.size());
     assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
 
-    List<JsonNode> tasksActual = retrieveRecords(TASKS_STREAM_NAME);
+    final List<JsonNode> tasksActual = retrieveRecords(TASKS_STREAM_NAME);
     final List<JsonNode> expectedTasksJson = Lists.newArrayList(SINGER_MESSAGE_TASKS1.getRecord(), SINGER_MESSAGE_TASKS2.getRecord());
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
@@ -244,7 +243,7 @@ class BigQueryDestinationTest {
   }
 
   private Set<String> fetchNamesOfTablesInDb() throws InterruptedException {
-    QueryJobConfiguration queryConfig = QueryJobConfiguration
+    final QueryJobConfiguration queryConfig = QueryJobConfiguration
         .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES;", dataset.getDatasetId().getDataset()))
         .setUseLegacySql(false)
         .build();
@@ -255,12 +254,11 @@ class BigQueryDestinationTest {
   }
 
   private void assertTmpTablesNotPresent(List<String> tableNames) throws InterruptedException {
-    Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
+    final Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
     assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
   }
 
   private List<JsonNode> retrieveRecords(String tableName) throws Exception {
-    LOGGER.info("dataset: {}", dataset.getDatasetId().getDataset());
     QueryJobConfiguration queryConfig =
         QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();

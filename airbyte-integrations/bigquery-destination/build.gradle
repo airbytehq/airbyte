@@ -30,6 +30,8 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
     implementation 'org.apache.commons:commons-lang3:3.11'
 
+    integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
+
 }
 
 application {

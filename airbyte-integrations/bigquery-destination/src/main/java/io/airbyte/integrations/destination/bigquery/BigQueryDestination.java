@@ -99,7 +99,7 @@ public class BigQueryDestination implements Destination {
   @Override
   public StandardCheckConnectionOutput check(JsonNode config) {
     try {
-      String datasetId = config.get(CONFIG_DATASET_ID).asText();
+      final String datasetId = config.get(CONFIG_DATASET_ID).asText();
 
       QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
@@ -118,10 +118,10 @@ public class BigQueryDestination implements Destination {
   }
 
   private BigQuery getBigQuery(JsonNode config) {
-    String projectId = config.get(CONFIG_PROJECT_ID).asText();
-    String credentialsString = config.get(CONFIG_CREDS).asText();
+    final String projectId = config.get(CONFIG_PROJECT_ID).asText();
+    final String credentialsString = config.get(CONFIG_CREDS).asText();
     try {
-      ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsString.getBytes()));
+      final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsString.getBytes()));
 
       return BigQueryOptions.newBuilder()
           .setProjectId(projectId)
@@ -134,8 +134,8 @@ public class BigQueryDestination implements Destination {
   }
 
   static ImmutablePair<Job, String> executeQuery(BigQuery bigquery, QueryJobConfiguration queryConfig) {
-    JobId jobId = JobId.of(UUID.randomUUID().toString());
-    Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
+    final JobId jobId = JobId.of(UUID.randomUUID().toString());
+    final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
   }
 
@@ -221,14 +221,14 @@ public class BigQueryDestination implements Destination {
   private static void createTable(BigQuery bigquery, String datasetName, String tableName) {
     try {
 
-      TableId tableId = TableId.of(datasetName, tableName);
-      TableDefinition tableDefinition = StandardTableDefinition.of(SCHEMA);
-      TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
+      final TableId tableId = TableId.of(datasetName, tableName);
+      final TableDefinition tableDefinition = StandardTableDefinition.of(SCHEMA);
+      final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
       bigquery.create(tableInfo);
-      System.out.println("Table created successfully");
+      LOGGER.info("Table created successfully");
     } catch (BigQueryException e) {
-      System.out.println("Table was not created. \n" + e.toString());
+      LOGGER.info("Table was not created. \n" + e.toString());
     }
   }
 
