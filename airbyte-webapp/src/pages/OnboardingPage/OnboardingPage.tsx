@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
-import { useFetcher, useResource } from "rest-hooks";
+import { useResource } from "rest-hooks";
 
 import { H2 } from "../../components/Titles";
 import StepsMenu from "../../components/StepsMenu";
@@ -10,17 +10,17 @@ import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
 import SourceImplementationResource from "../../core/resources/SourceImplementation";
 import DestinationImplementationResource from "../../core/resources/DestinationImplementation";
-import ConnectionResource from "../../core/resources/Connection";
 import config from "../../config";
 import StepsConfig, { StepsTypes } from "./components/StepsConfig";
 import PrepareDropDownLists from "./components/PrepareDropDownLists";
-import FrequencyConfig from "../../data/FrequencyConfig.json";
 import { Routes } from "../routes";
 import useRouter from "../../components/hooks/useRouterHook";
 import { Source } from "../../core/resources/Source";
 import { SyncSchema } from "../../core/resources/Schema";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
-import WorkspaceResource from "../../core/resources/Workspace";
+import useSource from "../../components/hooks/services/useSourceHook";
+import useDestination from "../../components/hooks/services/useDestinationHook";
+import useConnection from "../../components/hooks/services/useConnectionHook";
 
 const Content = styled.div`
   width: 100%;
@@ -60,6 +60,9 @@ const OnboardingPage: React.FC = () => {
   }, []);
 
   const { push } = useRouter();
+  const { createSource, recreateSource } = useSource();
+  const { createDestination, recreateDestination } = useDestination();
+  const { createConnection } = useConnection();
 
   const { sources } = useResource(SourceImplementationResource.listShape(), {
     workspaceId: config.ui.workspaceId
@@ -73,21 +76,17 @@ const OnboardingPage: React.FC = () => {
 
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
+
+  const afterUpdateStep = () => {
+    setSuccessRequest(false);
+    setErrorStatusRequest(0);
+  };
+
   const { currentStep, steps, setCurrentStep } = StepsConfig(
     !!sources.length,
-    !!destinations.length
+    !!destinations.length,
+    afterUpdateStep
   );
-  const createSourcesImplementation = useFetcher(
-    SourceImplementationResource.createShape()
-  );
-  const createDestinationsImplementation = useFetcher(
-    DestinationImplementationResource.createShape()
-  );
-  const createConnection = useFetcher(ConnectionResource.createShape());
-  const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
-  const workspace = useResource(WorkspaceResource.detailShape(), {
-    workspaceId: config.ui.workspaceId
-  });
 
   const {
     sourcesDropDownData,
@@ -103,59 +102,24 @@ const OnboardingPage: React.FC = () => {
     connectionConfiguration?: any;
   }) => {
     setErrorStatusRequest(0);
-
     const sourceConnector = getSourceById(values.serviceType);
-    AnalyticsService.track("New Source - Action", {
-      user_id: config.ui.workspaceId,
-      action: "Test a connector",
-      connector_source: sourceConnector?.name,
-      connector_source_id: sourceConnector?.sourceId
-    });
 
     try {
-      await createSourcesImplementation(
-        {},
-        {
-          name: values.name,
-          workspaceId: config.ui.workspaceId,
-          sourceSpecificationId: values.specificationId,
-          connectionConfiguration: values.connectionConfiguration
-        },
-        [
-          [
-            SourceImplementationResource.listShape(),
-            { workspaceId: config.ui.workspaceId },
-            (
-              newSourceImplementationId: string,
-              sourcesImplementationIds: { sources: string[] }
-            ) => ({
-              sources: [
-                ...sourcesImplementationIds.sources,
-                newSourceImplementationId
-              ]
-            })
-          ]
-        ]
-      );
+      if (!!sources.length) {
+        await recreateSource({
+          values,
+          sourceImplementationId: sources[0].sourceImplementationId
+        });
+      } else {
+        await createSource({ values, sourceConnector });
+      }
 
       setSuccessRequest(true);
-      AnalyticsService.track("New Source - Action", {
-        user_id: config.ui.workspaceId,
-        action: "Tested connector - success",
-        connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceId
-      });
       setTimeout(() => {
         setSuccessRequest(false);
         setCurrentStep(StepsTypes.CREATE_DESTINATION);
       }, 2000);
     } catch (e) {
-      AnalyticsService.track("New Source - Action", {
-        user_id: config.ui.workspaceId,
-        action: "Tested connector - failure",
-        connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceId
-      });
       setErrorStatusRequest(e.status);
     }
   };
@@ -167,59 +131,28 @@ const OnboardingPage: React.FC = () => {
     connectionConfiguration?: any;
   }) => {
     setErrorStatusRequest(0);
-
     const destinationConnector = getDestinationById(values.serviceType);
-    AnalyticsService.track("New Destination - Action", {
-      user_id: config.ui.workspaceId,
-      action: "Test a connector",
-      connector_destination: destinationConnector?.name,
-      connector_destination_id: destinationConnector?.destinationId
-    });
 
     try {
-      await createDestinationsImplementation(
-        {},
-        {
-          name: values.name,
-          workspaceId: config.ui.workspaceId,
-          destinationSpecificationId: values.specificationId,
-          connectionConfiguration: values.connectionConfiguration
-        },
-        [
-          [
-            DestinationImplementationResource.listShape(),
-            { workspaceId: config.ui.workspaceId },
-            (
-              newDestinationImplementationId: string,
-              destinationsImplementationIds: { destinations: string[] }
-            ) => ({
-              destinations: [
-                ...destinationsImplementationIds.destinations,
-                newDestinationImplementationId
-              ]
-            })
-          ]
-        ]
-      );
+      if (!!destinations.length) {
+        await recreateDestination({
+          values,
+          destinationImplementationId:
+            destinations[0].destinationImplementationId
+        });
+      } else {
+        await createDestination({
+          values,
+          destinationConnector
+        });
+      }
 
       setSuccessRequest(true);
-      AnalyticsService.track("New Destination - Action", {
-        user_id: config.ui.workspaceId,
-        action: "Tested connector - success",
-        connector_destination: destinationConnector?.name,
-        connector_destination_id: destinationConnector?.destinationId
-      });
       setTimeout(() => {
         setSuccessRequest(false);
         setCurrentStep(StepsTypes.SET_UP_CONNECTION);
       }, 2000);
     } catch (e) {
-      AnalyticsService.track("New Destination - Action", {
-        user_id: config.ui.workspaceId,
-        action: "Tested connector - failure",
-        connector_destination: destinationConnector?.name,
-        connector_destination_id: destinationConnector?.destinationId
-      });
       setErrorStatusRequest(e.status);
     }
   };
@@ -229,9 +162,6 @@ const OnboardingPage: React.FC = () => {
     syncSchema: SyncSchema;
     source?: Source;
   }) => {
-    const frequencyData = FrequencyConfig.find(
-      item => item.value === values.frequency
-    );
     const sourceConnector = getSourceById(sources[0].sourceId);
     const destinationConnector = getDestinationById(
       destinations[0].destinationId
@@ -239,58 +169,14 @@ const OnboardingPage: React.FC = () => {
 
     setErrorStatusRequest(0);
     try {
-      await createConnection(
-        {
-          sourceId: values.source?.sourceId || "",
-          sourceName: values.source?.name || "",
-          name: sources[0].name || ""
-        },
-        {
-          sourceImplementationId: sources[0].sourceImplementationId,
-          destinationImplementationId:
-            destinations[0].destinationImplementationId,
-          syncMode: "full_refresh",
-          schedule: frequencyData?.config,
-          status: "active",
-          syncSchema: values.syncSchema
-        },
-        [
-          [
-            ConnectionResource.listShape(),
-            { workspaceId: config.ui.workspaceId },
-            (
-              newConnectionId: string,
-              connectionsIds: { connections: string[] }
-            ) => ({
-              connections: [
-                ...(connectionsIds?.connections || []),
-                newConnectionId
-              ]
-            })
-          ]
-        ]
-      );
-      AnalyticsService.track("New Connection - Action", {
-        user_id: config.ui.workspaceId,
-        action: "Set up connection",
-        frequency: frequencyData?.text,
-        connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceId,
-        connector_destination: destinationConnector?.name,
-        connector_destination_id: destinationConnector?.destinationId
+      await createConnection({
+        values,
+        sourceImplementation: sources[0],
+        destinationImplementationId:
+          destinations[0].destinationImplementationId,
+        sourceConnector,
+        destinationConnector
       });
-
-      await updateWorkspace(
-        {},
-        {
-          workspaceId: workspace.workspaceId,
-          initialSetupComplete: workspace.initialSetupComplete,
-          onboardingComplete: true,
-          anonymousDataCollection: workspace.anonymousDataCollection,
-          news: workspace.news,
-          securityUpdates: workspace.securityUpdates
-        }
-      );
 
       push(Routes.Root);
     } catch (e) {
@@ -306,6 +192,9 @@ const OnboardingPage: React.FC = () => {
           dropDownData={sourcesDropDownData}
           hasSuccess={successRequest}
           errorStatus={errorStatusRequest}
+          sourceImplementation={
+            sources.length && !successRequest ? sources[0] : undefined
+          }
         />
       );
     }
@@ -317,6 +206,9 @@ const OnboardingPage: React.FC = () => {
           hasSuccess={successRequest}
           errorStatus={errorStatusRequest}
           currentSourceId={sources[0].sourceId}
+          destinationImplementation={
+            destinations.length && !successRequest ? destinations[0] : undefined
+          }
         />
       );
     }

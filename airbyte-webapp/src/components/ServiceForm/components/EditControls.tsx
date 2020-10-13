@@ -55,7 +55,7 @@ const EditControls: React.FC<IProps> = ({
         </SpinnerContainer>
       );
     }
-    if (errorMessage && !dirty) {
+    if (errorMessage) {
       return <Error>{errorMessage}</Error>;
     }
     if (successMessage && !dirty) {

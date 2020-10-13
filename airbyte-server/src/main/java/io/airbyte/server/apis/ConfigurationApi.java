@@ -37,6 +37,7 @@ import io.airbyte.api.model.DestinationImplementationCreate;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationRead;
 import io.airbyte.api.model.DestinationImplementationReadList;
+import io.airbyte.api.model.DestinationImplementationRecreate;
 import io.airbyte.api.model.DestinationImplementationUpdate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
@@ -54,6 +55,7 @@ import io.airbyte.api.model.SourceImplementationDiscoverSchemaRead;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.api.model.SourceImplementationRead;
 import io.airbyte.api.model.SourceImplementationReadList;
+import io.airbyte.api.model.SourceImplementationRecreate;
 import io.airbyte.api.model.SourceImplementationUpdate;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
@@ -322,6 +324,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WbConnectionReadList webBackendListConnectionsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public DestinationImplementationRead webBackendRecreateDestinationImplementation(@Valid DestinationImplementationRecreate destinationImplementationRecreate) {
+    return execute(
+        () -> webBackendDestinationImplementationHandler.webBackendRecreateDestinationImplementationAndCheck(destinationImplementationRecreate));
+  }
+
+  @Override
+  public SourceImplementationRead webBackendRecreateSourceImplementation(@Valid SourceImplementationRecreate sourceImplementationRecreate) {
+    return execute(() -> webBackendSourceImplementationHandler.webBackendRecreateSourceImplementationAndCheck(sourceImplementationRecreate));
   }
 
   @Override
