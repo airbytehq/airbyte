@@ -92,7 +92,7 @@ class AirbyteEntrypoint(object):
                 print(catalog.serialize())
                 sys.exit(0)
             elif cmd == "read":
-                generator = source.read(logging, rendered_config_path, parsed_args.state)
+                generator = source.read(logging, rendered_config_path, parsed_args.catalog, parsed_args.state)
                 for message in generator:
                     print(message.serialize())
                 sys.exit(0)

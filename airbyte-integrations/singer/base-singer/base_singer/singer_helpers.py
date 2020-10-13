@@ -9,6 +9,7 @@ from airbyte_protocol import AirbyteStateMessage
 from airbyte_protocol import AirbyteStream
 from typing import Generator
 from datetime import datetime
+from dataclasses import dataclass
 
 
 # helper to delegate input and output to a piped command
@@ -38,6 +39,12 @@ def to_json(string):
         return False
 
 
+@dataclass
+class Catalogs:
+    singer_catalog: object
+    airbyte_catalog: AirbyteCatalog
+
+
 class SingerHelper:
     @staticmethod
     def spec_from_file(spec_path) -> AirbyteSpec:
@@ -45,9 +52,8 @@ class SingerHelper:
             spec_text = file.read()
         return AirbyteSpec(spec_text)
 
-
     @staticmethod
-    def discover(shell_command, transform=(lambda catalog: catalog)) -> AirbyteCatalog:
+    def discover(shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)) -> Catalogs:
         completed_process = subprocess.run(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                            universal_newlines=True)
 
@@ -55,25 +61,24 @@ class SingerHelper:
             log_line(line, "ERROR")
 
         airbyte_streams = []
-        obj = json.loads(completed_process.stdout)
+        singer_catalog = singer_transform(json.loads(completed_process.stdout))
 
-        for stream in obj.get("streams"):
+        for stream in singer_catalog.get("streams"):
             name = stream.get("stream")
             schema = stream.get("schema").get("properties")
             airbyte_streams += [AirbyteStream(name=name, schema=schema)]
 
-        catalog = AirbyteCatalog(streams=airbyte_streams)
+        airbyte_catalog = airbyte_transform(AirbyteCatalog(streams=airbyte_streams))
 
-        return transform(catalog)
+        return Catalogs(singer_catalog=singer_catalog, airbyte_catalog=airbyte_catalog)
 
     @staticmethod
     def read(shell_command, is_message=(lambda x: True), transform=(lambda x: x)) -> Generator[AirbyteMessage, None, None]:
         with subprocess.Popen(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1,
                               universal_newlines=True) as p:
-            # todo: generate combined schema message from discovery and reading the catalog
-            for tuple in zip(p.stdout, p.stderr):
-                out_line = tuple[0]
-                err_line = tuple[1]
+            for line_tuple in zip(p.stdout, p.stderr):
+                out_line = line_tuple[0]
+                err_line = line_tuple[1]
 
                 if out_line:
                     out_json = to_json(out_line)

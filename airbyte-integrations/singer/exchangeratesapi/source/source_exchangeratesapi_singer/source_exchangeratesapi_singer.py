@@ -6,6 +6,11 @@ from airbyte_protocol import AirbyteMessage
 import urllib.request
 from typing import Generator
 from base_singer import SingerHelper
+from base_singer import Catalogs
+
+
+def get_catalogs() -> Catalogs:
+    return SingerHelper.discover("tap-exchangeratesapi | grep '\"type\": \"SCHEMA\"' | head -1 | jq -c '{\"streams\":[{\"stream\": .stream, \"schema\": .schema}]}'")
 
 
 class SourceExchangeRatesApiSinger(Source):
@@ -20,11 +25,18 @@ class SourceExchangeRatesApiSinger(Source):
         return AirbyteCheckResponse(code == 200, {})
 
     def discover(self, config_object, rendered_config_path) -> AirbyteCatalog:
-        return SingerHelper.discover("tap-exchangeratesapi | grep '\"type\": \"SCHEMA\"' | head -1 | jq -c '{\"streams\":[{\"stream\": .stream, \"schema\": .schema}]}'")
+        return get_catalogs().airbyte_catalog
 
-    # todo: handle state
-    def read(self, config_object, rendered_config_path, state=None) -> Generator[AirbyteMessage, None, None]:
+    def read(self, config_object, rendered_config_path, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
+        airbyte_catalog = catalog_path # todo: read
+
+        # call discover
+        singer_catalog = get_catalogs().singer_catalog
+
+        # todo: combine discovered singer catalog with the generated airbyte catalog
+
+        sync_prefix = f"tap-exchangeratesapi --config {rendered_config_path}"
         if state:
-            return SingerHelper.read(f"tap-exchangeratesapi --config {rendered_config_path} --state {state}")
+            return SingerHelper.read(sync_prefix + f"--state {state}")
         else:
-            return SingerHelper.read(f"tap-exchangeratesapi --config {rendered_config_path}")
+            return SingerHelper.read(sync_prefix)
