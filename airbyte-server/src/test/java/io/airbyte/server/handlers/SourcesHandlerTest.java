@@ -51,13 +51,14 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.validators.DockerImageValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SourcesHandlerTest {
 
   private ConfigRepository configRepository;
-  private SchedulerHandler schedulerHandler;
+  private DockerImageValidator dockerImageValidator;
   private StandardSource source;
   private SourcesHandler sourceHandler;
   private Supplier<UUID> uuidSupplier;
@@ -67,10 +68,10 @@ class SourcesHandlerTest {
   void setUp() {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
-    schedulerHandler = mock(SchedulerHandler.class);
+    dockerImageValidator = mock(DockerImageValidator.class);
 
     source = generateSource();
-    sourceHandler = new SourcesHandler(configRepository, schedulerHandler, uuidSupplier);
+    sourceHandler = new SourcesHandler(configRepository, dockerImageValidator, uuidSupplier);
   }
 
   private StandardSource generateSource() {
@@ -148,38 +149,7 @@ class SourcesHandlerTest {
     final SourceRead actualRead = sourceHandler.createSource(create);
 
     assertEquals(expectedRead, actualRead);
-    final String taggedImageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
-    verify(schedulerHandler).getConnectorSpecification(taggedImageName);
-  }
-
-  @Test
-  void testCreateInvalidSourceFails() throws IOException, URISyntaxException, JsonValidationException {
-    final SourceCreate create = new SourceCreate()
-        .name(source.getName())
-        .dockerRepository(source.getDockerRepository())
-        .dockerImageTag(source.getDockerImageTag())
-        .documentationUrl(new URI(source.getDocumentationUrl()));
-
-    final String taggedImageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
-    when(schedulerHandler.getConnectorSpecification(taggedImageName)).thenThrow(new IllegalArgumentException("Docker image not found"));
-
-    assertThrows(KnownException.class, () -> sourceHandler.createSource(create), "Expected source creation to fail");
-    verify(schedulerHandler).getConnectorSpecification(taggedImageName);
-  }
-
-  @Test
-  void testUpdateInvalidSourceFails() throws IOException, JsonValidationException, ConfigNotFoundException {
-    final String newDockerTag = "newtag123";
-    final String newDockerImage = DockerUtils.getTaggedImageName(source.getDockerRepository(), newDockerTag);
-    when(schedulerHandler.getConnectorSpecification(newDockerImage)).thenThrow(new IllegalArgumentException("invalid image"));
-    when(configRepository.getStandardSource(source.getSourceId())).thenReturn(source);
-
-    assertThrows(
-        KnownException.class,
-        () -> sourceHandler.updateSource(new SourceUpdate().sourceId(source.getSourceId()).dockerImageTag(newDockerTag)),
-        "Expected updating source to fail"
-    );
-    verify(schedulerHandler).getConnectorSpecification(newDockerImage);
+    verify(dockerImageValidator).assertValidIntegrationImage(source.getDockerRepository(), source.getDockerImageTag());
   }
 
   @Test
@@ -193,7 +163,7 @@ class SourcesHandlerTest {
     SourceRead sourceRead = sourceHandler.updateSource(new SourceUpdate().sourceId(source.getSourceId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
-    verify(schedulerHandler).getConnectorSpecification(newDockerImage);
+    verify(dockerImageValidator).assertValidIntegrationImage(source.getDockerRepository(), source.getDockerImageTag());
   }
 
 }

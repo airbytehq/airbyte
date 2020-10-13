@@ -167,7 +167,7 @@ public class SchedulerHandler {
         .sourceId(sourceId);
   }
 
-  ConnectorSpecification getConnectorSpecification(String imageName) throws IOException {
+  public ConnectorSpecification getConnectorSpecification(String imageName) throws IOException {
     final long jobId = schedulerPersistence.createGetSpecJob(imageName);
     LOGGER.debug("getSourceSpec jobId = {}", jobId);
 

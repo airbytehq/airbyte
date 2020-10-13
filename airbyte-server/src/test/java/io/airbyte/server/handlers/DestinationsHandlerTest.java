@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,12 +51,13 @@ import java.net.URISyntaxException;
 import java.util.UUID;
 
 import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.validators.DockerImageValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DestinationsHandlerTest {
 
-  private SchedulerHandler schedulerHandler;
+  private DockerImageValidator dockerImageValidator;
   private ConfigRepository configRepository;
   private StandardDestination destination;
   private DestinationsHandler destinationHandler;
@@ -63,9 +65,9 @@ class DestinationsHandlerTest {
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
-    schedulerHandler = mock(SchedulerHandler.class);
+    dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
-    destinationHandler = new DestinationsHandler(configRepository, schedulerHandler);
+    destinationHandler = new DestinationsHandler(configRepository, dockerImageValidator);
   }
 
   private StandardDestination generateDestination() {
@@ -136,28 +138,10 @@ class DestinationsHandlerTest {
     final String newDockerImageTag = "averydifferenttag";
     assertNotEquals(newDockerImageTag, currentTag);
 
-    String newImageName = DockerUtils.getTaggedImageName(currentRepo, newDockerImageTag);
-    when(schedulerHandler.getConnectorSpecification(newImageName)).thenReturn(new ConnectorSpecification());
-
     final DestinationRead sourceRead = destinationHandler.updateDestination(
         new DestinationUpdate().destinationId(this.destination.getDestinationId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
-    verify(schedulerHandler).getConnectorSpecification(newImageName);
+    verify(dockerImageValidator).assertValidIntegrationImage(currentRepo, newDockerImageTag);
   }
-
-  @Test
-  void testUpdateDestinationWithInvalidDockerImage() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final String newTag = "newtag123";
-    final String newImageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), newTag);
-    when(configRepository.getStandardDestination(destination.getDestinationId())).thenReturn(destination);
-    when(schedulerHandler.getConnectorSpecification(newImageName)).thenThrow(new IllegalArgumentException());
-    assertThrows(
-        KnownException.class,
-        () -> destinationHandler.updateDestination(new DestinationUpdate().destinationId(destination.getDestinationId()).dockerImageTag(newTag)),
-        "Expected updating destination with invalid docker image to fail."
-    );
-    verify(schedulerHandler).getConnectorSpecification(newImageName);
-  }
-
 }

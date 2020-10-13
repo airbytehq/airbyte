@@ -84,6 +84,8 @@ import io.airbyte.server.handlers.WebBackendSourceImplementationHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import java.io.IOException;
 import javax.validation.Valid;
+
+import io.airbyte.server.validators.DockerImageValidator;
 import org.eclipse.jetty.http.HttpStatus;
 
 @javax.ws.rs.Path("/v1")
@@ -106,9 +108,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
     workspacesHandler = new WorkspacesHandler(configRepository);
-    sourcesHandler = new SourcesHandler(configRepository, schedulerHandler);
+    DockerImageValidator dockerImageValidator = new DockerImageValidator(schedulerHandler);
+    sourcesHandler = new SourcesHandler(configRepository, dockerImageValidator);
     connectionsHandler = new ConnectionsHandler(configRepository);
-    destinationsHandler = new DestinationsHandler(configRepository, schedulerHandler);
+    destinationsHandler = new DestinationsHandler(configRepository, dockerImageValidator);
     destinationImplementationsHandler =
         new DestinationImplementationsHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     sourceImplementationsHandler = new SourceImplementationsHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);

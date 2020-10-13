@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import io.airbyte.server.validators.DockerImageValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,18 +51,18 @@ public class SourcesHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SourcesHandler.class);
 
-  private final SchedulerHandler schedulerHandler;
+  private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
 
-  public SourcesHandler(final ConfigRepository configRepository, SchedulerHandler schedulerHandler) {
-    this(configRepository, schedulerHandler, UUID::randomUUID);
+  public SourcesHandler(final ConfigRepository configRepository, DockerImageValidator imageValidator) {
+    this(configRepository, imageValidator, UUID::randomUUID);
   }
 
-  public SourcesHandler(final ConfigRepository configRepository, SchedulerHandler schedulerHandler, Supplier<UUID> uuidSupplier) {
+  public SourcesHandler(final ConfigRepository configRepository, DockerImageValidator imageValidator, Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
-    this.schedulerHandler = schedulerHandler;
+    this.imageValidator = imageValidator;
   }
 
   public SourceReadList listSources() throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -76,7 +78,7 @@ public class SourcesHandler {
   }
 
   public SourceRead createSource(SourceCreate sourceCreate) throws JsonValidationException, IOException {
-    assertDockerImageIsValidIntegration(sourceCreate.getDockerRepository(), sourceCreate.getDockerImageTag());
+    imageValidator.assertValidIntegrationImage(sourceCreate.getDockerRepository(), sourceCreate.getDockerImageTag());
 
     UUID id = uuidSupplier.get();
     StandardSource source = new StandardSource()
@@ -93,7 +95,7 @@ public class SourcesHandler {
 
   public SourceRead updateSource(SourceUpdate sourceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     StandardSource currentSource = configRepository.getStandardSource(sourceUpdate.getSourceId());
-    assertDockerImageIsValidIntegration(currentSource.getDockerRepository(), sourceUpdate.getDockerImageTag());
+    imageValidator.assertValidIntegrationImage(currentSource.getDockerRepository(), sourceUpdate.getDockerImageTag());
 
     StandardSource newSource = new StandardSource()
         .withSourceId(currentSource.getSourceId())
@@ -104,17 +106,6 @@ public class SourcesHandler {
 
     configRepository.writeStandardSource(newSource);
     return buildSourceRead(newSource);
-  }
-
-  private void assertDockerImageIsValidIntegration(String dockerRepo, String tag) {
-    // Validates that the docker image exists and can generate a compatible spec by running a getSpec
-    // job on the provided image.
-    String imageName = DockerUtils.getTaggedImageName(dockerRepo, tag);
-    try {
-      schedulerHandler.getConnectorSpecification(imageName);
-    } catch (Exception e) {
-      throw new KnownException(422, "Encountered an issue while validating input docker image: " + e.getMessage());
-    }
   }
 
   private static SourceRead buildSourceRead(StandardSource standardSource) {
