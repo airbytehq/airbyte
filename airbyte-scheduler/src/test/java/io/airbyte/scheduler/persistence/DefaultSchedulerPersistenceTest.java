@@ -40,7 +40,7 @@ import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.Field;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
-import io.airbyte.config.JobDiscoverSchemaConfig;
+import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
@@ -226,13 +226,13 @@ class DefaultSchedulerPersistenceTest {
 
     final Record jobEntry = getJobRecord(jobId);
 
-    final JobDiscoverSchemaConfig jobDiscoverSchemaConfig = new JobDiscoverSchemaConfig()
+    final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
         .withConnectionConfiguration(SOURCE_CONNECTION_IMPLEMENTATION.getConfiguration())
         .withDockerImage(SOURCE_IMAGE_NAME);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA)
-        .withDiscoverSchema(jobDiscoverSchemaConfig);
+        .withDiscoverCatalog(jobDiscoverCatalogConfig);
 
     assertJobConfigEqualJobDbRecord(jobId, SOURCE_CONNECTION_IMPLEMENTATION.getSourceImplementationId().toString(), jobConfig, jobEntry);
   }
@@ -344,7 +344,7 @@ class DefaultSchedulerPersistenceTest {
         DESTINATION_IMAGE_NAME);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
-    final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_SCHEMA);
+    final JobOutput jobOutput = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG);
     schedulerPersistence.writeOutput(jobId, jobOutput);
 
     final Job updated = schedulerPersistence.getJob(jobId);

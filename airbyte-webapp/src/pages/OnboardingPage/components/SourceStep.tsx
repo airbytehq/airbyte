@@ -10,8 +10,10 @@ import SourceSpecificationResource, {
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import config from "../../../config";
 import PrepareDropDownLists from "./PrepareDropDownLists";
+import { SourceImplementation } from "../../../core/resources/SourceImplementation";
 
 type IProps = {
+  sourceImplementation?: SourceImplementation;
   onSubmit: (values: {
     name: string;
     serviceType: string;
@@ -52,7 +54,8 @@ const SourceStep: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
   hasSuccess,
-  errorStatus
+  errorStatus,
+  sourceImplementation
 }) => {
   const [sourceId, setSourceId] = useState("");
   const { sourceSpecification, isLoading } = useSourceSpecificationLoad(
@@ -89,9 +92,14 @@ const SourceStep: React.FC<IProps> = ({
       <FormattedMessage id="form.someError" />
     );
 
+  useEffect(() => setSourceId(sourceImplementation?.sourceId || ""), [
+    sourceImplementation
+  ]);
+
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
       <ServiceForm
+        allowChangeConnector
         onDropDownSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
         formType="source"
@@ -101,6 +109,15 @@ const SourceStep: React.FC<IProps> = ({
         specifications={sourceSpecification?.connectionSpecification}
         documentationUrl={sourceSpecification?.documentationUrl}
         isLoading={isLoading}
+        formValues={
+          sourceImplementation
+            ? {
+                ...sourceImplementation.connectionConfiguration,
+                name: sourceImplementation.name,
+                serviceType: sourceImplementation.sourceId
+              }
+            : null
+        }
       />
     </ContentCard>
   );

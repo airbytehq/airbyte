@@ -1,17 +1,16 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { useFetcher, useResource } from "rest-hooks";
+import { useResource } from "rest-hooks";
 
 import ContentCard from "../../../../../components/ContentCard";
 import DeleteSource from "./DeleteSource";
 import ServiceForm from "../../../../../components/ServiceForm";
-import ConnectionResource, {
-  Connection
-} from "../../../../../core/resources/Connection";
+import { Connection } from "../../../../../core/resources/Connection";
 import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
 import SourceSpecificationResource from "../../../../../core/resources/SourceSpecification";
-import SourceImplementationResource from "../../../../../core/resources/SourceImplementation";
+import useSource from "../../../../../components/hooks/services/useSourceHook";
+import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 
 type IProps = {
   sourceData: Connection;
@@ -27,14 +26,8 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const updateConnection = useFetcher(ConnectionResource.updateShape());
-
-  const updateStateConnection = useFetcher(
-    ConnectionResource.updateStateShape()
-  );
-  const updateSourceImplementation = useFetcher(
-    SourceImplementationResource.updateShape()
-  );
+  const { updateSource } = useSource();
+  const { updateConnection, updateStateConnection } = useConnection();
 
   const sourceSpecification = useResource(
     SourceSpecificationResource.detailShape(),
@@ -60,40 +53,25 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
     );
     setErrorMessage("");
     if (values.frequency !== schedule?.value) {
-      await updateConnection(
-        {},
-        {
-          connectionId: sourceData.connectionId,
-          syncSchema: sourceData.syncSchema,
-          status: sourceData.status,
-          schedule: frequencyData?.config
-        }
-      );
+      await updateConnection({
+        connectionId: sourceData.connectionId,
+        syncSchema: sourceData.syncSchema,
+        status: sourceData.status,
+        schedule: frequencyData?.config || null
+      });
     }
 
-    const result = await updateSourceImplementation(
-      {
-        sourceImplementationId: sourceData.source?.sourceImplementationId || ""
-      },
-      {
-        name: values.name,
-        sourceImplementationId: sourceData.source?.sourceImplementationId,
-        connectionConfiguration: values.connectionConfiguration
-      }
-    );
+    const result = await updateSource({
+      values,
+      sourceImplementationId: sourceData.source?.sourceImplementationId || ""
+    });
 
-    await updateStateConnection(
-      {},
-      {
-        ...sourceData,
-        schedule: frequencyData?.config,
-        source: {
-          ...sourceData.source,
-          name: values.name,
-          connectionConfiguration: values.connectionConfiguration
-        }
-      }
-    );
+    await updateStateConnection({
+      sourceData,
+      sourceName: values.name,
+      connectionConfiguration: values.connectionConfiguration,
+      schedule: frequencyData?.config || null
+    });
 
     if (result.status === "failure") {
       setErrorMessage(result.message);

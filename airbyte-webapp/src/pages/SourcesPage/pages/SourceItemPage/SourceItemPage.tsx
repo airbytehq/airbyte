@@ -1,6 +1,6 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useFetcher, useResource } from "rest-hooks";
+import { useResource } from "rest-hooks";
 
 import PageTitle from "../../../../components/PageTitle";
 import Breadcrumbs from "../../../../components/Breadcrumbs";
@@ -18,11 +18,12 @@ import config from "../../../../config";
 import DestinationResource from "../../../../core/resources/Destination";
 import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
 import FrequencyConfig from "../../../../data/FrequencyConfig.json";
+import useConnection from "../../../../components/hooks/services/useConnectionHook";
 
 const SourceItemPage: React.FC = () => {
   const { query, push, history } = useRouter();
 
-  const updateConnection = useFetcher(ConnectionResource.updateShape());
+  const { updateConnection } = useConnection();
 
   const connection = useResource(ConnectionResource.detailShape(), {
     // @ts-ignore
@@ -73,15 +74,12 @@ const SourceItemPage: React.FC = () => {
   ];
 
   const onChangeStatus = async () => {
-    await updateConnection(
-      {},
-      {
-        connectionId: connection.connectionId,
-        syncSchema: connection.syncSchema,
-        schedule: connection.schedule,
-        status: connection.status === "active" ? "inactive" : "active"
-      }
-    );
+    await updateConnection({
+      connectionId: connection.connectionId,
+      syncSchema: connection.syncSchema,
+      schedule: connection.schedule,
+      status: connection.status === "active" ? "inactive" : "active"
+    });
 
     AnalyticsService.track("Source - Action", {
       user_id: config.ui.workspaceId,
@@ -134,12 +132,7 @@ const SourceItemPage: React.FC = () => {
     }
     if (currentStep === "schema") {
       return (
-        <SchemaView
-          syncSchema={connection.syncSchema}
-          connectionId={connection.connectionId}
-          connectionStatus={connection.status}
-          afterSave={onAfterSaveSchema}
-        />
+        <SchemaView connection={connection} afterSave={onAfterSaveSchema} />
       );
     }
 

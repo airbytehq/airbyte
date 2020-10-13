@@ -24,21 +24,9 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
-import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
-import java.nio.file.Path;
+import io.airbyte.workers.protocols.Destination;
 
-public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
-
-  void start(StandardTargetConfig targetConfig, Path jobRoot) throws Exception;
-
-  @Override
-  void accept(AirbyteMessage message) throws Exception;
-
-  void notifyEndOfStream() throws Exception;
-
-  @Override
-  void close() throws Exception;
+public interface AirbyteDestination extends Destination<AirbyteMessage> {
 
 }

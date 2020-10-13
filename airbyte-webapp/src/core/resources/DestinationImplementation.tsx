@@ -82,4 +82,22 @@ export default class DestinationImplementationResource extends BaseResource
       schema: this.asSchema()
     };
   }
+
+  static recreateShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.updateShape(),
+      fetch: async (
+        _: Readonly<Record<string, string | number>>,
+        body: Readonly<object>
+      ): Promise<any> => {
+        const response = await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/destination_implementations/recreate`,
+          body
+        );
+        return response;
+      },
+      schema: this.asSchema()
+    };
+  }
 }

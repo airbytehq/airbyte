@@ -35,23 +35,23 @@ import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverSchemaInput;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.SingerCheckConnectionWorker;
-import io.airbyte.workers.SingerDiscoverSchemaWorker;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.SingerIntegrationLauncher;
-import io.airbyte.workers.protocols.singer.DefaultSingerTap;
+import io.airbyte.workers.protocols.singer.DefaultSingerSource;
+import io.airbyte.workers.protocols.singer.SingerDiscoverCatalogWorker;
 import io.airbyte.workers.protocols.singer.SingerMessageTracker;
-import io.airbyte.workers.protocols.singer.SingerTap;
+import io.airbyte.workers.protocols.singer.SingerSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -121,13 +121,13 @@ public class SingerPostgresSourceTest {
         .withStandardSync(syncConfig)
         .withSourceConnectionImplementation(sourceImpl);
 
-    SingerTap singerTap = new DefaultSingerTap(integrationLauncher, new SingerDiscoverSchemaWorker(integrationLauncher));
-    singerTap.start(tapConfig, jobRoot);
+    SingerSource singerSource = new DefaultSingerSource(integrationLauncher, new SingerDiscoverCatalogWorker(integrationLauncher));
+    singerSource.start(tapConfig, jobRoot);
 
     List<SingerMessage> actualMessages = Lists.newArrayList();
     SingerMessageTracker singerMessageTracker = new SingerMessageTracker();
-    while (!singerTap.isFinished()) {
-      Optional<SingerMessage> maybeMessage = singerTap.attemptRead();
+    while (!singerSource.isFinished()) {
+      Optional<SingerMessage> maybeMessage = singerSource.attemptRead();
       if (maybeMessage.isPresent()) {
         singerMessageTracker.accept(maybeMessage.get());
         actualMessages.add(maybeMessage.get());
@@ -208,9 +208,9 @@ public class SingerPostgresSourceTest {
 
   @Test
   public void testDiscover() throws IOException {
-    StandardDiscoverSchemaInput inputConfig =
-        new StandardDiscoverSchemaInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
-    OutputAndStatus<StandardDiscoverSchemaOutput> run = new SingerDiscoverSchemaWorker(integrationLauncher).run(inputConfig, jobRoot);
+    StandardDiscoverCatalogInput inputConfig =
+        new StandardDiscoverCatalogInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
+    OutputAndStatus<StandardDiscoverCatalogOutput> run = new SingerDiscoverCatalogWorker(integrationLauncher).run(inputConfig, jobRoot);
 
     Schema expected = Jsons.deserialize(MoreResources.readResource("schema.json"), Schema.class);
     assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
@@ -222,7 +222,7 @@ public class SingerPostgresSourceTest {
   public void testSuccessfulConnectionCheck() {
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
     OutputAndStatus<StandardCheckConnectionOutput> run =
-        new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(integrationLauncher)).run(inputConfig, jobRoot);
+        new DefaultCheckConnectionWorker(new SingerDiscoverCatalogWorker(integrationLauncher)).run(inputConfig, jobRoot);
 
     assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
     assertTrue(run.getOutput().isPresent());
@@ -235,7 +235,7 @@ public class SingerPostgresSourceTest {
     dbConfig.put("password", "notarealpassword");
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(dbConfig));
     OutputAndStatus<StandardCheckConnectionOutput> run =
-        new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(integrationLauncher)).run(inputConfig, jobRoot);
+        new DefaultCheckConnectionWorker(new SingerDiscoverCatalogWorker(integrationLauncher)).run(inputConfig, jobRoot);
 
     assertEquals(JobStatus.FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());

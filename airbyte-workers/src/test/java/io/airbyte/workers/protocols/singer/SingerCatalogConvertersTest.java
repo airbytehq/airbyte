@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Schema;
-import io.airbyte.config.StandardDiscoverSchemaOutput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.singer.SingerCatalog;
 import io.airbyte.singer.SingerMetadataChild;
 import io.airbyte.singer.SingerType;
@@ -44,15 +44,15 @@ class SingerCatalogConvertersTest {
   @Test
   void applySchemaToDiscoveredCatalog() throws IOException {
     final SingerCatalog catalog =
-        Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
+        Jsons.deserialize(MoreResources.readResource("singer_postgres_catalog.json"), SingerCatalog.class);
     final Schema airbyteSchema =
-        Jsons.deserialize(MoreResources.readResource("simple_postgres_schema.json"), StandardDiscoverSchemaOutput.class).getSchema();
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_catalog_output.json"), StandardDiscoverCatalogOutput.class).getSchema();
 
     final SingerCatalog actualCatalog =
         SingerCatalogConverters.applySchemaToDiscoveredCatalog(catalog, airbyteSchema);
 
     final SingerCatalog expectedCatalog =
-        Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
+        Jsons.deserialize(MoreResources.readResource("singer_postgres_catalog.json"), SingerCatalog.class);
     expectedCatalog.getStreams().get(0).getMetadata().get(0).getMetadata().withSelected(true);
     expectedCatalog.getStreams().get(0).getMetadata().get(1).getMetadata().withSelected(true);
     expectedCatalog.getStreams().get(0).getMetadata().get(2).getMetadata().withSelected(true);
@@ -75,9 +75,9 @@ class SingerCatalogConvertersTest {
   @Test
   void toAirbyteSchemaWithUnselectedTable() throws IOException {
     final SingerCatalog catalog =
-        Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
+        Jsons.deserialize(MoreResources.readResource("singer_postgres_catalog.json"), SingerCatalog.class);
     final Schema expectedSchema =
-        Jsons.deserialize(MoreResources.readResource("simple_postgres_schema.json"), StandardDiscoverSchemaOutput.class).getSchema();
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_catalog_output.json"), StandardDiscoverCatalogOutput.class).getSchema();
     expectedSchema.getStreams().get(0).withSelected(false);
     expectedSchema.getStreams().get(0).getFields().get(0).withSelected(true);
     expectedSchema.getStreams().get(0).getFields().get(1).withSelected(true);
@@ -90,11 +90,11 @@ class SingerCatalogConvertersTest {
   @Test
   void toAirbyteSchemaWithSelectedTable() throws IOException {
     final SingerCatalog catalog =
-        Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
+        Jsons.deserialize(MoreResources.readResource("singer_postgres_catalog.json"), SingerCatalog.class);
     catalog.getStreams().get(0).getMetadata().get(0).getMetadata().withSelected(true);
 
     final Schema expectedSchema =
-        Jsons.deserialize(MoreResources.readResource("simple_postgres_schema.json"), StandardDiscoverSchemaOutput.class).getSchema();
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_catalog_output.json"), StandardDiscoverCatalogOutput.class).getSchema();
     expectedSchema.getStreams().get(0).withSelected(true);
     expectedSchema.getStreams().get(0).getFields().get(0).withSelected(true);
     expectedSchema.getStreams().get(0).getFields().get(1).withSelected(true);
@@ -107,11 +107,11 @@ class SingerCatalogConvertersTest {
   @Test
   void toAirbyteSchemaNoMetadataInSingerCatalog() throws IOException {
     final SingerCatalog catalog =
-        Jsons.deserialize(MoreResources.readResource("simple_postgres_singer_catalog.json"), SingerCatalog.class);
+        Jsons.deserialize(MoreResources.readResource("singer_postgres_catalog.json"), SingerCatalog.class);
     // remove metadata from singer catalog
     catalog.getStreams().forEach(stream -> stream.setMetadata(new ArrayList<>()));
     final Schema expectedSchema =
-        Jsons.deserialize(MoreResources.readResource("simple_postgres_schema.json"), StandardDiscoverSchemaOutput.class).getSchema();
+        Jsons.deserialize(MoreResources.readResource("simple_postgres_catalog_output.json"), StandardDiscoverCatalogOutput.class).getSchema();
     expectedSchema.getStreams().get(0).withSelected(false);
     expectedSchema.getStreams().get(0).getFields().get(0).withSelected(false);
     expectedSchema.getStreams().get(0).getFields().get(1).withSelected(false);

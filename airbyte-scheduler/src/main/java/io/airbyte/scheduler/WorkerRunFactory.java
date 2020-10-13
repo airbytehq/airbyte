@@ -24,24 +24,33 @@
 
 package io.airbyte.scheduler;
 
+import com.google.common.base.Preconditions;
 import io.airbyte.config.JobCheckConnectionConfig;
-import io.airbyte.config.JobDiscoverSchemaConfig;
+import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardDiscoverSchemaInput;
+import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.workers.DefaultCheckConnectionWorker;
+import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
+import io.airbyte.workers.DefaultSyncWorker;
+import io.airbyte.workers.DiscoverCatalogWorker;
 import io.airbyte.workers.GetSpecWorker;
-import io.airbyte.workers.SingerCheckConnectionWorker;
-import io.airbyte.workers.SingerDiscoverSchemaWorker;
-import io.airbyte.workers.SingerSyncWorker;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.process.AirbyteIntegrationLauncher;
+import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.process.SingerIntegrationLauncher;
-import io.airbyte.workers.protocols.singer.DefaultSingerTap;
-import io.airbyte.workers.protocols.singer.DefaultSingerTarget;
+import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+import io.airbyte.workers.protocols.singer.DefaultSingerDestination;
+import io.airbyte.workers.protocols.singer.DefaultSingerSource;
+import io.airbyte.workers.protocols.singer.SingerDiscoverCatalogWorker;
+import io.airbyte.workers.protocols.singer.SingerMessageTracker;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
@@ -82,69 +91,99 @@ public class WorkerRunFactory {
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(job.getId())).resolve(String.valueOf(currentAttempt));
     LOGGER.info("job root: {}", jobRoot);
 
-    switch (job.getConfig().getConfigType()) {
-      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> {
-        final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(job.getConfig().getCheckConnection());
-        return creator.create(
-            jobRoot,
-            checkConnectionInput,
-            new JobOutputCheckConnectionWorker(
-                new SingerCheckConnectionWorker(new SingerDiscoverSchemaWorker(
-                    new SingerIntegrationLauncher(
-                        job.getConfig().getCheckConnection().getDockerImage(),
-                        pbf)))));
-      }
-      case DISCOVER_SCHEMA -> {
-        final StandardDiscoverSchemaInput discoverSchemaInput = getDiscoverSchemaInput(job.getConfig().getDiscoverSchema());
-        return creator.create(
-            jobRoot,
-            discoverSchemaInput,
-            new JobOutputDiscoverSchemaWorker(
-                new SingerDiscoverSchemaWorker(new SingerIntegrationLauncher(
-                    job.getConfig().getDiscoverSchema().getDockerImage(),
-                    pbf))));
-      }
-      case SYNC -> {
-        final StandardSyncInput syncInput = getSyncInput(job.getConfig().getSync());
-        final SingerDiscoverSchemaWorker discoverSchemaWorker = new SingerDiscoverSchemaWorker(
-            new SingerIntegrationLauncher(job.getConfig().getSync().getSourceDockerImage(), pbf));
-        return creator.create(
-            jobRoot,
-            syncInput,
-            new JobOutputSyncWorker(
-                new SingerSyncWorker(
-                    new DefaultSingerTap(
-                        new SingerIntegrationLauncher(
-                            job.getConfig().getSync().getSourceDockerImage(),
-                            pbf),
-                        discoverSchemaWorker),
-                    new DefaultSingerTarget(
-                        new SingerIntegrationLauncher(
-                            job.getConfig().getSync().getDestinationDockerImage(),
-                            pbf)))));
-      }
-      case GET_SPEC -> {
-        final JobGetSpecConfig getSpecInput = job.getConfig().getGetSpec();
-        final GetSpecWorker worker = new DefaultGetSpecWorker(
-            new SingerIntegrationLauncher(
-                job.getConfig().getGetSpec().getDockerImage(),
-                pbf));
-        return creator.create(
-            jobRoot,
-            getSpecInput,
-            new JobOutputGetSpecWorker(worker));
-      }
-      default -> throw new RuntimeException("Unexpected config type: " + job.getConfig().getConfigType());
-    }
+    return switch (job.getConfig().getConfigType()) {
+      case GET_SPEC -> createGetSpecWorker(job.getConfig().getGetSpec(), jobRoot);
+      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> createConnectionCheckWorker(job.getConfig().getCheckConnection(), jobRoot);
+      case DISCOVER_SCHEMA -> createDiscoverCatalogWorker(job.getConfig().getDiscoverCatalog(), jobRoot);
+      case SYNC -> createSyncWorker(job.getConfig().getSync(), jobRoot);
+    };
+  }
 
+  private WorkerRun createGetSpecWorker(JobGetSpecConfig config, Path jobRoot) {
+    final GetSpecWorker worker = new DefaultGetSpecWorker(createLauncher(config.getDockerImage()));
+
+    return creator.create(
+        jobRoot,
+        config,
+        new JobOutputGetSpecWorker(worker));
+  }
+
+  private WorkerRun createConnectionCheckWorker(JobCheckConnectionConfig config, Path jobRoot) {
+    final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(config);
+
+    IntegrationLauncher launcher = createLauncher(config.getDockerImage());
+    DiscoverCatalogWorker discoverCatalogWorker =
+        isAirbyteProtocol(config.getDockerImage()) ? new DefaultDiscoverCatalogWorker(launcher) : new SingerDiscoverCatalogWorker(launcher);
+
+    return creator.create(
+        jobRoot,
+        checkConnectionInput,
+        new JobOutputCheckConnectionWorker(
+            new DefaultCheckConnectionWorker(discoverCatalogWorker)));
+  }
+
+  private WorkerRun createDiscoverCatalogWorker(JobDiscoverCatalogConfig config, Path jobRoot) {
+    final StandardDiscoverCatalogInput discoverSchemaInput = getDiscoverCatalogInput(config);
+
+    IntegrationLauncher launcher = createLauncher(config.getDockerImage());
+    DiscoverCatalogWorker discoverCatalogWorker =
+        isAirbyteProtocol(config.getDockerImage()) ? new DefaultDiscoverCatalogWorker(launcher) : new SingerDiscoverCatalogWorker(launcher);
+
+    return creator.create(
+        jobRoot,
+        discoverSchemaInput,
+        new JobOutputDiscoverSchemaWorker(discoverCatalogWorker));
+  }
+
+  private WorkerRun createSyncWorker(JobSyncConfig config, Path jobRoot) {
+    final StandardSyncInput syncInput = getSyncInput(config);
+
+    IntegrationLauncher sourceLauncher = createLauncher(config.getSourceDockerImage());
+    IntegrationLauncher destinationLauncher = createLauncher(config.getDestinationDockerImage());
+
+    Preconditions.checkArgument(sourceLauncher.getClass().equals(destinationLauncher.getClass()),
+        "Source and Destination must be using the same protocol");
+
+    if (!isAirbyteProtocol(config.getDestinationDockerImage())) {
+      final SingerDiscoverCatalogWorker discoverSchemaWorker = new SingerDiscoverCatalogWorker(sourceLauncher);
+
+      return creator.create(
+          jobRoot,
+          syncInput,
+          new JobOutputSyncWorker(
+              new DefaultSyncWorker<>(
+                  new DefaultSingerSource(sourceLauncher, discoverSchemaWorker),
+                  new DefaultSingerDestination(destinationLauncher),
+                  new SingerMessageTracker())));
+
+    } else {
+      final DefaultDiscoverCatalogWorker discoverSchemaWorker = new DefaultDiscoverCatalogWorker(createLauncher(config.getSourceDockerImage()));
+
+      return creator.create(
+          jobRoot,
+          syncInput,
+          new JobOutputSyncWorker(
+              new DefaultSyncWorker<>(
+                  new DefaultAirbyteSource(sourceLauncher, discoverSchemaWorker),
+                  new DefaultAirbyteDestination(destinationLauncher),
+                  new AirbyteMessageTracker())));
+    }
+  }
+
+  private IntegrationLauncher createLauncher(final String image) {
+    return isAirbyteProtocol(image) ? new AirbyteIntegrationLauncher(image, pbf) : new SingerIntegrationLauncher(image, pbf);
+  }
+
+  private boolean isAirbyteProtocol(final String image) {
+    return image != null && image.contains("abprotocol");
   }
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
     return new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
   }
 
-  private static StandardDiscoverSchemaInput getDiscoverSchemaInput(JobDiscoverSchemaConfig config) {
-    return new StandardDiscoverSchemaInput().withConnectionConfiguration(config.getConnectionConfiguration());
+  private static StandardDiscoverCatalogInput getDiscoverCatalogInput(JobDiscoverCatalogConfig config) {
+    return new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration());
   }
 
   private static StandardSyncInput getSyncInput(JobSyncConfig config) {
