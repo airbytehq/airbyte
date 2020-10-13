@@ -73,8 +73,7 @@ import org.slf4j.LoggerFactory;
 
 class BigQueryDestinationTest {
 
-  private static final Path CREDENTIALS_PATH = Path
-      .of("/Users/charles/code/airbyte/airbyte-integrations/bigquery-destination/config/bq_credentials.json");
+  private static final Path CREDENTIALS_PATH = Path.of("config/credentials.json");
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
 
@@ -114,12 +113,13 @@ class BigQueryDestinationTest {
     }
 
     if (!Files.exists(CREDENTIALS_PATH)) {
-      throw new IllegalStateException("Must provide path to a big query credentials file. Set path with the CREDENTIALS_PATH constant.");
+      throw new IllegalStateException(
+          "Must provide path to a big query credentials file. By default {module-root}/config/credentials.json. Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
     JsonNode credentialsJson = Jsons.deserialize(IOs.readFile(CREDENTIALS_PATH));
     String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
 
-    final String projectId = credentialsJson.get("project_id").asText();
+    final String projectId = credentialsJson.get(BigQueryDestination.CONFIG_PROJECT_ID).asText();
     final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsJsonString.getBytes()));
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(projectId)
@@ -269,7 +269,7 @@ class BigQueryDestinationTest {
 
     return StreamSupport
         .stream(BigQueryDestination.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
-        .map(v -> v.get(BigQueryDestination.COLUMN_NAME).getStringValue())
+        .map(v -> v.get(BigQueryDestination.COLUMN_DATA).getStringValue())
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }

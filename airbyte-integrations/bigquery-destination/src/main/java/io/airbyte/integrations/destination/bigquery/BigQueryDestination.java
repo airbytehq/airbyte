@@ -37,7 +37,6 @@ import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobInfo.CreateDisposition;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
-import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
@@ -77,7 +76,18 @@ import org.slf4j.LoggerFactory;
 public class BigQueryDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
-  static final String COLUMN_NAME = "data";
+  static final String CONFIG_DATASET_ID = "dataset_id";
+  static final String CONFIG_PROJECT_ID = "project_id";
+  static final String CONFIG_CREDS = "credentials_json";
+
+  static final String COLUMN_AB_ID = "ab_id";
+  static final String COLUMN_DATA = "data";
+  static final String COLUMN_EMITTED_AT = "emitted_at";
+
+  static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
+      Field.of(COLUMN_AB_ID, StandardSQLTypeName.STRING),
+      Field.of(COLUMN_DATA, StandardSQLTypeName.STRING),
+      Field.of(COLUMN_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 
   @Override
   public ConnectorSpecification spec() throws IOException {
@@ -89,7 +99,7 @@ public class BigQueryDestination implements Destination {
   @Override
   public StandardCheckConnectionOutput check(JsonNode config) {
     try {
-      String datasetId = config.get("dataset_id").asText();
+      String datasetId = config.get(CONFIG_DATASET_ID).asText();
 
       QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
@@ -108,8 +118,8 @@ public class BigQueryDestination implements Destination {
   }
 
   private BigQuery getBigQuery(JsonNode config) {
-    String projectId = config.get("project_id").asText();
-    String credentialsString = config.get("credentials_json").asText();
+    String projectId = config.get(CONFIG_PROJECT_ID).asText();
+    String credentialsString = config.get(CONFIG_CREDS).asText();
     try {
       ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsString.getBytes()));
 
@@ -182,7 +192,7 @@ public class BigQueryDestination implements Destination {
 
     final BigQuery bigquery = getBigQuery(config);
     Map<String, WriteConfig> writeConfigs = new HashMap<>();
-    final String datasetId = config.get("dataset_id").asText();
+    final String datasetId = config.get(CONFIG_DATASET_ID).asText();
 
     // create tmp tables if not exist
     for (final Stream stream : schema.getStreams()) {
@@ -194,7 +204,7 @@ public class BigQueryDestination implements Destination {
       final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
           .newBuilder(TableId.of(datasetId, tmpTableName))
           .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
-          .setSchema(com.google.cloud.bigquery.Schema.of(Field.of(COLUMN_NAME, LegacySQLTypeName.STRING)))
+          .setSchema(SCHEMA)
           .setFormatOptions(FormatOptions.json()).build(); // new-line delimited json.
 
       final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
@@ -209,11 +219,10 @@ public class BigQueryDestination implements Destination {
 
   // https://cloud.google.com/bigquery/docs/tables#create-table
   private static void createTable(BigQuery bigquery, String datasetName, String tableName) {
-    final com.google.cloud.bigquery.Schema schema = com.google.cloud.bigquery.Schema.of(Field.of(COLUMN_NAME, StandardSQLTypeName.STRING));
     try {
 
       TableId tableId = TableId.of(datasetName, tableName);
-      TableDefinition tableDefinition = StandardTableDefinition.of(schema);
+      TableDefinition tableDefinition = StandardTableDefinition.of(SCHEMA);
       TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
       bigquery.create(tableInfo);
@@ -263,7 +272,10 @@ public class BigQueryDestination implements Destination {
                   Jsons.serialize(schema), Jsons.serialize(singerMessage)));
         }
 
-        final JsonNode data = Jsons.jsonNode(ImmutableMap.of("data", Jsons.serialize(singerMessage.getRecord())));
+        final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
+            COLUMN_AB_ID, UUID.randomUUID().toString(),
+            COLUMN_DATA, Jsons.serialize(singerMessage.getRecord()),
+            COLUMN_EMITTED_AT, Instant.now().getEpochSecond()));
         try {
           writeConfigs.get(singerMessage.getStream()).getWriter().write(ByteBuffer.wrap((Jsons.serialize(data) + "\n").getBytes(Charsets.UTF_8)));
         } catch (IOException e) {
