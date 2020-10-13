@@ -35,6 +35,12 @@ jobs:
         with:
           node-version: '14.7'
 
+      - name: Write Integration "Unit" Credentials
+        run: ./tools/bin/ci_credentials.sh
+        env:
+          BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
+          STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
+
       - name: Build
         run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
 
