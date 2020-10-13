@@ -32,6 +32,7 @@ import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.validators.DockerImageValidator;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -41,9 +42,11 @@ import java.util.stream.Collectors;
 public class DestinationsHandler {
 
   private final ConfigRepository configRepository;
+  private DockerImageValidator dockerImageValidator;
 
-  public DestinationsHandler(final ConfigRepository configRepository) {
+  public DestinationsHandler(final ConfigRepository configRepository, DockerImageValidator dockerImageValidator) {
     this.configRepository = configRepository;
+    this.dockerImageValidator = dockerImageValidator;
   }
 
   public DestinationReadList listDestinations()
@@ -63,6 +66,8 @@ public class DestinationsHandler {
 
   public DestinationRead updateDestination(DestinationUpdate destinationUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     StandardDestination currentDestination = configRepository.getStandardDestination(destinationUpdate.getDestinationId());
+    dockerImageValidator.assertValidIntegrationImage(currentDestination.getDockerRepository(), destinationUpdate.getDockerImageTag());
+
     StandardDestination newDestination = new StandardDestination()
         .withDestinationId(currentDestination.getDestinationId())
         .withDockerImageTag(destinationUpdate.getDockerImageTag())
