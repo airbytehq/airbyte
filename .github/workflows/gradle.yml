@@ -35,7 +35,7 @@ jobs:
         with:
           node-version: '14.7'
 
-      - name: Write Integration "Unit" Credentials
+      - name: Write Integration Test Credentials 1
         run: ./tools/bin/ci_credentials.sh
         env:
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
