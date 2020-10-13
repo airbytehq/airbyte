@@ -44,7 +44,7 @@ You will need to choose an existing database or create a new database that will 
 
 ### Setup the Postgres destination in Airbyte
 
-You should now have all the requirements needed to configure BigQuery as a destination in the UI. You'll need the following information to configure the BigQuery destination:
+You should now have all the requirements needed to configure Postgres as a destination in the UI. You'll need the following information to configure the Postgres destination:
 
 * **Host**
 * **Port**
