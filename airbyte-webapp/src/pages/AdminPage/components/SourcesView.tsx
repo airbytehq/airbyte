@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import { useFetcher, useResource } from "rest-hooks";
@@ -24,26 +24,23 @@ const SourcesView: React.FC = () => {
   const [feedbackList, setFeedbackList] = useState<any>({});
 
   const updateSource = useFetcher(SourceResource.updateShape());
-  const onUpdateVersion = async ({
-    id,
-    version
-  }: {
-    id: string;
-    version: string;
-  }) => {
-    try {
-      await updateSource(
-        {},
-        {
-          sourceId: id,
-          dockerImageTag: version
-        }
-      );
-      setFeedbackList({ ...feedbackList, [id]: "success" });
-    } catch (e) {
-      setFeedbackList({ ...feedbackList, [id]: "error" });
-    }
-  };
+  const onUpdateVersion = useCallback(
+    async ({ id, version }: { id: string; version: string }) => {
+      try {
+        await updateSource(
+          {},
+          {
+            sourceId: id,
+            dockerImageTag: version
+          }
+        );
+        setFeedbackList({ ...feedbackList, [id]: "success" });
+      } catch (e) {
+        setFeedbackList({ ...feedbackList, [id]: "error" });
+      }
+    },
+    [feedbackList, updateSource]
+  );
 
   const columns = React.useMemo(
     () => [

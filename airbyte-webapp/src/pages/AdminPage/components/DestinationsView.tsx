@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
 
@@ -28,26 +28,24 @@ const DestinationsView: React.FC = () => {
   const currentDestination = destinationsImplementation.destinations[0];
 
   const updateDestination = useFetcher(DestinationResource.updateShape());
-  const onUpdateVersion = async ({
-    id,
-    version
-  }: {
-    id: string;
-    version: string;
-  }) => {
-    try {
-      await updateDestination(
-        {},
-        {
-          destinationId: id,
-          dockerImageTag: version
-        }
-      );
-      setFeedback("success");
-    } catch (e) {
-      setFeedback("error");
-    }
-  };
+
+  const onUpdateVersion = useCallback(
+    async ({ id, version }: { id: string; version: string }) => {
+      try {
+        await updateDestination(
+          {},
+          {
+            destinationId: id,
+            dockerImageTag: version
+          }
+        );
+        setFeedback("success");
+      } catch (e) {
+        setFeedback("error");
+      }
+    },
+    [updateDestination]
+  );
 
   const columns = React.useMemo(
     () => [
