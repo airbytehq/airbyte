@@ -27,6 +27,7 @@ package io.airbyte.server.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
@@ -38,6 +39,7 @@ import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.validators.DockerImageValidator;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,6 +49,7 @@ import org.junit.jupiter.api.Test;
 
 class DestinationsHandlerTest {
 
+  private DockerImageValidator dockerImageValidator;
   private ConfigRepository configRepository;
   private StandardDestination destination;
   private DestinationsHandler destinationHandler;
@@ -54,8 +57,9 @@ class DestinationsHandlerTest {
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
+    dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
-    destinationHandler = new DestinationsHandler(configRepository);
+    destinationHandler = new DestinationsHandler(configRepository, dockerImageValidator);
   }
 
   private StandardDestination generateDestination() {
@@ -119,14 +123,18 @@ class DestinationsHandlerTest {
   @Test
   void testUpdateDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getStandardDestination(destination.getDestinationId())).thenReturn(destination);
+    DestinationRead currentDestination =
+        destinationHandler.getDestination(new DestinationIdRequestBody().destinationId(destination.getDestinationId()));
+    final String currentTag = currentDestination.getDockerImageTag();
+    final String currentRepo = currentDestination.getDockerRepository();
     final String newDockerImageTag = "averydifferenttag";
-    String currentTag = destinationHandler.getDestination(
-        new DestinationIdRequestBody().destinationId(destination.getDestinationId())).getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
-    DestinationRead sourceRead = destinationHandler.updateDestination(
-        new DestinationUpdate().destinationId(destination.getDestinationId()).dockerImageTag(newDockerImageTag));
+    final DestinationRead sourceRead = destinationHandler.updateDestination(
+        new DestinationUpdate().destinationId(this.destination.getDestinationId()).dockerImageTag(newDockerImageTag));
+
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
+    verify(dockerImageValidator).assertValidIntegrationImage(currentRepo, newDockerImageTag);
   }
 
 }
