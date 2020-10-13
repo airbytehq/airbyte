@@ -18,8 +18,8 @@ properties:
       - sync
   checkConnection:
     "$ref": JobCheckConnectionConfig.yaml
-  discoverSchema:
-    "$ref": JobDiscoverSchemaConfig.yaml
+  discoverCatalog:
+    "$ref": JobDiscoverCatalogConfig.yaml
   getSpec:
     "$ref": JobGetSpecConfig.yaml
   sync:
