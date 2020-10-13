@@ -22,7 +22,9 @@ class SourceStripeSinger(Source):
         return AirbyteCheckResponse(r.status_code == 200, {})
 
     def discover(self, logger, config_container) -> AirbyteCatalog:
-        return SingerHelper.discover(f"tap-stripe --config {config_container.rendered_config_path} --discover")
+        catalogs = SingerHelper.get_catalogs(logger, f"tap-stripe --config {config_container.rendered_config_path} --discover")
+        print(catalogs)
+        return catalogs.airbyte_catalog
 
     def read(self, logger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         if state:
