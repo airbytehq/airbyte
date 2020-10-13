@@ -26,6 +26,7 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -42,10 +43,13 @@ import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
+
+import io.airbyte.server.errors.KnownException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -148,15 +152,11 @@ class DestinationsHandlerTest {
     final String newImageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), newTag);
     when(configRepository.getStandardDestination(destination.getDestinationId())).thenReturn(destination);
     when(schedulerHandler.getConnectorSpecification(newImageName)).thenThrow(new IllegalArgumentException());
-    try {
-      destinationHandler.updateDestination(new DestinationUpdate().destinationId(destination.getDestinationId()).dockerImageTag(newTag));
-      fail("Expected updating destination with invalid docker creds to fail.");
-    } catch (IOException | ConfigNotFoundException | JsonValidationException e) {
-      throw e;
-    } catch (Exception ignored) {
-
-    }
-
+    assertThrows(
+        KnownException.class,
+        () -> destinationHandler.updateDestination(new DestinationUpdate().destinationId(destination.getDestinationId()).dockerImageTag(newTag)),
+        "Expected updating destination with invalid docker image to fail."
+    );
     verify(schedulerHandler).getConnectorSpecification(newImageName);
   }
 

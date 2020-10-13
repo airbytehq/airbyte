@@ -26,6 +26,7 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -42,11 +43,14 @@ import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
 import java.util.function.Supplier;
+
+import io.airbyte.server.errors.KnownException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -159,15 +163,7 @@ class SourcesHandlerTest {
     final String taggedImageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     when(schedulerHandler.getConnectorSpecification(taggedImageName)).thenThrow(new IllegalArgumentException("Docker image not found"));
 
-    try {
-      sourceHandler.createSource(create);
-      fail("Expected source creation to fail");
-    } catch (JsonValidationException | IOException e) {
-      throw e;
-    } catch (Exception ignored) {
-
-    }
-
+    assertThrows(KnownException.class, () -> sourceHandler.createSource(create), "Expected source creation to fail");
     verify(schedulerHandler).getConnectorSpecification(taggedImageName);
   }
 
@@ -178,12 +174,11 @@ class SourcesHandlerTest {
     when(schedulerHandler.getConnectorSpecification(newDockerImage)).thenThrow(new IllegalArgumentException("invalid image"));
     when(configRepository.getStandardSource(source.getSourceId())).thenReturn(source);
 
-    try {
-      sourceHandler.updateSource(new SourceUpdate().sourceId(source.getSourceId()).dockerImageTag(newDockerTag));
-      fail("Expected updating source to fail");
-    } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
-      throw e;
-    } catch (Exception ignored) {}
+    assertThrows(
+        KnownException.class,
+        () -> sourceHandler.updateSource(new SourceUpdate().sourceId(source.getSourceId()).dockerImageTag(newDockerTag)),
+        "Expected updating source to fail"
+    );
     verify(schedulerHandler).getConnectorSpecification(newDockerImage);
   }
 
