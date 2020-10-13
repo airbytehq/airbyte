@@ -120,7 +120,6 @@ public class WebBackendSourceImplementationHandlerTest {
     SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate();
     sourceImplementationCreate.setName(sourceImplementationRead.getName());
     sourceImplementationCreate.setConnectionConfiguration(sourceImplementationRead.getConnectionConfiguration());
-    sourceImplementationCreate.setSourceSpecificationId(sourceImplementationRead.getSourceSpecificationId());
     sourceImplementationCreate.setWorkspaceId(sourceImplementationRead.getWorkspaceId());
 
     SourceImplementationRead newSourceImplementation = SourceImplementationHelpers
@@ -139,7 +138,6 @@ public class WebBackendSourceImplementationHandlerTest {
     SourceImplementationRecreate sourceImplementationRecreate = new SourceImplementationRecreate();
     sourceImplementationRecreate.setName(sourceImplementationRead.getName());
     sourceImplementationRecreate.setConnectionConfiguration(sourceImplementationRead.getConnectionConfiguration());
-    sourceImplementationRecreate.setSourceSpecificationId(sourceImplementationRead.getSourceSpecificationId());
     sourceImplementationRecreate.setWorkspaceId(sourceImplementationRead.getWorkspaceId());
     sourceImplementationRecreate.setSourceImplementationId(sourceImplementationRead.getSourceImplementationId());
 
@@ -158,7 +156,6 @@ public class WebBackendSourceImplementationHandlerTest {
     SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate();
     sourceImplementationCreate.setName(sourceImplementationRead.getName());
     sourceImplementationCreate.setConnectionConfiguration(sourceImplementationRead.getConnectionConfiguration());
-    sourceImplementationCreate.setSourceSpecificationId(sourceImplementationRead.getSourceSpecificationId());
     sourceImplementationCreate.setWorkspaceId(sourceImplementationRead.getWorkspaceId());
 
     SourceImplementationRead newSourceImplementation = SourceImplementationHelpers
@@ -177,7 +174,6 @@ public class WebBackendSourceImplementationHandlerTest {
     SourceImplementationRecreate sourceImplementationRecreate = new SourceImplementationRecreate();
     sourceImplementationRecreate.setName(sourceImplementationRead.getName());
     sourceImplementationRecreate.setConnectionConfiguration(sourceImplementationRead.getConnectionConfiguration());
-    sourceImplementationRecreate.setSourceSpecificationId(sourceImplementationRead.getSourceSpecificationId());
     sourceImplementationRecreate.setWorkspaceId(sourceImplementationRead.getWorkspaceId());
     sourceImplementationRecreate.setSourceImplementationId(sourceImplementationRead.getSourceImplementationId());
 

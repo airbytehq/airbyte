@@ -1089,7 +1089,6 @@ components:
       required:
         - workspaceId
         - sourceImplementationId
-        - sourceSpecificationId
         - connectionConfiguration
         - name
       properties:
@@ -1097,8 +1096,6 @@ components:
           $ref: "#/components/schemas/SourceImplementationId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        sourceSpecificationId:
-          $ref: "#/components/schemas/SourceSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
         name:
@@ -1254,7 +1251,6 @@ components:
       required:
         - workspaceId
         - destinationImplementationId
-        - destinationSpecificationId
         - connectionConfiguration
         - name
       properties:
@@ -1262,8 +1258,6 @@ components:
           $ref: "#/components/schemas/DestinationImplementationId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        destinationSpecificationId:
-          $ref: "#/components/schemas/DestinationSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:
