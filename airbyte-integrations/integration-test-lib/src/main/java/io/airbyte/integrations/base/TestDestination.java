@@ -39,9 +39,9 @@ import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.singer.SingerMessage.Type;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.process.SingerIntegrationLauncher;
 import io.airbyte.workers.protocols.singer.DefaultSingerDestination;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -209,8 +209,7 @@ public abstract class TestDestination {
         .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(getConfig()))
         .withStandardSync(new StandardSync().withSchema(catalog));
 
-    new SingerIntegrationLauncher(getImageName(), pbf);
-    final DefaultSingerDestination target = new DefaultSingerDestination(new SingerIntegrationLauncher(getImageName(), pbf));
+    final DefaultSingerDestination target = new DefaultSingerDestination(new AirbyteIntegrationLauncher(getImageName(), pbf));
 
     target.start(targetConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> target.accept(message)));
