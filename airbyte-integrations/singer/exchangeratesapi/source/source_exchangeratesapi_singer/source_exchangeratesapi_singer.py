@@ -20,15 +20,15 @@ class SourceExchangeRatesApiSinger(Source):
     def spec(self) -> AirbyteSpec:
         return SingerHelper.spec_from_file("/airbyte/exchangeratesapi-files/spec.json")
 
-    def check(self, logger, rendered_config_path) -> AirbyteCheckResponse:
+    def check(self, logger, config_container) -> AirbyteCheckResponse:
         code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
         return AirbyteCheckResponse(code == 200, {})
 
-    def discover(self, logger, rendered_config_path) -> AirbyteCatalog:
+    def discover(self, logger, config_container) -> AirbyteCatalog:
         return get_catalogs(logger).airbyte_catalog
 
-    def read(self, logger, rendered_config_path, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
+    def read(self, logger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         if state:
-            return SingerHelper.read(logger, f"tap-exchangeratesapi --config {rendered_config_path} --state {state}")
+            return SingerHelper.read(logger, f"tap-exchangeratesapi --config {config_container.rendered_config_path} --state {state}")
         else:
-            return SingerHelper.read(logger, f"tap-exchangeratesapi --config {rendered_config_path}")
+            return SingerHelper.read(logger, f"tap-exchangeratesapi --config {config_container.rendered_config_path}")

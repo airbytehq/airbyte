@@ -5,6 +5,7 @@ import tempfile
 import os.path
 import importlib
 
+from airbyte_protocol import ConfigContainer
 from airbyte_protocol import Source
 from airbyte_protocol import AirbyteLogMessage
 from airbyte_protocol import AirbyteMessage
@@ -76,12 +77,18 @@ class AirbyteEntrypoint(object):
                 sys.exit(0)
 
             rendered_config_path = os.path.join(temp_dir, 'config.json')
-            config_object = source.read_config(parsed_args.config)
-            source.render_config(config_object, rendered_config_path)
+            raw_config = source.read_config(parsed_args.config)
+            rendered_config = source.transform_config(raw_config)
+            source.write_config(rendered_config, rendered_config_path)
 
-            # todo: output message for check
+            config_container = ConfigContainer(
+                raw_config=raw_config,
+                rendered_config=rendered_config,
+                raw_config_path=parsed_args.config,
+                rendered_config_path=rendered_config_path)
+
             if cmd == "check":
-                check_result = source.check(log_line, rendered_config_path)
+                check_result = source.check(log_line, config_container)
                 if check_result.successful:
                     log("INFO", "Check succeeded")
                     sys.exit(0)
@@ -89,11 +96,11 @@ class AirbyteEntrypoint(object):
                     log("ERROR", "Check failed")
                     sys.exit(1)
             elif cmd == "discover":
-                catalog = source.discover(log_line, rendered_config_path)
+                catalog = source.discover(log_line, config_container)
                 print(catalog.serialize())
                 sys.exit(0)
             elif cmd == "read":
-                generator = source.read(log_line, rendered_config_path, parsed_args.catalog, parsed_args.state)
+                generator = source.read(log_line, config_container, parsed_args.catalog, parsed_args.state)
                 for message in generator:
                     print(message.serialize())
                 sys.exit(0)

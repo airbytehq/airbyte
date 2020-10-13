@@ -1,8 +1,10 @@
 from typing import Generator
 import yaml
+import json
 import pkgutil
 import warnings
 import python_jsonschema_objects as pjs
+from dataclasses import dataclass
 
 
 def _load_classes(yaml_path: str):
@@ -36,11 +38,6 @@ class AirbyteCheckResponse(object):
         self.field_to_error = field_to_error
 
 
-class AirbyteConfig(object):
-    def __init__(self, config_string):
-        self.config_string = config_string
-
-
 class Integration(object):
     def __init__(self):
         pass
@@ -48,21 +45,23 @@ class Integration(object):
     def spec(self) -> AirbyteSpec:
         raise Exception("Not Implemented")
 
-    # default version reads the config_path to a string
-    # this will often be overwritten to add fields for easy consumption or to modify the string for delegating to singer
-    def read_config(self, config_path) -> AirbyteConfig:
+    def read_config(self, config_path):
         with open(config_path, 'r') as file:
             contents = file.read()
-        return AirbyteConfig(contents)
+        return json.loads(contents)
 
-    def render_config(self, config_object, rendered_config_path):
-        with open(rendered_config_path, 'w') as fh:
-            fh.write(config_object.config_string)
+    # can be overridden to change an input file config
+    def transform_config(self, raw_config):
+        return raw_config
 
-    def check(self, logger, rendered_config_path) -> AirbyteCheckResponse:
+    def write_config(self, config_object, path):
+        with open(path, 'w') as fh:
+            fh.write(json.dumps(config_object))
+
+    def check(self, logger, config_container) -> AirbyteCheckResponse:
         raise Exception("Not Implemented")
 
-    def discover(self, logger, rendered_config_path) -> AirbyteCatalog:
+    def discover(self, logger, config_container) -> AirbyteCatalog:
         raise Exception("Not Implemented")
 
 
@@ -71,7 +70,7 @@ class Source(Integration):
         pass
 
     # Iterator<AirbyteMessage>
-    def read(self, logger, rendered_config_path, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
+    def read(self, logger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         raise Exception("Not Implemented")
 
 
@@ -95,3 +94,10 @@ def log_line(line, default_level):
     log_record = AirbyteLogMessage(level=log_level, message=rendered_line)
     log_message = AirbyteMessage(type="LOG", log=log_record)
     print(log_message.serialize())
+
+@dataclass
+class ConfigContainer:
+    raw_config: object
+    rendered_config: object
+    raw_config_path: str
+    rendered_config_path: str
