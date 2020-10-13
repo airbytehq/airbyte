@@ -25,6 +25,7 @@
 package io.airbyte.scheduler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -36,6 +37,7 @@ import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -98,7 +100,7 @@ public class SchedulerApp {
         JOB_SUBMITTER_DELAY_MILLIS,
         TimeUnit.MILLISECONDS);
 
-    Runtime.getRuntime().addShutdownHook(new SchedulerShutdownHandler(workerThreadPool, scheduledPool));
+    Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(30), workerThreadPool, scheduledPool));
   }
 
   public static void main(String[] args) {
