@@ -82,7 +82,6 @@ public class WebBackendSourceImplementationHandler {
     SourceImplementationCreate sourceImplementationCreate = new SourceImplementationCreate();
     sourceImplementationCreate.setConnectionConfiguration(sourceImplementationRecreate.getConnectionConfiguration());
     sourceImplementationCreate.setName(sourceImplementationRecreate.getName());
-    sourceImplementationCreate.setSourceSpecificationId(sourceImplementationRecreate.getSourceSpecificationId());
     sourceImplementationCreate.setWorkspaceId(sourceImplementationRecreate.getWorkspaceId());
 
     SourceImplementationRead sourceImplementation = sourceImplementationsHandler
