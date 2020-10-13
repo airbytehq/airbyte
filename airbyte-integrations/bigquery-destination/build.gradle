@@ -23,16 +23,13 @@ configurations {
 
 dependencies {
     implementation project(':airbyte-config:models')
-    implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:base-java')
     implementation project(':airbyte-queue')
     implementation project(':airbyte-singer')
 
-    integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
-    integrationTestImplementation project(':airbyte-integrations:postgres-destination')
+    implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
+    implementation 'org.apache.commons:commons-lang3:3.11'
 
-    testImplementation "org.testcontainers:postgresql:1.15.0-rc2"
-    integrationTestImplementation "org.testcontainers:postgresql:1.15.0-rc2"
 }
 
 application {

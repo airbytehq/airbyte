@@ -34,9 +34,15 @@ import static org.mockito.Mockito.spy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.DataType;
@@ -46,25 +52,31 @@ import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.Stream;
-import io.airbyte.db.DatabaseHelper;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.singer.SingerMessage.Type;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.AbstractMap;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
+import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.junit.jupiter.api.TestInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class BigQueryDestinationTest {
+
+  private static final Path CREDENTIALS_PATH = Path
+      .of("/Users/charles/code/airbyte/airbyte-integrations/bigquery-destination/config/bq_credentials.json");
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -78,7 +90,7 @@ class BigQueryDestinationTest {
       .withRecord(objectMapper.createObjectNode().put("goal", "announce the game."));
   private static final SingerMessage SINGER_MESSAGE_TASKS2 = new SingerMessage().withType(Type.RECORD).withStream(TASKS_STREAM_NAME)
       .withRecord(objectMapper.createObjectNode().put("goal", "ship some code."));
-  private static final SingerMessage SINGER_MESSAGE_RECORD = new SingerMessage().withType(Type.STATE)
+  private static final SingerMessage STATE_MESSAGE = new SingerMessage().withType(Type.STATE)
       .withValue(objectMapper.createObjectNode().put("checkpoint", "now!"));
 
   private static final Schema CATALOG = new Schema().withStreams(Lists.newArrayList(
@@ -90,27 +102,75 @@ class BigQueryDestinationTest {
 
   private JsonNode config;
 
-  private PostgreSQLContainer<?> db;
+  private BigQuery bigquery;
+  private Dataset dataset;
+
+  private boolean tornDown = true;
 
   @BeforeEach
-  void setup() {
-    db = new PostgreSQLContainer<>("postgres:13-alpine");
-    db.start();
+  void setup(TestInfo info) throws IOException {
+    if (info.getDisplayName().equals("testSpec()")) {
+      return;
+    }
+
+    if (!Files.exists(CREDENTIALS_PATH)) {
+      throw new IllegalStateException("Must provide path to a big query credentials file. Set path with the CREDENTIALS_PATH constant.");
+    }
+    JsonNode credentialsJson = Jsons.deserialize(IOs.readFile(CREDENTIALS_PATH));
+    String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+
+    final String projectId = credentialsJson.get("project_id").asText();
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsJsonString.getBytes()));
+    bigquery = BigQueryOptions.newBuilder()
+        .setProjectId(projectId)
+        .setCredentials(credentials)
+        .build()
+        .getService();
+
+    final String datasetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
+
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
+    dataset = bigquery.create(datasetInfo);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", "public")
-        .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
+        .put("project_id", projectId)
+        .put("credentials_json", credentialsJsonString)
+        .put("dataset_id", datasetId)
         .build());
+
+    tornDown = false;
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  if (!tornDown) {
+                    tearDownBigQuery();
+                  }
+                }));
+
   }
 
   @AfterEach
-  void tearDown() {
-    db.stop();
-    db.close();
+  void tearDown(TestInfo info) {
+    if (info.getDisplayName().equals("testSpec()")) {
+      return;
+    }
+
+    tearDownBigQuery();
+  }
+
+  public void tearDownBigQuery() {
+    // allows deletion of a dataset that has contents
+    BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
+
+    boolean success = bigquery.delete(dataset.getDatasetId(), option);
+    if (success) {
+      LOGGER.info("BQ Dataset " + dataset + " deleted...");
+    } else {
+      LOGGER.info("BQ Dataset cleanup for " + dataset + " failed!");
+    }
+
+    tornDown = true;
   }
 
   // todo - same test as csv destination
@@ -133,10 +193,10 @@ class BigQueryDestinationTest {
 
   @Test
   void testCheckFailure() {
-    ((ObjectNode) config).put("password", "fake");
+    ((ObjectNode) config).put("project_id", "fake");
     final StandardCheckConnectionOutput actual = new BigQueryDestination().check(config);
     final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILURE)
-        .withMessage("Cannot create PoolableConnectionFactory (FATAL: password authentication failed for user \"test\")");
+        .withMessage("Access Denied: Project fake: User does not have bigquery.jobs.create permission in project fake.");
     assertEquals(expected, actual);
   }
 
@@ -148,16 +208,18 @@ class BigQueryDestinationTest {
     consumer.accept(SINGER_MESSAGE_TASKS1);
     consumer.accept(SINGER_MESSAGE_USERS2);
     consumer.accept(SINGER_MESSAGE_TASKS2);
-    consumer.accept(SINGER_MESSAGE_RECORD);
+    consumer.accept(STATE_MESSAGE);
     consumer.close();
 
-    Set<JsonNode> usersActual = recordRetriever(USERS_STREAM_NAME);
-    final Set<JsonNode> expectedUsersJson = Sets.newHashSet(SINGER_MESSAGE_USERS1.getRecord(), SINGER_MESSAGE_USERS2.getRecord());
-    assertEquals(expectedUsersJson, usersActual);
+    List<JsonNode> usersActual = retrieveRecords(USERS_STREAM_NAME);
+    final List<JsonNode> expectedUsersJson = Lists.newArrayList(SINGER_MESSAGE_USERS1.getRecord(), SINGER_MESSAGE_USERS2.getRecord());
+    assertEquals(expectedUsersJson.size(), usersActual.size());
+    assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
 
-    Set<JsonNode> tasksActual = recordRetriever(TASKS_STREAM_NAME);
-    final Set<JsonNode> expectedTasksJson = Sets.newHashSet(SINGER_MESSAGE_TASKS1.getRecord(), SINGER_MESSAGE_TASKS2.getRecord());
-    assertEquals(expectedTasksJson, tasksActual);
+    List<JsonNode> tasksActual = retrieveRecords(TASKS_STREAM_NAME);
+    final List<JsonNode> expectedTasksJson = Lists.newArrayList(SINGER_MESSAGE_TASKS1.getRecord(), SINGER_MESSAGE_TASKS2.getRecord());
+    assertEquals(expectedTasksJson.size(), tasksActual.size());
+    assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
 
     assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(Stream::getName).collect(Collectors.toList()));
   }
@@ -181,39 +243,35 @@ class BigQueryDestinationTest {
     assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tableNames.stream().anyMatch(tableName::startsWith)));
   }
 
-  private List<String> fetchNamesOfTablesInDb() throws SQLException {
-    return DatabaseHelper.query(getDatabasePool(),
-        ctx -> ctx.fetch("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';"))
-        .stream()
-        .map(record -> (String) record.get("table_name")).collect(Collectors.toList());
+  private Set<String> fetchNamesOfTablesInDb() throws InterruptedException {
+    QueryJobConfiguration queryConfig = QueryJobConfiguration
+        .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES;", dataset.getDatasetId().getDataset()))
+        .setUseLegacySql(false)
+        .build();
+
+    return StreamSupport
+        .stream(BigQueryDestination.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
+        .map(v -> v.get("TABLE_NAME").getStringValue()).collect(Collectors.toSet());
   }
 
-  private void assertTmpTablesNotPresent(List<String> tableNames) throws SQLException {
+  private void assertTmpTablesNotPresent(List<String> tableNames) throws InterruptedException {
     Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
     assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
   }
 
-  private BasicDataSource getDatabasePool() {
-    return DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl());
-  }
+  private List<JsonNode> retrieveRecords(String tableName) throws Exception {
+    LOGGER.info("dataset: {}", dataset.getDatasetId().getDataset());
+    QueryJobConfiguration queryConfig =
+        QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
+            .setUseLegacySql(false).build();
 
-  private Set<JsonNode> recordRetriever(String streamName) throws Exception {
+    BigQueryDestination.executeQuery(bigquery, queryConfig);
 
-    return DatabaseHelper.query(
-        getDatabasePool(),
-        ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s ORDER BY ab_inserted_at ASC;", streamName))
-            .stream()
-            .map(Record::intoMap)
-            .map(r -> r.entrySet().stream().map(e -> {
-              if (e.getValue().getClass().equals(org.jooq.JSONB.class)) {
-                return new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue().toString());
-              }
-              return e;
-            }).collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
-            .map(r -> (String) r.get(BigQueryDestination.COLUMN_NAME))
-            .map(Jsons::deserialize)
-            .collect(Collectors.toSet()));
+    return StreamSupport
+        .stream(BigQueryDestination.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
+        .map(v -> v.get(BigQueryDestination.COLUMN_NAME).getStringValue())
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
   }
 
 }
