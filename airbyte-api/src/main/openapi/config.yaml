@@ -770,6 +770,48 @@ paths:
                 $ref: "#/components/schemas/SourceImplementationRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/source_implementations/recreate:
+    post:
+      tags:
+        - web_backend
+      summary: Recreate a source implementation
+      operationId: webBackendRecreateSourceImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceImplementationRecreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceImplementationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/destination_implementations/recreate:
+    post:
+      tags:
+        - web_backend
+      summary: Recreate a destination implementation
+      operationId: webBackendRecreateDestinationImplementation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationImplementationRecreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationImplementationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/destination_implementations/create:
     post:
       tags:
@@ -1042,6 +1084,25 @@ components:
           $ref: "#/components/schemas/SourceConfiguration"
         name:
           type: string
+    SourceImplementationRecreate:
+      type: object
+      required:
+        - workspaceId
+        - sourceImplementationId
+        - sourceSpecificationId
+        - connectionConfiguration
+        - name
+      properties:
+        sourceImplementationId:
+          $ref: "#/components/schemas/SourceImplementationId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceSpecificationId:
+          $ref: "#/components/schemas/SourceSpecificationId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
     SourceImplementationUpdate:
       type: object
       required:
@@ -1184,6 +1245,25 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        name:
+          type: string
+    DestinationImplementationRecreate:
+      type: object
+      required:
+        - workspaceId
+        - destinationImplementationId
+        - destinationSpecificationId
+        - connectionConfiguration
+        - name
+      properties:
+        destinationImplementationId:
+          $ref: "#/components/schemas/DestinationImplementationId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        destinationSpecificationId:
+          $ref: "#/components/schemas/DestinationSpecificationId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:

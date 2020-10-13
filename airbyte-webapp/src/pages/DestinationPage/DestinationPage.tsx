@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { useResource, useFetcher } from "rest-hooks";
+import { useResource } from "rest-hooks";
 
 import PageTitle from "../../components/PageTitle";
 import ContentCard from "../../components/ContentCard";
@@ -10,6 +10,7 @@ import DestinationImplementationResource from "../../core/resources/DestinationI
 import config from "../../config";
 import DestinationSpecificationResource from "../../core/resources/DestinationSpecification";
 import DestinationResource from "../../core/resources/Destination";
+import useDestination from "../../components/hooks/services/useDestinationHook";
 
 const Content = styled.div`
   width: 100%;
@@ -37,9 +38,7 @@ const DestinationPage: React.FC = () => {
   const destination = useResource(DestinationResource.detailShape(), {
     destinationId: currentDestination.destinationId
   });
-  const updateDestination = useFetcher(
-    DestinationImplementationResource.updateShape()
-  );
+  const { updateDestination } = useDestination();
 
   const onSubmitForm = async (values: {
     name: string;
@@ -47,18 +46,11 @@ const DestinationPage: React.FC = () => {
     connectionConfiguration?: any;
   }) => {
     setErrorMessage("");
-    const result = await updateDestination(
-      {
-        destinationImplementationId:
-          currentDestination.destinationImplementationId
-      },
-      {
-        name: values.name,
-        destinationImplementationId:
-          currentDestination.destinationImplementationId,
-        connectionConfiguration: values.connectionConfiguration
-      }
-    );
+    const result = await updateDestination({
+      values,
+      destinationImplementationId:
+        currentDestination.destinationImplementationId
+    });
 
     if (result.status === "failure") {
       setErrorMessage(result.message);
