@@ -60,7 +60,7 @@ public class CsvDestinationIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv) throws Exception {
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
     final List<Path> list = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
     // todo (cgardens) - this should be here. add a retrieve tables abstract method to verify this.
     assertEquals(1, list.size());
