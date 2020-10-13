@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
-import { useFetcher, useResource } from "rest-hooks";
+import { useResource, useFetcher } from "rest-hooks";
 
 import Table from "../../../../../components/Table";
 import FrequencyCell from "./FrequencyCell";
@@ -20,6 +20,7 @@ import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService
 import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
 import DestinationImplementationResource from "../../../../../core/resources/DestinationImplementation";
 import DestinationResource from "../../../../../core/resources/Destination";
+import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;
@@ -43,9 +44,9 @@ type ITableDataItem = {
 const SourcesTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
 
-  const updateConnection = useFetcher(ConnectionResource.updateShape());
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
 
+  const { updateConnection } = useConnection();
   const { destinations } = useResource(
     DestinationImplementationResource.listShape(),
     {
@@ -74,15 +75,12 @@ const SourcesTable: React.FC<IProps> = ({ connections }) => {
         item => item.connectionId === connectionId
       );
 
-      await updateConnection(
-        {},
-        {
-          connectionId,
-          syncSchema: connection?.syncSchema,
-          schedule: connection?.schedule,
-          status: connection?.status === "active" ? "inactive" : "active"
-        }
-      );
+      await updateConnection({
+        connectionId,
+        syncSchema: connection?.syncSchema,
+        schedule: connection?.schedule || null,
+        status: connection?.status === "active" ? "inactive" : "active"
+      });
 
       const frequency = FrequencyConfig.find(
         item =>

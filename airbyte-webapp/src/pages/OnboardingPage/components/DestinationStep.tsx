@@ -12,8 +12,10 @@ import SourceResource from "../../../core/resources/Source";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import config from "../../../config";
 import PrepareDropDownLists from "./PrepareDropDownLists";
+import { DestinationImplementation } from "../../../core/resources/DestinationImplementation";
 
 type IProps = {
+  destinationImplementation?: DestinationImplementation;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
   hasSuccess?: boolean;
   onSubmit: (values: {
@@ -58,7 +60,8 @@ const DestinationStep: React.FC<IProps> = ({
   dropDownData,
   hasSuccess,
   errorStatus,
-  currentSourceId
+  currentSourceId,
+  destinationImplementation
 }) => {
   const [destinationId, setDestinationId] = useState("");
   const {
@@ -97,6 +100,11 @@ const DestinationStep: React.FC<IProps> = ({
       <FormattedMessage id="form.someError" />
     );
 
+  useEffect(
+    () => setDestinationId(destinationImplementation?.destinationId || ""),
+    [destinationImplementation]
+  );
+
   return (
     <>
       <ConnectionBlock itemFrom={{ name: currentSource.name }} />
@@ -104,6 +112,7 @@ const DestinationStep: React.FC<IProps> = ({
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >
         <ServiceForm
+          allowChangeConnector
           onDropDownSelect={onDropDownSelect}
           onSubmit={onSubmitForm}
           hasSuccess={hasSuccess}
@@ -113,6 +122,15 @@ const DestinationStep: React.FC<IProps> = ({
           specifications={destinationSpecification?.connectionSpecification}
           documentationUrl={destinationSpecification?.documentationUrl}
           isLoading={isLoading}
+          formValues={
+            destinationImplementation
+              ? {
+                  ...destinationImplementation.connectionConfiguration,
+                  name: destinationImplementation.name,
+                  serviceType: destinationImplementation.destinationId
+                }
+              : null
+          }
         />
       </ContentCard>
     </>

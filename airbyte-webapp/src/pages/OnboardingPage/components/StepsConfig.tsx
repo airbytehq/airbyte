@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
 export enum StepsTypes {
@@ -7,22 +7,11 @@ export enum StepsTypes {
   SET_UP_CONNECTION = "set-up-connection"
 }
 
-const StepsConfig = (hasSources: boolean, hasDestinations: boolean) => {
-  const steps = [
-    {
-      id: StepsTypes.CREATE_SOURCE,
-      name: <FormattedMessage id={"onboarding.createSource"} />
-    },
-    {
-      id: StepsTypes.CREATE_DESTINATION,
-      name: <FormattedMessage id={"onboarding.createDestination"} />
-    },
-    {
-      id: StepsTypes.SET_UP_CONNECTION,
-      name: <FormattedMessage id={"onboarding.setUpConnection"} />
-    }
-  ];
-
+const StepsConfig = (
+  hasSources: boolean,
+  hasDestinations: boolean,
+  afterUpdateStep?: () => void
+) => {
   const getInitialStep = () => {
     if (hasSources) {
       if (hasDestinations) {
@@ -36,11 +25,49 @@ const StepsConfig = (hasSources: boolean, hasDestinations: boolean) => {
   };
 
   const [currentStep, setCurrentStep] = useState(getInitialStep());
+  const updateStep = useCallback(
+    (step: StepsTypes) => {
+      setCurrentStep(step);
+      if (afterUpdateStep) {
+        afterUpdateStep();
+      }
+    },
+    [setCurrentStep, afterUpdateStep]
+  );
+
+  const steps = useMemo(
+    () => [
+      {
+        id: StepsTypes.CREATE_SOURCE,
+        name: <FormattedMessage id={"onboarding.createSource"} />,
+        onSelect: hasSources
+          ? () => updateStep(StepsTypes.CREATE_SOURCE)
+          : undefined
+      },
+      {
+        id: StepsTypes.CREATE_DESTINATION,
+        name: <FormattedMessage id={"onboarding.createDestination"} />,
+        onSelect:
+          hasSources || hasDestinations
+            ? () => updateStep(StepsTypes.CREATE_DESTINATION)
+            : undefined
+      },
+      {
+        id: StepsTypes.SET_UP_CONNECTION,
+        name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+        onSelect:
+          hasSources && hasDestinations
+            ? () => updateStep(StepsTypes.SET_UP_CONNECTION)
+            : undefined
+      }
+    ],
+    [updateStep, hasSources, hasDestinations]
+  );
 
   return {
     steps,
     currentStep,
-    setCurrentStep
+    setCurrentStep: updateStep
   };
 };
 

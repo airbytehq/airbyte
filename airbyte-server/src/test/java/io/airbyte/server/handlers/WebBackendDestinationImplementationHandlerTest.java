@@ -35,6 +35,7 @@ import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.DestinationImplementationCreate;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationRead;
+import io.airbyte.api.model.DestinationImplementationRecreate;
 import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.StandardDestination;
@@ -118,6 +119,78 @@ public class WebBackendDestinationImplementationHandlerTest {
         () -> wbDestinationImplementationHandler.webBackendCreateDestinationImplementationAndCheck(destinationImplementationCreate));
 
     verify(destinationImplementationsHandler).deleteDestinationImplementation(destinationImplementationIdRequestBody);
+  }
+
+  @Test
+  public void testReCreatesDestinationWhenCheckConnectionSucceeds() throws JsonValidationException, IOException, ConfigNotFoundException {
+    DestinationImplementationCreate destinationImplementationCreate = new DestinationImplementationCreate();
+    destinationImplementationCreate.setName(destinationImplementationRead.getName());
+    destinationImplementationCreate.setConnectionConfiguration(destinationImplementationRead.getConnectionConfiguration());
+    destinationImplementationCreate.setDestinationSpecificationId(destinationImplementationRead.getDestinationSpecificationId());
+    destinationImplementationCreate.setWorkspaceId(destinationImplementationRead.getWorkspaceId());
+
+    DestinationImplementationRead newDestinationImplementation = DestinationImplementationHelpers
+        .getDestinationImplementationRead(DestinationImplementationHelpers.generateDestinationImplementation(UUID.randomUUID()), DestinationHelpers
+            .generateDestination());
+
+    when(destinationImplementationsHandler.createDestinationImplementation(destinationImplementationCreate)).thenReturn(newDestinationImplementation);
+
+    DestinationImplementationIdRequestBody newDestinationId = new DestinationImplementationIdRequestBody();
+    newDestinationId.setDestinationImplementationId(newDestinationImplementation.getDestinationImplementationId());
+
+    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
+    checkConnectionRead.setStatus(StatusEnum.SUCCESS);
+
+    when(schedulerHandler.checkDestinationImplementationConnection(newDestinationId)).thenReturn(checkConnectionRead);
+
+    DestinationImplementationRecreate destinationImplementationRecreate = new DestinationImplementationRecreate();
+    destinationImplementationRecreate.setName(destinationImplementationRead.getName());
+    destinationImplementationRecreate.setConnectionConfiguration(destinationImplementationRead.getConnectionConfiguration());
+    destinationImplementationRecreate.setDestinationSpecificationId(destinationImplementationRead.getDestinationSpecificationId());
+    destinationImplementationRecreate.setWorkspaceId(destinationImplementationRead.getWorkspaceId());
+    destinationImplementationRecreate.setDestinationImplementationId(destinationImplementationRead.getDestinationImplementationId());
+
+    DestinationImplementationIdRequestBody oldDestinationIdBody = new DestinationImplementationIdRequestBody();
+    oldDestinationIdBody.setDestinationImplementationId(destinationImplementationRead.getDestinationImplementationId());
+
+    DestinationImplementationRead returnedDestination =
+        wbDestinationImplementationHandler.webBackendRecreateDestinationImplementationAndCheck(destinationImplementationRecreate);
+
+    verify(destinationImplementationsHandler, times(1)).deleteDestinationImplementation(Mockito.eq(oldDestinationIdBody));
+    assertEquals(newDestinationImplementation, returnedDestination);
+  }
+
+  @Test
+  public void testRecreateDeletesNewCreatedDestinationWhenFails() throws JsonValidationException, IOException, ConfigNotFoundException {
+    DestinationImplementationCreate destinationImplementationCreate = new DestinationImplementationCreate();
+    destinationImplementationCreate.setName(destinationImplementationRead.getName());
+    destinationImplementationCreate.setConnectionConfiguration(destinationImplementationRead.getConnectionConfiguration());
+    destinationImplementationCreate.setDestinationSpecificationId(destinationImplementationRead.getDestinationSpecificationId());
+    destinationImplementationCreate.setWorkspaceId(destinationImplementationRead.getWorkspaceId());
+
+    DestinationImplementationRead newDestinationImplementation = DestinationImplementationHelpers.getDestinationImplementationRead(
+        DestinationImplementationHelpers.generateDestinationImplementation(UUID.randomUUID()), DestinationHelpers.generateDestination());
+
+    when(destinationImplementationsHandler.createDestinationImplementation(destinationImplementationCreate)).thenReturn(newDestinationImplementation);
+
+    DestinationImplementationIdRequestBody newDestinationId = new DestinationImplementationIdRequestBody();
+    newDestinationId.setDestinationImplementationId(newDestinationImplementation.getDestinationImplementationId());
+
+    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
+    checkConnectionRead.setStatus(StatusEnum.FAILURE);
+
+    when(schedulerHandler.checkDestinationImplementationConnection(newDestinationId)).thenReturn(checkConnectionRead);
+
+    DestinationImplementationRecreate destinationImplementationRecreate = new DestinationImplementationRecreate();
+    destinationImplementationRecreate.setName(destinationImplementationRead.getName());
+    destinationImplementationRecreate.setConnectionConfiguration(destinationImplementationRead.getConnectionConfiguration());
+    destinationImplementationRecreate.setDestinationSpecificationId(destinationImplementationRead.getDestinationSpecificationId());
+    destinationImplementationRecreate.setWorkspaceId(destinationImplementationRead.getWorkspaceId());
+    destinationImplementationRecreate.setDestinationImplementationId(destinationImplementationRead.getDestinationImplementationId());
+
+    Assertions.assertThrows(KnownException.class,
+        () -> wbDestinationImplementationHandler.webBackendRecreateDestinationImplementationAndCheck(destinationImplementationRecreate));
+    verify(destinationImplementationsHandler, times(1)).deleteDestinationImplementation(Mockito.eq(newDestinationId));
   }
 
 }
