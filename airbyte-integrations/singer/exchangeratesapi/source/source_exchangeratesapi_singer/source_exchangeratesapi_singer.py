@@ -9,8 +9,8 @@ from base_singer import SingerHelper
 from base_singer import Catalogs
 
 
-def get_catalogs() -> Catalogs:
-    return SingerHelper.discover("tap-exchangeratesapi | grep '\"type\": \"SCHEMA\"' | head -1 | jq -c '{\"streams\":[{\"stream\": .stream, \"schema\": .schema}]}'")
+def get_catalogs(logger) -> Catalogs:
+    return SingerHelper.discover(logger, "tap-exchangeratesapi | grep '\"type\": \"SCHEMA\"' | head -1 | jq -c '{\"streams\":[{\"stream\": .stream, \"schema\": .schema}]}'")
 
 
 class SourceExchangeRatesApiSinger(Source):
@@ -20,23 +20,15 @@ class SourceExchangeRatesApiSinger(Source):
     def spec(self) -> AirbyteSpec:
         return SingerHelper.spec_from_file("/airbyte/exchangeratesapi-files/spec.json")
 
-    def check(self, config_object, rendered_config_path) -> AirbyteCheckResponse:
+    def check(self, logger, rendered_config_path) -> AirbyteCheckResponse:
         code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
         return AirbyteCheckResponse(code == 200, {})
 
-    def discover(self, config_object, rendered_config_path) -> AirbyteCatalog:
-        return get_catalogs().airbyte_catalog
+    def discover(self, logger, rendered_config_path) -> AirbyteCatalog:
+        return get_catalogs(logger).airbyte_catalog
 
-    def read(self, config_object, rendered_config_path, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
-        airbyte_catalog = catalog_path # todo: read
-
-        # call discover
-        singer_catalog = get_catalogs().singer_catalog
-
-        # todo: combine discovered singer catalog with the generated airbyte catalog
-
-        sync_prefix = f"tap-exchangeratesapi --config {rendered_config_path}"
+    def read(self, logger, rendered_config_path, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         if state:
-            return SingerHelper.read(sync_prefix + f"--state {state}")
+            return SingerHelper.read(logger, f"tap-exchangeratesapi --config {rendered_config_path} --state {state}")
         else:
-            return SingerHelper.read(sync_prefix)
+            return SingerHelper.read(logger, f"tap-exchangeratesapi --config {rendered_config_path}")

@@ -8,6 +8,7 @@ import importlib
 from airbyte_protocol import Source
 from airbyte_protocol import AirbyteLogMessage
 from airbyte_protocol import AirbyteMessage
+from airbyte_protocol import log_line
 
 impl_module = os.environ['AIRBYTE_IMPL_MODULE']
 impl_class = os.environ['AIRBYTE_IMPL_PATH']
@@ -80,7 +81,7 @@ class AirbyteEntrypoint(object):
 
             # todo: output message for check
             if cmd == "check":
-                check_result = source.check(logging, rendered_config_path)
+                check_result = source.check(log_line, rendered_config_path)
                 if check_result.successful:
                     log("INFO", "Check succeeded")
                     sys.exit(0)
@@ -88,11 +89,11 @@ class AirbyteEntrypoint(object):
                     log("ERROR", "Check failed")
                     sys.exit(1)
             elif cmd == "discover":
-                catalog = source.discover(logging, rendered_config_path)
+                catalog = source.discover(log_line, rendered_config_path)
                 print(catalog.serialize())
                 sys.exit(0)
             elif cmd == "read":
-                generator = source.read(logging, rendered_config_path, parsed_args.catalog, parsed_args.state)
+                generator = source.read(log_line, rendered_config_path, parsed_args.catalog, parsed_args.state)
                 for message in generator:
                     print(message.serialize())
                 sys.exit(0)

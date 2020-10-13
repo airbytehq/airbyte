@@ -59,10 +59,10 @@ class Integration(object):
         with open(rendered_config_path, 'w') as fh:
             fh.write(config_object.config_string)
 
-    def check(self, config_object, rendered_config_path) -> AirbyteCheckResponse:
+    def check(self, logger, rendered_config_path) -> AirbyteCheckResponse:
         raise Exception("Not Implemented")
 
-    def discover(self, config_object, rendered_config_path) -> AirbyteCatalog:
+    def discover(self, logger, rendered_config_path) -> AirbyteCatalog:
         raise Exception("Not Implemented")
 
 
@@ -71,10 +71,27 @@ class Source(Integration):
         pass
 
     # Iterator<AirbyteMessage>
-    def read(self, config_object, rendered_config_path, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
+    def read(self, logger, rendered_config_path, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         raise Exception("Not Implemented")
 
 
 class Destination(Integration):
     def __init__(self):
         pass
+
+
+valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
+
+
+def log_line(line, default_level):
+    split_line = line.split()
+    first_word = next(iter(split_line), None)
+    if first_word in valid_log_types:
+        log_level = first_word
+        rendered_line = " ".join(split_line[1:])
+    else:
+        log_level = default_level
+        rendered_line = line
+    log_record = AirbyteLogMessage(level=log_level, message=rendered_line)
+    log_message = AirbyteMessage(type="LOG", log=log_record)
+    print(log_message.serialize())

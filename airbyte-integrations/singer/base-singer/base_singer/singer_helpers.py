@@ -11,27 +11,6 @@ from typing import Generator
 from datetime import datetime
 from dataclasses import dataclass
 
-
-# helper to delegate input and output to a piped command
-# todo: add error handling (make sure the overall tap fails if there's a failure in here)
-
-valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
-
-
-def log_line(line, default_level):
-    split_line = line.split()
-    first_word = next(iter(split_line), None)
-    if first_word in valid_log_types:
-        log_level = first_word
-        rendered_line = " ".join(split_line[1:])
-    else:
-        log_level = default_level
-        rendered_line = line
-    log_record = AirbyteLogMessage(level=log_level, message=rendered_line)
-    log_message = AirbyteMessage(type="LOG", log=log_record)
-    print(log_message.serialize())
-
-
 def to_json(string):
     try:
         return json.loads(string)
@@ -53,12 +32,12 @@ class SingerHelper:
         return AirbyteSpec(spec_text)
 
     @staticmethod
-    def discover(shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)) -> Catalogs:
+    def discover(logger, shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)) -> Catalogs:
         completed_process = subprocess.run(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                            universal_newlines=True)
 
         for line in completed_process.stderr.splitlines():
-            log_line(line, "ERROR")
+            logger(line, "ERROR")
 
         airbyte_streams = []
         singer_catalog = singer_transform(json.loads(completed_process.stdout))
@@ -73,7 +52,7 @@ class SingerHelper:
         return Catalogs(singer_catalog=singer_catalog, airbyte_catalog=airbyte_catalog)
 
     @staticmethod
-    def read(shell_command, is_message=(lambda x: True), transform=(lambda x: x)) -> Generator[AirbyteMessage, None, None]:
+    def read(logger, shell_command, is_message=(lambda x: True), transform=(lambda x: x)) -> Generator[AirbyteMessage, None, None]:
         with subprocess.Popen(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1,
                               universal_newlines=True) as p:
             for line_tuple in zip(p.stdout, p.stderr):
@@ -101,7 +80,7 @@ class SingerHelper:
                                 out_message = AirbyteMessage(type="RECORD", record=out_record)
                                 yield transform(out_message)
                     elif out_line:
-                        log_line(out_line, "INFO")
+                        logger(out_line, "INFO")
 
                 if err_line:
-                    log_line(err_line, "ERROR")
+                    logger(err_line, "ERROR")
