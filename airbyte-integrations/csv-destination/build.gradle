@@ -4,6 +4,8 @@ plugins {
     id 'application'
 }
 
+def image = 'airbyte/airbyte-csv-destination:dev'
+
 sourceSets {
     integrationTest {
         java {
@@ -34,9 +36,6 @@ dependencies {
 application {
     mainClass = 'io.airbyte.integrations.destination.csv.CsvDestination'
 }
-
-
-def image = 'airbyte/airbyte-csv-destination:dev'
 
 task imageName {
     doLast {
