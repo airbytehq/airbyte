@@ -24,14 +24,14 @@
 
 package io.airbyte.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,8 +40,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SingerExchangeRatesApiSourceTest {
 
@@ -71,6 +72,26 @@ public class SingerExchangeRatesApiSourceTest {
         workspaceRoot.toString(),
         "",
         "host");
+  }
+
+  @Test
+  public void testSpec() throws InterruptedException, IOException, WorkerException {
+    Process process = createSpecProcess();
+    process.waitFor();
+
+    assertEquals(0, process.exitValue());
+
+    // todo: add assertion to ensure the spec matches the schema / is serializable
+  }
+
+  @Test
+  public void testCheck() throws IOException, WorkerException, InterruptedException {
+    IOs.writeFile(jobRoot, CONFIG, "{}");
+
+    Process process = createCheckProcess(CONFIG);
+    process.waitFor();
+
+    assertEquals(0, process.exitValue());
   }
 
   @Test
@@ -108,6 +129,28 @@ public class SingerExchangeRatesApiSourceTest {
         .get("record")
         .get("data")
         .get("CAD").asDouble() > 0);
+  }
+
+  private Process createSpecProcess() throws IOException, WorkerException {
+    return pbf.create(
+            jobRoot,
+            IMAGE_NAME,
+            "spec")
+            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+            .redirectError(ProcessBuilder.Redirect.INHERIT)
+            .start();
+  }
+
+  private Process createCheckProcess(String configFileName) throws IOException, WorkerException {
+    return pbf.create(
+            jobRoot,
+            IMAGE_NAME,
+            "check",
+            "--config",
+            configFileName)
+            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+            .redirectError(ProcessBuilder.Redirect.INHERIT)
+            .start();
   }
 
   private Process createDiscoveryProcess(String configFileName) throws IOException, WorkerException {

@@ -1,5 +1,4 @@
 import argparse
-import logging
 import sys
 import tempfile
 import os.path
@@ -90,10 +89,10 @@ class AirbyteEntrypoint(object):
             if cmd == "check":
                 check_result = source.check(log_line, config_container)
                 if check_result.successful:
-                    log("INFO", "Check succeeded")
+                    log_line("Check succeeded", "INFO")
                     sys.exit(0)
                 else:
-                    log("ERROR", "Check failed")
+                    log_line("Check failed", "ERROR")
                     sys.exit(1)
             elif cmd == "discover":
                 catalog = source.discover(log_line, config_container)

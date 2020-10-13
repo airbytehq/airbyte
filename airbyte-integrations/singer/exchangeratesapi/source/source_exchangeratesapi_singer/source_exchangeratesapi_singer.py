@@ -22,6 +22,7 @@ class SourceExchangeRatesApiSinger(Source):
 
     def check(self, logger, config_container) -> AirbyteCheckResponse:
         code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
+        logger(f"Ping response code: {code}", "INFO")
         return AirbyteCheckResponse(code == 200, {})
 
     def discover(self, logger, config_container) -> AirbyteCatalog:
