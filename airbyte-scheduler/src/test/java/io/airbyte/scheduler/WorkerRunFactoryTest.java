@@ -56,7 +56,7 @@ import org.mockito.ArgumentCaptor;
 
 class WorkerRunFactoryTest {
 
-  private static JsonNode CONFIG = Jsons.jsonNode(1);
+  private static final JsonNode CONFIG = Jsons.jsonNode(1);
 
   private Job job;
   private Path rootPath;

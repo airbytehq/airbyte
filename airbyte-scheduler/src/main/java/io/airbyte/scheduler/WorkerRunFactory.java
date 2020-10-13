@@ -163,9 +163,7 @@ public class WorkerRunFactory {
   }
 
   private IntegrationLauncher createLauncher(final String image) {
-    return image.contains("abprotocol") ?
-        new AirbyteIntegrationLauncher(image, pbf) :
-        new SingerIntegrationLauncher(image, pbf);
+    return image != null && image.contains("abprotocol") ? new AirbyteIntegrationLauncher(image, pbf) : new SingerIntegrationLauncher(image, pbf);
   }
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
