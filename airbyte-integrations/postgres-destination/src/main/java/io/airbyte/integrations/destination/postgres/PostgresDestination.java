@@ -48,9 +48,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -77,15 +79,14 @@ public class PostgresDestination implements Destination {
       DatabaseHelper.query(connectionPool, ctx -> ctx.execute(
           "SELECT *\n"
               + "FROM pg_catalog.pg_tables\n"
-              + "WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';"));
+              + "WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema' LIMIT 1;"));
 
       connectionPool.close();
+      return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
     } catch (Exception e) {
       // todo (cgardens) - better error messaging for common cases. e.g. wrong password.
       return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage(e.getMessage());
     }
-
-    return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
   }
 
   @Override
@@ -131,10 +132,9 @@ public class PostgresDestination implements Destination {
       final String tableName = stream.getName();
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
       DatabaseHelper.query(connectionPool, ctx -> ctx.execute(String.format(
-          "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";\n"
-              + "CREATE TABLE \"%s\" ( \n"
-              + "\"ab_id\" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),\n"
-              + "\"%s\" jsonb,\n"
+          "CREATE TABLE \"%s\" ( \n"
+              + "\"ab_id\" VARCHAR PRIMARY KEY DEFAULT uuid_generate_v4(),\n"
+              + "\"%s\" JSONB,\n"
               + "\"ab_inserted_at\" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
               + ");",
           tmpTableName, COLUMN_NAME)));
@@ -168,7 +168,7 @@ public class PostgresDestination implements Destination {
       this.schema = schema;
       this.writerPool = Executors.newSingleThreadScheduledExecutor();
       // todo (cgardens) - how long? boh.
-      Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(GRACEFUL_SHUTDOWN_MINUTES, TimeUnit.MINUTES, writerPool));
+      Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofMinutes(GRACEFUL_SHUTDOWN_MINUTES), writerPool));
 
       writerPool.scheduleWithFixedDelay(
           () -> writeStreamsWithNRecords(MIN_RECORDS, BATCH_SIZE, writeConfigs, connectionPool),
@@ -209,7 +209,7 @@ public class PostgresDestination implements Destination {
     // ({ "my": "data" }),
     // ({ "my": "data" });
     private static String buildWriteQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String tmpTableName) {
-      final StringBuilder query = new StringBuilder(String.format("INSERT INTO %s(%s)\n", tmpTableName, COLUMN_NAME))
+      final StringBuilder query = new StringBuilder(String.format("INSERT INTO %s(ab_id, %s)\n", tmpTableName, COLUMN_NAME))
           .append("VALUES \n");
       boolean firstRecordInQuery = true;
       for (int i = 0; i < batchSize; i++) {
@@ -224,7 +224,7 @@ public class PostgresDestination implements Destination {
         } else {
           query.append(", \n");
         }
-        query.append(String.format("('%s')", new String(record, Charsets.UTF_8)));
+        query.append(String.format("('%s', '%s')", UUID.randomUUID().toString(), new String(record, Charsets.UTF_8)));
       }
       query.append(";");
 

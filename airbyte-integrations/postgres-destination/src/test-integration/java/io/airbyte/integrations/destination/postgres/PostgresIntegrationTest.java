@@ -58,7 +58,7 @@ public class PostgresIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected JsonNode getInvalidConfig() {
+  protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("username", db.getUsername())
@@ -70,7 +70,7 @@ public class PostgresIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> recordRetriever(TestDestinationEnv env, String streamName) throws Exception {
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
 
     return DatabaseHelper.query(
         DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl()),
@@ -79,6 +79,8 @@ public class PostgresIntegrationTest extends TestDestination {
             .stream()
             .map(Record::intoMap)
             .map(r -> r.entrySet().stream().map(e -> {
+              // jooq needs more configuration to handle jsonb natively. coerce it to a string for now and handle
+              // deserializing later.
               if (e.getValue().getClass().equals(org.jooq.JSONB.class)) {
                 return new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue().toString());
               }

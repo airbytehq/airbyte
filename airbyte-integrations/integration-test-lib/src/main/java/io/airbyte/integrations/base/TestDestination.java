@@ -100,7 +100,7 @@ public abstract class TestDestination {
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract List<JsonNode> recordRetriever(TestDestinationEnv testEnv, String streamName) throws Exception;
+  protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception;
 
   /**
    * Function that performs any setup of external resources required for the test. e.g. instantiate a
@@ -181,7 +181,7 @@ public abstract class TestDestination {
         .map(record -> Jsons.deserialize(record, SingerMessage.class)).collect(Collectors.toList());
     runSync(messages, catalog);
 
-    assertSameMessages(messages, recordRetriever(testEnv, catalog.getStreams().get(0).getName()));
+    assertSameMessages(messages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
   /**
@@ -202,7 +202,7 @@ public abstract class TestDestination {
             .put("NZD", 700)
             .build())));
     runSync(secondSyncMessages, catalog);
-    assertSameMessages(secondSyncMessages, recordRetriever(testEnv, catalog.getStreams().get(0).getName()));
+    assertSameMessages(secondSyncMessages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
   private void runSync(List<SingerMessage> messages, Schema catalog) throws IOException, WorkerException {
