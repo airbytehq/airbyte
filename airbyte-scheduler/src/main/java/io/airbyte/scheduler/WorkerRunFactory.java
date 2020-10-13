@@ -112,9 +112,8 @@ public class WorkerRunFactory {
     final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(config);
 
     IntegrationLauncher launcher = createLauncher(config.getDockerImage());
-    DiscoverCatalogWorker discoverCatalogWorker = isAirbyteProtocol(config.getDockerImage()) ?
-        new DefaultDiscoverCatalogWorker(launcher) :
-        new SingerDiscoverCatalogWorker(launcher);
+    DiscoverCatalogWorker discoverCatalogWorker =
+        isAirbyteProtocol(config.getDockerImage()) ? new DefaultDiscoverCatalogWorker(launcher) : new SingerDiscoverCatalogWorker(launcher);
 
     return creator.create(
         jobRoot,
@@ -127,9 +126,8 @@ public class WorkerRunFactory {
     final StandardDiscoverCatalogInput discoverSchemaInput = getDiscoverCatalogInput(config);
 
     IntegrationLauncher launcher = createLauncher(config.getDockerImage());
-    DiscoverCatalogWorker discoverCatalogWorker = isAirbyteProtocol(config.getDockerImage()) ?
-        new DefaultDiscoverCatalogWorker(launcher) :
-        new SingerDiscoverCatalogWorker(launcher);
+    DiscoverCatalogWorker discoverCatalogWorker =
+        isAirbyteProtocol(config.getDockerImage()) ? new DefaultDiscoverCatalogWorker(launcher) : new SingerDiscoverCatalogWorker(launcher);
 
     return creator.create(
         jobRoot,
