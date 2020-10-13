@@ -60,7 +60,7 @@ const CreateSourcePage: React.FC<IProps> = ({
 }) => {
   const { location }: any = useRouter();
 
-  const [sourceId, setSourceId] = useState("");
+  const [sourceId, setSourceId] = useState(location.state?.sourceId || "");
   const { sourceSpecification, isLoading } = useSourceSpecificationLoad(
     sourceId
   );
@@ -107,10 +107,9 @@ const CreateSourcePage: React.FC<IProps> = ({
           errorMessage={errorMessage}
           isLoading={isLoading}
           formValues={
-            location.state?.sourceId
-              ? { serviceType: location.state.sourceId, name: "" }
-              : undefined
+            sourceId ? { serviceType: sourceId, name: "" } : undefined
           }
+          allowChangeConnector
         />
       </ContentCard>
     </>

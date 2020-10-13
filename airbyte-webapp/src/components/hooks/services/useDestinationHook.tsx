@@ -7,7 +7,6 @@ import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 type ValuesProps = {
   name: string;
   serviceType?: string;
-  specificationId?: string;
   connectionConfiguration?: any;
 };
 
@@ -45,8 +44,8 @@ const useDestination = () => {
         {},
         {
           name: values.name,
+          destinationId: destinationConnector?.destinationId,
           workspaceId: config.ui.workspaceId,
-          destinationSpecificationId: values.specificationId,
           connectionConfiguration: values.connectionConfiguration
         },
         [
@@ -120,7 +119,7 @@ const useDestination = () => {
         destinationImplementationId,
         connectionConfiguration: values.connectionConfiguration,
         workspaceId: config.ui.workspaceId,
-        destinationSpecificationId: values.specificationId
+        destinationId: values.serviceType
       },
       // Method used only in onboarding.
       // Replace all DestinationImplementation List to new item in UpdateParams (to change id)
