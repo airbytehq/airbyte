@@ -1,8 +1,7 @@
 {
   "streams": [
     {
-      "stream": "customers",
-      "tap_stream_id": "customers",
+      "name": "customers",
       "schema": {
         "type": ["null", "object"],
         "properties": {
@@ -858,145 +857,7 @@
             "format": "date-time"
           }
         }
-      },
-      "metadata": [
-        {
-          "breadcrumb": [],
-          "metadata": {
-            "table-key-properties": ["id"],
-            "forced-replication-method": "INCREMENTAL",
-            "selected": "true",
-            "valid-replication-keys": ["created"]
-          }
-        },
-        {
-          "breadcrumb": ["properties", "metadata"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "shipping"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "sources"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "delinquent"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "description"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "livemode"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "default_source"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "cards"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "email"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "default_card"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "subscriptions"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "discount"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "account_balance"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "currency"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "id"],
-          "metadata": {
-            "inclusion": "automatic"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "invoice_prefix"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "tax_info_verification"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "object"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "created"],
-          "metadata": {
-            "inclusion": "automatic"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "tax_info"],
-          "metadata": {
-            "inclusion": "available"
-          }
-        },
-        {
-          "breadcrumb": ["properties", "updated"],
-          "metadata": {
-            "inclusion": "automatic"
-          }
-        }
-      ],
-      "key_properties": ["id"]
+      }
     }
   ]
 }
