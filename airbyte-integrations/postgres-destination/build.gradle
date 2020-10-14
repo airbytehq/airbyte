@@ -1,0 +1,69 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+plugins {
+    id 'com.bmuschko.docker-remote-api'
+    id 'application'
+}
+
+sourceSets {
+    integrationTest {
+        java {
+            srcDir 'src/test-integration/java'
+        }
+        resources {
+            srcDir 'src/test-integration/resources'
+        }
+    }
+}
+test.dependsOn('compileIntegrationTestJava')
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-db')
+    implementation project(':airbyte-integrations:base-java')
+    implementation project(':airbyte-queue')
+    implementation project(':airbyte-singer')
+
+    testImplementation "org.testcontainers:postgresql:1.15.0-rc2"
+
+    integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
+    integrationTestImplementation "org.testcontainers:postgresql:1.15.0-rc2"
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
+}
+
+
+def image = 'airbyte/airbyte-postgres-destination:dev'
+
+task imageName {
+    doLast {
+        println "IMAGE $image"
+    }
+}
+
+task buildImage(type: DockerBuildImage) {
+    inputDir = projectDir
+    images.add(image)
+    dependsOn ':airbyte-integrations:base-java:buildImage'
+}
+
+task integrationTest(type: Test) {
+    testClassesDirs += sourceSets.integrationTest.output.classesDirs
+    classpath += sourceSets.integrationTest.runtimeClasspath
+
+    useJUnitPlatform()
+    testLogging() {
+        events "passed", "failed"
+        exceptionFormat "full"
+    }
+
+    mustRunAfter test
+    dependsOn(buildImage)
+}
+

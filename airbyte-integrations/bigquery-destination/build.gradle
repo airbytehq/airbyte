@@ -1,0 +1,69 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+plugins {
+    id 'com.bmuschko.docker-remote-api'
+    id 'application'
+}
+
+sourceSets {
+    integrationTest {
+        java {
+            srcDir 'src/test-integration/java'
+        }
+        resources {
+            srcDir 'src/test-integration/resources'
+        }
+    }
+}
+test.dependsOn('compileIntegrationTestJava')
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-integrations:base-java')
+    implementation project(':airbyte-queue')
+    implementation project(':airbyte-singer')
+
+    implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
+    implementation 'org.apache.commons:commons-lang3:3.11'
+
+    integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
+
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
+}
+
+
+def image = 'airbyte/airbyte-bigquery-destination:dev'
+
+task imageName {
+    doLast {
+        println "IMAGE $image"
+    }
+}
+
+task buildImage(type: DockerBuildImage) {
+    inputDir = projectDir
+    images.add(image)
+    dependsOn ':airbyte-integrations:base-java:buildImage'
+}
+
+task integrationTest(type: Test) {
+    testClassesDirs += sourceSets.integrationTest.output.classesDirs
+    classpath += sourceSets.integrationTest.runtimeClasspath
+
+    useJUnitPlatform()
+    testLogging() {
+        events "passed", "failed"
+        exceptionFormat "full"
+    }
+
+    mustRunAfter test
+    dependsOn(buildImage)
+}
+

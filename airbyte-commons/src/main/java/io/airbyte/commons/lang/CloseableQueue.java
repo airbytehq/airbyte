@@ -22,35 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.commons.lang;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Queue;
 
-public class SchedulerShutdownHandler extends Thread {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerShutdownHandler.class);
-  private final ExecutorService[] threadPools;
-
-  public SchedulerShutdownHandler(final ExecutorService... threadPools) {
-    this.threadPools = threadPools;
-  }
-
-  @Override
-  public void run() {
-    for (ExecutorService threadPool : threadPools) {
-      threadPool.shutdown();
-
-      try {
-        if (!threadPool.awaitTermination(30, TimeUnit.SECONDS)) {
-          LOGGER.error("Unable to kill worker threads by shutdown timeout.");
-        }
-      } catch (InterruptedException e) {
-        LOGGER.error("Wait for graceful worker thread shutdown interrupted.", e);
-      }
-    }
-  }
+public interface CloseableQueue<E> extends Queue<E>, AutoCloseable {
 
 }

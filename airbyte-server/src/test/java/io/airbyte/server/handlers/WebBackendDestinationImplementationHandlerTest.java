@@ -126,7 +126,6 @@ public class WebBackendDestinationImplementationHandlerTest {
     DestinationImplementationCreate destinationImplementationCreate = new DestinationImplementationCreate();
     destinationImplementationCreate.setName(destinationImplementationRead.getName());
     destinationImplementationCreate.setConnectionConfiguration(destinationImplementationRead.getConnectionConfiguration());
-    destinationImplementationCreate.setDestinationSpecificationId(destinationImplementationRead.getDestinationSpecificationId());
     destinationImplementationCreate.setWorkspaceId(destinationImplementationRead.getWorkspaceId());
 
     DestinationImplementationRead newDestinationImplementation = DestinationImplementationHelpers
@@ -146,7 +145,6 @@ public class WebBackendDestinationImplementationHandlerTest {
     DestinationImplementationRecreate destinationImplementationRecreate = new DestinationImplementationRecreate();
     destinationImplementationRecreate.setName(destinationImplementationRead.getName());
     destinationImplementationRecreate.setConnectionConfiguration(destinationImplementationRead.getConnectionConfiguration());
-    destinationImplementationRecreate.setDestinationSpecificationId(destinationImplementationRead.getDestinationSpecificationId());
     destinationImplementationRecreate.setWorkspaceId(destinationImplementationRead.getWorkspaceId());
     destinationImplementationRecreate.setDestinationImplementationId(destinationImplementationRead.getDestinationImplementationId());
 
@@ -165,7 +163,6 @@ public class WebBackendDestinationImplementationHandlerTest {
     DestinationImplementationCreate destinationImplementationCreate = new DestinationImplementationCreate();
     destinationImplementationCreate.setName(destinationImplementationRead.getName());
     destinationImplementationCreate.setConnectionConfiguration(destinationImplementationRead.getConnectionConfiguration());
-    destinationImplementationCreate.setDestinationSpecificationId(destinationImplementationRead.getDestinationSpecificationId());
     destinationImplementationCreate.setWorkspaceId(destinationImplementationRead.getWorkspaceId());
 
     DestinationImplementationRead newDestinationImplementation = DestinationImplementationHelpers.getDestinationImplementationRead(
@@ -184,7 +181,6 @@ public class WebBackendDestinationImplementationHandlerTest {
     DestinationImplementationRecreate destinationImplementationRecreate = new DestinationImplementationRecreate();
     destinationImplementationRecreate.setName(destinationImplementationRead.getName());
     destinationImplementationRecreate.setConnectionConfiguration(destinationImplementationRead.getConnectionConfiguration());
-    destinationImplementationRecreate.setDestinationSpecificationId(destinationImplementationRead.getDestinationSpecificationId());
     destinationImplementationRecreate.setWorkspaceId(destinationImplementationRead.getWorkspaceId());
     destinationImplementationRecreate.setDestinationImplementationId(destinationImplementationRead.getDestinationImplementationId());
 
