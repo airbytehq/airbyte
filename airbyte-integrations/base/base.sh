@@ -49,7 +49,7 @@ function main() {
     ;;
   read)
     READ_STATEMENT="$AIRBYTE_READ_CMD --config $CONFIG_FILE --catalog $CATALOG_FILE"
-    if [[ -z "$STATE_FILE" ]]; then READ_STATEMENT="$READ_STATEMENT --state $STATE_FILE"; fi
+    if [[ ! -z "$STATE_FILE" ]]; then READ_STATEMENT="$READ_STATEMENT --state $STATE_FILE"; fi
     eval "$READ_STATEMENT"
     ;;
   write)
