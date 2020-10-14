@@ -41,4 +41,5 @@ public class CatalogHelpers {
         .put("type", "object")
         .put("properties", Arrays.stream(fields).collect(Collectors.toMap(Field::getName, field -> ImmutableMap.of("type", field.getType())))));
   }
+
 }
