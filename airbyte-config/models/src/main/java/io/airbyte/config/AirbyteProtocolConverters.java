@@ -37,7 +37,8 @@ public class AirbyteProtocolConverters {
 
   public static AirbyteCatalog toCatalog(Schema schema) {
     return new AirbyteCatalog()
-        .withStreams(schema.getStreams().stream().map(s -> new AirbyteStream().withName(s.getName())
+        .withStreams(schema.getStreams().stream().map(s -> new AirbyteStream()
+            .withName(s.getName())
             .withSchema(toJson(s.getFields()))).collect(Collectors.toList()));
   }
 
