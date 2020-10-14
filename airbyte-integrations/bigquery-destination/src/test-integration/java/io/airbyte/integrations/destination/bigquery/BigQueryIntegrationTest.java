@@ -50,7 +50,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// todo (cgardens).
 public class BigQueryIntegrationTest extends TestDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryIntegrationTest.class);
@@ -70,7 +69,7 @@ public class BigQueryIntegrationTest extends TestDestination {
 
   @Override
   protected String getImageName() {
-    return "airbyte/airbyte-bigquery-destination:dev";
+    return "airbyte/airbyte-bigquery-destination-abprotocol:dev";
   }
 
   @Override

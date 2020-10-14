@@ -22,37 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.protocol.models;
+package io.airbyte.commons.time;
 
-public class Field {
+public class Instants {
 
-  public static enum JsonSchemaPrimitives {
-    STRING,
-    NUMBER,
-    OBJECT,
-    ARRAY,
-    BOOLEAN,
-    NULL;
-  }
-
-  private final String name;
-  private final JsonSchemaPrimitives type;
-
-  public Field(String name, JsonSchemaPrimitives type) {
-    this.name = name;
-    this.type = type;
-  }
-
-  public static Field of(String name, JsonSchemaPrimitives type) {
-    return new Field(name, type);
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getTypeAsJsonSchemaString() {
-    return type.name().toLowerCase();
+  public static long toSeconds(long millis) {
+    return millis / 1000;
   }
 
 }

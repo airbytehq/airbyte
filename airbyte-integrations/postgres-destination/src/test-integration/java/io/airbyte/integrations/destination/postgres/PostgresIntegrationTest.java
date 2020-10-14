@@ -43,7 +43,7 @@ public class PostgresIntegrationTest extends TestDestination {
 
   @Override
   protected String getImageName() {
-    return "airbyte/airbyte-postgres-destination:dev";
+    return "airbyte/airbyte-postgres-destination-abprotocol:dev";
   }
 
   @Override
@@ -76,7 +76,7 @@ public class PostgresIntegrationTest extends TestDestination {
     return DatabaseHelper.query(
         DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl()),
         ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s ORDER BY ab_inserted_at ASC;", streamName))
+            .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
             .stream()
             .map(Record::intoMap)
             .map(r -> r.entrySet().stream().map(e -> {

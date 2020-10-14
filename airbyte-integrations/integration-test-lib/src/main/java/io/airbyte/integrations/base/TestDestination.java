@@ -37,12 +37,13 @@ import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardTargetConfig;
-import io.airbyte.singer.SingerMessage;
-import io.airbyte.singer.SingerMessage.Type;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.protocols.singer.DefaultSingerDestination;
+import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -175,8 +176,8 @@ public abstract class TestDestination {
   @ArgumentsSource(DataArgumentsProvider.class)
   void testSync(String messagesFilename, String catalogFilename) throws Exception {
     final Schema catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), Schema.class);
-    final List<SingerMessage> messages = MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, SingerMessage.class)).collect(Collectors.toList());
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(messages, catalog);
 
     assertSameMessages(messages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
@@ -188,27 +189,29 @@ public abstract class TestDestination {
   @Test
   void testSecondSync() throws Exception {
     final Schema catalog = Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), Schema.class);
-    final List<SingerMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
-        .map(record -> Jsons.deserialize(record, SingerMessage.class)).collect(Collectors.toList());
+    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(firstSyncMessages, catalog);
 
-    List<SingerMessage> secondSyncMessages = Lists.newArrayList(new SingerMessage()
-        .withStream(catalog.getStreams().get(0).getName())
-        .withRecord(Jsons.jsonNode(ImmutableMap.builder()
-            .put("date", "2020-03-31T00:00:00Z")
-            .put("HKD", 10)
-            .put("NZD", 700)
-            .build())));
+    List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(catalog.getStreams().get(0).getName())
+            .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("date", "2020-03-31T00:00:00Z")
+                .put("HKD", 10)
+                .put("NZD", 700)
+                .build()))));
     runSync(secondSyncMessages, catalog);
     assertSameMessages(secondSyncMessages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
-  private void runSync(List<SingerMessage> messages, Schema catalog) throws Exception {
+  // todo (cgardens) - still uses the old schema.
+  private void runSync(List<AirbyteMessage> messages, Schema catalog) throws Exception {
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
         .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(getConfig()))
         .withStandardSync(new StandardSync().withSchema(catalog));
 
-    final DefaultSingerDestination target = new DefaultSingerDestination(new AirbyteIntegrationLauncher(getImageName(), pbf));
+    final AirbyteDestination target = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(getImageName(), pbf));
 
     target.start(targetConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> target.accept(message)));
@@ -216,10 +219,11 @@ public abstract class TestDestination {
     target.close();
   }
 
-  private void assertSameMessages(List<SingerMessage> expected, List<JsonNode> actual) {
+  private void assertSameMessages(List<AirbyteMessage> expected, List<JsonNode> actual) {
     final List<JsonNode> expectedJson = expected.stream()
-        .filter(message -> message.getType() == Type.RECORD)
-        .map(SingerMessage::getRecord)
+        .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
+        .map(AirbyteMessage::getRecord)
+        .map(AirbyteRecordMessage::getData)
         .collect(Collectors.toList());
     // we want to ignore order in this comparison.
     assertEquals(expectedJson.size(), actual.size());

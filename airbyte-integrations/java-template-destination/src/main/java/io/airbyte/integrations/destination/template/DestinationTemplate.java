@@ -28,13 +28,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.singer.SingerMessage;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,14 +79,14 @@ public class DestinationTemplate implements Destination {
   // fixme - implement this method such that it returns a consumer that can push messages to the
   // destination.
   @Override
-  public DestinationConsumer<SingerMessage> write(JsonNode config, Schema schema) throws IOException {
+  public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws IOException {
     return new RecordConsumer();
   }
 
-  public static class RecordConsumer implements DestinationConsumer<SingerMessage> {
+  public static class RecordConsumer implements DestinationConsumer<AirbyteMessage> {
 
     @Override
-    public void accept(SingerMessage singerMessage) throws Exception {
+    public void accept(AirbyteMessage message) throws Exception {
       // fixme - implement how to write a message to the destination
       throw new RuntimeException("Not Implemented");
     }
