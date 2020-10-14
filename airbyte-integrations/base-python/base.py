@@ -17,12 +17,6 @@ module = importlib.import_module(impl_module)
 impl = getattr(module, impl_class)
 
 
-def log(level, text):
-    log_message = AirbyteLogMessage(level=level, message=text)
-    message = AirbyteMessage(type="LOG", log=log_message)
-    print(message.serialize)
-
-
 class AirbyteEntrypoint(object):
     def __init__(self, source):
         self.source = source
