@@ -48,8 +48,9 @@ function main() {
     eval "$AIRBYTE_DISCOVER_CMD" --config "$CONFIG_FILE"
     ;;
   read)
-    # todo: state should be optional: --state "$STATE_FILE"
-    eval "$AIRBYTE_READ_CMD" --config "$CONFIG_FILE" --catalog "$CATALOG_FILE"
+    READ_STATEMENT="$AIRBYTE_READ_CMD --config $CONFIG_FILE --catalog $CATALOG_FILE"
+    if [[ ! -z "$STATE_FILE" ]]; then READ_STATEMENT="$READ_STATEMENT --state $STATE_FILE"; fi
+    eval "$READ_STATEMENT"
     ;;
   write)
     eval "$AIRBYTE_WRITE_CMD" --config "$CONFIG_FILE" --catalog "$CATALOG_FILE"

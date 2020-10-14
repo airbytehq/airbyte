@@ -8,3 +8,6 @@ echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > airbyte-integrations/bigquery-destinat
 
 mkdir airbyte-integrations/singer/stripe/source/config
 echo "$STRIPE_INTEGRATION_TEST_CREDS" > airbyte-integrations/singer/stripe/source/config/config.json
+
+mkdir airbyte-integrations/singer/stripe_abprotocol/source/config
+echo "$STRIPE_INTEGRATION_TEST_CREDS" > airbyte-integrations/singer/stripe_abprotocol/source/config/config.json
