@@ -24,39 +24,39 @@
 
 package io.airbyte.protocol.models;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
-import java.util.Set;
-
 public class Field {
 
-  private static final Set<String> JSON_SCHEMA_PRIMITIVES = Sets.newHashSet(
-      "string",
-      "number",
-      "object",
-      "array",
-      "boolean",
-      "null");
+  private enum JsonSchemaPrimitives {
+    STRING,
+    NUMBER,
+    OBJECT,
+    ARRAY,
+    BOOLEAN,
+    NULL;
+  }
 
   private final String name;
-  private final String type;
+  private final JsonSchemaPrimitives type;
 
-  public Field(String name, String type) {
-    Preconditions.checkState(JSON_SCHEMA_PRIMITIVES.contains(type));
+  public Field(String name, JsonSchemaPrimitives type) {
     this.name = name;
     this.type = type;
   }
 
-  public static Field of(String name, String type) {
+  public static Field of(String name, JsonSchemaPrimitives type) {
     return new Field(name, type);
+  }
+
+  public static Field of(String name, String type) {
+    return new Field(name, JsonSchemaPrimitives.valueOf(type));
   }
 
   public String getName() {
     return name;
   }
 
-  public String getType() {
-    return type;
+  public String getTypeAsJsonSchemaString() {
+    return type.name().toLowerCase();
   }
 
 }

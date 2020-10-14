@@ -39,7 +39,8 @@ public class CatalogHelpers {
   public static JsonNode fieldsToJsonSchema(Field... fields) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("type", "object")
-        .put("properties", Arrays.stream(fields).collect(Collectors.toMap(Field::getName, field -> ImmutableMap.of("type", field.getType())))));
+        .put("properties", Arrays.stream(fields)
+            .collect(Collectors.toMap(Field::getName, field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString())))));
   }
 
 }
