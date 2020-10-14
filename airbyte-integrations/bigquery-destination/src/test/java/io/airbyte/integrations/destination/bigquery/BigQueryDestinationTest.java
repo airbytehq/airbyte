@@ -45,19 +45,21 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.DataType;
-import io.airbyte.config.Field;
-import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.Stream;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.singer.SingerMessage;
-import io.airbyte.singer.SingerMessage.Type;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.Field;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -77,25 +79,33 @@ class BigQueryDestinationTest {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
+  private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
-  private static final SingerMessage SINGER_MESSAGE_USERS1 = new SingerMessage().withType(Type.RECORD).withStream(USERS_STREAM_NAME)
-      .withRecord(objectMapper.createObjectNode().put("name", "john").put("id", "10"));
-  private static final SingerMessage SINGER_MESSAGE_USERS2 = new SingerMessage().withType(Type.RECORD).withStream(USERS_STREAM_NAME)
-      .withRecord(objectMapper.createObjectNode().put("name", "susan").put("id", "30"));
-  private static final SingerMessage SINGER_MESSAGE_TASKS1 = new SingerMessage().withType(Type.RECORD).withStream(TASKS_STREAM_NAME)
-      .withRecord(objectMapper.createObjectNode().put("goal", "announce the game."));
-  private static final SingerMessage SINGER_MESSAGE_TASKS2 = new SingerMessage().withType(Type.RECORD).withStream(TASKS_STREAM_NAME)
-      .withRecord(objectMapper.createObjectNode().put("goal", "ship some code."));
-  private static final SingerMessage STATE_MESSAGE = new SingerMessage().withType(Type.STATE)
-      .withValue(objectMapper.createObjectNode().put("checkpoint", "now!"));
+  private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+          .withData(objectMapper.createObjectNode().put("name", "john").put("id", "10"))
+          .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+          .withData(objectMapper.createObjectNode().put("name", "susan").put("id", "30"))
+          .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_TASKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
+          .withData(objectMapper.createObjectNode().put("goal", "announce the game."))
+          .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
+          .withData(objectMapper.createObjectNode().put("goal", "ship some code."))
+          .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
+      .withState(new AirbyteStateMessage().withData(objectMapper.createObjectNode().put("checkpoint", "now!")));
 
-  private static final Schema CATALOG = new Schema().withStreams(Lists.newArrayList(
-      new Stream().withName(USERS_STREAM_NAME)
-          .withFields(Lists.newArrayList(new Field().withName("name").withDataType(DataType.STRING).withSelected(true),
-              new Field().withName("id").withDataType(DataType.STRING).withSelected(true))),
-      new Stream().withName(TASKS_STREAM_NAME)
-          .withFields(Lists.newArrayList(new Field().withName("goal").withDataType(DataType.STRING).withSelected(true)))));
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(
+      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, io.airbyte.protocol.models.Field.of("name", Field.JsonSchemaPrimitives.STRING),
+          io.airbyte.protocol.models.Field
+              .of("id", Field.JsonSchemaPrimitives.STRING)),
+      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", Field.JsonSchemaPrimitives.STRING))));
 
   private JsonNode config;
 
@@ -200,43 +210,43 @@ class BigQueryDestinationTest {
 
   // @Test
   void testWriteSuccess() throws Exception {
-    final DestinationConsumer<SingerMessage> consumer = new BigQueryDestination().write(config, CATALOG);
+    final DestinationConsumer<AirbyteMessage> consumer = new BigQueryDestination().write(config, CATALOG);
 
-    consumer.accept(SINGER_MESSAGE_USERS1);
-    consumer.accept(SINGER_MESSAGE_TASKS1);
-    consumer.accept(SINGER_MESSAGE_USERS2);
-    consumer.accept(SINGER_MESSAGE_TASKS2);
-    consumer.accept(STATE_MESSAGE);
+    consumer.accept(MESSAGE_USERS1);
+    consumer.accept(MESSAGE_TASKS1);
+    consumer.accept(MESSAGE_USERS2);
+    consumer.accept(MESSAGE_TASKS2);
+    consumer.accept(MESSAGE_STATE);
     consumer.close();
 
     final List<JsonNode> usersActual = retrieveRecords(USERS_STREAM_NAME);
-    final List<JsonNode> expectedUsersJson = Lists.newArrayList(SINGER_MESSAGE_USERS1.getRecord(), SINGER_MESSAGE_USERS2.getRecord());
+    final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson.size(), usersActual.size());
     assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
 
     final List<JsonNode> tasksActual = retrieveRecords(TASKS_STREAM_NAME);
-    final List<JsonNode> expectedTasksJson = Lists.newArrayList(SINGER_MESSAGE_TASKS1.getRecord(), SINGER_MESSAGE_TASKS2.getRecord());
+    final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
 
-    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(Stream::getName).collect(Collectors.toList()));
+    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(AirbyteStream::getName).collect(Collectors.toList()));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   // @Test
   void testWriteFailure() throws Exception {
     // hack to force an exception to be thrown from within the consumer.
-    final SingerMessage spiedMessage = spy(SINGER_MESSAGE_USERS1);
-    doThrow(new RuntimeException()).when(spiedMessage).getStream();
+    final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
+    doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final DestinationConsumer<SingerMessage> consumer = spy(new BigQueryDestination().write(config, CATALOG));
+    final DestinationConsumer<AirbyteMessage> consumer = spy(new BigQueryDestination().write(config, CATALOG));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
-    consumer.accept(SINGER_MESSAGE_USERS2);
+    consumer.accept(MESSAGE_USERS2);
     consumer.close();
 
-    final List<String> tableNames = CATALOG.getStreams().stream().map(Stream::getName).collect(toList());
-    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(Stream::getName).collect(Collectors.toList()));
+    final List<String> tableNames = CATALOG.getStreams().stream().map(AirbyteStream::getName).collect(toList());
+    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(AirbyteStream::getName).collect(Collectors.toList()));
     // assert that no tables were created.
     assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tableNames.stream().anyMatch(tableName::startsWith)));
   }
