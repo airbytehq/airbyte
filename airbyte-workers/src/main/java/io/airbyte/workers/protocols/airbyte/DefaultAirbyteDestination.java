@@ -66,12 +66,11 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
     final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
     final AirbyteCatalog catalog = AirbyteProtocolConverters.toCatalog(targetConfig.getStandardSync().getSchema());
-    
     IOs.writeFile(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
     IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     LOGGER.info("Running target...");
-    targetProcess = integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME).start();
+    targetProcess = integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, WorkerConstants.CATALOG_JSON_FILENAME).start();
     LineGobbler.gobble(targetProcess.getInputStream(), LOGGER::info);
     LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER::error);
 
