@@ -18,5 +18,6 @@ application {
     mainClass = 'io.airbyte.integrations.destination.csv.CsvDestination'
 }
 
+buildImage.dependsOn(assemble)
 buildImage.dependsOn(':airbyte-integrations:base-java:buildImage')
 integrationTest.dependsOn(buildImage)

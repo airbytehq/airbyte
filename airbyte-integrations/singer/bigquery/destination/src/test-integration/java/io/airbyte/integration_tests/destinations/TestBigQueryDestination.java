@@ -71,7 +71,6 @@ import org.slf4j.LoggerFactory;
 class TestBigQueryDestination {
 
   private static final String CONFIG_PATH = "config/credentials.json";
-  private static final JsonNode CREDENTIALS = Jsons.deserialize(IOs.readFile(Path.of(CONFIG_PATH)));
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestBigQueryDestination.class);
 
@@ -93,8 +92,8 @@ class TestBigQueryDestination {
   @BeforeAll
   public static void setupOnce() throws IOException {
     BQ = BigQueryOptions.newBuilder()
-        .setProjectId(CREDENTIALS.get("project_id").asText())
-        .setCredentials(ServiceAccountCredentials.fromStream(new ByteArrayInputStream(Jsons.serialize(CREDENTIALS).getBytes(StandardCharsets.UTF_8))))
+        .setProjectId(Jsons.deserialize(IOs.readFile(Path.of(CONFIG_PATH))).get("project_id").asText())
+        .setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream(CONFIG_PATH)))
         .build().getService();
   }
 
