@@ -1,5 +1,8 @@
 import json
+import os
+import selectors
 import subprocess
+import tempfile
 from airbyte_protocol import AirbyteSpec
 from airbyte_protocol import AirbyteCatalog
 from airbyte_protocol import AirbyteMessage
@@ -66,41 +69,45 @@ class SingerHelper:
 
     @staticmethod
     def read(logger, shell_command, is_message=(lambda x: True), transform=(lambda x: x)) -> Generator[AirbyteMessage, None, None]:
-        with subprocess.Popen(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1,
-                              universal_newlines=True) as p:
-            for line_tuple in zip(p.stdout, p.stderr):
-                out_line = line_tuple[0]
-                err_line = line_tuple[1]
+        with subprocess.Popen(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) as p:
+            sel = selectors.DefaultSelector()
+            sel.register(p.stdout, selectors.EVENT_READ)
+            sel.register(p.stderr, selectors.EVENT_READ)
 
-                if out_line:
-                    out_json = to_json(out_line)
-                    if out_json is not None and is_message(out_json):
-                        transformed_json = transform(out_json)
-                        if transformed_json is not None:
-                            if transformed_json.get('type') == "SCHEMA":
-                                pass
-                            elif transformed_json.get('type') == "STATE":
-                                out_record = AirbyteStateMessage(data=transformed_json["value"])
-                                out_message = AirbyteMessage(type="STATE", state=out_record)
-                                yield transform(out_message)
-                            else:
-                                # todo: check that messages match the discovered schema
-                                stream_name = transformed_json["stream"]
-                                out_record = AirbyteRecordMessage(
-                                    stream=stream_name,
-                                    data=transformed_json["record"],
-                                    emitted_at=int(datetime.now().timestamp()) * 1000)
-                                out_message = AirbyteMessage(type="RECORD", record=out_record)
-                                yield transform(out_message)
-                    elif out_line:
-                        logger(out_line, "INFO")
+            ok = True
+            while ok:
+                for key, val1 in sel.select():
+                    line = key.fileobj.readline()
+                    if not line:
+                        ok = False
+                        break
+                    if key.fileobj is p.stdout:
+                        out_json = to_json(line)
+                        if out_json is not None and is_message(out_json):
+                            transformed_json = transform(out_json)
+                            if transformed_json is not None:
+                                if transformed_json.get('type') == "SCHEMA":
+                                    pass
+                                elif transformed_json.get('type') == "STATE":
+                                    out_record = AirbyteStateMessage(data=transformed_json["value"])
+                                    out_message = AirbyteMessage(type="STATE", state=out_record)
+                                    yield transform(out_message)
+                                else:
+                                    # todo: check that messages match the discovered schema
+                                    stream_name = transformed_json["stream"]
+                                    out_record = AirbyteRecordMessage(
+                                        stream=stream_name,
+                                        data=transformed_json["record"],
+                                        emitted_at=int(datetime.now().timestamp()) * 1000)
+                                    out_message = AirbyteMessage(type="RECORD", record=out_record)
+                                    yield transform(out_message)
+                    else:
+                        logger(line, "ERROR")
 
-                if err_line:
-                    logger(err_line, "ERROR")
 
     @staticmethod
     def combine_catalogs(masked_airbyte_catalog, discovered_singer_catalog) -> str:
-        combined_catalog_path = "/mount/rendered_catalog.json"
+        combined_catalog_path = os.path.join(tempfile.mkdtemp(), 'rendered_catalog.json')
         masked_singer_streams = []
 
         stream_to_airbyte_schema = {}
