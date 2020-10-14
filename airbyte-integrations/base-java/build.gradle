@@ -1,8 +1,9 @@
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 plugins {
-    id 'com.bmuschko.docker-remote-api'
     id 'java-library'
 }
+
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
 
@@ -10,16 +11,4 @@ dependencies {
     implementation project(':airbyte-singer')
 }
 
-def image = 'airbyte/base-java:dev'
-
-task imageName {
-    doLast {
-        println "IMAGE $image"
-    }
-}
-
-task buildImage(type: DockerBuildImage) {
-    inputDir = projectDir
-    images.add(image)
-    dependsOn ':airbyte-integrations:base:buildImage'
-}
+buildImage.dependsOn ':airbyte-integrations:base:buildImage'

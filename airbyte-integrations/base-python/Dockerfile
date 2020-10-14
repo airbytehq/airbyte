@@ -1,5 +1,5 @@
 FROM python:3.7-slim
-COPY --from=airbyte/base:dev /airbyte /airbyte
+COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
 WORKDIR /airbyte
 ENV VIRTUAL_ENV=/airbyte/env
@@ -19,3 +19,6 @@ ENV AIRBYTE_DISCOVER_CMD "python3 /airbyte/base-python/base.py discover"
 ENV AIRBYTE_READ_CMD "python3 /airbyte/base-python/base.py read"
 
 ENTRYPOINT ["/airbyte/base.sh"]
+
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/integration-base-python

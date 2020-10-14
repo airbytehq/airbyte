@@ -1,5 +1,5 @@
 FROM openjdk:14.0.2-slim
-COPY --from=airbyte/base:dev /airbyte /airbyte
+COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
 WORKDIR /airbyte
 
@@ -13,3 +13,6 @@ ENV AIRBYTE_READ_CMD "/airbyte/javabase.sh --read"
 ENV AIRBYTE_WRITE_CMD "/airbyte/javabase.sh --write"
 
 ENTRYPOINT ["/airbyte/base.sh"]
+
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/integration-base-java
