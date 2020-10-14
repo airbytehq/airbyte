@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -173,7 +174,7 @@ public class SingerStripeSourceTest {
     // run syn process
     Path syncOutputPath = jobRoot.resolve("sync_output.txt");
     Process process = createSyncProcess(syncOutputPath);
-    process.waitFor();
+    process.waitFor(1, TimeUnit.MINUTES);
 
     assertEquals(0, process.exitValue());
 
@@ -192,7 +193,7 @@ public class SingerStripeSourceTest {
     ObjectNode normalized = node.deepCopy();
 
     if (normalized.get("type").textValue().equals("RECORD")) {
-      ObjectNode record = (ObjectNode) normalized.get("record");
+      ObjectNode record = (ObjectNode) normalized.get("record").get("data");
       record.put("id", "id");
       record.put("created", "created");
       record.put("invoice_prefix", "invoice_prefix");
