@@ -50,18 +50,18 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.time.Instants;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.config.Stream;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.singer.SingerMessage;
-import io.airbyte.singer.SingerMessage.Type;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -184,18 +184,17 @@ public class BigQueryDestination implements Destination {
    *
    * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
    *        "password": "super secure" }
-   * @param schema - schema of the incoming messages.
+   * @param catalog - schema of the incoming messages.
    * @return consumer that writes singer messages to the database.
    */
   @Override
-  public DestinationConsumer<SingerMessage> write(JsonNode config, Schema schema) {
-
+  public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) {
     final BigQuery bigquery = getBigQuery(config);
     Map<String, WriteConfig> writeConfigs = new HashMap<>();
     final String datasetId = config.get(CONFIG_DATASET_ID).asText();
 
     // create tmp tables if not exist
-    for (final Stream stream : schema.getStreams()) {
+    for (final AirbyteStream stream : catalog.getStreams()) {
       final String tableName = stream.getName();
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
 
@@ -214,7 +213,7 @@ public class BigQueryDestination implements Destination {
 
     // write to tmp tables
     // if success copy delete main table if exists. rename tmp tables to real tables.
-    return new RecordConsumer(bigquery, writeConfigs, schema);
+    return new RecordConsumer(bigquery, writeConfigs, catalog);
   }
 
   // https://cloud.google.com/bigquery/docs/tables#create-table
@@ -250,34 +249,34 @@ public class BigQueryDestination implements Destination {
     }
   }
 
-  public static class RecordConsumer extends FailureTrackingConsumer<SingerMessage> implements DestinationConsumer<SingerMessage> {
+  public static class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
 
     private final BigQuery bigquery;
     private final Map<String, WriteConfig> writeConfigs;
-    private final Schema schema;
+    private final AirbyteCatalog catalog;
 
-    public RecordConsumer(BigQuery bigquery, Map<String, WriteConfig> writeConfigs, Schema schema) {
+    public RecordConsumer(BigQuery bigquery, Map<String, WriteConfig> writeConfigs, AirbyteCatalog catalog) {
       this.bigquery = bigquery;
       this.writeConfigs = writeConfigs;
-      this.schema = schema;
+      this.catalog = catalog;
     }
 
     @Override
-    public void acceptTracked(SingerMessage singerMessage) {
+    public void acceptTracked(AirbyteMessage message) {
       // ignore other message types.
-      if (singerMessage.getType() == Type.RECORD) {
-        if (!writeConfigs.containsKey(singerMessage.getStream())) {
+      if (message.getType() == AirbyteMessage.Type.RECORD) {
+        if (!writeConfigs.containsKey(message.getRecord().getStream())) {
           throw new IllegalArgumentException(
               String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                  Jsons.serialize(schema), Jsons.serialize(singerMessage)));
+                  Jsons.serialize(catalog), Jsons.serialize(message)));
         }
-
         final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
             COLUMN_AB_ID, UUID.randomUUID().toString(),
-            COLUMN_DATA, Jsons.serialize(singerMessage.getRecord()),
-            COLUMN_EMITTED_AT, Instant.now().getEpochSecond()));
+            COLUMN_DATA, Jsons.serialize(message.getRecord().getData()),
+            COLUMN_EMITTED_AT, Instants.toSeconds(message.getRecord().getEmittedAt())));
         try {
-          writeConfigs.get(singerMessage.getStream()).getWriter().write(ByteBuffer.wrap((Jsons.serialize(data) + "\n").getBytes(Charsets.UTF_8)));
+          writeConfigs.get(message.getRecord().getStream()).getWriter()
+              .write(ByteBuffer.wrap((Jsons.serialize(data) + "\n").getBytes(Charsets.UTF_8)));
         } catch (IOException e) {
           throw new RuntimeException(e);
         }

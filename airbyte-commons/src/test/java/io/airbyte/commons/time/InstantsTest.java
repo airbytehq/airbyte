@@ -22,37 +22,19 @@
  * SOFTWARE.
  */
 
-package io.airbyte.protocol.models;
+package io.airbyte.commons.time;
 
-public class Field {
+import static org.junit.jupiter.api.Assertions.*;
 
-  public static enum JsonSchemaPrimitives {
-    STRING,
-    NUMBER,
-    OBJECT,
-    ARRAY,
-    BOOLEAN,
-    NULL;
-  }
+import java.time.Instant;
+import org.junit.jupiter.api.Test;
 
-  private final String name;
-  private final JsonSchemaPrimitives type;
+class InstantsTest {
 
-  public Field(String name, JsonSchemaPrimitives type) {
-    this.name = name;
-    this.type = type;
-  }
-
-  public static Field of(String name, JsonSchemaPrimitives type) {
-    return new Field(name, type);
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getTypeAsJsonSchemaString() {
-    return type.name().toLowerCase();
+  @Test
+  void testMillisToSeconds() {
+    final Instant now = Instant.now();
+    assertEquals(now.getEpochSecond(), Instants.toSeconds(now.toEpochMilli()));
   }
 
 }

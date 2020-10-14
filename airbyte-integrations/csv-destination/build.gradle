@@ -8,8 +8,8 @@ apply from: rootProject.file('tools/gradle/commons/integrations/integration-test
 dependencies {
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation project(':airbyte-config:models')
+    implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:base-java')
-    implementation project(':airbyte-singer')
 
     integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
 }
