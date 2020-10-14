@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
@@ -36,14 +37,18 @@ import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -57,6 +62,7 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -64,11 +70,15 @@ import org.slf4j.LoggerFactory;
 
 class TestBigQueryDestination {
 
-  private static final BigQuery BQ = BigQueryOptions.getDefaultInstance().getService();
+  private static final String CONFIG_PATH = "config/credentials.json";
+  private static final JsonNode CREDENTIALS = Jsons.deserialize(IOs.readFile(Path.of(CONFIG_PATH)));
+
   private static final Logger LOGGER = LoggerFactory.getLogger(TestBigQueryDestination.class);
 
   private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
   private static final String IMAGE_NAME = "airbyte/integration-singer-bigquery-destination:dev";
+
+  private static BigQuery BQ;
 
   protected Path jobRoot;
   protected Path workspaceRoot;
@@ -79,6 +89,14 @@ class TestBigQueryDestination {
   private Process process;
 
   private boolean tornDown = true;
+
+  @BeforeAll
+  public static void setupOnce() throws IOException {
+    BQ = BigQueryOptions.newBuilder()
+        .setProjectId(CREDENTIALS.get("project_id").asText())
+        .setCredentials(ServiceAccountCredentials.fromStream(new ByteArrayInputStream(Jsons.serialize(CREDENTIALS).getBytes(StandardCharsets.UTF_8))))
+        .build().getService();
+  }
 
   @BeforeEach
   public void setUpBigQuery() throws IOException, WorkerException {

@@ -2,24 +2,8 @@ plugins {
     id 'java'
 }
 
-apply from: rootProject.file('tools/gradle/commons/integration.gradle')
-
-sourceSets {
-    integrationTest {
-        java {
-            srcDir 'src/test-integration/java'
-        }
-        resources {
-            srcDir 'src/test-integration/resources'
-        }
-    }
-}
-test.dependsOn('compileIntegrationTestJava')
-
-configurations {
-    integrationTestImplementation.extendsFrom testImplementation
-    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
-}
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 
 dependencies {
     integrationTestImplementation project(':airbyte-workers')
@@ -27,16 +11,4 @@ dependencies {
     integrationTestImplementation project(':airbyte-config:models')
 }
 
-task integrationTest(type: Test) {
-    testClassesDirs += sourceSets.integrationTest.output.classesDirs
-    classpath += sourceSets.integrationTest.runtimeClasspath
-
-    useJUnitPlatform()
-    testLogging() {
-        events "passed", "failed"
-        exceptionFormat "full"
-    }
-
-    mustRunAfter test
-    dependsOn(buildImage)
-}
+integrationTest.dependsOn(buildImage)

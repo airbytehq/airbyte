@@ -1,5 +1,5 @@
 FROM python:3.7-slim
-COPY --from=airbyte/base:dev /airbyte /airbyte
+COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
 WORKDIR /airbyte
 ENV VIRTUAL_ENV=/airbyte/env

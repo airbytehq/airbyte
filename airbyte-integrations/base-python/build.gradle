@@ -1,4 +1,4 @@
-apply from: rootProject.file('tools/gradle/commons/integration.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 buildImage.dependsOn ':airbyte-integrations:base:buildImage'
 
 task deleteProtocolDefinitions(type: Delete) {

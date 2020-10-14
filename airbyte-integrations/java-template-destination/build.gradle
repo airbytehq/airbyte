@@ -2,7 +2,7 @@ plugins {
     id 'application'
 }
 
-apply from: rootProject.file('tools/gradle/commons/integration.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 buildImage.dependsOn ':airbyte-integrations:base-java:buildImage'
 
 dependencies {

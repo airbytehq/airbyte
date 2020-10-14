@@ -2,50 +2,21 @@ plugins {
     id 'application'
 }
 
-apply from: rootProject.file('tools/gradle/commons/integration.gradle')
-buildImage.dependsOn ':airbyte-integrations:base-java:buildImage'
-
-sourceSets {
-    integrationTest {
-        java {
-            srcDir 'src/test-integration/java'
-        }
-        resources {
-            srcDir 'src/test-integration/resources'
-        }
-    }
-}
-test.dependsOn('compileIntegrationTestJava')
-
-configurations {
-    integrationTestImplementation.extendsFrom testImplementation
-    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
-}
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 
 dependencies {
+    implementation 'org.apache.commons:commons-csv:1.4'
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-integrations:base-java')
     implementation project(':airbyte-singer')
 
     integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
-
-    implementation 'org.apache.commons:commons-csv:1.4'
 }
 
 application {
     mainClass = 'io.airbyte.integrations.destination.csv.CsvDestination'
 }
 
-task integrationTest(type: Test) {
-    testClassesDirs += sourceSets.integrationTest.output.classesDirs
-    classpath += sourceSets.integrationTest.runtimeClasspath
-
-    useJUnitPlatform()
-    testLogging() {
-        events "passed", "failed"
-        exceptionFormat "full"
-    }
-
-    mustRunAfter test
-    dependsOn(buildImage)
-}
+buildImage.dependsOn(':airbyte-integrations:base-java:buildImage')
+integrationTest.dependsOn(buildImage)

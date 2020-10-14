@@ -3,7 +3,6 @@ plugins {
     id 'java'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.4.0'
-    id 'com.bmuschko.docker-remote-api' version '6.6.1' apply false
     // id 'de.aaschmid.cpd' version '3.1'
 }
 
@@ -81,13 +80,6 @@ allprojects {
     afterEvaluate { project ->
         composeBuild.dependsOn(project.tasks.assemble)
     }
-
-    // Handles the case where there's an upstream dependency on a dev versioned image built by Gradle.
-    // The plugin doesn't recognize changes to the base image as a change that requires rebuilding.
-    // Docker will still cache the artifact, so it shouldn't be much slower.
-//    tasks.withType(DockerBuildImage).all { task ->
-//        task.outputs.upToDateWhen { false }
-//    }
 }
 
 allprojects {

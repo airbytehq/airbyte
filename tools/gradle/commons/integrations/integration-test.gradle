@@ -26,5 +26,4 @@ task integrationTest(type: Test) {
     }
 
     mustRunAfter test
-    dependsOn(buildImage)
 }

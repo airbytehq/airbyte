@@ -15,4 +15,9 @@ apply from: rootProject.file('tools/gradle/commons/docker.gradle')
 task buildImage(type: DockerBuildImage) {
     inputDir = projectDir
     images.add("${extractImageName(project.file('Dockerfile'))}:dev")
+
+    // Handles the case where there's an upstream dependency on a dev versioned image built by Gradle.
+    // The plugin doesn't recognize changes to the base image as a change that requires rebuilding.
+    // Docker will still cache the artifact, so it shouldn't be much slower.
+    outputs.upToDateWhen { false }
 }

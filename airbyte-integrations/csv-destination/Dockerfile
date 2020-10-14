@@ -1,4 +1,4 @@
-FROM airbyte/base-java:dev
+FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 ENV APPLICATION csv-destination

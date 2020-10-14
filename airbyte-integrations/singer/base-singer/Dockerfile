@@ -1,4 +1,4 @@
-FROM airbyte/base-python:dev
+FROM airbyte/integration-base-python:dev
 
 WORKDIR /airbyte/base_singer
 COPY base_singer/__init__.py base_singer/__init__.py
