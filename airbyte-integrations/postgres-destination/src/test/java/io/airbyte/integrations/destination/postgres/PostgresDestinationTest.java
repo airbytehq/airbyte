@@ -93,8 +93,9 @@ class PostgresDestinationTest {
       .withState(new AirbyteStateMessage().withData(objectMapper.createObjectNode().put("checkpoint", "now!")));
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, Field.of("name", "string"), Field.of("id", "string")),
-      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", "string"))));
+      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, Field.of("name", Field.JsonSchemaPrimitives.STRING),
+          Field.of("id", Field.JsonSchemaPrimitives.STRING)),
+      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", Field.JsonSchemaPrimitives.STRING))));
 
   private JsonNode config;
 

@@ -102,9 +102,10 @@ class BigQueryDestinationTest {
       .withState(new AirbyteStateMessage().withData(objectMapper.createObjectNode().put("checkpoint", "now!")));
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, io.airbyte.protocol.models.Field.of("name", "string"), io.airbyte.protocol.models.Field
-          .of("id", "string")),
-      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", "string"))));
+      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, io.airbyte.protocol.models.Field.of("name", Field.JsonSchemaPrimitives.STRING),
+          io.airbyte.protocol.models.Field
+              .of("id", Field.JsonSchemaPrimitives.STRING)),
+      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", Field.JsonSchemaPrimitives.STRING))));
 
   private JsonNode config;
 

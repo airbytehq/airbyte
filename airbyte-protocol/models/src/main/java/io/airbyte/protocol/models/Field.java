@@ -26,7 +26,7 @@ package io.airbyte.protocol.models;
 
 public class Field {
 
-  private enum JsonSchemaPrimitives {
+  public static enum JsonSchemaPrimitives {
     STRING,
     NUMBER,
     OBJECT,
@@ -45,10 +45,6 @@ public class Field {
 
   public static Field of(String name, JsonSchemaPrimitives type) {
     return new Field(name, type);
-  }
-
-  public static Field of(String name, String type) {
-    return new Field(name, JsonSchemaPrimitives.valueOf(type));
   }
 
   public String getName() {

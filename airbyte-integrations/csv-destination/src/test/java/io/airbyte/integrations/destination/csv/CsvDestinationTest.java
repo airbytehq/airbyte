@@ -45,6 +45,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitives;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -91,17 +92,9 @@ class CsvDestinationTest {
       .withState(new AirbyteStateMessage().withData(objectMapper.createObjectNode().put("checkpoint", "now!")));
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, Field.of("name", "string"), Field.of("id", "string")),
-      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", "string"))));
-  // private static final Schema CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(
-  // new AirbyteStream().withName(USERS_STREAM_NAME)
-  // .withSchema(CatalogHelpers.createAirbyteStream()
-  // CatalLists.newArrayList(new
-  // Field().withName("name").withDataType(DataType.STRING).withSelected(true),
-  // new Field().withName("id").withDataType(DataType.STRING).withSelected(true))),
-  // new AirbyteStream().withName(TASKS_STREAM_NAME)
-  // .withFields(Lists.newArrayList(new
-  // Field().withName("goal").withDataType(DataType.STRING).withSelected(true)))));
+      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, Field.of("name", JsonSchemaPrimitives.STRING),
+          Field.of("id", JsonSchemaPrimitives.STRING)),
+      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitives.STRING))));
 
   private Path destinationPath;
   private ObjectNode config;
