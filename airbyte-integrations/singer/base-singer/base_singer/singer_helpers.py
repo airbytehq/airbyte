@@ -48,7 +48,7 @@ class SingerHelper:
                                            universal_newlines=True)
 
         for line in completed_process.stderr.splitlines():
-            logger(line, "ERROR")
+            logger.log_by_prefix(line, "ERROR")
 
         airbyte_streams = []
         singer_catalog = singer_transform(json.loads(completed_process.stdout))
@@ -80,8 +80,7 @@ class SingerHelper:
                     line = key.fileobj.readline()
                     if not line:
                         ok = False
-                        break
-                    if key.fileobj is p.stdout:
+                    elif key.fileobj is p.stdout:
                         out_json = to_json(line)
                         if out_json is not None and is_message(out_json):
                             transformed_json = transform(out_json)
@@ -101,8 +100,10 @@ class SingerHelper:
                                         emitted_at=int(datetime.now().timestamp()) * 1000)
                                     out_message = AirbyteMessage(type="RECORD", record=out_record)
                                     yield transform(out_message)
+                        else:
+                            logger.log_by_prefix(line, "INFO")
                     else:
-                        logger(line, "ERROR")
+                        logger.log_by_prefix(line, "ERROR")
 
 
     @staticmethod
