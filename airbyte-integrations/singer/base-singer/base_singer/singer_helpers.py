@@ -11,11 +11,19 @@ from typing import Generator
 from datetime import datetime
 from dataclasses import dataclass
 
+
 def to_json(string):
     try:
         return json.loads(string)
     except ValueError as e:
         return False
+
+
+def is_field_metadata(metadata):
+    if len(metadata.get("breadcrumb")) != 2:
+        return False
+    else:
+        return metadata.get("breadcrumb")[0] != "property"
 
 
 @dataclass
@@ -89,3 +97,32 @@ class SingerHelper:
 
                 if err_line:
                     logger(err_line, "ERROR")
+
+    @staticmethod
+    def combine_catalogs(masked_airbyte_catalog, discovered_singer_catalog) -> str:
+        combined_catalog_path = "/mount/rendered_catalog.json"
+        masked_singer_streams = []
+
+        stream_to_airbyte_schema = {}
+        for stream in masked_airbyte_catalog["streams"]:
+            stream_to_airbyte_schema[stream.get("name")] = stream
+
+        for singer_stream in discovered_singer_catalog.get("streams"):
+            if singer_stream.get("stream") in stream_to_airbyte_schema:
+                new_metadatas = []
+                metadatas = singer_stream.get("metadata")
+                for metadata in metadatas:
+                    new_metadata = metadata
+                    new_metadata["metadata"]["selected"] = True
+                    if not is_field_metadata(new_metadata):
+                        new_metadata["metadata"]["forced-replication-method"] = "FULL_TABLE"
+                    new_metadatas += [new_metadata]
+                singer_stream["metadata"] = new_metadatas
+
+            masked_singer_streams += [singer_stream]
+
+        combined_catalog = {"streams": masked_singer_streams}
+        with open(combined_catalog_path, 'w') as fh:
+            fh.write(json.dumps(combined_catalog))
+
+        return combined_catalog_path
