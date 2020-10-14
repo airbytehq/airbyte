@@ -107,7 +107,7 @@ class SingerHelper:
 
 
     @staticmethod
-    def combine_catalogs(masked_airbyte_catalog, discovered_singer_catalog) -> str:
+    def create_singer_catalog_with_selection(masked_airbyte_catalog, discovered_singer_catalog) -> str:
         combined_catalog_path = os.path.join(tempfile.mkdtemp(), 'rendered_catalog.json')
         masked_singer_streams = []
 
