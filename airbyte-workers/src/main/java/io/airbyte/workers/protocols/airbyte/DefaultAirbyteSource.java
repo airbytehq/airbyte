@@ -30,20 +30,14 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.DiscoverCatalogWorker;
-import io.airbyte.workers.JobStatus;
-import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Optional;
@@ -60,30 +54,26 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
-  private final DiscoverCatalogWorker discoverCatalogWorker;
 
   private Process tapProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
 
-  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                              final DiscoverCatalogWorker discoverSchemaWorker) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(), discoverSchemaWorker);
+  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
   @VisibleForTesting
   DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                       final AirbyteStreamFactory streamFactory,
-                       final DiscoverCatalogWorker discoverSchemaWorker) {
+                       final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
-    this.discoverCatalogWorker = discoverSchemaWorker;
   }
 
   @Override
   public void start(StandardTapConfig input, Path jobRoot) throws Exception {
     Preconditions.checkState(tapProcess == null);
 
-    AirbyteCatalog catalog = runDiscovery(input, jobRoot);
+    final AirbyteCatalog catalog = AirbyteProtocolConverters.toCatalog(input.getStandardSync().getSchema());
 
     final JsonNode configDotJson = input.getSourceConnectionImplementation().getConfiguration();
 
@@ -126,21 +116,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
     if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
       throw new WorkerException("Tap process wasn't successful");
     }
-  }
-
-  private AirbyteCatalog runDiscovery(StandardTapConfig input, Path jobRoot) throws IOException, WorkerException {
-    StandardDiscoverCatalogInput discoveryInput = new StandardDiscoverCatalogInput()
-        .withConnectionConfiguration(input.getSourceConnectionImplementation().getConfiguration());
-
-    Path discoverJobRoot = jobRoot.resolve(DISCOVERY_DIR);
-    Files.createDirectory(discoverJobRoot);
-
-    final OutputAndStatus<StandardDiscoverCatalogOutput> output = discoverCatalogWorker.run(discoveryInput, discoverJobRoot);
-    if (output.getStatus() == JobStatus.FAILED || output.getOutput().isEmpty()) {
-      throw new WorkerException("Cannot discover schema");
-    }
-
-    return output.getOutput().get().getCatalog();
   }
 
 }
