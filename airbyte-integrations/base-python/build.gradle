@@ -10,4 +10,6 @@ task copyProtocolDefinitions(type: Copy) {
     dependsOn deleteProtocolDefinitions
 }
 
+clean.dependsOn deleteProtocolDefinitions
+buildImage.dependsOn copyProtocolDefinitions
 buildImage.dependsOn ':airbyte-integrations:base:buildImage'
