@@ -28,3 +28,8 @@ integrationsPath.eachFileRecurse(FileType.FILES) { path ->
         include ":airbyte-integrations:${relativePath.parent.join(':')}"
     }
 }
+include 'airbyte-integrations:gsheets-source-abprotocol'
+findProject(':airbyte-integrations:gsheets-source-abprotocol')?.name = 'gsheets-source-abprotocol'
+include 'airbyte-integrations:gsheets-source-abprotocol:source'
+findProject(':airbyte-integrations:gsheets-source-abprotocol:source')?.name = 'source'
+

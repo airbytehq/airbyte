@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!entrypoint.sh
+!source_stripe_singer/*.py
+!spec.json
+!setup.py
+
