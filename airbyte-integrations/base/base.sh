@@ -48,11 +48,9 @@ function main() {
     eval "$AIRBYTE_DISCOVER_CMD" --config "$CONFIG_FILE"
     ;;
   read)
-    if [[ -z "$STATE_FILE" ]]; then
-      eval "$AIRBYTE_READ_CMD" --config "$CONFIG_FILE" --catalog "$CATALOG_FILE"
-    else
-      eval "$AIRBYTE_READ_CMD" --config "$CONFIG_FILE" --catalog "$CATALOG_FILE" --state "$STATE_FILE"
-    fi
+    READ_STATEMENT="$AIRBYTE_READ_CMD --config $CONFIG_FILE --catalog $CATALOG_FILE"
+    if [[ -z "$STATE_FILE" ]]; then READ_STATEMENT="$READ_STATEMENT --state $STATE_FILE"; fi
+    eval "$READ_STATEMENT"
     ;;
   write)
     eval "$AIRBYTE_WRITE_CMD" --config "$CONFIG_FILE" --catalog "$CATALOG_FILE"
