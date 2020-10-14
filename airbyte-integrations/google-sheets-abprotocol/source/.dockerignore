@@ -1,7 +1,6 @@
 *
 !Dockerfile
-!entrypoint.sh
-!source_stripe_singer/*.py
+!google_sheets_source/*.py
 !spec.json
 !setup.py
 
