@@ -25,6 +25,7 @@
 package io.airbyte.scheduler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -36,6 +37,7 @@ import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,6 +58,7 @@ public class SchedulerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
+  private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
   private static final int MAX_WORKERS = 4;
   private static final long JOB_SUBMITTER_DELAY_MILLIS = 5000L;
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
@@ -98,7 +101,7 @@ public class SchedulerApp {
         JOB_SUBMITTER_DELAY_MILLIS,
         TimeUnit.MILLISECONDS);
 
-    Runtime.getRuntime().addShutdownHook(new SchedulerShutdownHandler(workerThreadPool, scheduledPool));
+    Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduledPool));
   }
 
   public static void main(String[] args) {

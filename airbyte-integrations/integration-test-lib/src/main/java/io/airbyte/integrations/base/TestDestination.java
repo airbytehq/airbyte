@@ -25,6 +25,7 @@
 package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -38,12 +39,10 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.singer.SingerMessage;
 import io.airbyte.singer.SingerMessage.Type;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.singer.DefaultSingerDestination;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -79,7 +78,7 @@ public abstract class TestDestination {
    *
    * @return integration-specific configuration
    */
-  protected abstract JsonNode getConfig();
+  protected abstract JsonNode getConfig() throws Exception;
 
   /**
    * Configuration specific to the integration. Will be passed to integration where appropriate in
@@ -88,18 +87,18 @@ public abstract class TestDestination {
    *
    * @return integration-specific configuration
    */
-  protected abstract JsonNode getFailCheckConfig();
+  protected abstract JsonNode getFailCheckConfig() throws Exception;
 
   /**
    * Function that returns all of the records in destination as json at the time this method is
    * invoked. These will be used to check that the data actually written is what should actually be
-   * there.
+   * there. Note: this returns a set and does not test any order guarantees.
    *
    * @param testEnv - information about the test environment.
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv) throws Exception;
+  protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception;
 
   /**
    * Function that performs any setup of external resources required for the test. e.g. instantiate a
@@ -180,7 +179,7 @@ public abstract class TestDestination {
         .map(record -> Jsons.deserialize(record, SingerMessage.class)).collect(Collectors.toList());
     runSync(messages, catalog);
 
-    assertSameMessages(messages, retrieveRecords(testEnv));
+    assertSameMessages(messages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
   /**
@@ -201,10 +200,10 @@ public abstract class TestDestination {
             .put("NZD", 700)
             .build())));
     runSync(secondSyncMessages, catalog);
-    assertSameMessages(secondSyncMessages, retrieveRecords(testEnv));
+    assertSameMessages(secondSyncMessages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
-  private void runSync(List<SingerMessage> messages, Schema catalog) throws IOException, WorkerException {
+  private void runSync(List<SingerMessage> messages, Schema catalog) throws Exception {
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
         .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(getConfig()))
         .withStandardSync(new StandardSync().withSchema(catalog));
@@ -222,7 +221,10 @@ public abstract class TestDestination {
         .filter(message -> message.getType() == Type.RECORD)
         .map(SingerMessage::getRecord)
         .collect(Collectors.toList());
-    assertEquals(expectedJson, actual);
+    // we want to ignore order in this comparison.
+    assertEquals(expectedJson.size(), actual.size());
+    assertTrue(expectedJson.containsAll(actual));
+    assertTrue(actual.containsAll(expectedJson));
   }
 
   public static class TestDestinationEnv {
