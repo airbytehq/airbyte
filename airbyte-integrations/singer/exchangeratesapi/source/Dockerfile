@@ -18,3 +18,4 @@ ENV AIRBYTE_IMPL_MODULE="source_exchangeratesapi_singer"
 ENV AIRBYTE_IMPL_PATH="SourceExchangeRatesApiSinger"
 
 LABEL io.airbyte.version=0.1.2
+LABEL io.airbyte.name=airbyte/source-exchangeratesapi-singer

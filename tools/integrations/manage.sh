@@ -5,13 +5,8 @@ set -e
 . tools/lib/lib.sh
 
 _get_rule_base() {
-  local rule=$(echo "$1" | tr -s / :)
+  local rule; rule=$(echo "$1" | tr -s / :)
   echo ":$rule"
-}
-
-_get_image() {
-  local path=$1
-  ./gradlew "$(_get_rule_base "$path"):imageName" | grep IMAGE | cut -d ' ' -f 2
 }
 
 _check_tag_exists() {
@@ -31,18 +26,19 @@ cmd_publish() {
 
   cmd_build "$path"
 
-  local dev_image=$(_get_image "$path")
-  local versioned_image=${dev_image%:*}:$(_get_docker_version "$path"/Dockerfile)
-  local latest_image=${dev_image%:*}:latest
+  local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
+  local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
+  local versioned_image=$image_name:$image_version
+  local latest_image=$image_name:latest
 
-  docker tag $dev_image $versioned_image
-  docker tag $dev_image $latest_image
+  docker tag $image_name $versioned_image
+  docker tag $image_name $latest_image
 
   if _check_tag_exists $versioned_image; then
-    error "You're trying to push an version that was already released ($versioned_image). Make sure you bump it up."
+    error "You're trying to push an image_version that was already released ($versioned_image). Make sure you bump it up."
   fi
 
-  echo "Publishing new version ($versioned_image)"
+  echo "Publishing new image_version ($versioned_image)"
   docker push $versioned_image
   docker push $latest_image
 }

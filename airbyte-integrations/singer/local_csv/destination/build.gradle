@@ -1,10 +1,8 @@
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 plugins {
     id 'java'
-    id 'com.bmuschko.docker-remote-api'
 }
 
-def image = 'airbyte/integration-singer-csv-destination:dev'
+apply from: rootProject.file('tools/gradle/commons/integration.gradle')
 
 sourceSets {
     integrationTest {
@@ -26,17 +24,6 @@ configurations {
 dependencies {
     integrationTestImplementation project(':airbyte-config:models')
     integrationTestImplementation project(':airbyte-workers')
-}
-
-task imageName {
-    doLast {
-        println "IMAGE $image"
-    }
-}
-
-task buildImage(type: DockerBuildImage) {
-    inputDir = projectDir
-    images.add(image)
 }
 
 task integrationTest(type: Test) {

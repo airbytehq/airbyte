@@ -1,10 +1,8 @@
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 plugins {
     id 'java'
-    id 'com.bmuschko.docker-remote-api'
 }
 
-def image = 'airbyte/integration-singer-postgres-source:dev'
+apply from: rootProject.file('tools/gradle/commons/integration.gradle')
 
 sourceSets {
     integrationTest {
@@ -34,17 +32,6 @@ dependencies {
     integrationTestImplementation project(':airbyte-workers')
     integrationTestImplementation project(':airbyte-test-utils')
     integrationTestImplementation project(':airbyte-singer')
-}
-
-task imageName {
-    doLast {
-        println "IMAGE $image"
-    }
-}
-
-task buildImage(type: DockerBuildImage) {
-    inputDir = projectDir
-    images.add(image)
 }
 
 task integrationTest(type: Test) {

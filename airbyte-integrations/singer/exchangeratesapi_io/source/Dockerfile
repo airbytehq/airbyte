@@ -19,3 +19,4 @@ COPY ./src/test-integration/resources/spec.json .
 ENTRYPOINT ["/singer/entrypoint.sh"]
 
 LABEL io.airbyte.version=0.1.3
+LABEL io.airbyte.name=airbyte/integration-singer-exchangeratesapi_io-source

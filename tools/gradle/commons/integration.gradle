@@ -1,0 +1,18 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.bmuschko:gradle-docker-plugin:6.6.1"
+    }
+}
+
+apply plugin: com.bmuschko.gradle.docker.DockerRemoteApiPlugin
+apply from: rootProject.file('tools/gradle/commons/docker.gradle')
+
+task buildImage(type: DockerBuildImage) {
+    inputDir = projectDir
+    images.add("${extractImageName(project.file('Dockerfile'))}:dev")
+}
