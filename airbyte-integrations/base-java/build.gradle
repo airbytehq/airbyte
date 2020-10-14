@@ -3,7 +3,6 @@ plugins {
 }
 
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-buildImage.dependsOn ':airbyte-integrations:base:buildImage'
 
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
@@ -11,3 +10,5 @@ dependencies {
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-singer')
 }
+
+buildImage.dependsOn ':airbyte-integrations:base:buildImage'
