@@ -25,7 +25,6 @@ class SourceExchangeRatesApiSinger(Source):
         return catalogs.airbyte_catalog
 
     def read(self, logger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
-        if state:
-            return SingerHelper.read(logger, f"tap-exchangeratesapi --config {config_container.rendered_config_path} --state {state}")
-        else:
-            return SingerHelper.read(logger, f"tap-exchangeratesapi --config {config_container.rendered_config_path}")
+        config_option = f"--config {config_container.rendered_config_path}"
+        state_option = f"--state {state}" if state else ""
+        return SingerHelper.read(logger, f"tap-exchangeratesapi {config_option} {state_option}")

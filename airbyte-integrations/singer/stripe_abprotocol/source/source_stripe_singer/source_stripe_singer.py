@@ -30,7 +30,7 @@ class SourceStripeSinger(Source):
         discovered_singer_catalog = SingerHelper.get_catalogs(logger, f"tap-stripe --config {config_container.rendered_config_path} --discover").singer_catalog
         combined_catalog_path = SingerHelper.combine_catalogs(masked_airbyte_catalog, discovered_singer_catalog)
 
-        if state:
-            return SingerHelper.read(logger, f"tap-stripe --config {config_container.rendered_config_path} --catalog {combined_catalog_path} --state {state}")
-        else:
-            return SingerHelper.read(logger, f"tap-stripe --config {config_container.rendered_config_path} --catalog {combined_catalog_path}")
+        config_option = f"--config {config_container.rendered_config_path}"
+        catalog_option = f"--catalog {combined_catalog_path}"
+        state_option = f"--state {state}" if state else ""
+        return SingerHelper.read(logger, f"tap-stripe {config_option} {catalog_option} {state_option}")
