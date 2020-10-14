@@ -31,19 +31,19 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.config.Stream;
 import io.airbyte.db.DatabaseHelper;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.queue.BigQueue;
-import io.airbyte.singer.SingerMessage;
-import io.airbyte.singer.SingerMessage.Type;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -117,25 +117,25 @@ public class PostgresDestination implements Destination {
    *
    * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
    *        "password": "super secure" }
-   * @param schema - schema of the incoming messages.
+   * @param catalog - schema of the incoming messages.
    * @return consumer that writes singer messages to the database.
    * @throws Exception - anything could happen!
    */
   @Override
-  public DestinationConsumer<SingerMessage> write(JsonNode config, Schema schema) throws Exception {
+  public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws Exception {
     // connect to db.
     final BasicDataSource connectionPool = getConnectionPool(config);
     Map<String, WriteConfig> writeBuffers = new HashMap<>();
 
     // create tmp tables if not exist
-    for (final Stream stream : schema.getStreams()) {
+    for (final AirbyteStream stream : catalog.getStreams()) {
       final String tableName = stream.getName();
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
       DatabaseHelper.query(connectionPool, ctx -> ctx.execute(String.format(
           "CREATE TABLE \"%s\" ( \n"
               + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
               + "\"%s\" JSONB,\n"
-              + "\"ab_inserted_at\" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
+              + "\"emitted_at\" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
               + ");",
           tmpTableName, COLUMN_NAME)));
 
@@ -146,10 +146,10 @@ public class PostgresDestination implements Destination {
 
     // write to tmp tables
     // if success copy delete main table if exists. rename tmp tables to real tables.
-    return new RecordConsumer(connectionPool, writeBuffers, schema);
+    return new RecordConsumer(connectionPool, writeBuffers, catalog);
   }
 
-  public static class RecordConsumer extends FailureTrackingConsumer<SingerMessage> implements DestinationConsumer<SingerMessage> {
+  public static class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
 
     private static final long THREAD_DELAY_MILLIS = 500L;
 
@@ -160,12 +160,12 @@ public class PostgresDestination implements Destination {
     private final ScheduledExecutorService writerPool;
     private final BasicDataSource connectionPool;
     private final Map<String, WriteConfig> writeConfigs;
-    private final Schema schema;
+    private final AirbyteCatalog catalog;
 
-    public RecordConsumer(BasicDataSource connectionPool, Map<String, WriteConfig> writeConfigs, Schema schema) {
+    public RecordConsumer(BasicDataSource connectionPool, Map<String, WriteConfig> writeConfigs, AirbyteCatalog catalog) {
       this.connectionPool = connectionPool;
       this.writeConfigs = writeConfigs;
-      this.schema = schema;
+      this.catalog = catalog;
       this.writerPool = Executors.newSingleThreadScheduledExecutor();
       // todo (cgardens) - how long? boh.
       Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofMinutes(GRACEFUL_SHUTDOWN_MINUTES), writerPool));
@@ -209,7 +209,7 @@ public class PostgresDestination implements Destination {
     // ({ "my": "data" }),
     // ({ "my": "data" });
     private static String buildWriteQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String tmpTableName) {
-      final StringBuilder query = new StringBuilder(String.format("INSERT INTO %s(ab_id, %s)\n", tmpTableName, COLUMN_NAME))
+      final StringBuilder query = new StringBuilder(String.format("INSERT INTO %s(ab_id, %s, emitted_at)\n", tmpTableName, COLUMN_NAME))
           .append("VALUES \n");
       boolean firstRecordInQuery = true;
       for (int i = 0; i < batchSize; i++) {
@@ -217,6 +217,7 @@ public class PostgresDestination implements Destination {
         if (record == null) {
           break;
         }
+        final AirbyteRecordMessage message = Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteRecordMessage.class);
 
         // don't write comma before the first record.
         if (firstRecordInQuery) {
@@ -224,7 +225,8 @@ public class PostgresDestination implements Destination {
         } else {
           query.append(", \n");
         }
-        query.append(String.format("('%s', '%s')", UUID.randomUUID().toString(), new String(record, Charsets.UTF_8)));
+        query.append(String.format("('%s', '%s', TO_TIMESTAMP(%s / 1000))", UUID.randomUUID().toString(), Jsons.serialize(message.getData()),
+            message.getEmittedAt()));
       }
       query.append(";");
 
@@ -232,16 +234,16 @@ public class PostgresDestination implements Destination {
     }
 
     @Override
-    public void acceptTracked(SingerMessage singerMessage) {
+    public void acceptTracked(AirbyteMessage message) {
       // ignore other message types.
-      if (singerMessage.getType() == Type.RECORD) {
-        if (!writeConfigs.containsKey(singerMessage.getStream())) {
+      if (message.getType() == AirbyteMessage.Type.RECORD) {
+        if (!writeConfigs.containsKey(message.getRecord().getStream())) {
           throw new IllegalArgumentException(
               String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                  Jsons.serialize(schema), Jsons.serialize(singerMessage)));
+                  Jsons.serialize(catalog), Jsons.serialize(message)));
         }
 
-        writeConfigs.get(singerMessage.getStream()).getWriteBuffer().offer(Jsons.toBytes(singerMessage.getRecord()));
+        writeConfigs.get(message.getRecord().getStream()).getWriteBuffer().offer(Jsons.serialize(message.getRecord()).getBytes(Charsets.UTF_8));
       }
     }
 

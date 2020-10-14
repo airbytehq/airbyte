@@ -8,7 +8,7 @@ dependencies {
     implementation 'commons-cli:commons-cli:1.4'
 
     implementation project(':airbyte-config:models')
-    implementation project(':airbyte-singer')
+    implementation project(':airbyte-protocol:models')
 }
 
 buildImage.dependsOn ':airbyte-integrations:base:buildImage'
