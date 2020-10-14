@@ -83,7 +83,6 @@ public class WebBackendDestinationImplementationHandler {
     DestinationImplementationCreate destinationImplementationCreate = new DestinationImplementationCreate();
     destinationImplementationCreate.setConnectionConfiguration(destinationImplementationRecreate.getConnectionConfiguration());
     destinationImplementationCreate.setName(destinationImplementationRecreate.getName());
-    destinationImplementationCreate.setDestinationSpecificationId(destinationImplementationRecreate.getDestinationSpecificationId());
     destinationImplementationCreate.setWorkspaceId(destinationImplementationRecreate.getWorkspaceId());
 
     DestinationImplementationRead destinationImplementation =

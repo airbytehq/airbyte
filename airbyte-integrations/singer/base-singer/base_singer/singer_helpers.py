@@ -1,33 +1,18 @@
 import json
+import os
+import selectors
 import subprocess
+import tempfile
 from airbyte_protocol import AirbyteSpec
-from airbyte_protocol import AirbyteSchema
+from airbyte_protocol import AirbyteCatalog
 from airbyte_protocol import AirbyteMessage
 from airbyte_protocol import AirbyteLogMessage
 from airbyte_protocol import AirbyteRecordMessage
 from airbyte_protocol import AirbyteStateMessage
+from airbyte_protocol import AirbyteStream
 from typing import Generator
 from datetime import datetime
-
-
-# helper to delegate input and output to a piped command
-# todo: add error handling (make sure the overall tap fails if there's a failure in here)
-
-valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
-
-
-def log_line(line, default_level):
-    split_line = line.split()
-    first_word = next(iter(split_line), None)
-    if first_word in valid_log_types:
-        log_level = first_word
-        rendered_line = " ".join(split_line[1:])
-    else:
-        log_level = default_level
-        rendered_line = line
-    log_record = AirbyteLogMessage(level=log_level, message=rendered_line)
-    log_message = AirbyteMessage(type="LOG", log=log_record)
-    print(log_message.serialize())
+from dataclasses import dataclass
 
 
 def to_json(string):
@@ -37,6 +22,19 @@ def to_json(string):
         return False
 
 
+def is_field_metadata(metadata):
+    if len(metadata.get("breadcrumb")) != 2:
+        return False
+    else:
+        return metadata.get("breadcrumb")[0] != "property"
+
+
+@dataclass
+class Catalogs:
+    singer_catalog: object
+    airbyte_catalog: AirbyteCatalog
+
+
 class SingerHelper:
     @staticmethod
     def spec_from_file(spec_path) -> AirbyteSpec:
@@ -44,45 +42,95 @@ class SingerHelper:
             spec_text = file.read()
         return AirbyteSpec(spec_text)
 
-    # todo: support stderr in the discover process
     @staticmethod
-    def discover(shell_command, transform=(lambda x: AirbyteSchema(x))) -> AirbyteSchema:
+    def get_catalogs(logger, shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)) -> Catalogs:
         completed_process = subprocess.run(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                            universal_newlines=True)
-        return transform(completed_process.stdout)
+
+        for line in completed_process.stderr.splitlines():
+            logger.log_by_prefix(line, "ERROR")
+
+        airbyte_streams = []
+        singer_catalog = singer_transform(json.loads(completed_process.stdout))
+
+        for stream in singer_catalog.get("streams"):
+            name = stream.get("stream")
+            schema = stream.get("schema").get("properties")
+
+            # todo: figure out how to serialize an object with an items key in python_jsonschema_objects
+            if name == "subscriptions":
+                del schema["items"]
+
+            airbyte_streams += [AirbyteStream(name=name, schema=schema)]
+
+        airbyte_catalog = airbyte_transform(AirbyteCatalog(streams=airbyte_streams))
+
+        return Catalogs(singer_catalog=singer_catalog, airbyte_catalog=airbyte_catalog)
 
     @staticmethod
-    def read(shell_command, is_message=(lambda x: True), transform=(lambda x: x)) -> Generator[AirbyteMessage, None, None]:
-        with subprocess.Popen(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1,
-                              universal_newlines=True) as p:
-            for tuple in zip(p.stdout, p.stderr):
-                out_line = tuple[0]
-                err_line = tuple[1]
+    def read(logger, shell_command, is_message=(lambda x: True), transform=(lambda x: x)) -> Generator[AirbyteMessage, None, None]:
+        with subprocess.Popen(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) as p:
+            sel = selectors.DefaultSelector()
+            sel.register(p.stdout, selectors.EVENT_READ)
+            sel.register(p.stderr, selectors.EVENT_READ)
 
-                if out_line:
-                    out_json = to_json(out_line)
-                    if out_json is not None and is_message(out_json):
-                        transformed_json = transform(out_json)
-                        if transformed_json is not None:
-                            if transformed_json.get('type') == "SCHEMA":
-                                pass
-                            elif transformed_json.get('type') == "STATE":
-                                out_record = AirbyteStateMessage(data=transformed_json["value"])
-                                out_message = AirbyteMessage(type="STATE", state=out_record)
-                                yield transform(out_message)
-                            else:
-                                # todo: remove type from record
-                                # todo: handle stream designation
-                                # todo: check that messages match the discovered schema
-                                stream_name = transformed_json["stream"]
-                                out_record = AirbyteRecordMessage(
-                                    stream=stream_name,
-                                    data=transformed_json["record"],
-                                    emitted_at=int(datetime.now().timestamp()) * 1000)
-                                out_message = AirbyteMessage(type="RECORD", record=out_record)
-                                yield transform(out_message)
-                    elif out_line:
-                        log_line(out_line, "INFO")
+            ok = True
+            while ok:
+                for key, val1 in sel.select():
+                    line = key.fileobj.readline()
+                    if not line:
+                        ok = False
+                    elif key.fileobj is p.stdout:
+                        out_json = to_json(line)
+                        if out_json is not None and is_message(out_json):
+                            transformed_json = transform(out_json)
+                            if transformed_json is not None:
+                                if transformed_json.get('type') == "SCHEMA":
+                                    pass
+                                elif transformed_json.get('type') == "STATE":
+                                    out_record = AirbyteStateMessage(data=transformed_json["value"])
+                                    out_message = AirbyteMessage(type="STATE", state=out_record)
+                                    yield transform(out_message)
+                                else:
+                                    # todo: check that messages match the discovered schema
+                                    stream_name = transformed_json["stream"]
+                                    out_record = AirbyteRecordMessage(
+                                        stream=stream_name,
+                                        data=transformed_json["record"],
+                                        emitted_at=int(datetime.now().timestamp()) * 1000)
+                                    out_message = AirbyteMessage(type="RECORD", record=out_record)
+                                    yield transform(out_message)
+                        else:
+                            logger.log_by_prefix(line, "INFO")
+                    else:
+                        logger.log_by_prefix(line, "ERROR")
 
-                if err_line:
-                    log_line(err_line, "ERROR")
+
+    @staticmethod
+    def create_singer_catalog_with_selection(masked_airbyte_catalog, discovered_singer_catalog) -> str:
+        combined_catalog_path = os.path.join(tempfile.mkdtemp(), 'rendered_catalog.json')
+        masked_singer_streams = []
+
+        stream_to_airbyte_schema = {}
+        for stream in masked_airbyte_catalog["streams"]:
+            stream_to_airbyte_schema[stream.get("name")] = stream
+
+        for singer_stream in discovered_singer_catalog.get("streams"):
+            if singer_stream.get("stream") in stream_to_airbyte_schema:
+                new_metadatas = []
+                metadatas = singer_stream.get("metadata")
+                for metadata in metadatas:
+                    new_metadata = metadata
+                    new_metadata["metadata"]["selected"] = True
+                    if not is_field_metadata(new_metadata):
+                        new_metadata["metadata"]["forced-replication-method"] = "FULL_TABLE"
+                    new_metadatas += [new_metadata]
+                singer_stream["metadata"] = new_metadatas
+
+            masked_singer_streams += [singer_stream]
+
+        combined_catalog = {"streams": masked_singer_streams}
+        with open(combined_catalog_path, 'w') as fh:
+            fh.write(json.dumps(combined_catalog))
+
+        return combined_catalog_path

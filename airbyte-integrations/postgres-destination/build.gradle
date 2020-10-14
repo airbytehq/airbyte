@@ -1,0 +1,27 @@
+plugins {
+    id 'application'
+}
+
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-db')
+    implementation project(':airbyte-integrations:base-java')
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-queue')
+
+    testImplementation "org.testcontainers:postgresql:1.15.0-rc2"
+
+    integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
+    integrationTestImplementation "org.testcontainers:postgresql:1.15.0-rc2"
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
+}
+
+buildImage.dependsOn(assemble)
+buildImage.dependsOn(':airbyte-integrations:base-java:buildImage')
+integrationTest.dependsOn(buildImage)

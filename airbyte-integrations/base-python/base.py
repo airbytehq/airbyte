@@ -1,17 +1,22 @@
 import argparse
-import logging
 import sys
 import tempfile
 import os.path
 import importlib
 
+from airbyte_protocol import ConfigContainer
 from airbyte_protocol import Source
+from airbyte_protocol import AirbyteLogger
+from airbyte_protocol import AirbyteLogMessage
+from airbyte_protocol import AirbyteMessage
 
 impl_module = os.environ['AIRBYTE_IMPL_MODULE']
 impl_class = os.environ['AIRBYTE_IMPL_PATH']
 
 module = importlib.import_module(impl_module)
 impl = getattr(module, impl_class)
+
+logger = AirbyteLogger()
 
 class AirbyteEntrypoint(object):
     def __init__(self, source):
@@ -43,8 +48,8 @@ class AirbyteEntrypoint(object):
         # read
         read_parser = subparsers.add_parser("read", help="reads the source and outputs messages to STDOUT",
                                             parents=[parent_parser])
-        # todo: re-add state handling
-        # read_parser.add_argument('--state', type=str, required=False, help='path to the json-encoded state file')
+
+        read_parser.add_argument('--state', type=str, required=False, help='path to the json-encoded state file')
         required_read_parser = read_parser.add_argument_group('required named arguments')
         required_read_parser.add_argument('--config', type=str, required=True,
                                           help='path to the json configuration file')
@@ -66,25 +71,30 @@ class AirbyteEntrypoint(object):
                 sys.exit(0)
 
             rendered_config_path = os.path.join(temp_dir, 'config.json')
-            config_object = source.read_config(parsed_args.config)
-            source.render_config(config_object, rendered_config_path)
+            raw_config = source.read_config(parsed_args.config)
+            rendered_config = source.transform_config(raw_config)
+            source.write_config(rendered_config, rendered_config_path)
 
-            # todo: output message for check
+            config_container = ConfigContainer(
+                raw_config=raw_config,
+                rendered_config=rendered_config,
+                raw_config_path=parsed_args.config,
+                rendered_config_path=rendered_config_path)
+
             if cmd == "check":
-                check_result = source.check(logging, rendered_config_path)
+                check_result = source.check(logger, config_container)
                 if check_result.successful:
-                    print("Check succeeded")
+                    logger.info("Check succeeded")
                     sys.exit(0)
                 else:
-                    print("Check failed")
+                    logger.error("Check failed")
                     sys.exit(1)
             elif cmd == "discover":
-                schema = source.discover(logging, rendered_config_path)
-                print(schema.schema)
+                catalog = source.discover(logger, config_container)
+                print(catalog.serialize())
                 sys.exit(0)
             elif cmd == "read":
-                # todo: pass in state
-                generator = source.read(logging, rendered_config_path)
+                generator = source.read(logger, config_container, parsed_args.catalog, parsed_args.state)
                 for message in generator:
                     print(message.serialize())
                 sys.exit(0)

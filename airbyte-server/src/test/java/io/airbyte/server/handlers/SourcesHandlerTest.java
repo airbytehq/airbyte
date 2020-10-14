@@ -27,6 +27,7 @@ package io.airbyte.server.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
@@ -39,6 +40,7 @@ import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.validators.DockerImageValidator;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -50,6 +52,7 @@ import org.junit.jupiter.api.Test;
 class SourcesHandlerTest {
 
   private ConfigRepository configRepository;
+  private DockerImageValidator dockerImageValidator;
   private StandardSource source;
   private SourcesHandler sourceHandler;
   private Supplier<UUID> uuidSupplier;
@@ -59,9 +62,10 @@ class SourcesHandlerTest {
   void setUp() {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
+    dockerImageValidator = mock(DockerImageValidator.class);
 
     source = generateSource();
-    sourceHandler = new SourcesHandler(configRepository, uuidSupplier);
+    sourceHandler = new SourcesHandler(configRepository, dockerImageValidator, uuidSupplier);
   }
 
   private StandardSource generateSource() {
@@ -122,7 +126,6 @@ class SourcesHandlerTest {
   @Test
   void testCreateSource() throws URISyntaxException, ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSource source = generateSource();
-
     when(uuidSupplier.get()).thenReturn(source.getSourceId());
     final SourceCreate create = new SourceCreate()
         .name(source.getName())
@@ -140,17 +143,20 @@ class SourcesHandlerTest {
     final SourceRead actualRead = sourceHandler.createSource(create);
 
     assertEquals(expectedRead, actualRead);
+    verify(dockerImageValidator).assertValidIntegrationImage(source.getDockerRepository(), source.getDockerImageTag());
   }
 
   @Test
   void testUpdateSource() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getStandardSource(source.getSourceId())).thenReturn(source);
     final String newDockerImageTag = "averydifferenttag";
-    String currentTag = sourceHandler.getSource(new SourceIdRequestBody().sourceId(source.getSourceId())).getDockerImageTag();
+    final String currentTag = sourceHandler.getSource(new SourceIdRequestBody().sourceId(source.getSourceId())).getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
     SourceRead sourceRead = sourceHandler.updateSource(new SourceUpdate().sourceId(source.getSourceId()).dockerImageTag(newDockerImageTag));
+
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
+    verify(dockerImageValidator).assertValidIntegrationImage(source.getDockerRepository(), newDockerImageTag);
   }
 
 }
