@@ -235,9 +235,9 @@ public class SingerStripeSourceTest {
 
   private Process createCheckProcess(String configFileName) throws IOException, WorkerException {
     return launcher.check(jobRoot, configFileName)
-            .redirectOutput(catalogPath.toFile())
-            .redirectError(ProcessBuilder.Redirect.INHERIT)
-            .start();
+        .redirectOutput(catalogPath.toFile())
+        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .start();
   }
 
   private Process createDiscoveryProcess(String configFileName) throws IOException, WorkerException {
@@ -255,4 +255,3 @@ public class SingerStripeSourceTest {
   }
 
 }
-
