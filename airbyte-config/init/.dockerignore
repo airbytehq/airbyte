@@ -1,2 +1,4 @@
 *
 !src
+!create_mount_directories.sh
+!copy_seed_data.sh

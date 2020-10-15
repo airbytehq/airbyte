@@ -4,10 +4,14 @@ services:
   # hook in case we need to add init behavior
   # every root service (no depends_on) should depend on init
   init:
-    image: alpine
-    command: /bin/sh -c "
-      echo hello;
-      "
+    image: airbyte/seed:${VERSION}
+    container_name: init
+    command: /bin/sh -c "./create_mount_directories.sh /local_parent ${LOCAL_ROOT_PARENT} ${LOCAL_ROOT}"
+    environment:
+      - LOCAL_ROOT=${LOCAL_ROOT}
+      - LOCAL_ROOT_PARENT=${LOCAL_ROOT_PARENT}
+    volumes:
+      - ${LOCAL_ROOT_PARENT}:/local_parent
   db:
     image: airbyte/db:${VERSION}
     container_name: airbyte-db
