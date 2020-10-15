@@ -16,7 +16,7 @@ type IProps = {
   onSubmit: (values: {
     name: string;
     serviceType: string;
-    specificationId?: string;
+    sourceId?: string;
     connectionConfiguration?: any;
   }) => void;
   destination: Destination;
@@ -79,7 +79,7 @@ const CreateSourcePage: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      specificationId: sourceSpecification?.sourceSpecificationId
+      sourceId: sourceSpecification?.sourceId
     });
   };
 
