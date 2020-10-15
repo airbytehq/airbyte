@@ -1,5 +1,1 @@
-*
-!Dockerfile
-!base_singer/__init__.py
-!base_singer/singer_helpers.py
-!setup.py
+build

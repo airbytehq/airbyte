@@ -3,16 +3,16 @@ import os
 import selectors
 import subprocess
 import tempfile
-from airbyte_protocol import AirbyteSpec
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Generator
+
 from airbyte_protocol import AirbyteCatalog
 from airbyte_protocol import AirbyteMessage
-from airbyte_protocol import AirbyteLogMessage
 from airbyte_protocol import AirbyteRecordMessage
+from airbyte_protocol import AirbyteSpec
 from airbyte_protocol import AirbyteStateMessage
 from airbyte_protocol import AirbyteStream
-from typing import Generator
-from datetime import datetime
-from dataclasses import dataclass
 
 
 def to_json(string):

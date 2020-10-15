@@ -16,13 +16,13 @@ def _load_classes(yaml_path: str):
 # hide json schema version warnings
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=UserWarning)
-    message_classes = _load_classes("types/airbyte_message.yaml")
+    message_classes = _load_classes("models/airbyte_message.yaml")
     AirbyteMessage = message_classes.AirbyteMessage
     AirbyteLogMessage = message_classes.AirbyteLogMessage
     AirbyteRecordMessage = message_classes.AirbyteRecordMessage
     AirbyteStateMessage = message_classes.AirbyteStateMessage
 
-    catalog_classes = _load_classes("types/airbyte_catalog.yaml")
+    catalog_classes = _load_classes("models/airbyte_catalog.yaml")
     AirbyteCatalog = catalog_classes.AirbyteCatalog
     AirbyteStream = catalog_classes.AirbyteStream
 

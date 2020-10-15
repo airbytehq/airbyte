@@ -1,12 +1,13 @@
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
+def typesDir = 'airbyte_protocol/models'
 task deleteProtocolDefinitions(type: Delete) {
-    delete 'airbyte_protocol/airbyte_protocol/types'
+    delete typesDir
 }
 
 task copyProtocolDefinitions(type: Copy) {
     from file("$rootDir/airbyte-protocol/models/src/main/resources/airbyte_protocol").absolutePath
-    into "airbyte_protocol/airbyte_protocol/types"
+    into typesDir
     dependsOn deleteProtocolDefinitions
 }
 

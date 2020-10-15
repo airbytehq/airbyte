@@ -5,11 +5,8 @@ RUN apt-get update && apt-get install -y jq
 COPY spec.json /airbyte/exchangeratesapi-files/spec.json
 
 WORKDIR /airbyte/source_exchangeratesapi_singer
-
-COPY source_exchangeratesapi_singer/__init__.py ./source_exchangeratesapi_singer/__init__.py
-COPY source_exchangeratesapi_singer/source_exchangeratesapi_singer.py ./source_exchangeratesapi_singer/source_exchangeratesapi_singer.py
-
-COPY setup.py .
+COPY source_exchangeratesapi_singer ./source_exchangeratesapi_singer
+COPY setup.py ./
 RUN pip install .
 
 WORKDIR /airbyte

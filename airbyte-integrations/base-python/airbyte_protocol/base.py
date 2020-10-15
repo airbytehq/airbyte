@@ -4,19 +4,30 @@ import tempfile
 import os.path
 import importlib
 
-from airbyte_protocol import ConfigContainer
-from airbyte_protocol import Source
-from airbyte_protocol import AirbyteLogger
-from airbyte_protocol import AirbyteLogMessage
-from airbyte_protocol import AirbyteMessage
+from . import ConfigContainer
+from . import Source
+from . import AirbyteLogger
 
-impl_module = os.environ['AIRBYTE_IMPL_MODULE']
-impl_class = os.environ['AIRBYTE_IMPL_PATH']
+AIRBYTE_IMPL_MODULE = 'AIRBYTE_IMPL_MODULE'
+AIRBYTE_IMPL_PATH = 'AIRBYTE_IMPL_PATH'
+
+logger = AirbyteLogger()
+
+if AIRBYTE_IMPL_MODULE not in os.environ:
+    impl_module = 'airbyte_protocol'
+    logger.warn(f"Using default module: {impl_module}")
+else:
+    impl_module = os.environ[AIRBYTE_IMPL_MODULE]
+
+if AIRBYTE_IMPL_PATH not in os.environ:
+    impl_class = 'Source'
+    logger.warn(f"Using default class: {impl_module}")
+else:
+    impl_class = os.environ[AIRBYTE_IMPL_PATH]
 
 module = importlib.import_module(impl_module)
 impl = getattr(module, impl_class)
 
-logger = AirbyteLogger()
 
 class AirbyteEntrypoint(object):
     def __init__(self, source):
@@ -61,19 +72,21 @@ class AirbyteEntrypoint(object):
 
         # execute
         cmd = parsed_args.command
+        if not cmd:
+            raise Exception("No command passed")
 
         # todo: add try catch for exceptions with different exit codes
 
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
                 # todo: output this as a JSON formatted message
-                print(source.spec().spec_string)
+                print(self.source.spec().spec_string)
                 sys.exit(0)
 
             rendered_config_path = os.path.join(temp_dir, 'config.json')
-            raw_config = source.read_config(parsed_args.config)
-            rendered_config = source.transform_config(raw_config)
-            source.write_config(rendered_config, rendered_config_path)
+            raw_config = self.source.read_config(parsed_args.config)
+            rendered_config = self.source.transform_config(raw_config)
+            self.source.write_config(rendered_config, rendered_config_path)
 
             config_container = ConfigContainer(
                 raw_config=raw_config,
@@ -82,7 +95,7 @@ class AirbyteEntrypoint(object):
                 rendered_config_path=rendered_config_path)
 
             if cmd == "check":
-                check_result = source.check(logger, config_container)
+                check_result = self.source.check(logger, config_container)
                 if check_result.successful:
                     logger.info("Check succeeded")
                     sys.exit(0)
@@ -90,11 +103,11 @@ class AirbyteEntrypoint(object):
                     logger.error("Check failed")
                     sys.exit(1)
             elif cmd == "discover":
-                catalog = source.discover(logger, config_container)
+                catalog = self.source.discover(logger, config_container)
                 print(catalog.serialize())
                 sys.exit(0)
             elif cmd == "read":
-                generator = source.read(logger, config_container, parsed_args.catalog, parsed_args.state)
+                generator = self.source.read(logger, config_container, parsed_args.catalog, parsed_args.state)
                 for message in generator:
                     print(message.serialize())
                 sys.exit(0)
@@ -102,10 +115,15 @@ class AirbyteEntrypoint(object):
                 raise Exception("Unexpected command " + cmd)
 
 
-# set up and run entrypoint
-source = impl()
+def main():
+    # set up and run entrypoint
+    source = impl()
 
-if not isinstance(source, Source):
-    raise Exception("Source implementation provided does not implement Source class!")
+    if not isinstance(source, Source):
+        raise Exception("Source implementation provided does not implement Source class!")
 
-AirbyteEntrypoint(source).start()
+    AirbyteEntrypoint(source).start()
+
+
+if __name__ == "__main__":
+    main()

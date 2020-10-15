@@ -1,12 +1,13 @@
-from airbyte_protocol import Source
-from airbyte_protocol import AirbyteSpec
-from airbyte_protocol import AirbyteCheckResponse
-from airbyte_protocol import AirbyteCatalog
-from airbyte_protocol import AirbyteMessage
 import urllib.request
 from typing import Generator
+
+from airbyte_protocol import AirbyteCatalog
+from airbyte_protocol import AirbyteCheckResponse
+from airbyte_protocol import AirbyteMessage
+from airbyte_protocol import AirbyteSpec
+from airbyte_protocol import Source
 from base_singer import SingerHelper
-from base_singer import Catalogs
+
 
 class SourceExchangeRatesApiSinger(Source):
     def __init__(self):

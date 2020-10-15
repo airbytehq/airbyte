@@ -1,1 +1,1 @@
-from .source_exchangeratesapi_singer import *
+from .source import *

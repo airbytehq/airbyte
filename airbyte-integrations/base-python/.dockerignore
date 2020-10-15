@@ -1,4 +1,1 @@
-*
-!Dockerfile
-!base.py
-!airbyte_protocol
+build

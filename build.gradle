@@ -3,6 +3,7 @@ plugins {
     id 'java'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.4.0'
+    id 'ru.vyarus.use-python' version '2.2.0' apply false
     // id 'de.aaschmid.cpd' version '3.1'
 }
 
