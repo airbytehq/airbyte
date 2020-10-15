@@ -11,7 +11,6 @@ export type specification = {
 };
 
 export interface SourceSpecification {
-  sourceSpecificationId: string;
   sourceId: string;
   documentationUrl: string;
   connectionSpecification: specification;
@@ -19,7 +18,6 @@ export interface SourceSpecification {
 
 export default class SourceSpecificationResource extends BaseResource
   implements SourceSpecification {
-  readonly sourceSpecificationId: string = "";
   readonly sourceId: string = "";
   readonly documentationUrl: string = "";
   readonly connectionSpecification: specification = {
@@ -28,7 +26,7 @@ export default class SourceSpecificationResource extends BaseResource
   };
 
   pk() {
-    return this.sourceSpecificationId?.toString();
+    return this.sourceId?.toString();
   }
 
   static urlRoot = "source_specifications";
