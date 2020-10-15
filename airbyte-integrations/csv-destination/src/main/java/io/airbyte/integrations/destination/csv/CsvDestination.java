@@ -31,7 +31,6 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
@@ -77,13 +76,6 @@ public class CsvDestination implements Destination {
       return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage(e.getMessage());
     }
     return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
-  }
-
-  // todo (cgardens) - we currently don't leverage discover in our destinations, so skipping
-  // implementing it... for now.
-  @Override
-  public StandardDiscoverCatalogOutput discover(JsonNode config) {
-    throw new RuntimeException("Not Implemented");
   }
 
   /**

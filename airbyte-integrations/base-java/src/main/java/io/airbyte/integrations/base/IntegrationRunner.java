@@ -71,8 +71,7 @@ public class IntegrationRunner {
         stdoutConsumer.accept(Jsons.serialize(destination.check(config)));
       }
       case DISCOVER -> {
-        final JsonNode config = parseConfig(parsed.getConfigPath());
-        stdoutConsumer.accept(Jsons.serialize(destination.discover(config)));
+        throw new IllegalStateException("Discover is not implemented for destinations");
       }
       case READ ->
         // final JsonNode config = parseConfig(parsed.getConfig());
