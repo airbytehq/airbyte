@@ -98,7 +98,7 @@ const OnboardingPage: React.FC = () => {
   const onSubmitSourceStep = async (values: {
     name: string;
     serviceType: string;
-    specificationId?: string;
+    sourceId?: string;
     connectionConfiguration?: any;
   }) => {
     setErrorStatusRequest(0);
@@ -127,7 +127,7 @@ const OnboardingPage: React.FC = () => {
   const onSubmitDestinationStep = async (values: {
     name: string;
     serviceType: string;
-    specificationId?: string;
+    destinationId?: string;
     connectionConfiguration?: any;
   }) => {
     setErrorStatusRequest(0);

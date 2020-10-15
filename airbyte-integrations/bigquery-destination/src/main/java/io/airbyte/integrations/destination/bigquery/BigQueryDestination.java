@@ -54,7 +54,6 @@ import io.airbyte.commons.time.Instants;
 import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
@@ -158,11 +157,6 @@ public class BigQueryDestination implements Destination {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public StandardDiscoverCatalogOutput discover(JsonNode config) {
-    throw new RuntimeException("Not Implemented");
   }
 
   /**

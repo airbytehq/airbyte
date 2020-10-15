@@ -29,8 +29,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
@@ -65,8 +64,6 @@ import org.junit.jupiter.api.Test;
 
 class CsvDestinationTest {
 
-  private static final ObjectMapper objectMapper = new ObjectMapper();
-
   private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
@@ -74,22 +71,22 @@ class CsvDestinationTest {
   private static final String TASKS_FILE = TASKS_STREAM_NAME + ".csv";
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-          .withData(objectMapper.createObjectNode().put("name", "john").put("id", "10"))
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
           .withEmittedAt(NOW.toEpochMilli()));
   private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-          .withData(objectMapper.createObjectNode().put("name", "susan").put("id", "30"))
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
           .withEmittedAt(NOW.toEpochMilli()));
   private static final AirbyteMessage MESSAGE_TASKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
-          .withData(objectMapper.createObjectNode().put("goal", "announce the game."))
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "announce the game.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
   private static final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
-          .withData(objectMapper.createObjectNode().put("goal", "ship some code."))
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "ship some code.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
   private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
-      .withState(new AirbyteStateMessage().withData(objectMapper.createObjectNode().put("checkpoint", "now!")));
+      .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(
       CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, Field.of("name", JsonSchemaPrimitives.STRING),
@@ -97,12 +94,12 @@ class CsvDestinationTest {
       CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitives.STRING))));
 
   private Path destinationPath;
-  private ObjectNode config;
+  private JsonNode config;
 
   @BeforeEach
   void setup() throws IOException {
     destinationPath = Files.createTempDirectory("test");
-    config = objectMapper.createObjectNode().put(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString());
+    config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString()));
   }
 
   @Test
@@ -125,7 +122,7 @@ class CsvDestinationTest {
   void testCheckFailure() throws IOException {
     final Path looksLikeADirectoryButIsAFile = destinationPath.resolve("file");
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
-    final ObjectNode config = objectMapper.createObjectNode().put(CsvDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString());
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
     final StandardCheckConnectionOutput actual = new CsvDestination().check(config);
     final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILURE);
 
