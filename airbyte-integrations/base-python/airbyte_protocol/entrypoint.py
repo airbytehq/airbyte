@@ -115,11 +115,11 @@ class AirbyteEntrypoint(object):
                 raise Exception("Unexpected command " + cmd)
 
 
-def main(args):
+def main():
     # set up and run entrypoint
     source = impl()
 
     if not isinstance(source, Source):
         raise Exception("Source implementation provided does not implement Source class!")
 
-    AirbyteEntrypoint(source).start(args)
+    AirbyteEntrypoint(source).start(sys.argv[1:])
