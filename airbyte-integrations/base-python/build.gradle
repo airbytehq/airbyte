@@ -1,6 +1,6 @@
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
-def typesDir = 'airbyte_protocol/models'
+def typesDir = 'airbyte_protocol/models/yaml'
 task deleteProtocolDefinitions(type: Delete) {
     delete typesDir
 }

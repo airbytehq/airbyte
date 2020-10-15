@@ -1,12 +1,12 @@
 import argparse
-import sys
-import tempfile
-import os.path
 import importlib
+import os.path
+import tempfile
 
-from . import ConfigContainer
-from . import Source
-from . import AirbyteLogger
+import sys
+
+from .integration import ConfigContainer, Source
+from .logger import AirbyteLogger
 
 AIRBYTE_IMPL_MODULE = 'AIRBYTE_IMPL_MODULE'
 AIRBYTE_IMPL_PATH = 'AIRBYTE_IMPL_PATH'
@@ -14,14 +14,14 @@ AIRBYTE_IMPL_PATH = 'AIRBYTE_IMPL_PATH'
 logger = AirbyteLogger()
 
 if AIRBYTE_IMPL_MODULE not in os.environ:
-    impl_module = 'airbyte_protocol'
+    impl_module = Source.__module__
     logger.warn(f"Using default module: {impl_module}")
 else:
     impl_module = os.environ[AIRBYTE_IMPL_MODULE]
 
 if AIRBYTE_IMPL_PATH not in os.environ:
-    impl_class = 'Source'
-    logger.warn(f"Using default class: {impl_module}")
+    impl_class = Source.__name__
+    logger.warn(f"Using default class: {impl_class}")
 else:
     impl_class = os.environ[AIRBYTE_IMPL_PATH]
 
@@ -33,7 +33,7 @@ class AirbyteEntrypoint(object):
     def __init__(self, source):
         self.source = source
 
-    def start(self):
+    def start(self, args):
         # set up parent parsers
         parent_parser = argparse.ArgumentParser(add_help=False)
         main_parser = argparse.ArgumentParser()
@@ -68,7 +68,7 @@ class AirbyteEntrypoint(object):
                                           help='path to the catalog used to determine which data to read')
 
         # parse the args
-        parsed_args = main_parser.parse_args()
+        parsed_args = main_parser.parse_args(args)
 
         # execute
         cmd = parsed_args.command
@@ -115,15 +115,11 @@ class AirbyteEntrypoint(object):
                 raise Exception("Unexpected command " + cmd)
 
 
-def main():
+def main(args):
     # set up and run entrypoint
     source = impl()
 
     if not isinstance(source, Source):
         raise Exception("Source implementation provided does not implement Source class!")
 
-    AirbyteEntrypoint(source).start()
-
-
-if __name__ == "__main__":
-    main()
+    AirbyteEntrypoint(source).start(args)

@@ -9,7 +9,7 @@ setuptools.setup(
 
     packages=setuptools.find_packages(),
     package_data={
-        '': ['models/*.yaml']
+        '': ['models/yaml/*.yaml']
     },
 
     install_requires=[
@@ -18,7 +18,7 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts': [
-            'base-python=airbyte_protocol.base:main'
+            'base-python=airbyte_protocol.entrypoint:main'
         ],
     }
 )
