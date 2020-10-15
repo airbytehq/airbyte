@@ -17,7 +17,7 @@ type IProps = {
   onSubmit: (values: {
     name: string;
     serviceType: string;
-    specificationId?: string;
+    sourceId?: string;
     connectionConfiguration?: any;
   }) => void;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
@@ -81,7 +81,7 @@ const SourceStep: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      specificationId: sourceSpecification?.sourceSpecificationId
+      sourceId: sourceSpecification?.sourceId
     });
   };
 
