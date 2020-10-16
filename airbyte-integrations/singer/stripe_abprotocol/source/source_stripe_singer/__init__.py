@@ -1,2 +1,2 @@
-from .source_stripe_singer import *
+from .source import *
 

@@ -4,3 +4,7 @@ build
 !tools/build
 .DS_Store
 data
+
+# Python
+*.egg-info
+__pycache__
