@@ -1,7 +1,7 @@
 FROM python:3.7-slim
 COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
-WORKDIR /airbyte/airbyte_protocol
+WORKDIR /airbyte/airbyte_protocol_code
 COPY airbyte_protocol ./airbyte_protocol
 COPY setup.py ./
 RUN pip install .
