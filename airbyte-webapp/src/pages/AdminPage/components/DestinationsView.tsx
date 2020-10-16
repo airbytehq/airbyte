@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
 
-import { Block, Title, FormContent } from "./PageComponents";
+import { Block, Title, FormContent, FormContentTitle } from "./PageComponents";
 import Table from "../../../components/Table";
 import { CellProps } from "react-table";
 import ConnectorCell from "./ConnectorCell";
@@ -13,6 +13,7 @@ import DestinationResource from "../../../core/resources/Destination";
 import DestinationImplementationResource from "../../../core/resources/DestinationImplementation";
 
 const DestinationsView: React.FC = () => {
+  const formatMessage = useIntl().formatMessage;
   const { destinations } = useResource(DestinationResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
@@ -41,10 +42,18 @@ const DestinationsView: React.FC = () => {
         );
         setFeedback("success");
       } catch (e) {
-        setFeedback("error");
+        const message =
+          e.status === 422
+            ? formatMessage({
+                id: "form.imageCannotFound"
+              })
+            : formatMessage({
+                id: "form.someError"
+              });
+        setFeedback(message);
       }
     },
-    [updateDestination]
+    [formatMessage, updateDestination]
   );
 
   const columns = React.useMemo(
@@ -52,7 +61,7 @@ const DestinationsView: React.FC = () => {
       {
         Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
-        customWidth: 34,
+        customWidth: 25,
         Cell: ({ cell }: CellProps<{}>) => (
           <ConnectorCell connectorName={cell.value} />
         )
@@ -75,7 +84,11 @@ const DestinationsView: React.FC = () => {
         )
       },
       {
-        Header: <FormattedMessage id="admin.version" />,
+        Header: (
+          <FormContentTitle>
+            <FormattedMessage id="admin.tag" />
+          </FormContentTitle>
+        ),
         accessor: "dockerImageTag",
         collapse: true,
         Cell: ({ cell, row }: CellProps<{ destinationId: string }>) => (

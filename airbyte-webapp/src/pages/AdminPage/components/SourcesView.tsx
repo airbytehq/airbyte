@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { CellProps } from "react-table";
 import { useFetcher, useResource } from "rest-hooks";
 
@@ -13,6 +13,7 @@ import { Block, Title, FormContent, FormContentTitle } from "./PageComponents";
 import SourceResource from "../../../core/resources/Source";
 
 const SourcesView: React.FC = () => {
+  const formatMessage = useIntl().formatMessage;
   const { connections } = useResource(ConnectionResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
@@ -36,10 +37,18 @@ const SourcesView: React.FC = () => {
         );
         setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
-        setFeedbackList({ ...feedbackList, [id]: "error" });
+        const message =
+          e.status === 422
+            ? formatMessage({
+                id: "form.imageCannotFound"
+              })
+            : formatMessage({
+                id: "form.someError"
+              });
+        setFeedbackList({ ...feedbackList, [id]: message });
       }
     },
-    [feedbackList, updateSource]
+    [feedbackList, formatMessage, updateSource]
   );
 
   const columns = React.useMemo(
@@ -47,7 +56,7 @@ const SourcesView: React.FC = () => {
       {
         Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
-        customWidth: 34,
+        customWidth: 25,
         Cell: ({ cell }: CellProps<{}>) => (
           <ConnectorCell connectorName={cell.value} />
         )
@@ -72,7 +81,7 @@ const SourcesView: React.FC = () => {
       {
         Header: (
           <FormContentTitle>
-            <FormattedMessage id="admin.version" />
+            <FormattedMessage id="admin.tag" />
           </FormContentTitle>
         ),
         accessor: "dockerImageTag",

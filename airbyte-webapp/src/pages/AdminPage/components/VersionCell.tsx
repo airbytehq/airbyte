@@ -5,6 +5,7 @@ import { FormattedMessage } from "react-intl";
 
 import Input from "../../../components/Input";
 import Button from "../../../components/Button";
+import Spinner from "../../../components/Spinner";
 import { FormContent } from "./PageComponents";
 
 type IProps = {
@@ -25,19 +26,50 @@ const SuccessMessage = styled.div`
   line-height: 18px;
   position: absolute;
   text-align: right;
-  width: 105px;
-  left: -118px;
+  width: 205px;
+  left: -218px;
   height: 100%;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   white-space: break-spaces;
 `;
 
 const ErrorMessage = styled(SuccessMessage)`
   color: ${({ theme }) => theme.dangerColor};
+  font-size: 11px;
+  line-height: 14px;
 `;
 
 const VersionCell: React.FC<IProps> = ({ version, id, onChange, feedback }) => {
+  const renderFeedback = (
+    dirty: boolean,
+    isSubmitting: boolean,
+    feedback?: string
+  ) => {
+    if (isSubmitting) {
+      return (
+        <SuccessMessage>
+          <Spinner small />
+        </SuccessMessage>
+      );
+    }
+
+    if (feedback && !dirty) {
+      if (feedback === "success") {
+        return (
+          <SuccessMessage>
+            <FormattedMessage id="form.savedChange" />
+          </SuccessMessage>
+        );
+      } else {
+        return <ErrorMessage>{feedback}</ErrorMessage>;
+      }
+    }
+
+    return null;
+  };
+
   return (
     <FormContent>
       <Formik
@@ -51,15 +83,7 @@ const VersionCell: React.FC<IProps> = ({ version, id, onChange, feedback }) => {
       >
         {({ isSubmitting, dirty }) => (
           <Form>
-            {!feedback || dirty ? null : feedback === "success" ? (
-              <SuccessMessage>
-                <FormattedMessage id="form.savedChange" />
-              </SuccessMessage>
-            ) : (
-              <ErrorMessage>
-                <FormattedMessage id="form.someError" />
-              </ErrorMessage>
-            )}
+            {renderFeedback(dirty, isSubmitting, feedback)}
             <Field name="version">
               {({ field }: FieldProps<string>) => (
                 <VersionInput {...field} type="text" autoComplete="off" />

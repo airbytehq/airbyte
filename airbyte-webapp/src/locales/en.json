@@ -63,6 +63,7 @@
   "form.someError": "Sorry. Something went wrong... ",
   "form.changesSaved": "Your changes were saved!",
   "form.savedChange": "Change saved!",
+  "form.imageCannotFound": "The docker image cannot be found. Please ensure that the input tag points to a valid Airbyte docker image",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
@@ -134,7 +135,7 @@
   "admin.connectors": "Connectors",
   "admin.image": "Image",
   "admin.codeSource": "Code source",
-  "admin.version": "Version",
+  "admin.tag": "Tag",
   "admin.addNewConnector": "Add new connector",
   "admin.connectorName": "Connector display name",
   "admin.connectorName.placeholder": "Connector name",
