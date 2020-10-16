@@ -48,12 +48,7 @@ class SingerHelper:
         for stream in singer_catalog.get("streams"):
             name = stream.get("stream")
             schema = stream.get("schema").get("properties")
-
-            # todo: figure out how to serialize an object with an items key in python_jsonschema_objects
-            if name == "subscriptions":
-                del schema["items"]
-
-            airbyte_streams += [AirbyteStream(name=name, schema=schema)]
+            airbyte_streams += [AirbyteStream(name=name, json_schema=schema)]
 
         airbyte_catalog = airbyte_transform(AirbyteCatalog(streams=airbyte_streams))
 

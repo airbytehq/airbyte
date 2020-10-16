@@ -126,7 +126,7 @@ definitions:
       name:
         type: string
         description: Stream's name.
-      schema:
+      json_schema:
         description: Stream schema using Json Schema specs.
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
