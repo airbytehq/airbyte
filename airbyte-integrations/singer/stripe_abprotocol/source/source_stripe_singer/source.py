@@ -1,11 +1,7 @@
 import requests
-from airbyte_protocol import AirbyteCatalog
 from airbyte_protocol import AirbyteCheckResponse
-from airbyte_protocol import AirbyteMessage
-from airbyte_protocol import Source
-from base_singer import SingerHelper
-from typing import Generator
 from base_singer import SingerSource
+
 
 class SourceStripeSinger(SingerSource):
     def __init__(self):
