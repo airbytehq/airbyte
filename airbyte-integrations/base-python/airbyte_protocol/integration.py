@@ -66,7 +66,7 @@ class Source(Integration):
         super().__init__()
 
     # Iterator<AirbyteMessage>
-    def read(self, logger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
+    def read(self, logger, config_container, catalog_path, state_path=None) -> Generator[AirbyteMessage, None, None]:
         raise Exception("Not Implemented")
 
 

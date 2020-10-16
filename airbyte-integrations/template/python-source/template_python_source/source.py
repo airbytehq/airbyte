@@ -23,8 +23,8 @@ class TemplatePythonSource(Source):
         logger.info(f'Discovering ({config_container.rendered_config_path})...')
         return AirbyteCatalog.from_json(pkgutil.get_data(__name__, 'catalog.json'))
 
-    def read(self, logger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
-        logger.info(f'Reading ({config_container.rendered_config_path}, {catalog_path}, {state})...')
+    def read(self, logger, config_container, catalog_path, state_path=None) -> Generator[AirbyteMessage, None, None]:
+        logger.info(f'Reading ({config_container.rendered_config_path}, {catalog_path}, {state_path})...')
 
         message = AirbyteRecordMessage(
             stream='love_airbyte',
