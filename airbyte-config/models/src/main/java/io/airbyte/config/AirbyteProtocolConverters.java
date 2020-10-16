@@ -39,7 +39,7 @@ public class AirbyteProtocolConverters {
     return new AirbyteCatalog()
         .withStreams(schema.getStreams().stream().map(s -> new AirbyteStream()
             .withName(s.getName())
-            .withSchema(toJson(s.getFields()))).collect(Collectors.toList()));
+            .withJsonSchema(toJson(s.getFields()))).collect(Collectors.toList()));
   }
 
   // todo (cgardens) - this will only work with table / column schemas. it's hack to get us through

@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class CatalogHelpers {
 
   public static AirbyteStream createAirbyteStream(String streamName, Field... fields) {
-    return new AirbyteStream().withName(streamName).withSchema(fieldsToJsonSchema(fields));
+    return new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
   public static JsonNode fieldsToJsonSchema(Field... fields) {
