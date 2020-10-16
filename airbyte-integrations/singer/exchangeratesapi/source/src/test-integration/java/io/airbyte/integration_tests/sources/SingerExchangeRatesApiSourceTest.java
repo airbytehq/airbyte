@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class SingerExchangeRatesApiSourceTest {
 
   protected Path jobRoot;
   protected Path workspaceRoot;
-  protected ProcessBuilderFactory pbf;
+  AirbyteIntegrationLauncher launcher;
   protected Path catalogPath;
 
   @BeforeEach
@@ -66,18 +67,40 @@ public class SingerExchangeRatesApiSourceTest {
 
     Files.createDirectories(jobRoot);
 
-    pbf = new DockerProcessBuilderFactory(
+    final ProcessBuilderFactory pbf = new DockerProcessBuilderFactory(
         workspaceRoot,
         workspaceRoot.toString(),
         "",
         "host");
+
+    launcher = new AirbyteIntegrationLauncher(IMAGE_NAME, pbf);
+  }
+
+  @Test
+  public void testSpec() throws InterruptedException, IOException, WorkerException {
+    Process process = createSpecProcess();
+    process.waitFor();
+
+    assertEquals(0, process.exitValue());
+
+    // todo: add assertion to ensure the spec matches the schema / is serializable
+  }
+
+  @Test
+  public void testCheck() throws IOException, WorkerException, InterruptedException {
+    IOs.writeFile(jobRoot, CONFIG, "{}");
+
+    Process process = createCheckProcess();
+    process.waitFor();
+
+    assertEquals(0, process.exitValue());
   }
 
   @Test
   public void testSuccessfulDiscover() throws IOException, InterruptedException, WorkerException {
     IOs.writeFile(jobRoot, CONFIG, "{}");
 
-    Process process = createDiscoveryProcess(CONFIG);
+    Process process = createDiscoveryProcess();
     process.waitFor();
 
     assertEquals(0, process.exitValue());
@@ -110,27 +133,29 @@ public class SingerExchangeRatesApiSourceTest {
         .get("CAD").asDouble() > 0);
   }
 
-  private Process createDiscoveryProcess(String configFileName) throws IOException, WorkerException {
-    return pbf.create(
-        jobRoot,
-        IMAGE_NAME,
-        "discover",
-        "--config",
-        configFileName)
+  private Process createSpecProcess() throws IOException, WorkerException {
+    return launcher.spec(jobRoot)
+        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .start();
+  }
+
+  private Process createCheckProcess() throws IOException, WorkerException {
+    return launcher.check(jobRoot, CONFIG)
+        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .start();
+  }
+
+  private Process createDiscoveryProcess() throws IOException, WorkerException {
+    return launcher.discover(jobRoot, CONFIG)
         .redirectOutput(catalogPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
   }
 
   private Process createSyncProcess(Path syncOutputPath) throws IOException, WorkerException {
-    return pbf.create(
-        jobRoot,
-        IMAGE_NAME,
-        "read",
-        "--config",
-        CONFIG,
-        "--catalog",
-        "catalog.json")
+    return launcher.read(jobRoot, CONFIG, "catalog.json")
         .redirectOutput(syncOutputPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();

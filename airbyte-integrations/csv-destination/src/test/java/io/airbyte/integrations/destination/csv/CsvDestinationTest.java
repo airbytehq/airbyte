@@ -29,27 +29,28 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.DataType;
-import io.airbyte.config.Field;
-import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.Stream;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.singer.SingerMessage;
-import io.airbyte.singer.SingerMessage.Type;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitives;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -63,37 +64,42 @@ import org.junit.jupiter.api.Test;
 
 class CsvDestinationTest {
 
-  private static final ObjectMapper objectMapper = new ObjectMapper();
-
+  private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
   private static final String USERS_FILE = USERS_STREAM_NAME + ".csv";
   private static final String TASKS_FILE = TASKS_STREAM_NAME + ".csv";
-  private static final SingerMessage SINGER_MESSAGE_USERS1 = new SingerMessage().withType(Type.RECORD).withStream(USERS_STREAM_NAME)
-      .withRecord(objectMapper.createObjectNode().put("name", "john").put("id", "10"));
-  private static final SingerMessage SINGER_MESSAGE_USERS2 = new SingerMessage().withType(Type.RECORD).withStream(USERS_STREAM_NAME)
-      .withRecord(objectMapper.createObjectNode().put("name", "susan").put("id", "30"));
-  private static final SingerMessage SINGER_MESSAGE_TASKS1 = new SingerMessage().withType(Type.RECORD).withStream(TASKS_STREAM_NAME)
-      .withRecord(objectMapper.createObjectNode().put("goal", "announce the game."));
-  private static final SingerMessage SINGER_MESSAGE_TASKS2 = new SingerMessage().withType(Type.RECORD).withStream(TASKS_STREAM_NAME)
-      .withRecord(objectMapper.createObjectNode().put("goal", "ship some code."));
-  private static final SingerMessage SINGER_MESSAGE_RECORD = new SingerMessage().withType(Type.STATE)
-      .withValue(objectMapper.createObjectNode().put("checkpoint", "now!"));
+  private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
+          .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
+          .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_TASKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "announce the game.").build()))
+          .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "ship some code.").build()))
+          .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
+      .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
-  private static final Schema CATALOG = new Schema().withStreams(Lists.newArrayList(
-      new Stream().withName(USERS_STREAM_NAME)
-          .withFields(Lists.newArrayList(new Field().withName("name").withDataType(DataType.STRING).withSelected(true),
-              new Field().withName("id").withDataType(DataType.STRING).withSelected(true))),
-      new Stream().withName(TASKS_STREAM_NAME)
-          .withFields(Lists.newArrayList(new Field().withName("goal").withDataType(DataType.STRING).withSelected(true)))));
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(
+      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, Field.of("name", JsonSchemaPrimitives.STRING),
+          Field.of("id", JsonSchemaPrimitives.STRING)),
+      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitives.STRING))));
 
   private Path destinationPath;
-  private ObjectNode config;
+  private JsonNode config;
 
   @BeforeEach
   void setup() throws IOException {
     destinationPath = Files.createTempDirectory("test");
-    config = objectMapper.createObjectNode().put(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString());
+    config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString()));
   }
 
   @Test
@@ -116,7 +122,7 @@ class CsvDestinationTest {
   void testCheckFailure() throws IOException {
     final Path looksLikeADirectoryButIsAFile = destinationPath.resolve("file");
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
-    final ObjectNode config = objectMapper.createObjectNode().put(CsvDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString());
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
     final StandardCheckConnectionOutput actual = new CsvDestination().check(config);
     final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILURE);
 
@@ -129,40 +135,36 @@ class CsvDestinationTest {
 
   @Test
   void testWriteSuccess() throws Exception {
-    final DestinationConsumer<SingerMessage> consumer = new CsvDestination().write(config, CATALOG);
+    final DestinationConsumer<AirbyteMessage> consumer = new CsvDestination().write(config, CATALOG);
 
-    consumer.accept(SINGER_MESSAGE_USERS1);
-    consumer.accept(SINGER_MESSAGE_TASKS1);
-    consumer.accept(SINGER_MESSAGE_USERS2);
-    consumer.accept(SINGER_MESSAGE_TASKS2);
-    consumer.accept(SINGER_MESSAGE_RECORD);
+    consumer.accept(MESSAGE_USERS1);
+    consumer.accept(MESSAGE_TASKS1);
+    consumer.accept(MESSAGE_USERS2);
+    consumer.accept(MESSAGE_TASKS2);
+    consumer.accept(MESSAGE_STATE);
     consumer.close();
 
     // verify contents of CSV file
-    final List<String> usersActual = Files.readAllLines(destinationPath.resolve(USERS_FILE));
+    final String usersActual = Files.readString(destinationPath.resolve(USERS_FILE));
     // csv adds all of these goofy quotes.
-    final List<String> usersExpected = Lists.newArrayList(
-        CsvDestination.COLUMN_NAME,
-        "\"{\"\"name\"\":\"\"john\"\",\"\"id\"\":\"\"10\"\"}\"",
-        "\"{\"\"name\"\":\"\"susan\"\",\"\"id\"\":\"\"30\"\"}\"");
+    final String EXPECTED_USERS1 = "\"{\"\"name\"\":\"\"john\"\",\"\"id\"\":\"\"10\"\"}\"";
+    final String EXPECTED_USERS2 = "\"{\"\"name\"\":\"\"susan\"\",\"\"id\"\":\"\"30\"\"}\"";
+    assertTrue(usersActual.contains(EXPECTED_USERS1));
+    assertTrue(usersActual.contains(EXPECTED_USERS2));
 
-    assertEquals(usersExpected, usersActual);
-
-    final List<String> tasksActual = Files.readAllLines(destinationPath.resolve(TASKS_FILE));
-    final List<String> tasksExpected = Lists.newArrayList(
-        CsvDestination.COLUMN_NAME,
-        "\"{\"\"goal\"\":\"\"announce the game.\"\"}\"",
-        "\"{\"\"goal\"\":\"\"ship some code.\"\"}\"");
-
-    assertEquals(tasksActual, tasksExpected);
+    final String tasksActual = Files.readString(destinationPath.resolve(TASKS_FILE));
+    final String EXPECTED_TASKS1 = "\"{\"\"goal\"\":\"\"announce the game.\"\"}\"";
+    final String EXPECTED_TASKS2 = "\"{\"\"goal\"\":\"\"ship some code.\"\"}\"";
+    assertTrue(tasksActual.contains(EXPECTED_TASKS1));
+    assertTrue(tasksActual.contains(EXPECTED_TASKS2));
 
     // verify that the file is parsable as json (sanity check since the quoting is so goofy).
     final List<JsonNode> actualUsersJson = csvToJson(destinationPath.resolve(USERS_FILE));
-    final List<JsonNode> expectedUsersJson = Lists.newArrayList(SINGER_MESSAGE_USERS1.getRecord(), SINGER_MESSAGE_USERS2.getRecord());
+    final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, actualUsersJson);
 
     final List<JsonNode> actualTasksJson = csvToJson(destinationPath.resolve(TASKS_FILE));
-    final List<JsonNode> expectedTasksJson = Lists.newArrayList(SINGER_MESSAGE_TASKS1.getRecord(), SINGER_MESSAGE_TASKS2.getRecord());
+    final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, actualTasksJson);
 
     // verify tmp files are cleaned up
@@ -175,13 +177,13 @@ class CsvDestinationTest {
   @Test
   void testWriteFailure() throws Exception {
     // hack to force an exception to be thrown from within the consumer.
-    final SingerMessage spiedMessage = spy(SINGER_MESSAGE_USERS1);
-    doThrow(new RuntimeException()).when(spiedMessage).getStream();
+    final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
+    doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final DestinationConsumer<SingerMessage> consumer = spy(new CsvDestination().write(config, CATALOG));
+    final DestinationConsumer<AirbyteMessage> consumer = spy(new CsvDestination().write(config, CATALOG));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
-    consumer.accept(SINGER_MESSAGE_USERS2);
+    consumer.accept(MESSAGE_USERS2);
     consumer.close();
 
     // verify tmp files are cleaned up and no files are output at all
@@ -192,12 +194,12 @@ class CsvDestinationTest {
   private List<JsonNode> csvToJson(Path csvPath) throws IOException {
     final Reader in = new FileReader(csvPath.toFile());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-        .withHeader(CsvDestination.COLUMN_NAME)
+        .withHeader(CsvDestination.COLUMN_DATA)
         .withFirstRecordAsHeader()
         .parse(in);
 
     return StreamSupport.stream(records.spliterator(), false)
-        .map(record -> Jsons.deserialize(record.toMap().get(CsvDestination.COLUMN_NAME)))
+        .map(record -> Jsons.deserialize(record.toMap().get(CsvDestination.COLUMN_DATA)))
         .collect(Collectors.toList());
   }
 

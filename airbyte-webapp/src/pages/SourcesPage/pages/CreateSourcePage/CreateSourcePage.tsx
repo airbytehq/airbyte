@@ -78,7 +78,7 @@ const CreateSourcePage: React.FC = () => {
   const onSubmitSourceStep = async (values: {
     name: string;
     serviceType: string;
-    specificationId?: string;
+    sourceId?: string;
     connectionConfiguration?: any;
   }) => {
     const connector = sources.find(

@@ -34,22 +34,22 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.Schema;
+import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
+import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardTapConfig;
+import io.airbyte.config.State;
+import io.airbyte.config.Stream;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.workers.DiscoverCatalogWorker;
-import io.airbyte.workers.JobStatus;
-import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -60,6 +60,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,16 +76,21 @@ class DefaultAirbyteSourceTest {
               .withName("hudi:latest")
               .withSchema(Jsons.deserialize("{}"))));
 
-  private static final StandardTapConfig TAP_CONFIG = WorkerUtils.syncToTapConfig(TestConfigHelpers.createSyncConfig().getValue());
+  private static final StandardTapConfig TAP_CONFIG = new StandardTapConfig()
+      .withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "the future."))))
+      .withSourceConnectionImplementation(new SourceConnectionImplementation()
+          .withConfiguration(Jsons.jsonNode(Map.of(
+              "apiKey", "123",
+              "region", "us-east"))))
+      .withStandardSync(new StandardSync().withSchema(new Schema().withStreams(Lists.newArrayList(new Stream().withName("hudi:latest")))));
   private static final StandardDiscoverCatalogInput DISCOVER_SCHEMA_INPUT = new StandardDiscoverCatalogInput()
       .withConnectionConfiguration(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration());
 
-  final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
+  private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
 
   private Path jobRoot;
-  private DiscoverCatalogWorker discoverSchemaWorker;
   private IntegrationLauncher integrationLauncher;
   private Process process;
   private AirbyteStreamFactory streamFactory;
@@ -92,17 +98,6 @@ class DefaultAirbyteSourceTest {
   @BeforeEach
   public void setup() throws IOException, WorkerException {
     jobRoot = Files.createTempDirectory("test");
-
-    discoverSchemaWorker = mock(DiscoverCatalogWorker.class);
-    when(discoverSchemaWorker.run(
-        DISCOVER_SCHEMA_INPUT,
-        jobRoot.resolve(DefaultAirbyteSource.DISCOVERY_DIR)))
-            .thenAnswer(invocation -> {
-              Files.writeString(
-                  jobRoot.resolve(DefaultAirbyteSource.DISCOVERY_DIR).resolve(WorkerConstants.CATALOG_JSON_FILENAME),
-                  Jsons.serialize(CATALOG));
-              return new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverCatalogOutput().withCatalog(CATALOG));
-            });
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class, RETURNS_DEEP_STUBS);
@@ -123,7 +118,7 @@ class DefaultAirbyteSourceTest {
   @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, discoverSchemaWorker);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory);
     tap.start(TAP_CONFIG, jobRoot);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
@@ -162,24 +157,12 @@ class DefaultAirbyteSourceTest {
 
   @Test
   public void testProcessFail() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, discoverSchemaWorker);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory);
     tap.start(TAP_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
 
     Assertions.assertThrows(WorkerException.class, tap::close);
-  }
-
-  @Test
-  public void testSchemaDiscoveryFail() {
-    when(discoverSchemaWorker.run(any(), any())).thenReturn(new OutputAndStatus<>(JobStatus.FAILED));
-
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, discoverSchemaWorker);
-    Assertions.assertThrows(WorkerException.class, () -> tap.start(TAP_CONFIG, jobRoot));
-
-    assertFalse(Files.exists(jobRoot.resolve(WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
-    assertFalse(Files.exists(jobRoot.resolve(WorkerConstants.INPUT_STATE_JSON_FILENAME)));
-    assertFalse(Files.exists(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME)));
   }
 
 }

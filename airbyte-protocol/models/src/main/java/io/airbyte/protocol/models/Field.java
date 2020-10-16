@@ -22,35 +22,37 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.protocol.models;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public class Field {
 
-public class SchedulerShutdownHandler extends Thread {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerShutdownHandler.class);
-  private final ExecutorService[] threadPools;
-
-  public SchedulerShutdownHandler(final ExecutorService... threadPools) {
-    this.threadPools = threadPools;
+  public static enum JsonSchemaPrimitives {
+    STRING,
+    NUMBER,
+    OBJECT,
+    ARRAY,
+    BOOLEAN,
+    NULL;
   }
 
-  @Override
-  public void run() {
-    for (ExecutorService threadPool : threadPools) {
-      threadPool.shutdown();
+  private final String name;
+  private final JsonSchemaPrimitives type;
 
-      try {
-        if (!threadPool.awaitTermination(30, TimeUnit.SECONDS)) {
-          LOGGER.error("Unable to kill worker threads by shutdown timeout.");
-        }
-      } catch (InterruptedException e) {
-        LOGGER.error("Wait for graceful worker thread shutdown interrupted.", e);
-      }
-    }
+  public Field(String name, JsonSchemaPrimitives type) {
+    this.name = name;
+    this.type = type;
+  }
+
+  public static Field of(String name, JsonSchemaPrimitives type) {
+    return new Field(name, type);
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getTypeAsJsonSchemaString() {
+    return type.name().toLowerCase();
   }
 
 }

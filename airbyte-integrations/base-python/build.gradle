@@ -1,15 +1,4 @@
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-plugins {
-    id 'com.bmuschko.docker-remote-api'
-}
-
-def image = 'airbyte/base-python:dev'
-
-task imageName {
-    doLast {
-        println "IMAGE $image"
-    }
-}
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
 task deleteProtocolDefinitions(type: Delete) {
     delete 'airbyte_protocol/airbyte_protocol/types'
@@ -21,8 +10,6 @@ task copyProtocolDefinitions(type: Copy) {
     dependsOn deleteProtocolDefinitions
 }
 
-task buildImage(type: DockerBuildImage) {
-    inputDir = projectDir
-    images.add(image)
-    dependsOn ":airbyte-integrations:base:buildImage", copyProtocolDefinitions
-}
+clean.dependsOn deleteProtocolDefinitions
+buildImage.dependsOn copyProtocolDefinitions
+buildImage.dependsOn ':airbyte-integrations:base:buildImage'

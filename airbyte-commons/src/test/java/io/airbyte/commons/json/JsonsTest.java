@@ -27,6 +27,7 @@ package io.airbyte.commons.json;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.util.List;
@@ -191,6 +192,12 @@ class JsonsTest {
     final JsonNode actualWithStringType = Jsons.deserialize("{\"test\":\"abc\", \"type\":\"object\"}");
     JsonSchemas.mutateTypeToArrayStandard(actualWithStringType);
     Assertions.assertEquals(expectedWithoutArrayType, actualWithStringType);
+  }
+
+  @Test
+  void testToBytes() {
+    final String jsonString = "{\"test\":\"abc\",\"type\":[\"object\"]}";
+    Assertions.assertArrayEquals(jsonString.getBytes(Charsets.UTF_8), Jsons.toBytes(Jsons.deserialize(jsonString)));
   }
 
   private static class ToClass {

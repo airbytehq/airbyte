@@ -29,17 +29,15 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.config.Stream;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.singer.SingerMessage;
-import io.airbyte.singer.SingerMessage.Type;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -48,6 +46,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.io.FileUtils;
@@ -58,7 +57,9 @@ public class CsvDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
 
-  static final String COLUMN_NAME = "data"; // we output all data as a blob to a single column.
+  static final String COLUMN_DATA = "data"; // we output all data as a blob to a single column.
+  static final String COLUMN_AB_ID = "ab_id"; // we output all data as a blob to a single column.
+  static final String COLUMN_EMITTED_AT = "emitted_at"; // we output all data as a blob to a single column.
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
   @Override
@@ -77,36 +78,29 @@ public class CsvDestination implements Destination {
     return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
   }
 
-  // todo (cgardens) - we currently don't leverage discover in our destinations, so skipping
-  // implementing it... for now.
-  @Override
-  public StandardDiscoverCatalogOutput discover(JsonNode config) {
-    throw new RuntimeException("Not Implemented");
-  }
-
   /**
    * @param config - csv destination config.
-   * @param schema - schema of the incoming messages.
+   * @param catalog - schema of the incoming messages.
    * @return - a consumer to handle writing records to the filesystem.
    * @throws IOException - exception throw in manipulating the filesytem.
    */
   @Override
-  public DestinationConsumer<SingerMessage> write(JsonNode config, Schema schema) throws IOException {
+  public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
     FileUtils.forceMkdir(destinationDir.toFile());
 
     final long now = Instant.now().toEpochMilli();
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
-    for (final Stream stream : schema.getStreams()) {
+    for (final AirbyteStream stream : catalog.getStreams()) {
       final Path tmpPath = destinationDir.resolve(stream.getName() + "_" + now + ".csv");
       final Path finalPath = destinationDir.resolve(stream.getName() + ".csv");
       final FileWriter fileWriter = new FileWriter(tmpPath.toFile());
-      final CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(COLUMN_NAME));
+      final CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA));
       writeConfigs.put(stream.getName(), new WriteConfig(printer, tmpPath, finalPath));
     }
 
-    return new CsvConsumer(writeConfigs, schema);
+    return new CsvConsumer(writeConfigs, catalog);
   }
 
   /**
@@ -127,30 +121,33 @@ public class CsvDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class CsvConsumer extends FailureTrackingConsumer<SingerMessage> {
+  private static class CsvConsumer extends FailureTrackingConsumer<AirbyteMessage> {
 
     private final Map<String, WriteConfig> writeConfigs;
-    private final Schema schema;
+    private final AirbyteCatalog catalog;
 
-    public CsvConsumer(Map<String, WriteConfig> writeConfigs, Schema schema) {
-      this.schema = schema;
+    public CsvConsumer(Map<String, WriteConfig> writeConfigs, AirbyteCatalog catalog) {
+      this.catalog = catalog;
       LOGGER.info("initializing consumer.");
 
       this.writeConfigs = writeConfigs;
     }
 
     @Override
-    protected void acceptTracked(SingerMessage singerMessage) throws Exception {
+    protected void acceptTracked(AirbyteMessage message) throws Exception {
 
       // ignore other message types.
-      if (singerMessage.getType() == Type.RECORD) {
-        if (!writeConfigs.containsKey(singerMessage.getStream())) {
+      if (message.getType() == AirbyteMessage.Type.RECORD) {
+        if (!writeConfigs.containsKey(message.getRecord().getStream())) {
           throw new IllegalArgumentException(
               String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                  Jsons.serialize(schema), Jsons.serialize(singerMessage)));
+                  Jsons.serialize(catalog), Jsons.serialize(message)));
         }
 
-        writeConfigs.get(singerMessage.getStream()).getWriter().printRecord(Jsons.serialize(singerMessage.getRecord()));
+        writeConfigs.get(message.getRecord().getStream()).getWriter().printRecord(
+            UUID.randomUUID(),
+            message.getRecord().getEmittedAt(),
+            Jsons.serialize(message.getRecord().getData()));
       }
     }
 
