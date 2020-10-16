@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='source-exchangeratesapi-singer',
-    description='Source implementation for the exchange rates API.',
+    name='template-singer-source',
+    description='Singer source implementation template',
     author='Airbyte',
     author_email='contact@airbyte.io',
 
