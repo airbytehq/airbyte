@@ -157,14 +157,12 @@ public class WorkerRunFactory {
                   new SingerMessageTracker())));
 
     } else {
-      final DefaultDiscoverCatalogWorker discoverSchemaWorker = new DefaultDiscoverCatalogWorker(createLauncher(config.getSourceDockerImage()));
-
       return creator.create(
           jobRoot,
           syncInput,
           new JobOutputSyncWorker(
               new DefaultSyncWorker<>(
-                  new DefaultAirbyteSource(sourceLauncher, discoverSchemaWorker),
+                  new DefaultAirbyteSource(sourceLauncher),
                   new DefaultAirbyteDestination(destinationLauncher),
                   new AirbyteMessageTracker())));
     }

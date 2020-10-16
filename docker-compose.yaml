@@ -4,15 +4,14 @@ services:
   # hook in case we need to add init behavior
   # every root service (no depends_on) should depend on init
   init:
-    image: alpine
-    command: /bin/sh -c "
-      echo ${LOCAL_ROOT};
-      mkdir -p ${LOCAL_ROOT};
-      "
+    image: airbyte/seed:${VERSION}
+    container_name: init
+    command: /bin/sh -c "./scripts/create_mount_directories.sh /local_parent ${HACK_LOCAL_ROOT_PARENT} ${LOCAL_ROOT}"
     environment:
       - LOCAL_ROOT=${LOCAL_ROOT}
+      - HACK_LOCAL_ROOT_PARENT=${HACK_LOCAL_ROOT_PARENT}
     volumes:
-      - ${LOCAL_ROOT}/..:/tmp
+      - ${HACK_LOCAL_ROOT_PARENT}:/local_parent
   db:
     image: airbyte/db:${VERSION}
     container_name: airbyte-db
@@ -49,7 +48,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
-      - local:${LOCAL_ROOT}
+      - ${LOCAL_ROOT}:${LOCAL_ROOT}
       - data:${CONFIG_ROOT}
     depends_on:
       - db
@@ -85,12 +84,5 @@ services:
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
-  local:
-    name: local
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ${LOCAL_ROOT}
   data:
   db:

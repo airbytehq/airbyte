@@ -116,21 +116,6 @@ class IntegrationRunnerTest {
     verify(stdoutConsumer).accept(Jsons.serialize(output));
   }
 
-  // @Test
-  // void testDiscover() throws Exception {
-  // final IntegrationConfig intConfig = IntegrationConfig.discover(Path.of(configPath.toString()));
-  // final StandardDiscoverCatalogOutput output = new
-  // StandardDiscoverCatalogOutput().withSchema(CATALOG);
-  //
-  // when(cliParser.parse(ARGS)).thenReturn(intConfig);
-  // when(destination.discover(CONFIG)).thenReturn(output);
-  //
-  // new IntegrationRunner(cliParser, stdoutConsumer, destination).run(ARGS);
-  //
-  // verify(destination).discover(CONFIG);
-  // verify(stdoutConsumer).accept(Jsons.serialize(output));
-  // }
-
   @SuppressWarnings("unchecked")
   @Test
   void testWrite() throws Exception {

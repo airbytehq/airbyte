@@ -27,7 +27,6 @@ package io.airbyte.integrations.base;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 
@@ -51,16 +50,6 @@ public interface Destination {
    * @throws Exception - any exception.
    */
   StandardCheckConnectionOutput check(JsonNode config) throws Exception;
-
-  /**
-   * Discover the current schema in the destination.
-   *
-   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
-   *        "password": "super secure" }
-   * @return Description of the schema.
-   * @throws Exception - any exception.
-   */
-  StandardDiscoverCatalogOutput discover(JsonNode config) throws Exception;
 
   /**
    * Return a consumer that writes messages to the destination.

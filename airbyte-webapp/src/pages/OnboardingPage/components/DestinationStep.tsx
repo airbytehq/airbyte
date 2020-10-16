@@ -21,7 +21,7 @@ type IProps = {
   onSubmit: (values: {
     name: string;
     serviceType: string;
-    specificationId?: string;
+    destinationId?: string;
     connectionConfiguration?: any;
   }) => void;
   errorStatus?: number;
@@ -89,7 +89,7 @@ const DestinationStep: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      specificationId: destinationSpecification?.destinationSpecificationId
+      destinationId: destinationSpecification?.destinationId
     });
   };
 

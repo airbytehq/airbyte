@@ -7,7 +7,7 @@ import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 type ValuesProps = {
   name: string;
   serviceType?: string;
-  specificationId?: string;
+  sourceId?: string;
   connectionConfiguration?: any;
   frequency?: string;
 };
@@ -47,7 +47,7 @@ const useSource = () => {
         {
           name: values.name,
           workspaceId: config.ui.workspaceId,
-          sourceSpecificationId: values.specificationId,
+          sourceId: values.sourceId,
           connectionConfiguration: values.connectionConfiguration
         },
         [
@@ -120,7 +120,7 @@ const useSource = () => {
         sourceImplementationId,
         connectionConfiguration: values.connectionConfiguration,
         workspaceId: config.ui.workspaceId,
-        sourceSpecificationId: values.specificationId
+        sourceId: values.sourceId
       },
       // Method used only in onboarding.
       // Replace all SourceImplementation List to new item in UpdateParams (to change id)
