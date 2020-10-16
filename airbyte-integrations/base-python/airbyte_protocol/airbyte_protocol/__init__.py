@@ -81,7 +81,7 @@ class AirbyteLogger:
     def log(self, level, message):
         log_record = AirbyteLogMessage(level=level, message=message)
         log_message = AirbyteMessage(type="LOG", log=log_record)
-        print(log_message.json())
+        print(log_message.json(exclude_unset=True))
 
     def fatal(self, message):
         self.log("FATAL", message)

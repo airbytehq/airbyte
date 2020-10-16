@@ -91,12 +91,12 @@ class AirbyteEntrypoint(object):
                     sys.exit(1)
             elif cmd == "discover":
                 catalog = source.discover(logger, config_container)
-                print(catalog.json())
+                print(catalog.json(exclude_unset=True))
                 sys.exit(0)
             elif cmd == "read":
                 generator = source.read(logger, config_container, parsed_args.catalog, parsed_args.state)
                 for message in generator:
-                    print(message.json())
+                    print(message.json(exclude_unset=True))
                 sys.exit(0)
             else:
                 raise Exception("Unexpected command " + cmd)

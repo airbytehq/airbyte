@@ -35,7 +35,7 @@ def createLicenseWith = { licence ->
 spotless {
     java {
         target '**/*.java'
-        targetExclude "**/build/**/*"
+        targetExclude "**/build/**/*", "**/.gradle/**/*"
 
         importOrder()
 
@@ -47,17 +47,17 @@ spotless {
     }
     groovyGradle {
         target '**/*.gradle'
-        targetExclude "**/build/**/*"
+        targetExclude "**/build/**/*", "**/.gradle/**/*"
     }
     sql {
         target '**/*.sql'
-        targetExclude "**/build/**/*"
+        targetExclude "**/build/**/*", "**/.gradle/**/*"
 
         dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
     }
     format 'styling', {
         target '**/*.json', '**/*.yaml'
-        targetExclude "**/build/**/*", "**/node_modules/**/*"
+        targetExclude "**/build/**/*", "**/node_modules/**/*", "**/.gradle/**/*"
 
         prettier()
     }
