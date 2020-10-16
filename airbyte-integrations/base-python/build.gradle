@@ -1,5 +1,4 @@
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 
 def typesDir = 'airbyte_protocol/models/yaml'
 task deleteProtocolDefinitions(type: Delete) {
@@ -12,6 +11,6 @@ task copyProtocolDefinitions(type: Copy) {
     dependsOn deleteProtocolDefinitions
 }
 
+assemble.dependsOn copyProtocolDefinitions
 clean.dependsOn deleteProtocolDefinitions
-buildImage.dependsOn copyProtocolDefinitions
 buildImage.dependsOn ':airbyte-integrations:base:buildImage'
