@@ -24,10 +24,6 @@
 
 package io.airbyte.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.stripe.exception.StripeException;
@@ -42,6 +38,10 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -54,9 +54,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SingerStripeSourceTest {
 
@@ -192,16 +193,16 @@ public class SingerStripeSourceTest {
     ObjectNode normalized = node.deepCopy();
 
     if (normalized.get("type").textValue().equals("RECORD")) {
-      ObjectNode record = (ObjectNode) normalized.get("record").get("data");
-      record.put("id", "id");
-      record.put("created", "created");
-      record.put("invoice_prefix", "invoice_prefix");
-      record.put("updated", "updated");
+      ObjectNode data = (ObjectNode) normalized.get("record").get("data");
+      data.put("id", "id");
+      data.put("created", "created");
+      data.put("invoice_prefix", "invoice_prefix");
+      data.put("updated", "updated");
 
-      normalized.replace("record", record);
+      ObjectNode record = ((ObjectNode)normalized.get("record"));
+      record.replace("data", data);
+      record.put("emitted_at", 0);
     }
-
-    normalized.put("time_extracted", "time_extracted");
 
     return normalized;
   }
