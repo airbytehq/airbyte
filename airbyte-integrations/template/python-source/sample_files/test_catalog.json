@@ -1,0 +1,18 @@
+{
+  "streams": [
+    {
+      "name": "love_airbyte",
+      "schema": {
+        "type": "object",
+        "required": [
+          "love"
+        ],
+        "properties": {
+          "love": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -13,7 +13,6 @@ logger = AirbyteLogger()
 
 def environ_with_default(name, default):
     if name not in os.environ:
-        logger.warn(f"Using default ({name}): {default}")
         return default
     else:
         return os.environ[name]
