@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
@@ -117,6 +118,7 @@ public class SingerExchangeRatesApiSourceTest {
     final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
 
     IOs.writeFile(jobRoot, CONFIG, String.format("{\"start_date\":\"%s\"}", fmt.format(date)));
+    IOs.writeFile(jobRoot, CATALOG, MoreResources.readResource("catalog.json"));
 
     final Path syncOutputPath = jobRoot.resolve("sync_output.txt");
     final Process process = createSyncProcess(syncOutputPath);
