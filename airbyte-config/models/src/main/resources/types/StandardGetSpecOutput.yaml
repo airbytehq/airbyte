@@ -9,4 +9,4 @@ required:
   - specification
 properties:
   specification:
-    "$ref": ConnectorSpecification.yaml
+    "$ref": ../../../../../../airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml#/definitions/ConnectorSpecification
