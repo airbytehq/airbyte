@@ -3,16 +3,16 @@ import os
 import selectors
 import subprocess
 import tempfile
-from airbyte_protocol import AirbyteSpec
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Generator
+
 from airbyte_protocol import AirbyteCatalog
 from airbyte_protocol import AirbyteMessage
-from airbyte_protocol import AirbyteLogMessage
 from airbyte_protocol import AirbyteRecordMessage
+from airbyte_protocol import AirbyteSpec
 from airbyte_protocol import AirbyteStateMessage
 from airbyte_protocol import AirbyteStream
-from typing import Generator
-from datetime import datetime
-from dataclasses import dataclass
 
 
 def to_json(string):
@@ -36,14 +36,6 @@ class Catalogs:
 
 
 class SingerHelper:
-    @staticmethod
-    def spec_from_file(spec_path) -> AirbyteSpec:
-        with open(spec_path) as file:
-            spec_text = file.read()
-        # we need to output a spec on a single line
-        flattened_json = json.dumps(json.loads(spec_text))
-        return AirbyteSpec(flattened_json)
-
     @staticmethod
     def get_catalogs(logger, shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)) -> Catalogs:
         completed_process = subprocess.run(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,

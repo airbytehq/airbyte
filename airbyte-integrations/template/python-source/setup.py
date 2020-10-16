@@ -1,12 +1,15 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='base-singer',
-    description='Contains helpers for handling Singer sources and destinations.',
+    name='template-python-source',
+    description='Source implementation template',
     author='Airbyte',
     author_email='contact@airbyte.io',
 
     packages=find_packages(),
+    package_data={
+        '': ['*.json']
+    },
 
     install_requires=['airbyte-protocol']
 )
