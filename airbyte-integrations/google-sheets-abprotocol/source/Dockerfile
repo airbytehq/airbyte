@@ -1,12 +1,12 @@
-FROM airbyte/integration-base-python
+FROM airbyte/integration-base-python:dev
 
 RUN apt-get update && apt-get install -y jq curl bash
 
 WORKDIR /airbyte/google_sheets_source
 
+
 COPY ./google_sheets_source google_sheets_source
 COPY ./spec.json .
-
 COPY setup.py .
 RUN pip install .
 

@@ -16,3 +16,4 @@ application {
 }
 
 buildImage.dependsOn ':airbyte-integrations:base-java:buildImage'
+buildImage.dependsOn check
