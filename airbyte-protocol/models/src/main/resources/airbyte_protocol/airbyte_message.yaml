@@ -22,12 +22,12 @@ properties:
     description: "log message: any kind of logging you want the platform to know about."
     "$ref": "#/definitions/AirbyteLogMessage"
   spec:
-    "$ref": "../../../../../../airbyte-config/models/src/main/resources/types/ConnectorSpecification.yaml"
+    "$ref": "#/definitions/ConnectorSpecification"
   connectionStatus:
-    "$ref": "airbyte_connection_status.yaml"
+    "$ref": "#/definitions/AirbyteConnectionStatus"
   catalog:
     description: "log message: any kind of logging you want the platform to know about."
-    "$ref": "airbyte_catalog.yaml"
+    "$ref": "#/definitions/AirbyteCatalog"
   record:
     description: "record message: the record"
     "$ref": "#/definitions/AirbyteRecordMessage"
@@ -35,6 +35,14 @@ properties:
     description: "schema message: the state. Must be the last message produced. The platform uses this information"
     "$ref": "#/definitions/AirbyteStateMessage"
 definitions:
+  AirbyteType:
+    description: Airbyte supported types
+    type: string
+    enum:
+      - boolean
+      - number
+      - text
+      - object
   AirbyteRecordMessage:
     type: object
     additionalProperties: false
@@ -83,3 +91,59 @@ definitions:
       message:
         description: "the log message"
         type: string
+  AirbyteConnectionStatus:
+    description: Airbyte connection status
+    type: object
+    additionalProperties: false
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        enum:
+          - SUCCESS
+          - FAILED
+      message:
+        type: string
+  AirbyteCatalog:
+    description: Airbyte stream schema catalog
+    type: object
+    additionalProperties: false
+    required:
+      - streams
+    properties:
+      streams:
+        type: array
+        items:
+          "$ref": "#/definitions/AirbyteStream"
+  AirbyteStream:
+    type: object
+    additionalProperties: false
+    required:
+      - name
+      - schema
+    properties:
+      name:
+        type: string
+        description: Stream's name.
+      schema:
+        description: Stream schema using Json Schema specs.
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  ConnectorSpecification:
+    description: Specification of a connector (source/destination)
+    type: object
+    required:
+      - connectionSpecification
+    additionalProperties: false
+    properties:
+      documentationUrl:
+        type: string
+        format: uri
+      changelogUrl:
+        type: string
+        format: uri
+      connectionSpecification:
+        description: ConnectorDefinition specific blob. Must be a valid JSON string.
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
