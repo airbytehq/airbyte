@@ -78,8 +78,9 @@ class AirbyteEntrypoint(object):
                 print(self.source.spec(logger).spec_string)
                 sys.exit(0)
 
-            rendered_config_path = os.path.join(temp_dir, 'config.json')
             raw_config = self.source.read_config(parsed_args.config)
+
+            rendered_config_path = os.path.join(temp_dir, 'config.json')
             rendered_config = self.source.transform_config(raw_config)
             self.source.write_config(rendered_config, rendered_config_path)
 
