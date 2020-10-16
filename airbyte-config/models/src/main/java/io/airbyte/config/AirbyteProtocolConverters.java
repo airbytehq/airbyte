@@ -29,7 +29,10 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 // todo (cgardens) - hack, remove after we've gotten rid of Schema object.
@@ -57,7 +60,25 @@ public class AirbyteProtocolConverters {
         .put("properties", fields
             .stream()
             .filter(Field::getSelected)
-            .collect(Collectors.toMap(Field::getName, field -> ImmutableMap.of("type", field.getDataType().toString())))));
+            .collect(Collectors.toMap(
+                Field::getName,
+                field -> ImmutableMap.of("type", field.getDataType().toString().toLowerCase()))))
+        .build());
+  }
+
+  public static Schema toSchema(AirbyteCatalog catalog) {
+    return new Schema().withStreams(catalog.getStreams().stream().map(airbyteStream -> {
+      final List<Entry<String, JsonNode>> list = new ArrayList<>();
+      final Iterator<Entry<String, JsonNode>> iterator = airbyteStream.getSchema().get("properties").fields();
+      while (iterator.hasNext()) {
+        list.add(iterator.next());
+      }
+      return new Stream().withName(airbyteStream.getName())
+          .withFields(list.stream().map(item -> new Field()
+              .withName(item.getKey())
+              .withDataType(DataType.valueOf(item.getValue().get("type").asText().toUpperCase()))
+              .withSelected(true)).collect(Collectors.toList()));
+    }).collect(Collectors.toList()));
   }
 
 }
