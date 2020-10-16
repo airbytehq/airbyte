@@ -28,7 +28,7 @@ properties:
     description: "log message: any kind of logging you want the platform to know about."
     "$ref": "#/definitions/AirbyteLogMessage"
   spec:
-    "$ref": "airbyte_connector_spec.yaml"
+    "$ref": "../../../../../../airbyte-config/models/src/main/resources/types/ConnectorSpecification.yaml"
   checkConnection:
     "$ref": "airbyte_connection_status.yaml"
   catalog:
