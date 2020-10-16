@@ -1,9 +1,8 @@
 FROM airbyte/integration-base-python:dev
 
-WORKDIR /airbyte/base_singer
-COPY base_singer/__init__.py base_singer/__init__.py
-COPY base_singer/singer_helpers.py base_singer/singer_helpers.py
-COPY setup.py .
+WORKDIR /airbyte/base_singer_code
+COPY base_singer ./base_singer
+COPY setup.py ./
 RUN pip install .
 
 LABEL io.airbyte.version=0.1.0

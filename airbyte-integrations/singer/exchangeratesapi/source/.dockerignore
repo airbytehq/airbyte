@@ -1,7 +1,1 @@
-*
-!Dockerfile
-!entrypoint.sh
-!source_exchangeratesapi_singer/source_exchangeratesapi_singer.py
-!source_exchangeratesapi_singer/__init__.py
-!spec.json
-!setup.py
+build
