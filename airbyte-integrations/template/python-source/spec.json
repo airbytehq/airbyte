@@ -10,7 +10,7 @@
       "love_airbyte": {
         "type": "boolean",
         "description": "Do you love Airbyte",
-        "examples": ["True"]
+        "examples": ["true"]
       }
     }
   }
