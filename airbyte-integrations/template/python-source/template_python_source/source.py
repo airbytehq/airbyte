@@ -15,10 +15,6 @@ class TemplatePythonSource(Source):
     def __init__(self):
         pass
 
-    def spec(self, logger) -> AirbyteSpec:
-        logger.info('Getting spec...')
-        return AirbyteSpec.from_file('spec.json')
-
     def check(self, logger, config_container) -> AirbyteCheckResponse:
         logger.info(f'Checking configuration ({config_container.rendered_config_path})...')
         return AirbyteCheckResponse(True, {})

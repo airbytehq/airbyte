@@ -13,4 +13,4 @@ COPY setup.py ./
 RUN pip install .
 
 WORKDIR /airbyte
-COPY spec.json .
+COPY spec.json /airbyte/spec.json

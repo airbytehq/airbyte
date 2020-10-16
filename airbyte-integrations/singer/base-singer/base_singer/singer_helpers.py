@@ -37,12 +37,6 @@ class Catalogs:
 
 class SingerHelper:
     @staticmethod
-    def spec_from_file(spec_path) -> AirbyteSpec:
-        with open(spec_path) as file:
-            spec_text = file.read()
-        return AirbyteSpec(spec_text)
-
-    @staticmethod
     def get_catalogs(logger, shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)) -> Catalogs:
         completed_process = subprocess.run(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                            universal_newlines=True)
