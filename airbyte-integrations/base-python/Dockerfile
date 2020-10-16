@@ -1,22 +1,15 @@
 FROM python:3.7-slim
 COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
-WORKDIR /airbyte
-ENV VIRTUAL_ENV=/airbyte/env
-RUN python -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
-WORKDIR /airbyte/airbyte_protocol
-COPY airbyte_protocol .
+WORKDIR /airbyte/base_python_code
+COPY airbyte_protocol ./airbyte_protocol
+COPY setup.py ./
 RUN pip install .
 
-WORKDIR /airbyte/base-python
-COPY base.py .
-
-ENV AIRBYTE_SPEC_CMD "python3 /airbyte/base-python/base.py spec"
-ENV AIRBYTE_CHECK_CMD "python3 /airbyte/base-python/base.py check"
-ENV AIRBYTE_DISCOVER_CMD "python3 /airbyte/base-python/base.py discover"
-ENV AIRBYTE_READ_CMD "python3 /airbyte/base-python/base.py read"
+ENV AIRBYTE_SPEC_CMD "base-python spec"
+ENV AIRBYTE_CHECK_CMD "base-python check"
+ENV AIRBYTE_DISCOVER_CMD "base-python discover"
+ENV AIRBYTE_READ_CMD "base-python read"
 
 ENTRYPOINT ["/airbyte/base.sh"]
 

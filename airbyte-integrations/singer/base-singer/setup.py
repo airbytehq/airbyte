@@ -1,10 +1,12 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-    name='base_singer',
+    name='base-singer',
     description='Contains helpers for handling Singer sources and destinations.',
     author='Airbyte',
     author_email='contact@airbyte.io',
-    packages=['base_singer'],
-    install_requires=['airbyte_protocol']
+
+    packages=find_packages(),
+
+    install_requires=['airbyte-protocol']
 )

@@ -3,7 +3,7 @@
 set -e
 
 YAML_DIR=airbyte-protocol/models/src/main/resources/airbyte_protocol
-OUTPUT_DIR=airbyte-integrations/base-python/airbyte_protocol/airbyte_protocol
+OUTPUT_DIR=airbyte-integrations/base-python/airbyte_protocol/models
 
 FILES=$(cd ../../$YAML_DIR; ls -1 | grep yaml)
 for f in $FILES
