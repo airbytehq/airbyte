@@ -192,16 +192,16 @@ public class SingerStripeSourceTest {
     ObjectNode normalized = node.deepCopy();
 
     if (normalized.get("type").textValue().equals("RECORD")) {
-      ObjectNode record = (ObjectNode) normalized.get("record").get("data");
-      record.put("id", "id");
-      record.put("created", "created");
-      record.put("invoice_prefix", "invoice_prefix");
-      record.put("updated", "updated");
+      ObjectNode data = (ObjectNode) normalized.get("record").get("data");
+      data.put("id", "id");
+      data.put("created", "created");
+      data.put("invoice_prefix", "invoice_prefix");
+      data.put("updated", "updated");
 
-      normalized.replace("record", record);
+      ObjectNode record = ((ObjectNode) normalized.get("record"));
+      record.replace("data", data);
+      record.put("emitted_at", 0);
     }
-
-    normalized.put("time_extracted", "time_extracted");
 
     return normalized;
   }
