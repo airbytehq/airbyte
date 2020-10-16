@@ -15,7 +15,7 @@ class SingerSource(Source):
         raise Exception("Not Implemented")
 
     def discover(self, logger, config_container) -> AirbyteCatalog:
-        cmd = self.discover_cmd(logger, config_container)
+        cmd = self.discover_cmd(logger, config_container.rendered_config_path)
         catalogs = SingerHelper.get_catalogs(logger, cmd)
 
         return catalogs.airbyte_catalog

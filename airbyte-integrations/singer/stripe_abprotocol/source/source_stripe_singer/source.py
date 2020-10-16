@@ -25,4 +25,3 @@ class SourceStripeSinger(SingerSource):
         catalog_option = f"--catalog {catalog_path}"
         state_option = f"--state {state_path}" if state_path else ""
         return f"tap-stripe {config_option} {catalog_option} {state_option}"
-    
