@@ -1,18 +1,16 @@
-import json
 import os
 import selectors
 import subprocess
-import tempfile
+from airbyte_protocol import AirbyteCatalog
+from airbyte_protocol import AirbyteMessage
+from airbyte_protocol import AirbyteRecordMessage
+from airbyte_protocol import AirbyteStateMessage
+from airbyte_protocol import AirbyteStream
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog
-from airbyte_protocol import AirbyteMessage
-from airbyte_protocol import AirbyteRecordMessage
-from airbyte_protocol import AirbyteSpec
-from airbyte_protocol import AirbyteStateMessage
-from airbyte_protocol import AirbyteStream
+import json
 
 
 def to_json(string):
@@ -99,10 +97,9 @@ class SingerHelper:
                     else:
                         logger.log_by_prefix(line, "ERROR")
 
-
     @staticmethod
     def create_singer_catalog_with_selection(masked_airbyte_catalog, discovered_singer_catalog) -> str:
-        combined_catalog_path = os.path.join(tempfile.mkdtemp(), 'rendered_catalog.json')
+        combined_catalog_path = os.path.join('singer_rendered_catalog.json')
         masked_singer_streams = []
 
         stream_to_airbyte_schema = {}
