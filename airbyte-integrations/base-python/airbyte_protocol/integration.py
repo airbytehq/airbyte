@@ -6,6 +6,12 @@ from .models import AirbyteCatalog, AirbyteMessage
 
 
 class AirbyteSpec(object):
+    @staticmethod
+    def from_file(file):
+        with open(file) as file:
+            spec_text = file.read()
+        return AirbyteSpec(spec_text)
+
     def __init__(self, spec_string):
         self.spec_string = spec_string
 
@@ -28,7 +34,7 @@ class Integration(object):
     def __init__(self):
         pass
 
-    def spec(self) -> AirbyteSpec:
+    def spec(self, logger) -> AirbyteSpec:
         raise Exception("Not Implemented")
 
     def read_config(self, config_path):

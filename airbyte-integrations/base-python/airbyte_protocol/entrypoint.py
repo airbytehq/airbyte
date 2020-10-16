@@ -8,23 +8,19 @@ import sys
 from .integration import ConfigContainer, Source
 from .logger import AirbyteLogger
 
-AIRBYTE_IMPL_MODULE = 'AIRBYTE_IMPL_MODULE'
-AIRBYTE_IMPL_PATH = 'AIRBYTE_IMPL_PATH'
-
 logger = AirbyteLogger()
 
-if AIRBYTE_IMPL_MODULE not in os.environ:
-    impl_module = Source.__module__
-    logger.warn(f"Using default module: {impl_module}")
-else:
-    impl_module = os.environ[AIRBYTE_IMPL_MODULE]
 
-if AIRBYTE_IMPL_PATH not in os.environ:
-    impl_class = Source.__name__
-    logger.warn(f"Using default class: {impl_class}")
-else:
-    impl_class = os.environ[AIRBYTE_IMPL_PATH]
+def environ_with_default(name, default):
+    if name not in os.environ:
+        logger.warn(f"Using default ({name}): {default}")
+        return default
+    else:
+        return os.environ[name]
 
+
+impl_module = environ_with_default('AIRBYTE_IMPL_MODULE', Source.__module__)
+impl_class = environ_with_default('AIRBYTE_IMPL_PATH', Source.__name__)
 module = importlib.import_module(impl_module)
 impl = getattr(module, impl_class)
 
@@ -80,7 +76,7 @@ class AirbyteEntrypoint(object):
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
                 # todo: output this as a JSON formatted message
-                print(self.source.spec().spec_string)
+                print(self.source.spec(logger).spec_string)
                 sys.exit(0)
 
             rendered_config_path = os.path.join(temp_dir, 'config.json')
@@ -113,6 +109,10 @@ class AirbyteEntrypoint(object):
                 sys.exit(0)
             else:
                 raise Exception("Unexpected command " + cmd)
+
+
+def launch(source):
+    AirbyteEntrypoint(source).start(sys.argv[1:])
 
 
 def main():
