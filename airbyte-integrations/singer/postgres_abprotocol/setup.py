@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='template-singer-source',
-    description='Singer source implementation template',
+    name='postgres-singer-source',
+    description='Postgres Singer source',
     author='Airbyte',
     author_email='contact@airbyte.io',
 
@@ -12,7 +12,8 @@ setup(
     },
 
     install_requires=[
-        'tap-exchangeratesapi==0.1.1',
+        'psycopg2==2.7.4',
+        'tap-postgres==0.1.0',
         'base_singer',
         'airbyte_protocol'
     ]

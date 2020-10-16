@@ -8,7 +8,7 @@ from airbyte_protocol import Source
 from base_singer import SingerHelper
 
 
-class TemplateSingerSource(Source):
+class PostgresSingerSource(Source):
     def __init__(self):
         pass
 
