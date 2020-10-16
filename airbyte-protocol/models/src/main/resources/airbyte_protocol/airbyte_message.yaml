@@ -15,15 +15,25 @@ properties:
       - RECORD
       - STATE
       - LOG
+      - SPEC
+      - CONNECTION_STATUS
+      - CATALOG
+  log:
+    description: "log message: any kind of logging you want the platform to know about."
+    "$ref": "#/definitions/AirbyteLogMessage"
+  spec:
+    "$ref": "../../../../../../airbyte-config/models/src/main/resources/types/ConnectorSpecification.yaml"
+  connectionStatus:
+    "$ref": "airbyte_connection_status.yaml"
+  catalog:
+    description: "log message: any kind of logging you want the platform to know about."
+    "$ref": "airbyte_catalog.yaml"
   record:
     description: "record message: the record"
     "$ref": "#/definitions/AirbyteRecordMessage"
   state:
     description: "schema message: the state. Must be the last message produced. The platform uses this information"
     "$ref": "#/definitions/AirbyteStateMessage"
-  log:
-    description: "log message: any kind of logging you want the platform to know about."
-    "$ref": "#/definitions/AirbyteLogMessage"
 definitions:
   AirbyteRecordMessage:
     type: object
