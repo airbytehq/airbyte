@@ -36,7 +36,10 @@ class Integration(object):
         pass
 
     def spec(self, logger) -> AirbyteSpec:
-        return AirbyteSpec(pkgutil.get_data(self.__class__.__module__.split('.')[0], 'spec.json'))
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split('.')[0], 'spec.json')
+        # we need to output a spec on a single line
+        flattened_json = json.dumps(json.loads(raw_spec))
+        return AirbyteSpec(flattened_json)
 
     def read_config(self, config_path):
         with open(config_path, 'r') as file:
