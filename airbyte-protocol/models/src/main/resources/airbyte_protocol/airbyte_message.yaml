@@ -15,6 +15,9 @@ properties:
       - RECORD
       - STATE
       - LOG
+      - SPEC
+      - CONNECTION_STATUS
+      - CATALOG
   record:
     description: "record message: the record"
     "$ref": "#/definitions/AirbyteRecordMessage"
@@ -24,6 +27,13 @@ properties:
   log:
     description: "log message: any kind of logging you want the platform to know about."
     "$ref": "#/definitions/AirbyteLogMessage"
+  spec:
+    "$ref": "airbyte_connector_spec.yaml"
+  checkConnection:
+    "$ref": "airbyte_connection_status.yaml"
+  catalog:
+    description: "log message: any kind of logging you want the platform to know about."
+    "$ref": "airbyte_catalog.yaml"
 definitions:
   AirbyteRecordMessage:
     type: object
