@@ -61,7 +61,7 @@ class SingerHelper:
             if name == "subscriptions":
                 del schema["items"]
 
-            airbyte_streams += [AirbyteStream(name=name, schema=schema)]
+            airbyte_streams += [AirbyteStream(name=name, json_schema=schema)]
 
         airbyte_catalog = airbyte_transform(AirbyteCatalog(streams=airbyte_streams))
 

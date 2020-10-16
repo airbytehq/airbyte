@@ -1,30 +1,14 @@
 from typing import Generator
-import yaml
 import json
-import pkgutil
-import warnings
-import python_jsonschema_objects as pjs
 from dataclasses import dataclass
 
-
-def _load_classes(yaml_path: str):
-    data = yaml.load(pkgutil.get_data(__name__, yaml_path), Loader=yaml.FullLoader)
-    builder = pjs.ObjectBuilder(data)
-    return builder.build_classes(standardize_names=False)
-
-
-# hide json schema version warnings
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=UserWarning)
-    message_classes = _load_classes("types/airbyte_message.yaml")
-    AirbyteMessage = message_classes.AirbyteMessage
-    AirbyteLogMessage = message_classes.AirbyteLogMessage
-    AirbyteRecordMessage = message_classes.AirbyteRecordMessage
-    AirbyteStateMessage = message_classes.AirbyteStateMessage
-
-    catalog_classes = _load_classes("types/airbyte_catalog.yaml")
-    AirbyteCatalog = catalog_classes.AirbyteCatalog
-    AirbyteStream = catalog_classes.AirbyteStream
+from .airbyte_catalog import AirbyteStream
+from .airbyte_catalog import AirbyteCatalog
+from .airbyte_message import AirbyteMessage
+from .airbyte_message import AirbyteLogMessage
+from .airbyte_message import AirbyteRecordMessage
+from .airbyte_message import AirbyteStateMessage
+from .airbyte_type import AirbyteType
 
 
 class AirbyteSpec(object):
@@ -97,7 +81,7 @@ class AirbyteLogger:
     def log(self, level, message):
         log_record = AirbyteLogMessage(level=level, message=message)
         log_message = AirbyteMessage(type="LOG", log=log_record)
-        print(log_message.serialize())
+        print(log_message.json())
 
     def fatal(self, message):
         self.log("FATAL", message)
@@ -116,6 +100,7 @@ class AirbyteLogger:
 
     def trace(self, message):
         self.log("TRACE", message)
+
 
 @dataclass
 class ConfigContainer:

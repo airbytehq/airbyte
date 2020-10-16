@@ -1,15 +1,11 @@
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
-task deleteProtocolDefinitions(type: Delete) {
-    delete 'airbyte_protocol/airbyte_protocol/types'
+task generateProtocolClassFiles(type: Exec) {
+    workingDir '.'
+    commandLine 'bin/generate-protocol-files.sh'
+    dependsOn ':airbyte-integrations:base-python:code-generator:buildImage'
+    outputs.upToDateWhen { false }
 }
 
-task copyProtocolDefinitions(type: Copy) {
-    from file("$rootDir/airbyte-protocol/models/src/main/resources/airbyte_protocol").absolutePath
-    into "airbyte_protocol/airbyte_protocol/types"
-    dependsOn deleteProtocolDefinitions
-}
-
-clean.dependsOn deleteProtocolDefinitions
-buildImage.dependsOn copyProtocolDefinitions
+buildImage.dependsOn generateProtocolClassFiles
 buildImage.dependsOn ':airbyte-integrations:base:buildImage'
