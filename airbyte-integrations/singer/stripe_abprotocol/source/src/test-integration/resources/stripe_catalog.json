@@ -3,7 +3,7 @@
     {
       "stream": "charges",
       "tap_stream_id": "charges",
-      "schema": {
+      "json_schema": {
         "type": ["null", "object"],
         "properties": {
           "metadata": {
