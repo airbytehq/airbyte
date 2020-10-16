@@ -24,9 +24,9 @@ Test image:
 ```
 # in airbyte root directory
 ./gradlew :airbyte-integrations:template:singer-source:buildImage
-docker run --rm -v $(pwd)/airbyte-integrations/template/python-source/sample_files:/sample_files airbyte/source-template-python:dev spec
-docker run --rm -v $(pwd)/airbyte-integrations/template/python-source/sample_files:/sample_files airbyte/source-template-python:dev check --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/template/python-source/sample_files:/sample_files airbyte/source-template-python:dev discover --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/template/python-source/sample_files:/sample_files airbyte/source-template-python:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
+docker run --rm -v $(pwd)/airbyte-integrations/template/singer-source/sample_files:/sample_files airbyte/source-template-python:dev spec
+docker run --rm -v $(pwd)/airbyte-integrations/template/singer-source/sample_files:/sample_files airbyte/source-template-python:dev check --config /sample_files/test_config.json
+docker run --rm -v $(pwd)/airbyte-integrations/template/singer-source/sample_files:/sample_files airbyte/source-template-python:dev discover --config /sample_files/test_config.json
+docker run --rm -v $(pwd)/airbyte-integrations/template/singer-source/sample_files:/sample_files airbyte/source-template-python:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
 ```
 
