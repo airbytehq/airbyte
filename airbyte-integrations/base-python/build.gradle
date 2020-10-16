@@ -7,5 +7,6 @@ task generateProtocolClassFiles(type: Exec) {
     outputs.upToDateWhen { false }
 }
 
+build.dependsOn generateProtocolClassFiles
 buildImage.dependsOn generateProtocolClassFiles
 buildImage.dependsOn ':airbyte-integrations:base:buildImage'
