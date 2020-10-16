@@ -1,7 +1,7 @@
 import json
+import pkgutil
 from dataclasses import dataclass
 from typing import Generator
-import os
 
 from .models import AirbyteCatalog, AirbyteMessage
 
@@ -36,11 +36,7 @@ class Integration(object):
         pass
 
     def spec(self, logger) -> AirbyteSpec:
-        # test if spec is present in cwd to allow code to run outside of a docker image
-        if os.path.exists('spec.json'):
-            return AirbyteSpec.from_file('spec.json')
-        else:
-            return AirbyteSpec.from_file('/airbyte/spec.json')
+        return AirbyteSpec(pkgutil.get_data(self.__class__.__module__.split('.')[0], 'spec.json'))
 
     def read_config(self, config_path):
         with open(config_path, 'r') as file:

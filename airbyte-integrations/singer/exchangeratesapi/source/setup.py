@@ -7,6 +7,9 @@ setup(
     author_email='contact@airbyte.io',
 
     packages=find_packages(),
+    package_data={
+        '': ['*.json']
+    },
 
     install_requires=[
         'tap-exchangeratesapi==0.1.1',

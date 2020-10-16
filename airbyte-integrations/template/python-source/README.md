@@ -1,4 +1,4 @@
-# Quick & Dirty manual
+# Python Airbyte Source Development
 
 Prepare development environment:
 ```
@@ -29,4 +29,3 @@ docker run --rm -v $(pwd)/airbyte-integrations/template/python-source/sample_fil
 docker run --rm -v $(pwd)/airbyte-integrations/template/python-source/sample_files:/sample_files airbyte/source-template-python:dev discover --config /sample_files/test_config.json
 docker run --rm -v $(pwd)/airbyte-integrations/template/python-source/sample_files:/sample_files airbyte/source-template-python:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
 ```
-

@@ -8,7 +8,7 @@ setup(
 
     packages=find_packages(),
     package_data={
-        '': ['catalog.json']
+        '': ['*.json']
     },
 
     install_requires=['airbyte-protocol']

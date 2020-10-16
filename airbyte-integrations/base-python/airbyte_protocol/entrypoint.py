@@ -1,23 +1,14 @@
 import argparse
 import importlib
 import os.path
-import tempfile
-
 import sys
+import tempfile
 
 from .integration import ConfigContainer, Source
 from .logger import AirbyteLogger
 
-
-def environ_with_default(name, default):
-    if name not in os.environ:
-        return default
-    else:
-        return os.environ[name]
-
-
-impl_module = environ_with_default('AIRBYTE_IMPL_MODULE', Source.__module__)
-impl_class = environ_with_default('AIRBYTE_IMPL_PATH', Source.__name__)
+impl_module = os.environ.get('AIRBYTE_IMPL_MODULE', Source.__module__)
+impl_class = os.environ.get('AIRBYTE_IMPL_PATH', Source.__name__)
 module = importlib.import_module(impl_module)
 impl = getattr(module, impl_class)
 
