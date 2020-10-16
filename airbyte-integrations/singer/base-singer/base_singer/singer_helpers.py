@@ -40,7 +40,9 @@ class SingerHelper:
     def spec_from_file(spec_path) -> AirbyteSpec:
         with open(spec_path) as file:
             spec_text = file.read()
-        return AirbyteSpec(spec_text)
+        # we need to output a spec on a single line
+        flattened_json = json.dumps(json.loads(spec_text))
+        return AirbyteSpec(flattened_json)
 
     @staticmethod
     def get_catalogs(logger, shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)) -> Catalogs:
