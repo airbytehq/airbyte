@@ -3,7 +3,7 @@
     "streams": [
       {
         "name": "id_and_name",
-        "schema": {
+        "json_schema": {
           "type": "object",
           "properties": {
             "id": {

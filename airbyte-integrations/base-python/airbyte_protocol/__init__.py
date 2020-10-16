@@ -1,6 +1,7 @@
 from .integration import *
 from .logger import AirbyteLogger
 from .models import AirbyteCatalog
+from .models import AirbyteConnectionStatus
 from .models import AirbyteLogMessage
 from .models import AirbyteMessage
 from .models import AirbyteRecordMessage
