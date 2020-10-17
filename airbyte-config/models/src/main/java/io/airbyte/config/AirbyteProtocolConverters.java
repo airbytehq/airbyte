@@ -69,7 +69,7 @@ public class AirbyteProtocolConverters {
   public static Schema toSchema(AirbyteCatalog catalog) {
     return new Schema().withStreams(catalog.getStreams().stream().map(airbyteStream -> {
       final List<Entry<String, JsonNode>> list = new ArrayList<>();
-      final Iterator<Entry<String, JsonNode>> iterator = airbyteStream.getSchema().get("properties").fields();
+      final Iterator<Entry<String, JsonNode>> iterator = airbyteStream.getJsonSchema().get("properties").fields();
       while (iterator.hasNext()) {
         list.add(iterator.next());
       }

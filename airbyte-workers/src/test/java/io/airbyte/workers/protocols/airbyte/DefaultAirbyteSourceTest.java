@@ -75,7 +75,7 @@ class DefaultAirbyteSourceTest {
       .withStreams(Collections.singletonList(
           new AirbyteStream()
               .withName("hudi:latest")
-              .withSchema(CatalogHelpers.fieldsToJsonSchema())));
+              .withJsonSchema(CatalogHelpers.fieldsToJsonSchema())));
 
   private static final StandardTapConfig TAP_CONFIG = new StandardTapConfig()
       .withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "the future."))))

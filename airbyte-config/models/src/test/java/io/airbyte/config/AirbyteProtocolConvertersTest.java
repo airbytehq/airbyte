@@ -42,7 +42,7 @@ class AirbyteProtocolConvertersTest {
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
       .withStreams(Lists.newArrayList(new AirbyteStream()
           .withName(STREAM)
-          .withSchema(CatalogHelpers.fieldsToJsonSchema(
+          .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(
               Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
               Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER)))));
 
