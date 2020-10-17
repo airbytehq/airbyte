@@ -69,8 +69,9 @@ class AirbyteEntrypoint(object):
                 print(self.source.spec(logger).spec_string)
                 sys.exit(0)
 
-            rendered_config_path = os.path.join(temp_dir, 'config.json')
             raw_config = self.source.read_config(parsed_args.config)
+
+            rendered_config_path = os.path.join(temp_dir, 'config.json')
             rendered_config = self.source.transform_config(raw_config)
             self.source.write_config(rendered_config, rendered_config_path)
 
@@ -90,12 +91,12 @@ class AirbyteEntrypoint(object):
                     sys.exit(1)
             elif cmd == "discover":
                 catalog = self.source.discover(logger, config_container)
-                print(catalog.serialize())
+                print(catalog.json(exclude_unset=True))
                 sys.exit(0)
             elif cmd == "read":
                 generator = self.source.read(logger, config_container, parsed_args.catalog, parsed_args.state)
                 for message in generator:
-                    print(message.serialize())
+                    print(message.json(exclude_unset=True))
                 sys.exit(0)
             else:
                 raise Exception("Unexpected command " + cmd)

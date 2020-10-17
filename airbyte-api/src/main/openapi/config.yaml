@@ -1430,8 +1430,8 @@ components:
         status:
           type: string
           enum:
-            - success
-            - fail
+            - succeeded
+            - failed
     # SCHEMA
     SourceSchema:
       description: describes the available schema.
@@ -1582,8 +1582,8 @@ components:
         status:
           type: string
           enum:
-            - success
-            - failure
+            - succeeded
+            - failed
         message:
           type: string
     # Web Backend

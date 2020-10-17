@@ -28,11 +28,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.IOException;
 import org.slf4j.Logger;
@@ -59,11 +59,11 @@ public class DestinationTemplate implements Destination {
   // field to help the user figure out what they need to do differently so that the connection will
   // succeed.
   @Override
-  public StandardCheckConnectionOutput check(JsonNode config) {
+  public AirbyteConnectionStatus check(JsonNode config) {
     // if(success) {
-    // return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
+    // return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     // } else {
-    // return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage("(optional) the
+    // return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("(optional) the
     // reason it failed");
     // }
     throw new RuntimeException("Not Implemented");

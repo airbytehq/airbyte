@@ -31,14 +31,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.DatabaseHelper;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -72,7 +72,7 @@ public class PostgresDestination implements Destination {
   }
 
   @Override
-  public StandardCheckConnectionOutput check(JsonNode config) {
+  public AirbyteConnectionStatus check(JsonNode config) {
     try {
       final BasicDataSource connectionPool = getConnectionPool(config);
       DatabaseHelper.query(connectionPool, ctx -> ctx.execute(
@@ -81,10 +81,10 @@ public class PostgresDestination implements Destination {
               + "WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema' LIMIT 1;"));
 
       connectionPool.close();
-      return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
+      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       // todo (cgardens) - better error messaging for common cases. e.g. wrong password.
-      return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage(e.getMessage());
+      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
   }
 

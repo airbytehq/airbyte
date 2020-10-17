@@ -48,6 +48,7 @@ import io.airbyte.config.Stream;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -74,7 +75,7 @@ class DefaultAirbyteSourceTest {
       .withStreams(Collections.singletonList(
           new AirbyteStream()
               .withName("hudi:latest")
-              .withSchema(Jsons.deserialize("{}"))));
+              .withJsonSchema(CatalogHelpers.fieldsToJsonSchema())));
 
   private static final StandardTapConfig TAP_CONFIG = new StandardTapConfig()
       .withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "the future."))))

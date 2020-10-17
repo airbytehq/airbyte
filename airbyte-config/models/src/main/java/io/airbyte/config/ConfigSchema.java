@@ -41,9 +41,6 @@ public enum ConfigSchema {
   STANDARD_DESTINATION("StandardDestination.yaml"),
   DESTINATION_CONNECTION_IMPLEMENTATION("DestinationConnectionImplementation.yaml"),
 
-  // specs
-  CONNECTOR_SPECIFICATION("ConnectorSpecification.yaml"),
-
   // sync
   STANDARD_SYNC("StandardSync.yaml"),
   STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml"),

@@ -14,8 +14,9 @@ setuptools.setup(
 
     install_requires=[
         'PyYAML==5.3.1',
-        'python-jsonschema-objects==0.3.13'
+        'pydantic==1.6.1'
     ],
+
     entry_points={
         'console_scripts': [
             'base-python=airbyte_protocol.entrypoint:main'

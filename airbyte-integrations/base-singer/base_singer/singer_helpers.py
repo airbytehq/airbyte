@@ -1,18 +1,16 @@
-import json
 import os
 import selectors
 import subprocess
-import tempfile
+from airbyte_protocol import AirbyteCatalog
+from airbyte_protocol import AirbyteMessage
+from airbyte_protocol import AirbyteRecordMessage
+from airbyte_protocol import AirbyteStateMessage
+from airbyte_protocol import AirbyteStream
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog
-from airbyte_protocol import AirbyteMessage
-from airbyte_protocol import AirbyteRecordMessage
-from airbyte_protocol import AirbyteSpec
-from airbyte_protocol import AirbyteStateMessage
-from airbyte_protocol import AirbyteStream
+import json
 
 
 def to_json(string):
@@ -50,12 +48,7 @@ class SingerHelper:
         for stream in singer_catalog.get("streams"):
             name = stream.get("stream")
             schema = stream.get("schema").get("properties")
-
-            # todo: figure out how to serialize an object with an items key in python_jsonschema_objects
-            if name == "subscriptions":
-                del schema["items"]
-
-            airbyte_streams += [AirbyteStream(name=name, schema=schema)]
+            airbyte_streams += [AirbyteStream(name=name, json_schema=schema)]
 
         airbyte_catalog = airbyte_transform(AirbyteCatalog(streams=airbyte_streams))
 
@@ -99,10 +92,9 @@ class SingerHelper:
                     else:
                         logger.log_by_prefix(line, "ERROR")
 
-
     @staticmethod
     def create_singer_catalog_with_selection(masked_airbyte_catalog, discovered_singer_catalog) -> str:
-        combined_catalog_path = os.path.join(tempfile.mkdtemp(), 'rendered_catalog.json')
+        combined_catalog_path = os.path.join('singer_rendered_catalog.json')
         masked_singer_streams = []
 
         stream_to_airbyte_schema = {}
