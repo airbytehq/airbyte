@@ -31,14 +31,11 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardGetSpecOutput;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -70,14 +67,9 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testSuccessfulRun() throws IOException, InterruptedException {
+  public void testSuccessfulRun() throws WorkerException, IOException, InterruptedException {
     String expectedSpecString = MoreResources.readResource("valid_spec.json");
-
-    final AirbyteMessage message = new AirbyteMessage()
-        .withType(Type.SPEC)
-        .withSpec(Jsons.deserialize(expectedSpecString, io.airbyte.protocol.models.ConnectorSpecification.class));
-
-    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));
+    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
 
@@ -90,7 +82,7 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testFailureOnInvalidSpec() throws InterruptedException {
+  public void testFailureOnInvalidSpec() throws InterruptedException, WorkerException, IOException {
     String expectedSpecString = "{\"key\":\"value\"}";
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
@@ -103,7 +95,7 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testFailureOnNonzeroExitCode() throws InterruptedException {
+  public void testFailureOnNonzeroExitCode() throws InterruptedException, WorkerException, IOException {
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(1);
 
