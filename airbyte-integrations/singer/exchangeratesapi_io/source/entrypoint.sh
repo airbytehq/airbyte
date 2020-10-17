@@ -48,7 +48,7 @@ function main() {
     echo2 "Checking connection..."
     tap-exchangeratesapi | grep '"type": "SCHEMA"' | head -1 | jq -c '{"streams":[{"stream": .stream, "schema": .schema}]}'
   elif [[ "$ARGS" =~ .*"--spec".* ]]; then
-    cat /singer/spec.json
+    tr -d '\n' < /singer/spec.json
   else
     echo2 "Running sync..."
     tap-exchangeratesapi $ARGS

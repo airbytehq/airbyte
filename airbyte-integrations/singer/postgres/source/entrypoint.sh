@@ -52,7 +52,7 @@ function main() {
   done
 
   if [[ "$ARGS" =~ .*"--spec".* ]]; then
-    cat /singer/spec.json
+    tr -d '\n' < /singer/spec.json
     exit 0
   else
     PGCLIENTENCODING=UTF8 tap-postgres $ARGS

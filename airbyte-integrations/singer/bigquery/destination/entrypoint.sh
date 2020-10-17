@@ -45,7 +45,7 @@ function main() {
   done
 
   if [[ "$ARGS" =~ .*"--spec".* ]]; then
-    cat /singer/spec.json
+    tr -d '\n' < /singer/spec.json
     exit 0
   else
     # Set default_target_schema to the value of dataset_id
