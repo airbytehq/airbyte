@@ -26,8 +26,8 @@ package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 
 // todo (cgardens) - share common parts of this interface with source.
@@ -49,7 +49,7 @@ public interface Destination {
    * @return Whether or not the connection was successful. Optional message if it was not.
    * @throws Exception - any exception.
    */
-  StandardCheckConnectionOutput check(JsonNode config) throws Exception;
+  AirbyteConnectionStatus check(JsonNode config) throws Exception;
 
   /**
    * Return a consumer that writes messages to the destination.

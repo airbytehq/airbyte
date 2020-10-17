@@ -44,10 +44,10 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -192,16 +192,16 @@ class BigQueryDestinationTest {
   // todo - same test as csv destination
   // @Test
   void testCheckSuccess() {
-    final StandardCheckConnectionOutput actual = new BigQueryDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED);
+    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
   // @Test
   void testCheckFailure() {
     ((ObjectNode) config).put(BigQueryDestination.CONFIG_PROJECT_ID, "fake");
-    final StandardCheckConnectionOutput actual = new BigQueryDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILED)
+    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
         .withMessage("Access Denied: Project fake: User does not have bigquery.jobs.create permission in project fake.");
     assertEquals(expected, actual);
   }

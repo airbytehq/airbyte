@@ -52,13 +52,13 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.time.Instants;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import java.io.ByteArrayInputStream;
@@ -96,7 +96,7 @@ public class BigQueryDestination implements Destination {
   }
 
   @Override
-  public StandardCheckConnectionOutput check(JsonNode config) {
+  public AirbyteConnectionStatus check(JsonNode config) {
     try {
       final String datasetId = config.get(CONFIG_DATASET_ID).asText();
 
@@ -107,12 +107,12 @@ public class BigQueryDestination implements Destination {
 
       final ImmutablePair<Job, String> result = executeQuery(getBigQuery(config), queryConfig);
       if (result.getLeft() != null) {
-        return new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED);
+        return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
       } else {
-        return new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage(result.getRight());
+        return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(result.getRight());
       }
     } catch (Exception e) {
-      return new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage(e.getMessage());
+      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
   }
 
