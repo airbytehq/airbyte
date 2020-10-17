@@ -81,10 +81,10 @@ public class PostgresDestination implements Destination {
               + "WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema' LIMIT 1;"));
 
       connectionPool.close();
-      return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
+      return new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       // todo (cgardens) - better error messaging for common cases. e.g. wrong password.
-      return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage(e.getMessage());
+      return new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
   }
 
