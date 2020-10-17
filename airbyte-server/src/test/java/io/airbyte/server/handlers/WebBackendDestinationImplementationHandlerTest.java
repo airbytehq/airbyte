@@ -86,7 +86,7 @@ public class WebBackendDestinationImplementationHandlerTest {
     destinationImplementationIdRequestBody.setDestinationImplementationId(destinationImplementationRead.getDestinationImplementationId());
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.SUCCESS);
+    checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
     when(schedulerHandler.checkDestinationImplementationConnection(destinationImplementationIdRequestBody)).thenReturn(checkConnectionRead);
 
@@ -109,7 +109,7 @@ public class WebBackendDestinationImplementationHandlerTest {
         .thenReturn(destinationImplementationRead);
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.FAILURE);
+    checkConnectionRead.setStatus(StatusEnum.FAILED);
 
     DestinationImplementationIdRequestBody destinationImplementationIdRequestBody = new DestinationImplementationIdRequestBody();
     destinationImplementationIdRequestBody.setDestinationImplementationId(destinationImplementationRead.getDestinationImplementationId());
@@ -138,7 +138,7 @@ public class WebBackendDestinationImplementationHandlerTest {
     newDestinationId.setDestinationImplementationId(newDestinationImplementation.getDestinationImplementationId());
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.SUCCESS);
+    checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
     when(schedulerHandler.checkDestinationImplementationConnection(newDestinationId)).thenReturn(checkConnectionRead);
 
@@ -174,7 +174,7 @@ public class WebBackendDestinationImplementationHandlerTest {
     newDestinationId.setDestinationImplementationId(newDestinationImplementation.getDestinationImplementationId());
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.FAILURE);
+    checkConnectionRead.setStatus(StatusEnum.FAILED);
 
     when(schedulerHandler.checkDestinationImplementationConnection(newDestinationId)).thenReturn(checkConnectionRead);
 

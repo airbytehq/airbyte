@@ -134,7 +134,7 @@ class PostgresDestinationTest {
   @Test
   void testCheckSuccess() {
     final StandardCheckConnectionOutput actual = new PostgresDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
+    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
@@ -142,7 +142,7 @@ class PostgresDestinationTest {
   void testCheckFailure() {
     ((ObjectNode) config).put("password", "fake");
     final StandardCheckConnectionOutput actual = new PostgresDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILURE)
+    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILED)
         .withMessage("Cannot create PoolableConnectionFactory (FATAL: password authentication failed for user \"test\")");
     assertEquals(expected, actual);
   }

@@ -52,13 +52,13 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
     final JobStatus jobStatus;
     final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput();
-    if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL && outputAndStatus.getOutput().isPresent()) {
-      output.withStatus(StandardCheckConnectionOutput.Status.SUCCESS);
-      jobStatus = JobStatus.SUCCESSFUL;
+    if (outputAndStatus.getStatus() == JobStatus.SUCCEEDED && outputAndStatus.getOutput().isPresent()) {
+      output.withStatus(StandardCheckConnectionOutput.Status.SUCCEEDED);
+      jobStatus = JobStatus.SUCCEEDED;
     } else {
       LOGGER.info("Connection check unsuccessful. Discovery output: {}", outputAndStatus);
       jobStatus = JobStatus.FAILED;
-      output.withStatus(StandardCheckConnectionOutput.Status.FAILURE)
+      output.withStatus(StandardCheckConnectionOutput.Status.FAILED)
           // TODO add better error log parsing to specify the exact reason for failure as the message
           .withMessage("Failed to connect.");
     }

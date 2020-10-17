@@ -107,12 +107,12 @@ public class BigQueryDestination implements Destination {
 
       final ImmutablePair<Job, String> result = executeQuery(getBigQuery(config), queryConfig);
       if (result.getLeft() != null) {
-        return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
+        return new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED);
       } else {
-        return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage(result.getRight());
+        return new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage(result.getRight());
       }
     } catch (Exception e) {
-      return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage(e.getMessage());
+      return new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
   }
 

@@ -24,9 +24,8 @@
 
 package io.airbyte.server.handlers;
 
-import static io.airbyte.api.model.CheckConnectionRead.StatusEnum.SUCCESS;
-
 import io.airbyte.api.model.CheckConnectionRead;
+import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.SourceImplementationCreate;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.api.model.SourceImplementationRead;
@@ -65,7 +64,7 @@ public class WebBackendSourceImplementationHandler {
     try {
       CheckConnectionRead checkConnectionRead = schedulerHandler
           .checkSourceImplementationConnection(sourceImplementationIdRequestBody);
-      if (checkConnectionRead.getStatus() == SUCCESS) {
+      if (checkConnectionRead.getStatus() == StatusEnum.SUCCEEDED) {
         return sourceImplementation;
       }
     } catch (Exception e) {
@@ -93,7 +92,7 @@ public class WebBackendSourceImplementationHandler {
     try {
       CheckConnectionRead checkConnectionRead = schedulerHandler
           .checkSourceImplementationConnection(sourceImplementationIdRequestBody);
-      if (checkConnectionRead.getStatus() == SUCCESS) {
+      if (checkConnectionRead.getStatus() == StatusEnum.SUCCEEDED) {
         final SourceImplementationIdRequestBody sourceImplementationIdRequestBody1 = new SourceImplementationIdRequestBody()
             .sourceImplementationId(sourceImplementationRecreate.getSourceImplementationId());
 

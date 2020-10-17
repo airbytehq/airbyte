@@ -213,7 +213,7 @@ public class SingerPostgresSourceTest {
     OutputAndStatus<StandardDiscoverCatalogOutput> run = new SingerDiscoverCatalogWorker(integrationLauncher).run(inputConfig, jobRoot);
 
     Schema expected = Jsons.deserialize(MoreResources.readResource("schema.json"), Schema.class);
-    assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(expected, run.getOutput().get().getSchema());
   }
@@ -224,9 +224,9 @@ public class SingerPostgresSourceTest {
     OutputAndStatus<StandardCheckConnectionOutput> run =
         new DefaultCheckConnectionWorker(new SingerDiscoverCatalogWorker(integrationLauncher)).run(inputConfig, jobRoot);
 
-    assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, run.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.SUCCEEDED, run.getOutput().get().getStatus());
   }
 
   @Test
@@ -239,7 +239,7 @@ public class SingerPostgresSourceTest {
 
     assertEquals(JobStatus.FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.FAILED, run.getOutput().get().getStatus());
   }
 
   private Map<String, Object> getDbConfig(PostgreSQLContainer containerDb) {

@@ -25,7 +25,7 @@
 package io.airbyte.integration_tests.destinations;
 
 import static io.airbyte.workers.JobStatus.FAILED;
-import static io.airbyte.workers.JobStatus.SUCCESSFUL;
+import static io.airbyte.workers.JobStatus.SUCCEEDED;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
@@ -132,9 +132,9 @@ class TestPostgresDestination {
     DefaultCheckConnectionWorker checkConnectionWorker = new DefaultCheckConnectionWorker(new DefaultDiscoverCatalogWorker(integrationLauncher));
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig()));
     OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
-    assertEquals(SUCCESSFUL, run.getStatus());
+    assertEquals(SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, run.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.SUCCEEDED, run.getOutput().get().getStatus());
   }
 
   @Test
@@ -147,7 +147,7 @@ class TestPostgresDestination {
     OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.FAILED, run.getOutput().get().getStatus());
   }
 
   private Process startTarget() throws IOException, WorkerException {
