@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.protocols.singer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,14 +31,14 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardGetSpecOutput;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -47,11 +47,11 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DefaultGetSpecWorkerTest {
+class SingerGetSpecWorkerTest {
 
   private static final String DUMMY_IMAGE_NAME = "airbyte/notarealimage:1.1";
 
-  private DefaultGetSpecWorker worker;
+  private SingerGetSpecWorker worker;
   private IntegrationLauncher integrationLauncher;
   private Process process;
   private Path jobRoot;
@@ -66,18 +66,13 @@ class DefaultGetSpecWorkerTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
     when(integrationLauncher.spec(jobRoot).start()).thenReturn(process);
 
-    worker = new DefaultGetSpecWorker(integrationLauncher);
+    worker = new SingerGetSpecWorker(integrationLauncher);
   }
 
   @Test
-  public void testSuccessfulRun() throws IOException, InterruptedException {
+  public void testSuccessfulRun() throws WorkerException, IOException, InterruptedException {
     String expectedSpecString = MoreResources.readResource("valid_spec.json");
-
-    final AirbyteMessage message = new AirbyteMessage()
-        .withType(Type.SPEC)
-        .withSpec(Jsons.deserialize(expectedSpecString, io.airbyte.protocol.models.ConnectorSpecification.class));
-
-    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));
+    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
 
@@ -90,7 +85,7 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testFailureOnInvalidSpec() throws InterruptedException {
+  public void testFailureOnInvalidSpec() throws InterruptedException, WorkerException, IOException {
     String expectedSpecString = "{\"key\":\"value\"}";
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
@@ -103,7 +98,7 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testFailureOnNonzeroExitCode() throws InterruptedException {
+  public void testFailureOnNonzeroExitCode() throws InterruptedException, WorkerException, IOException {
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(1);
 
