@@ -29,6 +29,7 @@ import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionSyncRead;
+import io.airbyte.api.model.ConnectionSyncRead.StatusEnum;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
 import io.airbyte.api.model.DestinationSpecificationRead;
@@ -231,7 +232,7 @@ public class SchedulerHandler {
         .build());
 
     return new ConnectionSyncRead()
-        .status(job.getStatus().equals(JobStatus.COMPLETED) ? ConnectionSyncRead.StatusEnum.SUCCESS : ConnectionSyncRead.StatusEnum.FAIL);
+        .status(job.getStatus().equals(JobStatus.COMPLETED) ? StatusEnum.SUCCEEDED : ConnectionSyncRead.StatusEnum.FAILED);
   }
 
   private Job waitUntilJobIsTerminalOrTimeout(final long jobId) throws IOException {
@@ -255,7 +256,7 @@ public class SchedulerHandler {
   private CheckConnectionRead reportConnectionStatus(final Job job) {
     final StandardCheckConnectionOutput output = job.getOutput().map(JobOutput::getCheckConnection)
         // the job should always produce an output, but if it does not, we assume a failure.
-        .orElse(new StandardCheckConnectionOutput().withStatus(StandardCheckConnectionOutput.Status.FAILURE));
+        .orElse(new StandardCheckConnectionOutput().withStatus(StandardCheckConnectionOutput.Status.FAILED));
 
     return new CheckConnectionRead()
         .status(Enums.convertTo(output.getStatus(), CheckConnectionRead.StatusEnum.class))

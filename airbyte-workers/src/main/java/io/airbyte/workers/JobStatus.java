@@ -30,5 +30,5 @@ package io.airbyte.workers;
  */
 public enum JobStatus {
   FAILED,
-  SUCCESSFUL
+  SUCCEEDED
 }

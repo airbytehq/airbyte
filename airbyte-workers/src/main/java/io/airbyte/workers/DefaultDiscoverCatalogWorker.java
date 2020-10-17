@@ -25,7 +25,7 @@
 package io.airbyte.workers;
 
 import static io.airbyte.workers.JobStatus.FAILED;
-import static io.airbyte.workers.JobStatus.SUCCESSFUL;
+import static io.airbyte.workers.JobStatus.SUCCEEDED;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;

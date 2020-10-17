@@ -87,7 +87,7 @@ public class SingerDiscoverCatalogWorkerTest {
 
     final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput =
         new OutputAndStatus<>(
-            JobStatus.SUCCESSFUL,
+            JobStatus.SUCCEEDED,
             Jsons.deserialize(MoreResources.readResource("singer_discovered_postgres_catalog_output.json"), StandardDiscoverCatalogOutput.class));
 
     assertEquals(expectedOutput, output);

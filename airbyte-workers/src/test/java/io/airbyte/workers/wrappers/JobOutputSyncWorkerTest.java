@@ -50,11 +50,11 @@ public class JobOutputSyncWorkerTest {
 
     StandardSyncOutput output = new StandardSyncOutput().withState(new State().withConnectionId(UUID.randomUUID()));
 
-    when(syncWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, output));
+    when(syncWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCEEDED, output));
     OutputAndStatus<JobOutput> run = new JobOutputSyncWorker(syncWorker).run(input, jobRoot);
 
     JobOutput expected = new JobOutput().withOutputType(JobOutput.OutputType.SYNC).withSync(output);
-    assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(expected, run.getOutput().get());
   }

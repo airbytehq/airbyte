@@ -53,7 +53,7 @@ class AirbyteLogMessage(BaseModel):
 
 
 class Status(Enum):
-    SUCCESS = 'SUCCESS'
+    SUCCEEDED = 'SUCCEEDED'
     FAILED = 'FAILED'
 
 
