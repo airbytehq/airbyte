@@ -5,6 +5,8 @@ build
 .DS_Store
 data
 
+secret_configs
+
 # Python
 *.egg-info
 __pycache__

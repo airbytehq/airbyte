@@ -68,7 +68,7 @@ import org.slf4j.LoggerFactory;
 
 class TestBigQueryDestination {
 
-  private static final String CONFIG_PATH = "config/credentials.json";
+  private static final String CONFIG_PATH = "secret_configs/credentials.json";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestBigQueryDestination.class);
 
