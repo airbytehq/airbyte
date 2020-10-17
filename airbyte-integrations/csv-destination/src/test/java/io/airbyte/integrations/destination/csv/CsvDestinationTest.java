@@ -35,10 +35,10 @@ import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -113,8 +113,8 @@ class CsvDestinationTest {
 
   @Test
   void testCheckSuccess() {
-    final StandardCheckConnectionOutput actual = new CsvDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED);
+    final AirbyteConnectionStatus actual = new CsvDestination().check(config);
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
@@ -123,8 +123,8 @@ class CsvDestinationTest {
     final Path looksLikeADirectoryButIsAFile = destinationPath.resolve("file");
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
     final JsonNode config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
-    final StandardCheckConnectionOutput actual = new CsvDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILED);
+    final AirbyteConnectionStatus actual = new CsvDestination().check(config);
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED);
 
     // the message includes the random file path, so just verify it exists and then remove it when we do
     // rest of the comparison.
