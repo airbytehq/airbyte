@@ -40,7 +40,10 @@ public class CatalogHelpers {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("type", "object")
         .put("properties", Arrays.stream(fields)
-            .collect(Collectors.toMap(Field::getName, field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString())))));
+            .collect(Collectors.toMap(
+                Field::getName,
+                field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString()))))
+        .build());
   }
 
 }

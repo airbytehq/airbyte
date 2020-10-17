@@ -44,7 +44,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitives;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -89,9 +89,9 @@ class CsvDestinationTest {
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, Field.of("name", JsonSchemaPrimitives.STRING),
-          Field.of("id", JsonSchemaPrimitives.STRING)),
-      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitives.STRING))));
+      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, Field.of("name", JsonSchemaPrimitive.STRING),
+          Field.of("id", JsonSchemaPrimitive.STRING)),
+      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
   private Path destinationPath;
   private JsonNode config;

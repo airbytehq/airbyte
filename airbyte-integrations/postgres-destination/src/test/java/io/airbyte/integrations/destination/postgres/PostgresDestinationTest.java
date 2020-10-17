@@ -50,6 +50,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -90,9 +91,9 @@ class PostgresDestinationTest {
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, Field.of("name", Field.JsonSchemaPrimitives.STRING),
-          Field.of("id", Field.JsonSchemaPrimitives.STRING)),
-      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", Field.JsonSchemaPrimitives.STRING))));
+      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, Field.of("name", JsonSchemaPrimitive.STRING),
+          Field.of("id", JsonSchemaPrimitive.STRING)),
+      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
   private JsonNode config;
 

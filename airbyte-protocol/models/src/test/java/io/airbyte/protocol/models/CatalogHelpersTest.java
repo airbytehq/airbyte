@@ -24,35 +24,21 @@
 
 package io.airbyte.protocol.models;
 
-public class Field {
+import static org.junit.jupiter.api.Assertions.*;
 
-  public enum JsonSchemaPrimitive {
-    STRING,
-    NUMBER,
-    OBJECT,
-    ARRAY,
-    BOOLEAN,
-    NULL;
-  }
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import org.junit.jupiter.api.Test;
 
-  private final String name;
-  private final JsonSchemaPrimitive type;
+class CatalogHelpersTest {
 
-  public Field(String name, JsonSchemaPrimitive type) {
-    this.name = name;
-    this.type = type;
-  }
+  @Test
+  void fieldToJsonSchema() {
+    final String expected = "{ \"type\": \"object\", \"properties\": { \"name\": { \"type\": \"string\" } } } ";
+    final JsonNode actual = CatalogHelpers.fieldsToJsonSchema(Field.of("name", JsonSchemaPrimitive.STRING));
 
-  public static Field of(String name, JsonSchemaPrimitive type) {
-    return new Field(name, type);
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getTypeAsJsonSchemaString() {
-    return type.name().toLowerCase();
+    assertEquals(Jsons.deserialize(expected), actual);
   }
 
 }
