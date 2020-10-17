@@ -5,7 +5,7 @@ build
 .DS_Store
 data
 
-secret_configs
+secrets
 
 # Python
 *.egg-info

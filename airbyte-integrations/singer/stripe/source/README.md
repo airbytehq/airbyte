@@ -5,7 +5,7 @@ In order to test the Stripe source, you will need API credentials and the abilit
 ## Community Contributor
 
 1. Create an empty account on Stripe. 
-1. Create a file at `secret_configs/config.json` with the following format using your client secret and account id:
+1. Create a file at `secrets/config.json` with the following format using your client secret and account id:
 ```
 {
   "client_secret": "sk_XXXXXXXXXXX",
@@ -17,4 +17,4 @@ In order to test the Stripe source, you will need API credentials and the abilit
 ## Airbyte Employee
 
 1. Access the `Stripe Integration Test Config` secret on Rippling under the `Engineering` folder
-1. Create a file with the contents at `secret_configs/config.json`
+1. Create a file with the contents at `secrets/config.json`

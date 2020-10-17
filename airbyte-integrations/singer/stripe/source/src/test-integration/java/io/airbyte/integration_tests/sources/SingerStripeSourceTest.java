@@ -62,7 +62,7 @@ public class SingerStripeSourceTest {
 
   private static final String CATALOG = "catalog.json";
   private static final String CONFIG = "config.json";
-  private static final String CONFIG_PATH = "secret_configs/config.json";
+  private static final String CONFIG_PATH = "secrets/config.json";
   private static final String INVALID_CONFIG = "invalid_config.json";
 
   protected Path jobRoot;

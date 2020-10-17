@@ -13,9 +13,9 @@ As a community contributor, you will need access to a GCP project and BigQuery t
 1. Add the `BigQuery User` role
 1. Go back to the `Service Accounts` page and use the actions modal to `Create Key`
 1. Download this key as a JSON file
-1. Move and rename this file to `secret_configs/credentials.json`
+1. Move and rename this file to `secrets/credentials.json`
 
 ## Airbyte Employee
 
 1. Access the `BigQuery Integration Test User` secret on Rippling under the `Engineering` folder
-1. Create a file with the contents at `secret_configs/credentials.json`
+1. Create a file with the contents at `secrets/credentials.json`
