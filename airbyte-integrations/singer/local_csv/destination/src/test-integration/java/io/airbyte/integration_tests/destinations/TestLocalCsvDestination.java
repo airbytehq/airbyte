@@ -34,7 +34,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
-import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
@@ -155,9 +154,9 @@ class TestLocalCsvDestination {
     javaDestinationPath.toFile().mkdirs();
 
     final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
-    DefaultCheckConnectionWorker checkConnectionWorker = new DefaultCheckConnectionWorker(new DefaultDiscoverCatalogWorker(integrationLauncher));
-    StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(config));
-    OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
+    final DefaultCheckConnectionWorker checkConnectionWorker = new DefaultCheckConnectionWorker(integrationLauncher);
+    final StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(config));
+    final OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
     assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardCheckConnectionOutput.Status.SUCCEEDED, run.getOutput().get().getStatus());
