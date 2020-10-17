@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.workers.DefaultCheckConnectionWorker;
+import io.airbyte.workers.CheckConnectionWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
@@ -42,6 +42,8 @@ import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.SingerIntegrationLauncher;
+import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
+import io.airbyte.workers.protocols.singer.SingerDiscoverCatalogWorker;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -154,7 +156,7 @@ class TestLocalCsvDestination {
     javaDestinationPath.toFile().mkdirs();
 
     final Map<String, Object> config = createConfigWithDestinationPath(destinationPath);
-    final DefaultCheckConnectionWorker checkConnectionWorker = new DefaultCheckConnectionWorker(integrationLauncher);
+    final CheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverCatalogWorker(integrationLauncher));
     final StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(config));
     final OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
     assertEquals(JobStatus.SUCCEEDED, run.getStatus());
