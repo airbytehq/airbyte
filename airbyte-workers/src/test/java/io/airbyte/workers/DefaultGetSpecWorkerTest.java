@@ -75,7 +75,7 @@ class DefaultGetSpecWorkerTest {
 
     OutputAndStatus<StandardGetSpecOutput> actualOutput = worker.run(config, jobRoot);
     OutputAndStatus<StandardGetSpecOutput> expectedOutput =
-        new OutputAndStatus<>(JobStatus.SUCCESSFUL,
+        new OutputAndStatus<>(JobStatus.SUCCEEDED,
             new StandardGetSpecOutput().withSpecification(Jsons.deserialize(expectedSpecString, ConnectorSpecification.class)));
 
     assertEquals(expectedOutput, actualOutput);

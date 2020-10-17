@@ -48,11 +48,11 @@ public class JobOutputCheckConnectionWorkerTest {
 
     StandardCheckConnectionOutput output = new StandardCheckConnectionOutput().withMessage("hello world");
 
-    when(checkConnectionWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, output));
+    when(checkConnectionWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCEEDED, output));
     OutputAndStatus<JobOutput> run = new JobOutputCheckConnectionWorker(checkConnectionWorker).run(input, jobRoot);
 
     JobOutput expected = new JobOutput().withOutputType(JobOutput.OutputType.CHECK_CONNECTION).withCheckConnection(output);
-    assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(expected, run.getOutput().get());
   }

@@ -52,11 +52,11 @@ public class JobOutputDiscoveryWorkerTest {
     StandardDiscoverCatalogOutput output = new StandardDiscoverCatalogOutput().withSchema(
         new Schema().withStreams(Lists.newArrayList(new Stream().withName("table"))));
 
-    when(discoverWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, output));
+    when(discoverWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCEEDED, output));
     OutputAndStatus<JobOutput> run = new JobOutputDiscoverSchemaWorker(discoverWorker).run(input, jobRoot);
 
     JobOutput expected = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withDiscoverCatalog(output);
-    assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(expected, run.getOutput().get());
   }

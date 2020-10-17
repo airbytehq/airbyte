@@ -73,9 +73,9 @@ public class CsvDestination implements Destination {
     try {
       FileUtils.forceMkdir(getDestinationPath(config).toFile());
     } catch (Exception e) {
-      return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage(e.getMessage());
+      return new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
-    return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
+    return new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED);
   }
 
   /**

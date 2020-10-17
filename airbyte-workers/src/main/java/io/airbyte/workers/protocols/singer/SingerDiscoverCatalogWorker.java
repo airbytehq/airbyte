@@ -25,7 +25,7 @@
 package io.airbyte.workers.protocols.singer;
 
 import static io.airbyte.workers.JobStatus.FAILED;
-import static io.airbyte.workers.JobStatus.SUCCESSFUL;
+import static io.airbyte.workers.JobStatus.SUCCEEDED;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
@@ -89,7 +89,7 @@ public class SingerDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
     if (exitCode == 0) {
       return new OutputAndStatus<>(
-          SUCCESSFUL,
+          SUCCEEDED,
           new StandardDiscoverCatalogOutput()
               .withSchema(SingerCatalogConverters.toAirbyteSchema(readCatalog(jobRoot))));
     } else {

@@ -67,15 +67,15 @@ public class DefaultCheckConnectionWorkerTest {
   @Test
   public void testSuccessfulConnection() {
     OutputAndStatus<StandardDiscoverCatalogOutput> discoverOutput =
-        new OutputAndStatus<>(JobStatus.SUCCESSFUL, mock(StandardDiscoverCatalogOutput.class));
+        new OutputAndStatus<>(JobStatus.SUCCEEDED, mock(StandardDiscoverCatalogOutput.class));
     when(discoverCatalogWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(discoverCatalogWorker);
     final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
 
-    assertEquals(JobStatus.SUCCESSFUL, output.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, output.getStatus());
     assertTrue(output.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, output.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.SUCCEEDED, output.getOutput().get().getStatus());
     assertNull(output.getOutput().get().getMessage());
 
     verify(discoverCatalogWorker).run(discoverInput, jobRoot);
@@ -91,7 +91,7 @@ public class DefaultCheckConnectionWorkerTest {
 
     assertEquals(JobStatus.FAILED, output.getStatus());
     assertTrue(output.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, output.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.FAILED, output.getOutput().get().getStatus());
     assertEquals("Failed to connect.", output.getOutput().get().getMessage());
 
     verify(discoverCatalogWorker).run(discoverInput, jobRoot);
@@ -100,7 +100,7 @@ public class DefaultCheckConnectionWorkerTest {
   @Test
   public void testCancel() {
     OutputAndStatus<StandardDiscoverCatalogOutput> discoverOutput =
-        new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverCatalogOutput());
+        new OutputAndStatus<>(JobStatus.SUCCEEDED, new StandardDiscoverCatalogOutput());
     when(discoverCatalogWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(discoverCatalogWorker);

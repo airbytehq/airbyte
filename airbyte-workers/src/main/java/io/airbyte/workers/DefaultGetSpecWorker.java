@@ -62,7 +62,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         if (process.exitValue() == 0) {
           String specString = new String(stdout.readAllBytes());
           ConnectorSpecification spec = Jsons.deserialize(specString, ConnectorSpecification.class);
-          return new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardGetSpecOutput().withSpecification(spec));
+          return new OutputAndStatus<>(JobStatus.SUCCEEDED, new StandardGetSpecOutput().withSpecification(spec));
         } else {
           return new OutputAndStatus<>(JobStatus.FAILED);
         }
