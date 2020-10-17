@@ -10,7 +10,7 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.11'
 
     implementation project(':airbyte-config:models')
-    implementation project(':airbyte-integrations:base-java')
+    implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-queue')
 
@@ -22,6 +22,5 @@ application {
     mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
 }
 
-buildImage.dependsOn(assemble)
-buildImage.dependsOn(':airbyte-integrations:base-java:buildImage')
+buildImage.dependsOn(':airbyte-integrations:bases:base-java:buildImage')
 integrationTest.dependsOn(buildImage)

@@ -8,7 +8,7 @@ apply from: rootProject.file('tools/gradle/commons/integrations/integration-test
 dependencies {
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db')
-    implementation project(':airbyte-integrations:base-java')
+    implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-queue')
 
@@ -22,6 +22,5 @@ application {
     mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
 }
 
-buildImage.dependsOn(assemble)
-buildImage.dependsOn(':airbyte-integrations:base-java:buildImage')
+buildImage.dependsOn(':airbyte-integrations:bases:base-java:buildImage')
 integrationTest.dependsOn(buildImage)
