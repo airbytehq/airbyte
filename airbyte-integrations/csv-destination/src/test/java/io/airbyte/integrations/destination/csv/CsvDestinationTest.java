@@ -114,7 +114,7 @@ class CsvDestinationTest {
   @Test
   void testCheckSuccess() {
     final StandardCheckConnectionOutput actual = new CsvDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
+    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
@@ -124,7 +124,7 @@ class CsvDestinationTest {
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
     final JsonNode config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
     final StandardCheckConnectionOutput actual = new CsvDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILURE);
+    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILED);
 
     // the message includes the random file path, so just verify it exists and then remove it when we do
     // rest of the comparison.

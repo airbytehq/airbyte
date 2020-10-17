@@ -33,6 +33,7 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.CheckConnectionRead;
+import io.airbyte.api.client.model.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.client.model.ConnectionCreate;
 import io.airbyte.api.client.model.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.ConnectionRead;
@@ -158,7 +159,7 @@ public class AcceptanceTests {
             new DestinationImplementationIdRequestBody().destinationImplementationId(destinationImplId))
         .getStatus();
 
-    assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkOperationStatus);
+    assertEquals(StatusEnum.SUCCEEDED, checkOperationStatus);
   }
 
   @Test
@@ -189,7 +190,7 @@ public class AcceptanceTests {
     CheckConnectionRead checkConnectionRead = apiClient.getSourceImplementationApi()
         .checkConnectionToSourceImplementation(new SourceImplementationIdRequestBody().sourceImplementationId(sourceImplId));
 
-    assertEquals(CheckConnectionRead.StatusEnum.SUCCESS, checkConnectionRead.getStatus());
+    assertEquals(StatusEnum.SUCCEEDED, checkConnectionRead.getStatus());
   }
 
   @Test
@@ -238,7 +239,7 @@ public class AcceptanceTests {
 
     ConnectionSyncRead connectionSyncRead =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(createdConnection.getConnectionId()));
-    assertEquals(ConnectionSyncRead.StatusEnum.SUCCESS, connectionSyncRead.getStatus());
+    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead.getStatus());
     assertSourceAndTargetDbInSync(sourcePsql, targetPsql);
   }
 

@@ -45,7 +45,7 @@ public class OutputConvertingWorkerTest {
     String inputConfig = "input";
     int expectedOutput = 123;
     Path path = Path.of("fakepath");
-    when(worker.run(inputConfig, path)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, String.valueOf(expectedOutput)));
+    when(worker.run(inputConfig, path)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCEEDED, String.valueOf(expectedOutput)));
 
     OutputAndStatus<Integer> output = new OutputConvertingWorker<String, String, Integer>(worker, Integer::valueOf).run(inputConfig, path);
     assertTrue(output.getOutput().isPresent());

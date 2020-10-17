@@ -24,9 +24,6 @@
 
 package io.airbyte.workers;
 
-import static io.airbyte.workers.JobStatus.FAILED;
-import static io.airbyte.workers.JobStatus.SUCCESSFUL;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
@@ -60,7 +57,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       return runInternal(discoverSchemaInput, jobRoot);
     } catch (final Exception e) {
       LOGGER.error("Error while discovering schema", e);
-      return new OutputAndStatus<>(FAILED);
+      return new OutputAndStatus<>(JobStatus.FAILED);
     }
   }
 
@@ -84,12 +81,12 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
     if (exitCode == 0) {
       return new OutputAndStatus<>(
-          SUCCESSFUL,
+          JobStatus.SUCCEEDED,
           new StandardDiscoverCatalogOutput()
               .withCatalog(readCatalog(jobRoot)));
     } else {
       LOGGER.debug("Discovery job subprocess finished with exit code {}", exitCode);
-      return new OutputAndStatus<>(FAILED);
+      return new OutputAndStatus<>(JobStatus.FAILED);
     }
   }
 

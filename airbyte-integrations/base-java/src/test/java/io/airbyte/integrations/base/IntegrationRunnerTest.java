@@ -105,7 +105,7 @@ class IntegrationRunnerTest {
   @Test
   void testCheck() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(Path.of(configPath.toString()));
-    final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage("it failed");
+    final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("it failed");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.check(CONFIG)).thenReturn(output);

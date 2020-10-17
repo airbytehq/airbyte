@@ -193,7 +193,7 @@ class BigQueryDestinationTest {
   // @Test
   void testCheckSuccess() {
     final StandardCheckConnectionOutput actual = new BigQueryDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
+    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
@@ -201,7 +201,7 @@ class BigQueryDestinationTest {
   void testCheckFailure() {
     ((ObjectNode) config).put(BigQueryDestination.CONFIG_PROJECT_ID, "fake");
     final StandardCheckConnectionOutput actual = new BigQueryDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILURE)
+    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILED)
         .withMessage("Access Denied: Project fake: User does not have bigquery.jobs.create permission in project fake.");
     assertEquals(expected, actual);
   }
