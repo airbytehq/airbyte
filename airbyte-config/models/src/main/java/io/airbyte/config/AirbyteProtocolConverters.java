@@ -73,7 +73,8 @@ public class AirbyteProtocolConverters {
       while (iterator.hasNext()) {
         list.add(iterator.next());
       }
-      return new Stream().withName(airbyteStream.getName())
+      return new Stream()
+          .withName(airbyteStream.getName())
           .withFields(list.stream().map(item -> new Field()
               .withName(item.getKey())
               .withDataType(DataType.valueOf(item.getValue().get("type").asText().toUpperCase()))
