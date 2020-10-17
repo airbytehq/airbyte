@@ -101,7 +101,7 @@ definitions:
       status:
         type: string
         enum:
-          - SUCCESS
+          - SUCCEEDED
           - FAILED
       message:
         type: string

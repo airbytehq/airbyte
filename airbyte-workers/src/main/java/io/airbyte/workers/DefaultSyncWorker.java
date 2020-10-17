@@ -101,7 +101,7 @@ public class DefaultSyncWorker<T> implements SyncWorker {
       output.withState(state);
     });
 
-    return new OutputAndStatus<>(cancelled.get() ? JobStatus.FAILED : JobStatus.SUCCESSFUL, output);
+    return new OutputAndStatus<>(cancelled.get() ? JobStatus.FAILED : JobStatus.SUCCEEDED, output);
   }
 
   @Override

@@ -61,9 +61,9 @@ public class DestinationTemplate implements Destination {
   @Override
   public StandardCheckConnectionOutput check(JsonNode config) {
     // if(success) {
-    // return new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
+    // return new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED);
     // } else {
-    // return new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage("(optional) the
+    // return new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("(optional) the
     // reason it failed");
     // }
     throw new RuntimeException("Not Implemented");

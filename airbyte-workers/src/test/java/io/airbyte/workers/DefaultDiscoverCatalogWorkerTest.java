@@ -83,7 +83,7 @@ public class DefaultDiscoverCatalogWorkerTest {
 
     final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput =
         new OutputAndStatus<>(
-            JobStatus.SUCCESSFUL,
+            JobStatus.SUCCEEDED,
             Jsons.deserialize(MoreResources.readResource("airbyte_discovered_postgres_catalog_output.json"), StandardDiscoverCatalogOutput.class));
 
     assertEquals(expectedOutput, output);
