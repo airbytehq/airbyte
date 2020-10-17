@@ -73,7 +73,7 @@ function main() {
     tap-stripe $ARGS
   elif [[ "$ARGS" =~ .*"--spec".* ]]; then
     echo2 'spec'
-    tr -d '\n' < /singer/spec.json
+    cat /singer/spec.json
   else
     echo2 "sync"
     tap-stripe $ARGS

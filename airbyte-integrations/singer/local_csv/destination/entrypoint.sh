@@ -56,7 +56,7 @@ function main() {
     # If connection check is successful write a fake catalog for the discovery worker to find
     echo '{"streams":[]}'
   elif [[ "$ARGS" =~ .*"--spec".* ]]; then
-    tr -d '\n' < /singer/spec.json
+    cat /singer/spec.json
   else
     DESTINATION_PATH=$(jq -r '.destination_path' $PROCESSED_CONFIG_FILE)
     mkdirOrThrow "$DESTINATION_PATH"

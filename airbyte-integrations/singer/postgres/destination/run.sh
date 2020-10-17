@@ -13,7 +13,7 @@ function main() {
     python3 /singer/check_connection.py "$@"
   elif [[ "$*" =~ .*"--spec".* ]]; then
     echo_err "Getting spec..."
-    tr -d '\n' < /singer/spec.json
+    cat /singer/spec.json
   else
     echo_err "Running sync..."
     target-postgres "$@"
