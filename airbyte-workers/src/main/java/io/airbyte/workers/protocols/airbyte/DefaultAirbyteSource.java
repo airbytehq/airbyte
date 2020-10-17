@@ -34,6 +34,7 @@ import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
@@ -48,9 +49,6 @@ import org.slf4j.LoggerFactory;
 public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
-
-  @VisibleForTesting
-  static final String DISCOVERY_DIR = "discover";
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
@@ -88,7 +86,9 @@ public class DefaultAirbyteSource implements AirbyteSource {
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
 
-    messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream())).iterator();
+    messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream()))
+        .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE)
+        .iterator();
   }
 
   @Override
