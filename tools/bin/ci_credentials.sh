@@ -4,6 +4,8 @@ set -e
 
 mkdir airbyte-integrations/singer/bigquery/destination/secrets
 echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > airbyte-integrations/singer/bigquery/destination/secrets/credentials.json
+
+mkdir airbyte-integrations/bigquery-destination/secrets
 echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > airbyte-integrations/bigquery-destination/secrets/credentials.json
 
 mkdir airbyte-integrations/singer/stripe/source/secrets
