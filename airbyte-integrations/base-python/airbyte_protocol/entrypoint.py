@@ -83,7 +83,7 @@ class AirbyteEntrypoint(object):
 
             if cmd == "check":
                 check_result = self.source.check(logger, config_container)
-                output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connection_status=check_result)
+                output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
                 print(output_message)
 
                 if check_result.status == Status.SUCCEEDED:
