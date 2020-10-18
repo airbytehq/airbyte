@@ -1,10 +1,11 @@
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
 task generateProtocolClassFiles(type: Exec) {
-    workingDir '.'
+    environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/generate-protocol-files.sh'
-    dependsOn ':airbyte-integrations:base-python:code-generator:buildImage'
+
     outputs.upToDateWhen { false }
+    dependsOn ':airbyte-integrations:base-python:code-generator:buildImage'
 }
 
 build.dependsOn generateProtocolClassFiles
