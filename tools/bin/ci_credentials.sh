@@ -2,8 +2,6 @@
 
 set -e
 
-CONNECTOR_BASE=airbyte-integrations/connectors
-
 function install_secret() {
   local secrets_path; secrets_path=$1/secrets
   local filename; filename=$2

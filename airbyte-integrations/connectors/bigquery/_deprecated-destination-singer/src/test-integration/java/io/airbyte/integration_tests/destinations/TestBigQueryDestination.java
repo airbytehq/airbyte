@@ -191,7 +191,7 @@ class TestBigQueryDestination {
   }
 
   private void writeConfigFileToJobRoot() throws IOException {
-    String credentialsJsonString = new String(Files.readAllBytes(Paths.get("config/credentials.json")));
+    String credentialsJsonString = new String(Files.readAllBytes(Paths.get("secrets/credentials.json")));
     JsonNode credentials = Jsons.deserialize(credentialsJsonString);
 
     Map<String, Object> fullConfig = new HashMap<>();
