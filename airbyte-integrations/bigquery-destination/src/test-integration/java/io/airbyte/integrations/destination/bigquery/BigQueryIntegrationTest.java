@@ -54,7 +54,7 @@ public class BigQueryIntegrationTest extends TestDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryIntegrationTest.class);
 
-  private static final Path CREDENTIALS_PATH = Path.of("config/credentials.json");
+  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
   private static final String CONFIG_DATASET_ID = "dataset_id";
   private static final String CONFIG_PROJECT_ID = "project_id";
