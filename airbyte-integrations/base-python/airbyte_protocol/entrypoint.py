@@ -3,6 +3,7 @@ import importlib
 import os.path
 import sys
 import tempfile
+import json
 
 from .integration import ConfigContainer, Source
 from .logger import AirbyteLogger
@@ -83,18 +84,18 @@ class AirbyteEntrypoint(object):
 
             if cmd == "check":
                 check_result = self.source.check(logger, config_container)
-                output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
+                output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result).json(exclude_unset=True)
                 print(output_message)
 
                 if check_result.status == Status.SUCCEEDED:
                     logger.info("Check succeeded")
-                    sys.exit(0)
                 else:
                     logger.error("Check failed")
-                    sys.exit(1)
+
+                sys.exit(0)
             elif cmd == "discover":
                 catalog = self.source.discover(logger, config_container)
-                print(catalog.json(exclude_unset=True))
+                print(AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(exclude_unset=True))
                 sys.exit(0)
             elif cmd == "read":
                 generator = self.source.read(logger, config_container, parsed_args.catalog, parsed_args.state)

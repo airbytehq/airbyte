@@ -10,10 +10,9 @@ from airbyte_protocol import AirbyteMessage
 from airbyte_protocol import Source
 from airbyte_protocol import ConfigContainer
 from base_singer import SingerHelper
-from base_singer import SingerSource
 
 TAP_CMD = "PGCLIENTENCODING=UTF8 tap-postgres"
-class PostgresSingerSource(SingerSource):
+class PostgresSingerSource(Source):
     def __init__(self):
         pass
 
@@ -22,19 +21,17 @@ class PostgresSingerSource(SingerSource):
         print(config)
         try:
             params="dbname='{dbname}' user='{user}' host='{host}' password='{password}' port='{port}'".format(**config)
-            print(params)
             psycopg2.connect(params)
-            print("Great success")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             logger.error(f"Exception while connecting to postgres database: {e}")
             return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 
-    def discover_cmd(self, logger, config_container) -> AirbyteCatalog:
+    def discover(self, logger, config_container) -> AirbyteCatalog:
         catalogs = SingerHelper.get_catalogs(logger, f"{TAP_CMD} --config {config_container.rendered_config_path} --discover")
         return catalogs.airbyte_catalog
 
-    def read_cmd(self, logger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
+    def read(self, logger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         discover_cmd = f"{TAP_CMD} --config {config_container.rendered_config_path} --discover"
         discovered_singer_catalog = SingerHelper.get_catalogs(logger, discover_cmd).singer_catalog
 

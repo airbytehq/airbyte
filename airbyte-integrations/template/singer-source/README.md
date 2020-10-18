@@ -4,8 +4,8 @@ Prepare development environment:
 ```
 cd airbyte-integrations/template/singer-source
 
-# create & activate virtualenv
-virtualenv build/venv
+# create & activate virtualenv using python 3.7
+python3.7 -m venv build/venv
 source build/venv/bin/activate
 
 # install necessary dependencies

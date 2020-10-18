@@ -18,6 +18,7 @@ function main() {
     docker run -v "$ROOT_DIR":/airbyte airbyte/code-generator:dev \
       --input "/airbyte/$YAML_DIR/$filename_wo_ext.yaml" \
       --output "/airbyte/$OUTPUT_DIR/$filename_wo_ext.py" \
+      --strip-default-none \
       --disable-timestamp
 done
 }

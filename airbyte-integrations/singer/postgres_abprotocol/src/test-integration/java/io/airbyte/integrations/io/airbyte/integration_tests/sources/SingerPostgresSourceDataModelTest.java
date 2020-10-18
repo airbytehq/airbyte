@@ -24,41 +24,30 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.JsonSchemas;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.workers.protocols.singer.SingerProtocolPredicate;
-import java.io.IOException;
-import org.junit.jupiter.api.Test;
-
 public class SingerPostgresSourceDataModelTest {
 
-//  @Test
-//  void testDeserializeCatalog() throws IOException {
-//    final String catalogString = MoreResources.readResource("catalog.json");
-//    final SingerCatalog singerCatalog = Jsons.deserialize(catalogString, SingerCatalog.class);
-//    final String reserialized = Jsons.serialize(singerCatalog);
-//
-//    final JsonNode expected = Jsons.deserialize(catalogString);
-//    final JsonNode actual = Jsons.deserialize(reserialized);
-//    JsonSchemas.mutateTypeToArrayStandard(expected.get("streams").get(0).get("schema"));
-//    expected.get("streams")
-//        .get(0)
-//        .get("schema")
-//        .get("properties")
-//        .forEach(JsonSchemas::mutateTypeToArrayStandard);
-//
-//    assertEquals(expected, actual);
-//  }
-//
-//  @Test
-//  void stripeSchemaMessageIsValid() throws IOException {
-//    final String input = MoreResources.readResource("schema_message.json");
-//    assertTrue(new SingerProtocolPredicate().test(Jsons.deserialize(input)));
-//  }
+  // @Test
+  // void testDeserializeCatalog() throws IOException {
+  // final String catalogString = MoreResources.readResource("catalog.json");
+  // final SingerCatalog singerCatalog = Jsons.deserialize(catalogString, SingerCatalog.class);
+  // final String reserialized = Jsons.serialize(singerCatalog);
+  //
+  // final JsonNode expected = Jsons.deserialize(catalogString);
+  // final JsonNode actual = Jsons.deserialize(reserialized);
+  // JsonSchemas.mutateTypeToArrayStandard(expected.get("streams").get(0).get("schema"));
+  // expected.get("streams")
+  // .get(0)
+  // .get("schema")
+  // .get("properties")
+  // .forEach(JsonSchemas::mutateTypeToArrayStandard);
+  //
+  // assertEquals(expected, actual);
+  // }
+  //
+  // @Test
+  // void stripeSchemaMessageIsValid() throws IOException {
+  // final String input = MoreResources.readResource("schema_message.json");
+  // assertTrue(new SingerProtocolPredicate().test(Jsons.deserialize(input)));
+  // }
 
 }

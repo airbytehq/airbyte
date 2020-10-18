@@ -24,26 +24,28 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.Schema;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
+import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,8 +56,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import io.airbyte.workers.protocols.singer.SingerDiscoverCatalogWorker;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings("rawtypes")
 public class SingerPostgresSourceTest {
@@ -92,63 +100,69 @@ public class SingerPostgresSourceTest {
   @Test
   public void testFullRefreshStatelessRead() throws Exception {
 
-//    AirbyteCatalog schema = Jsons.deserialize(MoreResources.readResource("schema.json"), AirbyteCatalog.class);
-//
-//    // select all streams and all fields
-//    schema.getStreams().forEach(s -> s.setSelected(true));
-//    schema.getStreams().forEach(t -> t.getFields().forEach(c -> c.setSelected(true)));
-//
-//    StandardSync syncConfig = new StandardSync().withSyncMode(StandardSync.SyncMode.FULL_REFRESH).withSchema(schema);
-//    SourceConnectionImplementation sourceImpl =
-//        new SourceConnectionImplementation().withConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
-//
-//    StandardTapConfig tapConfig = new StandardTapConfig()
-//        .withStandardSync(syncConfig)
-//        .withSourceConnectionImplementation(sourceImpl);
-//
-//    DefaultAirbyteSource singerSource = new DefaultAirbyteSource(integrationLauncher);
-//    singerSource.start(tapConfig, jobRoot);
-//
-//    List<AirbyteMessage> actualMessages = Lists.newArrayList();
-//    AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
-//    while (!singerSource.isFinished()) {
-//      Optional<AirbyteMessage> maybeMessage = singerSource.attemptRead();
-//      if (maybeMessage.isPresent()) {
-//        messageTracker.accept(maybeMessage.get());
-//        actualMessages.add(maybeMessage.get());
-//      }
-//    }
-//
-//    for (AirbyteMessage singerMessage : actualMessages) {
-//      LOGGER.info("{}", singerMessage);
-//    }
-//
-//    JsonNode expectedMessagesContainer = Jsons.deserialize(MoreResources.readResource("expected_messages.json")).get("messages");
-//    List<AirbyteMessage> expectedMessages = StreamSupport.stream(expectedMessagesContainer.spliterator(), false)
-//        .map(msg -> Jsons.deserialize(Jsons.serialize(msg), AirbyteMessage.class))
-//        .collect(Collectors.toList());
-//
-//    assertMessagesEquivalent(expectedMessages, actualMessages);
+    // AirbyteCatalog schema = Jsons.deserialize(MoreResources.readResource("schema.json"),
+    // AirbyteCatalog.class);
+    //
+    // // select all streams and all fields
+    // schema.getStreams().forEach(s -> s.setSelected(true));
+    // schema.getStreams().forEach(t -> t.getFields().forEach(c -> c.setSelected(true)));
+    //
+    // StandardSync syncConfig = new
+    // StandardSync().withSyncMode(StandardSync.SyncMode.FULL_REFRESH).withSchema(schema);
+    // SourceConnectionImplementation sourceImpl =
+    // new SourceConnectionImplementation().withConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
+    //
+    // StandardTapConfig tapConfig = new StandardTapConfig()
+    // .withStandardSync(syncConfig)
+    // .withSourceConnectionImplementation(sourceImpl);
+    //
+    // DefaultAirbyteSource singerSource = new DefaultAirbyteSource(integrationLauncher);
+    // singerSource.start(tapConfig, jobRoot);
+    //
+    // List<AirbyteMessage> actualMessages = Lists.newArrayList();
+    // AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
+    // while (!singerSource.isFinished()) {
+    // Optional<AirbyteMessage> maybeMessage = singerSource.attemptRead();
+    // if (maybeMessage.isPresent()) {
+    // messageTracker.accept(maybeMessage.get());
+    // actualMessages.add(maybeMessage.get());
+    // }
+    // }
+    //
+    // for (AirbyteMessage singerMessage : actualMessages) {
+    // LOGGER.info("{}", singerMessage);
+    // }
+    //
+    // JsonNode expectedMessagesContainer =
+    // Jsons.deserialize(MoreResources.readResource("expected_messages.json")).get("messages");
+    // List<AirbyteMessage> expectedMessages =
+    // StreamSupport.stream(expectedMessagesContainer.spliterator(), false)
+    // .map(msg -> Jsons.deserialize(Jsons.serialize(msg), AirbyteMessage.class))
+    // .collect(Collectors.toList());
+    //
+    // assertMessagesEquivalent(expectedMessages, actualMessages);
   }
 
   @Test
   public void testCanReadUtf8() throws IOException, InterruptedException, WorkerException {
-//    // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
-//    // default settings are in another encoding
-//    PostgreSQLContainer db = (PostgreSQLContainer) new PostgreSQLContainer().withCommand("postgres -c client_encoding=sql_ascii");
-//    db.start();
-//    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("init_utf8.sql"), db);
-//
-//    String configFileName = "config.json";
-//    String catalogFileName = "catalog.json";
-//    writeFileToJobRoot(catalogFileName, MoreResources.readResource(catalogFileName));
-//    writeFileToJobRoot(configFileName, Jsons.serialize(getDbConfig(db)));
-//
-//    Process tapProcess = integrationLauncher.read(jobRoot, configFileName, catalogFileName).inheritIO().start();
-//    tapProcess.waitFor();
-//    if (tapProcess.exitValue() != 0) {
-//      fail("Docker container exited with non-zero exit code: " + tapProcess.exitValue());
-//    }
+    // // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
+    // // default settings are in another encoding
+    // PostgreSQLContainer db = (PostgreSQLContainer) new PostgreSQLContainer().withCommand("postgres -c
+    // client_encoding=sql_ascii");
+    // db.start();
+    // PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("init_utf8.sql"), db);
+    //
+    // String configFileName = "config.json";
+    // String catalogFileName = "catalog.json";
+    // writeFileToJobRoot(catalogFileName, MoreResources.readResource(catalogFileName));
+    // writeFileToJobRoot(configFileName, Jsons.serialize(getDbConfig(db)));
+    //
+    // Process tapProcess = integrationLauncher.read(jobRoot, configFileName,
+    // catalogFileName).inheritIO().start();
+    // tapProcess.waitFor();
+    // if (tapProcess.exitValue() != 0) {
+    // fail("Docker container exited with non-zero exit code: " + tapProcess.exitValue());
+    // }
   }
 
   @Test
@@ -175,45 +189,38 @@ public class SingerPostgresSourceTest {
       // We might not want to check that all fields are the same to pass a test e.g: time_extracted isn't
       // something we want a test to fail over.
       // So we copy those "irrelevant" fields to the message before checking for equality
-//      message.set
-//      message.setTimeExtracted(containedMessage.getTimeExtracted());
-//      message.setKeyProperties(containedMessage.getKeyProperties());
-//      message.setBookmarkProperties(containedMessage.getBookmarkProperties());
-//      // the value field is used for state messages -- no need to compare the exact state messages
-//      message.setValue(containedMessage.getValue());
-//      // additional props are not part of the spec
-//      containedMessage.getAdditionalProperties().forEach(message::setAdditionalProperty);
-//
-//      if (message.equals(containedMessage)) {
-//        return true;
-//      }
+      // message.set
+      // message.setTimeExtracted(containedMessage.getTimeExtracted());
+      // message.setKeyProperties(containedMessage.getKeyProperties());
+      // message.setBookmarkProperties(containedMessage.getBookmarkProperties());
+      // // the value field is used for state messages -- no need to compare the exact state messages
+      // message.setValue(containedMessage.getValue());
+      // // additional props are not part of the spec
+      // containedMessage.getAdditionalProperties().forEach(message::setAdditionalProperty);
+      //
+      // if (message.equals(containedMessage)) {
+      // return true;
+      // }
     }
     return false;
   }
-//
-//  @Test
-//  public void testDiscover() throws IOException {
-//    StandardDiscoverCatalogInput inputConfig =
-//        new StandardDiscoverCatalogInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
-//    OutputAndStatus<StandardDiscoverCatalogOutput> run = new SingerDiscoverCatalogWorker(integrationLauncher).run(inputConfig, jobRoot);
-//
-//    Schema expected = Jsons.deserialize(MoreResources.readResource("schema.json"), Schema.class);
-//    assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
-//    assertTrue(run.getOutput().isPresent());
-//    assertEquals(expected, run.getOutput().get().getSchema());
-//  }
-//
+
+  @Test
+  public void testDiscover() throws IOException {
+    StandardDiscoverCatalogInput inputConfig = new StandardDiscoverCatalogInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
+    OutputAndStatus<StandardDiscoverCatalogOutput> run = new DefaultDiscoverCatalogWorker(integrationLauncher).run(inputConfig, jobRoot);
+
+    AirbyteCatalog expected = Jsons.deserialize(MoreResources.readResource("airbyte_catalog.json"), AirbyteCatalog.class);
+    assertEquals(JobStatus.SUCCEEDED, run.getStatus());
+    assertTrue(run.getOutput().isPresent());
+    assertEquals(expected, run.getOutput().get().getSchema());
+  }
+
   @Test
   public void testSuccessfulConnectionCheck() {
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
     OutputAndStatus<StandardCheckConnectionOutput> run =
         new DefaultCheckConnectionWorker(integrationLauncher).run(inputConfig, jobRoot);
-
-    System.out.println("filler");
-    System.out.println("filler");
-    System.out.println("filler");System.out.println("filler");
-    System.out.println("filler");
-
 
     assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
@@ -228,7 +235,7 @@ public class SingerPostgresSourceTest {
     OutputAndStatus<StandardCheckConnectionOutput> run =
         new DefaultCheckConnectionWorker(integrationLauncher).run(inputConfig, jobRoot);
 
-    assertEquals(JobStatus.FAILED, run.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(StandardCheckConnectionOutput.Status.FAILED, run.getOutput().get().getStatus());
   }

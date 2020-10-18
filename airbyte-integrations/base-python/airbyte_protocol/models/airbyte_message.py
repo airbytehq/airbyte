@@ -59,19 +59,19 @@ class Status(Enum):
 
 class AirbyteConnectionStatus(BaseModel):
     status: Status
-    message: Optional[str] = None
+    message: Optional[str]
 
 
 class AirbyteStream(BaseModel):
     name: str = Field(..., description="Stream's name.")
-    json_schema: Optional[Dict[str, Any]] = Field(
-        None, description='Stream schema using Json Schema specs.'
+    json_schema: Dict[str, Any] = Field(
+        ..., description='Stream schema using Json Schema specs.'
     )
 
 
 class ConnectorSpecification(BaseModel):
-    documentationUrl: Optional[AnyUrl] = None
-    changelogUrl: Optional[AnyUrl] = None
+    documentationUrl: Optional[AnyUrl]
+    changelogUrl: Optional[AnyUrl]
     connectionSpecification: Dict[str, Any] = Field(
         ...,
         description='ConnectorDefinition specific blob. Must be a valid JSON string.',
@@ -88,8 +88,8 @@ class AirbyteMessage(BaseModel):
         None,
         description='log message: any kind of logging you want the platform to know about.',
     )
-    spec: Optional[ConnectorSpecification] = None
-    connectionStatus: Optional[AirbyteConnectionStatus] = None
+    spec: Optional[ConnectorSpecification]
+    connectionStatus: Optional[AirbyteConnectionStatus]
     catalog: Optional[AirbyteCatalog] = Field(
         None,
         description='log message: any kind of logging you want the platform to know about.',

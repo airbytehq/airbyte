@@ -87,19 +87,16 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
       WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 
       int exitCode = process.exitValue();
-      if (exitCode == 0) {
-        if (status.isEmpty()) {
-          LOGGER.error("integration failed to output a connection status struct.");
-          return new OutputAndStatus<>(JobStatus.FAILED);
-        }
 
+      if (status.isPresent() && exitCode == 0) {
         final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
             .withStatus(Enums.convertTo(status.get().getStatus(), Status.class))
             .withMessage(status.get().getMessage());
 
+        LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
+        LOGGER.debug("Check connection job received output: {}", output);
         return new OutputAndStatus<>(SUCCEEDED, output);
       } else {
-        LOGGER.error("Check connection job subprocess finished with exit code {}", exitCode);
         return new OutputAndStatus<>(FAILED);
       }
 
