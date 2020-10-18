@@ -2,8 +2,7 @@ FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 
-# fixme - replace java-template with the name of directory that this file is in.
-ENV APPLICATION postgres-destination
+ENV APPLICATION destination
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 

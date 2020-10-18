@@ -2,7 +2,7 @@ FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 
-ENV APPLICATION bigquery-destination
+ENV APPLICATION destination
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
