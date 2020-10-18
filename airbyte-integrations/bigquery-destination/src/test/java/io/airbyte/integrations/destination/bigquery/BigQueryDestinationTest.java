@@ -73,7 +73,7 @@ import org.slf4j.LoggerFactory;
 
 class BigQueryDestinationTest {
 
-  private static final Path CREDENTIALS_PATH = Path.of("config/credentials.json");
+  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
 
