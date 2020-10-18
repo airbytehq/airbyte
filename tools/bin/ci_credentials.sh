@@ -5,12 +5,12 @@ set -e
 CONNECTOR_BASE=airbyte-integrations/connectors
 
 function install_secret() {
-  local path; path=$1
+  local secrets_path; secrets_path=$1/secrets
   local filename; filename=$2
   local value; value=$3
 
-  mkdir "$path"
-  echo "$value" > "$path/secrets/$filename"
+  mkdir "$secrets_path"
+  echo "$value" > "$secrets_path/$filename"
 }
 
 # BigQuery Credentials
