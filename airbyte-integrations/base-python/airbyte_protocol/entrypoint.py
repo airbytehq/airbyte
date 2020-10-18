@@ -6,6 +6,7 @@ import tempfile
 
 from .integration import ConfigContainer, Source
 from .logger import AirbyteLogger
+from airbyte_protocol import AirbyteMessage, Type, Status
 
 impl_module = os.environ.get('AIRBYTE_IMPL_MODULE', Source.__module__)
 impl_class = os.environ.get('AIRBYTE_IMPL_PATH', Source.__name__)
@@ -13,7 +14,6 @@ module = importlib.import_module(impl_module)
 impl = getattr(module, impl_class)
 
 logger = AirbyteLogger()
-
 
 class AirbyteEntrypoint(object):
     def __init__(self, source):
@@ -83,7 +83,10 @@ class AirbyteEntrypoint(object):
 
             if cmd == "check":
                 check_result = self.source.check(logger, config_container)
-                if check_result.successful:
+                output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connection_status=check_result)
+                print(output_message)
+
+                if check_result.status == Status.SUCCEEDED:
                     logger.info("Check succeeded")
                     sys.exit(0)
                 else:

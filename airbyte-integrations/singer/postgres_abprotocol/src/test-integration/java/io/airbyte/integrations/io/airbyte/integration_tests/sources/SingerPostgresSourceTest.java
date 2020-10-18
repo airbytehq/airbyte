@@ -26,14 +26,8 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardTapConfig;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
@@ -43,15 +37,6 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.process.SingerIntegrationLauncher;
-import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
-import io.airbyte.workers.protocols.airbyte.AirbyteSource;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
-import io.airbyte.workers.protocols.singer.DefaultSingerSource;
-import io.airbyte.workers.protocols.singer.SingerDiscoverCatalogWorker;
-import io.airbyte.workers.protocols.singer.SingerMessageTracker;
-import io.airbyte.workers.protocols.singer.SingerSource;
-import org.apache.commons.compress.utils.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,16 +51,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings("rawtypes")
 public class SingerPostgresSourceTest {
@@ -227,11 +207,17 @@ public class SingerPostgresSourceTest {
   public void testSuccessfulConnectionCheck() {
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
     OutputAndStatus<StandardCheckConnectionOutput> run =
-        new DefaultCheckConnectionWorker(new SingerDiscoverCatalogWorker(integrationLauncher)).run(inputConfig, jobRoot);
+        new DefaultCheckConnectionWorker(integrationLauncher).run(inputConfig, jobRoot);
 
-    assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
+    System.out.println("filler");
+    System.out.println("filler");
+    System.out.println("filler");System.out.println("filler");
+    System.out.println("filler");
+
+
+    assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, run.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.SUCCEEDED, run.getOutput().get().getStatus());
   }
 
   @Test
@@ -240,11 +226,11 @@ public class SingerPostgresSourceTest {
     dbConfig.put("password", "notarealpassword");
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(dbConfig));
     OutputAndStatus<StandardCheckConnectionOutput> run =
-        new DefaultCheckConnectionWorker(new SingerDiscoverCatalogWorker(integrationLauncher)).run(inputConfig, jobRoot);
+        new DefaultCheckConnectionWorker(integrationLauncher).run(inputConfig, jobRoot);
 
     assertEquals(JobStatus.FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.FAILED, run.getOutput().get().getStatus());
   }
 
   private Map<String, Object> getDbConfig(PostgreSQLContainer containerDb) {

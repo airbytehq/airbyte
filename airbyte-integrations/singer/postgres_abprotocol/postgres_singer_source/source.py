@@ -4,33 +4,37 @@ import psycopg2
 from typing import Generator
 
 from airbyte_protocol import AirbyteCatalog
-from airbyte_protocol import AirbyteCheckResponse
+from airbyte_protocol import AirbyteConnectionStatus
+from airbyte_protocol import Status
 from airbyte_protocol import AirbyteMessage
 from airbyte_protocol import Source
 from airbyte_protocol import ConfigContainer
 from base_singer import SingerHelper
+from base_singer import SingerSource
 
 TAP_CMD = "PGCLIENTENCODING=UTF8 tap-postgres"
-class PostgresSingerSource(Source):
+class PostgresSingerSource(SingerSource):
     def __init__(self):
         pass
 
-    def check(self, logger, config_container: ConfigContainer) -> AirbyteCheckResponse:
+    def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         config = config_container.rendered_config
+        print(config)
         try:
-            psycopg2.connect(
-                "dbname='{postgres_database}' user='{postgres_username}' host='{postgres_host}' password='{postgres_password}' port='{postgres_port}'".format(
-                    **config))
-            return AirbyteCheckResponse(True, {})
+            params="dbname='{dbname}' user='{user}' host='{host}' password='{password}' port='{port}'".format(**config)
+            print(params)
+            psycopg2.connect(params)
+            print("Great success")
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             logger.error(f"Exception while connecting to postgres database: {e}")
-            return AirbyteCheckResponse(False, {"reason": str(e)})
+            return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 
-    def discover(self, logger, config_container) -> AirbyteCatalog:
+    def discover_cmd(self, logger, config_container) -> AirbyteCatalog:
         catalogs = SingerHelper.get_catalogs(logger, f"{TAP_CMD} --config {config_container.rendered_config_path} --discover")
         return catalogs.airbyte_catalog
 
-    def read(self, logger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
+    def read_cmd(self, logger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         discover_cmd = f"{TAP_CMD} --config {config_container.rendered_config_path} --discover"
         discovered_singer_catalog = SingerHelper.get_catalogs(logger, discover_cmd).singer_catalog
 
