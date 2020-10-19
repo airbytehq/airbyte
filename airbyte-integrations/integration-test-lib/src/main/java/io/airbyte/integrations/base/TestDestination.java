@@ -122,9 +122,11 @@ public abstract class TestDestination {
 
   @BeforeEach
   void setUpInternal() throws Exception {
-    final Path workspaceRoot = Files.createTempDirectory("test");
+    Path testDir = Path.of("/tmp/airbyte_tests/");
+    Files.createDirectories(testDir);
+    final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
-    localRoot = Files.createTempDirectory("output");
+    localRoot = Files.createTempDirectory(testDir, "output");
     testEnv = new TestDestinationEnv(localRoot);
 
     setup(testEnv);
