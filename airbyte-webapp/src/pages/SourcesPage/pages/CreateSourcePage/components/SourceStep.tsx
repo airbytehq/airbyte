@@ -11,12 +11,13 @@ import SourceSpecificationResource, {
 } from "../../../../../core/resources/SourceSpecification";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import config from "../../../../../config";
+import useRouter from "../../../../../components/hooks/useRouterHook";
 
 type IProps = {
   onSubmit: (values: {
     name: string;
     serviceType: string;
-    sourceId?: string;
+    specificationId?: string;
     connectionConfiguration?: any;
   }) => void;
   destination: Destination;
@@ -57,7 +58,9 @@ const CreateSourcePage: React.FC<IProps> = ({
   errorStatus,
   hasSuccess
 }) => {
-  const [sourceId, setSourceId] = useState("");
+  const { location }: any = useRouter();
+
+  const [sourceId, setSourceId] = useState(location.state?.sourceId || "");
   const { sourceSpecification, isLoading } = useSourceSpecificationLoad(
     sourceId
   );
@@ -79,7 +82,7 @@ const CreateSourcePage: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      sourceId: sourceSpecification?.sourceId
+      specificationId: sourceSpecification?.sourceId
     });
   };
 
@@ -103,6 +106,10 @@ const CreateSourcePage: React.FC<IProps> = ({
           hasSuccess={hasSuccess}
           errorMessage={errorMessage}
           isLoading={isLoading}
+          formValues={
+            sourceId ? { serviceType: sourceId, name: "" } : undefined
+          }
+          allowChangeConnector
         />
       </ContentCard>
     </>
