@@ -170,9 +170,10 @@ public class SingerStripeSourceTest {
         new BufferedReader(new InputStreamReader(process.getInputStream())).lines().filter(s -> s.contains("CONNECTION_STATUS")).findFirst();
     assertTrue(statusMessageString.isPresent());
 
-    assertEquals(
-        new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(new AirbyteConnectionStatus().withStatus(Status.FAILED)),
-        Jsons.deserialize(statusMessageString.get(), AirbyteMessage.class));
+    AirbyteMessage response = Jsons.deserialize(statusMessageString.get(), AirbyteMessage.class);
+    assertEquals(Type.CONNECTION_STATUS, response.getType());
+    assertEquals(Status.FAILED, response.getConnectionStatus().getStatus());
+    assertTrue(response.getConnectionStatus().getMessage().length() > 0);
   }
 
   @Test
@@ -209,7 +210,7 @@ public class SingerStripeSourceTest {
     MoreResources.readResource("sync_output_subset.txt").lines()
         .map(Jsons::deserialize)
         .map(SingerStripeSourceTest::normalize)
-        .forEach(record -> assertTrue(actualSyncOutput.contains(record)));
+        .forEach(record -> assertTrue(actualSyncOutput.contains(record), "Actual output: " + actualSyncOutput));
   }
 
   private static JsonNode normalize(JsonNode node) {

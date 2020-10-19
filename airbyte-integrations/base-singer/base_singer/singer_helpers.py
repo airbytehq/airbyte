@@ -8,7 +8,7 @@ from airbyte_protocol import AirbyteStateMessage
 from airbyte_protocol import AirbyteStream
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Generator
+from typing import Generator, List, DefaultDict
 
 import json
 
@@ -34,6 +34,12 @@ class Catalogs:
 
 
 class SingerHelper:
+    @staticmethod
+    def _transform_types(stream_properties: DefaultDict):
+        for field_name in stream_properties:
+            field_object = stream_properties[field_name]
+            field_object['type'] = SingerHelper._parse_type(field_object['type'])
+
     @staticmethod
     def get_catalogs(logger, shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)) -> Catalogs:
         completed_process = subprocess.run(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -72,7 +78,7 @@ class SingerHelper:
                         if out_json is not None and is_message(out_json):
                             transformed_json = transform(out_json)
                             if transformed_json is not None:
-                                if transformed_json.get('type') == "SCHEMA":
+                                if transformed_json.get('type') == "SCHEMA" or transformed_json.get('type') == "ACTIVATE_VERSION":
                                     pass
                                 elif transformed_json.get('type') == "STATE":
                                     out_record = AirbyteStateMessage(data=transformed_json["value"])
@@ -104,6 +110,7 @@ class SingerHelper:
         for singer_stream in discovered_singer_catalog.get("streams"):
             if singer_stream.get("stream") in stream_to_airbyte_schema:
                 new_metadatas = []
+
                 if singer_stream.get("metadata"):
                     metadatas = singer_stream.get("metadata")
                     for metadata in metadatas:
@@ -111,6 +118,7 @@ class SingerHelper:
                         new_metadata["metadata"]["selected"] = True
                         if not is_field_metadata(new_metadata):
                             new_metadata["metadata"]["forced-replication-method"] = "FULL_TABLE"
+                            new_metadata["metadata"]["replication-method"] = "FULL_TABLE"
                         new_metadatas += [new_metadata]
                     singer_stream["metadata"] = new_metadatas
 

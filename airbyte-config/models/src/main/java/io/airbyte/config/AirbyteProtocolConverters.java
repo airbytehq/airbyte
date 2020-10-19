@@ -87,6 +87,7 @@ public class AirbyteProtocolConverters {
   }
 
   // todo (cgardens) - add more robust handling for jsonschema types.
+
   /**
    * JsonSchema tends to have 2 types for fields one of which is null. The null is pretty irrelevant,
    * so look at types and find the first non-null one and use that.
@@ -96,16 +97,25 @@ public class AirbyteProtocolConverters {
    */
   private static DataType jsonSchemaTypesToDataType(JsonNode node) {
     if (node.isTextual()) {
-      return DataType.valueOf(node.asText().toUpperCase());
+      return DataType.valueOf(convertToNumberIfInteger(node.asText().toUpperCase()));
     } else if (node.isArray()) {
       return StreamSupport.stream(Spliterators.spliteratorUnknownSize(node.elements(), 0), false)
           .filter(typeString -> !typeString.asText().toUpperCase().equals("NULL"))
-          .map(typeString -> DataType.valueOf(typeString.asText().toUpperCase()))
+          .map(typeString -> DataType.valueOf(convertToNumberIfInteger(typeString.asText().toUpperCase())))
           .findFirst()
           // todo (cgardens) - or throw?
           .orElse(DataType.STRING);
     } else {
       throw new IllegalArgumentException("Unknown jsonschema type:" + Jsons.serialize(node));
+    }
+  }
+
+  // TODO HACK: convert Integer to Number until we have a more solid typing system
+  private static String convertToNumberIfInteger(String type) {
+    if (type.toUpperCase().equals("INTEGER")) {
+      return "NUMBER";
+    } else {
+      return type;
     }
   }
 
