@@ -84,6 +84,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
     <Content>
       <ContentCard title={<FormattedMessage id="sources.sourceSettings" />}>
         <ServiceForm
+          isEditMode
           onSubmit={onSubmit}
           formType="connection"
           dropDownData={[

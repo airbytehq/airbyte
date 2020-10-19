@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLifeRing, faBook } from "@fortawesome/free-solid-svg-icons";
+import { faLifeRing, faBook, faCog } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
@@ -81,6 +81,11 @@ const HelpIcon = styled(FontAwesomeIcon)`
   line-height: 21px;
 `;
 
+const AdminIcon = styled(FontAwesomeIcon)`
+  font-size: 15px;
+  line-height: 15px;
+`;
+
 const SideBar: React.FC = () => {
   return (
     <Bar>
@@ -110,6 +115,14 @@ const SideBar: React.FC = () => {
               <Destination />
               <Text>
                 <FormattedMessage id="sidebar.destination" />
+              </Text>
+            </MenuItem>
+          </li>
+          <li>
+            <MenuItem to={Routes.Admin} activeClassName="active">
+              <AdminIcon icon={faCog} />
+              <Text>
+                <FormattedMessage id="sidebar.admin" />
               </Text>
             </MenuItem>
           </li>
