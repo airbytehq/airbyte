@@ -19,6 +19,7 @@ type formInitialValues = {
 
 type IProps = {
   isLoading?: boolean;
+  isEditMode?: boolean;
   allowChangeConnector?: boolean;
   dropDownData: Array<IDataItem>;
   onDropDownSelect?: (id: string) => void;
@@ -53,7 +54,8 @@ const ServiceForm: React.FC<IProps> = ({
   specifications,
   documentationUrl,
   isLoading,
-  allowChangeConnector
+  allowChangeConnector,
+  isEditMode
 }) => {
   const properties = Object.keys(specifications?.properties || {});
 
@@ -75,19 +77,15 @@ const ServiceForm: React.FC<IProps> = ({
       ])
     : null;
 
-  const isEditMode = !!formValues;
   return (
     <Formik
-      initialValues={
-        formValues
-          ? formValues
-          : {
-              name: "",
-              serviceType: "",
-              frequency: "",
-              ...additionalFields
-            }
-      }
+      initialValues={{
+        name: "",
+        serviceType: "",
+        frequency: "",
+        ...additionalFields,
+        ...formValues
+      }}
       validateOnBlur={true}
       validateOnChange={true}
       validateOnMount={true}

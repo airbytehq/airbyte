@@ -16,9 +16,9 @@ const StepView = styled.div<{
   nonClickable?: boolean;
 }>`
   width: ${({ lightMode }) => (lightMode ? "auto" : "212px")};
-  min-width: ${({ lightMode }) => (lightMode ? "70px" : "auto")};
+  min-width: ${({ lightMode }) => (lightMode ? "100px" : "auto")};
   min-height: 28px;
-  padding: 6px;
+  padding: 6px 14px;
   border-radius: 4px;
   pointer-events: ${({ isActive, nonClickable }) =>
     isActive || nonClickable ? "none" : "all"};

@@ -8,14 +8,13 @@ import ConnectionResource, {
 import WorkspaceResource from "../../../core/resources/Workspace";
 import { SyncSchema } from "../../../core/resources/Schema";
 import { Source } from "../../../core/resources/Source";
-import { Destination } from "../../../core/resources/Destination";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
 import { SourceImplementation } from "../../../core/resources/SourceImplementation";
 
 type ValuesProps = {
   frequency: string;
   syncSchema: SyncSchema;
-  source?: Source;
+  source?: { name: string; sourceId: string };
 };
 
 type CreateConnectionProps = {
@@ -23,7 +22,7 @@ type CreateConnectionProps = {
   sourceImplementation?: SourceImplementation;
   destinationImplementationId: string;
   sourceConnector?: Source;
-  destinationConnector?: Destination;
+  destinationConnector?: { name: string; destinationId: string };
 };
 
 const useConnection = () => {

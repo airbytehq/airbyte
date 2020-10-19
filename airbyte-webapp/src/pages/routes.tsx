@@ -11,6 +11,7 @@ import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
 import PreferencesPage from "./PreferencesPage";
 import OnboardingPage from "./OnboardingPage";
+import AdminPage from "./AdminPage";
 import LoadingPage from "../components/LoadingPage";
 import MainView from "../components/MainView";
 import config from "../config";
@@ -26,21 +27,38 @@ export enum Routes {
   Destination = "/destination",
   Source = "/source",
   SourceNew = "/new-source",
+  Admin = "/admin",
   Root = "/"
 }
+
+const getPageName = (pathname: string) => {
+  const itemPageRegex = new RegExp(`${Routes.Source}/.*`);
+
+  if (pathname === Routes.Destination) {
+    return "Destination Page";
+  }
+  if (pathname === Routes.Root) {
+    return "Sources Page";
+  }
+  if (pathname === `${Routes.Source}${Routes.SourceNew}`) {
+    return "Create Source Page";
+  }
+  if (pathname.match(itemPageRegex)) {
+    return "Source Item Page";
+  }
+  if (pathname === Routes.Admin) {
+    return "Admin Page";
+  }
+
+  return "";
+};
 
 const MainViewRoutes = () => {
   const { pathname } = useRouter();
   useEffect(() => {
-    const itemPageRegex = new RegExp(`${Routes.Source}/.*`);
-    if (pathname === Routes.Destination) {
-      AnalyticsService.page("Destination Page");
-    } else if (pathname === Routes.Root) {
-      AnalyticsService.page("Sources Page");
-    } else if (pathname === `${Routes.Source}${Routes.SourceNew}`) {
-      AnalyticsService.page("Create Source Page");
-    } else if (pathname.match(itemPageRegex)) {
-      AnalyticsService.page("Source Item Page");
+    const pageName = getPageName(pathname);
+    if (pageName) {
+      AnalyticsService.page(pageName);
     }
   }, [pathname]);
 
@@ -53,6 +71,9 @@ const MainViewRoutes = () => {
           </Route>
           <Route path={Routes.Source}>
             <SourcesPage />
+          </Route>
+          <Route path={Routes.Admin}>
+            <AdminPage />
           </Route>
           <Route exact path={Routes.Root}>
             <SourcesPage />
