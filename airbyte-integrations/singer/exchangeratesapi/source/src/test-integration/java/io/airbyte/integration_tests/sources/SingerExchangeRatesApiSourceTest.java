@@ -48,7 +48,7 @@ import org.junit.jupiter.api.Test;
 public class SingerExchangeRatesApiSourceTest {
 
   private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
-  private static final String IMAGE_NAME = "airbyte/source-exchangeratesapi-singer:dev";
+  private static final String IMAGE_NAME = "airbyte/source-exchangeratesapi-singer-abprotocol:dev";
 
   private static final String CATALOG = "catalog.json";
   private static final String CONFIG = "config.json";
@@ -114,7 +114,7 @@ public class SingerExchangeRatesApiSourceTest {
 
   @Test
   public void testSync() throws IOException, InterruptedException, WorkerException {
-    final Date date = Date.from(Instant.now().minus(2, ChronoUnit.DAYS));
+    final Date date = Date.from(Instant.now().minus(3, ChronoUnit.DAYS));
     final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
 
     IOs.writeFile(jobRoot, CONFIG, String.format("{\"start_date\":\"%s\"}", fmt.format(date)));
@@ -127,7 +127,7 @@ public class SingerExchangeRatesApiSourceTest {
     assertEquals(0, process.exitValue());
 
     final Optional<String> record = IOs.readFile(syncOutputPath).lines().filter(s -> s.contains("RECORD")).findFirst();
-    assertTrue(record.isPresent());
+    assertTrue(record.isPresent(), "Date: " + date + "tap output: " + IOs.readFile(syncOutputPath));
 
     assertTrue(Jsons.deserialize(record.get())
         .get("record")

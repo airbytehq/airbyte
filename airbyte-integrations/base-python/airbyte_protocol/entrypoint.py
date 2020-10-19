@@ -30,6 +30,7 @@ import tempfile
 
 from .integration import ConfigContainer, Source
 from .logger import AirbyteLogger
+from airbyte_protocol import AirbyteMessage, AirbyteConnectionStatus
 
 impl_module = os.environ.get('AIRBYTE_IMPL_MODULE', Source.__module__)
 impl_class = os.environ.get('AIRBYTE_IMPL_PATH', Source.__name__)
@@ -89,8 +90,8 @@ class AirbyteEntrypoint(object):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
-                # todo: output this as a JSON formatted message
-                print(self.source.spec(logger).spec_string)
+                message = AirbyteMessage(type='SPEC', spec=self.source.spec(logger))
+                print(message.json(exclude_unset=True))
                 sys.exit(0)
 
             raw_config = self.source.read_config(parsed_args.config)
@@ -107,15 +108,20 @@ class AirbyteEntrypoint(object):
 
             if cmd == "check":
                 check_result = self.source.check(logger, config_container)
+
                 if check_result.successful:
                     logger.info("Check succeeded")
-                    sys.exit(0)
+                    status = AirbyteConnectionStatus(status='SUCCEEDED')
                 else:
                     logger.error("Check failed")
-                    sys.exit(1)
+                    status = AirbyteConnectionStatus(status='FAILED')
+                message = AirbyteMessage(type='CONNECTION_STATUS', connectionStatus=status)
+                print(message.json(exclude_unset=True))
+                sys.exit(0)
             elif cmd == "discover":
                 catalog = self.source.discover(logger, config_container)
-                print(catalog.json(exclude_unset=True))
+                message = AirbyteMessage(type='CATALOG', catalog=catalog)
+                print(message.json(exclude_unset=True))
                 sys.exit(0)
             elif cmd == "read":
                 generator = self.source.read(logger, config_container, parsed_args.catalog, parsed_args.state)

@@ -70,6 +70,7 @@ const DestinationPage: React.FC = () => {
           title={<FormattedMessage id="destination.destinationSettings" />}
         >
           <ServiceForm
+            isEditMode
             onSubmit={onSubmitForm}
             formType="destination"
             dropDownData={[

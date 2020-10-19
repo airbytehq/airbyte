@@ -1,7 +1,6 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
-import styled from "styled-components";
 
 import PageTitle from "../../../../components/PageTitle";
 import Breadcrumbs from "../../../../components/Breadcrumbs";
@@ -13,24 +12,13 @@ import SettingsView from "./components/SettingsView";
 import SchemaView from "./components/SchemaView";
 import ConnectionResource from "../../../../core/resources/Connection";
 import LoadingPage from "../../../../components/LoadingPage";
+import MainPageWithScroll from "../../../../components/MainPageWithScroll";
 import DestinationImplementationResource from "../../../../core/resources/DestinationImplementation";
 import config from "../../../../config";
 import DestinationResource from "../../../../core/resources/Destination";
 import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
 import FrequencyConfig from "../../../../data/FrequencyConfig.json";
 import useConnection from "../../../../components/hooks/services/useConnectionHook";
-
-const Content = styled.div`
-  overflow-y: auto;
-  height: calc(100% - 67px);
-  margin-top: -17px;
-  padding-top: 17px;
-`;
-
-const Page = styled.div`
-  overflow-y: hidden;
-  height: 100%;
-`;
 
 const SourceItemPage: React.FC = () => {
   const { query, push, history } = useRouter();
@@ -152,23 +140,24 @@ const SourceItemPage: React.FC = () => {
   };
 
   return (
-    <Page>
-      <PageTitle
-        withLine
-        title={<Breadcrumbs data={breadcrumbsData} />}
-        middleComponent={
-          <StepsMenu
-            lightMode
-            data={steps}
-            onSelect={onSelectStep}
-            activeStep={currentStep}
-          />
-        }
-      />
-      <Content>
-        <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
-      </Content>
-    </Page>
+    <MainPageWithScroll
+      title={
+        <PageTitle
+          withLine
+          title={<Breadcrumbs data={breadcrumbsData} />}
+          middleComponent={
+            <StepsMenu
+              lightMode
+              data={steps}
+              onSelect={onSelectStep}
+              activeStep={currentStep}
+            />
+          }
+        />
+      }
+    >
+      <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
+    </MainPageWithScroll>
   );
 };
 

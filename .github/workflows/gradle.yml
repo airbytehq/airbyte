@@ -1,6 +1,9 @@
 name: Airbyte CI
 
-on: push
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  push:
 
 jobs:
   build:
