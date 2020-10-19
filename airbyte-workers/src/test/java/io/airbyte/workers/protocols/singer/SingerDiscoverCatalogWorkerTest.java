@@ -57,6 +57,7 @@ import org.junit.jupiter.api.Test;
 public class SingerDiscoverCatalogWorkerTest {
 
   private static final JsonNode CREDENTIALS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
@@ -65,7 +66,7 @@ public class SingerDiscoverCatalogWorkerTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    jobRoot = Files.createTempDirectory("");
+    jobRoot = Files.createTempDirectory(TEST_ROOT, "");
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 

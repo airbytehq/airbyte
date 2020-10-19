@@ -66,6 +66,7 @@ import org.junit.jupiter.api.Test;
 
 class DefaultSingerSourceTest {
 
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
@@ -92,7 +93,7 @@ class DefaultSingerSourceTest {
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
-    jobRoot = Files.createTempDirectory("test");
+    jobRoot = Files.createTempDirectory(TEST_ROOT, "test");
 
     discoverSchemaWorker = mock(SingerDiscoverCatalogWorker.class);
     when(discoverSchemaWorker.run(

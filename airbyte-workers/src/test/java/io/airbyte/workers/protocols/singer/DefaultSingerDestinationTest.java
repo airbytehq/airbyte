@@ -55,6 +55,7 @@ import org.junit.jupiter.api.Test;
 
 class DefaultSingerDestinationTest {
 
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String JOB_ROOT_PREFIX = "workspace";
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
@@ -68,7 +69,7 @@ class DefaultSingerDestinationTest {
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
-    jobRoot = Files.createTempDirectory(JOB_ROOT_PREFIX);
+    jobRoot = Files.createTempDirectory(TEST_ROOT, JOB_ROOT_PREFIX);
 
     process = mock(Process.class);
     outputStream = spy(new ByteArrayOutputStream());

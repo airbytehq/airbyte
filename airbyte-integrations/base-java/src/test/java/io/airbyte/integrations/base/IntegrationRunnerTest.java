@@ -67,6 +67,7 @@ class IntegrationRunnerTest {
   private static final JsonNode CONFIG = Jsons.deserialize(CONFIG_STRING);
   private static final String STREAM_NAME = "users";
   private static final Long EMITTED_AT = Instant.now().toEpochMilli();
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
 
@@ -82,7 +83,7 @@ class IntegrationRunnerTest {
     cliParser = mock(IntegrationCliParser.class);
     stdoutConsumer = Mockito.mock(Consumer.class);
     destination = mock(Destination.class);
-    Path configDir = Files.createTempDirectory("test");
+    Path configDir = Files.createTempDirectory(TEST_ROOT, "test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
     catalogPath = IOs.writeFile(configDir, CATALOG_FILE_NAME, Jsons.serialize(CATALOG));
