@@ -81,19 +81,20 @@ public class AirbyteProtocolConverters {
           .withName(airbyteStream.getName())
           .withFields(list.stream().map(item -> new Field()
               .withName(item.getKey())
-              .withDataType(singerTypesToDataType(item.getValue().get("type")))
+              .withDataType(jsonSchemaTypesToDataType(item.getValue().get("type")))
               .withSelected(true)).collect(Collectors.toList()));
     }).collect(Collectors.toList()));
   }
 
+  // todo (cgardens) - add more robust handling for jsonschema types.
   /**
-   * Singer tends to have 2 types for fields one of which is null. The null is pretty irrelevant, so
-   * look at types and find the first non-null one and use that.
+   * JsonSchema tends to have 2 types for fields one of which is null. The null is pretty irrelevant,
+   * so look at types and find the first non-null one and use that.
    *
-   * @param singerTypes - list of types discovered by singer.
+   * @param node - list of types from jsonschema.
    * @return reduce down to one type which best matches the field's data type
    */
-  private static DataType singerTypesToDataType(JsonNode node) {
+  private static DataType jsonSchemaTypesToDataType(JsonNode node) {
     if (node.isTextual()) {
       return DataType.valueOf(node.asText().toUpperCase());
     } else if (node.isArray()) {
