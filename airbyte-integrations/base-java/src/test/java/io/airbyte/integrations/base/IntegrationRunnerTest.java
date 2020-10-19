@@ -37,13 +37,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -99,7 +100,7 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, destination).run(ARGS);
 
     verify(destination).spec();
-    verify(stdoutConsumer).accept(Jsons.serialize(output));
+    verify(stdoutConsumer).accept(Jsons.serialize(new AirbyteMessage().withType(Type.SPEC).withSpec(output)));
   }
 
   @Test
@@ -113,7 +114,7 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, destination).run(ARGS);
 
     verify(destination).check(CONFIG);
-    verify(stdoutConsumer).accept(Jsons.serialize(output));
+    verify(stdoutConsumer).accept(Jsons.serialize(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus((output))));
   }
 
   @SuppressWarnings("unchecked")

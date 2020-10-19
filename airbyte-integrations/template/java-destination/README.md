@@ -1,4 +1,4 @@
-### How to write a destination integration in java.
+### How to write a destination integration in Java.
 1. Copy the template into a directory with your integration name. `cp -r airbyte-integrations/template/java-destination airbyte-integrations/<name of integration>-destination`.
     1. By convention this should be the name of the target tool with `-destination` appended to it. e.g. `bigquery-destination`. The rest of this tutorial will assume the name: `bigquery-destination`.
 1. Adjust the name directory structure to remove `java-destination` and `template` and use the integration name instead.
@@ -18,3 +18,5 @@
 1. Update the docker file to know how to find your integration.
     1. e.g. in `airbyte-integrations/template/java-destination/src/main/java/io/airbyte/integrations/destination/bigquery/dockerfile`, set the `APPLICATION` environment variable to match the top-level directory name of your integration. In the case of `airbyte-integrations/bigquery-destination`, `bigquery-destination` would be the correct value. `ENV APPLICATION bigquery-destination`  
 1. todo: add step on how to add documentation.
+
+Please reach out in a GitHub Issue or Slack if you run into any issues developing a destination. We're happy to help!

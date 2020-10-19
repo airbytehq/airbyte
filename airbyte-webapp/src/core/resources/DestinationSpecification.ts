@@ -15,11 +15,6 @@ export type specification = {
   required: [string];
 };
 
-export interface DestinationSpecification {
-  destinationId: string;
-  connectionSpecification: specification;
-}
-
 export default class DestinationSpecificationResource extends BaseResource
   implements DestinationSpecification {
   readonly destinationId: string = "";

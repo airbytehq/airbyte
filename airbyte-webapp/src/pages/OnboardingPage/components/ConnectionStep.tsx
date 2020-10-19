@@ -6,7 +6,7 @@ import styled from "styled-components";
 import ContentCard from "../../../components/ContentCard";
 import ConnectionBlock from "../../../components/ConnectionBlock";
 import ConnectionForm from "./ConnectionForm";
-import SourceResource, { Source } from "../../../core/resources/Source";
+import SourceResource from "../../../core/resources/Source";
 import DestinationResource from "../../../core/resources/Destination";
 import Spinner from "../../../components/Spinner";
 import { SyncSchema } from "../../../core/resources/Schema";
@@ -18,7 +18,10 @@ type IProps = {
   onSubmit: (values: {
     frequency: string;
     syncSchema: SyncSchema;
-    source: Source;
+    source: {
+      name: string;
+      sourceId: string;
+    };
   }) => void;
   currentSourceId: string;
   currentDestinationId: string;

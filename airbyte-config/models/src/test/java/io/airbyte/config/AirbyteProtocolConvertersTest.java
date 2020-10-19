@@ -27,7 +27,9 @@ package io.airbyte.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Lists;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
@@ -67,6 +69,30 @@ class AirbyteProtocolConvertersTest {
   @Test
   void testToSchema() {
     assertEquals(SCHEMA, AirbyteProtocolConverters.toSchema(CATALOG));
+  }
+
+  @Test
+  void testToSchemaWithMultipleJsonSchemaTypesAndFormats() {
+    // written as string because helper interface does not support building json schema with multiple
+    // types. (can add this functionliaty if these helpers stay)
+    final String testString =
+        "{\"type\":\"CATALOG\",\"catalog\":{\"streams\":[{\"name\":\"users\",\"json_schema\":{ \"properties\": {\"date\":{\"type\":\"string\",\"format\":\"date-time\"},\"age\":{\"type\":[\"null\",\"number\"]}}}}]}}";
+
+    Schema schema = new Schema()
+        .withStreams(Lists.newArrayList(new Stream()
+            .withName(STREAM)
+            .withFields(Lists.newArrayList(
+                new io.airbyte.config.Field()
+                    .withName("date")
+                    .withDataType(DataType.STRING)
+                    .withSelected(true),
+                new io.airbyte.config.Field()
+                    .withName(COLUMN_AGE)
+                    .withDataType(DataType.NUMBER)
+                    .withSelected(true)))));
+
+    final AirbyteMessage message = Jsons.deserialize(testString, AirbyteMessage.class);
+    assertEquals(schema, AirbyteProtocolConverters.toSchema(message.getCatalog()));
   }
 
 }
