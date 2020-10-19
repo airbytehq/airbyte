@@ -2,11 +2,12 @@ import styled from "styled-components";
 
 type IProps = {
   center?: boolean;
+  bold?: boolean;
 };
 
 export const H1 = styled.h1<IProps>`
   font-style: normal;
-  font-weight: 500;
+  font-weight: ${props => (props.bold ? 600 : 500)};
   font-size: 28px;
   line-height: 34px;
   display: block;
