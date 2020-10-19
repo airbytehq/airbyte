@@ -6,7 +6,7 @@
    ``` 
 1. Update the name, description, and dependencies in `setup.py`
     1. Your Singer Tap's package should be added as a dependency.
-    1. Note that release dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used for local development. 
+    1. Note that all of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies for local development.
 1. Update the `Dockerfile` to point `CODE_PATH` and `AIRBYTE_IMPL_MODULE` at `SOURCENAME_singer_source`
 1. Edit the classname in `SOURCENAME_singer_source/source.py` and update the `Dockerfile` to point `AIRBYTE_IMPL_PATH` to that classname. 
 1. Update the `io.airbyte.name` label in the `Dockerfile` to `airbyte/source-SOURCENAME-singer`
@@ -21,10 +21,10 @@
     1. `read_cmd` will write messages to stdout. 
         1. The command to specify is typically the same as the sync from a Singer Tap.
         1. Usually this command needs to be computed from the config file and optionally the state.
-1. Update the `sample_files` directory with an example config and catalog (discover output).
 1. We highly recommend creating tests for your integration. 
     1. Since some tests may require external APIs, you may need to give instructions on how to set up a testing instance for CI testing.
 1. Update `README.md` to document the usage of your integration. 
+    1. We recommend including sample configs and catalogs in the `sample_files` directory or within your `README.md`.
 1. Add your source to the source registry in `airbyte-config/init`.
 
 Please reach out in a GitHub Issue or Slack if you run into any issues developing a source. We're happy to help!

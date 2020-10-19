@@ -5,7 +5,7 @@
    mv airbyte-integrations/source-SOURCENAME/template_python_source airbyte-integrations/source-SOURCENAME/SOURCENAME_source
    ``` 
 1. Update the name, description, and dependencies in `setup.py`
-    1. Note that release dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used for local development. 
+    1. Note that all of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies for local development. 
 1. Update the `Dockerfile` to point `CODE_PATH` and `AIRBYTE_IMPL_MODULE` at `SOURCENAME_source`
 1. Edit the classname in `SOURCENAME_singer_source/source.py` and update the `Dockerfile` to point `AIRBYTE_IMPL_PATH` to that classname.
 1. Update the `io.airbyte.name` label in the `Dockerfile` to `airbyte/source-SOURCENAME`
