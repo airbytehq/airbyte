@@ -33,7 +33,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 // todo (cgardens) - hack, remove after we've gotten rid of Schema object.
 public class AirbyteProtocolConverters {
@@ -69,6 +71,8 @@ public class AirbyteProtocolConverters {
   public static Schema toSchema(AirbyteCatalog catalog) {
     return new Schema().withStreams(catalog.getStreams().stream().map(airbyteStream -> {
       final List<Entry<String, JsonNode>> list = new ArrayList<>();
+      // todo (cgardens) - assumes it is json schema type object with properties. not a stellar
+      // assumption.
       final Iterator<Entry<String, JsonNode>> iterator = airbyteStream.getJsonSchema().get("properties").fields();
       while (iterator.hasNext()) {
         list.add(iterator.next());
@@ -77,9 +81,32 @@ public class AirbyteProtocolConverters {
           .withName(airbyteStream.getName())
           .withFields(list.stream().map(item -> new Field()
               .withName(item.getKey())
-              .withDataType(DataType.fromValue(item.getValue().get("type").asText()))
+              .withDataType(jsonSchemaTypesToDataType(item.getValue().get("type")))
               .withSelected(true)).collect(Collectors.toList()));
     }).collect(Collectors.toList()));
+  }
+
+  // todo (cgardens) - add more robust handling for jsonschema types.
+  /**
+   * JsonSchema tends to have 2 types for fields one of which is null. The null is pretty irrelevant,
+   * so look at types and find the first non-null one and use that.
+   *
+   * @param node - list of types from jsonschema.
+   * @return reduce down to one type which best matches the field's data type
+   */
+  private static DataType jsonSchemaTypesToDataType(JsonNode node) {
+    if (node.isTextual()) {
+      return DataType.valueOf(node.asText().toUpperCase());
+    } else if (node.isArray()) {
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(node.elements(), 0), false)
+          .filter(typeString -> !typeString.asText().toUpperCase().equals("NULL"))
+          .map(typeString -> DataType.valueOf(typeString.asText().toUpperCase()))
+          .findFirst()
+          // todo (cgardens) - or throw?
+          .orElse(DataType.STRING);
+    } else {
+      throw new IllegalArgumentException("Unknown jsonschema type:" + Jsons.serialize(node));
+    }
   }
 
 }

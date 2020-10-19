@@ -35,30 +35,6 @@ class Catalogs:
 
 class SingerHelper:
     @staticmethod
-    def _normalize_type(type_field):
-        if isinstance(type_field, list):
-            non_null_fields = [type_string.lower() for type_string in type_field if type_string.lower() != 'null']
-            if len(non_null_fields) != 1:
-                raise Exception(f"Unexpected type in singer catalog: {type_field} ")
-            return non_null_fields[0]
-        else:
-            return type_field
-
-    @staticmethod
-    def _parse_type(type_field):
-        normalized_type = SingerHelper._normalize_type(type_field)
-        switcher = {
-            "string": "string",
-            "integer": "number",
-            "number": "number",
-            "null": "string",
-            "boolean": "boolean",
-            "object": "object",
-            "array": "array"
-        }
-        return switcher[normalized_type]
-
-    @staticmethod
     def _transform_types(stream_properties: DefaultDict):
         for field_name in stream_properties:
             field_object = stream_properties[field_name]
@@ -77,8 +53,7 @@ class SingerHelper:
 
         for stream in singer_catalog.get("streams"):
             name = stream.get("stream")
-            SingerHelper._transform_types(stream.get("schema").get("properties"))
-            schema = {"type": "object", "properties": stream.get("schema").get("properties")}
+            schema = stream.get("schema")
             airbyte_streams += [AirbyteStream(name=name, json_schema=schema)]
 
         airbyte_catalog = airbyte_transform(AirbyteCatalog(streams=airbyte_streams))
@@ -135,6 +110,7 @@ class SingerHelper:
         for singer_stream in discovered_singer_catalog.get("streams"):
             if singer_stream.get("stream") in stream_to_airbyte_schema:
                 new_metadatas = []
+<<<<<<< HEAD
                 metadatas = singer_stream.get("metadata")
                 for metadata in metadatas:
                     new_metadata = metadata
@@ -143,6 +119,17 @@ class SingerHelper:
                         new_metadata["metadata"]["replication-method"] = "FULL_TABLE"
                     new_metadatas += [new_metadata]
                 singer_stream["metadata"] = new_metadatas
+=======
+                if singer_stream.get("metadata"):
+                    metadatas = singer_stream.get("metadata")
+                    for metadata in metadatas:
+                        new_metadata = metadata
+                        new_metadata["metadata"]["selected"] = True
+                        if not is_field_metadata(new_metadata):
+                            new_metadata["metadata"]["forced-replication-method"] = "FULL_TABLE"
+                        new_metadatas += [new_metadata]
+                    singer_stream["metadata"] = new_metadatas
+>>>>>>> 238867d6022f890b99e6a2d17603edbc5a897a50
 
             masked_singer_streams += [singer_stream]
 
