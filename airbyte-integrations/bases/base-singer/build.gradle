@@ -1,0 +1,4 @@
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+
+buildImage.dependsOn ':airbyte-integrations:bases:base-python:buildImage'
+

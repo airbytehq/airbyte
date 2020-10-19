@@ -1,0 +1,18 @@
+plugins {
+    id 'application'
+}
+
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-protocol:models')
+}
+
+application {
+    // fixme - replace this with the fully qualified path to the new integration.
+    mainClass = 'io.airbyte.integrations.destination.template.DestinationTemplate'
+}
+
+buildImage.dependsOn ':airbyte-integrations:bases:base-java:buildImage'

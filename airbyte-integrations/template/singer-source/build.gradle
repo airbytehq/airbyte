@@ -1,5 +1,0 @@
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
-
-integrationTest.dependsOn(buildImage)
-buildImage.dependsOn ':airbyte-integrations:base-singer:buildImage'

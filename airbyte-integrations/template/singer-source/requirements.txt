@@ -1,3 +1,0 @@
--e ../../base-python
--e ../../base-singer
--e .
