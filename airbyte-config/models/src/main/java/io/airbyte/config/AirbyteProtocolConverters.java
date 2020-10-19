@@ -81,7 +81,7 @@ public class AirbyteProtocolConverters {
           .withName(airbyteStream.getName())
           .withFields(list.stream().map(item -> new Field()
               .withName(item.getKey())
-              .withDataType(jsonSchemaTypesToDataType(item.getValue().get("type")))
+              .withDataType(getDataType(item.getValue()))
               .withSelected(true)).collect(Collectors.toList()));
     }).collect(Collectors.toList()));
   }
@@ -107,6 +107,18 @@ public class AirbyteProtocolConverters {
           .orElse(DataType.STRING);
     } else {
       throw new IllegalArgumentException("Unknown jsonschema type:" + Jsons.serialize(node));
+    }
+  }
+
+  // TODO HACK: this defaults to OBJECT in the case of anyOf. May fail with anyOf: [int or string],
+  // for example.
+  private static DataType getDataType(JsonNode node) {
+    JsonNode type = node.get("type");
+
+    if (type == null) {
+      return DataType.OBJECT;
+    } else {
+      return jsonSchemaTypesToDataType(type);
     }
   }
 
