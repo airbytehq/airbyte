@@ -16,6 +16,7 @@ impl = getattr(module, impl_class)
 
 logger = AirbyteLogger()
 
+
 class AirbyteEntrypoint(object):
     def __init__(self, source):
         self.source = source
