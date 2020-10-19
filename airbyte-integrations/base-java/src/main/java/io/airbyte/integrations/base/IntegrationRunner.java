@@ -30,6 +30,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
@@ -65,10 +66,10 @@ public class IntegrationRunner {
     LOGGER.info("Integration config: {}", parsed);
 
     switch (parsed.getCommand()) {
-      case SPEC -> stdoutConsumer.accept(Jsons.serialize(destination.spec()));
+      case SPEC -> stdoutConsumer.accept(Jsons.serialize(new AirbyteMessage().withType(Type.SPEC).withSpec(destination.spec())));
       case CHECK -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        stdoutConsumer.accept(Jsons.serialize(destination.check(config)));
+        stdoutConsumer.accept(Jsons.serialize(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(destination.check(config))));
       }
       case DISCOVER -> {
         throw new IllegalStateException("Discover is not implemented for destinations");
