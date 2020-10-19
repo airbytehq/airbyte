@@ -41,9 +41,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -119,9 +117,8 @@ public class SingerExchangeRatesApiSourceTest {
     final Date date = Date.from(Instant.now().minus(2, ChronoUnit.DAYS));
     final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
 
-    IOs.writeFile(jobRoot, CONFIG, String.format("{\"start_date\":\"%s\", \"base\":\"USD\"}", fmt.format(date)));
+    IOs.writeFile(jobRoot, CONFIG, String.format("{\"start_date\":\"%s\"}", fmt.format(date)));
     IOs.writeFile(jobRoot, CATALOG, MoreResources.readResource("catalog.json"));
-    System.out.println("MoreResources.readResource(\"catalog.json\") = " + MoreResources.readResource("catalog.json"));
 
     final Path syncOutputPath = jobRoot.resolve("sync_output.txt");
     final Process process = createSyncProcess(syncOutputPath);
@@ -129,9 +126,6 @@ public class SingerExchangeRatesApiSourceTest {
 
     assertEquals(0, process.exitValue());
 
-    final List<String> list = IOs.readFile(syncOutputPath).lines().collect(Collectors.toList());
-    System.out.println("list.size() = " + list.size());
-    System.out.println("list = " + list);
     final Optional<String> record = IOs.readFile(syncOutputPath).lines().filter(s -> s.contains("RECORD")).findFirst();
     assertTrue(record.isPresent());
 
@@ -163,7 +157,7 @@ public class SingerExchangeRatesApiSourceTest {
   }
 
   private Process createSyncProcess(Path syncOutputPath) throws IOException, WorkerException {
-    return launcher.read(jobRoot, CONFIG, CATALOG)
+    return launcher.read(jobRoot, CONFIG, "catalog.json")
         .redirectOutput(syncOutputPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
