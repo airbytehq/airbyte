@@ -7,6 +7,7 @@ from .models import AirbyteMessage
 from .models import AirbyteRecordMessage
 from .models import AirbyteStateMessage
 from .models import AirbyteStream
+from .models import ConnectorSpecification
 
 # Must be the last one because the way we load the connector module creates a circular
 # dependency and models might not have been loaded yet
