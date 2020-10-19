@@ -1,5 +1,5 @@
 import requests
-from airbyte_protocol import AirbyteCheckResponse
+from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_singer import SingerSource
 
 
@@ -7,11 +7,16 @@ class SourceStripeSinger(SingerSource):
     def __init__(self):
         pass
 
-    def check(self, logger, config_container) -> AirbyteCheckResponse:
-        json_config = config_container.rendered_config
-        r = requests.get('https://api.stripe.com/v1/customers', auth=(json_config['client_secret'], ''))
-
-        return AirbyteCheckResponse(r.status_code == 200, {})
+    def check(self, logger, config_container) -> AirbyteConnectionStatus:
+        try:
+            json_config = config_container.rendered_config
+            r = requests.get('https://api.stripe.com/v1/customers', auth=(json_config['client_secret'], ''))
+            if r.status_code == 200:
+                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            else:
+                return AirbyteConnectionStatus(status=Status.FAILED, message=r.text)
+        except Exception as e:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
 
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-stripe --config {config_path} --discover"
