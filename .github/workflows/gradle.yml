@@ -48,7 +48,7 @@ jobs:
         run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
 
       - name: Ensure no file change
-        run: test -z "$(git status --porcelain)"
+        run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Run Integration Tests
         run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
