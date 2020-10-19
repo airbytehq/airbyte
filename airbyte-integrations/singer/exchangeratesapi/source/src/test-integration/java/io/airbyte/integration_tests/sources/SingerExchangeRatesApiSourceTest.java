@@ -126,11 +126,8 @@ public class SingerExchangeRatesApiSourceTest {
 
     assertEquals(0, process.exitValue());
 
-    System.out.println(IOs.readFile(syncOutputPath));
-    System.out.println(IOs.readFile(syncOutputPath).lines());
-    System.out.println(IOs.readFile(syncOutputPath).lines().filter(s -> s.contains("RECORD")));
     final Optional<String> record = IOs.readFile(syncOutputPath).lines().filter(s -> s.contains("RECORD")).findFirst();
-    assertTrue(record.isPresent());
+    assertTrue(record.isPresent(), IOs.readFile(syncOutputPath));
 
     assertTrue(Jsons.deserialize(record.get())
         .get("record")
