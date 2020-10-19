@@ -47,7 +47,7 @@ class SingerHelper:
 
         for stream in singer_catalog.get("streams"):
             name = stream.get("stream")
-            schema = stream.get("schema").get("properties")
+            schema = stream.get("schema")
             airbyte_streams += [AirbyteStream(name=name, json_schema=schema)]
 
         airbyte_catalog = airbyte_transform(AirbyteCatalog(streams=airbyte_streams))
@@ -104,14 +104,15 @@ class SingerHelper:
         for singer_stream in discovered_singer_catalog.get("streams"):
             if singer_stream.get("stream") in stream_to_airbyte_schema:
                 new_metadatas = []
-                metadatas = singer_stream.get("metadata")
-                for metadata in metadatas:
-                    new_metadata = metadata
-                    new_metadata["metadata"]["selected"] = True
-                    if not is_field_metadata(new_metadata):
-                        new_metadata["metadata"]["forced-replication-method"] = "FULL_TABLE"
-                    new_metadatas += [new_metadata]
-                singer_stream["metadata"] = new_metadatas
+                if singer_stream.get("metadata"):
+                    metadatas = singer_stream.get("metadata")
+                    for metadata in metadatas:
+                        new_metadata = metadata
+                        new_metadata["metadata"]["selected"] = True
+                        if not is_field_metadata(new_metadata):
+                            new_metadata["metadata"]["forced-replication-method"] = "FULL_TABLE"
+                        new_metadatas += [new_metadata]
+                    singer_stream["metadata"] = new_metadatas
 
             masked_singer_streams += [singer_stream]
 

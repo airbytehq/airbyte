@@ -3,8 +3,7 @@ import pkgutil
 from dataclasses import dataclass
 from typing import Generator
 
-from .models import AirbyteCatalog, AirbyteMessage
-
+from .models import AirbyteCatalog, AirbyteMessage, ConnectorSpecification
 
 class AirbyteSpec(object):
     @staticmethod
@@ -35,11 +34,9 @@ class Integration(object):
     def __init__(self):
         pass
 
-    def spec(self, logger) -> AirbyteSpec:
+    def spec(self, logger) -> ConnectorSpecification:
         raw_spec = pkgutil.get_data(self.__class__.__module__.split('.')[0], 'spec.json')
-        # we need to output a spec on a single line
-        flattened_json = json.dumps(json.loads(raw_spec))
-        return AirbyteSpec(flattened_json)
+        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
 
     def read_config(self, config_path):
         with open(config_path, 'r') as file:

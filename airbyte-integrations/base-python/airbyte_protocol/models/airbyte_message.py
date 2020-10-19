@@ -64,8 +64,8 @@ class AirbyteConnectionStatus(BaseModel):
 
 class AirbyteStream(BaseModel):
     name: str = Field(..., description="Stream's name.")
-    json_schema: Optional[Dict[str, Any]] = Field(
-        None, description='Stream schema using Json Schema specs.'
+    json_schema: Dict[str, Any] = Field(
+        ..., description='Stream schema using Json Schema specs.'
     )
 
 

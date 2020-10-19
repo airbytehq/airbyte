@@ -121,7 +121,7 @@ definitions:
     additionalProperties: false
     required:
       - name
-      - schema
+      - json_schema
     properties:
       name:
         type: string

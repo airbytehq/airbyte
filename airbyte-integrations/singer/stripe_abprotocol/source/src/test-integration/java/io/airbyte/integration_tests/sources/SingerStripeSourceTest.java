@@ -25,7 +25,6 @@
 package io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,12 +37,19 @@ import com.stripe.param.CustomerListParams;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,6 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -131,24 +138,41 @@ public class SingerStripeSourceTest {
     InputStream expectedSpecInputStream = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("spec.json"));
 
     assertEquals(
-        Jsons.deserialize(new String(expectedSpecInputStream.readAllBytes())),
-        Jsons.deserialize(new String(process.getInputStream().readAllBytes())));
+        new AirbyteMessage().withType(Type.SPEC)
+            .withSpec(Jsons.deserialize(new String(expectedSpecInputStream.readAllBytes()), ConnectorSpecification.class)),
+        Jsons.deserialize(new String(process.getInputStream().readAllBytes()), AirbyteMessage.class));
   }
 
   @Test
   public void testSuccessfulCheck() throws IOException, InterruptedException, WorkerException {
-    Process process = createCheckProcess(CONFIG);
+    Process process = launcher.check(jobRoot, CONFIG).start();
     process.waitFor();
 
     assertEquals(0, process.exitValue());
+
+    final Optional<String> statusMessageString =
+        new BufferedReader(new InputStreamReader(process.getInputStream())).lines().filter(s -> s.contains("CONNECTION_STATUS")).findFirst();
+
+    assertTrue(statusMessageString.isPresent());
+    assertEquals(
+        new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED)),
+        Jsons.deserialize(statusMessageString.get(), AirbyteMessage.class));
   }
 
   @Test
   public void testInvalidCredentialsCheck() throws IOException, InterruptedException, WorkerException {
-    Process process = createCheckProcess(INVALID_CONFIG);
+    Process process = launcher.check(jobRoot, INVALID_CONFIG).start();
     process.waitFor();
 
-    assertNotEquals(0, process.exitValue());
+    assertEquals(0, process.exitValue());
+
+    final Optional<String> statusMessageString =
+        new BufferedReader(new InputStreamReader(process.getInputStream())).lines().filter(s -> s.contains("CONNECTION_STATUS")).findFirst();
+    assertTrue(statusMessageString.isPresent());
+
+    assertEquals(
+        new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(new AirbyteConnectionStatus().withStatus(Status.FAILED)),
+        Jsons.deserialize(statusMessageString.get(), AirbyteMessage.class));
   }
 
   @Test
@@ -231,13 +255,6 @@ public class SingerStripeSourceTest {
     fullConfig.put("start_date", "2017-01-01T00:00:00Z");
 
     Files.writeString(Path.of(jobRoot.toString(), INVALID_CONFIG), Jsons.serialize(fullConfig));
-  }
-
-  private Process createCheckProcess(String configFileName) throws IOException, WorkerException {
-    return launcher.check(jobRoot, configFileName)
-        .redirectOutput(catalogPath.toFile())
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
-        .start();
   }
 
   private Process createDiscoveryProcess(String configFileName) throws IOException, WorkerException {
