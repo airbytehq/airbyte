@@ -11,8 +11,10 @@ class SourceStripeSinger(SingerSource):
         try:
             json_config = config_container.rendered_config
             r = requests.get('https://api.stripe.com/v1/customers', auth=(json_config['client_secret'], ''))
-
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED if (r.status_code == 200) else Status.FAILED)
+            if r.status_code == 200:
+                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            else:
+                return AirbyteConnectionStatus(status=Status.FAILED, message=r.text)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
 

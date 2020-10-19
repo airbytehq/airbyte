@@ -30,7 +30,7 @@ class PostgresSingerSource(SingerSource):
     def discover_cmd(self, logger, config_container: ConfigContainer) -> AirbyteCatalog:
         return f"{TAP_CMD} --config {config_container.rendered_config_path} --discover"
 
-    def read_cmd(self, logger, config_container: ConfigContainer, catalog_path: str, state=None) -> Generator[AirbyteMessage, None, None]:
+    def read_cmd(self, logger, config_container: ConfigContainer, catalog_option: str, state=None) -> Generator[AirbyteMessage, None, None]:
         catalog_path = f"--properties {selected_singer_catalog}"
         config_option = f"--config {config_container.rendered_config_path}"
         state_option = f"--state {state}" if state else ""
