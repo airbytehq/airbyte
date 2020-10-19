@@ -28,6 +28,8 @@ class PostgresSingerSource(SingerSource):
             return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 
     def transform_config(self, raw_config):
+        # the filter_dbs option should be equal to the dbname option in all cases.
+        # https://github.com/singer-io/tap-postgres
         rendered_config = dict(raw_config)
         rendered_config['filter_dbs'] = raw_config['dbname']
         return rendered_config
