@@ -52,7 +52,8 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
-
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,9 +66,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,8 +115,7 @@ public class SingerPostgresSourceTest {
     schema.getStreams().forEach(s -> s.setSelected(true));
     schema.getStreams().forEach(t -> t.getFields().forEach(c -> c.setSelected(true)));
 
-    StandardSync syncConfig = new
-        StandardSync().withSyncMode(StandardSync.SyncMode.FULL_REFRESH).withSchema(schema);
+    StandardSync syncConfig = new StandardSync().withSyncMode(StandardSync.SyncMode.FULL_REFRESH).withSchema(schema);
     SourceConnectionImplementation sourceImpl =
         new SourceConnectionImplementation().withConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
 
