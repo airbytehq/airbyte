@@ -16,7 +16,6 @@ class SourceExchangeRatesApiSinger(SingerSource):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
 
-
     def discover_cmd(self, logger, config_path) -> str:
         return "tap-exchangeratesapi | grep '\"type\": \"SCHEMA\"' | head -1 | jq -c '{\"streams\":[{\"stream\": .stream, \"schema\": .schema}]}'"
 
