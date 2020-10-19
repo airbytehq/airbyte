@@ -31,8 +31,12 @@ cmd_publish() {
   local versioned_image=$image_name:$image_version
   local latest_image=$image_name:latest
 
-  docker tag $image_name $versioned_image
-  docker tag $image_name $latest_image
+  echo "image_name $image_name"
+  echo "$versioned_image $versioned_image"
+  echo "latest_image $latest_image"
+
+  docker tag "$image_name:dev" "$versioned_image"
+  docker tag "$image_name:dev" "$latest_image"
 
   if _check_tag_exists $versioned_image; then
     error "You're trying to push a version that was already released ($versioned_image). Make sure you bump it up."
