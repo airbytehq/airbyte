@@ -27,11 +27,11 @@ class PostgresSingerSource(SingerSource):
             logger.error(f"Exception while connecting to postgres database: {e}")
             return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 
-    def discover_cmd(self, logger, config_container: ConfigContainer) -> AirbyteCatalog:
-        return f"{TAP_CMD} --config {config_container.rendered_config_path} --discover"
+    def discover_cmd(self, logger, config_path) -> AirbyteCatalog:
+        return f"{TAP_CMD} --config {config_path} --discover"
 
-    def read_cmd(self, logger, config_container: ConfigContainer, catalog_option: str, state=None) -> Generator[AirbyteMessage, None, None]:
-        catalog_path = f"--properties {selected_singer_catalog}"
-        config_option = f"--config {config_container.rendered_config_path}"
-        state_option = f"--state {state}" if state else ""
-        return f"{TAP_CMD} {catalog_path} {config_option} {state_option}"
+    def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> Generator[AirbyteMessage, None, None]:
+        catalog_option = f"--properties {catalog_path}"
+        config_option = f"--config {config_path}"
+        state_option = f"--state {state_path}" if state else ""
+        return f"{TAP_CMD} {catalog_option} {config_option} {state_option}"
