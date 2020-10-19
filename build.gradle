@@ -17,7 +17,7 @@ if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
 }
 
-def createLicenseWith = { licence ->
+def createJavaLicenseWith = { licence ->
     def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
@@ -32,6 +32,20 @@ def createLicenseWith = { licence ->
     return tmp
 }
 
+def createPythonLicenseWith = { licence ->
+    def tmp = File.createTempFile('tmp', '.tmp')
+    tmp.withWriter {
+        def w = it
+        w.writeLine('"""')
+        licence.eachLine {
+            w.writeLine(it)
+        }
+        w.writeLine('"""')
+        w.writeLine("")
+    }
+    return tmp
+}
+
 spotless {
     java {
         target '**/*.java'
@@ -41,7 +55,7 @@ spotless {
 
         eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
 
-        licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
+        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE'))
         removeUnusedImports()
         trimTrailingWhitespace()
     }
@@ -55,6 +69,11 @@ spotless {
 
         dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
     }
+    python {
+        target '**/*.py'
+        targetExclude "**/build/**/*", "**/.gradle/**/*"
+        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|# generated)'
+    }
     format 'styling', {
         target '**/*.json', '**/*.yaml'
         targetExclude "**/build/**/*", "**/node_modules/**/*", "**/.gradle/**/*"
@@ -63,6 +82,7 @@ spotless {
     }
 }
 check.dependsOn 'spotlessApply'
+spotlessPython.dependsOn ':airbyte-integrations:base-python:generateProtocolClassFiles'
 
 // Disabled because it generate an obnoxious warning
 // TODO: https://github.com/airbytehq/airbyte/issues/225
