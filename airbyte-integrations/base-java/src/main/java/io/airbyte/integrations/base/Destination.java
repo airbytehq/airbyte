@@ -25,10 +25,10 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConnectorSpecification;
 
 // todo (cgardens) - share common parts of this interface with source.
 public interface Destination {
