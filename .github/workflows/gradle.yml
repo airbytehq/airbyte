@@ -41,6 +41,9 @@ jobs:
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
           STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
 
+      - name: eraio tests
+        run: ./gradlew :airbyte-integrations:singer:exchangeratesapi:source:integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
+
       - name: Build
         run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
 
