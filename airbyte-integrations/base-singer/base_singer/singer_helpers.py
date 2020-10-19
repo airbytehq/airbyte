@@ -102,7 +102,6 @@ class SingerHelper:
                         out_json = to_json(line)
                         if out_json is not None and is_message(out_json):
                             transformed_json = transform(out_json)
-                            print(f'transformed json: {transformed_json}')
                             if transformed_json is not None:
                                 if transformed_json.get('type') == "SCHEMA" or transformed_json.get('type') == "ACTIVATE_VERSION":
                                     pass

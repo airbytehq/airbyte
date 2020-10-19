@@ -1,6 +1,6 @@
 import urllib.request
 
-from airbyte_protocol import AirbyteConnectionStatus
+from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_singer import SingerSource
 
 
@@ -12,9 +12,9 @@ class SourceExchangeRatesApiSinger(SingerSource):
         try:
             code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
             logger.info(f"Ping response code: {code}")
-            return AirbyteConnectionStatus(status=(code == 200))
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED if (code==200) else Status.FAILED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=False, message=f"{str(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
 
 
     def discover_cmd(self, logger, config_path) -> str:
