@@ -15,7 +15,6 @@ import StepsConfig, { StepsTypes } from "./components/StepsConfig";
 import PrepareDropDownLists from "./components/PrepareDropDownLists";
 import { Routes } from "../routes";
 import useRouter from "../../components/hooks/useRouterHook";
-import { Source } from "../../core/resources/Source";
 import { SyncSchema } from "../../core/resources/Schema";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import useSource from "../../components/hooks/services/useSourceHook";
@@ -160,7 +159,10 @@ const OnboardingPage: React.FC = () => {
   const onSubmitConnectionStep = async (values: {
     frequency: string;
     syncSchema: SyncSchema;
-    source?: Source;
+    source?: {
+      name: string;
+      sourceId: string;
+    };
   }) => {
     const sourceConnector = getSourceById(sources[0].sourceId);
     const destinationConnector = getDestinationById(
