@@ -33,14 +33,17 @@ import java.util.stream.Collectors;
 public class CatalogHelpers {
 
   public static AirbyteStream createAirbyteStream(String streamName, Field... fields) {
-    return new AirbyteStream().withName(streamName).withSchema(fieldsToJsonSchema(fields));
+    return new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
   public static JsonNode fieldsToJsonSchema(Field... fields) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("type", "object")
         .put("properties", Arrays.stream(fields)
-            .collect(Collectors.toMap(Field::getName, field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString())))));
+            .collect(Collectors.toMap(
+                Field::getName,
+                field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString()))))
+        .build());
   }
 
 }

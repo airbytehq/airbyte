@@ -3,7 +3,6 @@ plugins {
 }
 
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-buildImage.dependsOn ":airbyte-integrations:singer:base-singer:buildImage"
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 
 dependencies {
@@ -13,3 +12,4 @@ dependencies {
 }
 
 integrationTest.dependsOn(buildImage)
+buildImage.dependsOn ':airbyte-integrations:base-singer:buildImage'

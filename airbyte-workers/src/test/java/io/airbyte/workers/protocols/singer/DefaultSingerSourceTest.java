@@ -102,7 +102,7 @@ class DefaultSingerSourceTest {
               Files.writeString(
                   jobRoot.resolve(DefaultSingerSource.DISCOVERY_DIR).resolve(WorkerConstants.CATALOG_JSON_FILENAME),
                   Jsons.serialize(SINGER_CATALOG));
-              return new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverCatalogOutput());
+              return new OutputAndStatus<>(JobStatus.SUCCEEDED, new StandardDiscoverCatalogOutput());
             });
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);

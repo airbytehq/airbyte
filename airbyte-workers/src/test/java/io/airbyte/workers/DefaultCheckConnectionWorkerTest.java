@@ -27,18 +27,28 @@ package io.airbyte.workers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,64 +60,93 @@ public class DefaultCheckConnectionWorkerTest {
 
   private Path jobRoot;
   private StandardCheckConnectionInput input;
-  private StandardDiscoverCatalogInput discoverInput;
-  private DiscoverCatalogWorker discoverCatalogWorker;
+  private IntegrationLauncher integrationLauncher;
+  private Process process;
+  private AirbyteStreamFactory successStreamFactory;
+  private AirbyteStreamFactory failureStreamFactory;
 
   @BeforeEach
-  public void setup() throws IOException {
-    jobRoot = Files.createTempDirectory("");
-
+  public void setup() throws IOException, WorkerException {
     input = new StandardCheckConnectionInput().withConnectionConfiguration(CREDS);
 
-    discoverInput = new StandardDiscoverCatalogInput().withConnectionConfiguration(CREDS);
+    jobRoot = Files.createTempDirectory("");
+    integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
+    process = mock(Process.class);
 
-    discoverCatalogWorker = mock(DiscoverCatalogWorker.class);
+    when(integrationLauncher.check(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME).start()).thenReturn(process);
+    final InputStream inputStream = mock(InputStream.class);
+    when(process.getInputStream()).thenReturn(inputStream);
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+
+    final AirbyteMessage successMessage = new AirbyteMessage()
+        .withType(Type.CONNECTION_STATUS)
+        .withConnectionStatus(new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED));
+    successStreamFactory = noop -> Lists.newArrayList(successMessage).stream();
+
+    final AirbyteMessage failureMessage = new AirbyteMessage()
+        .withType(Type.CONNECTION_STATUS)
+        .withConnectionStatus(new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("failed to connect"));
+    failureStreamFactory = noop -> Lists.newArrayList(failureMessage).stream();
+  }
+
+  @Test
+  public void testEnums() {
+    Enums.isCompatible(AirbyteConnectionStatus.Status.class, Status.class);
   }
 
   @Test
   public void testSuccessfulConnection() {
-    OutputAndStatus<StandardDiscoverCatalogOutput> discoverOutput =
-        new OutputAndStatus<>(JobStatus.SUCCESSFUL, mock(StandardDiscoverCatalogOutput.class));
-    when(discoverCatalogWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
-
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(discoverCatalogWorker);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
     final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
 
-    assertEquals(JobStatus.SUCCESSFUL, output.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, output.getStatus());
     assertTrue(output.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, output.getOutput().get().getStatus());
+    assertEquals(Status.SUCCEEDED, output.getOutput().get().getStatus());
     assertNull(output.getOutput().get().getMessage());
 
-    verify(discoverCatalogWorker).run(discoverInput, jobRoot);
   }
 
   @Test
   public void testFailedConnection() {
-    OutputAndStatus<StandardDiscoverCatalogOutput> discoverOutput = new OutputAndStatus<>(JobStatus.FAILED, null);
-    when(discoverCatalogWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
+    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
 
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(discoverCatalogWorker);
+    assertEquals(JobStatus.SUCCEEDED, output.getStatus());
+    assertTrue(output.getOutput().isPresent());
+    assertEquals(Status.FAILED, output.getOutput().get().getStatus());
+    assertEquals("failed to connect", output.getOutput().get().getMessage());
+  }
+
+  @Test
+  public void testProcessFail() {
+    when(process.exitValue()).thenReturn(1);
+
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
     final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
 
     assertEquals(JobStatus.FAILED, output.getStatus());
-    assertTrue(output.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, output.getOutput().get().getStatus());
-    assertEquals("Failed to connect.", output.getOutput().get().getMessage());
+    assertTrue(output.getOutput().isEmpty());
+  }
 
-    verify(discoverCatalogWorker).run(discoverInput, jobRoot);
+  @Test
+  public void testExceptionThrownInRun() throws WorkerException {
+    doThrow(new RuntimeException()).when(integrationLauncher).check(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME);
+
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
+    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
+
+    assertEquals(JobStatus.FAILED, output.getStatus());
+    assertTrue(output.getOutput().isEmpty());
   }
 
   @Test
   public void testCancel() {
-    OutputAndStatus<StandardDiscoverCatalogOutput> discoverOutput =
-        new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardDiscoverCatalogOutput());
-    when(discoverCatalogWorker.run(discoverInput, jobRoot)).thenReturn(discoverOutput);
-
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(discoverCatalogWorker);
+    DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
     worker.run(input, jobRoot);
+
     worker.cancel();
 
-    verify(discoverCatalogWorker).cancel();
+    verify(process).destroy();
   }
 
 }

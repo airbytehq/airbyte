@@ -44,16 +44,17 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -72,7 +73,7 @@ import org.slf4j.LoggerFactory;
 
 class BigQueryDestinationTest {
 
-  private static final Path CREDENTIALS_PATH = Path.of("config/credentials.json");
+  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
 
@@ -99,10 +100,10 @@ class BigQueryDestinationTest {
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, io.airbyte.protocol.models.Field.of("name", Field.JsonSchemaPrimitives.STRING),
+      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
           io.airbyte.protocol.models.Field
-              .of("id", Field.JsonSchemaPrimitives.STRING)),
-      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", Field.JsonSchemaPrimitives.STRING))));
+              .of("id", JsonSchemaPrimitive.STRING)),
+      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
   private JsonNode config;
 
@@ -191,16 +192,16 @@ class BigQueryDestinationTest {
   // todo - same test as csv destination
   // @Test
   void testCheckSuccess() {
-    final StandardCheckConnectionOutput actual = new BigQueryDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.SUCCESS);
+    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
   // @Test
   void testCheckFailure() {
     ((ObjectNode) config).put(BigQueryDestination.CONFIG_PROJECT_ID, "fake");
-    final StandardCheckConnectionOutput actual = new BigQueryDestination().check(config);
-    final StandardCheckConnectionOutput expected = new StandardCheckConnectionOutput().withStatus(Status.FAILURE)
+    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
         .withMessage("Access Denied: Project fake: User does not have bigquery.jobs.create permission in project fake.");
     assertEquals(expected, actual);
   }

@@ -24,14 +24,19 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardGetSpecOutput;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,37 +46,63 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultGetSpecWorker.class);
 
   private final IntegrationLauncher integrationLauncher;
+  private final AirbyteStreamFactory streamFactory;
 
   private Process process;
 
-  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher) {
+  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher, AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
+    this.streamFactory = streamFactory;
+  }
+
+  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
   @Override
   public OutputAndStatus<StandardGetSpecOutput> run(JobGetSpecConfig config, Path jobRoot) {
     try {
       process = integrationLauncher.spec(jobRoot).start();
+
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
+      Optional<ConnectorSpecification> spec;
       try (InputStream stdout = process.getInputStream()) {
-        // retrieving spec should generally be instantaneous, but since docker images might not be pulled
-        // it could take a while longer depending on internet conditions as well.
-        WorkerUtils.gentleClose(process, 2, TimeUnit.MINUTES);
-
-        if (process.exitValue() == 0) {
-          String specString = new String(stdout.readAllBytes());
-          ConnectorSpecification spec = Jsons.deserialize(specString, ConnectorSpecification.class);
-          return new OutputAndStatus<>(JobStatus.SUCCESSFUL, new StandardGetSpecOutput().withSpecification(spec));
-        } else {
-          return new OutputAndStatus<>(JobStatus.FAILED);
-        }
+        spec = streamFactory.create(IOs.newBufferedReader(stdout))
+            .filter(message -> message.getType() == Type.SPEC)
+            .map(AirbyteMessage::getSpec)
+            .findFirst();
       }
 
+      // todo (cgardens) - let's pre-fetch the images outside of the worker so we don't need account for
+      // this.
+      // retrieving spec should generally be instantaneous, but since docker images might not be pulled
+      // it could take a while longer depending on internet conditions as well.
+      WorkerUtils.gentleClose(process, 2, TimeUnit.MINUTES);
+
+      int exitCode = process.exitValue();
+      if (exitCode == 0) {
+        if (spec.isEmpty()) {
+          LOGGER.error("integration failed to output a spec struct.");
+          return new OutputAndStatus<>(JobStatus.FAILED);
+        }
+
+        // hack: more json schema X-module issues.
+        final io.airbyte.config.ConnectorSpecification spec2 = new io.airbyte.config.ConnectorSpecification()
+            .withDocumentationUrl(spec.get().getDocumentationUrl())
+            .withChangelogUrl(spec.get().getChangelogUrl())
+            .withConnectionSpecification(spec.get().getConnectionSpecification());
+        return new OutputAndStatus<>(JobStatus.SUCCEEDED, new StandardGetSpecOutput().withSpecification(spec2));
+
+      } else {
+        LOGGER.error("Spec job subprocess finished with exit code {}", exitCode);
+        return new OutputAndStatus<>(JobStatus.FAILED);
+      }
     } catch (Exception e) {
       LOGGER.error("Error while getting spec from image {}: {}", config.getDockerImage(), e);
       return new OutputAndStatus<>(JobStatus.FAILED);
     }
+
   }
 
   @Override

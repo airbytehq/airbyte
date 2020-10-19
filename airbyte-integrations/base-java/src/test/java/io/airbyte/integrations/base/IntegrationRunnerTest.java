@@ -38,9 +38,9 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorSpecification;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -105,7 +105,7 @@ class IntegrationRunnerTest {
   @Test
   void testCheck() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(Path.of(configPath.toString()));
-    final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput().withStatus(Status.FAILURE).withMessage("it failed");
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.check(CONFIG)).thenReturn(output);

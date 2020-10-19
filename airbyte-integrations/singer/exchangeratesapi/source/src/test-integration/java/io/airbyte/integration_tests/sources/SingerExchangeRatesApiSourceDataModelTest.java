@@ -70,7 +70,7 @@ public class SingerExchangeRatesApiSourceDataModelTest {
   }
 
   @Test
-  void stripeSchemaMessageIsValid() throws IOException {
+  void schemaMessageIsValid() throws IOException {
     final String input = MoreResources.readResource("schema_message.json");
     assertTrue(new SingerProtocolPredicate().test(Jsons.deserialize(input)));
   }

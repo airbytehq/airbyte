@@ -24,11 +24,27 @@
 
 package io.airbyte.workers;
 
+import static io.airbyte.workers.JobStatus.FAILED;
+import static io.airbyte.workers.JobStatus.SUCCEEDED;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
+import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,39 +52,66 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCheckConnectionWorker.class);
 
-  private final DiscoverCatalogWorker discoverCatalogWorker;
+  private final IntegrationLauncher integrationLauncher;
+  private final AirbyteStreamFactory streamFactory;
 
-  public DefaultCheckConnectionWorker(DiscoverCatalogWorker discoverCatalogWorker) {
-    this.discoverCatalogWorker = discoverCatalogWorker;
+  private Process process;
+
+  public DefaultCheckConnectionWorker(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
+    this.integrationLauncher = integrationLauncher;
+    this.streamFactory = streamFactory;
+  }
+
+  public DefaultCheckConnectionWorker(final IntegrationLauncher integrationLauncher) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
   @Override
   public OutputAndStatus<StandardCheckConnectionOutput> run(StandardCheckConnectionInput input, Path jobRoot) {
 
-    final StandardDiscoverCatalogInput discoverSchemaInput = new StandardDiscoverCatalogInput()
-        .withConnectionConfiguration(input.getConnectionConfiguration());
+    final JsonNode configDotJson = input.getConnectionConfiguration();
+    IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
-    final OutputAndStatus<StandardDiscoverCatalogOutput> outputAndStatus = discoverCatalogWorker.run(discoverSchemaInput, jobRoot);
+    try {
+      process = integrationLauncher.check(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME).start();
 
-    final JobStatus jobStatus;
-    final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput();
-    if (outputAndStatus.getStatus() == JobStatus.SUCCESSFUL && outputAndStatus.getOutput().isPresent()) {
-      output.withStatus(StandardCheckConnectionOutput.Status.SUCCESS);
-      jobStatus = JobStatus.SUCCESSFUL;
-    } else {
-      LOGGER.info("Connection check unsuccessful. Discovery output: {}", outputAndStatus);
-      jobStatus = JobStatus.FAILED;
-      output.withStatus(StandardCheckConnectionOutput.Status.FAILURE)
-          // TODO add better error log parsing to specify the exact reason for failure as the message
-          .withMessage("Failed to connect.");
+      LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+
+      Optional<AirbyteConnectionStatus> status;
+      try (InputStream stdout = process.getInputStream()) {
+        status = streamFactory.create(IOs.newBufferedReader(stdout))
+            .filter(message -> message.getType() == Type.CONNECTION_STATUS)
+            .map(AirbyteMessage::getConnectionStatus).findFirst();
+      }
+
+      WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+
+      int exitCode = process.exitValue();
+      if (exitCode == 0) {
+        if (status.isEmpty()) {
+          LOGGER.error("integration failed to output a connection status struct.");
+          return new OutputAndStatus<>(JobStatus.FAILED);
+        }
+
+        final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
+            .withStatus(Enums.convertTo(status.get().getStatus(), Status.class))
+            .withMessage(status.get().getMessage());
+
+        return new OutputAndStatus<>(SUCCEEDED, output);
+      } else {
+        LOGGER.error("Check connection job subprocess finished with exit code {}", exitCode);
+        return new OutputAndStatus<>(FAILED);
+      }
+
+    } catch (Exception e) {
+      LOGGER.error("Error while getting checking connection.");
+      return new OutputAndStatus<>(JobStatus.FAILED);
     }
-
-    return new OutputAndStatus<>(jobStatus, output);
   }
 
   @Override
   public void cancel() {
-    discoverCatalogWorker.cancel();
+    WorkerUtils.cancelProcess(process);
   }
 
 }

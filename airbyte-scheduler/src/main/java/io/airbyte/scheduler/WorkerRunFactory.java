@@ -33,6 +33,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.workers.CheckConnectionWorker;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
@@ -49,7 +50,9 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
 import io.airbyte.workers.protocols.singer.DefaultSingerDestination;
 import io.airbyte.workers.protocols.singer.DefaultSingerSource;
+import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
 import io.airbyte.workers.protocols.singer.SingerDiscoverCatalogWorker;
+import io.airbyte.workers.protocols.singer.SingerGetSpecWorker;
 import io.airbyte.workers.protocols.singer.SingerMessageTracker;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
@@ -100,7 +103,11 @@ public class WorkerRunFactory {
   }
 
   private WorkerRun createGetSpecWorker(JobGetSpecConfig config, Path jobRoot) {
-    final GetSpecWorker worker = new DefaultGetSpecWorker(createLauncher(config.getDockerImage()));
+    final IntegrationLauncher launcher = createLauncher(config.getDockerImage());
+
+    final GetSpecWorker worker =
+        isAirbyteProtocol(config.getDockerImage()) ? new DefaultGetSpecWorker(launcher)
+            : new SingerGetSpecWorker(launcher);
 
     return creator.create(
         jobRoot,
@@ -111,15 +118,14 @@ public class WorkerRunFactory {
   private WorkerRun createConnectionCheckWorker(JobCheckConnectionConfig config, Path jobRoot) {
     final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(config);
 
-    IntegrationLauncher launcher = createLauncher(config.getDockerImage());
-    DiscoverCatalogWorker discoverCatalogWorker =
-        isAirbyteProtocol(config.getDockerImage()) ? new DefaultDiscoverCatalogWorker(launcher) : new SingerDiscoverCatalogWorker(launcher);
-
+    final IntegrationLauncher launcher = createLauncher(config.getDockerImage());
+    final CheckConnectionWorker worker =
+        isAirbyteProtocol(config.getDockerImage()) ? new DefaultCheckConnectionWorker(launcher)
+            : new SingerCheckConnectionWorker(new SingerDiscoverCatalogWorker(launcher));
     return creator.create(
         jobRoot,
         checkConnectionInput,
-        new JobOutputCheckConnectionWorker(
-            new DefaultCheckConnectionWorker(discoverCatalogWorker)));
+        new JobOutputCheckConnectionWorker(worker));
   }
 
   private WorkerRun createDiscoverCatalogWorker(JobDiscoverCatalogConfig config, Path jobRoot) {

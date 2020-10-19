@@ -25,7 +25,7 @@
 package io.airbyte.integration_tests.destinations;
 
 import static io.airbyte.workers.JobStatus.FAILED;
-import static io.airbyte.workers.JobStatus.SUCCESSFUL;
+import static io.airbyte.workers.JobStatus.SUCCEEDED;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
@@ -36,8 +36,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.db.DatabaseHelper;
-import io.airbyte.workers.DefaultCheckConnectionWorker;
-import io.airbyte.workers.DefaultDiscoverCatalogWorker;
+import io.airbyte.workers.CheckConnectionWorker;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
@@ -45,6 +44,8 @@ import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.SingerIntegrationLauncher;
+import io.airbyte.workers.protocols.singer.SingerCheckConnectionWorker;
+import io.airbyte.workers.protocols.singer.SingerDiscoverCatalogWorker;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -129,17 +130,17 @@ class TestPostgresDestination {
 
   @Test
   public void testConnectionSuccessful() {
-    DefaultCheckConnectionWorker checkConnectionWorker = new DefaultCheckConnectionWorker(new DefaultDiscoverCatalogWorker(integrationLauncher));
+    CheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverCatalogWorker(integrationLauncher));
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig()));
     OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
-    assertEquals(SUCCESSFUL, run.getStatus());
+    assertEquals(SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.SUCCESS, run.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.SUCCEEDED, run.getOutput().get().getStatus());
   }
 
   @Test
   public void testConnectionUnsuccessfulInvalidCreds() {
-    DefaultCheckConnectionWorker checkConnectionWorker = new DefaultCheckConnectionWorker(new DefaultDiscoverCatalogWorker(integrationLauncher));
+    CheckConnectionWorker checkConnectionWorker = new SingerCheckConnectionWorker(new SingerDiscoverCatalogWorker(integrationLauncher));
     Map<String, Object> dbConfig = getDbConfig();
     dbConfig.put("postgres_password", "superfakepassword_nowaythisworks");
     StandardCheckConnectionInput inputConfig = new StandardCheckConnectionInput().withConnectionConfiguration(Jsons.jsonNode(dbConfig));
@@ -147,7 +148,7 @@ class TestPostgresDestination {
     OutputAndStatus<StandardCheckConnectionOutput> run = checkConnectionWorker.run(inputConfig, jobRoot);
     assertEquals(FAILED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(StandardCheckConnectionOutput.Status.FAILURE, run.getOutput().get().getStatus());
+    assertEquals(StandardCheckConnectionOutput.Status.FAILED, run.getOutput().get().getStatus());
   }
 
   private Process startTarget() throws IOException, WorkerException {

@@ -55,7 +55,7 @@ import org.slf4j.MDC;
 
 public class JobSubmitterTest {
 
-  public static final OutputAndStatus<JobOutput> SUCCESS_OUTPUT = new OutputAndStatus<>(JobStatus.SUCCESSFUL, new JobOutput());
+  public static final OutputAndStatus<JobOutput> SUCCESS_OUTPUT = new OutputAndStatus<>(JobStatus.SUCCEEDED, new JobOutput());
   public static final OutputAndStatus<JobOutput> FAILED_OUTPUT = new OutputAndStatus<>(JobStatus.FAILED);
 
   private SchedulerPersistence persistence;

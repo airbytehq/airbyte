@@ -11,7 +11,7 @@ properties:
   status:
     type: string
     enum:
-      - success
-      - failure
+      - succeeded
+      - failed
   message:
     type: string
