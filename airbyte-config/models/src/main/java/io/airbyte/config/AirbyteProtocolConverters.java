@@ -29,7 +29,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteStream;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -119,4 +118,5 @@ public class AirbyteProtocolConverters {
       return type;
     }
   }
+
 }
