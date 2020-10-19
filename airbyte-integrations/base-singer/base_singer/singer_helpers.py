@@ -8,7 +8,7 @@ from airbyte_protocol import AirbyteStateMessage
 from airbyte_protocol import AirbyteStream
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Generator
+from typing import Generator, List, DefaultDict
 
 import json
 
@@ -35,6 +35,36 @@ class Catalogs:
 
 class SingerHelper:
     @staticmethod
+    def _normalize_type(type_field):
+        if isinstance(type_field, list):
+            non_null_fields = [type_string.lower() for type_string in type_field if type_string.lower() != 'null']
+            if len(non_null_fields) != 1:
+                raise Exception(f"Unexpected type in singer catalog: {type_field} ")
+            return non_null_fields[0]
+        else:
+            return type_field
+
+    @staticmethod
+    def _parse_type(type_field):
+        normalized_type = SingerHelper._normalize_type(type_field)
+        switcher = {
+            "string": "string",
+            "integer": "number",
+            "number": "number",
+            "null": "string",
+            "boolean": "boolean",
+            "object": "object",
+            "array": "array"
+        }
+        return switcher[normalized_type]
+
+    @staticmethod
+    def _transform_types(stream_properties: DefaultDict):
+        for field_name in stream_properties:
+            field_object = stream_properties[field_name]
+            field_object['type'] = SingerHelper._parse_type(field_object['type'])
+
+    @staticmethod
     def get_catalogs(logger, shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)) -> Catalogs:
         completed_process = subprocess.run(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                            universal_newlines=True)
@@ -47,7 +77,8 @@ class SingerHelper:
 
         for stream in singer_catalog.get("streams"):
             name = stream.get("stream")
-            schema = {"properties": stream.get("schema").get("properties"), "type": "object"}
+            SingerHelper._transform_types(stream.get("schema").get("properties"))
+            schema = {"type": "object", "properties": stream.get("schema").get("properties")}
             airbyte_streams += [AirbyteStream(name=name, json_schema=schema)]
 
         airbyte_catalog = airbyte_transform(AirbyteCatalog(streams=airbyte_streams))

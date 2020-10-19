@@ -255,26 +255,17 @@ public class SingerCatalogConverters {
    */
   @VisibleForTesting
   static DataType singerTypeToDataType(SingerType singerType) {
-    switch (singerType) {
-      case STRING:
-        return DataType.STRING;
-      case INTEGER:
-        return DataType.NUMBER;
-      case NUMBER:
-        return DataType.NUMBER;
-      case NULL:
-        // noinspection DuplicateBranchesInSwitch
-        return DataType.STRING; // todo (cgardens) - hackasaurus rex
-      case BOOLEAN:
-        return DataType.BOOLEAN;
-      case OBJECT:
-        return DataType.OBJECT;
-      case ARRAY:
-        return DataType.ARRAY;
-      default:
-        throw new RuntimeException(
-            String.format("could not map SingerType: %s to DataType", singerType));
-    }
+    return switch (singerType) {
+      case STRING -> DataType.STRING;
+      case NULL -> DataType.STRING;
+      case NUMBER -> DataType.NUMBER;
+      case INTEGER -> DataType.NUMBER;
+      case BOOLEAN -> DataType.BOOLEAN;
+      case OBJECT -> DataType.OBJECT;
+      case ARRAY -> DataType.ARRAY;
+      default -> throw new RuntimeException(
+          String.format("could not map SingerType: %s to DataType", singerType));
+    };
   }
 
 }
