@@ -8,6 +8,5 @@ task generateProtocolClassFiles(type: Exec) {
     dependsOn ':airbyte-integrations:base-python:code-generator:buildImage'
 }
 
-build.dependsOn generateProtocolClassFiles
-buildImage.dependsOn generateProtocolClassFiles
+assemble.dependsOn generateProtocolClassFiles
 buildImage.dependsOn ':airbyte-integrations:base:buildImage'
