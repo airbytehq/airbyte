@@ -26,17 +26,23 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Schema;
+import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardTapConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
@@ -46,14 +52,22 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -97,69 +111,86 @@ public class SingerPostgresSourceTest {
   @Test
   public void testFullRefreshStatelessRead() throws Exception {
 
-    // AirbyteCatalog schema = Jsons.deserialize(MoreResources.readResource("schema.json"),
-    // AirbyteCatalog.class);
-    //
-    // // select all streams and all fields
-    // schema.getStreams().forEach(s -> s.setSelected(true));
-    // schema.getStreams().forEach(t -> t.getFields().forEach(c -> c.setSelected(true)));
-    //
-    // StandardSync syncConfig = new
-    // StandardSync().withSyncMode(StandardSync.SyncMode.FULL_REFRESH).withSchema(schema);
-    // SourceConnectionImplementation sourceImpl =
-    // new SourceConnectionImplementation().withConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
-    //
-    // StandardTapConfig tapConfig = new StandardTapConfig()
-    // .withStandardSync(syncConfig)
-    // .withSourceConnectionImplementation(sourceImpl);
-    //
-    // DefaultAirbyteSource singerSource = new DefaultAirbyteSource(integrationLauncher);
-    // singerSource.start(tapConfig, jobRoot);
-    //
-    // List<AirbyteMessage> actualMessages = Lists.newArrayList();
-    // AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
-    // while (!singerSource.isFinished()) {
-    // Optional<AirbyteMessage> maybeMessage = singerSource.attemptRead();
-    // if (maybeMessage.isPresent()) {
-    // messageTracker.accept(maybeMessage.get());
-    // actualMessages.add(maybeMessage.get());
-    // }
-    // }
-    //
-    // for (AirbyteMessage singerMessage : actualMessages) {
-    // LOGGER.info("{}", singerMessage);
-    // }
-    //
-    // JsonNode expectedMessagesContainer =
-    // Jsons.deserialize(MoreResources.readResource("expected_messages.json")).get("messages");
-    // List<AirbyteMessage> expectedMessages =
-    // StreamSupport.stream(expectedMessagesContainer.spliterator(), false)
-    // .map(msg -> Jsons.deserialize(Jsons.serialize(msg), AirbyteMessage.class))
-    // .collect(Collectors.toList());
-    //
-    // assertMessagesEquivalent(expectedMessages, actualMessages);
+    Schema schema = Jsons.deserialize(MoreResources.readResource("schema.json"), Schema.class);
+
+    // select all streams and all fields
+    schema.getStreams().forEach(s -> s.setSelected(true));
+    schema.getStreams().forEach(t -> t.getFields().forEach(c -> c.setSelected(true)));
+
+    StandardSync syncConfig = new
+        StandardSync().withSyncMode(StandardSync.SyncMode.FULL_REFRESH).withSchema(schema);
+    SourceConnectionImplementation sourceImpl =
+        new SourceConnectionImplementation().withConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
+
+    StandardTapConfig tapConfig = new StandardTapConfig()
+        .withStandardSync(syncConfig)
+        .withSourceConnectionImplementation(sourceImpl);
+
+    DefaultAirbyteSource source = new DefaultAirbyteSource(integrationLauncher);
+    source.start(tapConfig, jobRoot);
+
+    List<AirbyteRecordMessage> actualMessages = Lists.newArrayList();
+    while (!source.isFinished()) {
+      Optional<AirbyteMessage> maybeMessage = source.attemptRead();
+      if (maybeMessage.isPresent() && maybeMessage.get().getType() == AirbyteMessage.Type.RECORD) {
+        actualMessages.add(maybeMessage.get().getRecord());
+      }
+    }
+
+    String lineSeparatedMessages = MoreResources.readResource("expected_messages.txt");
+    List<AirbyteRecordMessage> expectedMessages = deserializeLineSeparatedJsons(lineSeparatedMessages, AirbyteRecordMessage.class);
+
+    assertMessagesEquivalent(expectedMessages, actualMessages);
+  }
+
+  private void assertMessagesEquivalent(List<AirbyteRecordMessage> expectedMessages, List<AirbyteRecordMessage> actualMessages) {
+    assertEquals(expectedMessages.size(), actualMessages.size());
+
+    for (int i = 0; i < expectedMessages.size(); i++) {
+      AirbyteRecordMessage expected = expectedMessages.get(i);
+      AirbyteRecordMessage actual = actualMessages.get(i);
+      assertEquals(expected.getStream(), actual.getStream());
+      assertEquals(expected.getData(), actual.getData());
+    }
   }
 
   @Test
   public void testCanReadUtf8() throws IOException, InterruptedException, WorkerException {
-    // // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
-    // // default settings are in another encoding
-    // PostgreSQLContainer db = (PostgreSQLContainer) new PostgreSQLContainer().withCommand("postgres -c
-    // client_encoding=sql_ascii");
-    // db.start();
-    // PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("init_utf8.sql"), db);
-    //
-    // String configFileName = "config.json";
-    // String catalogFileName = "catalog.json";
-    // writeFileToJobRoot(catalogFileName, MoreResources.readResource(catalogFileName));
-    // writeFileToJobRoot(configFileName, Jsons.serialize(getDbConfig(db)));
-    //
-    // Process tapProcess = integrationLauncher.read(jobRoot, configFileName,
-    // catalogFileName).inheritIO().start();
-    // tapProcess.waitFor();
-    // if (tapProcess.exitValue() != 0) {
-    // fail("Docker container exited with non-zero exit code: " + tapProcess.exitValue());
-    // }
+    // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
+    // default settings are in another encoding
+    PostgreSQLContainer db = (PostgreSQLContainer) new PostgreSQLContainer().withCommand("postgres -c client_encoding=sql_ascii");
+    db.start();
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("init_utf8.sql"), db);
+
+    String configFileName = "config.json";
+    String catalogFileName = "selected_catalog.json";
+    writeFileToJobRoot(catalogFileName, MoreResources.readResource(catalogFileName));
+    writeFileToJobRoot(configFileName, Jsons.serialize(getDbConfig(db)));
+
+    Process tapProcess = integrationLauncher.read(jobRoot, configFileName, catalogFileName).start();
+    tapProcess.waitFor();
+
+    DefaultAirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
+    List<AirbyteRecordMessage> actualMessages = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream()))
+        .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
+        .map(AirbyteMessage::getRecord)
+        .collect(Collectors.toList());
+
+    String lineSeparatedMessages = MoreResources.readResource("expected_utf8_messages.txt");
+    List<AirbyteRecordMessage> expectedMessages = deserializeLineSeparatedJsons(lineSeparatedMessages, AirbyteRecordMessage.class);
+
+    assertMessagesEquivalent(expectedMessages, actualMessages);
+
+    if (tapProcess.exitValue() != 0) {
+      fail("Docker container exited with non-zero exit code: " + tapProcess.exitValue());
+    }
+  }
+
+  private <T> List<T> deserializeLineSeparatedJsons(String lineSeparatedMessages, Class<T> clazz) {
+    return new BufferedReader(new StringReader(lineSeparatedMessages))
+        .lines()
+        .map(l -> Jsons.deserialize(l, clazz))
+        .collect(Collectors.toList());
   }
 
   @Test
@@ -170,36 +201,6 @@ public class SingerPostgresSourceTest {
     JsonNode expectedSpec = Jsons.deserialize(new String(expectedSpecInputStream.readAllBytes()));
     JsonNode actualSpec = Jsons.deserialize(new String(process.getInputStream().readAllBytes()));
     assertEquals(expectedSpec, actualSpec);
-  }
-
-  private void assertMessagesEquivalent(Collection<AirbyteMessage> expected, Collection<AirbyteMessage> actual) {
-    for (AirbyteMessage expectedMessage : expected) {
-      assertTrue(isMessagePartiallyContained(expectedMessage, actual), expectedMessage + " was not found in actual messages: " + actual);
-    }
-  }
-
-  private static boolean isMessagePartiallyContained(AirbyteMessage message, Collection<AirbyteMessage> collection) {
-    for (AirbyteMessage containedMessage : collection) {
-      if (!message.getType().equals(containedMessage.getType())) {
-        continue;
-      }
-      // We might not want to check that all fields are the same to pass a test e.g: time_extracted isn't
-      // something we want a test to fail over.
-      // So we copy those "irrelevant" fields to the message before checking for equality
-      // message.set
-      // message.setTimeExtracted(containedMessage.getTimeExtracted());
-      // message.setKeyProperties(containedMessage.getKeyProperties());
-      // message.setBookmarkProperties(containedMessage.getBookmarkProperties());
-      // // the value field is used for state messages -- no need to compare the exact state messages
-      // message.setValue(containedMessage.getValue());
-      // // additional props are not part of the spec
-      // containedMessage.getAdditionalProperties().forEach(message::setAdditionalProperty);
-      //
-      // if (message.equals(containedMessage)) {
-      // return true;
-      // }
-    }
-    return false;
   }
 
   @Test

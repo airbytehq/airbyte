@@ -102,8 +102,9 @@ class SingerHelper:
                         out_json = to_json(line)
                         if out_json is not None and is_message(out_json):
                             transformed_json = transform(out_json)
+                            print(f'transformed json: {transformed_json}')
                             if transformed_json is not None:
-                                if transformed_json.get('type') == "SCHEMA":
+                                if transformed_json.get('type') == "SCHEMA" or transformed_json.get('type') == "ACTIVATE_VERSION":
                                     pass
                                 elif transformed_json.get('type') == "STATE":
                                     out_record = AirbyteStateMessage(data=transformed_json["value"])
@@ -140,7 +141,7 @@ class SingerHelper:
                     new_metadata = metadata
                     new_metadata["metadata"]["selected"] = True
                     if not is_field_metadata(new_metadata):
-                        new_metadata["metadata"]["forced-replication-method"] = "FULL_TABLE"
+                        new_metadata["metadata"]["replication-method"] = "FULL_TABLE"
                     new_metadatas += [new_metadata]
                 singer_stream["metadata"] = new_metadatas
 
