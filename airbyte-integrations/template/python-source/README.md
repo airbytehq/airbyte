@@ -7,7 +7,7 @@
 1. Update the name, description, and dependencies in `setup.py`
     1. Note that all of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies for local development. 
 1. Update the `Dockerfile` to point `CODE_PATH` and `AIRBYTE_IMPL_MODULE` at `SOURCENAME_source`
-1. Edit the classname in `SOURCENAME_singer_source/source.py` and update the `Dockerfile` to point `AIRBYTE_IMPL_PATH` to that classname.
+1. Edit the classname in `SOURCENAME_source/source.py` and update the `Dockerfile` to point `AIRBYTE_IMPL_PATH` to that classname.
 1. Update the `io.airbyte.name` label in the `Dockerfile` to `airbyte/source-SOURCENAME`
 1. Define a specification for the configuration when connecting to the source by modifying `SOURCENAME_source/spec.json`.
     1. This spec uses JsonSchema to define properties and validations.
