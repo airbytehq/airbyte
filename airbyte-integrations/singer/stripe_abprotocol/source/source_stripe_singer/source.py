@@ -7,7 +7,7 @@ class SourceStripeSinger(SingerSource):
     def __init__(self):
         pass
 
-    def check(self, logger, config_container) -> AirbyteCheckResponse:
+    def check(self, logger, config_container) -> AirbyteConnectionStatus:
         try:
             json_config = config_container.rendered_config
             r = requests.get('https://api.stripe.com/v1/customers', auth=(json_config['client_secret'], ''))
