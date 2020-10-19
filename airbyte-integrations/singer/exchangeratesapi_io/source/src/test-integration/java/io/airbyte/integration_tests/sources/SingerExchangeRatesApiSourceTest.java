@@ -24,15 +24,15 @@
 
 package io.airbyte.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -43,8 +43,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SingerExchangeRatesApiSourceTest {
 
@@ -93,7 +94,7 @@ public class SingerExchangeRatesApiSourceTest {
 
   @Test
   public void testSync() throws IOException, InterruptedException, WorkerException {
-    final Date date = Date.from(Instant.now().minus(2, ChronoUnit.DAYS));
+    final Date date = Date.from(Instant.now().minus(3, ChronoUnit.DAYS));
     final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
 
     IOs.writeFile(jobRoot, CONFIG, String.format("{\"start_date\":\"%s\"}", fmt.format(date)));
@@ -105,7 +106,7 @@ public class SingerExchangeRatesApiSourceTest {
     assertEquals(0, process.exitValue());
 
     final Optional<String> record = IOs.readFile(syncOutputPath).lines().filter(s -> s.contains("RECORD")).findFirst();
-    assertTrue(record.isPresent());
+    assertTrue(record.isPresent(), "Date: " + date + "tap output: " + IOs.readFile(syncOutputPath));
     assertTrue(Jsons.deserialize(record.get()).get("record").get("CAD").asDouble() > 0);
   }
 
