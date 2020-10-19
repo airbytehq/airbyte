@@ -27,6 +27,14 @@ class PostgresSingerSource(SingerSource):
             logger.error(f"Exception while connecting to postgres database: {e}")
             return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 
+    def transform_config(self, raw_config):
+        # the filter_dbs option is not required input but is a significant performance improvement on shared DB clusters e.g: Heroku free tier.
+        # It should be equal to the dbname option in all cases.
+        # See https://github.com/singer-io/tap-postgres source code for more information
+        rendered_config = dict(raw_config)
+        rendered_config['filter_dbs'] = raw_config['dbname']
+        return rendered_config
+
     def discover_cmd(self, logger, config_path) -> AirbyteCatalog:
         return f"{TAP_CMD} --config {config_path} --discover"
 
