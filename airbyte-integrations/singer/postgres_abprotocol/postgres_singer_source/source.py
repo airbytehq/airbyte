@@ -33,5 +33,5 @@ class PostgresSingerSource(SingerSource):
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> Generator[AirbyteMessage, None, None]:
         catalog_option = f"--properties {catalog_path}"
         config_option = f"--config {config_path}"
-        state_option = f"--state {state_path}" if state else ""
+        state_option = f"--state {state_path}" if state_path else ""
         return f"{TAP_CMD} {catalog_option} {config_option} {state_option}"
