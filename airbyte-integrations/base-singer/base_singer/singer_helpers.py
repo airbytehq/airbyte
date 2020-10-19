@@ -119,7 +119,7 @@ class SingerHelper:
                         if not is_field_metadata(new_metadata):
                             new_metadata["metadata"]["forced-replication-method"] = "FULL_TABLE"
                             new_metadata["metadata"]["replication-method"] = "FULL_TABLE"
-                    new_metadatas += [new_metadata]
+                        new_metadatas += [new_metadata]
                     singer_stream["metadata"] = new_metadatas
 
             masked_singer_streams += [singer_stream]
