@@ -121,7 +121,8 @@ public class BigQueryDestination implements Destination {
     final String projectId = config.get(CONFIG_PROJECT_ID).asText();
     final String credentialsString = config.get(CONFIG_CREDS).asText();
     try {
-      final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
+      final ServiceAccountCredentials credentials =
+          ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
 
       return BigQueryOptions.newBuilder()
           .setProjectId(projectId)
