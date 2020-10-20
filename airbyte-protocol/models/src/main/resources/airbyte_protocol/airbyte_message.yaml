@@ -35,14 +35,6 @@ properties:
     description: "schema message: the state. Must be the last message produced. The platform uses this information"
     "$ref": "#/definitions/AirbyteStateMessage"
 definitions:
-  AirbyteType:
-    description: Airbyte supported types
-    type: string
-    enum:
-      - boolean
-      - number
-      - text
-      - object
   AirbyteRecordMessage:
     type: object
     additionalProperties: false
