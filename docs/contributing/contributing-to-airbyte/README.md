@@ -34,15 +34,13 @@ You are welcome to add your own reactions to the existing issues. We will take t
 ❤️ means that this task is CRITICAL to you.  
 👍 means it is important to you.
 
-
 ## **Contributing new integrations**
 
 It's easy to add your own integrations to Airbyte! Here are some links to instructions on how to add sources and destinations. Please reach out to us if you'd like help developing integrations in other languages.
 
-* [Contributing Sources (Python)](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/template/python-source/README.md)
-* [Contributing Sources Based on Singer Taps (Python)](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/template/singer-source/README.md)
-* [Contributing Destinations (Java)](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/template/java-destination/README.md)
-
+* [Contributing Sources \(Python\)](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/template/python-source/README.md)
+* [Contributing Sources Based on Singer Taps \(Python\)](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/template/singer-source/README.md)
+* [Contributing Destinations \(Java\)](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/template/java-destination/README.md)
 
 ## **Requesting new features**
 
