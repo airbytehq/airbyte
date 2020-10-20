@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Test;
 class AirbyteProtocolConvertersTest {
 
   private static final String STREAM = "users";
+  private static final String STREAM_2 = "users2";
   private static final String COLUMN_NAME = "name";
   private static final String COLUMN_AGE = "age";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
@@ -61,9 +62,38 @@ class AirbyteProtocolConvertersTest {
                   .withDataType(DataType.NUMBER)
                   .withSelected(true)))));
 
+  private static final Schema SCHEMA_WITH_UNSELECTED = new Schema()
+      .withStreams(Lists.newArrayList(new Stream()
+          .withName(STREAM)
+          .withFields(Lists.newArrayList(
+              new io.airbyte.config.Field()
+                  .withName(COLUMN_NAME)
+                  .withDataType(DataType.STRING)
+                  .withSelected(true),
+              new io.airbyte.config.Field()
+                  .withName(COLUMN_AGE)
+                  .withDataType(DataType.NUMBER)
+                  .withSelected(true))),
+          new Stream()
+              .withName(STREAM_2)
+              .withFields(Lists.newArrayList(
+                  new io.airbyte.config.Field()
+                      .withName(COLUMN_NAME)
+                      .withDataType(DataType.STRING)
+                      .withSelected(false),
+                  new io.airbyte.config.Field()
+                      .withName(COLUMN_AGE)
+                      .withDataType(DataType.NUMBER)
+                      .withSelected(false)))));
+
   @Test
   void testToCatalog() {
     assertEquals(CATALOG, AirbyteProtocolConverters.toCatalog(SCHEMA));
+  }
+
+  @Test
+  void testToCatalogWithUnselected() {
+    assertEquals(CATALOG, AirbyteProtocolConverters.toCatalog(SCHEMA_WITH_UNSELECTED));
   }
 
   @Test

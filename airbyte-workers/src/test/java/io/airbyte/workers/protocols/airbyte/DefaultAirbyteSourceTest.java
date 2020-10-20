@@ -38,9 +38,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DataType;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.State;
@@ -49,6 +49,7 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.Field;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -75,7 +76,7 @@ class DefaultAirbyteSourceTest {
       .withStreams(Collections.singletonList(
           new AirbyteStream()
               .withName("hudi:latest")
-              .withJsonSchema(CatalogHelpers.fieldsToJsonSchema())));
+              .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(new Field(FIELD_NAME, Field.JsonSchemaPrimitive.STRING)))));
 
   private static final StandardTapConfig TAP_CONFIG = new StandardTapConfig()
       .withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "the future."))))
@@ -83,9 +84,9 @@ class DefaultAirbyteSourceTest {
           .withConfiguration(Jsons.jsonNode(Map.of(
               "apiKey", "123",
               "region", "us-east"))))
-      .withStandardSync(new StandardSync().withSchema(new Schema().withStreams(Lists.newArrayList(new Stream().withName("hudi:latest")))));
-  private static final StandardDiscoverCatalogInput DISCOVER_SCHEMA_INPUT = new StandardDiscoverCatalogInput()
-      .withConnectionConfiguration(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration());
+      .withStandardSync(new StandardSync().withSchema(new Schema().withStreams(Lists.newArrayList(new Stream().withName("hudi:latest")
+          .withFields(Lists.newArrayList(new io.airbyte.config.Field().withDataType(DataType.STRING).withName(FIELD_NAME).withSelected(true)))
+          .withSelected(true)))));
 
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
