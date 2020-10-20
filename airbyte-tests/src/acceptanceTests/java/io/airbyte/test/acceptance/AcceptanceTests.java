@@ -27,7 +27,9 @@ package io.airbyte.test.acceptance;
 import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.ApiClient;
@@ -56,17 +58,17 @@ import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Condition;
-import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.junit.jupiter.api.AfterEach;
@@ -322,20 +324,32 @@ public class AcceptanceTests {
   private void assertRecordInStream(Record record, BasicDataSource connectionPool, String tableName)
       throws SQLException {
 
-    Set<Condition> conditions = new HashSet<>();
-    for (Field<?> field : record.fields()) {
-      Object fieldValue = record.get(field);
-      Condition eq = ((Field) field).equal(fieldValue);
-      conditions.add(eq);
-    }
-
     Result<Record> presentRecords =
         DatabaseHelper.query(
-            connectionPool, context -> context.select().from(tableName).where(conditions).fetch());
+            connectionPool, context -> context.select().from(tableName).fetch());
 
     // TODO validate that the correct number of records exists? currently if the same record exists
     // multiple times in the source but once in destination, this returns true.
-    assertEquals(1, presentRecords.size());
+    final Optional<JsonNode> matchingRecord = presentRecords
+        .stream()
+        .map(Record::intoMap)
+        .map(r -> r.entrySet().stream().map(e -> {
+          if (e.getValue().getClass().equals(org.jooq.JSONB.class)) {
+            // jooq needs more configuration to handle jsonb natively. coerce it to a string for now and handle
+            // deserializing later.
+            return new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue().toString());
+          }
+          return e;
+        }).collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
+        .map(r -> ((String) r.get("data")))
+        .map(Jsons::deserialize)
+        .filter(j -> j.get("id").asText().equals(record.get("id").toString())).findFirst();
+
+    assertTrue(matchingRecord.isPresent());
+
+    final JsonNode expectValues = Jsons.jsonNode(record.intoMap());
+
+    assertEquals(expectValues, matchingRecord.get());
   }
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -379,12 +393,12 @@ public class AcceptanceTests {
 
   private Map<Object, Object> getDestinationDbConfig() {
     return ImmutableMap.builder()
-        .put("postgres_host", targetPsql.getHost())
-        .put("postgres_username", targetPsql.getUsername())
-        .put("postgres_password", targetPsql.getPassword())
-        .put("postgres_schema", "public")
-        .put("postgres_port", targetPsql.getFirstMappedPort())
-        .put("postgres_database", targetPsql.getDatabaseName())
+        .put("host", targetPsql.getHost())
+        .put("username", targetPsql.getUsername())
+        .put("password", targetPsql.getPassword())
+        .put("schema", "public")
+        .put("port", targetPsql.getFirstMappedPort())
+        .put("database", targetPsql.getDatabaseName())
         .build();
   }
 
