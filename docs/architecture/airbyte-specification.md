@@ -1,0 +1,180 @@
+# The Airbyte Specification
+
+## Summary
+This page will describe the Airbyte Specification.
+
+####Contents:
+1. [General information about the specification](#General)
+1. [Integration primitives](#Primitives)
+1. [Details of the protocol to pass information between integrations](#The-Protocol)
+
+## General
+* All structs described in this article are defined using JsonSchema.
+* Airbyte uses json serialized representations of these structs for all inter-process communication.
+
+### Definitions
+* Airbyte Worker - This is a core piece of the Airbyte stack that is responsible for initializing Sources and Destinations and passing data from Source to Destination. Someone implementing an integration need not ever touch this code, but in this article we mention it to contextualize how data is flowing through Airbyte.
+* Integration - An integration is code that allows Airbyte to interact with a specific underlying data source (e.g. Postgres). In Airbyte, an integration is either a Source or a Destination.
+* Source - An integration that _pulls_ data from an underlying data source. (e.g. A Postgres Source reads data from a Postgres database. A Stripe Source reads data from the Stripe API)
+* Destination - An integration that _pushes_ data to an underlying data source. (e.g. A Postgres Destination writes data to a Postgres database)
+* AirbyteSpecification - the specification that describe how to implement integrations using a standard interface.
+* AirbyteProtocol - the protocol used for inter-process communication.
+* Integration Commands - the commands that an integration container implements (e.g. spec, check, discover, read/write). We describe these commands in more detail below.
+* Sync - the act of moving data from a source to a destination.
+
+## Primitives
+
+### Source
+* A source is implemented as a docker container. The container must adhere to the following interface.
+
+Pseudocode of the interface:
+```
+spec() -> ConnectorSpecification
+check(Config) -> AirbyteConnectionStatus
+discover(Config) -> AirbyteCatalog
+read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
+```
+
+How to the container will be called:
+The first argument passed to the image must be the command (e.g. spec, check, discover, read). Additional arguments can be passed after the command.
+Note: When called by the airbyte worker, it will handle mounting the appropriate paths so that the config files are available to the container. This code snippet does not include that logic.
+```
+docker run --rm -i <source-image-name> spec
+docker run --rm -i <source-image-name> check --config <config-file-path>
+docker run --rm -i <source-image-name> discover --config <config-file-path>
+docker run --rm -i <source-image-name> read --config <config-file-path> --catalog <catalog-file-path> --state <optional-state-file-path> > message_stream.json
+```
+The read command will emit a stream records on stdout.
+
+#### Spec
+* Input:
+    1. none.
+* Output:
+    1. spec - a [ConnectorSpecification](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml#L133-L149).
+* A `ConnectorSpecification` contains information about the source.
+* The `connectionSpecification` of that struct must be valid JsonSchema. It describes what inputs are needed in order for the source to interact with the underlying data source. e.g. If using a postgres source, the `ConnectorSpecification` would specify that a `hostname`, `port`, and `password` are required in order for the integration to function. The UI reads the JsonSchema in this field in order to render the input fields for a user to fill in. This JsonSchema is also used to validate that the provided inputs are valid. e.g. If `port` is one of the fields and the JsonSchema in the `connectorSpecification` specifies that this filed should be a number, if a user inputs "airbyte", they will receive an error. Airbyte adheres to JsonSchema validation rules.
+
+#### Check
+* Input:
+    1. config: A configuration json object that has been validated using the `ConnectorSpecification`.
+* Output:
+    1. connectionStatus - an [AirbyteConnectionStatus](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml#L94-L107).
+* It attempts to connect to the underlying data source in order to verify that the provided credentials are usable. e.g. If the given the credentials, it can connect to the postgres database, it will return a success response. If it fails (perhaps the password is incorrect), it will return a failed response and (when possible) a helpful error message.
+
+#### Discover
+* Input:
+    1. config: A configuration json object that has been validated using the `ConnectorSpecification`.
+* Output:
+    1. catalog - an [AirbyteCatalog](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml#L108-L132).
+* This command detects the _structure_ of the data in the data source.
+* An `AirbyteCatalog` describes the structure of data in a data source. It has a single field called `streams` that contains a list of `AirbyteStream`s. Each of these contain a `name` and `json_schema` field. The `json_schema` field accepts any valid JsonSchema and describes the structure of a stream. This data model is intentionally flexible. That can make it a little hard at first to mentally map onto your own data, so we provide some example below:
+    * If you are using a data source that is a "traditional" relational database, each table in that database would make to an `AirbyteStream`. Each column in the table would be a key in the `json_schema` field.
+        * e.g. If we have a table called `users` which had the columns `name` and `age` (the age column is optional) the `AirbyteCatalog` would look like this:
+            ```
+            {
+              "streams": [
+                {
+                  "name": "users",
+                  "schema": {
+                    "type": "object",
+                    "required": ["name"],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "age": {
+                        "type": {
+                          "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+            ```
+    * If you are using a data source that wraps an API with multiple different resources (e.g. `api/customers` and `api/products`) each route would correspond to a stream. The json object returned by each route would be described in the `json_schema` field.
+        * e.g. In the case where the API has two endpoints `api/customers` and `api/producs` and each returns a list of json objects, the `AirbyteCatalog` might look like this. (Note: using the json schema standard for defining a stream allows you to describe nested objects. You are not constrained to a classic "table/columns" structure)
+            ```
+            {
+              "streams": [
+                {
+                  "name": "customers",
+                  "schema": {
+                    "type": "object",
+                    "required": ["name"],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "products",
+                  "schema": {
+                    "type": "object",
+                    "required": ["name", "features"],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "features": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": ["name", "productId"],
+                          "properties": {
+                            "name": "string",
+                            "productId": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+            ```
+#### Read
+* Input:
+    1. config: A configuration json object that has been validated using the `ConnectorSpecification`.
+    1. catalog: An `AirbyteCatalog`. This catalog should be a subset of the catalog returned by the `discover` command.
+    1. state: A json object. This object is only ever written or read by the source, so it is a json blob with whatever information is necessary to keep track of how much of the data source has already been read. Because, Airbyte currently only supports [Full Refresh](full-refresh.md), this state object is purely cosmetic. It will become more important when Airbyte beings to supporting incremental syncs.
+* Output:
+    1. message stream: A stream of `AirbyteRecordMessage`s and `AirbyteStateMessage`s piped to stdout.
+* This command reads data from the underlying data source and converts it into `AirbyteRecordMessage`.
+* Outputting `AirbyteStateMessages` is optional. They can be used to track how much of the data source has been synced.
+* The integration ideally will only pull the data described in the catalog argument. It is permissible for the integration, however, to ignore the catalog and pull data from any stream it can find. If it follows this second behavior, the extra data will be pruned in the worker. We prefer the former behavior because it reduces the amount of data that is transferred and allows control over not sending sensitive data. There are some sources for which this is simply not possible.
+
+### Destination
+* A source is implemented as a docker container. The container must adhere to the following interface.
+```
+spec() -> ConnectorSpecification
+check(Config) -> AirbyteConnectionStatus
+write(Config, AirbyteCatalog, Stream<AirbyteMessage>(stdin)) -> void
+```
+
+For the sake of brevity, we will not re-describe `spec` and `check`. They are exactly the same as those commands described for the Source.
+
+#### Write
+* Input:
+    1. config: A configuration json object that has been validated using the `ConnectorSpecification`.
+    1. catalog: An `AirbyteCatalog`. This catalog should be a subset of the catalog returned by the `discover` command.
+    1. message stream: (this stream is consumed on stdin--it is not passed as an arg). It will receive a stream of json-serialized `AirbyteMesssage`.
+* Output:
+    1. none.
+* The destination should read in the `AirbyteMessages` and write any that are of type `AirbyteRecordMessage` to the underlying data store.
+* The destination should fail if any of the messages it receives do not match the structure described in the catalog.
+
+## The Protocol
+* All messages passed to and from integrations must be wrapped in an `AirbyteMesage` envelope and serialized as json. The JsonSchema specification for these messages can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml).
+* Even if a record is wrapped in an `AirbyteMessage` it will only be processed if it appropriate for the given command. e.g. If a source read action includes AirbyteMessages in its stream of type Catalog for instance, these messages will be ignored as the read interface only expects `AirbyteRecordMessage`s and `AirbyteStateMessage`s.
+* ALL actions are allowed to return `AirbyteLogMessage`s on stdout. For brevity, we have not mentioned these log messages in the description of each action, but they are always allowed. An `AirbyteLogMessage` wraps any useful logging that the integration wants to provide. These logs will written to Airbyte's log files and output to the console.
+* I/O:
+    * Integrations receive arguments on the command line via json files. `e.g. --catalog catalog.json`
+    * They read `AirbyteMessage`s from stdin. The destination write action is the only command that consumes `AirbyteMessage`s.
+    * They emit `AirbyteMessage`s on stdout. All commands that output messages use this approach (even write emits `AirbyteLogMessage`s). e.g. discover outputs the catalog wrapped in an AirbyteMessage on stdout.
+* Messages not wrapped in the `AirbyteMessage` will be ignored.
+* Each message must be on its own line. Multiple messages _cannot_ be sent on the same line.
+* Each message must but serialized onto exactly 1 line. The json cannot be serialized across multiple lines.
