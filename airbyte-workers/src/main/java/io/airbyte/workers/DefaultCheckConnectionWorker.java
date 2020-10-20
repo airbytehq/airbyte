@@ -82,9 +82,9 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         status = streamFactory.create(IOs.newBufferedReader(stdout))
             .filter(message -> message.getType() == Type.CONNECTION_STATUS)
             .map(AirbyteMessage::getConnectionStatus).findFirst();
-      }
 
-      WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+        WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+      }
 
       int exitCode = process.exitValue();
 
