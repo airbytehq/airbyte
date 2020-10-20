@@ -1,13 +1,9 @@
----
-description: This page will describe the Airbyte Specification.
----
-
 # The Airbyte Specification
 
 ## Key Takeaways
 
 * The specification is Docker-based; this allows a developer to write an integration in any language they want. All they have to do is put that code in a Docker container that adheres to the interface and protocol described below.
-  * We currently provide templates to make this even easier for those who prefer to work in Python or Java. These templates allow the developer skip any Docker setup so that they can just implement code against well-defined interfaces in their language of choice.
+  * We currently provide templates to make this even easier for those who prefer to work in python or java. These templates allow the developer skip any Docker setup so that they can just implement code against well-defined interfaces in their language of choice.
 * The specification is designed to work as a CLI. The Airbyte app is built on top of this CLI.
 * The specification defines a standard interface for implementing data integrations: Sources and Destinations.
 * The specification provides a structured stdout / stdin message passing standard for data transport.
@@ -15,20 +11,20 @@ description: This page will describe the Airbyte Specification.
 
 #### Contents:
 
-1. [General information about the specification](airbyte-specification.md#General)
-2. [Integration primitives](airbyte-specification.md#Primitives)
-3. [Details of the protocol to pass information between integrations](airbyte-specification.md#The-Airbyte-Protocol)
+1. [General information about the specification](airbyte-specification.md#general)
+2. [Integration primitives](airbyte-specification.md#primitives)
+3. [Details of the protocol to pass information between integrations](airbyte-specification.md#the-airbyte-protocol)
 
 This document is focused on the interfaces and primitives around integrations. You can better understand how that fits into the bigger picture by checking out the [Airbyte Architecture](high-level-overview.md).
 
 ## General
 
-* All structs described in this article are defined using JSONSchema.
+* All structs described in this article are defined using JsonSchema.
 * Airbyte uses JSON representations of these structs for all inter-process communication.
 
 ### Definitions
 
-* **Airbyte Worker** - This is a core piece of the Airbyte stack that is responsible for 1\) initializing a Source and a Destination and 2\) passing data from Source to Destination.
+* **Airbyte Worker** - This is a core piece of the Airbyte stack that is responsible for 1\) initializing a Source and a Destinations and 2\) passing data from Source to Destination.
   * Someone implementing an integration need not ever touch this code, but in this article we mention it to contextualize how data is flowing through Airbyte.
 * **Integration** - An integration is code that allows Airbyte to interact with a specific underlying data source \(e.g. Postgres\). In Airbyte, an integration is either a Source or a Destination.
 * **Source** - An integration that _pulls_ data from an underlying data source. \(e.g. A Postgres Source reads data from a Postgres database. A Stripe Source reads data from the Stripe API\)
@@ -73,17 +69,17 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 * Output:
   1. `spec` - a [ConnectorSpecification](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml#L133-L149) wrapped in an `AirbyteMessage` of type `spec`.
 * The objective of the spec command is to pull information about how to use a source. The `ConnectorSpecification` contains this information.
-* The `connectionSpecification` of the `ConnectorSpecification` must be valid JSONSchema. It describes what inputs are needed in order for the source to interact with the underlying data source.
+* The `connectionSpecification` of the `ConnectorSpecification` must be valid JsonSchema. It describes what inputs are needed in order for the source to interact with the underlying data source.
   * e.g. If using a Postgres source, the `ConnectorSpecification` would specify that a `hostname`, `port`, and `password` are required in order for the integration to function.
-  * The UI reads the JSONSchema in this field in order to render the input fields for a user to fill in.
-  * This JSONSchema is also used to validate that the provided inputs are valid. e.g. If `port` is one of the fields and the JSONSchema in the `connectorSpecification` specifies that this filed should be a number, if a user inputs "airbyte", they will receive an error. Airbyte adheres to JSONSchema validation rules.
+  * The UI reads the JsonSchema in this field in order to render the input fields for a user to fill in.
+  * This JsonSchema is also used to validate that the provided inputs are valid. e.g. If `port` is one of the fields and the JsonSchema in the `connectorSpecification` specifies that this filed should be a number, if a user inputs "airbyte", they will receive an error. Airbyte adheres to JsonSchema validation rules.
 
 #### Check
 
 * Input:
-  * `config` - A configuration JSON object that has been validated using the `ConnectorSpecification`.
+  1. `config` - A configuration JSON object that has been validated using the `ConnectorSpecification`.
 * Output:
-  * `connectionStatus` - an [AirbyteConnectionStatus](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml#L94-L107) wrapped in an `AirbyteMessage` of type `connection_status`.
+  1. `connectionStatus` - an [AirbyteConnectionStatus](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml#L94-L107) wrapped in an `AirbyteMessage` of type `connection_status`.
 * The `check` command attempts to connect to the underlying data source in order to verify that the provided credentials are usable.
   * e.g. If the given the credentials, it can connect to the Postgres database, it will return a success response. If it fails \(perhaps the password is incorrect\), it will return a failed response and \(when possible\) a helpful error message.
 
@@ -94,7 +90,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 * Output:
   1. `catalog` - an [AirbyteCatalog](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml#L108-L132) wrapped in an `AirbyteMessage` of type `catalog`.
 * This command detects the _structure_ of the data in the data source.
-* An `AirbyteCatalog` describes the structure of data in a data source. It has a single field called `streams` that contains a list of `AirbyteStream`s. Each of these contain a `name` and `json_schema` field. The `json_schema` field accepts any valid JSONSchema and describes the structure of a stream. This data model is intentionally flexible. That can make it a little hard at first to mentally map onto your own data, so we provide some example below:
+* An `AirbyteCatalog` describes the structure of data in a data source. It has a single field called `streams` that contains a list of `AirbyteStream`s. Each of these contain a `name` and `json_schema` field. The `json_schema` field accepts any valid JsonSchema and describes the structure of a stream. This data model is intentionally flexible. That can make it a little hard at first to mentally map onto your own data, so we provide some example below:
   * If we are using a data source that is a traditional relational database, each table in that database would map to an `AirbyteStream`. Each column in the table would be a key in the `properties` field of the `json_schema` field.
     * e.g. If we have a table called `users` which had the columns `name` and `age` \(the age column is optional\) the `AirbyteCatalog` would look like this:
 
@@ -216,7 +212,7 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 
 ## The Airbyte Protocol
 
-* All messages passed to and from integrations must be wrapped in an `AirbyteMesage` envelope and serialized as JSON. The JSONSchema specification for these messages can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml).
+* All messages passed to and from integrations must be wrapped in an `AirbyteMesage` envelope and serialized as JSON. The JsonSchema specification for these messages can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml).
 * Even if a record is wrapped in an `AirbyteMessage` it will only be processed if it appropriate for the given command. e.g. If a source `read` action includes AirbyteMessages in its stream of type Catalog for instance, these messages will be ignored as the `read` interface only expects `AirbyteRecordMessage`s and `AirbyteStateMessage`s. The appropriate `AirbyteMessage` types have been described in each command above.
 * **ALL** actions are allowed to return `AirbyteLogMessage`s on stdout. For brevity, we have not mentioned these log messages in the description of each action, but they are always allowed. An `AirbyteLogMessage` wraps any useful logging that the integration wants to provide. These logs will written to Airbyte's log files and output to the console.
 * I/O:
@@ -226,4 +222,8 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 * Messages not wrapped in the `AirbyteMessage` will be ignored.
 * Each message must be on its own line. Multiple messages _cannot_ be sent on the same line.
 * Each message must but serialize to a JSON object that is exactly 1 line. The JSON objects cannot be serialized across multiple lines.
+
+## Recognition
+
+We have been heavily inspired by Singer.io's [specification](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#singer-specification) and would like to acknowledge how some of their choices have helped us bootstrap.
 

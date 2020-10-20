@@ -45,8 +45,6 @@ Here is a [step-by-step guide](docs/getting-started-tutorial.md) showing you how
 
 [See more on our website.](https://airbyte.io/features/)
 
-
-
 ## Contributing
 
 Before you can contribute, you need to understand the [**specification of Airbyte's data protocol**](https://docs.airbyte.io/architecture/airbyte-specification)**.** 
