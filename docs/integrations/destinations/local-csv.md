@@ -8,19 +8,10 @@ This destination writes data to a directory on the _local_ filesystem on the hos
 
 #### Output schema
 
-This destination outputs files with the name of the stream and a timestamp. Each row will be written as a new line in the output CSV file.
-
-#### Data Type Mapping
-
-As the output is CSV, the only output type is `String`. All input fields with be converted to their `String` value.
-
-| Airbyte Type | Destination Type | Notes |
-| :--- | :--- | :--- |
-| `string` | string |  |
-| `number` | string |  |
-| `int` | string |  |
-| `boolean` | string |  |
-| `object` | string | Objects will be serialized as json |
+Each stream will be output into its own file. Each file will contain 3 columns:
+* `ab_id`: a uuid assigned by Airbyte to each event that is processed.
+* `emitted_at`: a timestamp representing when the event was pulled from the data source.
+* `data`: a json blob representing with the event data.
 
 #### Features
 
