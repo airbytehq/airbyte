@@ -30,7 +30,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
@@ -41,6 +40,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;

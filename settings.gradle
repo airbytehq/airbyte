@@ -10,6 +10,7 @@ include ':airbyte-config:init'
 include ':airbyte-config:persistence'
 include ':airbyte-db'
 include ':airbyte-integrations'
+include ':airbyte-json-validation'
 include ':airbyte-protocol:models'
 include ':airbyte-queue'
 include ':airbyte-scheduler'
@@ -28,3 +29,4 @@ integrationsPath.eachFileRecurse(FileType.FILES) { path ->
         include ":airbyte-integrations:${relativePath.parent.join(':')}"
     }
 }
+

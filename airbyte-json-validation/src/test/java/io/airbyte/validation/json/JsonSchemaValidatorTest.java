@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.json;
+package io.airbyte.validation.json;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.Test;
 
 class JsonSchemaValidatorTest {
