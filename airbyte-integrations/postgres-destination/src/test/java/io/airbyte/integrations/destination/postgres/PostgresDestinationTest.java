@@ -54,6 +54,8 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -83,9 +85,10 @@ class PostgresDestinationTest {
       .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "announce the game.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
+  // also used for testing quote escaping
   private static final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
-          .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "ship some code.").build()))
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "ship some 'code'.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
   private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
@@ -211,6 +214,13 @@ class PostgresDestinationTest {
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
             .stream()
+            .peek(record -> {
+              // ensure emitted_at is not in the future
+              OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+              OffsetDateTime emitted_at = record.get("emitted_at", OffsetDateTime.class);
+
+              assertTrue(now.toEpochSecond() >= emitted_at.toEpochSecond());
+            })
             .map(Record::intoMap)
             .map(r -> r.entrySet().stream().map(e -> {
               if (e.getValue().getClass().equals(org.jooq.JSONB.class)) {
