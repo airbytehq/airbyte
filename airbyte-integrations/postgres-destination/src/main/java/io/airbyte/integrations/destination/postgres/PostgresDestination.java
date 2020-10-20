@@ -24,6 +24,9 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.table;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
@@ -49,6 +52,9 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -56,6 +62,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.DSLContext;
+import org.jooq.InsertValuesStep3;
+import org.jooq.JSONB;
+import org.jooq.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,7 +199,7 @@ public class PostgresDestination implements Destination {
         final CloseableQueue<byte[]> writeBuffer = entry.getValue().getWriteBuffer();
         while (writeBuffer.size() > minRecords) {
           try {
-            DatabaseHelper.query(connectionPool, ctx -> ctx.execute(buildWriteQuery(batchSize, writeBuffer, tmpTableName)));
+            DatabaseHelper.query(connectionPool, ctx -> buildWriteQuery(ctx, batchSize, writeBuffer, tmpTableName).execute());
           } catch (SQLException e) {
             throw new RuntimeException(e);
           }
@@ -202,10 +212,13 @@ public class PostgresDestination implements Destination {
     // VALUES
     // ({ "my": "data" }),
     // ({ "my": "data" });
-    private static String buildWriteQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String tmpTableName) {
-      final StringBuilder query = new StringBuilder(String.format("INSERT INTO %s(ab_id, %s, emitted_at)\n", tmpTableName, COLUMN_NAME))
-          .append("VALUES \n");
-      boolean firstRecordInQuery = true;
+    private static InsertValuesStep3<Record, String, JSONB, OffsetDateTime> buildWriteQuery(DSLContext ctx,
+                                                                                            int batchSize,
+                                                                                            CloseableQueue<byte[]> writeBuffer,
+                                                                                            String tmpTableName) {
+      InsertValuesStep3<Record, String, JSONB, OffsetDateTime> step = ctx.insertInto(table(tmpTableName), field("ab_id", String.class),
+          field(COLUMN_NAME, JSONB.class), field("emitted_at", OffsetDateTime.class));
+
       for (int i = 0; i < batchSize; i++) {
         final byte[] record = writeBuffer.poll();
         if (record == null) {
@@ -213,18 +226,11 @@ public class PostgresDestination implements Destination {
         }
         final AirbyteRecordMessage message = Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteRecordMessage.class);
 
-        // don't write comma before the first record.
-        if (firstRecordInQuery) {
-          firstRecordInQuery = false;
-        } else {
-          query.append(", \n");
-        }
-        query.append(String.format("('%s', '%s', TO_TIMESTAMP(%s / 1000))", UUID.randomUUID().toString(), Jsons.serialize(message.getData()),
-            message.getEmittedAt()));
+        step = step.values(UUID.randomUUID().toString(), JSONB.valueOf(Jsons.serialize(message.getData())),
+            OffsetDateTime.of(LocalDateTime.ofEpochSecond(message.getEmittedAt(), 0, ZoneOffset.UTC), ZoneOffset.UTC));
       }
-      query.append(";");
 
-      return query.toString();
+      return step;
     }
 
     @Override
