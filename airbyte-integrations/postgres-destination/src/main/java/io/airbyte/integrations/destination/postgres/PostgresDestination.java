@@ -227,7 +227,7 @@ public class PostgresDestination implements Destination {
         final AirbyteRecordMessage message = Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteRecordMessage.class);
 
         step = step.values(UUID.randomUUID().toString(), JSONB.valueOf(Jsons.serialize(message.getData())),
-            OffsetDateTime.of(LocalDateTime.ofEpochSecond(message.getEmittedAt(), 0, ZoneOffset.UTC), ZoneOffset.UTC));
+            OffsetDateTime.of(LocalDateTime.ofEpochSecond(message.getEmittedAt() / 1000, 0, ZoneOffset.UTC), ZoneOffset.UTC));
       }
 
       return step;
