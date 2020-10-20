@@ -72,13 +72,13 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
             .filter(message -> message.getType() == Type.SPEC)
             .map(AirbyteMessage::getSpec)
             .findFirst();
-      }
 
-      // todo (cgardens) - let's pre-fetch the images outside of the worker so we don't need account for
-      // this.
-      // retrieving spec should generally be instantaneous, but since docker images might not be pulled
-      // it could take a while longer depending on internet conditions as well.
-      WorkerUtils.gentleClose(process, 2, TimeUnit.MINUTES);
+        // todo (cgardens) - let's pre-fetch the images outside of the worker so we don't need account for
+        // this.
+        // retrieving spec should generally be instantaneous, but since docker images might not be pulled
+        // it could take a while longer depending on internet conditions as well.
+        WorkerUtils.gentleClose(process, 2, TimeUnit.MINUTES);
+      }
 
       int exitCode = process.exitValue();
       if (exitCode == 0) {
