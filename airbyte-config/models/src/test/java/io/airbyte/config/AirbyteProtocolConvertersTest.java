@@ -95,4 +95,22 @@ class AirbyteProtocolConvertersTest {
     assertEquals(schema, AirbyteProtocolConverters.toSchema(message.getCatalog()));
   }
 
+  @Test
+  void testAnyOfAsObject() {
+    final String testString =
+        "{\"type\":\"CATALOG\",\"catalog\":{\"streams\":[{\"name\":\"users\",\"json_schema\":{\"properties\":{\"date\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"object\"}]}}}}]}}";
+
+    Schema schema = new Schema()
+        .withStreams(Lists.newArrayList(new Stream()
+            .withName(STREAM)
+            .withFields(Lists.newArrayList(
+                new io.airbyte.config.Field()
+                    .withName("date")
+                    .withDataType(DataType.OBJECT)
+                    .withSelected(true)))));
+
+    final AirbyteMessage message = Jsons.deserialize(testString, AirbyteMessage.class);
+    assertEquals(schema, AirbyteProtocolConverters.toSchema(message.getCatalog()));
+  }
+
 }
