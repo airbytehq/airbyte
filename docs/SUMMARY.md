@@ -35,6 +35,7 @@
 ## Architecture
 
 * [High Level Overview](architecture/high-level-overview.md)
+* [The Airbyte Specification](architecture/airbyte-specification.md)
 * [Technical Stack](architecture/tech-stack.md)
 * [Full Refresh](architecture/full-refresh.md)
 
