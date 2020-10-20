@@ -112,7 +112,8 @@ public class BigQueryDestination implements Destination {
         return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(result.getRight());
       }
     } catch (Exception e) {
-      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
+      LOGGER.info("Check failed.", e);
+      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
     }
   }
 
@@ -120,7 +121,7 @@ public class BigQueryDestination implements Destination {
     final String projectId = config.get(CONFIG_PROJECT_ID).asText();
     final String credentialsString = config.get(CONFIG_CREDS).asText();
     try {
-      final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsString.getBytes()));
+      final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
 
       return BigQueryOptions.newBuilder()
           .setProjectId(projectId)
