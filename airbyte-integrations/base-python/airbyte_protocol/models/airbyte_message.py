@@ -42,13 +42,6 @@ class Type(Enum):
     CATALOG = 'CATALOG'
 
 
-class AirbyteType(Enum):
-    boolean = 'boolean'
-    number = 'number'
-    text = 'text'
-    object = 'object'
-
-
 class AirbyteRecordMessage(BaseModel):
     stream: str = Field(..., description='the name of the stream for this record')
     data: Dict[str, Any] = Field(..., description='the record data')
