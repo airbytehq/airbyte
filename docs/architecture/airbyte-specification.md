@@ -12,9 +12,9 @@ This page will describe the Airbyte Specification.
 * While this specification works with Airbyte, it is an independent standard.
 
 #### Contents:
-1. [General information about the specification](#General)
-1. [Integration primitives](#Primitives)
-1. [Details of the protocol to pass information between integrations](#The-Airbyte-Protocol)
+1. [General information about the specification](#general)
+1. [Integration primitives](#primitives)
+1. [Details of the protocol to pass information between integrations](#the-airbyte-protocol)
 
 This document is focused on the interfaces and primitives around integrations. You can better understand how that fits into the bigger picture by checking out the [Airbyte Architecture](high-level-overview.md).
 
@@ -205,3 +205,6 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 * Messages not wrapped in the `AirbyteMessage` will be ignored.
 * Each message must be on its own line. Multiple messages _cannot_ be sent on the same line.
 * Each message must but serialize to a json object that is exactly 1 line. The json objects cannot be serialized across multiple lines.
+
+## Recognition
+We have been heavily inspired by Singer.io's [specification](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#singer-specification) and would like to acknowledge how some of their choices have helped us bootstrap.
