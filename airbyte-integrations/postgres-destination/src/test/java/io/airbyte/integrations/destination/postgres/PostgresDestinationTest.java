@@ -86,9 +86,10 @@ class PostgresDestinationTest {
       .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "announce the game.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
+  // also used for testing quote escaping
   private static final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
-          .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "ship some code.").build()))
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "ship some 'code'.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
   private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
