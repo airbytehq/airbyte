@@ -12,13 +12,13 @@ Here is what we have in mind:
 
 * our own **Snowflake** warehouse integration
 * **10 additional Singer taps** 
+* as a bonus if we can, update the onboarding experience with pre-filled demo data for the users who just want to see how Airbyte works with the least effort.
 
 ## 0.3.0 - expected around 10/26/2020
 
 Here is what we have in mind:
 
 * new guides \(how to build scratch/singer\) 
-* as a bonus if we can, update the onboarding experience with pre-filled demo data for the users who just want to see how Airbyte works with the least effort.
 * **5 additional Singer taps**
 
 ## 0.2.0 - delivered on 10/19/2020
