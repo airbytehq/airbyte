@@ -12,9 +12,9 @@ This page will describe the Airbyte Specification.
 * While this specification works with Airbyte, it is an independent standard.
 
 #### Contents:
-1. [General information about the specification](#General)
-1. [Integration primitives](#Primitives)
-1. [Details of the protocol to pass information between integrations](#The-Airbyte-Protocol)
+1. [General information about the specification](#general)
+1. [Integration primitives](#primitives)
+1. [Details of the protocol to pass information between integrations](#the-airbyte-protocol)
 
 This document is focused on the interfaces and primitives around integrations. You can better understand how that fits into the bigger picture by checking out the [Airbyte Architecture](high-level-overview.md).
 
