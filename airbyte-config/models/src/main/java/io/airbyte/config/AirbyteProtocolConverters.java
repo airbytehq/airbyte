@@ -41,10 +41,14 @@ import java.util.stream.StreamSupport;
 public class AirbyteProtocolConverters {
 
   public static AirbyteCatalog toCatalog(Schema schema) {
-    return new AirbyteCatalog()
-        .withStreams(schema.getStreams().stream().map(s -> new AirbyteStream()
+    List<AirbyteStream> airbyteStreams = schema.getStreams().stream()
+        .map(s -> new AirbyteStream()
             .withName(s.getName())
-            .withJsonSchema(toJson(s.getFields()))).collect(Collectors.toList()));
+            .withJsonSchema(toJson(s.getFields())))
+        // perform selection based on the output of toJson, which keeps properties if selected=true
+        .filter(s -> !s.getJsonSchema().get("properties").isEmpty())
+        .collect(Collectors.toList());
+    return new AirbyteCatalog().withStreams(airbyteStreams);
   }
 
   // todo (cgardens) - this will only work with table / column schemas. it's hack to get us through
