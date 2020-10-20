@@ -81,9 +81,9 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
             .filter(message -> message.getType() == Type.CATALOG)
             .map(AirbyteMessage::getCatalog)
             .findFirst();
-      }
 
-      WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+        WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+      }
 
       int exitCode = process.exitValue();
       if (exitCode == 0) {
