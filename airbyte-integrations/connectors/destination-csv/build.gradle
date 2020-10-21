@@ -11,7 +11,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:bases:base-java')
 
-    integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
+    integrationTestImplementation project(':airbyte-integrations:bases:integration-test-lib')
 }
 
 application {

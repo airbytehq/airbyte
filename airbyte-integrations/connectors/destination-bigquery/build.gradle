@@ -14,7 +14,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-queue')
 
-    integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
+    integrationTestImplementation project(':airbyte-integrations:bases:integration-test-lib')
 
 }
 
