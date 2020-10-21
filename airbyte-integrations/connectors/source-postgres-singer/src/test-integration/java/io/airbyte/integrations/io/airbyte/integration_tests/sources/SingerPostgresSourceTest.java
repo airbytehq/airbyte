@@ -41,8 +41,12 @@ import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardTapConfig;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
@@ -69,17 +73,19 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings("rawtypes")
 public class SingerPostgresSourceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingerPostgresSourceTest.class);
   private static final String IMAGE_NAME = "airbyte/postgres-singer-source-abprotocol:dev";
   private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
+
+  private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
+      "id_and_name",
+      Field.of("id", JsonSchemaPrimitive.NUMBER),
+      Field.of("name", JsonSchemaPrimitive.STRING));
 
   private PostgreSQLContainer psqlDb;
   private Path jobRoot;
@@ -161,7 +167,7 @@ public class SingerPostgresSourceTest {
 
     String configFileName = "config.json";
     String catalogFileName = "selected_catalog.json";
-    writeFileToJobRoot(catalogFileName, MoreResources.readResource(catalogFileName));
+    writeFileToJobRoot(catalogFileName, Jsons.serialize(CATALOG));
     writeFileToJobRoot(configFileName, Jsons.serialize(getDbConfig(db)));
 
     Process tapProcess = integrationLauncher.read(jobRoot, configFileName, catalogFileName).start();
@@ -205,10 +211,9 @@ public class SingerPostgresSourceTest {
     StandardDiscoverCatalogInput inputConfig = new StandardDiscoverCatalogInput().withConnectionConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
     OutputAndStatus<StandardDiscoverCatalogOutput> run = new DefaultDiscoverCatalogWorker(integrationLauncher).run(inputConfig, jobRoot);
 
-    Schema expected = Jsons.deserialize(MoreResources.readResource("schema.json"), Schema.class);
     assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(expected, run.getOutput().get().getSchema());
+    assertEquals(CATALOG, run.getOutput().get().getCatalog());
   }
 
   @Test
