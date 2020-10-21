@@ -9,6 +9,7 @@ This destination writes data to a directory on the _local_ filesystem on the hos
 #### Output schema
 
 Each stream will be output into its own file. Each file will contain 3 columns:
+
 * `ab_id`: a uuid assigned by Airbyte to each event that is processed.
 * `emitted_at`: a timestamp representing when the event was pulled from the data source.
 * `data`: a json blob representing with the event data.
