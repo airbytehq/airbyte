@@ -2,8 +2,10 @@ plugins {
     id 'java'
 }
 
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
-buildImage.dependsOn ":airbyte-integrations:base-python:buildImage"
+buildImage.dependsOn ":airbyte-integrations:bases:base-python:buildImage"
 integrationTest.dependsOn(buildImage)
+
+
