@@ -1,5 +1,5 @@
 ### Create a Python Airbyte Source
-1. If you are trying to create an Airbyte Source from a Singer Tap, you should follow [this guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/template/singer-source/README.md) instead.
+1. If you are trying to create an Airbyte Source from a Singer Tap, you should follow [this guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/singer-source/README.md) instead.
 1. Copy the template into a directory with your integration name. `cp -r airbyte-integrations/template/python-source airbyte-integrations/source-SOURCENAME`.
 1. ```
    mv airbyte-integrations/source-SOURCENAME/template_python_source airbyte-integrations/source-SOURCENAME/SOURCENAME_source
