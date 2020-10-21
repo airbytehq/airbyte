@@ -1,0 +1,35 @@
+name: Airbyte CI
+
+on:
+  push:
+
+jobs:
+  build:
+    env:
+      GRADLE_PATH: /tmp/gradle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
+      - name: Cache java deps
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.GRADLE_PATH }}
+          key: gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            gradle-
+
+      - name: generaterandomfiles
+        run:  base64 /dev/urandom | head -c 3 > r1.txt
+
+      - name: cache-docker-layers
+        uses: satackey/action-docker-layer-caching@v0.0.8
+        continue-on-error: true
+        with:
+          path: /
+          key: airbyte-docker-cache-{hash}
+          restore-keys: |
+            airbyte-docker-cache-
+
+
