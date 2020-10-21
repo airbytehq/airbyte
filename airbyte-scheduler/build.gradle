@@ -8,7 +8,6 @@ dependencies {
     implementation project(':airbyte-db')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-singer')
     implementation project(':airbyte-workers')
 
     testImplementation "org.testcontainers:postgresql:1.15.0-rc2"
