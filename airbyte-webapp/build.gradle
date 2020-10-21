@@ -14,6 +14,7 @@ npm_run_build {
     inputs.file 'package.json'
     inputs.file 'package-lock.json'
 
+    outputs.cacheIf { true }
     outputs.dir project.buildDir
 }
 assemble.dependsOn npm_run_build
@@ -27,6 +28,3 @@ task test(type: NpmTask) {
     inputs.file 'package-lock.json'
 }
 
-clean {
-    delete "${projectDir}/node_modules/"
-}
