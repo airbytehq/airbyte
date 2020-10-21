@@ -87,12 +87,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
           return new OutputAndStatus<>(JobStatus.FAILED);
         }
 
-        // hack: more json schema X-module issues.
-        final io.airbyte.config.ConnectorSpecification spec2 = new io.airbyte.config.ConnectorSpecification()
-            .withDocumentationUrl(spec.get().getDocumentationUrl())
-            .withChangelogUrl(spec.get().getChangelogUrl())
-            .withConnectionSpecification(spec.get().getConnectionSpecification());
-        return new OutputAndStatus<>(JobStatus.SUCCEEDED, new StandardGetSpecOutput().withSpecification(spec2));
+        return new OutputAndStatus<>(JobStatus.SUCCEEDED, new StandardGetSpecOutput().withSpecification(spec.get()));
 
       } else {
         LOGGER.error("Spec job subprocess finished with exit code {}", exitCode);
