@@ -1,6 +1,0 @@
-*
-!Dockerfile
-!check_connection.py
-!requirements.txt
-!run.sh
-!src/test-integration/resources/spec.json
