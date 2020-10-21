@@ -1,4 +1,4 @@
-name: Airbyte CI
+name: Fast CI
 
 on:
   push:
