@@ -17,6 +17,7 @@ This BigQuery destination is based on the [PipelineWise BigQuery Target](https:/
 #### Output schema
 
 Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
+
 * `ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
 * `emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
 * `data`: a json blob representing with the event data. The column type in BigQuery is `String`.
