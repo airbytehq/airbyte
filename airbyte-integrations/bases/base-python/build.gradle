@@ -9,4 +9,4 @@ task generateProtocolClassFiles(type: Exec) {
 }
 
 assemble.dependsOn generateProtocolClassFiles
-buildImage.dependsOn ':airbyte-integrations:base:buildImage'
+buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'
