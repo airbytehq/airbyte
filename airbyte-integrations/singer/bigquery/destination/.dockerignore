@@ -1,5 +1,0 @@
-*
-!Dockerfile
-!entrypoint.sh
-!requirements.txt
-!src/test-integration/resources/spec.json
