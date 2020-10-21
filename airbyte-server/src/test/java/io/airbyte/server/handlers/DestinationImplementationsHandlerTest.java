@@ -45,12 +45,12 @@ import io.airbyte.api.model.DestinationImplementationUpdate;
 import io.airbyte.api.model.DestinationSpecificationRead;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConnectorSpecification;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.ConnectorSpecificationHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
@@ -89,7 +89,7 @@ class DestinationImplementationsHandlerTest {
 
     standardDestination = DestinationHelpers.generateDestination();
     destinationIdRequestBody = new DestinationIdRequestBody().destinationId(standardDestination.getDestinationId());
-    ConnectorSpecification connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
+    final ConnectorSpecification connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
     destinationSpecificationRead = new DestinationSpecificationRead()
         .connectionSpecification(connectorSpecification.getConnectionSpecification())
         .destinationId(standardDestination.getDestinationId())

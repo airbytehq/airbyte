@@ -25,7 +25,7 @@
 package io.airbyte.server.helpers;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConnectorSpecification;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
