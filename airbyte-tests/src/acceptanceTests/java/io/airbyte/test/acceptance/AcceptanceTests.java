@@ -70,7 +70,9 @@ import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -85,8 +87,8 @@ import org.testcontainers.utility.MountableFile;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
-  private PostgreSQLContainer sourcePsql;
-  private PostgreSQLContainer targetPsql;
+  private static PostgreSQLContainer sourcePsql;
+  private static PostgreSQLContainer targetPsql;
 
   private final AirbyteApiClient apiClient = new AirbyteApiClient(
       new ApiClient().setScheme("http")
@@ -98,24 +100,33 @@ public class AcceptanceTests {
   private List<UUID> connectionIds;
   private List<UUID> destinationImplIds;
 
-  @BeforeEach
-  public void init() {
-    sourceImplIds = Lists.newArrayList();
-    connectionIds = Lists.newArrayList();
-    destinationImplIds = Lists.newArrayList();
-
+  @BeforeAll
+  public static void init() {
     sourcePsql = new PostgreSQLContainer("postgres:13-alpine");
     targetPsql = new PostgreSQLContainer("postgres:13-alpine");
     sourcePsql.start();
     targetPsql.start();
+  }
 
+  @AfterAll
+  public static void end() {
+    sourcePsql.stop();
+    targetPsql.stop();
+  }
+
+  @BeforeEach
+  public void setup() throws SQLException {
+    sourceImplIds = Lists.newArrayList();
+    connectionIds = Lists.newArrayList();
+    destinationImplIds = Lists.newArrayList();
+    
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), sourcePsql);
   }
 
   @AfterEach
-  public void tearDown() throws ApiException {
-    sourcePsql.stop();
-    targetPsql.stop();
+  public void tearDown() throws ApiException, SQLException {
+    clearDbData(sourcePsql);
+    clearDbData(targetPsql);
 
     for (UUID sourceImplId : sourceImplIds) {
       deleteSourceImpl(sourceImplId);
@@ -460,6 +471,16 @@ public class AcceptanceTests {
         .findFirst()
         .orElseThrow()
         .getSourceId();
+  }
+
+  private void clearDbData(PostgreSQLContainer connectionPool) throws SQLException {
+    final BasicDataSource connectionPool1 = getConnectionPool(connectionPool);
+    final Set<String> tableNames = listStreams(connectionPool1);
+    for (final String tableName : tableNames) {
+      DatabaseHelper.query(
+          connectionPool1,
+          context -> context.execute(String.format("DELETE FROM %s", tableName)));
+    }
   }
 
   private void deleteSourceImpl(UUID sourceImplId) throws ApiException {
