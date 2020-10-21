@@ -78,7 +78,7 @@ import org.testcontainers.utility.MountableFile;
 @SuppressWarnings("rawtypes")
 public class SingerPostgresSourceTest {
 
-  private static final String IMAGE_NAME = "airbyte/postgres-singer-source-abprotocol:dev";
+  private static final String IMAGE_NAME = "airbyte/postgres-singer-source:dev";
   private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
 
   private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(

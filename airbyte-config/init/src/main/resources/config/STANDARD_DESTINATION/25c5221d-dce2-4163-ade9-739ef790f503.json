@@ -1,7 +1,7 @@
 {
   "destinationId": "25c5221d-dce2-4163-ade9-739ef790f503",
   "name": "Postgres",
-  "dockerRepository": "airbyte/airbyte-postgres-destination-abprotocol",
+  "dockerRepository": "airbyte/airbyte-postgres-destination",
   "dockerImageTag": "0.1.0",
   "documentationUrl": "https://hub.docker.com/r/airbyte/integration-singer-postgres-destination"
 }

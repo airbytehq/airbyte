@@ -9,7 +9,7 @@ ENV AIRBYTE_IMPL_MODULE="postgres_singer_source"
 ENV AIRBYTE_IMPL_PATH="PostgresSingerSource"
 
 LABEL io.airbyte.version=0.1.0
-LABEL io.airbyte.name=airbyte/postgres-singer-source-abprotocol
+LABEL io.airbyte.name=airbyte/postgres-singer-source
 
 WORKDIR /airbyte/integration_code
 
