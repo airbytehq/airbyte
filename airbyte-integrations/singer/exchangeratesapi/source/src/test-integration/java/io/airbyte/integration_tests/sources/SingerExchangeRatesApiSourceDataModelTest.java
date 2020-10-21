@@ -24,55 +24,20 @@
 
 package io.airbyte.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.Schema;
-import io.airbyte.singer.SingerCatalog;
-import io.airbyte.workers.protocols.singer.SingerCatalogConverters;
-import io.airbyte.workers.protocols.singer.SingerProtocolPredicate;
+import io.airbyte.workers.protocols.airbyte.AirbyteProtocolPredicate;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 public class SingerExchangeRatesApiSourceDataModelTest {
 
   @Test
-  void testDeserializeCatalog() throws IOException {
-    final String input = MoreResources.readResource("catalog.json");
-
-    final JsonNode expected = Jsons.deserialize(input);
-    // our deserializer converts `type: "object"` => `type: ["object"]`. both are valid jsonschema.
-    JsonSchemas.mutateTypeToArrayStandard(expected.get("streams").get(0).get("schema"));
-    expected.get("streams")
-        .get(0)
-        .get("schema")
-        .get("properties")
-        .forEach(JsonSchemas::mutateTypeToArrayStandard);
-
-    final SingerCatalog catalog = Jsons.deserialize(input, SingerCatalog.class);
-
-    // test deserialize / serialize
-    assertEquals(expected, Jsons.deserialize(Jsons.serialize(catalog)));
-
-    // test after applying airbyte schema.
-    final Schema airbyteSchema = SingerCatalogConverters.toAirbyteSchema(catalog);
-    final SingerCatalog catalogWithSchemaApplied = SingerCatalogConverters.applySchemaToDiscoveredCatalog(catalog, airbyteSchema);
-
-    // we end up adding an empty metadata field.
-    JsonNode expectedAfterSchemaApplied = Jsons.clone(expected);
-    ((ObjectNode) expectedAfterSchemaApplied.get("streams").get(0)).putArray("metadata");
-    assertEquals(expectedAfterSchemaApplied, Jsons.deserialize(Jsons.serialize(catalogWithSchemaApplied)));
-  }
-
-  @Test
   void schemaMessageIsValid() throws IOException {
     final String input = MoreResources.readResource("schema_message.json");
-    assertTrue(new SingerProtocolPredicate().test(Jsons.deserialize(input)));
+    assertTrue(new AirbyteProtocolPredicate().test(Jsons.deserialize(input)));
   }
 
 }
