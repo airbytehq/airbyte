@@ -47,6 +47,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.Stream;
 import io.airbyte.db.DatabaseHelper;
 import io.airbyte.scheduler.Job;
@@ -137,7 +138,7 @@ class DefaultSchedulerPersistenceTest {
         .withSchema(schema)
         .withSourceImplementationId(sourceImplementationId)
         .withDestinationImplementationId(destinationImplementationId)
-        .withSyncMode(StandardSync.SyncMode.APPEND);
+        .withSyncMode(SyncMode.FULL_REFRESH);
 
     NOW = Instant.now();
   }

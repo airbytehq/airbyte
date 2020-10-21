@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
@@ -116,7 +117,10 @@ class WorkerRunFactoryTest {
     StandardSyncInput expectedInput = new StandardSyncInput()
         .withSourceConnectionImplementation(job.getConfig().getSync().getSourceConnectionImplementation())
         .withDestinationConnectionImplementation(job.getConfig().getSync().getDestinationConnectionImplementation())
-        .withStandardSync(job.getConfig().getSync().getStandardSync());
+        .withCatalog(AirbyteProtocolConverters.toCatalog(job.getConfig().getSync().getStandardSync().getSchema()))
+        .withConnectionId(job.getConfig().getSync().getStandardSync().getConnectionId())
+        .withSyncMode(job.getConfig().getSync().getStandardSync().getSyncMode())
+        .withState(job.getConfig().getSync().getState());
 
     ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());

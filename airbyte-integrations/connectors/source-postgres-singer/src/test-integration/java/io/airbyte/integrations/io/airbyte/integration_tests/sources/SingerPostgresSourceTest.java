@@ -33,13 +33,11 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.Schema;
-import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -114,20 +112,10 @@ public class SingerPostgresSourceTest {
 
   @Test
   public void testFullRefreshStatelessRead() throws Exception {
-
-    Schema schema = Jsons.deserialize(MoreResources.readResource("schema.json"), Schema.class);
-
-    // select all streams and all fields
-    schema.getStreams().forEach(s -> s.setSelected(true));
-    schema.getStreams().forEach(t -> t.getFields().forEach(c -> c.setSelected(true)));
-
-    StandardSync syncConfig = new StandardSync().withSyncMode(StandardSync.SyncMode.FULL_REFRESH).withSchema(schema);
-    SourceConnectionImplementation sourceImpl =
-        new SourceConnectionImplementation().withConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
-
     StandardTapConfig tapConfig = new StandardTapConfig()
-        .withStandardSync(syncConfig)
-        .withSourceConnectionImplementation(sourceImpl);
+        .withCatalog(CATALOG)
+        .withSyncMode(SyncMode.FULL_REFRESH)
+        .withSourceConnectionConfiguration(Jsons.jsonNode(getDbConfig(psqlDb)));
 
     DefaultAirbyteSource source = new DefaultAirbyteSource(integrationLauncher);
     source.start(tapConfig, jobRoot);

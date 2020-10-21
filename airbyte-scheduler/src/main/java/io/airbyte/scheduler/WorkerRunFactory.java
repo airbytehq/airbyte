@@ -25,6 +25,7 @@
 package io.airbyte.scheduler;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -162,7 +163,10 @@ public class WorkerRunFactory {
     return new StandardSyncInput()
         .withSourceConnectionImplementation(config.getSourceConnectionImplementation())
         .withDestinationConnectionImplementation(config.getDestinationConnectionImplementation())
-        .withStandardSync(config.getStandardSync());
+        .withConnectionId(config.getStandardSync().getConnectionId())
+        .withCatalog(AirbyteProtocolConverters.toCatalog(config.getStandardSync().getSchema()))
+        .withSyncMode(config.getStandardSync().getSyncMode())
+        .withState(config.getState());
   }
 
   /*
