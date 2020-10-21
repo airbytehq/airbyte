@@ -7,8 +7,8 @@ apply from: rootProject.file('tools/gradle/commons/integrations/integration-test
 
 dependencies {
     integrationTestImplementation project(':airbyte-workers')
-    integrationTestImplementation project(':airbyte-singer')
     integrationTestImplementation project(':airbyte-config:models')
+    integrationTestImplementation project(':airbyte-protocol:models')
 }
 
 integrationTest.dependsOn(buildImage)
