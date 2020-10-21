@@ -63,7 +63,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -330,7 +329,7 @@ public class AcceptanceTests {
 
     // TODO validate that the correct number of records exists? currently if the same record exists
     // multiple times in the source but once in destination, this returns true.
-    final Optional<JsonNode> matchingRecord = presentRecords
+    final List<JsonNode> matchingRecords = presentRecords
         .stream()
         .map(Record::intoMap)
         .map(r -> r.entrySet().stream().map(e -> {
@@ -343,13 +342,12 @@ public class AcceptanceTests {
         }).collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
         .map(r -> ((String) r.get("data")))
         .map(Jsons::deserialize)
-        .filter(j -> j.get("id").asText().equals(record.get("id").toString())).findFirst();
+        .collect(Collectors.toList());
 
-    assertTrue(matchingRecord.isPresent());
+    assertTrue(matchingRecords.size() > 0);
 
-    final JsonNode expectValues = Jsons.jsonNode(record.intoMap());
-
-    assertEquals(expectValues, matchingRecord.get());
+    final JsonNode expectedValues = Jsons.jsonNode(record.intoMap());
+    assertTrue(matchingRecords.contains(expectedValues));
   }
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")
