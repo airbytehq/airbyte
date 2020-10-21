@@ -5,7 +5,7 @@ task generateProtocolClassFiles(type: Exec) {
     commandLine 'bin/generate-protocol-files.sh'
 
     outputs.upToDateWhen { false }
-    dependsOn ':airbyte-integrations:base-python:code-generator:buildImage'
+    dependsOn ':airbyte-integrations:bases:base-python:code-generator:buildImage'
 }
 
 assemble.dependsOn generateProtocolClassFiles
