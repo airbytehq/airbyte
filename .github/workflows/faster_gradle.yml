@@ -27,9 +27,9 @@ jobs:
         uses: satackey/action-docker-layer-caching@v0.0.8
         continue-on-error: true
         with:
-          path: /
           key: airbyte-docker-cache-{hash}
           restore-keys: |
             airbyte-docker-cache-
 
-
+      - name: build docker
+        run: docker build .
