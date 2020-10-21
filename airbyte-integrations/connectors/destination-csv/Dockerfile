@@ -1,7 +1,7 @@
 FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
-ENV APPLICATION csv-destination
+ENV APPLICATION destination-csv
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 

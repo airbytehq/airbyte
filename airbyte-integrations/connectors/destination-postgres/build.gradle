@@ -14,7 +14,7 @@ dependencies {
 
     testImplementation "org.testcontainers:postgresql:1.15.0-rc2"
 
-    integrationTestImplementation project(':airbyte-integrations:integration-test-lib')
+    integrationTestImplementation project(':airbyte-integrations:bases:integration-test-lib')
     integrationTestImplementation "org.testcontainers:postgresql:1.15.0-rc2"
 }
 
