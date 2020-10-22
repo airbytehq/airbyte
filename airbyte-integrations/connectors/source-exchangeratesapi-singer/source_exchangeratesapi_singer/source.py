@@ -36,14 +36,15 @@ class SourceExchangeRatesApiSinger(SingerSource):
         try:
             code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
             logger.info(f"Ping response code: {code}")
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED if (code==200) else Status.FAILED)
+            return AirbyteConnectionStatus(
+                status=Status.SUCCEEDED if (code == 200) else Status.FAILED
+            )
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
 
     def discover_cmd(self, logger, config_path) -> str:
-        return "tap-exchangeratesapi | grep '\"type\": \"SCHEMA\"' | head -1 | jq -c '{\"streams\":[{\"stream\": .stream, \"schema\": .schema}]}'"
+        return 'tap-exchangeratesapi | grep \'"type": "SCHEMA"\' | head -1 | jq -c \'{"streams":[{"stream": .stream, "schema": .schema}]}\''
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         state_option = f"--state {state_path}" if state_path else ""
         return f"tap-exchangeratesapi --config {config_path} {state_option}"
-

@@ -1,0 +1,43 @@
+apply plugin: 'ru.vyarus.use-python'
+
+python {
+    envPath = '.venv'
+    minPythonVersion = '3.7'
+    scope = VIRTUALENV
+    installVirtualenv = true
+    pip 'flake8:3.8.4'
+    pip 'black:20.8b1'
+    pip 'mypy:0.790'
+    pip 'isort:5.6.4'
+}
+
+task installReqs(type: PythonTask) {
+    module = "pip"
+    command = "install -r requirements.txt"
+}
+
+task blackFormat(type: PythonTask) {
+    module = "black"
+    command = "."
+}
+
+task isortFormat(type: PythonTask) {
+    module = "isort"
+    command = ". --settings-file ${rootProject.file('tools/python/.isort.cfg').absolutePath}"
+}
+
+task flakeCheck(type: PythonTask, dependsOn: blackFormat) {
+    module = "flake8"
+    command = ". --config ${rootProject.file('tools/python/.flake8').absolutePath}"
+}
+
+task mypyCheck(type: PythonTask, dependsOn: installReqs) {
+    module = "mypy"
+    command = "-m source_exchangeratesapi_singer --config-file ${rootProject.file('tools/python/.mypy.ini').absolutePath}"
+}
+
+build.dependsOn installReqs
+check.dependsOn blackFormat
+check.dependsOn isortFormat
+check.dependsOn flakeCheck
+check.dependsOn mypyCheck
