@@ -25,6 +25,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -201,7 +202,16 @@ public class SingerPostgresSourceTest {
 
     assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
-    assertEquals(CATALOG, run.getOutput().get().getCatalog());
+    final AirbyteCatalog actualCatalog = run.getOutput().get().getCatalog();
+    assertEquals(CATALOG.getStreams().get(0).getName(), actualCatalog.getStreams().get(0).getName());
+    assertNotNull(CATALOG.getStreams().get(0).getJsonSchema().get("properties").get("id"));
+    assertNotNull(CATALOG.getStreams().get(0).getJsonSchema().get("properties").get("name"));
+    assertEquals(
+        Jsons.jsonNode(Lists.newArrayList("null", "integer")),
+        actualCatalog.getStreams().get(0).getJsonSchema().get("properties").get("id").get("type"));
+    assertEquals(
+        Jsons.jsonNode(Lists.newArrayList("null", "string")),
+        actualCatalog.getStreams().get(0).getJsonSchema().get("properties").get("name").get("type"));
   }
 
   @Test
