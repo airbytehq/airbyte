@@ -24,15 +24,12 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.StandardTargetConfig;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
@@ -64,10 +61,8 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   public void start(StandardTargetConfig targetConfig, Path jobRoot) throws IOException, WorkerException {
     Preconditions.checkState(targetProcess == null);
 
-    final JsonNode configDotJson = targetConfig.getDestinationConnectionImplementation().getConfiguration();
-    final AirbyteCatalog catalog = AirbyteProtocolConverters.toCatalog(targetConfig.getStandardSync().getSchema());
-    IOs.writeFile(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
-    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
+    IOs.writeFile(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, Jsons.serialize(targetConfig.getDestinationConnectionConfiguration()));
+    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(targetConfig.getCatalog()));
 
     LOGGER.info("Running target...");
     targetProcess = integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, WorkerConstants.CATALOG_JSON_FILENAME).start();
