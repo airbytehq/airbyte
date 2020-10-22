@@ -34,7 +34,7 @@ class SourceGithubSinger(SingerSource):
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
         try:
             json_config = config_container.rendered_config
-            r = requests.get('https://api.github.com/orgs/airbytehq/teams', auth=(json_config['access_token'], ''))
+            r = requests.get('https://api.github.com/repos/airbytehq/airbyte/commits', auth=(json_config['access_token'], ''))
             if r.status_code == 200:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:
@@ -47,6 +47,6 @@ class SourceGithubSinger(SingerSource):
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
-        catalog_option = f"--catalog {catalog_path}"
+        properties_option = f"--properties {catalog_path}"
         state_option = f"--state {state_path}" if state_path else ""
-        return f"tap-github {config_option} {catalog_option} {state_option}"
+        return f"tap-github {config_option} {properties_option} {state_option}"
