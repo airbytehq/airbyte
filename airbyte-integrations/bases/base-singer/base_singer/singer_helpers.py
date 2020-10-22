@@ -134,7 +134,8 @@ class SingerHelper:
         for singer_stream in discovered_singer_catalog.get("streams"):
             if singer_stream.get("stream") in stream_to_airbyte_schema:
                 new_metadatas = []
-
+                # support old style catalog.
+                singer_stream["schema"]["selected"] = True
                 if singer_stream.get("metadata"):
                     metadatas = singer_stream.get("metadata")
                     for metadata in metadatas:
