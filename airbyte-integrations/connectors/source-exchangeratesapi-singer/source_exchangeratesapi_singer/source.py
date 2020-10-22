@@ -48,3 +48,8 @@ class SourceExchangeRatesApiSinger(SingerSource):
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         state_option = f"--state {state_path}" if state_path else ""
         return f"tap-exchangeratesapi --config {config_path} {state_option}"
+
+
+if __name__ == "__main__":
+    source = SourceExchangeRatesApiSinger()
+    source.spec(None)

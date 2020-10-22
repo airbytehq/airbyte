@@ -31,5 +31,10 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     package_data={"": ["*.json"]},
-    install_requires=["tap-exchangeratesapi==0.1.1", "base_singer", "airbyte_protocol"],
+    install_requires=[
+        "tap-exchangeratesapi==0.1.1",
+        "pydantic==1.6.1",
+        "base_singer",
+        "airbyte_protocol",
+    ],
 )
