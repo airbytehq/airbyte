@@ -162,7 +162,7 @@ public abstract class TestDestination {
    */
   @Test
   void testCheckConnection() throws Exception {
-    final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck();
+    final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getConfig());
     assertTrue(output.getOutput().isPresent());
     assertEquals(Status.SUCCEEDED, output.getOutput().get().getStatus());
   }
@@ -173,7 +173,7 @@ public abstract class TestDestination {
    */
   @Test
   void testCheckConnectionInvalidCredentials() throws Exception {
-    final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck();
+    final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getFailCheckConfig());
     assertTrue(output.getOutput().isPresent());
     assertEquals(Status.FAILED, output.getOutput().get().getStatus());
   }
@@ -233,9 +233,9 @@ public abstract class TestDestination {
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
-  private OutputAndStatus<StandardCheckConnectionOutput> runCheck() throws Exception {
+  private OutputAndStatus<StandardCheckConnectionOutput> runCheck(JsonNode config) throws Exception {
     return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
-        .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
+        .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
   // todo (cgardens) - still uses the old schema.
