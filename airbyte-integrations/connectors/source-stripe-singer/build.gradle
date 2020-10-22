@@ -2,6 +2,7 @@ plugins {
     id 'java'
 }
 
+apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 

@@ -2,8 +2,10 @@ plugins {
     id 'java'
 }
 
+apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+
 dependencies {
     integrationTestImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
     integrationTestImplementation 'com.fasterxml.jackson.core:jackson-databind'
