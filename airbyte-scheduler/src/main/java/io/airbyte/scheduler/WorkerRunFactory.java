@@ -41,7 +41,6 @@ import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.process.SingerIntegrationLauncher;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
@@ -143,11 +142,7 @@ public class WorkerRunFactory {
   }
 
   private IntegrationLauncher createLauncher(final String image) {
-    return isAirbyteProtocol(image) ? new AirbyteIntegrationLauncher(image, pbf) : new SingerIntegrationLauncher(image, pbf);
-  }
-
-  private boolean isAirbyteProtocol(final String image) {
-    return image != null && image.contains("abprotocol");
+    return new AirbyteIntegrationLauncher(image, pbf);
   }
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
