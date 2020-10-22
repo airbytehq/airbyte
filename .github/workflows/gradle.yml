@@ -7,8 +7,6 @@ on:
 
 jobs:
   build:
-    env:
-      GRADLE_PATH: /tmp/gradle
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
@@ -17,7 +15,7 @@ jobs:
       - name: Cache java deps
         uses: actions/cache@v2
         with:
-          path: ${{ env.GRADLE_PATH }}
+          path: ~/.gradle
           key: gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             gradle-
@@ -45,17 +43,17 @@ jobs:
           STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
 
       - name: Build
-        run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
+        run: ./gradlew --no-daemon build
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Run Integration Tests
-        run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
+        run: ./gradlew --no-daemon integrationTest
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew composeBuild --no-daemon -g ${{ env.GRADLE_PATH }}
+        run: ./gradlew --no-daemon composeBuild
         env:
           GIT_REVISION: ${{ github.sha }}
 
