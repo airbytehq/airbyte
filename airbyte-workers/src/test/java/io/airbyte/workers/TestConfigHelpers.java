@@ -26,12 +26,14 @@ package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.State;
 import io.airbyte.config.Stream;
@@ -98,7 +100,7 @@ public class TestConfigHelpers {
         .withDestinationImplementationId(destinationImplementationId)
         .withSourceImplementationId(sourceImplementationId)
         .withStatus(StandardSync.Status.ACTIVE)
-        .withSyncMode(StandardSync.SyncMode.APPEND)
+        .withSyncMode(SyncMode.FULL_REFRESH)
         .withName(CONNECTION_NAME)
         .withSchema(schema);
 
@@ -110,7 +112,9 @@ public class TestConfigHelpers {
 
     StandardSyncInput syncInput = new StandardSyncInput()
         .withDestinationConnectionImplementation(destinationConnectionConfig)
-        .withStandardSync(standardSync)
+        .withSyncMode(standardSync.getSyncMode())
+        .withCatalog(AirbyteProtocolConverters.toCatalog(standardSync.getSchema()))
+        .withConnectionId(standardSync.getConnectionId())
         .withSourceConnectionImplementation(sourceConnectionConfig)
         .withState(state);
 
