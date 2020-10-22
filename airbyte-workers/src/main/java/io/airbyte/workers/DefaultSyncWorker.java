@@ -96,7 +96,7 @@ public class DefaultSyncWorker<T> implements SyncWorker {
     final StandardSyncOutput output = new StandardSyncOutput().withStandardSyncSummary(summary);
     messageTracker.getOutputState().ifPresent(capturedState -> {
       final State state = new State()
-          .withConnectionId(tapConfig.getStandardSync().getConnectionId())
+          .withConnectionId(tapConfig.getConnectionId())
           .withState(capturedState);
       output.withState(state);
     });

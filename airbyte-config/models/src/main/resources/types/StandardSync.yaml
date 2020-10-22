@@ -24,10 +24,7 @@ properties:
   name:
     type: string
   syncMode:
-    type: string
-    enum:
-      - full_refresh
-      - append
+    "$ref": SyncMode.yaml
   schema:
     "$ref": StandardDataSchema.yaml#/definitions/schema
   status:

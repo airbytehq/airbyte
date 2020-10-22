@@ -24,15 +24,12 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.StandardTapConfig;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
@@ -71,12 +68,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
   public void start(StandardTapConfig input, Path jobRoot) throws Exception {
     Preconditions.checkState(tapProcess == null);
 
-    final AirbyteCatalog catalog = AirbyteProtocolConverters.toCatalog(input.getStandardSync().getSchema());
-
-    final JsonNode configDotJson = input.getSourceConnectionImplementation().getConfiguration();
-
-    IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
-    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
+    IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(input.getSourceConnectionConfiguration()));
+    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(input.getCatalog()));
     IOs.writeFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME, Jsons.serialize(input.getState()));
 
     tapProcess = integrationLauncher.read(jobRoot,
