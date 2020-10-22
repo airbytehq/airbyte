@@ -1,8 +1,6 @@
 FROM airbyte/integration-base-singer:dev
 
 RUN apt-get update && apt-get install -y \
-    jq \
-    curl \
     bash \
     && rm -rf /var/lib/apt/lists/*
 
