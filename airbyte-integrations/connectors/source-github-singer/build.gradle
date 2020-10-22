@@ -1,0 +1,12 @@
+plugins {
+    id 'java'
+}
+
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+
+dependencies {
+}
+
+buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
+integrationTest.dependsOn(buildImage)
