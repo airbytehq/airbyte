@@ -38,6 +38,10 @@ jobs:
         with:
           node-version: '14.7'
 
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh
         env:
