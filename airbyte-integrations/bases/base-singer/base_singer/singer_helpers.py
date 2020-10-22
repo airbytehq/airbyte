@@ -28,7 +28,7 @@ import selectors
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
-from typing import DefaultDict, Generator, List
+from typing import DefaultDict, Generator
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -42,7 +42,7 @@ from airbyte_protocol import (
 def to_json(string):
     try:
         return json.loads(string)
-    except ValueError as e:
+    except ValueError:
         return False
 
 

@@ -31,13 +31,16 @@ task flakeCheck(type: PythonTask, dependsOn: blackFormat) {
     command = ". --config ${rootProject.file('tools/python/.flake8').absolutePath}"
 }
 
-task mypyCheck(type: PythonTask, dependsOn: installReqs) {
-    module = "mypy"
-    command = "-m source_exchangeratesapi_singer --config-file ${rootProject.file('tools/python/.mypy.ini').absolutePath}"
+if(project.ext.has('pyModule')) {
+    task mypyCheck(type: PythonTask, dependsOn: installReqs) {
+        module = "mypy"
+        command = "-m ${project.ext.pyModule} --config-file ${rootProject.file('tools/python/.mypy.ini').absolutePath}"
+    }
+
+    check.dependsOn mypyCheck
 }
 
 build.dependsOn installReqs
 check.dependsOn blackFormat
 check.dependsOn isortFormat
 check.dependsOn flakeCheck
-check.dependsOn mypyCheck

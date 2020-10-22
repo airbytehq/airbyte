@@ -4,6 +4,7 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '5.6.1'
     id 'ru.vyarus.use-python' version '2.2.0' apply false
+    id "com.jetbrains.python.envs" version "0.0.19"
     // id 'de.aaschmid.cpd' version '3.1'
 }
 
@@ -72,7 +73,7 @@ spotless {
     }
     python {
         target '**/*.py'
-        targetExclude "**/build/**/*", "**/.gradle/**/*"
+        targetExclude "**/build/**/*", "**/.gradle/**/*", "**/.venv/**/*"
         licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|# generated)'
     }
     format 'styling', {

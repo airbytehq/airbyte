@@ -1,2 +1,2 @@
--e ../../base-python
+-e ../../bases/base-python
 -e .

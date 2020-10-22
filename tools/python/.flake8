@@ -1,5 +1,5 @@
 [flake8]
-exclude = .venv
+exclude = .venv, __init__.py
 extend-ignore =
   E203,  # whitespace before ':' (conflicts with Black)
   E231,  # Bad trailing comma (conflicts with Black)

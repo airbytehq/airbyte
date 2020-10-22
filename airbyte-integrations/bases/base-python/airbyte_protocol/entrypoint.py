@@ -24,12 +24,11 @@ SOFTWARE.
 
 import argparse
 import importlib
-import json
 import os.path
 import sys
 import tempfile
 
-from airbyte_protocol import AirbyteConnectionStatus, AirbyteMessage, Status, Type
+from airbyte_protocol import AirbyteMessage, Status, Type
 
 from .integration import ConfigContainer, Source
 from .logger import AirbyteLogger
