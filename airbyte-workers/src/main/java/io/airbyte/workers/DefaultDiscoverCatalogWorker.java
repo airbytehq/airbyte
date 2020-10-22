@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -95,7 +94,6 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
         return new OutputAndStatus<>(
             JobStatus.SUCCEEDED,
             new StandardDiscoverCatalogOutput()
-                .withSchema(AirbyteProtocolConverters.toSchema(catalog.get()))
                 .withCatalog(catalog.get()));
       } else {
         LOGGER.debug("Discover job subprocess finished with exit code {}", exitCode);

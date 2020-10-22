@@ -39,13 +39,13 @@ import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.api.model.SourceSpecificationRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestination;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -133,11 +133,12 @@ public class SchedulerHandler {
     LOGGER.debug("jobId = " + jobId);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
-    final StandardDiscoverCatalogOutput output = job.getOutput().map(JobOutput::getDiscoverCatalog)
+    final Schema schema = job.getOutput()
+        .map(out -> AirbyteProtocolConverters.toSchema(out.getDiscoverCatalog().getCatalog()))
         // the job should always produce an output, but if does not, we fall back on an empty schema.
-        .orElse(new StandardDiscoverCatalogOutput().withSchema(new Schema().withStreams(Collections.emptyList())));
+        .orElse(new Schema().withStreams(Collections.emptyList()));
 
-    LOGGER.debug("output = " + output);
+    LOGGER.debug("schema = " + schema);
 
     TrackingClientSingleton.get().track("discover_schema", ImmutableMap.<String, Object>builder()
         .put("name", connectionImplementation.getName())
@@ -146,7 +147,7 @@ public class SchedulerHandler {
         .put("job_id", jobId)
         .build());
 
-    return new SourceImplementationDiscoverSchemaRead().schema(SchemaConverter.toApiSchema(output.getSchema()));
+    return new SourceImplementationDiscoverSchemaRead().schema(SchemaConverter.toApiSchema(schema));
   }
 
   public SourceSpecificationRead getSourceSpecification(SourceIdRequestBody sourceIdRequestBody)

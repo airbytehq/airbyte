@@ -38,7 +38,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -101,9 +100,7 @@ public class DefaultDiscoverCatalogWorkerTest {
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
     final OutputAndStatus<StandardDiscoverCatalogOutput> output = worker.run(INPUT, jobRoot);
 
-    final StandardDiscoverCatalogOutput standardDiscoverCatalogOutput = new StandardDiscoverCatalogOutput()
-        .withCatalog(CATALOG)
-        .withSchema(AirbyteProtocolConverters.toSchema(CATALOG));
+    final StandardDiscoverCatalogOutput standardDiscoverCatalogOutput = new StandardDiscoverCatalogOutput().withCatalog(CATALOG);
     final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput = new OutputAndStatus<>(JobStatus.SUCCEEDED, standardDiscoverCatalogOutput);
 
     assertEquals(expectedOutput, output);
