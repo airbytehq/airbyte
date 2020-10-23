@@ -27,6 +27,3 @@ task test(type: NpmTask) {
     inputs.file 'package-lock.json'
 }
 
-clean {
-    delete "${projectDir}/node_modules/"
-}

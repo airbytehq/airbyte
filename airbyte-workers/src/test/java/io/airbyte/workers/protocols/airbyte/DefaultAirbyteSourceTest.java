@@ -38,18 +38,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DataType;
-import io.airbyte.config.Schema;
-import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.State;
-import io.airbyte.config.Stream;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -80,13 +76,10 @@ class DefaultAirbyteSourceTest {
 
   private static final StandardTapConfig TAP_CONFIG = new StandardTapConfig()
       .withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "the future."))))
-      .withSourceConnectionImplementation(new SourceConnectionImplementation()
-          .withConfiguration(Jsons.jsonNode(Map.of(
-              "apiKey", "123",
-              "region", "us-east"))))
-      .withStandardSync(new StandardSync().withSchema(new Schema().withStreams(Lists.newArrayList(new Stream().withName("hudi:latest")
-          .withFields(Lists.newArrayList(new io.airbyte.config.Field().withDataType(DataType.STRING).withName(FIELD_NAME).withSelected(true)))
-          .withSelected(true)))));
+      .withSourceConnectionConfiguration(Jsons.jsonNode(Map.of(
+          "apiKey", "123",
+          "region", "us-east")))
+      .withCatalog(CatalogHelpers.createAirbyteCatalog("hudi:latest", Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
 
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
@@ -137,7 +130,7 @@ class DefaultAirbyteSourceTest {
     tap.close();
 
     assertEquals(
-        Jsons.jsonNode(TAP_CONFIG.getSourceConnectionImplementation().getConfiguration()),
+        Jsons.jsonNode(TAP_CONFIG.getSourceConnectionConfiguration()),
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
     assertEquals(
         Jsons.jsonNode(TAP_CONFIG.getState()),

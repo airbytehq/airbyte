@@ -52,17 +52,10 @@ class DefaultSyncWorkerTest {
   @Test
   public void test() throws Exception {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
-    final StandardSync standardSync = syncPair.getKey();
     final StandardSyncInput syncInput = syncPair.getValue();
 
-    final StandardTapConfig tapConfig = new StandardTapConfig()
-        .withStandardSync(standardSync)
-        .withSourceConnectionImplementation(syncInput.getSourceConnectionImplementation())
-        .withState(syncInput.getState());
-
-    final StandardTargetConfig targetConfig = new StandardTargetConfig()
-        .withStandardSync(standardSync)
-        .withDestinationConnectionImplementation(syncInput.getDestinationConnectionImplementation());
+    final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
+    final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
 
     final AirbyteSource tap = mock(AirbyteSource.class);
     final AirbyteDestination target = mock(AirbyteDestination.class);
