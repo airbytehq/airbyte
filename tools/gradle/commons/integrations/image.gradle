@@ -21,3 +21,5 @@ task buildImage(type: DockerBuildImage) {
     // Docker will still cache the artifact, so it shouldn't be much slower.
     outputs.upToDateWhen { false }
 }
+
+buildImage.dependsOn(build)
