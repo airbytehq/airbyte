@@ -60,7 +60,7 @@ The contributing guide for docs can be found [here](https://docs.airbyte.io/cont
 
 ### **Community content**
 
-Since we launched our [Tutorials page](http://airbyte.io/tutorials), we are happy about contributions:
+We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](http://airbyte.io/tutorials):
 
 * Fix errors in existing tutorials
 * Add new tutorials \(please reach out to us if you have ideas to avoid duplicate work\)
