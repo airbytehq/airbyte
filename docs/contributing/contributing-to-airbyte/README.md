@@ -10,12 +10,12 @@ However, for those who want a bit more guidance on the best way to contribute to
 
 ## Table of Contents
 
-1. Code of conduct
-2. Airbyte specification
-3. First-time contributors, welcome!
-4. Areas for contributing
-5. Ways you can contribute
-6. Review process
+1. [Code of conduct](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#1-code-of-conduct)
+2. [Airbyte specification](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#2-the-airbyte-specification)
+3. [First-time contributors, welcome!](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#3-first-time-contributors-welcome)
+4. [Areas for contributing](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#4-areas-for-contributing)
+5. [Ways you can contribute](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#5-ways-you-can-contribute)
+6. [Review process](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#6-review-process)
 
 ## 1. Code of conduct
 
@@ -80,7 +80,7 @@ First, a big thank you ❤️! A few things to keep in mind when contributing co
 * If you're working on an issue, please comment that you are doing so to prevent duplicate work by others also.
 * Rebase master with your branch before submitting a pull request.
 
-Here are some details about our review process. 
+Here are some details about [our review process](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#6-review-process). 
 
 ### **Upvoting issues, feature and integration requests**
 
