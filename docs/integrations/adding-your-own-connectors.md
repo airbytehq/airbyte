@@ -6,11 +6,9 @@ If you'd like to build new connectors, or update existing ones, for your own usa
 
 ## Table of Contents
 
-1. [Airbyte specification](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#2-the-airbyte-specification)
-2. Developing your own connectors
-3. Adding your connectors on our UI to run them
-
-
+1. [Airbyte specification](https://docs.airbyte.io/v/dx-to-add-own-connector_suggestion/integrations/adding-your-own-connectors#1-the-airbyte-specification)
+2. [Developing your own connectors](https://docs.airbyte.io/v/dx-to-add-own-connector_suggestion/integrations/adding-your-own-connectors#2-developing-your-own-connectors)
+3. [Adding your connectors on our UI to run them](https://docs.airbyte.io/v/dx-to-add-own-connector_suggestion/integrations/adding-your-own-connectors#3-adding-your-connectors-on-our-ui-to-run-them)
 
 ## 1. The Airbyte specification
 
@@ -43,7 +41,7 @@ There are only 2 easy steps to do that:
 
 ![](https://lh6.googleusercontent.com/UfEol2AKAR-7pKtJnzPNRoEDgOlEfoi9cA3SzB1NboENOZnniaJFfUGcCcVxYtzC8R97tnLwOh28Er5wS_aNujfXCSKUh0K7lhu7xUFYm4oiVCDlFdsdJNvgVihWp0u13ZNyzFuA)
 
-Once this is filled, you will see your connector in the UI and your team will be able to use it. 
+Once this is filled, you will see your connector in the UI and your team will be able to use it, **from the UI and Airbyte's API too.** 
 
 Note that this new connector could just be an updated version of an existing connector that you adapted to your specific edge case. Anything is possible!
 
