@@ -50,21 +50,15 @@ jobs:
       - name: Build
         run: ./gradlew --no-daemon build --scan
 
-      - name: hack (overwrite user for files generated from docker)
-        run: sudo chown -R $(id -u):$(id -g) airbyte-integrations/bases/base-python/airbyte_protocol/models
-
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Run Integration Tests
-        run: ./gradlew --no-daemon integrationTest --scan
-
-      - name: hack (overwrite user for files generated from docker)
-        run: sudo chown -R $(id -u):$(id -g) airbyte-integrations/bases/base-python/airbyte_protocol/models
+        run: ./gradlew --no-daemon integrationTest --scan -x generateProtocolClassFiles
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon composeBuild --scan
+        run: ./gradlew --no-daemon composeBuild --scan -x generateProtocolClassFiles
         env:
           GIT_REVISION: ${{ github.sha }}
 
