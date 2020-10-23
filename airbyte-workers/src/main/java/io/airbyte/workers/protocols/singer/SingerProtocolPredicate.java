@@ -25,8 +25,8 @@
 package io.airbyte.workers.protocols.singer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.JsonSchemaValidator;
 import io.airbyte.singer.SingerProtocolSchema;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.function.Predicate;
 
 public class SingerProtocolPredicate implements Predicate<JsonNode> {

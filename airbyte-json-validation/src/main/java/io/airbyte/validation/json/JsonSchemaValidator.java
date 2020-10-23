@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.json;
+package io.airbyte.validation.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;

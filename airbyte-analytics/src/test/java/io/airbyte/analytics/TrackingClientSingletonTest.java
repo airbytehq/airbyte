@@ -29,12 +29,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
