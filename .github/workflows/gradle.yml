@@ -45,17 +45,17 @@ jobs:
           STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
 
       - name: Build
-        run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
+        run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }} --scan
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Run Integration Tests
-        run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
+        run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }} --scan
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew composeBuild --no-daemon -g ${{ env.GRADLE_PATH }}
+        run: ./gradlew composeBuild --no-daemon -g ${{ env.GRADLE_PATH }} --scan
         env:
           GIT_REVISION: ${{ github.sha }}
 
