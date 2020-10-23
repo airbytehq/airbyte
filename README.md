@@ -51,7 +51,6 @@ We love contributions to Airbyte, big or small.
 
 See our [Contributing guide](https://docs.airbyte.io/contributing/contributing-to-airbyte) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
 
-
 **Note that you are able to create integrations using the language you want, as Airbyte connections run as Docker containers.**
 
 ## Community support
@@ -70,4 +69,3 @@ Check out our [roadmap](https://github.com/airbytehq/airbyte/projects/1) to get 
 ## License
 
 Airbyte is licensed under the MIT license. See the [LICENSE](https://docs.airbyte.io/license) file for licensing information.
-
