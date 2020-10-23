@@ -117,7 +117,7 @@ Please do not create a public GitHub issue. If you've found a security issue, pl
 
 ## **6. Review process**
 
-**‌‌**If you are considering adding to the codebase or contributing a new integration, first a big thank you. We sincerely appreciate your help in our mission to solve the data integration problem!
+**‌‌**If you are considering adding to the codebase or contributing a new integration: a big thank you! We sincerely appreciate your help.
 
 As soon as you are done with your development, just put up a PR.  
 When we review we look at:
@@ -131,4 +131,3 @@ When we review we look at:
 ‌Once your PR passes, we will merge it.
 
 \*\*\*\*
-
