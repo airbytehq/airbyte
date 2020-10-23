@@ -18,7 +18,8 @@ task installReqs(type: PythonTask) {
 
 task blackFormat(type: PythonTask) {
     module = "black"
-    command = "."
+    // the line length should match .isort.cfg
+    command = ". --line-length 140"
 }
 
 task isortFormat(type: PythonTask) {
