@@ -1336,7 +1336,6 @@ components:
           type: string
           enum:
             - full_refresh
-            - append
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1381,7 +1380,6 @@ components:
           type: string
           enum:
             - full_refresh
-            - append
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1612,7 +1610,6 @@ components:
           type: string
           enum:
             - full_refresh
-            - append
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:

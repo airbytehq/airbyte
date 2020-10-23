@@ -34,6 +34,7 @@ import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.Stream;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -81,7 +82,7 @@ class JobSchedulerTest {
         .withSchema(schema)
         .withSourceImplementationId(sourceImplementationId)
         .withDestinationImplementationId(destinationImplementationId)
-        .withSyncMode(StandardSync.SyncMode.APPEND);
+        .withSyncMode(SyncMode.FULL_REFRESH);
 
     // empty. contents not needed for any of these unit tests.
     STANDARD_SYNC_SCHEDULE = new StandardSyncSchedule();

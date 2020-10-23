@@ -25,6 +25,7 @@
 package io.airbyte.scheduler;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -41,7 +42,6 @@ import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.process.SingerIntegrationLauncher;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
@@ -143,11 +143,7 @@ public class WorkerRunFactory {
   }
 
   private IntegrationLauncher createLauncher(final String image) {
-    return isAirbyteProtocol(image) ? new AirbyteIntegrationLauncher(image, pbf) : new SingerIntegrationLauncher(image, pbf);
-  }
-
-  private boolean isAirbyteProtocol(final String image) {
-    return image != null && image.contains("abprotocol");
+    return new AirbyteIntegrationLauncher(image, pbf);
   }
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
@@ -162,7 +158,10 @@ public class WorkerRunFactory {
     return new StandardSyncInput()
         .withSourceConnectionImplementation(config.getSourceConnectionImplementation())
         .withDestinationConnectionImplementation(config.getDestinationConnectionImplementation())
-        .withStandardSync(config.getStandardSync());
+        .withConnectionId(config.getStandardSync().getConnectionId())
+        .withCatalog(AirbyteProtocolConverters.toCatalog(config.getStandardSync().getSchema()))
+        .withSyncMode(config.getStandardSync().getSyncMode())
+        .withState(config.getState());
   }
 
   /*

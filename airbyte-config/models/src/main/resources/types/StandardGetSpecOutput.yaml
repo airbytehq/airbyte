@@ -9,4 +9,4 @@ required:
   - specification
 properties:
   specification:
-    "$ref": ../../../../../../airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml#/definitions/ConnectorSpecification
+    existingJavaType: io.airbyte.protocol.models.ConnectorSpecification

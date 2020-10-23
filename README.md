@@ -2,15 +2,15 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte) [![StackShare](https://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](https://stackshare.io/airbyte/airbyte)
 
-[![](docs/.gitbook/assets/airbyte_white-background%20%281%29.svg)](https://airbyte.io)
+[![](docs/.gitbook/assets/airbyte_white-background%20%281%29%20%281%29.svg)](https://airbyte.io)
 
 ### Data integration made simple, secure and extensible.
 
 The new open-source standard to sync data from applications, APIs & databases to warehouses.
 
-[![](docs/.gitbook/assets/deploy-locally%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/with-docker) [![](docs/.gitbook/assets/deploy-on-aws%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-aws-ec2) [![](docs/.gitbook/assets/deploy-on-gcp%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-gcp-compute-engine)
+[![](docs/.gitbook/assets/deploy-locally%20%281%29%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/with-docker) [![](docs/.gitbook/assets/deploy-on-aws%20%281%29%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-aws-ec2) [![](docs/.gitbook/assets/deploy-on-gcp%20%281%29%20%281%29.svg)](https://docs.airbyte.io/deployment/deploying-airbyte/on-gcp-compute-engine)
 
-![](docs/.gitbook/assets/sources_list%20%281%29.png)
+![](docs/.gitbook/assets/sources_list%20%281%29%20%281%29.png)
 
 Airbyte is on a mission to make data integration pipelines a commodity.
 
@@ -47,7 +47,7 @@ Here is a [step-by-step guide](docs/getting-started-tutorial.md) showing you how
 
 ## Contributing
 
-Before you can contribute, you need to understand the [**specification of Airbyte's data protocol**](https://docs.airbyte.io/architecture/airbyte-specification)**.** 
+Before you can contribute, you need to understand the [**specification of Airbyte's data protocol**](https://docs.airbyte.io/architecture/airbyte-specification)**.**
 
 We love contributions to Airbyte, big or small. See our [Contributing Guide](https://docs.airbyte.io/contributing/contributing-to-airbyte) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
 

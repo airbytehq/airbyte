@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConnectorSpecification;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.handlers.SchedulerHandler;
 import java.io.IOException;

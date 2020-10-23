@@ -33,10 +33,9 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.DestinationConnectionImplementation;
-import io.airbyte.config.Schema;
-import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
@@ -47,6 +46,7 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
@@ -177,7 +177,7 @@ public abstract class TestDestination {
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   void testSync(String messagesFilename, String catalogFilename) throws Exception {
-    final Schema catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), Schema.class);
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(messages, catalog);
@@ -190,7 +190,7 @@ public abstract class TestDestination {
    */
   @Test
   void testSecondSync() throws Exception {
-    final Schema catalog = Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), Schema.class);
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), AirbyteCatalog.class);
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(firstSyncMessages, catalog);
@@ -208,10 +208,12 @@ public abstract class TestDestination {
   }
 
   // todo (cgardens) - still uses the old schema.
-  private void runSync(List<AirbyteMessage> messages, Schema catalog) throws Exception {
+  private void runSync(List<AirbyteMessage> messages, AirbyteCatalog catalog) throws Exception {
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
-        .withDestinationConnectionImplementation(new DestinationConnectionImplementation().withConfiguration(getConfig()))
-        .withStandardSync(new StandardSync().withSchema(catalog));
+        .withConnectionId(UUID.randomUUID())
+        .withSyncMode(SyncMode.FULL_REFRESH)
+        .withCatalog(catalog)
+        .withDestinationConnectionConfiguration(getConfig());
 
     final AirbyteDestination target = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(getImageName(), pbf));
 
