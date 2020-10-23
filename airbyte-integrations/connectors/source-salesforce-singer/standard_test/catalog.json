@@ -1,8 +1,7 @@
 {
   "streams": [
     {
-      "stream": "User",
-      "tap_stream_id": "User",
+      "name": "User",
       "json_schema": {
         "type": "object",
         "additionalProperties": false,

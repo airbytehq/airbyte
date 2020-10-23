@@ -1,8 +1,8 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/github",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/salesforce",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Github Source Spec",
+    "title": "Salesforce Source Spec",
     "type": "object",
     "_comment": "todo (cgardens) - allow default fields. is_sandbox and api_type should not be required and fall back on default. depends on change in api.",
     "required": [
