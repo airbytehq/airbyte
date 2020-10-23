@@ -82,7 +82,7 @@ spotless {
     }
 }
 check.dependsOn 'spotlessApply'
-spotlessPython.dependsOn ':airbyte-integrations:base-python:generateProtocolClassFiles'
+spotlessPython.dependsOn ':airbyte-integrations:bases:base-python:generateProtocolClassFiles'
 
 // Disabled because it generate an obnoxious warning
 // TODO: https://github.com/airbytehq/airbyte/issues/225

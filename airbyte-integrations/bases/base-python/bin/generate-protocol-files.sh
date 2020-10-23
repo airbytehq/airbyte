@@ -5,7 +5,7 @@ set -e
 [ -z "$ROOT_DIR" ] && exit 1
 
 YAML_DIR=airbyte-protocol/models/src/main/resources/airbyte_protocol
-OUTPUT_DIR=airbyte-integrations/base-python/airbyte_protocol/models
+OUTPUT_DIR=airbyte-integrations/bases/base-python/airbyte_protocol/models
 
 function main() {
   rm -rf "$ROOT_DIR/$OUTPUT_DIR"/*.py
