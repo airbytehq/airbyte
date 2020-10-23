@@ -44,17 +44,18 @@ jobs:
           GH_INTEGRATION_TEST_CREDS: ${{ secrets.GH_INTEGRATION_TEST_CREDS }}
 
       - name: Build
-        run: ./gradlew --no-daemon build
+        run: ./gradlew --no-daemon build --scan
+
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Run Integration Tests
-        run: ./gradlew --no-daemon integrationTest
+        run: ./gradlew --no-daemon integrationTest --scan
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon composeBuild
+        run: ./gradlew --no-daemon composeBuild --scan
         env:
           GIT_REVISION: ${{ github.sha }}
 
