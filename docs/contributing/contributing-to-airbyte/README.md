@@ -62,7 +62,7 @@ The contributing guide for docs can be found [here](https://docs.airbyte.io/cont
 
 Since we launched our [Tutorials page](http://airbyte.io/tutorials), we are happy about contributions:
 
-* Fix errors in existing learn tutorials
+* Fix errors in existing tutorials
 * Add new tutorials \(please reach out to us if you have ideas to avoid duplicate work\)
 * Request tutorials
 
