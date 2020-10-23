@@ -64,7 +64,7 @@ Since we launched our [Tutorials page](http://airbyte.io/tutorials), we are happ
 
 * Fix errors in existing learn tutorials
 * Add new tutorials \(please reach out to us if you have ideas to avoid duplicate word\)
-* Requesting tutorials
+* Request tutorials
 
 We have a repo dedicated to community content. Everything is documented [there](https://github.com/airbytehq/community-content/).
 
