@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.nio.file.Path;
 
 /**
@@ -39,13 +40,23 @@ public class ExecutableTestSource extends TestSource {
   public static class TestConfig {
 
     private final String imageName;
+    private final Path specPath;
     private final Path configPath;
     private final Path catalogPath;
 
-    public TestConfig(String imageName, Path configPath, Path catalogPath) {
+    public TestConfig(String imageName, Path specPath, Path configPath, Path catalogPath) {
       this.imageName = imageName;
+      this.specPath = specPath;
       this.configPath = configPath;
       this.catalogPath = catalogPath;
+    }
+
+    public String getImageName() {
+      return imageName;
+    }
+
+    public Path getSpecPath() {
+      return specPath;
     }
 
     public Path getConfigPath() {
@@ -56,13 +67,14 @@ public class ExecutableTestSource extends TestSource {
       return catalogPath;
     }
 
-    public String getImageName() {
-      return imageName;
-    }
-
   }
 
   public static TestConfig TEST_CONFIG;
+
+  @Override
+  protected ConnectorSpecification getSpec() {
+    return Jsons.deserialize(IOs.readFile(TEST_CONFIG.getSpecPath()), ConnectorSpecification.class);
+  }
 
   @Override
   protected String getImageName() {

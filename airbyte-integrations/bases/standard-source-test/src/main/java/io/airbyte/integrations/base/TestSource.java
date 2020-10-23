@@ -42,6 +42,7 @@ import io.airbyte.config.StandardTapConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
@@ -75,6 +76,14 @@ public abstract class TestSource {
    * @return docker image name
    */
   protected abstract String getImageName();
+
+  /**
+   * Specification for integration. Will be passed to integration where appropriate in each test.
+   * Should be valid.
+   *
+   * @return integration-specific configuration
+   */
+  protected abstract ConnectorSpecification getSpec() throws Exception;
 
   /**
    * Configuration specific to the integration. Will be passed to integration where appropriate in
@@ -138,9 +147,10 @@ public abstract class TestSource {
    * Verify that when the integrations returns a valid spec.
    */
   @Test
-  public void testGetSpec() {
+  public void testGetSpec() throws Exception {
     final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
     assertTrue(output.getOutput().isPresent());
+    assertEquals(getSpec(), output.getOutput().get().getSpecification());
   }
 
   /**
@@ -176,6 +186,7 @@ public abstract class TestSource {
     // the worker validates that it is a valid catalog, so we do not need to validate again (as long as
     // we use the worker, which we will not want to do long term).
     assertNotNull(output.getOutput().get().getCatalog());
+    assertEquals(getCatalog(), output.getOutput().get().getCatalog());
   }
 
   /**
