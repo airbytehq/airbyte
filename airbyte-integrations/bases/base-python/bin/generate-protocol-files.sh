@@ -19,6 +19,8 @@ function main() {
       --input "/airbyte/$YAML_DIR/$filename_wo_ext.yaml" \
       --output "/airbyte/$OUTPUT_DIR/$filename_wo_ext.py" \
       --disable-timestamp
+
+    chown -R "$(whoami)" "$ROOT_DIR/$OUTPUT_DIR"
   done
 }
 
