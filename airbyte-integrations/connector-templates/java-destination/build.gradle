@@ -15,5 +15,4 @@ application {
     mainClass = 'io.airbyte.integrations.destination.template.DestinationTemplate'
 }
 
-
 buildImage.dependsOn ':airbyte-integrations:bases:base-java:buildImage'
