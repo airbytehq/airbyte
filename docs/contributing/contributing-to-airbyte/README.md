@@ -74,7 +74,7 @@ Feel free to submit a pull request in this repo, if you have something to add ev
 
 ### **Adding to the codebase for an integration or issue**
 
-First, a big thank you ❤️! A few things to keep in mind when contributing code:
+First, a big thank you! A few things to keep in mind when contributing code:
 
 * Please make sure there is an issue associated with the work that you're doing.
 * If you're working on an issue, please comment that you are doing so to prevent duplicate work by others also.
