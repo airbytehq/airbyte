@@ -35,7 +35,7 @@ Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/
 
 ### **New integrations**
 
-It's easy to add your own integrations to Airbyte! Here are some links to instructions on how to add sources and destinations. 
+It's easy to add your own integrations to Airbyte! Here are some links to instruct how to add sources and destinations. 
 
 #### **Contributing sources:**
 
