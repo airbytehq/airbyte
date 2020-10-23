@@ -36,9 +36,7 @@ class SourceExchangeRatesApiSinger(SingerSource):
         try:
             code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
             logger.info(f"Ping response code: {code}")
-            return AirbyteConnectionStatus(
-                status=Status.SUCCEEDED if (code == 200) else Status.FAILED
-            )
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED if (code == 200) else Status.FAILED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
 

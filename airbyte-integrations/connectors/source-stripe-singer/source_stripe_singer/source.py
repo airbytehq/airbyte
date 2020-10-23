@@ -34,10 +34,7 @@ class SourceStripeSinger(SingerSource):
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
         try:
             json_config = config_container.rendered_config
-            r = requests.get(
-                "https://api.stripe.com/v1/customers",
-                auth=(json_config["client_secret"], ""),
-            )
+            r = requests.get("https://api.stripe.com/v1/customers", auth=(json_config["client_secret"], ""))
             if r.status_code == 200:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:

@@ -81,9 +81,7 @@ class AirbyteConnectionStatus(BaseModel):
 
 class AirbyteStream(BaseModel):
     name: str = Field(..., description="Stream's name.")
-    json_schema: Dict[str, Any] = Field(
-        ..., description="Stream schema using Json Schema specs."
-    )
+    json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
 
 
 class ConnectorSpecification(BaseModel):
@@ -111,9 +109,7 @@ class AirbyteMessage(BaseModel):
         None,
         description="log message: any kind of logging you want the platform to know about.",
     )
-    record: Optional[AirbyteRecordMessage] = Field(
-        None, description="record message: the record"
-    )
+    record: Optional[AirbyteRecordMessage] = Field(None, description="record message: the record")
     state: Optional[AirbyteStateMessage] = Field(
         None,
         description="schema message: the state. Must be the last message produced. The platform uses this information",

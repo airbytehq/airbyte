@@ -30,13 +30,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import DefaultDict, Generator
 
-from airbyte_protocol import (
-    AirbyteCatalog,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStateMessage,
-    AirbyteStream,
-)
+from airbyte_protocol import AirbyteCatalog, AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream
 
 
 def to_json(string):
@@ -68,17 +62,10 @@ class SingerHelper:
 
     @staticmethod
     def get_catalogs(
-        logger,
-        shell_command,
-        singer_transform=(lambda catalog: catalog),
-        airbyte_transform=(lambda catalog: catalog),
+        logger, shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)
     ) -> Catalogs:
         completed_process = subprocess.run(
-            shell_command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
+            shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
         )
 
         for line in completed_process.stderr.splitlines():
@@ -97,16 +84,8 @@ class SingerHelper:
         return Catalogs(singer_catalog=singer_catalog, airbyte_catalog=airbyte_catalog)
 
     @staticmethod
-    def read(
-        logger, shell_command, is_message=(lambda x: True), transform=(lambda x: x)
-    ) -> Generator[AirbyteMessage, None, None]:
-        with subprocess.Popen(
-            shell_command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-        ) as p:
+    def read(logger, shell_command, is_message=(lambda x: True), transform=(lambda x: x)) -> Generator[AirbyteMessage, None, None]:
+        with subprocess.Popen(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) as p:
             sel = selectors.DefaultSelector()
             sel.register(p.stdout, selectors.EVENT_READ)
             sel.register(p.stderr, selectors.EVENT_READ)
@@ -122,19 +101,11 @@ class SingerHelper:
                         if out_json is not None and is_message(out_json):
                             transformed_json = transform(out_json)
                             if transformed_json is not None:
-                                if (
-                                    transformed_json.get("type") == "SCHEMA"
-                                    or transformed_json.get("type")
-                                    == "ACTIVATE_VERSION"
-                                ):
+                                if transformed_json.get("type") == "SCHEMA" or transformed_json.get("type") == "ACTIVATE_VERSION":
                                     pass
                                 elif transformed_json.get("type") == "STATE":
-                                    out_record = AirbyteStateMessage(
-                                        data=transformed_json["value"]
-                                    )
-                                    out_message = AirbyteMessage(
-                                        type="STATE", state=out_record
-                                    )
+                                    out_record = AirbyteStateMessage(data=transformed_json["value"])
+                                    out_message = AirbyteMessage(type="STATE", state=out_record)
                                     yield transform(out_message)
                                 else:
                                     # todo: check that messages match the discovered schema
@@ -142,12 +113,9 @@ class SingerHelper:
                                     out_record = AirbyteRecordMessage(
                                         stream=stream_name,
                                         data=transformed_json["record"],
-                                        emitted_at=int(datetime.now().timestamp())
-                                        * 1000,
+                                        emitted_at=int(datetime.now().timestamp()) * 1000,
                                     )
-                                    out_message = AirbyteMessage(
-                                        type="RECORD", record=out_record
-                                    )
+                                    out_message = AirbyteMessage(type="RECORD", record=out_record)
                                     yield transform(out_message)
                         else:
                             logger.log_by_prefix(line, "INFO")
@@ -155,9 +123,7 @@ class SingerHelper:
                         logger.log_by_prefix(line, "ERROR")
 
     @staticmethod
-    def create_singer_catalog_with_selection(
-        masked_airbyte_catalog, discovered_singer_catalog
-    ) -> str:
+    def create_singer_catalog_with_selection(masked_airbyte_catalog, discovered_singer_catalog) -> str:
         combined_catalog_path = os.path.join("singer_rendered_catalog.json")
         masked_singer_streams = []
 
@@ -175,12 +141,8 @@ class SingerHelper:
                         new_metadata = metadata
                         new_metadata["metadata"]["selected"] = True
                         if not is_field_metadata(new_metadata):
-                            new_metadata["metadata"][
-                                "forced-replication-method"
-                            ] = "FULL_TABLE"
-                            new_metadata["metadata"][
-                                "replication-method"
-                            ] = "FULL_TABLE"
+                            new_metadata["metadata"]["forced-replication-method"] = "FULL_TABLE"
+                            new_metadata["metadata"]["replication-method"] = "FULL_TABLE"
                         new_metadatas += [new_metadata]
                     singer_stream["metadata"] = new_metadatas
 

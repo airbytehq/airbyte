@@ -25,13 +25,7 @@ SOFTWARE.
 from typing import Generator
 
 import psycopg2
-from airbyte_protocol import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    ConfigContainer,
-    Status,
-)
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfigContainer, Status
 from base_singer import SingerSource
 
 TAP_CMD = "PGCLIENTENCODING=UTF8 tap-postgres"
@@ -41,14 +35,10 @@ class PostgresSingerSource(SingerSource):
     def __init__(self):
         pass
 
-    def check(
-        self, logger, config_container: ConfigContainer
-    ) -> AirbyteConnectionStatus:
+    def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         config = config_container.rendered_config
         try:
-            params = "dbname='{dbname}' user='{user}' host='{host}' password='{password}' port='{port}'".format(
-                **config
-            )
+            params = "dbname='{dbname}' user='{user}' host='{host}' password='{password}' port='{port}'".format(**config)
             psycopg2.connect(params)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
@@ -66,9 +56,7 @@ class PostgresSingerSource(SingerSource):
     def discover_cmd(self, logger, config_path) -> AirbyteCatalog:
         return f"{TAP_CMD} --config {config_path} --discover"
 
-    def read_cmd(
-        self, logger, config_path, catalog_path, state_path=None
-    ) -> Generator[AirbyteMessage, None, None]:
+    def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> Generator[AirbyteMessage, None, None]:
         catalog_option = f"--properties {catalog_path}"
         config_option = f"--config {config_path}"
         state_option = f"--state {state_path}" if state_path else ""

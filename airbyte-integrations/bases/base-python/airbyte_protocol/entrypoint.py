@@ -52,71 +52,28 @@ class AirbyteEntrypoint(object):
         subparsers = main_parser.add_subparsers(title="commands", dest="command")
 
         # spec
-        subparsers.add_parser(
-            "spec",
-            help="outputs the json configuration specification",
-            parents=[parent_parser],
-        )
+        subparsers.add_parser("spec", help="outputs the json configuration specification", parents=[parent_parser])
 
         # check
-        check_parser = subparsers.add_parser(
-            "check",
-            help="checks the config can be used to connect",
-            parents=[parent_parser],
-        )
-        required_check_parser = check_parser.add_argument_group(
-            "required named arguments"
-        )
-        required_check_parser.add_argument(
-            "--config",
-            type=str,
-            required=True,
-            help="path to the json configuration file",
-        )
+        check_parser = subparsers.add_parser("check", help="checks the config can be used to connect", parents=[parent_parser])
+        required_check_parser = check_parser.add_argument_group("required named arguments")
+        required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
 
         # discover
         discover_parser = subparsers.add_parser(
-            "discover",
-            help="outputs a catalog describing the source's schema",
-            parents=[parent_parser],
+            "discover", help="outputs a catalog describing the source's schema", parents=[parent_parser]
         )
-        required_discover_parser = discover_parser.add_argument_group(
-            "required named arguments"
-        )
-        required_discover_parser.add_argument(
-            "--config",
-            type=str,
-            required=True,
-            help="path to the json configuration file",
-        )
+        required_discover_parser = discover_parser.add_argument_group("required named arguments")
+        required_discover_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
 
         # read
-        read_parser = subparsers.add_parser(
-            "read",
-            help="reads the source and outputs messages to STDOUT",
-            parents=[parent_parser],
-        )
+        read_parser = subparsers.add_parser("read", help="reads the source and outputs messages to STDOUT", parents=[parent_parser])
 
-        read_parser.add_argument(
-            "--state",
-            type=str,
-            required=False,
-            help="path to the json-encoded state file",
-        )
-        required_read_parser = read_parser.add_argument_group(
-            "required named arguments"
-        )
+        read_parser.add_argument("--state", type=str, required=False, help="path to the json-encoded state file")
+        required_read_parser = read_parser.add_argument_group("required named arguments")
+        required_read_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
         required_read_parser.add_argument(
-            "--config",
-            type=str,
-            required=True,
-            help="path to the json configuration file",
-        )
-        required_read_parser.add_argument(
-            "--catalog",
-            type=str,
-            required=True,
-            help="path to the catalog used to determine which data to read",
+            "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
         )
 
         # parse the args
@@ -156,23 +113,15 @@ class AirbyteEntrypoint(object):
                 else:
                     logger.error("Check failed")
 
-                output_message = AirbyteMessage(
-                    type=Type.CONNECTION_STATUS, connectionStatus=check_result
-                ).json(exclude_unset=True)
+                output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result).json(exclude_unset=True)
                 print(output_message)
                 sys.exit(0)
             elif cmd == "discover":
                 catalog = self.source.discover(logger, config_container)
-                print(
-                    AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(
-                        exclude_unset=True
-                    )
-                )
+                print(AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(exclude_unset=True))
                 sys.exit(0)
             elif cmd == "read":
-                generator = self.source.read(
-                    logger, config_container, parsed_args.catalog, parsed_args.state
-                )
+                generator = self.source.read(logger, config_container, parsed_args.catalog, parsed_args.state)
                 for message in generator:
                     print(message.json(exclude_unset=True))
                 sys.exit(0)
@@ -189,8 +138,6 @@ def main():
     source = impl()
 
     if not isinstance(source, Source):
-        raise Exception(
-            "Source implementation provided does not implement Source class!"
-        )
+        raise Exception("Source implementation provided does not implement Source class!")
 
     launch(source, sys.argv[1:])

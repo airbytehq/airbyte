@@ -60,9 +60,7 @@ class Integration(object):
         pass
 
     def spec(self, logger) -> ConnectorSpecification:
-        raw_spec = pkgutil.get_data(
-            self.__class__.__module__.split(".")[0], "spec.json"
-        )
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
         return ConnectorSpecification.parse_obj(json.loads(raw_spec))
 
     def read_config(self, config_path):
@@ -90,9 +88,7 @@ class Source(Integration):
         super().__init__()
 
     # Iterator<AirbyteMessage>
-    def read(
-        self, logger, config_container, catalog_path, state_path=None
-    ) -> Generator[AirbyteMessage, None, None]:
+    def read(self, logger, config_container, catalog_path, state_path=None) -> Generator[AirbyteMessage, None, None]:
         raise Exception("Not Implemented")
 
 

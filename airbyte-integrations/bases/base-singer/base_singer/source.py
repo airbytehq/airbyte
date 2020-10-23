@@ -42,22 +42,11 @@ class SingerSource(Source):
 
         return catalogs.airbyte_catalog
 
-    def read(
-        self, logger, config_container, catalog_path, state_path=None
-    ) -> Generator[AirbyteMessage, None, None]:
+    def read(self, logger, config_container, catalog_path, state_path=None) -> Generator[AirbyteMessage, None, None]:
         discover_cmd = self.discover_cmd(logger, config_container.rendered_config_path)
         catalogs = SingerHelper.get_catalogs(logger, discover_cmd)
         masked_airbyte_catalog = self.read_config(catalog_path)
-        selected_singer_catalog_path = (
-            SingerHelper.create_singer_catalog_with_selection(
-                masked_airbyte_catalog, catalogs.singer_catalog
-            )
-        )
+        selected_singer_catalog_path = SingerHelper.create_singer_catalog_with_selection(masked_airbyte_catalog, catalogs.singer_catalog)
 
-        read_cmd = self.read_cmd(
-            logger,
-            config_container.rendered_config_path,
-            selected_singer_catalog_path,
-            state_path,
-        )
+        read_cmd = self.read_cmd(logger, config_container.rendered_config_path, selected_singer_catalog_path, state_path)
         return SingerHelper.read(logger, read_cmd)
