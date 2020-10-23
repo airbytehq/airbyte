@@ -4,7 +4,7 @@ description: 'We love contributions to Airbyte, big or small.'
 
 # Contributing to Airbyte
 
-Thank you for your interest in contributing! We love community contributions. Contribution guidelines are listed below. If you're unsure about how to start contributing or have any questions even after reading them, feel free to ask us on [Slack](https://slack.airbyte.io) in the \#dev or \#general channel. 
+Thank you for your interest in contributing! We love community contributions. Contribution guidelines are listed below. If you're unsure about how to start contributing or have any questions even after reading them, feel free to ask us on [Slack](https://slack.airbyte.io) in the \#dev or \#general channel.
 
 However, for those who want a bit more guidance on the best way to contribute to Airbyte, read on. This document will cover what we're looking for. By addressing the points below, the chances that we can quickly merge or address your contributions will increase.
 
@@ -23,7 +23,7 @@ Please follow our [Code of conduct](https://docs.airbyte.io/contributing/code-of
 
 ## 2. The Airbyte specification
 
-Before you can start contributing, you need to understand [Airbyte's data protocol specification](https://docs.airbyte.io/architecture/airbyte-specification). 
+Before you can start contributing, you need to understand [Airbyte's data protocol specification](https://docs.airbyte.io/architecture/airbyte-specification).
 
 ## 3. First-time contributors, welcome!
 
@@ -35,7 +35,7 @@ Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/
 
 ### **New integrations**
 
-It's easy to add your own integrations to Airbyte! Since Airbyte Connectors are encapsulated within Docker containers, you can use any language you like. Here are some links on how to add sources and destinations. 
+It's easy to add your own integrations to Airbyte! **Since Airbyte connectors are encapsulated within Docker containers, you can use any language you like.** Here are some links on how to add sources and destinations. We haven't built the documentation for all languages yet, so don't hesitate to reach out to us if you'd like help developing integrations in other languages.
 
 #### **Contributing sources:**
 
@@ -45,8 +45,6 @@ It's easy to add your own integrations to Airbyte! Since Airbyte Connectors are 
 #### **Contributing destinations:**
 
 * [In Java](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/java-destination/README.md)
-
-Please reach out to us if you'd like help developing integrations in other languages. **Indeed, you are able to create integrations using the language you want, as Airbyte connections run as Docker containers.** We haven't built the documentation for all languages yet, that's all. 
 
 ### **Documentation**
 
@@ -80,7 +78,7 @@ First, a big thank you! A few things to keep in mind when contributing code:
 * If you're working on an issue, please comment that you are doing so to prevent duplicate work by others also.
 * Rebase master with your branch before submitting a pull request.
 
-Here are some details about [our review process](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#6-review-process). 
+Here are some details about [our review process](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#6-review-process).
 
 ### **Upvoting issues, feature and integration requests**
 
@@ -119,8 +117,7 @@ Please do not create a public GitHub issue. If you've found a security issue, pl
 
 **‌‌**If you are considering adding to the codebase or contributing a new integration: a big thank you! We sincerely appreciate your help.
 
-As soon as you are done with your development, just put up a PR.  You're also always welcome to reach out during or before development.
-When we review we look at:
+As soon as you are done with your development, just put up a PR. You're also always welcome to reach out during or before development. When we review we look at:
 
 * ‌Does the PR solve the issue?
 * Is the proposed solution reasonable?
@@ -130,3 +127,4 @@ When we review we look at:
 ‌Once your PR passes, we will merge it.
 
 \*\*\*\*
+
