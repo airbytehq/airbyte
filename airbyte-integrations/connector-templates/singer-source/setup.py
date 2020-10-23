@@ -22,22 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
-    name='template-singer-source',
-    description='Singer source implementation template',
-    author='Airbyte',
-    author_email='contact@airbyte.io',
-
+    name="template-singer-source",
+    description="Singer source implementation template",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
     packages=find_packages(),
-    package_data={
-        '': ['*.json']
-    },
-
+    package_data={"": ["*.json"]},
     install_requires=[
-        'tap-exchangeratesapi==0.1.1',
-        'base_singer',
-        'airbyte_protocol'
-    ]
+        "tap-exchangeratesapi==0.1.1",
+        "pydantic==1.6.1",
+        "base_singer",
+        "airbyte_protocol",
+    ],
 )

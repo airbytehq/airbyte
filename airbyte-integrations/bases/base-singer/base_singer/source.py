@@ -22,16 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from airbyte_protocol import AirbyteCatalog
-from airbyte_protocol import AirbyteMessage
-from airbyte_protocol import Source
 from typing import Generator
+
+from airbyte_protocol import AirbyteCatalog, AirbyteMessage, Source
 
 from .singer_helpers import SingerHelper
 
 
 class SingerSource(Source):
-
     def discover_cmd(self, logger, config_path) -> str:
         raise Exception("Not Implemented")
 
