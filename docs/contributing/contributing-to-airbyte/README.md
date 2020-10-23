@@ -126,7 +126,6 @@ When we review we look at:
 * Is the proposed solution reasonable?
 * Is it tested? \(unit tests or integration tests\)
 * Is it introducing security risks?
-* Does it pass QA?
 
 ‌Once your PR passes, we will merge it.
 
