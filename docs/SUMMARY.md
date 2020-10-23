@@ -16,6 +16,7 @@
 * [Sources](integrations/sources/README.md)
   * [exchangeratesapi.io](integrations/sources/exchangeratesapi-io.md)
   * [Postgres](integrations/sources/postgres.md)
+  * [Salesforce](integrations/sources/salesforce.md)
   * [Stripe](integrations/sources/stripe.md)
 * [Destinations](integrations/destinations/README.md)
   * [Local CSV](integrations/destinations/local-csv.md)

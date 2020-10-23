@@ -16,8 +16,6 @@ The [Stripe API](https://stripe.com/docs/api) uses the same [JSONSchema](https:/
 
 ### Features
 
-This section should contain a table with the following format:
-
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |

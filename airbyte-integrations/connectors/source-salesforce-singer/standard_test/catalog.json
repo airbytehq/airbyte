@@ -1,0 +1,54 @@
+{
+  "streams": [
+    {
+      "stream": "User",
+      "tap_stream_id": "User",
+      "json_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "Id": {
+            "type": "string"
+          },
+          "Username": {
+            "type": ["null", "string"]
+          },
+          "Name": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "metadata": [
+        {
+          "breadcrumb": ["properties", "Id"],
+          "metadata": {
+            "inclusion": "automatic",
+            "selected-by-default": true
+          }
+        },
+        {
+          "breadcrumb": ["properties", "Username"],
+          "metadata": {
+            "inclusion": "available",
+            "selected-by-default": true
+          }
+        },
+        {
+          "breadcrumb": ["properties", "Name"],
+          "metadata": {
+            "inclusion": "available",
+            "selected-by-default": true
+          }
+        },
+        {
+          "breadcrumb": [],
+          "metadata": {
+            "selected": true,
+            "valid-replication-keys": ["SystemModstamp"],
+            "table-key-properties": ["Id"]
+          }
+        }
+      ]
+    }
+  ]
+}
