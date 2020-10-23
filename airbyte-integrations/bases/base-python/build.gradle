@@ -1,12 +1,11 @@
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+apply from: rootProject.file('tools/gradle/commons/generate-python-models.gradle')
 
-task generateProtocolClassFiles(type: Exec) {
-    environment 'ROOT_DIR', rootDir.absolutePath
-    commandLine 'bin/generate-protocol-files.sh'
-
-    outputs.upToDateWhen { false }
-    dependsOn ':airbyte-integrations:bases:base-python:code-generator:buildImage'
+generatePythonModels {
+    ext {
+        inputDir = "airbyte-protocol/models/src/main/resources/airbyte_protocol"
+        outputDir = "airbyte-integrations/bases/base-python/airbyte_protocol/models"
+    }
 }
-
-assemble.dependsOn generateProtocolClassFiles
+assemble.dependsOn generatePythonModels
 buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'

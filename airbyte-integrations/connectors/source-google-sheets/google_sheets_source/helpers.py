@@ -1,0 +1,144 @@
+import json
+
+from apiclient import discovery
+from collections import defaultdict
+from datetime import datetime
+from google.oauth2 import service_account
+from typing import Dict, Iterable, FrozenSet, List
+
+from airbyte_protocol import AirbyteCatalog
+from airbyte_protocol import AirbyteRecordMessage
+from airbyte_protocol import AirbyteStream
+from .models.generated.spreadsheet import *
+from .models.generated.spreadsheet_values import *
+
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/drive.readonly']
+
+
+class Helpers(object):
+    @staticmethod
+    def get_authenticated_sheets_client(config, scopes=SCOPES) -> discovery.Resource:
+        creds = Helpers.get_authenticated_google_credentials(config, scopes)
+        return discovery.build('sheets', 'v4', credentials=creds).spreadsheets()
+
+    @staticmethod
+    def get_authenticated_drive_client(config, scopes=SCOPES) -> discovery.Resource:
+        creds = Helpers.get_authenticated_google_credentials(config, scopes)
+        return discovery.build('drive', 'v3', credentials=creds)
+
+    @staticmethod
+    def get_authenticated_google_credentials(config, scopes=SCOPES):
+        creds_json = json.loads(config['credentials_json'])
+        return service_account.Credentials.from_service_account_info(creds_json, scopes=scopes)
+
+    @staticmethod
+    def headers_to_airbyte_stream(sheet_name, header_row_values: List[str]) -> AirbyteStream:
+        """
+        Parses sheet headers from the provided row. This method assumes that data is contiguous
+        i.e: every cell contains a value and the first cell which does not contain a value denotes the end
+        of the headers. For example, if the first row contains "One | Two | | Three" then this method
+        will parse the headers as ["One", "Two"]. This assumption is made for simplicity and can be modified later.
+        """
+        fields = []
+        for cell_value in header_row_values:
+            if cell_value:
+                if cell_value in fields:
+                    raise Exception(f"Duplicate header {cell_value} found in {sheet_name}. Please ensure all headers are unique")
+                else:
+                    fields.append(cell_value)
+            else:
+                break
+
+        sheet_json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            # For simplicity, the type of every cell is a string
+            "properties": {field: {"type": "string"} for field in fields}
+        }
+
+        return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema)
+
+    @staticmethod
+    def get_formatted_row_values(row_data: RowData) -> List[str]:
+        """
+        Gets the formatted values of all cell data in this row. A formatted value is the final value a user sees in a spreadsheet. It can be a raw
+        string input by the user, or the result of a sheets function call.
+        """
+        return [value.formattedValue for value in row_data.values]
+
+    @staticmethod
+    def get_first_row(client: discovery.Resource, spreadsheet_id: str, sheet_name: str) -> List[str]:
+        spreadsheet = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f'{sheet_name}!1:1').execute())
+        # There is only one sheet since we are specifying the sheet in the requested ranges.
+        returned_sheets = spreadsheet.sheets
+        if len(returned_sheets) != 1:
+            raise Exception(f"Unexpected return result: Sheet {sheet_name} was expected to contain data on exactly 1 sheet. ")
+
+        range_data = returned_sheets[0].data
+        if len(range_data) != 1:
+            raise Exception(f"Expected data for exactly one range for sheet {sheet_name}")
+
+        all_row_data = range_data[0].rowData
+        if len(all_row_data) != 1:
+            raise Exception(f"Expected data for exactly one row for sheet {sheet_name}")
+
+        first_row_data = all_row_data[0]
+
+        return Helpers.get_formatted_row_values(first_row_data)
+
+    @staticmethod
+    def parse_sheet_and_column_names_from_catalog(catalog: AirbyteCatalog) -> Dict[str, FrozenSet[str]]:
+        sheet_to_column_name = {}
+        for stream in catalog.streams:
+            sheet_name = stream.name
+            sheet_to_column_name[sheet_name] = frozenset(stream.json_schema["properties"].keys())
+
+        return sheet_to_column_name
+
+    @staticmethod
+    def row_data_to_record_message(sheet_name: str, cell_values: Values, column_index_to_name: Dict[int, str]) -> AirbyteRecordMessage:
+        data = {}
+        for relevant_index in sorted(column_index_to_name.keys()):
+            if relevant_index >= len(cell_values.__root__):
+                break
+
+            cell_value = cell_values.__root__[relevant_index]
+            if cell_value.strip() != "":
+                data[column_index_to_name[relevant_index]] = cell_value
+
+        return AirbyteRecordMessage(
+            stream=sheet_name,
+            data=data,
+            emitted_at=int(datetime.now().timestamp()) * 1000
+        )
+
+    @staticmethod
+    def get_available_sheets_to_column_index_to_name(
+            client: discovery.Resource,
+            spreadsheet_id: str,
+            requested_sheets_and_columns: Dict[str, FrozenSet[str]]
+    ) -> Dict[str, Dict[int, str]]:
+        available_sheets_to_column_index_to_name = defaultdict(dict)
+        for sheet, columns in requested_sheets_and_columns.items():
+            first_row = Helpers.get_first_row(client, spreadsheet_id, sheet)
+            # Find the column index of each header value
+            idx = 0
+            for cell_value in first_row:
+                if cell_value in columns:
+                    available_sheets_to_column_index_to_name[sheet][idx] = cell_value
+                idx += 1
+        return available_sheets_to_column_index_to_name
+
+    @staticmethod
+    def is_row_empty(cell_values: Values) -> bool:
+        for cell in cell_values.__root__:
+            if cell.strip() != "":
+                return False
+        return True
+
+    @staticmethod
+    def row_contains_relevant_data(cell_values: Values, relevant_indices: Iterable[int]) -> bool:
+        for idx in relevant_indices:
+            if len(cell_values.__root__) > idx and cell_values.__root__[idx].strip() != "":
+                return True
+        return False
