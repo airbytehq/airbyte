@@ -10,18 +10,18 @@ However, for those who want a bit more guidance on the best way to contribute to
 
 ## Table of Contents
 
-1. [Code of conduct](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#1-code-of-conduct)
-2. [Airbyte specification](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#2-the-airbyte-specification)
-3. [First-time contributors, welcome!](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#3-first-time-contributors-welcome)
-4. [Areas for contributing](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#4-areas-for-contributing)
-5. [Ways you can contribute](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#5-ways-you-can-contribute)
-6. [Review process](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#6-review-process)
+1. [Code of conduct](https://docs.airbyte.io/contributing/contributing-to-airbyte/#1-code-of-conduct)
+2. [Airbyte specification](https://docs.airbyte.io/contributing/contributing-to-airbyte#2-airbyte-specification)
+3. [First-time contributors, welcome!](https://docs.airbyte.io/contributing/contributing-to-airbyte#3-first-time-contributors-welcome)
+4. [Areas for contributing](https://docs.airbyte.io/contributing/contributing-to-airbyte#4-areas-for-contributing)
+5. [Ways you can contribute](https://docs.airbyte.io/contributing/contributing-to-airbyte#5-ways-you-can-contribute)
+6. [Review process](https://docs.airbyte.io/contributing/contributing-to-airbyte#6-review-process)
 
 ## 1. Code of conduct
 
 Please follow our [Code of conduct](https://docs.airbyte.io/contributing/code-of-conduct) in the context of any contributions made to Airbyte.
 
-## 2. The Airbyte specification
+## 2. Airbyte specification
 
 Before you can start contributing, you need to understand [Airbyte's data protocol specification](https://docs.airbyte.io/architecture/airbyte-specification).
 
@@ -125,6 +125,4 @@ As soon as you are done with your development, just put up a PR. You're also alw
 * Is it introducing security risks?
 
 ‌Once your PR passes, we will merge it.
-
-\*\*\*\*
 
