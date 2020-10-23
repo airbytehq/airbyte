@@ -33,7 +33,7 @@ from google_sheets_source.helpers import Helpers
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/drive.file']
 SECRETS_PATH = "../secrets/config.json"  # TODO replace with injected secrets
 
-
+# TODO this whole file is one big TODO. placeholder code for pre and post actions when running integration tests
 def before():
     with open(SECRETS_PATH, 'r') as file:
         config = json.loads(file.read())
