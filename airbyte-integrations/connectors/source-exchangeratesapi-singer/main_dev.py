@@ -23,8 +23,8 @@ SOFTWARE.
 """
 
 import sys
-from airbyte_protocol.entrypoint import launch
 
+from airbyte_protocol.entrypoint import launch
 from source_exchangeratesapi_singer import SourceExchangeRatesApiSinger
 
 if __name__ == "__main__":

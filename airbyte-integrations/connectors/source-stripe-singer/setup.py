@@ -22,23 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
-    name='source_stripe_singer',
-    description='Source implementation for Stripe.',
-    author='Airbyte',
-    author_email='contact@airbyte.io',
-
+    name="source_stripe_singer",
+    description="Source implementation for Stripe.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
     packages=find_packages(),
-    package_data={
-        '': ['*.json']
-    },
-
+    package_data={"": ["*.json"]},
     install_requires=[
-        'tap-stripe==1.4.4',
-        'requests',
-        'base_singer',
-        'airbyte_protocol'
-    ]
+        "tap-stripe==1.4.4",
+        "requests",
+        "base_singer",
+        "airbyte_protocol",
+    ],
 )
