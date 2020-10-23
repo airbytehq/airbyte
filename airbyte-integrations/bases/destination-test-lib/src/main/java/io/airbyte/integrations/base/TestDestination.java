@@ -33,11 +33,19 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.workers.DefaultCheckConnectionWorker;
+import io.airbyte.workers.DefaultGetSpecWorker;
+import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -140,12 +148,23 @@ public abstract class TestDestination {
   }
 
   /**
+   * Verify that when the integrations returns a valid spec.
+   */
+  @Test
+  void testGetSpec() throws Exception {
+    final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
+    assertTrue(output.getOutput().isPresent());
+  }
+
+  /**
    * Verify that when given valid credentials, that check connection returns a success response.
    * Assume that the {@link TestDestination#getConfig()} is valid.
    */
   @Test
-  void testCheckConnection() {
-    // todo (cgardens) - blocked on worker not calling discover worker.
+  void testCheckConnection() throws Exception {
+    final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getConfig());
+    assertTrue(output.getOutput().isPresent());
+    assertEquals(Status.SUCCEEDED, output.getOutput().get().getStatus());
   }
 
   /**
@@ -153,8 +172,10 @@ public abstract class TestDestination {
    * Assume that the {@link TestDestination#getFailCheckConfig()} is invalid.
    */
   @Test
-  void testCheckConnectionInvalidCredentials() {
-    // todo (cgardens) - blocked on worker not calling discover worker.
+  void testCheckConnectionInvalidCredentials() throws Exception {
+    final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getFailCheckConfig());
+    assertTrue(output.getOutput().isPresent());
+    assertEquals(Status.FAILED, output.getOutput().get().getStatus());
   }
 
   private static class DataArgumentsProvider implements ArgumentsProvider {
@@ -205,6 +226,16 @@ public abstract class TestDestination {
                 .build()))));
     runSync(secondSyncMessages, catalog);
     assertSameMessages(secondSyncMessages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
+  }
+
+  private OutputAndStatus<StandardGetSpecOutput> runSpec() {
+    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
+        .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
+  }
+
+  private OutputAndStatus<StandardCheckConnectionOutput> runCheck(JsonNode config) throws Exception {
+    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
+        .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
   // todo (cgardens) - still uses the old schema.
