@@ -6,7 +6,8 @@ task generateProtocolClassFiles(type: Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/generate-protocol-files.sh'
 
-    outputs.upToDateWhen { false }
+    inputs.files file(rootDir.relativePath(file('airbyte-protocol/models/src/main/resources/airbyte_protocol')))
+    outputs.cacheIf { true }
     dependsOn ':airbyte-integrations:bases:base-python:code-generator:buildImage'
 }
 
