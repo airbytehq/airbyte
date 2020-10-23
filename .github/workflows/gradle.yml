@@ -54,6 +54,9 @@ jobs:
       - name: Run Integration Tests
         run: ./gradlew --no-daemon integrationTest --scan
 
+      - name: Run Standard Source Tests
+        run: ./gradlew --no-daemon standardSourceTest --scan
+
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
         run: ./gradlew --no-daemon composeBuild --scan
