@@ -11,7 +11,7 @@ module.exports = function (plop) {
 		actions: [
       {
         type: 'add',
-        path: 'connectors/destination-test/build.gradle',
+        path: 'connectors/destination-{{dashCase name}}/build.gradle',
         templateFile: 'connector-templates/java-destination/build.gradle.hbs',
       },
 		  {
@@ -30,7 +30,7 @@ module.exports = function (plop) {
         templateFile: 'connector-templates/java-destination/.dockerignore.hbs',
       },
       {
-        type: '`add',
+        type: 'add',
         path: 'connectors/destination-{{dashCase name}}/spec.json',
         templateFile: 'connector-templates/java-destination/spec.json.hbs',
       },
