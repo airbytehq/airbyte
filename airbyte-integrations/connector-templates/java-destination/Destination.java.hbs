@@ -93,8 +93,6 @@ public class {{properCase name}}Destination implements Destination {
   }
 
   public static void main(String[] args) throws Exception {
-    // fixme - instantiate your implementation of the Destination interface and pass it to
-    // IntegrationRunner.
     final Destination destination = new {{properCase name}}Destination();
     // this is airbyte's entrypoint into the integration. do not remove this line!
     LOGGER.info("starting destination: {}", {{properCase name}}Destination.class);
