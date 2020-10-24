@@ -69,7 +69,7 @@ public class BigQueryIntegrationTest extends TestDestination {
 
   @Override
   protected String getImageName() {
-    return "airbyte/airbyte-bigquery-destination:dev";
+    return "airbyte/destination-bigquery:dev";
   }
 
   @Override

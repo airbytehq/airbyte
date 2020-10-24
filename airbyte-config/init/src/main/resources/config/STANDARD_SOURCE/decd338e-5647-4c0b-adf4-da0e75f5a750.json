@@ -1,7 +1,7 @@
 {
   "sourceId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
   "name": "Postgres",
-  "dockerRepository": "airbyte/postgres-singer-source",
-  "dockerImageTag": "0.1.0",
+  "dockerRepository": "airbyte/source-postgres-singer",
+  "dockerImageTag": "0.1.4",
   "documentationUrl": "https://hub.docker.com/r/airbyte/integration-singer-postgres-source"
 }

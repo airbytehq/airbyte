@@ -43,7 +43,7 @@ public class PostgresIntegrationTest extends TestDestination {
 
   @Override
   protected String getImageName() {
-    return "airbyte/airbyte-postgres-destination:dev";
+    return "airbyte/destination-postgres:dev";
   }
 
   @Override
