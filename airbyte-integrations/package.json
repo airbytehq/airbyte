@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "generate": "npx plop"
+    "generate": "plop"
   },
   "devDependencies": {
     "plop": "^2.7.4"

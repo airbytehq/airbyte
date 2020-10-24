@@ -1,5 +1,5 @@
 ### Updating an Integration
-1. Create an integration using the generator
+1. Create an integration using the generator:
 
     ```
     npm run generate
