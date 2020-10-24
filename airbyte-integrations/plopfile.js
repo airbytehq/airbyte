@@ -34,6 +34,7 @@ module.exports = function (plop) {
         path: 'connectors/destination-{{dashCase name}}/spec.json',
         templateFile: 'connector-templates/java-destination/spec.json.hbs',
       },
+      'Your new connector has been created. Happy coding~~',
     ],
   });
 };
