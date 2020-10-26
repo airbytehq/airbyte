@@ -104,8 +104,8 @@ public class AcceptanceTests {
     connectionIds = Lists.newArrayList();
     destinationImplIds = Lists.newArrayList();
 
-    sourcePsql = new PostgreSQLContainer();
-    targetPsql = new PostgreSQLContainer();
+    sourcePsql = new PostgreSQLContainer("postgres:13-alpine");
+    targetPsql = new PostgreSQLContainer("postgres:13-alpine");
     sourcePsql.start();
     targetPsql.start();
 
