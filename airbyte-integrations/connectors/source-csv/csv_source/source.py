@@ -39,7 +39,7 @@ from airbyte_protocol import (
 )
 
 
-class TemplatePythonSource(Source):
+class CsvSource(Source):
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
         logger.info(f"Checking configuration ({config_container.rendered_config_path})...")
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)

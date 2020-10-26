@@ -25,8 +25,8 @@ SOFTWARE.
 import sys
 
 from airbyte_protocol.entrypoint import launch
-from template_python_source import TemplatePythonSource
+from csv_source import CsvSource
 
 if __name__ == "__main__":
-    source = TemplatePythonSource()
+    source = CsvSource()
     launch(source, sys.argv[1:])

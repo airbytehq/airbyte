@@ -25,8 +25,8 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="template-python-source",
-    description="Source implementation template",
+    name="csv-source",
+    description="Csv Source implementation",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
