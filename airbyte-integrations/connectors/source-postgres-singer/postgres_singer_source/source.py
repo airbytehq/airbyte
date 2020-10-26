@@ -22,21 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import urllib.request
-import psycopg2
-
 from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog
-from airbyte_protocol import AirbyteConnectionStatus
-from airbyte_protocol import Status
-from airbyte_protocol import AirbyteMessage
-from airbyte_protocol import Source
-from airbyte_protocol import ConfigContainer
-from base_singer import SingerHelper, SingerSource
-
+import psycopg2
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfigContainer, Status
+from base_singer import SingerSource
 
 TAP_CMD = "PGCLIENTENCODING=UTF8 tap-postgres"
+
+
 class PostgresSingerSource(SingerSource):
     def __init__(self):
         pass
@@ -44,7 +38,7 @@ class PostgresSingerSource(SingerSource):
     def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         config = config_container.rendered_config
         try:
-            params="dbname='{dbname}' user='{user}' host='{host}' password='{password}' port='{port}'".format(**config)
+            params = "dbname='{dbname}' user='{user}' host='{host}' password='{password}' port='{port}'".format(**config)
             psycopg2.connect(params)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
@@ -56,7 +50,7 @@ class PostgresSingerSource(SingerSource):
         # It should be equal to the dbname option in all cases.
         # See https://github.com/singer-io/tap-postgres source code for more information
         rendered_config = dict(raw_config)
-        rendered_config['filter_dbs'] = raw_config['dbname']
+        rendered_config["filter_dbs"] = raw_config["dbname"]
         return rendered_config
 
     def discover_cmd(self, logger, config_path) -> AirbyteCatalog:

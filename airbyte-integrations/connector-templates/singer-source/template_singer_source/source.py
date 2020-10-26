@@ -38,7 +38,7 @@ class TemplateSingerSource(SingerSource):
         return AirbyteCheckResponse(code == 200, {})
 
     def discover_cmd(self, logger, config_path) -> str:
-        return "tap-exchangeratesapi | grep '\"type\": \"SCHEMA\"' | head -1 | jq -c '{\"streams\":[{\"stream\": .stream, \"schema\": .schema}]}'"
+        return 'tap-exchangeratesapi | grep \'"type": "SCHEMA"\' | head -1 | jq -c \'{"streams":[{"stream": .stream, "schema": .schema}]}\''
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"

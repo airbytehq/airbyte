@@ -22,23 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
-    name='postgres-singer-source',
-    description='Postgres Singer source',
-    author='Airbyte',
-    author_email='contact@airbyte.io',
-
+    name="postgres-singer-source",
+    description="Postgres Singer source",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
     packages=find_packages(),
-    package_data={
-        '': ['*.json']
-    },
-
+    package_data={"": ["*.json"]},
     install_requires=[
-        'psycopg2==2.7.4',
-        'tap-postgres==0.1.0',
-        'base_singer',
-        'airbyte_protocol'
-    ]
+        "psycopg2==2.8.4",
+        "tap-postgres==0.1.0",
+        "pydantic==1.6.1",
+        "base_singer",
+        "airbyte_protocol",
+    ],
 )
