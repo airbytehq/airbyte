@@ -24,7 +24,7 @@ SOFTWARE.
 
 import urllib.request
 
-from airbyte_protocol import AirbyteCheckResponse
+from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_singer import SingerSource
 
 
@@ -32,10 +32,13 @@ class TemplateSingerSource(SingerSource):
     def __init__(self):
         pass
 
-    def check(self, logger, config_container) -> AirbyteCheckResponse:
+    def check(self, logger, config_container) -> AirbyteConnectionStatus:
         code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
         logger.info(f"Ping response code: {code}")
-        return AirbyteCheckResponse(code == 200, {})
+        if code == 200:
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        else:
+            return AirbyteConnectionStatus(status=Status.FAILED)
 
     def discover_cmd(self, logger, config_path) -> str:
         return 'tap-exchangeratesapi | grep \'"type": "SCHEMA"\' | head -1 | jq -c \'{"streams":[{"stream": .stream, "schema": .schema}]}\''
