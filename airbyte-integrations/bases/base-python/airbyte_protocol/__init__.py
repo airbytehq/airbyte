@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .integration import AirbyteCheckResponse, AirbyteSpec, ConfigContainer, Destination, Integration, Source
+from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
 from .logger import AirbyteLogger
 from .models import (
     AirbyteCatalog,
@@ -43,7 +43,6 @@ from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
 
 __all__ = [
     "AirbyteSpec",
-    "AirbyteCheckResponse",
     "ConfigContainer",
     "Integration",
     "Source",
