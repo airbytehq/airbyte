@@ -88,7 +88,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings("rawtypes")
-// We order tests such that earlier tests test more basic behavior that is relied upon in later tests.
+// We order tests such that earlier tests test more basic behavior that is relied upon in later
+// tests.
 // e.g. We test that we can create a destination before we test whether we can sync data to it.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
