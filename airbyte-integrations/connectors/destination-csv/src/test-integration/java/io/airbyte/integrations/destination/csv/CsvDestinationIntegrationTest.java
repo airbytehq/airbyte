@@ -48,7 +48,7 @@ public class CsvDestinationIntegrationTest extends TestDestination {
 
   @Override
   protected String getImageName() {
-    return "airbyte/airbyte-csv-destination-abprotocol:dev";
+    return "airbyte/destination-csv:dev";
   }
 
   @Override
