@@ -4,7 +4,7 @@ plugins {
 
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/standard-source-test.gradle')
+//apply from: rootProject.file('tools/gradle/commons/integrations/standard-source-test.gradle')
 
 dependencies {
 }
