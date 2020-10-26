@@ -23,40 +23,38 @@ SOFTWARE.
 """
 
 import json
-
-from apiclient import discovery
 from collections import defaultdict
 from datetime import datetime
+from typing import Dict, FrozenSet, Iterable, List
+
+from airbyte_protocol import AirbyteCatalog, AirbyteRecordMessage, AirbyteStream
+from apiclient import discovery
 from google.oauth2 import service_account
-from typing import Dict, Iterable, FrozenSet, List
 
-from airbyte_protocol import AirbyteCatalog
-from airbyte_protocol import AirbyteRecordMessage
-from airbyte_protocol import AirbyteStream
-from .models.generated.spreadsheet import *
-from .models.generated.spreadsheet_values import *
+from .models.generated.spreadsheet import RowData, Spreadsheet
+from .models.generated.spreadsheet_values import Values
 
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/drive.readonly']
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
 
 
 class Helpers(object):
     @staticmethod
     def get_authenticated_sheets_client(config, scopes=SCOPES) -> discovery.Resource:
         creds = Helpers.get_authenticated_google_credentials(config, scopes)
-        return discovery.build('sheets', 'v4', credentials=creds).spreadsheets()
+        return discovery.build("sheets", "v4", credentials=creds).spreadsheets()
 
     @staticmethod
     def get_authenticated_drive_client(config, scopes=SCOPES) -> discovery.Resource:
         creds = Helpers.get_authenticated_google_credentials(config, scopes)
-        return discovery.build('drive', 'v3', credentials=creds)
+        return discovery.build("drive", "v3", credentials=creds)
 
     @staticmethod
     def get_authenticated_google_credentials(config, scopes=SCOPES):
-        creds_json = json.loads(config['credentials_json'])
+        creds_json = json.loads(config["credentials_json"])
         return service_account.Credentials.from_service_account_info(creds_json, scopes=scopes)
 
     @staticmethod
-    def headers_to_airbyte_stream(sheet_name, header_row_values: List[str]) -> AirbyteStream:
+    def headers_to_airbyte_stream(sheet_name: str, header_row_values: List[str]) -> AirbyteStream:
         """
         Parses sheet headers from the provided row. This method assumes that data is contiguous
         i.e: every cell contains a value and the first cell which does not contain a value denotes the end
@@ -77,7 +75,7 @@ class Helpers(object):
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             # For simplicity, the type of every cell is a string
-            "properties": {field: {"type": "string"} for field in fields}
+            "properties": {field: {"type": "string"} for field in fields},
         }
 
         return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema)
@@ -92,7 +90,10 @@ class Helpers(object):
 
     @staticmethod
     def get_first_row(client: discovery.Resource, spreadsheet_id: str, sheet_name: str) -> List[str]:
-        spreadsheet = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f'{sheet_name}!1:1').execute())
+        print(client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1").execute())
+        spreadsheet = Spreadsheet.parse_obj(
+            client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1").execute()
+        )
         # There is only one sheet since we are specifying the sheet in the requested ranges.
         returned_sheets = spreadsheet.sheets
         if len(returned_sheets) != 1:
@@ -130,17 +131,11 @@ class Helpers(object):
             if cell_value.strip() != "":
                 data[column_index_to_name[relevant_index]] = cell_value
 
-        return AirbyteRecordMessage(
-            stream=sheet_name,
-            data=data,
-            emitted_at=int(datetime.now().timestamp()) * 1000
-        )
+        return AirbyteRecordMessage(stream=sheet_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000)
 
     @staticmethod
     def get_available_sheets_to_column_index_to_name(
-            client: discovery.Resource,
-            spreadsheet_id: str,
-            requested_sheets_and_columns: Dict[str, FrozenSet[str]]
+            client: discovery.Resource, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
     ) -> Dict[str, Dict[int, str]]:
         available_sheets_to_column_index_to_name = defaultdict(dict)
         for sheet, columns in requested_sheets_and_columns.items():

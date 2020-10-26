@@ -22,5 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .google_sheets_source import *
+from .google_sheets_source import GoogleSheetsSource
 
+__all__ = ["GoogleSheetsSource"]

@@ -55,14 +55,14 @@ jobs:
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Run Integration Tests
-        run: ./gradlew --no-daemon integrationTest --scan -x generateProtocolClassFiles
+        run: ./gradlew --no-daemon integrationTest --scan -x generatePythonModels
 
       - name: Run Standard Source Tests
         run: ./gradlew --no-daemon standardSourceTest --scan
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon composeBuild --scan -x generateProtocolClassFiles
+        run: ./gradlew --no-daemon composeBuild --scan -x generatePythonModels
         env:
           GIT_REVISION: ${{ github.sha }}
 

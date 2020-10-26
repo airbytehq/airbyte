@@ -22,18 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from apiclient import errors
 from typing import Generator
 
-from airbyte_protocol import AirbyteConnectionStatus, Status
-from airbyte_protocol import AirbyteCatalog
-from airbyte_protocol import AirbyteLogger
-from airbyte_protocol import AirbyteMessage, Type
-from airbyte_protocol import Source
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteLogger, AirbyteMessage, Source, Status, Type
+from apiclient import errors
 
 from .helpers import Helpers
-from .models.generated.spreadsheet_values import *
-from .models.generated.spreadsheet import *
+from .models.generated.spreadsheet import Spreadsheet
+from .models.generated.spreadsheet_values import SpreadsheetValues
 
 ROW_BATCH_SIZE = 200
 
@@ -50,10 +46,10 @@ class GoogleSheetsSource(Source):
         # Check involves verifying that the specified spreadsheet is reachable with our credentials.
         config = config_container.rendered_config
         client = Helpers.get_authenticated_sheets_client(config)
-        spreadsheet_id = config['spreadsheet_id']
+        spreadsheet_id = config["spreadsheet_id"]
         try:
             # Attempt to get first row of sheet
-            client.get(spreadsheetId=spreadsheet_id, includeGridData=False, ranges='1:1').execute()
+            client.get(spreadsheetId=spreadsheet_id, includeGridData=False, ranges="1:1").execute()
         except errors.HttpError as err:
             reason = str(err)
             # Give a clearer message if it's a common error like 404.
@@ -68,7 +64,7 @@ class GoogleSheetsSource(Source):
     def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
         config = config_container.rendered_config
         client = Helpers.get_authenticated_sheets_client(config)
-        spreadsheet_id = config['spreadsheet_id']
+        spreadsheet_id = config["spreadsheet_id"]
         try:
             logger.info(f"Running discovery on sheet {spreadsheet_id}")
             spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False).execute())
@@ -92,7 +88,7 @@ class GoogleSheetsSource(Source):
 
         catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
-        spreadsheet_id = config['spreadsheet_id']
+        spreadsheet_id = config["spreadsheet_id"]
 
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
 
@@ -106,7 +102,8 @@ class GoogleSheetsSource(Source):
                 range = f"{sheet}!{row_cursor}:{row_cursor + ROW_BATCH_SIZE}"
                 logger.info(f"Fetching range {range}")
                 row_batch = SpreadsheetValues.parse_obj(
-                    client.values().batchGet(spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS").execute())
+                    client.values().batchGet(spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS").execute()
+                )
                 row_cursor += ROW_BATCH_SIZE + 1
                 # there should always be one range since we requested only one
                 value_ranges = row_batch.valueRanges[0]
