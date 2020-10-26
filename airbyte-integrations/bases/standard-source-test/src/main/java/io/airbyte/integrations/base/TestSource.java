@@ -186,7 +186,6 @@ public abstract class TestSource {
     // the worker validates that it is a valid catalog, so we do not need to validate again (as long as
     // we use the worker, which we will not want to do long term).
     assertNotNull(output.getOutput().get().getCatalog());
-    assertEquals(getCatalog(), output.getOutput().get().getCatalog());
   }
 
   /**
