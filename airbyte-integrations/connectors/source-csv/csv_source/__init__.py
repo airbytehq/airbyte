@@ -1,4 +1,5 @@
-"""MIT License.
+"""
+MIT License
 
 Copyright (c) 2020 Airbyte
 
