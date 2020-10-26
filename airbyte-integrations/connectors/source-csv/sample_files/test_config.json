@@ -1,3 +1,8 @@
 {
-  "love_airbyte": true
+  "csv_url": "sample_files/sample.csv",
+  "remove_csv_url":  "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv",
+  "pandas.read_csv": {
+    "sep": "|"
+  },
+  "" : ""
 }
