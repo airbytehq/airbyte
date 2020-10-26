@@ -15,7 +15,7 @@ function main() {
     filename_wo_ext=$(basename "$f" | cut -d . -f 1)
     echo "from .$filename_wo_ext import *" >> "$ROOT_DIR/$OUTPUT_DIR"/__init__.py
 
-    docker run -v "$ROOT_DIR":/airbyte airbyte/code-generator:dev \
+    docker run --user "$(id -u):$(id -g)" -v "$ROOT_DIR":/airbyte airbyte/code-generator:dev \
       --input "/airbyte/$YAML_DIR/$filename_wo_ext.yaml" \
       --output "/airbyte/$OUTPUT_DIR/$filename_wo_ext.py" \
       --disable-timestamp

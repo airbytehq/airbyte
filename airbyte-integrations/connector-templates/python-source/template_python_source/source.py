@@ -22,24 +22,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
 import pkgutil
 import time
 from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteCheckResponse, AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, Source
+from airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStream,
+    Source,
+    Status,
+)
 
 
 class TemplatePythonSource(Source):
-    def __init__(self):
-        pass
-
-    def check(self, logger, config_container) -> AirbyteCheckResponse:
+    def check(self, logger, config_container) -> AirbyteConnectionStatus:
         logger.info(f"Checking configuration ({config_container.rendered_config_path})...")
-        return AirbyteCheckResponse(True, {})
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def discover(self, logger, config_container) -> AirbyteCatalog:
         logger.info(f"Discovering ({config_container.rendered_config_path})...")
-        return AirbyteCatalog.from_json(pkgutil.get_data(__name__, "catalog.json"))
+        catalog = pkgutil.get_data(__name__, "catalog.json")
+        if catalog:
+            schema = json.loads(catalog)
+            airbyte_streams = [AirbyteStream(name=__name__, json_schema=schema)]
+        else:
+            airbyte_streams = []
+        return AirbyteCatalog(streams=airbyte_streams)
 
     def read(self, logger, config_container, catalog_path, state_path=None) -> Generator[AirbyteMessage, None, None]:
         logger.info(f"Reading ({config_container.rendered_config_path}, {catalog_path}, {state_path})...")
