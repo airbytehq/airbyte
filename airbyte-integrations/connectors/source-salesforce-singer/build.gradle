@@ -9,14 +9,16 @@ apply from: rootProject.file('tools/gradle/commons/integrations/standard-source-
 dependencies {
 }
 
-standardSourceTest {
-    ext {
-        imageName = "${extractImageName(project.file('Dockerfile'))}:dev"
-        specPath = 'source_salesforce_singer/spec.json'
-        configPath ='secrets/config.json'
-        catalogPath = 'standard_test/catalog.json'
-    }
-}
+// We cannot run these tests with every build because it blows through the Salesforce quota. For now, turn this on as needed and run these tests locally; they will not be run in CI.
+// CRITICAL Salesforce has reported 13060/15000 (87.07%) total REST quota used across all Salesforce Applications. Terminating replication to not continue past configured percentage of 80% total quota.
+//standardSourceTest {
+//    ext {
+//        imageName = "${extractImageName(project.file('Dockerfile'))}:dev"
+//        specPath = 'source_salesforce_singer/spec.json'
+//        configPath ='secrets/config.json'
+//        catalogPath = 'standard_test/catalog.json'
+//    }
+//}
 
 buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
 integrationTest.dependsOn(buildImage)
