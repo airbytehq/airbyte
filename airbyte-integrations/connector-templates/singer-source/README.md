@@ -33,7 +33,7 @@ Please reach out in a GitHub Issue or Slack if you run into any issues developin
 
 Prepare development environment:
 ```
-cd airbyte-integrations/template/singer-source
+cd airbyte-integrations/connector-templates/singer-source
 
 # create & activate virtualenv using python 3.7
 python3.7 -m venv build/venv
@@ -54,9 +54,9 @@ python main_dev.py read --config sample_files/test_config.json --catalog sample_
 Test image:
 ```
 # in airbyte root directory
-./gradlew :airbyte-integrations:template:singer-source:buildImage
-docker run --rm -v $(pwd)/airbyte-integrations/template/singer-source/sample_files:/sample_files airbyte/source-template-python:dev spec
-docker run --rm -v $(pwd)/airbyte-integrations/template/singer-source/sample_files:/sample_files airbyte/source-template-python:dev check --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/template/singer-source/sample_files:/sample_files airbyte/source-template-python:dev discover --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/template/singer-source/sample_files:/sample_files airbyte/source-template-python:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
+./gradlew :airbyte-integrations:connector-templates:singer-source:buildImage
+docker run --rm -v $(pwd)/airbyte-integrations/connector-templates/singer-source/sample_files:/sample_files airbyte/source-template-python:dev spec
+docker run --rm -v $(pwd)/airbyte-integrations/connector-templates/singer-source/sample_files:/sample_files airbyte/source-template-python:dev check --config /sample_files/test_config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connector-templates/singer-source/sample_files:/sample_files airbyte/source-template-python:dev discover --config /sample_files/test_config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connector-templates/singer-source/sample_files:/sample_files airbyte/source-template-python:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
 ```

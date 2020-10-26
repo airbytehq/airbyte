@@ -27,7 +27,7 @@ import pkgutil
 from dataclasses import dataclass
 from typing import Generator
 
-from .models import AirbyteCatalog, AirbyteMessage, ConnectorSpecification
+from .models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification
 
 
 class AirbyteSpec(object):
@@ -39,12 +39,6 @@ class AirbyteSpec(object):
 
     def __init__(self, spec_string):
         self.spec_string = spec_string
-
-
-class AirbyteCheckResponse(object):
-    def __init__(self, successful, field_to_error):
-        self.successful = successful
-        self.field_to_error = field_to_error
 
 
 @dataclass
@@ -76,7 +70,7 @@ class Integration(object):
         with open(path, "w") as fh:
             fh.write(json.dumps(config_object))
 
-    def check(self, logger, config_container) -> AirbyteCheckResponse:
+    def check(self, logger, config_container) -> AirbyteConnectionStatus:
         raise Exception("Not Implemented")
 
     def discover(self, logger, config_container) -> AirbyteCatalog:
