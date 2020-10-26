@@ -4,12 +4,20 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Csv source Spec",
     "type": "object",
-    "required": ["csv_url"],
+    "required": ["data_url"],
     "additionalProperties": false,
     "properties": {
-      "csv_url": {
+      "data_url": {
         "type": "string",
-        "description": "The path to the csv file to be replicated."
+        "description": "The path to the file to be replicated."
+      },
+      "reader": {
+        "type": "string",
+        "description": "The reader from pandas library to use"
+      },
+      "reader_arguments": {
+        "type": "object",
+        "description": "The reader arguments from pandas library to use"
       }
     }
   }
