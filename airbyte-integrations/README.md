@@ -1,4 +1,4 @@
-### Updating an Integration
+## Updating an Integration
 1. Make your code changes to an integration
 1. Bump the version in the `Dockerfile` of the integration (`LABEL io.airbyte.version=0.1.0`)
 1. Iterate by building the the `dev` tagged image and running tests:
@@ -16,3 +16,39 @@
     ```
 1. Update the version of the integration in `Integrations.java` so the new version can be used in Airbyte.
 1. Merge the PR with you integration updates.
+
+
+## Python Connector Development
+
+Before working with integrations written in Python, we recommend running `./gradlew build` from the root project directory.
+This will create a virtualenv for every integration and helper project and install dependencies locally. 
+
+When iterating on a single connector, you will often iterate by running `./gradlew :airbyte-integrations:connectors:your-connector-dir:build`.
+This command will:
+1. Install a virtual environment at `airbyte-integrations/connectors/your-connector-dir/.venv`
+1. Install local development dependencies specified in `airbyte-integrations/connectors/your-connector-dir/requirements.txt`
+1. Runs the following pip modules:
+    1. [Black](https://pypi.org/project/black/) to format the code
+    1. [isort](https://pypi.org/project/isort/) to sort imports
+    1. [Flake8](https://pypi.org/project/flake8/) to check formatting
+    1. [MyPy](https://pypi.org/project/mypy/) to check type usage
+
+At Airbyte, we use IntelliJ IDEA for development. Although it is possible to develop integrations with any IDE, 
+we typically recommend IntelliJ IDEA or PyCharm, since we actively work towards compatibility. 
+The following setup steps are written for IntelliJ IDEA but should have similar equivalents for PyCharm:
+1. Install the [Pydantic](https://plugins.jetbrains.com/plugin/12861-pydantic) plugin. This will help autocompletion with some of our internal types.
+1. We recommend using one project for Java development with Gradle and a separate project for Python.
+1. To create the Python project, go to `File -> New -> Project...`
+1. Select Python.
+1. Select a project name like `airbyte-python` and a directory *outside of the `airbyte` code root*.
+1. Usually you will want to create this project in a new window and not replace the existing window.
+1. Go to `Project Structure > Modules`. 
+1. Click the + sign and `New Module`.
+1. Set the content root and module file location to the location of your `airbyte-integrations` directory or a specific subdirectory.
+1. Finish adding the module.
+
+You should now have access to code completion and proper syntax highlighting for Python projects. 
+You can use your default Python SDK, but if you want your dependency management to match what will be used in the build process, 
+we recommend creating a Python SDK under `Project Structure > SDKs > + > Virtual Enironment > Existing Environment` 
+and setting the interpreter to the python script specified in a location such as `airbyte-integrations/connectors/source-exchangeratesapi-singer/.venv/bin/python`. 
+Then, you can set the module interpreter to this venv-based interpreter to make sure imports are working as intended.
