@@ -15,6 +15,7 @@
 
 * [Sources](integrations/sources/README.md)
   * [exchangeratesapi.io](integrations/sources/exchangeratesapi-io.md)
+  * [Github](integrations/sources/github.md)
   * [Postgres](integrations/sources/postgres.md)
   * [Salesforce](integrations/sources/salesforce.md)
   * [Stripe](integrations/sources/stripe.md)
