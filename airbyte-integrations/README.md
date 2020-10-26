@@ -34,7 +34,7 @@ This command will:
     1. [MyPy](https://pypi.org/project/mypy/) to check type usage
 
 At Airbyte, we use IntelliJ IDEA for development. Although it is possible to develop integrations with any IDE, 
-we typically recommend IntelliJ IDEA or PyCharm, since we actively work towards compatibility. 
+we typically recommend IntelliJ IDEA or PyCharm, since we actively work towards compatibility. Our typical development flow is to have one Intellij project for Java development with Gradle and a separate Intellij project for Python.
 The following setup steps are written for IntelliJ IDEA but should have similar equivalents for PyCharm:
 1. Install the [Pydantic](https://plugins.jetbrains.com/plugin/12861-pydantic) plugin. This will help autocompletion with some of our internal types.
 1. We recommend using one project for Java development with Gradle and a separate project for Python.
