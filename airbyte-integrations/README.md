@@ -49,6 +49,6 @@ The following setup steps are written for IntelliJ IDEA but should have similar 
 
 You should now have access to code completion and proper syntax highlighting for Python projects. 
 You can use your default Python SDK, but if you want your dependency management to match what will be used in the build process, 
-we recommend creating a Python SDK under `Project Structure > SDKs > + > Virtual Enironment > Existing Environment` 
+we recommend creating a Python SDK under `Project Structure > SDKs > + > Virtual Environment > Existing Environment` 
 and setting the interpreter to the python script specified in a location such as `airbyte-integrations/connectors/source-exchangeratesapi-singer/.venv/bin/python`. 
 Then, you can set the module interpreter to this venv-based interpreter to make sure imports are working as intended.
