@@ -468,12 +468,12 @@ public class AcceptanceTests {
         .getSourceId();
   }
 
-  private void clearDbData(PostgreSQLContainer connectionPool) throws SQLException {
-    final BasicDataSource connectionPool1 = getConnectionPool(connectionPool);
-    final Set<String> tableNames = listStreams(connectionPool1);
+  private void clearDbData(PostgreSQLContainer db) throws SQLException {
+    final BasicDataSource connectionPool = getConnectionPool(db);
+    final Set<String> tableNames = listStreams(connectionPool);
     for (final String tableName : tableNames) {
       DatabaseHelper.query(
-          connectionPool1,
+          connectionPool,
           context -> context.execute(String.format("DELETE FROM %s", tableName)));
     }
   }
