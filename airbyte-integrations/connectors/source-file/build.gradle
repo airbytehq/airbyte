@@ -1,4 +1,4 @@
-project.ext.pyModule = 'csv_source'
+project.ext.pyModule = 'file_source'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')

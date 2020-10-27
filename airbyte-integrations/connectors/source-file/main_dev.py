@@ -22,14 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import sys
 
-setup(
-    name="csv-source",
-    description="Csv Source implementation",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    install_requires=["airbyte-protocol", "gcsfs", "google-cloud-storage", "pandas>=0.24.1", "smart_open"],
-)
+from airbyte_protocol.entrypoint import launch
+from file_source import FileSource
+
+if __name__ == "__main__":
+    source = FileSource()
+    launch(source, sys.argv[1:])

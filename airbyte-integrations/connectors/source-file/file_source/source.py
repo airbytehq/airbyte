@@ -41,10 +41,12 @@ from google.cloud.storage import Client
 from smart_open import smart_open
 
 
-class CsvSource(Source):
+class FileSource(Source):
     """This source aims to provide support for readers of different file formats stored in various locations.
 
-    It is optionally using smart_open library to handle efficient streaming of very large files.
+    It is optionally using s3fs, gcfs or smart_open libraries to handle efficient streaming of very large files
+    (either compressed or not).
+
     Supported examples of URL this can accept are as follows:
     ```
         s3://my_bucket/my_key
@@ -66,7 +68,7 @@ class CsvSource(Source):
         [ssh|scp|sftp]://username:password@host/path/file
     ```
 
-    This reading supports primarily `read_csv` primitive but will be extend to readers of different formats for more
+    This reading supports primarily `read_csv` primitive but will be extended to readers of different formats for more
     potential sources as described below:
     https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html
     - read_json
@@ -77,13 +79,23 @@ class CsvSource(Source):
     - read_orc
     - read_pickle
 
-    Note that this implementation is handling `data_url` target as a single CSV file at the moment.
+    All the options of the pandas readers are exposed to the configuration file of this connector so it is possible to
+    override header names, types, encoding
+
+    Note that this implementation is handling `data_url` target as a single file at the moment.
     We will expand the capabilities to load either glob of multiple files, content of directories, etc in a latter
     iteration.
+
+    read more:
+    https://gitlab.com/meltano/tap-csv
+    https://github.com/robertjmoore/tap-csv
+    https://gitlab.com/tjb-bnb/tap-csv
+    https://github.com/fishtown-analytics/tap-s3-csv
+    https://github.com/datamill-co/tap-files
     """
 
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
-        """Check involves verifying that the specified csv is reachable with
+        """Check involves verifying that the specified file is reachable with
         our credentials.
 
         :param logger:
@@ -113,15 +125,15 @@ class CsvSource(Source):
         logger.info(f"Discovering schema of {data_url}...")
         streams = []
         try:
-            # TODO handle discovery of directories of csv files?
+            # TODO handle discovery of directories of files?
             # Don't skip data when discovering in order to infer column types
             df = self.load_dataframe(config, skip_data=False)
-            csv_json_schema = {
+            json_schema = {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {field: {"type": self.convert_dtype(df[field].dtype)} for field in df.columns},
             }
-            streams.append(AirbyteStream(name=data_url, json_schema=csv_json_schema))
+            streams.append(AirbyteStream(name=data_url, json_schema=json_schema))
         except Exception as err:
             reason = f"Failed to discover schemas of {data_url}: {repr(err)}"
             logger.error(reason)
