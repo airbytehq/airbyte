@@ -21,7 +21,7 @@
   * [Local CSV](integrations/destinations/local-csv.md)
   * [BigQuery](integrations/destinations/bigquery.md)
   * [Postgres](integrations/destinations/postgres.md)
-* [Adding your own connectors](integrations/adding-your-own-connectors.md)
+* [Custom Connectors](integrations/adding-your-own-connectors.md)
 
 ## Contributing
 
