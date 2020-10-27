@@ -39,7 +39,7 @@ class GoogleAnalyticsSingerSource(SingerSource):
 
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
         try:
-            client_secrets = json.loads(config_container.rendered_config["credentials_json"])
+            client_secrets = json.loads(config_container.raw_config["credentials_json"])
             additional_fields = {"end_date": "2020-10-01T00:00:00Z", "client_secrets": client_secrets}
             augmented_config = dict(additional_fields, **config_container.rendered_config)
             client = GAClient(augmented_config)
