@@ -22,14 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name="google_sheets_source",
     description="Source implementation for Google Sheets.",
     author="Airbyte",
     author_email="contact@airbyte.io",
-    packages=["google_sheets_source"],
+    packages=find_packages(),
     install_requires=[
         "requests",
         "google-api-python-client",
@@ -38,4 +38,6 @@ setup(
         "PyYAML==5.3.1",
         "pydantic==1.6.1",
     ],
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest", "google_sheets_source"],
 )

@@ -31,8 +31,8 @@ from airbyte_protocol import AirbyteCatalog, AirbyteRecordMessage, AirbyteStream
 from apiclient import discovery
 from google.oauth2 import service_account
 
-from .models.generated.spreadsheet import RowData, Spreadsheet
-from .models.generated.spreadsheet_values import Values
+from .models.spreadsheet import RowData, Spreadsheet
+from .models.spreadsheet_values import Values
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
 
@@ -93,6 +93,7 @@ class Helpers(object):
         spreadsheet = Spreadsheet.parse_obj(
             client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1").execute()
         )
+        print(spreadsheet)
         # There is only one sheet since we are specifying the sheet in the requested ranges.
         returned_sheets = spreadsheet.sheets
         if len(returned_sheets) != 1:
@@ -136,15 +137,17 @@ class Helpers(object):
     def get_available_sheets_to_column_index_to_name(
             client: discovery.Resource, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
     ) -> Dict[str, Dict[int, str]]:
+        available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
         available_sheets_to_column_index_to_name = defaultdict(dict)
         for sheet, columns in requested_sheets_and_columns.items():
-            first_row = Helpers.get_first_row(client, spreadsheet_id, sheet)
-            # Find the column index of each header value
-            idx = 0
-            for cell_value in first_row:
-                if cell_value in columns:
-                    available_sheets_to_column_index_to_name[sheet][idx] = cell_value
-                idx += 1
+            if sheet in available_sheets:
+                first_row = Helpers.get_first_row(client, spreadsheet_id, sheet)
+                # Find the column index of each header value
+                idx = 0
+                for cell_value in first_row:
+                    if cell_value in columns:
+                        available_sheets_to_column_index_to_name[sheet][idx] = cell_value
+                    idx += 1
         return available_sheets_to_column_index_to_name
 
     @staticmethod

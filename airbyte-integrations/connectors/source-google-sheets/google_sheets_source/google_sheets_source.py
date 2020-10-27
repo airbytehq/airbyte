@@ -28,8 +28,8 @@ from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteLog
 from apiclient import errors
 
 from .helpers import Helpers
-from .models.generated.spreadsheet import Spreadsheet
-from .models.generated.spreadsheet_values import SpreadsheetValues
+from .models.spreadsheet import Spreadsheet
+from .models.spreadsheet_values import SpreadsheetValues
 
 ROW_BATCH_SIZE = 200
 
@@ -38,6 +38,7 @@ class GoogleSheetsSource(Source):
     """
     Spreadsheets API Reference: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets
     """
+
     def __init__(self):
         super().__init__()
 

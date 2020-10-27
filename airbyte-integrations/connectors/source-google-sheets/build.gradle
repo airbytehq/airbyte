@@ -12,7 +12,7 @@ generatePythonModels {
     def relativeProjectDir = "${rootDir.relativePath(projectDir)}"
     ext {
         inputDir = "${relativeProjectDir}/google_sheets_source/models/definitions/"
-        outputDir = "${relativeProjectDir}/google_sheets_source/models/generated/"
+        outputDir = "${relativeProjectDir}/google_sheets_source/models/"
     }
 }
 
