@@ -25,6 +25,7 @@ SOFTWARE.
 from datetime import datetime
 from typing import Generator
 
+import gcsfs
 import pandas as pd
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -36,14 +37,49 @@ from airbyte_protocol import (
     Status,
     Type,
 )
+from google.cloud.storage import Client
+from smart_open import smart_open
 
 
 class CsvSource(Source):
-    """This source aims to provide support for readers described here:
-    https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#io-excel-
-    reader.
+    """This source aims to provide support for readers of different file formats stored in various locations.
 
-    Starting first with the read_csv primitive and then ramp up with other readers to handle more potential sources
+    It is optionally using smart_open library to handle efficient streaming of very large files.
+    Supported examples of URL this can accept are as follows:
+    ```
+        s3://my_bucket/my_key
+        s3://my_key:my_secret@my_bucket/my_key
+        s3://my_key:my_secret@my_server:my_port@my_bucket/my_key
+        gs://my_bucket/my_blob
+        azure://my_bucket/my_blob
+        hdfs:///path/file
+        hdfs://path/file
+        webhdfs://host:port/path/file
+        ./local/path/file
+        ~/local/path/file
+        local/path/file
+        ./local/path/file.gz
+        file:///home/user/file
+        file:///home/user/file.bz2
+        [ssh|scp|sftp]://username@host//path/file
+        [ssh|scp|sftp]://username@host/path/file
+        [ssh|scp|sftp]://username:password@host/path/file
+    ```
+
+    This reading supports primarily `read_csv` primitive but will be extend to readers of different formats for more
+    potential sources as described below:
+    https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html
+    - read_json
+    - read_html
+    - read_excel
+    - read_feather
+    - read_parquet
+    - read_orc
+    - read_pickle
+
+    Note that this implementation is handling `data_url` target as a single CSV file at the moment.
+    We will expand the capabilities to load either glob of multiple files, content of directories, etc in a latter
+    iteration.
     """
 
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
@@ -126,21 +162,41 @@ class CsvSource(Source):
         :return:
         """
         data_url = config["data_url"]
+
         reader = "read_csv"
         if "reader" in config:
             reader = config["reader"]
+
         reader_arg = {}
         if "reader_arguments" in config:
             reader_arg = config["reader_arguments"]
         if skip_data:
             reader_arg["nrows"] = 0
             reader_arg["index_col"] = 0
-        if reader == "read_csv":
-            # pandas.read_csv additional arguments can be passed to customize how to parse csv.
-            # see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
-            return pd.read_csv(data_url, **reader_arg)
+
+        gcs_file = None
+        if "use_smart_open" in config and config["use_smart_open"]:
+            if "gcs_service_account.json" in config and (data_url.startswith("gcs://") or data_url.startswith("gs://")):
+                client = Client.from_service_account_json(config["gcs_service_account.json"])
+                data_url = smart_open(data_url, transport_params=dict(client=client))
+            else:
+                data_url = smart_open(data_url)
         else:
-            raise Exception(f"Reader {reader} is not supported")
+            if "gcs_service_account.json" in config and (data_url.startswith("gcs://") or data_url.startswith("gs://")):
+                fs = gcsfs.GCSFileSystem(token=config["gcs_service_account.json"])
+                gcs_file = fs.open(data_url)
+                data_url = gcs_file
+
+        try:
+            if reader == "read_csv":
+                # pandas.read_csv additional arguments can be passed to customize how to parse csv.
+                # see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
+                return pd.read_csv(data_url, **reader_arg)
+            else:
+                raise Exception(f"Reader {reader} is not supported")
+        finally:
+            if gcs_file:
+                gcs_file.close()
 
     @staticmethod
     def convert_dtype(dtype) -> str:

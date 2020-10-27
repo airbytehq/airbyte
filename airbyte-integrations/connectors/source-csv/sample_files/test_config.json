@@ -1,9 +1,19 @@
 {
-  "data_url": "sample_files/sample.csv",
+  "data_url": "s3://myowndatasample/my_epidemiology.csv",
+
+  "local_data_url": "sample_files/sample.csv",
   "gcs_public_data_url": "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv",
+  "gcs_private_data_url": "gcs://my_own_data_sample/my_epidemiology.csv",
+  "s3_private_data_url": "s3://myowndatasample/my_epidemiology.csv",
+
+  "gcs_service_account.json": "/home/user/Software/chris-qubes-work_service_account.json",
+
+  "use_smart_open": false,
   "reader": "read_csv",
+
   "reader_arguments": {
-    "sep": "|"
+    "sep": ";"
   },
+
   "": ""
 }
