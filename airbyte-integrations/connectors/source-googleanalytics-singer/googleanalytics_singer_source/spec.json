@@ -18,7 +18,7 @@
       "start_date": {
         "type": "string",
         "description": "A date in the format YYYY-MM-DDT00:00:00Z.",
-        "examples": ["2020-06-01T00:00:00Z"]
+        "examples": ["2020-06-01T00:00:00Z"],
       }
     }
   }

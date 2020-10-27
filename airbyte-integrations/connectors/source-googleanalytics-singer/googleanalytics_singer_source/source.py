@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
 import os
 import tempfile
 
@@ -48,13 +47,11 @@ class GoogleAnalyticsSingerSource(SingerSource):
 
     def transform_config(self, raw_config):
         with open(CREDENTIALS_FILE, "w") as fh:
-            fh.write(json.dumps(raw_config["credentials_json"]))
+            fh.write(raw_config["credentials_json"])
 
         return {"key_file_location": CREDENTIALS_FILE, "view_id": raw_config["view_id"], "start_date": raw_config["start_date"]}
 
     def discover_cmd(self, logger, config_path) -> str:
-        with open(CREDENTIALS_FILE, "r") as fh:
-            print("filecontents:" + fh.read())
         return f"tap-google-analytics --discover --config {config_path}"
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
