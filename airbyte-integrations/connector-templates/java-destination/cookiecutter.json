@@ -1,0 +1,4 @@
+{
+  "name": "my awesome database",
+  "_extensions": ["kamidana.extensions.NamingModuleExtension"]
+}

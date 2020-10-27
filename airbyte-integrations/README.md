@@ -1,5 +1,10 @@
-## Updating an Integration
-1. Make your code changes to an integration
+### Updating an Integration
+1. Create an integration using the generator:
+
+    ```
+    npm run generate
+    ```
+
 1. Bump the version in the `Dockerfile` of the integration (`LABEL io.airbyte.version=0.1.0`)
 1. Iterate by building the the `dev` tagged image and running tests:
     ```

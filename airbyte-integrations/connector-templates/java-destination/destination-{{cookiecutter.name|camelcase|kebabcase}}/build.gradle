@@ -11,8 +11,7 @@ dependencies {
 }
 
 application {
-    // fixme - replace this with the fully qualified path to the new integration.
-    mainClass = 'io.airbyte.integrations.destination.template.DestinationTemplate'
+    mainClass = 'io.airbyte.integrations.destination.{{cookiecutter.name|camelcase|snakecase}}.{{cookiecutter.name|pascalcase}}Destination'
 }
 
 buildImage.dependsOn ':airbyte-integrations:bases:base-java:buildImage'
