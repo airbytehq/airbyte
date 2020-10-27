@@ -1,11 +1,9 @@
 import unittest
-from unittest.mock import patch, MagicMock, Mock
-from apiclient import discovery
+from unittest.mock import Mock
 
-from collections import defaultdict
 from google_sheets_source.helpers import Helpers
 from google_sheets_source.models import Values, RowData, CellData, Spreadsheet, Sheet, GridData, SheetProperties
-from airbyte_protocol import AirbyteCatalog, AirbyteStream, AirbyteMessage, AirbyteRecordMessage
+from airbyte_protocol import AirbyteCatalog, AirbyteStream, AirbyteRecordMessage
 
 
 class TestHelpers(unittest.TestCase):
