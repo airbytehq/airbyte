@@ -29,7 +29,7 @@ It's easy to code your own integrations on Airbyte. Here are some links to instr
 
 Please reach out to us if you'd like help developing integrations in other languages. **Indeed, you are able to create integrations using the language you want, as Airbyte connections run as Docker containers.** We haven't built the documentation for all languages yet, that's all. 
 
-## 3. Adding your connectors on our UI to run them
+## 3. Adding your connectors in the UI
 
 There are only 2 easy steps to do that: 
 
