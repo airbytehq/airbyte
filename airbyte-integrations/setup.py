@@ -31,4 +31,4 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=["cookiecutter", "kamidana"],
-)F
+)
