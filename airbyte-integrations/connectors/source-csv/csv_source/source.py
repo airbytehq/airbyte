@@ -43,7 +43,7 @@ class CsvSource(Source):
     https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#io-excel-
     reader.
 
-    Starting first with the read_csv primitive.
+    Starting first with the read_csv primitive and then ramp up with other readers to handle more potential sources
     """
 
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
@@ -58,7 +58,7 @@ class CsvSource(Source):
         data_url = config["data_url"]
         logger.info(f"Checking access to {data_url}...")
         try:
-            self.load_dataframe(config)
+            self.load_dataframe(config, skip_data=True)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as err:
             reason = f"Failed to load {data_url}: {repr(err)}"
@@ -74,11 +74,12 @@ class CsvSource(Source):
         """
         config = config_container.rendered_config
         data_url = config["data_url"]
-        logger.info(f"Discovering {data_url}...")
+        logger.info(f"Discovering schema of {data_url}...")
         streams = []
         try:
             # TODO handle discovery of directories of csv files?
-            df = self.load_dataframe(config)
+            # Don't skip data when discovering in order to infer column types
+            df = self.load_dataframe(config, skip_data=False)
             csv_json_schema = {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
@@ -91,6 +92,14 @@ class CsvSource(Source):
         return AirbyteCatalog(streams=streams)
 
     def read(self, logger, config_container, catalog_path, state_path=None) -> Generator[AirbyteMessage, None, None]:
+        """
+
+        :param logger:
+        :param config_container:
+        :param catalog_path:
+        :param state_path:
+        :return:
+        """
         config = config_container.rendered_config
         data_url = config["data_url"]
         logger.info(f"Reading ({data_url}, {catalog_path}, {state_path})...")
@@ -108,23 +117,30 @@ class CsvSource(Source):
             raise err
 
     @staticmethod
-    def load_dataframe(config) -> pd.DataFrame:
+    def load_dataframe(config, skip_data=False) -> pd.DataFrame:
         """From a Airbyte Configuration file, load and return the pandas
         dataframe.
 
+        :param skip_data:
         :param config:
         :return:
         """
         data_url = config["data_url"]
-        if config["reader"] == "read_csv":
-            if "reader_arguments" in config:
-                # pandas.read_csv additional arguments can be passed to customize how to parse csv.
-                # see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
-                return pd.read_csv(data_url, **config["reader_arguments"])
-            else:
-                return pd.read_csv(data_url)
+        reader = "read_csv"
+        if "reader" in config:
+            reader = config["reader"]
+        reader_arg = {}
+        if "reader_arguments" in config:
+            reader_arg = config["reader_arguments"]
+        if skip_data:
+            reader_arg["nrows"] = 0
+            reader_arg["index_col"] = 0
+        if reader == "read_csv":
+            # pandas.read_csv additional arguments can be passed to customize how to parse csv.
+            # see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
+            return pd.read_csv(data_url, **reader_arg)
         else:
-            raise Exception("No valid readers defined in configuration")
+            raise Exception(f"Reader {reader} is not supported")
 
     @staticmethod
     def convert_dtype(dtype) -> str:
