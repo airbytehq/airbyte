@@ -2,7 +2,7 @@
 
 If you'd like to build new connectors and make them part of the pool of pre-built connectors on Airbyte, first a big thank you, and we invite you to check our [contributing guide](https://docs.airbyte.io/contributing/contributing-to-airbyte).
 
-If you'd like to build new connectors, or update existing ones, for your own usage, without contributing to the Airbyte codebase, then that's what open-source is for, and read along. 
+If you'd like to build new connectors, or update existing ones, for your own usage, without contributing to the Airbyte codebase, read along. 
 
 ## Table of Contents
 
@@ -46,4 +46,3 @@ Once this is filled, you will see your connector in the UI and your team will be
 Note that this new connector could just be an updated version of an existing connector that you adapted to your specific edge case. Anything is possible!
 
 ### \*\*\*\*
-
