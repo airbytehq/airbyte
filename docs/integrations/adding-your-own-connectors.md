@@ -27,7 +27,7 @@ It's easy to code your own integrations on Airbyte. Here are some links to instr
 
 * [In Java](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/java-destination/README.md)
 
-Please reach out to us if you'd like help developing integrations in other languages. **Indeed, you are able to create integrations using the language you want, as Airbyte connections run as Docker containers.** We haven't built the documentation for all languages yet, that's all. 
+While the guides above are specific to the languages used most frequently to write integrations, **Airbyte integrations can be written in any language**. Please reach out to us if you'd like help developing integrations in other languages.
 
 ## 3. Adding your connectors in the UI
 
