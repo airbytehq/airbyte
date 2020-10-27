@@ -2,6 +2,16 @@ project.ext.pyModule = 'googleanalytics_singer_source'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/standard-source-test.gradle')
+
+standardSourceTest {
+    ext {
+        imageName = "${extractImageName(project.file('Dockerfile'))}:dev"
+        specPath = 'googleanalytics_singer_source/spec.json'
+        configPath ='secrets/config.json'
+        catalogPath = 'sample_files/catalog.json'
+    }
+}
 
 integrationTest.dependsOn(buildImage)
 buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
