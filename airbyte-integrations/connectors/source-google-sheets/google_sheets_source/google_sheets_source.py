@@ -38,7 +38,6 @@ class GoogleSheetsSource(Source):
     """
     Spreadsheets API Reference: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets
     """
-
     def __init__(self):
         super().__init__()
 

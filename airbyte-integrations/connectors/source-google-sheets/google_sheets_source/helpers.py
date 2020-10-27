@@ -90,7 +90,6 @@ class Helpers(object):
 
     @staticmethod
     def get_first_row(client: discovery.Resource, spreadsheet_id: str, sheet_name: str) -> List[str]:
-        print(client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1").execute())
         spreadsheet = Spreadsheet.parse_obj(
             client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1").execute()
         )
@@ -147,6 +146,11 @@ class Helpers(object):
                     available_sheets_to_column_index_to_name[sheet][idx] = cell_value
                 idx += 1
         return available_sheets_to_column_index_to_name
+
+    @staticmethod
+    def get_sheets_in_spreadsheet(client: discovery.Resource, spreadsheet_id: str):
+        spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False).execute())
+        return [sheet.properties.title for sheet in spreadsheet_metadata.sheets]
 
     @staticmethod
     def is_row_empty(cell_values: Values) -> bool:
