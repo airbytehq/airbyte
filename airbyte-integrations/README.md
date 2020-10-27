@@ -1,8 +1,9 @@
 ### Updating an Integration
-1. Create an integration using the generator:
+1. Create an integration using one of the generator scripts:
 
     ```
-    npm run generate
+    # java destination
+    bin/generate-java-destination.sh
     ```
 
 1. Bump the version in the `Dockerfile` of the integration (`LABEL io.airbyte.version=0.1.0`)
