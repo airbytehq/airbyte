@@ -1,5 +1,9 @@
 project.ext.pyModule = 'csv_source'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
 buildImage.dependsOn ":airbyte-integrations:bases:base-python:buildImage"
+integrationTest.dependsOn(buildImage)
+
+
