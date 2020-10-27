@@ -46,6 +46,7 @@ jobs:
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
           STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
           GH_INTEGRATION_TEST_CREDS: ${{ secrets.GH_INTEGRATION_TEST_CREDS }}
+          SALESFORCE_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_INTEGRATION_TESTS_CREDS }}
 
       - name: Build
         run: ./gradlew --no-daemon build --scan
@@ -53,8 +54,21 @@ jobs:
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
-      - name: Run Integration Tests
+      - name: Run Integration Tests (PR)
+        if: success() && github.ref != 'refs/heads/master'
+        run: ./tools/bin/integration_test_pr.sh
+
+      - name: Run Integration Tests (Master)
+        if: success() && github.ref == 'refs/heads/master'
         run: ./gradlew --no-daemon integrationTest --scan -x generateProtocolClassFiles
+
+      - name: Run Standard Source Tests (PR)
+        if: success() && github.ref != 'refs/heads/master'
+        run: ./tools/bin/standard_test_pr.sh
+
+      - name: Run Standard Source Tests (Master)
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./gradlew --no-daemon standardSourceTest --scan
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
