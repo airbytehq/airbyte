@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 from datetime import datetime
-from typing import Generator
+from typing import Generator, List
 
 import gcsfs
 import pandas as pd
@@ -68,8 +68,8 @@ class FileSource(Source):
         [ssh|scp|sftp]://username:password@host/path/file
     ```
 
-    This reading supports primarily `read_csv` primitive but will be extended to readers of different formats for more
-    potential sources as described below:
+    The source reader currently leverages `read_csv` but will be extended to readers of different formats for
+    more potential sources as described below:
     https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html
     - read_json
     - read_html
@@ -80,18 +80,11 @@ class FileSource(Source):
     - read_pickle
 
     All the options of the pandas readers are exposed to the configuration file of this connector so it is possible to
-    override header names, types, encoding
+    override header names, types, encoding, etc
 
     Note that this implementation is handling `data_url` target as a single file at the moment.
-    We will expand the capabilities to load either glob of multiple files, content of directories, etc in a latter
-    iteration.
-
-    read more:
-    https://gitlab.com/meltano/tap-csv
-    https://github.com/robertjmoore/tap-csv
-    https://gitlab.com/tjb-bnb/tap-csv
-    https://github.com/fishtown-analytics/tap-s3-csv
-    https://github.com/datamill-co/tap-files
+    We will expand the capabilities of this source to discover and load either glob of multiple files,
+    content of directories, etc in a latter iteration.
     """
 
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
@@ -106,7 +99,7 @@ class FileSource(Source):
         data_url = config["data_url"]
         logger.info(f"Checking access to {data_url}...")
         try:
-            self.load_dataframe(config, skip_data=True)
+            self.load_dataframes(config, skip_data=True)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as err:
             reason = f"Failed to load {data_url}: {repr(err)}"
@@ -125,13 +118,17 @@ class FileSource(Source):
         logger.info(f"Discovering schema of {data_url}...")
         streams = []
         try:
-            # TODO handle discovery of directories of files?
+            # TODO handle discovery of directories of multiple files instead
             # Don't skip data when discovering in order to infer column types
-            df = self.load_dataframe(config, skip_data=False)
+            df_list = self.load_dataframes(config, skip_data=False)
+            fields = {}
+            for df in df_list:
+                for col in df.columns:
+                    fields[col] = self.convert_dtype(df[col].dtype)
             json_schema = {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "properties": {field: {"type": self.convert_dtype(df[field].dtype)} for field in df.columns},
+                "properties": {field: {"type": fields[field]} for field in fields},
             }
             streams.append(AirbyteStream(name=data_url, json_schema=json_schema))
         except Exception as err:
@@ -152,29 +149,30 @@ class FileSource(Source):
         data_url = config["data_url"]
         logger.info(f"Reading ({data_url}, {catalog_path}, {state_path})...")
         try:
-            df = self.load_dataframe(config)
+            df_list = self.load_dataframes(config)
             # TODO get subset of columns from catalog
-            for data in df.to_dict(orient="records"):
-                yield AirbyteMessage(
-                    type=Type.RECORD,
-                    record=AirbyteRecordMessage(stream=data_url, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
-                )
+            for df in df_list:
+                for data in df.to_dict(orient="records"):
+                    yield AirbyteMessage(
+                        type=Type.RECORD,
+                        record=AirbyteRecordMessage(stream=data_url, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+                    )
         except Exception as err:
             reason = f"Failed to discover schemas of {data_url}: {repr(err)}"
             logger.error(reason)
             raise err
 
     @staticmethod
-    def load_dataframe(config, skip_data=False) -> pd.DataFrame:
-        """From a Airbyte Configuration file, load and return the pandas
-        dataframe.
+    def load_dataframes(config, skip_data=False) -> List:
+        """From an Airbyte Configuration file, load and return the appropriate pandas dataframe.
 
-        :param skip_data:
+        :param skip_data: limit reading data
         :param config:
-        :return:
+        :return: a list of dataframe loaded from files described in the configuration
         """
         data_url = config["data_url"]
 
+        # default reader
         reader = "read_csv"
         if "reader" in config:
             reader = config["reader"]
@@ -182,33 +180,50 @@ class FileSource(Source):
         reader_arg = {}
         if "reader_arguments" in config:
             reader_arg = config["reader_arguments"]
-        if skip_data:
+        if skip_data and reader == "read_csv":
             reader_arg["nrows"] = 0
             reader_arg["index_col"] = 0
 
         gcs_file = None
+        use_gcs_service_account = "gcs_service_account.json" in config and (data_url.startswith("gcs://") or data_url.startswith("gs://"))
         if "use_smart_open" in config and config["use_smart_open"]:
-            if "gcs_service_account.json" in config and (data_url.startswith("gcs://") or data_url.startswith("gs://")):
+            if use_gcs_service_account:
                 client = Client.from_service_account_json(config["gcs_service_account.json"])
                 data_url = smart_open(data_url, transport_params=dict(client=client))
             else:
                 data_url = smart_open(data_url)
         else:
-            if "gcs_service_account.json" in config and (data_url.startswith("gcs://") or data_url.startswith("gs://")):
+            if use_gcs_service_account:
                 fs = gcsfs.GCSFileSystem(token=config["gcs_service_account.json"])
                 gcs_file = fs.open(data_url)
                 data_url = gcs_file
 
+        result = []
         try:
             if reader == "read_csv":
                 # pandas.read_csv additional arguments can be passed to customize how to parse csv.
                 # see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
-                return pd.read_csv(data_url, **reader_arg)
+                result.append(pd.read_csv(data_url, **reader_arg))
+            elif reader == "read_json":
+                result.append(pd.read_json(data_url, **reader_arg))
+            elif reader == "read_html":
+                result += pd.read_html(data_url, **reader_arg)
+            elif reader == "read_excel":
+                result.append(pd.read_excel(data_url, **reader_arg))
+            elif reader == "read_feather":
+                result.append(pd.read_feather(data_url, **reader_arg))
+            elif reader == "read_parquet":
+                result.append(pd.read_parquet(data_url, **reader_arg))
+            elif reader == "read_orc":
+                result.append(pd.read_orc(data_url, **reader_arg))
+            elif reader == "read_pickle":
+                result.append(pd.read_pickle(data_url, **reader_arg))
             else:
                 raise Exception(f"Reader {reader} is not supported")
         finally:
             if gcs_file:
                 gcs_file.close()
+        return result
 
     @staticmethod
     def convert_dtype(dtype) -> str:
