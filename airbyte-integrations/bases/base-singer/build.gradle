@@ -2,5 +2,7 @@ project.ext.pyModule = 'base_singer'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
+build.dependsOn ':airbyte-integrations:bases:airbyte-protocol:build'
+build.dependsOn ':airbyte-integrations:bases:base-python:build'
 buildImage.dependsOn ':airbyte-integrations:bases:base-python:buildImage'
 
