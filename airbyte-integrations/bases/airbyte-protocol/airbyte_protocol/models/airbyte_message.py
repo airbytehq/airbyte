@@ -34,44 +34,44 @@ from pydantic import AnyUrl, BaseModel, Field
 
 
 class Type(Enum):
-    RECORD = "RECORD"
-    STATE = "STATE"
-    LOG = "LOG"
-    SPEC = "SPEC"
-    CONNECTION_STATUS = "CONNECTION_STATUS"
-    CATALOG = "CATALOG"
+    RECORD = 'RECORD'
+    STATE = 'STATE'
+    LOG = 'LOG'
+    SPEC = 'SPEC'
+    CONNECTION_STATUS = 'CONNECTION_STATUS'
+    CATALOG = 'CATALOG'
 
 
 class AirbyteRecordMessage(BaseModel):
-    stream: str = Field(..., description="the name of the stream for this record")
-    data: Dict[str, Any] = Field(..., description="the record data")
+    stream: str = Field(..., description='the name of the stream for this record')
+    data: Dict[str, Any] = Field(..., description='the record data')
     emitted_at: int = Field(
         ...,
-        description="when the data was emitted from the source. epoch in millisecond.",
+        description='when the data was emitted from the source. epoch in millisecond.',
     )
 
 
 class AirbyteStateMessage(BaseModel):
-    data: Dict[str, Any] = Field(..., description="the state data")
+    data: Dict[str, Any] = Field(..., description='the state data')
 
 
 class Level(Enum):
-    FATAL = "FATAL"
-    ERROR = "ERROR"
-    WARN = "WARN"
-    INFO = "INFO"
-    DEBUG = "DEBUG"
-    TRACE = "TRACE"
+    FATAL = 'FATAL'
+    ERROR = 'ERROR'
+    WARN = 'WARN'
+    INFO = 'INFO'
+    DEBUG = 'DEBUG'
+    TRACE = 'TRACE'
 
 
 class AirbyteLogMessage(BaseModel):
-    level: Level = Field(..., description="the type of logging")
-    message: str = Field(..., description="the log message")
+    level: Level = Field(..., description='the type of logging')
+    message: str = Field(..., description='the log message')
 
 
 class Status(Enum):
-    SUCCEEDED = "SUCCEEDED"
-    FAILED = "FAILED"
+    SUCCEEDED = 'SUCCEEDED'
+    FAILED = 'FAILED'
 
 
 class AirbyteConnectionStatus(BaseModel):
@@ -81,7 +81,9 @@ class AirbyteConnectionStatus(BaseModel):
 
 class AirbyteStream(BaseModel):
     name: str = Field(..., description="Stream's name.")
-    json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
+    json_schema: Dict[str, Any] = Field(
+        ..., description='Stream schema using Json Schema specs.'
+    )
 
 
 class ConnectorSpecification(BaseModel):
@@ -89,7 +91,7 @@ class ConnectorSpecification(BaseModel):
     changelogUrl: Optional[AnyUrl] = None
     connectionSpecification: Dict[str, Any] = Field(
         ...,
-        description="ConnectorDefinition specific blob. Must be a valid JSON string.",
+        description='ConnectorDefinition specific blob. Must be a valid JSON string.',
     )
 
 
@@ -98,19 +100,21 @@ class AirbyteCatalog(BaseModel):
 
 
 class AirbyteMessage(BaseModel):
-    type: Type = Field(..., description="Message type")
+    type: Type = Field(..., description='Message type')
     log: Optional[AirbyteLogMessage] = Field(
         None,
-        description="log message: any kind of logging you want the platform to know about.",
+        description='log message: any kind of logging you want the platform to know about.',
     )
     spec: Optional[ConnectorSpecification] = None
     connectionStatus: Optional[AirbyteConnectionStatus] = None
     catalog: Optional[AirbyteCatalog] = Field(
         None,
-        description="log message: any kind of logging you want the platform to know about.",
+        description='log message: any kind of logging you want the platform to know about.',
     )
-    record: Optional[AirbyteRecordMessage] = Field(None, description="record message: the record")
+    record: Optional[AirbyteRecordMessage] = Field(
+        None, description='record message: the record'
+    )
     state: Optional[AirbyteStateMessage] = Field(
         None,
-        description="schema message: the state. Must be the last message produced. The platform uses this information",
+        description='schema message: the state. Must be the last message produced. The platform uses this information',
     )
