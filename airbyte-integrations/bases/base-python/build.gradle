@@ -1,16 +1,7 @@
 project.ext.pyModule = 'base_python'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/generate-python-models.gradle')
 
-generatePythonModels {
-    ext {
-        inputDir = "airbyte-protocol/models/src/main/resources/airbyte_protocol"
-        outputDir = "airbyte-integrations/bases/base-python/airbyte_protocol/models"
-    }
-}
-assemble.dependsOn generatePythonModels
-buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'
 build.dependsOn ':airbyte-integrations:bases:airbyte-protocol:build'
+buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'
 buildImage.dependsOn ':airbyte-integrations:bases:airbyte-protocol:buildImage'
-rootProject.spotlessPython.dependsOn ':airbyte-integrations:bases:base-python:generatePythonModels'

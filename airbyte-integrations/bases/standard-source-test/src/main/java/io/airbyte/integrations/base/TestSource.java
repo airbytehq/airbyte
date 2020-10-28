@@ -65,6 +65,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class TestSource {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(TestSource.class);
 
   private TestDestinationEnv testEnv;
