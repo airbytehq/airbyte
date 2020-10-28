@@ -1,6 +1,6 @@
 FROM python:3.7-slim
 
-WORKDIR /airbyte/base_python_code
+WORKDIR /airbyte/base_python_structs
 COPY airbyte_protocol ./airbyte_protocol
 COPY setup.py ./
 RUN pip install .

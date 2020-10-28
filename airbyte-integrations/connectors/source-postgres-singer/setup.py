@@ -36,6 +36,7 @@ setup(
         "tap-postgres==0.1.0",
         "pydantic==1.6.1",
         "airbyte-protocol",
+        "base-python",
         "base-singer",
     ],
 )
