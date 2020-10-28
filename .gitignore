@@ -13,3 +13,4 @@ secrets
 __pycache__
 .venv
 .mypy_cache
+.eggs
