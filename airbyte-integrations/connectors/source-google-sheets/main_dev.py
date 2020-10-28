@@ -24,7 +24,7 @@ SOFTWARE.
 
 import sys
 
-from airbyte_protocol.entrypoint import launch
+from base_python.entrypoint import launch
 
 from .google_sheets_source import GoogleSheetsSource
 

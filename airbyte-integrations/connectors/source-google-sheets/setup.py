@@ -35,6 +35,7 @@ setup(
         "google-api-python-client",
         "google-auth-httplib2",
         "airbyte-protocol",
+        "base-python",
         "PyYAML==5.3.1",
         "pydantic==1.6.1",
         "jsonpickle==1.4.1",

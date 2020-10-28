@@ -7,5 +7,3 @@ integrationTest.dependsOn(buildImage)
 build.dependsOn ':airbyte-integrations:bases:base-python:build'
 build.dependsOn ':airbyte-integrations:bases:airbyte-protocol:build'
 buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
-
-

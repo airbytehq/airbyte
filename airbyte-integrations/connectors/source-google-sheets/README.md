@@ -31,7 +31,7 @@ python setup.py test
 
 ## Configure credentials
 ### Configuring credentials as a community contributor
-Follow the instructions in the documentation above for generating credentials to access the Google API, then put those 
+Follow the instructions in the [Google Sheets documentation](https://docs.airbyte.io/integrations/sources/googlesheets) for generating credentials to access the Google API, then put those 
 in a file named `secrets/credentials.json`. 
 
 ### Airbyte Employee
