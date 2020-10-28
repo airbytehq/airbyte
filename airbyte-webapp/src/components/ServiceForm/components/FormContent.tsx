@@ -134,9 +134,16 @@ const FormContent: React.FC<IProps> = ({
       ) : (
         properties?.map(item => {
           const condition = specifications?.properties[item];
+          const isRequired =
+            !condition.default &&
+            !!specifications?.required.find(
+              requiredItem => requiredItem === item
+            );
+
           return (
             <FormItem key={`form-field-${item}`}>
               <PropertyField
+                isRequired={isRequired}
                 condition={condition}
                 property={item}
                 setFieldValue={setFieldValue}

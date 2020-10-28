@@ -16,9 +16,9 @@ const ConstructValidationSchema = (
 
   const getCondition = (propertyKey: string) => {
     const condition = specifications.properties[propertyKey];
-    const isRequired = specifications.required.find(
-      item => item === propertyKey
-    );
+    const isRequired =
+      !specifications.properties[propertyKey].default &&
+      specifications.required.find(item => item === propertyKey);
 
     if (condition.type === "string") {
       if (!!isRequired) {

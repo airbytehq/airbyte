@@ -7,7 +7,10 @@ import FormContent from "./components/FormContent";
 import BottomBlock from "./components/BottomBlock";
 import EditControls from "./components/EditControls";
 import ConstructValidationSchema from "./components/ConstructValidationSchema";
-import { specification } from "../../core/resources/SourceSpecification";
+import {
+  propertiesType,
+  specification
+} from "../../core/resources/SourceSpecification";
 
 type formInitialValues = {
   [key: string]: any;
@@ -63,15 +66,21 @@ const ServiceForm: React.FC<IProps> = ({
     () => ConstructValidationSchema(specifications, properties),
     [specifications, properties]
   );
+  const getFieldValue = (condition: propertiesType) => {
+    if (condition.default) {
+      return condition.default;
+    }
+    if (condition.type === "boolean") {
+      return false;
+    }
+
+    return "";
+  };
   const additionalFields = properties
     ? Object.fromEntries([
         ...properties.map(item => {
           const condition = specifications?.properties[item];
-          const value = formValues
-            ? formValues[item]
-            : condition.type === "boolean"
-            ? false
-            : "";
+          const value = formValues?.[item] || getFieldValue(condition);
           return [item, value];
         })
       ])
