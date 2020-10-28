@@ -1,7 +1,7 @@
 import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
-type propertiesType = {
+export type propertiesType = {
   [key: string]: any;
 };
 
