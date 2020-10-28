@@ -60,7 +60,7 @@ jobs:
 
       - name: Run Integration Tests (Master)
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon integrationTest --scan -x generateProtocolClassFiles
+        run: ./gradlew --no-daemon integrationTest --scan
 
       - name: Run Standard Source Tests (PR)
         if: success() && github.ref != 'refs/heads/master'
@@ -72,7 +72,7 @@ jobs:
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon composeBuild --scan -x generateProtocolClassFiles
+        run: ./gradlew --no-daemon composeBuild --scan
         env:
           GIT_REVISION: ${{ github.sha }}
 
