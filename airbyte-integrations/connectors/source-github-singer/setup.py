@@ -33,7 +33,7 @@ setup(
     package_data={"": ["*.json"]},
     # two sets of dependencies: 1) for main 2) for standard test deps. 2 does not have all of the dependencies of 1, which is we cannot use install_requires.
     extras_require={
-        "main": ["tap-github==1.9.0", "requests", "base_singer", "airbyte_protocol"],
+        "main": ["tap-github==1.9.0", "requests", "base_python", "base_singer"],
         "standardtest": ["airbyte_python_test"],
     },
 )

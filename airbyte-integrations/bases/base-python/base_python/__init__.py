@@ -22,19 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
+from .logger import AirbyteLogger
 
-setup(
-    name="source-exchangeratesapi-singer",
-    description="Source implementation for the exchange rates API.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    install_requires=[
-        "tap-exchangeratesapi==0.1.1",
-        "pydantic==1.6.1",
-        "base_python",
-        "base_singer",
-    ],
-)
+# Must be the last one because the way we load the connector module creates a circular
+# dependency and models might not have been loaded yet
+from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
+
+__all__ = [
+    "AirbyteSpec",
+    "ConfigContainer",
+    "Integration",
+    "Source",
+    "Destination",
+    "AirbyteLogger",
+]

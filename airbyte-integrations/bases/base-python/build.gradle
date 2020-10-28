@@ -1,12 +1,5 @@
-project.ext.pyModule = 'airbyte_protocol'
+project.ext.pyModule = 'base_python'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
-task generateProtocolClassFiles(type: Exec) {
-    environment 'ROOT_DIR', rootDir.absolutePath
-    commandLine 'bin/generate-protocol-files.sh'
-    dependsOn ':airbyte-integrations:bases:base-python:code-generator:buildImage'
-}
-
-assemble.dependsOn generateProtocolClassFiles
 buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'

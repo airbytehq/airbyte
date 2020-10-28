@@ -22,19 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from airbyte_protocol.entrypoint import main
 
-setup(
-    name="source-exchangeratesapi-singer",
-    description="Source implementation for the exchange rates API.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    install_requires=[
-        "tap-exchangeratesapi==0.1.1",
-        "pydantic==1.6.1",
-        "base_python",
-        "base_singer",
-    ],
-)
+if __name__ == "__main__":
+    main()

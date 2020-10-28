@@ -30,5 +30,5 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol"],
+    install_requires=["airbyte-protocol", "base-singer"],
 )

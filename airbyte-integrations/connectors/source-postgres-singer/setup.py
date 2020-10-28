@@ -35,7 +35,7 @@ setup(
         "psycopg2==2.8.4",
         "tap-postgres==0.1.0",
         "pydantic==1.6.1",
+        "base_python",
         "base_singer",
-        "airbyte_protocol",
     ],
 )
