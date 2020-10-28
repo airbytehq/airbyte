@@ -1,1 +1,2 @@
+-e ../airbyte-protocol
 -e .

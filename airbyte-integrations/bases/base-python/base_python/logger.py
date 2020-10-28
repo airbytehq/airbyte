@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .models import AirbyteLogMessage, AirbyteMessage
+from airbyte_protocol import AirbyteLogMessage, AirbyteMessage
 
 
 class AirbyteLogger:

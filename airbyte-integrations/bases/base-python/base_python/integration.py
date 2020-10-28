@@ -27,7 +27,7 @@ import pkgutil
 from dataclasses import dataclass
 from typing import Generator
 
-from .models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification
 
 
 class AirbyteSpec(object):
