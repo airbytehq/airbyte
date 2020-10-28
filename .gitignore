@@ -14,4 +14,4 @@ __pycache__
 .eggs
 .venv
 .mypy_cache
-.eggs
+
