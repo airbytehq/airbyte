@@ -52,7 +52,6 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
 
     def get_config(self) -> object:
         config = {"credentials_json": json.dumps(self._get_creds()), "spreadsheet_id": self._get_spreadsheet_id()}
-        print(config)
         return config
 
     def get_catalog(self) -> AirbyteCatalog:
@@ -111,10 +110,12 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
         rows.append(["orphan1", "orphan2", "orphan3"])
 
         sheets_client.values().batchUpdate(
-            spreadsheetId=spreadsheet_id, body={"data": {"majorDimension": "ROWS", "values": rows, "ranges": "sheet1!1:1"}}
+            spreadsheetId=spreadsheet_id,
+            body={"data": {"majorDimension": "ROWS", "values": rows, "range": "sheet1"}, "valueInputOption": "RAW"},
         ).execute()
         sheets_client.values().batchUpdate(
-            spreadsheetId=spreadsheet_id, body={"data": {"majorDimension": "ROWS", "values": rows, "ranges": "sheet2!1:1"}}
+            spreadsheetId=spreadsheet_id,
+            body={"data": {"majorDimension": "ROWS", "values": rows, "range": "sheet2"}, "valueInputOption": "RAW"},
         ).execute()
 
         return spreadsheet_id

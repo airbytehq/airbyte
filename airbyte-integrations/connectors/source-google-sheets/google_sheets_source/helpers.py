@@ -90,8 +90,7 @@ class Helpers(object):
         spreadsheet = Spreadsheet.parse_obj(
             client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1").execute()
         )
-        print("SPREADSHEET")
-        print(spreadsheet)
+
         # There is only one sheet since we are specifying the sheet in the requested ranges.
         returned_sheets = spreadsheet.sheets
         if len(returned_sheets) != 1:
@@ -136,8 +135,7 @@ class Helpers(object):
         client: discovery.Resource, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
-        print("available sheets")
-        print(available_sheets)
+
         available_sheets_to_column_index_to_name = defaultdict(dict)
         for sheet, columns in requested_sheets_and_columns.items():
             if sheet in available_sheets:

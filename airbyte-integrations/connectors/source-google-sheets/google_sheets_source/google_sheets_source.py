@@ -88,8 +88,7 @@ class GoogleSheetsSource(Source):
         client = Helpers.get_authenticated_sheets_client(json.loads(config["credentials_json"]))
 
         catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
-        print("input catalog")
-        print(catalog)
+
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = config["spreadsheet_id"]
 
@@ -120,7 +119,6 @@ class GoogleSheetsSource(Source):
                     break
 
                 for row in row_values:
-                    print(row)
                     if Helpers.is_row_empty(row):
                         encountered_blank_row = True
                         break
