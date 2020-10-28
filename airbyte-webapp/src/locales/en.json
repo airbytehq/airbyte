@@ -59,7 +59,7 @@
   "form.credentials_json": "Credentials JSON",
   "form.disable_collection": "Disable Collection",
   "form.replication_method": "Replication Method",
-  "form.validationError": "The received form did not pass validation",
+  "form.validationError": "Could not connect with provided credentials",
   "form.someError": "Sorry. Something went wrong... ",
   "form.changesSaved": "Your changes were saved!",
   "form.savedChange": "Change saved!",
