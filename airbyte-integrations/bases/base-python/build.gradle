@@ -2,4 +2,5 @@ project.ext.pyModule = 'base_python'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
+build.dependsOn ':airbyte-integrations:bases:airbyte-protocol:build'
 buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'
