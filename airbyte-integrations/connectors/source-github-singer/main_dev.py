@@ -23,8 +23,8 @@ SOFTWARE.
 """
 
 import sys
-from airbyte_protocol.entrypoint import launch
 
+from airbyte_protocol.entrypoint import launch
 from source_github_singer import SourceGithubSinger
 
 if __name__ == "__main__":

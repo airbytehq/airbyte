@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import os
+
 from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
 from .logger import AirbyteLogger
 from .models import (
@@ -37,9 +39,13 @@ from .models import (
     Type,
 )
 
-# Must be the last one because the way we load the connector module creates a circular
-# dependency and models might not have been loaded yet
-from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
+# todo (cgardens) - hack so that standard test library can depend on the airbyte protocol structs. without this, invoking this class tries to run the entrypoint.
+# issue: https://github.com/airbytehq/airbyte/issues/718
+test_case = os.environ.get("AIRBYTE_TEST_CASE")
+if not test_case:
+    # Must be the last one because the way we load the connector module creates a circular
+    # dependency and models might not have been loaded yet
+    from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
 
 __all__ = [
     "AirbyteSpec",
