@@ -13,9 +13,12 @@ LABEL io.airbyte.version=0.1.0
 LABEL io.airbyte.name=airbyte/source-github-singer-standard-test
 
 WORKDIR /airbyte/integration_code
+
+# copy all resources to the code path.
 COPY secrets ./$CODE_PATH
 COPY source_github_singer/*.json ./$CODE_PATH
-COPY $CODE_PATH ./$CODE_PATH
+COPY standardtestresources ./$CODE_PATH
+
 COPY setup.py ./
 RUN pip install ".[standardtest]"
 
