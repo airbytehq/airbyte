@@ -34,7 +34,7 @@ setup(
     install_requires=[
         "tap-exchangeratesapi==0.1.1",
         "pydantic==1.6.1",
-        "base_python",
-        "base_singer",
+        "base-python",
+        "base-singer",
     ],
 )
