@@ -25,7 +25,8 @@ SOFTWARE.
 from typing import Generator
 
 import psycopg2
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfigContainer, Status
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, Status
+from base_python import ConfigContainer
 from base_singer import SingerSource
 
 TAP_CMD = "PGCLIENTENCODING=UTF8 tap-postgres"

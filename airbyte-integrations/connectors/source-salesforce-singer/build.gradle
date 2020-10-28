@@ -20,5 +20,6 @@ dependencies {
 //    }
 //}
 
+build.dependsOn ':airbyte-integrations:bases:base-singer:build'
 buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
 integrationTest.dependsOn(buildImage)
