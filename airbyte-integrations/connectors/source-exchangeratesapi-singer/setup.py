@@ -34,7 +34,7 @@ setup(
     install_requires=[
         "tap-exchangeratesapi==0.1.1",
         "pydantic==1.6.1",
-        "base-python",
+        "airbyte-protocol",
         "base-singer",
     ],
 )
