@@ -1,11 +1,11 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/template-python-source",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/file-source",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Csv source Spec",
+    "title": "File source Spec",
     "type": "object",
     "required": ["data_url"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "data_url": {
         "type": "string",
@@ -13,11 +13,11 @@
       },
       "reader": {
         "type": "string",
-        "description": "The reader from pandas library to use"
+        "description": "Which reader to use for parsing the file format (csv, json, parquet, etc)"
       },
       "reader_arguments": {
         "type": "object",
-        "description": "The reader arguments from pandas library to use"
+        "description": "Extra arguments to provide to the reader"
       }
     }
   }

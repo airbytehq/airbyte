@@ -79,7 +79,7 @@ class FileSource(Source):
     - read_orc
     - read_pickle
 
-    All the options of the pandas readers are exposed to the configuration file of this connector so it is possible to
+    All the options of the readers are exposed to the configuration file of this connector so it is possible to
     override header names, types, encoding, etc
 
     Note that this implementation is handling `data_url` target as a single file at the moment.
@@ -173,7 +173,7 @@ class FileSource(Source):
         data_url = config["data_url"]
 
         # default reader
-        reader = "read_csv"
+        reader = "csv"
         if "reader" in config:
             reader = config["reader"]
 
@@ -200,23 +200,23 @@ class FileSource(Source):
 
         result = []
         try:
-            if reader == "read_csv":
+            if reader == "csv":
                 # pandas.read_csv additional arguments can be passed to customize how to parse csv.
                 # see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
                 result.append(pd.read_csv(data_url, **reader_arg))
-            elif reader == "read_json":
+            elif reader == "json":
                 result.append(pd.read_json(data_url, **reader_arg))
-            elif reader == "read_html":
+            elif reader == "html":
                 result += pd.read_html(data_url, **reader_arg)
-            elif reader == "read_excel":
+            elif reader == "excel":
                 result.append(pd.read_excel(data_url, **reader_arg))
-            elif reader == "read_feather":
+            elif reader == "feather":
                 result.append(pd.read_feather(data_url, **reader_arg))
-            elif reader == "read_parquet":
+            elif reader == "parquet":
                 result.append(pd.read_parquet(data_url, **reader_arg))
-            elif reader == "read_orc":
+            elif reader == "orc":
                 result.append(pd.read_orc(data_url, **reader_arg))
-            elif reader == "read_pickle":
+            elif reader == "pickle":
                 result.append(pd.read_pickle(data_url, **reader_arg))
             else:
                 raise Exception(f"Reader {reader} is not supported")

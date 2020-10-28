@@ -9,7 +9,7 @@
   "gcs_service_account.json": "/home/user/Software/chris-qubes-work_service_account.json",
 
   "use_smart_open": false,
-  "reader": "read_csv",
+  "reader": "csv",
 
   "reader_arguments": {
     "sep": ";"
