@@ -72,7 +72,7 @@ spotless {
     }
     python {
         target '**/*.py'
-        targetExclude "**/build/**/*", "**/.gradle/**/*", "**/.venv/**/*"
+        targetExclude "**/build/**/*", "**/.gradle/**/*", "**/.venv/**/*", "**/.eggs/**/*"
         licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|# generated)'
     }
     format 'styling', {
