@@ -17,7 +17,7 @@ dependencies {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.base.TestSourceMain'
+    mainClass = 'io.airbyte.integrations.base.TestPythonSourceMain'
 }
 
 buildImage.dependsOn(assemble)

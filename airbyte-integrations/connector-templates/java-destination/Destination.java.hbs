@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.template;
+package io.airbyte.integrations.destination.{{snakeCase name}};
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
@@ -38,9 +38,9 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DestinationTemplate implements Destination {
+public class {{properCase name}}Destination implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationTemplate.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger({{properCase name}}Destination.class);
 
   // fixme - implement this method such that it returns the specification for the integration.
   // suggestion 1: save the jsonschema of the spec spec as a resource and just load it from disk.
@@ -93,13 +93,11 @@ public class DestinationTemplate implements Destination {
   }
 
   public static void main(String[] args) throws Exception {
-    // fixme - instantiate your implementation of the Destination interface and pass it to
-    // IntegrationRunner.
-    final Destination destination = new DestinationTemplate();
+    final Destination destination = new {{properCase name}}Destination();
     // this is airbyte's entrypoint into the integration. do not remove this line!
-    LOGGER.info("starting destination: {}", DestinationTemplate.class);
+    LOGGER.info("starting destination: {}", {{properCase name}}Destination.class);
     new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", DestinationTemplate.class);
+    LOGGER.info("completed destination: {}", {{properCase name}}Destination.class);
   }
 
 }

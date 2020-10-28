@@ -34,7 +34,7 @@ class SourceGithubSinger(SingerSource):
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
         try:
             json_config = config_container.rendered_config
-            r = requests.get('https://api.github.com/repos/airbytehq/airbyte/commits', auth=(json_config['access_token'], ''))
+            r = requests.get("https://api.github.com/repos/airbytehq/airbyte/commits", auth=(json_config["access_token"], ""))
             if r.status_code == 200:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:

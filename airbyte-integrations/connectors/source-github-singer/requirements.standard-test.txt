@@ -1,0 +1,2 @@
+-e ../../bases/base-python-test
+-e .
