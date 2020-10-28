@@ -22,21 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
+from .logger import AirbyteLogger
 
-setup(
-    name="postgres-singer-source",
-    description="Postgres Singer source",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    install_requires=[
-        "psycopg2==2.8.4",
-        "tap-postgres==0.1.0",
-        "pydantic==1.6.1",
-        "airbyte-protocol",
-        "base-python",
-        "base-singer",
-    ],
-)
+# Must be the last one because the way we load the connector module creates a circular
+# dependency and models might not have been loaded yet
+from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
+
+__all__ = [
+    "AirbyteSpec",
+    "ConfigContainer",
+    "Integration",
+    "Source",
+    "Destination",
+    "AirbyteLogger",
+]

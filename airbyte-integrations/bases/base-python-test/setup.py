@@ -31,7 +31,7 @@ setuptools.setup(
     author_email="contact@airbyte.io",
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
-    install_requires=["airbyte_protocol"],
+    install_requires=["airbyte-protocol"],
     entry_points={
         "console_scripts": ["airbyte-python-test=base_python_test.standard_test:main"],
     },
