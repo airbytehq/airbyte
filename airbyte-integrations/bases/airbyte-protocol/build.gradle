@@ -2,13 +2,11 @@ project.ext.pyModule = 'airbyte_protocol'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
-task generateProtocolClassFilesWithoutLicense(type: Exec) {
+task generateProtocolClassFiles(type: Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/generate-protocol-files.sh'
-    dependsOn ':airbyte-integrations:bases:airbyte-protocol:code-generator:buildImage'
+    dependsOn [':airbyte-integrations:bases:airbyte-protocol:code-generator:buildImage', rootProject.spotlessPythonApply]
 }
 
-task generateProtocolClassFiles(dependsOn: [generateProtocolClassFilesWithoutLicense, rootProject.spotlessPythonApply])
-rootProject.spotlessPythonApply.mustRunAfter(generateProtocolClassFilesWithoutLicense)
-
+rootProject.spotlessPythonApply.mustRunAfter generateProtocolClassFiles
 assemble.dependsOn generateProtocolClassFiles
