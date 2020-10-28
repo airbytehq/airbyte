@@ -1,0 +1,7 @@
+{
+  "data_url": "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv",
+  "reader": "csv",
+  "reader_arguments": {
+    "nrows": 20
+  }
+}

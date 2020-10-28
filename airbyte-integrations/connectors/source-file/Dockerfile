@@ -10,6 +10,6 @@ LABEL io.airbyte.name=airbyte/source-file
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
-RUN pip install .
+RUN pip install ".[main]"
 
 WORKDIR /airbyte

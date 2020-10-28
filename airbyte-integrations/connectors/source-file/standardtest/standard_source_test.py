@@ -22,18 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import json
+import pkgutil
 
-setup(
-    name="source_file",
-    description="Source implementation for Files",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    # install_requires=["airbyte-protocol", "gcsfs", "google-cloud-storage", "pandas>=0.24.1", "smart_open"],
-    extras_require={
-        "main": ["airbyte-protocol", "gcsfs", "google-cloud-storage", "pandas>=0.24.1", "s3fs", "smart_open"],
-        "standardtest": ["airbyte_python_test"],
-    },
-)
+from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from base_python_test import StandardSourceTestIface
+
+
+class FileStandardSourceTest(StandardSourceTestIface):
+    def get_spec(self) -> ConnectorSpecification:
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
+        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
+
+    def get_config(self) -> object:
+        return json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json"))
+
+    def get_catalog(self) -> AirbyteCatalog:
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
+        return AirbyteCatalog.parse_obj(json.loads(raw_spec))
+
+    def setup(self) -> None:
+        pass
+
+    def teardown(self) -> None:
+        pass

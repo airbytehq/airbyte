@@ -22,18 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from .standard_source_test import FileStandardSourceTest
 
-setup(
-    name="source_file",
-    description="Source implementation for Files",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    # install_requires=["airbyte-protocol", "gcsfs", "google-cloud-storage", "pandas>=0.24.1", "smart_open"],
-    extras_require={
-        "main": ["airbyte-protocol", "gcsfs", "google-cloud-storage", "pandas>=0.24.1", "s3fs", "smart_open"],
-        "standardtest": ["airbyte_python_test"],
-    },
-)
+__all__ = ["FileStandardSourceTest"]
