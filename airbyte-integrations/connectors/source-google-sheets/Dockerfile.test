@@ -15,6 +15,7 @@ LABEL io.airbyte.name=airbyte/source-google-sheets-standard-test
 WORKDIR /airbyte/integration_code
 COPY . .
 COPY secrets/* ./integration_tests/
+COPY google_sheets_source/*.json ./integration_tests/
 RUN pip install ".[standardtest]"
 
 WORKDIR /airbyte

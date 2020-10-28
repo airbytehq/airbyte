@@ -32,11 +32,13 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerUtils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +53,8 @@ public class PythonTestSource extends TestSource {
 
   public static String IMAGE_NAME;
   public static String PYTHON_CONTAINER_NAME;
+
+  private Path testRoot;
 
   @Override
   protected String getImageName() {
@@ -74,7 +78,7 @@ public class PythonTestSource extends TestSource {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    LOGGER.info("SETTING UP");
+    testRoot = Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), "pytest");
     runExecutableVoid(Command.SETUP);
   }
 
@@ -92,20 +96,19 @@ public class PythonTestSource extends TestSource {
     TEARDOWN
   }
 
-  private static <T> T runExecutable(Command cmd, Class<T> klass) throws IOException {
+  private <T> T runExecutable(Command cmd, Class<T> klass) throws IOException {
     return Jsons.object(runExecutable(cmd), klass);
   }
 
-  private static JsonNode runExecutable(Command cmd) throws IOException {
+  private JsonNode runExecutable(Command cmd) throws IOException {
     return Jsons.deserialize(IOs.readFile(runExecutableInternal(cmd), OUTPUT_FILENAME));
   }
 
-  private static void runExecutableVoid(Command cmd) throws IOException {
+  private void runExecutableVoid(Command cmd) throws IOException {
     runExecutableInternal(cmd);
   }
 
-  private static Path runExecutableInternal(Command cmd) throws IOException {
-    final Path testRoot = Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), cmd.toString().toLowerCase());
+  private Path runExecutableInternal(Command cmd) throws IOException {
     LOGGER.info("testRoot = " + testRoot);
     final List<String> dockerCmd =
         Lists.newArrayList(

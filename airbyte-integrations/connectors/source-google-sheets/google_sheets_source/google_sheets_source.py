@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
 from typing import Generator
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteLogger, AirbyteMessage, Source, Status, Type
@@ -45,7 +46,7 @@ class GoogleSheetsSource(Source):
     def check(self, logger: AirbyteLogger, config_container) -> AirbyteConnectionStatus:
         # Check involves verifying that the specified spreadsheet is reachable with our credentials.
         config = config_container.rendered_config
-        client = Helpers.get_authenticated_sheets_client(config["credentials_json"])
+        client = Helpers.get_authenticated_sheets_client(json.loads(config["credentials_json"]))
         spreadsheet_id = config["spreadsheet_id"]
         try:
             # Attempt to get first row of sheet
@@ -63,7 +64,7 @@ class GoogleSheetsSource(Source):
 
     def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
         config = config_container.rendered_config
-        client = Helpers.get_authenticated_sheets_client(config["credentials_json"])
+        client = Helpers.get_authenticated_sheets_client(json.loads(config["credentials_json"]))
         spreadsheet_id = config["spreadsheet_id"]
         try:
             logger.info(f"Running discovery on sheet {spreadsheet_id}")
@@ -84,9 +85,11 @@ class GoogleSheetsSource(Source):
 
     def read(self, logger: AirbyteLogger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         config = config_container.rendered_config
-        client = Helpers.get_authenticated_sheets_client(config["credentials_json"])
+        client = Helpers.get_authenticated_sheets_client(json.loads(config["credentials_json"]))
 
         catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        print("input catalog")
+        print(catalog)
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = config["spreadsheet_id"]
 

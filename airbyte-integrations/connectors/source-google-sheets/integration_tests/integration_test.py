@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import json
-import os
 import pkgutil
 import shutil
 from pathlib import Path
@@ -49,7 +48,6 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
 
     def get_spec(self) -> ConnectorSpecification:
         raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
-        print(raw_spec)
         return ConnectorSpecification.parse_obj(json.loads(raw_spec))
 
     def get_config(self) -> object:
@@ -59,7 +57,6 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
 
     def get_catalog(self) -> AirbyteCatalog:
         raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
-        print(raw_catalog)
         return AirbyteCatalog.parse_obj(json.loads(raw_catalog))
 
     def setup(self) -> None:
@@ -68,7 +65,6 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
         sheets_client = Helpers.get_authenticated_sheets_client(self._get_creds(), SCOPES)
         spreadsheet_id = GoogleSheetsSourceStandardTest._create_spreadsheet(sheets_client)
         self._write_spreadsheet_id(spreadsheet_id)
-        print(self._get_spreadsheet_id())
 
     def teardown(self) -> None:
         drive_client = Helpers.get_authenticated_drive_client(self._get_creds(), SCOPES)
@@ -81,7 +77,6 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
     def _write_spreadsheet_id(self, spreadsheet_id: str):
         with open(self._get_spreadsheet_id_file_path(), "w") as file:
             file.write(spreadsheet_id)
-        print(f"spreadsheet_id: {self._get_spreadsheet_id()}")
 
     def _get_spreadsheet_id(self):
         with open(self._get_spreadsheet_id_file_path(), "r") as file:
@@ -93,7 +88,7 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
     # TODO this should be provided by the super class
     @staticmethod
     def _get_tmp_dir():
-        return os.getcwd()
+        return "/test_root/gsheet_test"
 
     @staticmethod
     def _create_spreadsheet(sheets_client: discovery.Resource) -> str:
@@ -117,9 +112,9 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
 
         sheets_client.values().batchUpdate(
             spreadsheetId=spreadsheet_id, body={"data": {"majorDimension": "ROWS", "values": rows, "ranges": "sheet1!1:1"}}
-        )
+        ).execute()
         sheets_client.values().batchUpdate(
             spreadsheetId=spreadsheet_id, body={"data": {"majorDimension": "ROWS", "values": rows, "ranges": "sheet2!1:1"}}
-        )
+        ).execute()
 
         return spreadsheet_id
