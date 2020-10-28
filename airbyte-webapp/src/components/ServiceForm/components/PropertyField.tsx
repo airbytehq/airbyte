@@ -1,6 +1,6 @@
+import React, { useCallback } from "react";
 import { Field, FieldProps } from "formik";
 import { FormattedHTMLMessage, FormattedMessage, useIntl } from "react-intl";
-import React from "react";
 
 import LabeledInput from "../../LabeledInput";
 import LabeledDropDown from "../../LabeledDropDown";
@@ -8,7 +8,7 @@ import { propertiesType } from "../../../core/resources/SourceSpecification";
 import LabeledToggle from "../../LabeledToggle";
 
 type IProps = {
-  condition?: propertiesType;
+  condition: propertiesType;
   property: string;
   setFieldValue: (field: string, value: string) => void;
 };
@@ -20,7 +20,12 @@ const PropertyField: React.FC<IProps> = ({
 }) => {
   const formatMessage = useIntl().formatMessage;
 
-  if (condition?.type === "boolean") {
+  const onSetValue = useCallback(
+    selectedItem => setFieldValue(property, selectedItem.value),
+    [property, setFieldValue]
+  );
+
+  if (condition.type === "boolean") {
     return (
       <Field name={property}>
         {({ field }: FieldProps<string>) => (
@@ -37,26 +42,24 @@ const PropertyField: React.FC<IProps> = ({
             message={
               <FormattedHTMLMessage
                 id="1"
-                defaultMessage={condition?.description}
+                defaultMessage={condition.description}
               />
             }
-            placeholder={
-              condition?.examples?.length ? condition?.examples[0] : ""
-            }
+            placeholder={condition.examples?.[0]}
           />
         )}
       </Field>
     );
   }
 
-  if (condition?.enum) {
+  if (condition.enum) {
     return (
       <Field name={property}>
         {({ field }: FieldProps<string>) => (
           <LabeledDropDown
             {...field}
             label={
-              condition?.title || (
+              condition.title || (
                 <FormattedMessage
                   id={`form.${property}`}
                   defaultMessage={property}
@@ -64,26 +67,22 @@ const PropertyField: React.FC<IProps> = ({
               )
             }
             message={
-              condition?.description ? (
+              condition.description ? (
                 <FormattedHTMLMessage
                   id="1"
-                  defaultMessage={condition?.description}
+                  defaultMessage={condition.description}
                 />
               ) : null
             }
-            placeholder={
-              condition?.examples?.length ? condition?.examples[0] : ""
-            }
+            placeholder={condition.examples?.[0]}
             filterPlaceholder={formatMessage({
               id: "form.searchName"
             })}
-            data={condition?.enum.map((dataItem: string) => ({
+            data={condition.enum.map((dataItem: string) => ({
               text: dataItem,
               value: dataItem
             }))}
-            onSelect={selectedItem => {
-              setFieldValue(property, selectedItem.value);
-            }}
+            onSelect={onSetValue}
           />
         )}
       </Field>
@@ -97,7 +96,7 @@ const PropertyField: React.FC<IProps> = ({
           {...field}
           autoComplete="off"
           label={
-            condition?.title || (
+            condition.title || (
               <FormattedMessage
                 id={`form.${property}`}
                 defaultMessage={property}
@@ -105,17 +104,15 @@ const PropertyField: React.FC<IProps> = ({
             )
           }
           message={
-            condition?.description ? (
+            condition.description ? (
               <FormattedHTMLMessage
                 id="1"
-                defaultMessage={condition?.description}
+                defaultMessage={condition.description}
               />
             ) : null
           }
-          placeholder={
-            condition?.examples?.length ? condition?.examples[0] : ""
-          }
-          type={condition?.type === "integer" ? "number" : "text"}
+          placeholder={condition.examples?.[0]}
+          type={condition.type === "integer" ? "number" : "text"}
         />
       )}
     </Field>

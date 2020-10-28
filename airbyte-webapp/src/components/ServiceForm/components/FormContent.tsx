@@ -17,7 +17,7 @@ type IProps = {
   isLoadSchema?: boolean;
   allowChangeConnector?: boolean;
   dropDownData: Array<IDataItem>;
-  setFieldValue: (item: any, value: any) => void;
+  setFieldValue: (item: string, value: string) => void;
   onDropDownSelect?: (id: string) => void;
   formType: "source" | "destination" | "connection";
   values: { name: string; serviceType: string; frequency?: string };
