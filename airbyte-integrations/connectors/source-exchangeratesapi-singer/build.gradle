@@ -14,4 +14,5 @@ dependencies {
 }
 
 integrationTest.dependsOn(buildImage)
+build.dependsOn ':airbyte-integrations:bases:base-singer:build'
 buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
