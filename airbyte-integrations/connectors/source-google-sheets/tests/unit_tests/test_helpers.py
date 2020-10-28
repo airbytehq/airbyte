@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import Mock
 
 from google_sheets_source.helpers import Helpers
-from google_sheets_source.models import Values, RowData, CellData, Spreadsheet, Sheet, GridData, SheetProperties
+from google_sheets_source.models import RowData, CellData, Spreadsheet, Sheet, GridData, SheetProperties
 from airbyte_protocol import AirbyteCatalog, AirbyteStream, AirbyteRecordMessage
 
 
@@ -48,22 +48,22 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(expected_stream, actual_stream)
 
     def test_is_row_empty_with_empty_row(self):
-        values = Values(__root__=[" ", "", "     "])
+        values = [" ", "", "     "]
 
         self.assertTrue(Helpers.is_row_empty(values))
 
     def test_is_row_empty_with_full_row(self):
-        values = Values(__root__=[" ", "", "     ", "somevaluehere"])
+        values = [" ", "", "     ", "somevaluehere"]
 
         self.assertFalse(Helpers.is_row_empty(values))
 
     def test_row_contains_relevant_data(self):
-        values = Values(__root__=["c1", "c2", "c3"])
+        values = ["c1", "c2", "c3"]
         relevant_indices = [2]
         self.assertTrue(Helpers.row_contains_relevant_data(values, relevant_indices))
 
     def test_row_contains_relevant_data_is_false(self):
-        values = Values(__root__=["", "", "c3"])
+        values = ["", "", "c3"]
         relevant_indices = [0, 1]
         self.assertFalse(Helpers.row_contains_relevant_data(values, relevant_indices))
 
@@ -87,7 +87,7 @@ class TestHelpers(unittest.TestCase):
 
     def test_row_data_to_record_message(self):
         sheet = "my_sheet"
-        cell_values = Values(__root__=["v1", "v2", "v3", "v4"])
+        cell_values = ["v1", "v2", "v3", "v4"]
         column_index_to_name = {0: "c1", 3: "c4"}
 
         actual = Helpers.row_data_to_record_message(sheet, cell_values, column_index_to_name)

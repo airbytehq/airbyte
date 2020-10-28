@@ -37,6 +37,7 @@ setup(
         "airbyte_protocol",
         "PyYAML==5.3.1",
         "pydantic==1.6.1",
+        "jsonpickle==1.4.1"
     ],
     setup_requires=["pytest-runner"],
     tests_require=["pytest", "google_sheets_source"],

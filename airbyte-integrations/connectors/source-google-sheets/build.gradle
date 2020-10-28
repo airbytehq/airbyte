@@ -6,17 +6,7 @@ project.ext.pyModule = 'google_sheets_source'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/generate-python-models.gradle')
 
-generatePythonModels {
-    def relativeProjectDir = "${rootDir.relativePath(projectDir)}"
-    ext {
-        inputDir = "${relativeProjectDir}/google_sheets_source/models/definitions/"
-        outputDir = "${relativeProjectDir}/google_sheets_source/models/"
-    }
-}
-
-assemble.dependsOn(generatePythonModels)
 buildImage.dependsOn ":airbyte-integrations:bases:base-python:buildImage"
 integrationTest.dependsOn(buildImage)
 

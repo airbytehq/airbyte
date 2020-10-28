@@ -32,7 +32,6 @@ from apiclient import discovery
 from google.oauth2 import service_account
 
 from .models.spreadsheet import RowData, Spreadsheet
-from .models.spreadsheet_values import Values
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
 
@@ -121,13 +120,13 @@ class Helpers(object):
         return sheet_to_column_name
 
     @staticmethod
-    def row_data_to_record_message(sheet_name: str, cell_values: Values, column_index_to_name: Dict[int, str]) -> AirbyteRecordMessage:
+    def row_data_to_record_message(sheet_name: str, cell_values: List[str], column_index_to_name: Dict[int, str]) -> AirbyteRecordMessage:
         data = {}
         for relevant_index in sorted(column_index_to_name.keys()):
-            if relevant_index >= len(cell_values.__root__):
+            if relevant_index >= len(cell_values):
                 break
 
-            cell_value = cell_values.__root__[relevant_index]
+            cell_value = cell_values[relevant_index]
             if cell_value.strip() != "":
                 data[column_index_to_name[relevant_index]] = cell_value
 
@@ -156,15 +155,15 @@ class Helpers(object):
         return [sheet.properties.title for sheet in spreadsheet_metadata.sheets]
 
     @staticmethod
-    def is_row_empty(cell_values: Values) -> bool:
-        for cell in cell_values.__root__:
+    def is_row_empty(cell_values: List[str]) -> bool:
+        for cell in cell_values:
             if cell.strip() != "":
                 return False
         return True
 
     @staticmethod
-    def row_contains_relevant_data(cell_values: Values, relevant_indices: Iterable[int]) -> bool:
+    def row_contains_relevant_data(cell_values: List[str], relevant_indices: Iterable[int]) -> bool:
         for idx in relevant_indices:
-            if len(cell_values.__root__) > idx and cell_values.__root__[idx].strip() != "":
+            if len(cell_values) > idx and cell_values[idx].strip() != "":
                 return True
         return False

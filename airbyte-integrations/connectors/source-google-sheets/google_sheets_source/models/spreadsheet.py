@@ -56,5 +56,5 @@ class Spreadsheet(BaseModel):
         extra = Extra.allow
 
     spreadsheetId: str
-    sheets: List[Sheet] = Field(..., description='Array of Sheet objects')
+    sheets: List[Sheet]
     properties: Optional[SpreadsheetProperties] = None
