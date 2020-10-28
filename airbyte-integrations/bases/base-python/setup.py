@@ -34,6 +34,6 @@ setuptools.setup(
     package_data={"": ["models/yaml/*.yaml"]},
     install_requires=["PyYAML==5.3.1", "pydantic==1.6.1", "airbyte-protocol"],
     entry_points={
-        "console_scripts": ["base-python=airbyte_protocol.entrypoint:main"],
+        "console_scripts": ["base-python=base_python.entrypoint:main"],
     },
 )
