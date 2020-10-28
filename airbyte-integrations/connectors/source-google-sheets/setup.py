@@ -41,7 +41,7 @@ setup(
     ],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
-    tests_require=["pytest", "google_sheets_source"],
+    tests_require=["pytest"],
     extras_require={
         "standardtest": ["airbyte_python_test"],
     },
