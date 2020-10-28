@@ -8,7 +8,7 @@ task generateProtocolClassFilesWithoutLicense(type: Exec) {
     dependsOn ':airbyte-integrations:bases:airbyte-protocol:code-generator:buildImage'
 }
 
-task generateProtocolClassFiles(dependsOn: [generateProtocolClassFilesWithoutLicense, rootProject.spotlessPythonApply])
-rootProject.spotlessPythonApply.mustRunAfter(generateProtocolClassFilesWithoutLicense)
+task generateProtocolClassFiles(dependsOn: [generateProtocolClassFilesWithoutLicense, rootProject.spotlessPython])
+rootProject.spotlessPython.mustRunAfter(generateProtocolClassFilesWithoutLicense)
 
-assemble.dependsOn generateProtocolClassFiles
+rootProject.build.dependsOn generateProtocolClassFiles
