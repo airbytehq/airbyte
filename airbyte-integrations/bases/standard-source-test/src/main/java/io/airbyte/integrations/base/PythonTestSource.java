@@ -74,11 +74,13 @@ public class PythonTestSource extends TestSource {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
+    LOGGER.info("SETTING UP");
     runExecutableVoid(Command.SETUP);
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+    LOGGER.info("TEARING DOWN");
     runExecutableVoid(Command.TEARDOWN);
   }
 

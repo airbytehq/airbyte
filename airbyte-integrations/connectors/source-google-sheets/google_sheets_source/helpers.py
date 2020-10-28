@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List
@@ -38,19 +37,18 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.
 
 class Helpers(object):
     @staticmethod
-    def get_authenticated_sheets_client(config, scopes=SCOPES) -> discovery.Resource:
-        creds = Helpers.get_authenticated_google_credentials(config, scopes)
+    def get_authenticated_sheets_client(credentials: Dict[str, str], scopes=SCOPES) -> discovery.Resource:
+        creds = Helpers.get_authenticated_google_credentials(credentials, scopes)
         return discovery.build("sheets", "v4", credentials=creds).spreadsheets()
 
     @staticmethod
-    def get_authenticated_drive_client(config, scopes=SCOPES) -> discovery.Resource:
-        creds = Helpers.get_authenticated_google_credentials(config, scopes)
+    def get_authenticated_drive_client(credentials: Dict[str, str], scopes=SCOPES) -> discovery.Resource:
+        creds = Helpers.get_authenticated_google_credentials(credentials, scopes)
         return discovery.build("drive", "v3", credentials=creds)
 
     @staticmethod
-    def get_authenticated_google_credentials(config, scopes=SCOPES):
-        creds_json = json.loads(config["credentials_json"])
-        return service_account.Credentials.from_service_account_info(creds_json, scopes=scopes)
+    def get_authenticated_google_credentials(credentials: Dict[str, str], scopes=SCOPES):
+        return service_account.Credentials.from_service_account_info(credentials, scopes=scopes)
 
     @staticmethod
     def headers_to_airbyte_stream(sheet_name: str, header_row_values: List[str]) -> AirbyteStream:
@@ -134,7 +132,7 @@ class Helpers(object):
 
     @staticmethod
     def get_available_sheets_to_column_index_to_name(
-            client: discovery.Resource, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
+        client: discovery.Resource, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
         available_sheets_to_column_index_to_name = defaultdict(dict)

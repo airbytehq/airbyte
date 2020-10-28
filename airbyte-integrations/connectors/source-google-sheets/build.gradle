@@ -4,10 +4,20 @@ plugins {
 
 project.ext.pyModule = 'google_sheets_source'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/test-image.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/standard-source-test-python.gradle')
 
-buildImage.dependsOn ":airbyte-integrations:bases:base-python:buildImage"
+
+standardSourceTestPython {
+    ext {
+        imageName = "${extractImageName(project.file('Dockerfile'))}:dev"
+        pythonContainerName = "${extractImageName(project.file('Dockerfile.test'))}:dev"
+    }
+}
+
+buildTestImage.dependsOn ':airbyte-integrations:bases:base-python-test:buildImage'
+buildImage.dependsOn ':airbyte-integrations:bases:base-python:buildImage'
+standardSourceTestPython.dependsOn(buildTestImage)
 integrationTest.dependsOn(buildImage)
-
-

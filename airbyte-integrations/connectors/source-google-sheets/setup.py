@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="google_sheets_source",
@@ -37,8 +37,12 @@ setup(
         "airbyte_protocol",
         "PyYAML==5.3.1",
         "pydantic==1.6.1",
-        "jsonpickle==1.4.1"
+        "jsonpickle==1.4.1",
     ],
+    package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest", "google_sheets_source"],
+    extras_require={
+        "standardtest": ["airbyte_python_test"],
+    },
 )

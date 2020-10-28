@@ -61,8 +61,11 @@ import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class TestSource {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestSource.class);
 
   private TestDestinationEnv testEnv;
 
@@ -122,6 +125,7 @@ public abstract class TestSource {
 
   @Before
   public void setUpInternal() throws Exception {
+    LOGGER.info("Running setUpInternal");
     Path testDir = Path.of("/tmp/airbyte_tests/");
     Files.createDirectories(testDir);
     final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
@@ -140,6 +144,7 @@ public abstract class TestSource {
 
   @After
   public void tearDownInternal() throws Exception {
+    LOGGER.info("Running teardownInternal");
     tearDown(testEnv);
   }
 
@@ -148,6 +153,7 @@ public abstract class TestSource {
    */
   @Test
   public void testGetSpec() throws Exception {
+    LOGGER.info("Running test get spec");
     final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
     assertTrue(output.getOutput().isPresent());
     assertEquals(getSpec(), output.getOutput().get().getSpecification());
@@ -159,6 +165,7 @@ public abstract class TestSource {
    */
   @Test
   public void testCheckConnection() throws Exception {
+    LOGGER.info("Running testCheckConnection");
     final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck();
     assertTrue(output.getOutput().isPresent());
     assertEquals(Status.SUCCEEDED, output.getOutput().get().getStatus());
@@ -181,6 +188,7 @@ public abstract class TestSource {
    */
   @Test
   public void testDiscover() throws Exception {
+    LOGGER.info("Running testDiscover");
     final OutputAndStatus<StandardDiscoverCatalogOutput> output = runDiscover();
     assertTrue(output.getOutput().isPresent());
     // the worker validates that it is a valid catalog, so we do not need to validate again (as long as
