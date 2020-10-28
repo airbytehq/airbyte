@@ -22,18 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from .standard_source_test import GithubStandardSourceTest
 
-setup(
-    name="source_github_singer",
-    description="Source implementation for Github.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    # two sets of dependencies: 1) for main 2) for standard test deps. 2 does not have all of the dependencies of 1, which is we cannot use install_requires.
-    extras_require={
-        "main": ["tap-github==1.9.0", "requests", "base_singer", "airbyte_protocol"],
-        "standardtest": ["airbyte_python_test"],
-    },
-)
+__all__ = ["GithubStandardSourceTest"]
