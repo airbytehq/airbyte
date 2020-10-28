@@ -63,9 +63,6 @@ public class TestPythonSourceMain {
     PythonTestSource.IMAGE_NAME = imageName;
     PythonTestSource.PYTHON_CONTAINER_NAME = pythonContainerName;
 
-    // todo (cgardens) - using JUnit4 (instead of 5) here for two reasons: 1) Cannot get JUnit5 to print
-    // output nearly as nicely as 4. 2) JUnit5 was running all tests twice. Likely there are workarounds
-    // to both, but I cut my losses and went for something that worked.
     JUnitCore junit = new JUnitCore();
     junit.addListener(new TextListener(System.out));
     final Result result = junit.run(PythonTestSource.class);
@@ -73,30 +70,6 @@ public class TestPythonSourceMain {
     if (result.getFailureCount() > 0) {
       System.exit(1);
     }
-
-    // this is how you you are supposed to do it in JUnit5
-    // LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
-    // .selectors(
-    // selectPackage("io.airbyte.integrations.base"),
-    // selectClass(TestBasicTest.class)
-    // selectClass(TestBasicTest.class, PythonTestSource.class)
-    // )
-    // .filters(includeClassNamePatterns(".*Test"))
-    // .build();
-    //
-    // TestPlan plan = LauncherFactory.create().discover(request);
-    // Launcher launcher = LauncherFactory.create();
-    //
-    //
-    //
-    // // Register a listener of your choice
-    // SummaryGeneratingListener listener = new SummaryGeneratingListener();
-    // launcher.registerTestExecutionListeners(listener);
-    //
-    // launcher.execute(plan, listener);
-    //
-    // listener.getSummary().printFailuresTo(new PrintWriter(System.out));
-    // listener.getSummary().printTo(new PrintWriter(System.out));
   }
 
 }
