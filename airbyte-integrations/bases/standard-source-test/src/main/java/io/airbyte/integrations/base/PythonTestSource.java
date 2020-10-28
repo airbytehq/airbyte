@@ -82,7 +82,6 @@ public class PythonTestSource extends TestSource {
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
-    LOGGER.info("TEARING DOWN");
     runExecutableVoid(Command.TEARDOWN);
   }
 
