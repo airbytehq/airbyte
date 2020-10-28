@@ -9,7 +9,7 @@ standardSourceTest {
         imageName = "${extractImageName(project.file('Dockerfile'))}:dev"
         specPath = 'googleanalytics_singer_source/spec.json'
         configPath ='secrets/config.json'
-        catalogPath = 'sample_files/catalog.json'
+        catalogPath = 'sample_files/test_catalog.json'
     }
 }
 
