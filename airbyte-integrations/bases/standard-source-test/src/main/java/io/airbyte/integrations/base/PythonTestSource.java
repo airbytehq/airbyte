@@ -95,9 +95,7 @@ public class PythonTestSource extends TestSource {
   }
 
   private static JsonNode runExecutable(Command cmd) throws IOException {
-    // todo (cgardens) - hack to get around python being python. python is wrapping the json in an extra
-    // set of quotation marks.
-    return Jsons.deserialize(Jsons.deserialize(IOs.readFile(runExecutableInternal(cmd), OUTPUT_FILENAME)).asText());
+    return Jsons.deserialize(IOs.readFile(runExecutableInternal(cmd), OUTPUT_FILENAME));
   }
 
   private static void runExecutableVoid(Command cmd) throws IOException {
@@ -106,7 +104,7 @@ public class PythonTestSource extends TestSource {
 
   private static Path runExecutableInternal(Command cmd) throws IOException {
     final Path testRoot = Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), cmd.toString().toLowerCase());
-    System.out.println("testRoot = " + testRoot);
+    LOGGER.info("testRoot = " + testRoot);
     final List<String> dockerCmd =
         Lists.newArrayList(
             "docker",

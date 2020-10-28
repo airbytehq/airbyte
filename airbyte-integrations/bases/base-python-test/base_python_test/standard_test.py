@@ -47,11 +47,10 @@ class StandardSourceTestRunner(StandardSourceTestIface):
         self.test = test
 
     @staticmethod
-    def write_output(object, path):
-        print("the path")
-        print(path)
+    def write_output(json, path):
+        print(f"output path: {path}")
         with open(path + "/" + StandardSourceTestRunner.OUTPUT_FILENAME, "w") as fh:
-            fh.write(json.dumps(object))
+            fh.write(json)
 
     def start(self, args):
         print("parsing")

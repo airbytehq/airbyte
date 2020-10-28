@@ -1,7 +1,6 @@
 FROM airbyte/base-python-test:dev
 
 RUN apt-get update && apt-get install -y \
-    vim \
     bash \
     && rm -rf /var/lib/apt/lists/*
 
