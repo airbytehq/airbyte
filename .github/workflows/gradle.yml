@@ -68,7 +68,7 @@ jobs:
 
       - name: Run Standard Source Tests (Master)
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon standardSourceTest --scan
+        run: ./gradlew --no-daemon standardSourceTestPython --scan
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
