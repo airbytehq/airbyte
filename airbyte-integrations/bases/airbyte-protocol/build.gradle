@@ -1,5 +1,7 @@
 project.ext.pyModule = 'airbyte_protocol'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+
 
 task generateProtocolClassFiles(type: Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
