@@ -22,18 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
-    name='template-python-source',
-    description='Source implementation template',
-    author='Airbyte',
-    author_email='contact@airbyte.io',
-
+    name="template-python-source",
+    description="Source implementation template",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
     packages=find_packages(),
-    package_data={
-        '': ['*.json']
-    },
-
-    install_requires=['airbyte-protocol']
+    package_data={"": ["*.json"]},
+    install_requires=["airbyte-protocol", "pydantic==1.6.1"],
 )

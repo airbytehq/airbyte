@@ -1,8 +1,8 @@
 ### Create a Python Airbyte Source
 1. If you are trying to create an Airbyte Source from a Singer Tap, you should follow [this guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/singer-source/README.md) instead.
-1. Copy the template into a directory with your integration name. `cp -r airbyte-integrations/template/python-source airbyte-integrations/source-SOURCENAME`.
+1. Copy the template into a directory with your integration name. `cp -r airbyte-integrations/connector-templates/python-source airbyte-integrations/connectors/source-SOURCENAME`.
 1. ```
-   mv airbyte-integrations/source-SOURCENAME/template_python_source airbyte-integrations/source-SOURCENAME/SOURCENAME_source
+   mv airbyte-integrations/connectors/source-SOURCENAME/template_python_source airbyte-integrations/connectors/source-SOURCENAME/SOURCENAME_source
    ``` 
 1. Update the name, description, and dependencies in `setup.py`
     1. Note that all of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies for local development. 
@@ -31,7 +31,7 @@ Please reach out in a GitHub Issue or Slack if you run into any issues developin
 
 Prepare development environment:
 ```
-cd airbyte-integrations/template/python-source
+cd airbyte-integrations/connector-templates/python-source
 
 # create & activate virtualenv
 virtualenv build/venv
@@ -52,9 +52,9 @@ python main_dev.py read --config sample_files/test_config.json --catalog sample_
 Test image:
 ```
 # in airbyte root directory
-./gradlew :airbyte-integrations:template:python-source:buildImage
-docker run --rm -v $(pwd)/airbyte-integrations/template/python-source/sample_files:/sample_files airbyte/source-template-python:dev spec
-docker run --rm -v $(pwd)/airbyte-integrations/template/python-source/sample_files:/sample_files airbyte/source-template-python:dev check --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/template/python-source/sample_files:/sample_files airbyte/source-template-python:dev discover --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/template/python-source/sample_files:/sample_files airbyte/source-template-python:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
+./gradlew :airbyte-integrations:connector-templates:python-source:buildImage
+docker run --rm -v $(pwd)/airbyte-integrations/connector-templates/python-source/sample_files:/sample_files airbyte/source-template-python:dev spec
+docker run --rm -v $(pwd)/airbyte-integrations/connector-templates/python-source/sample_files:/sample_files airbyte/source-template-python:dev check --config /sample_files/test_config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connector-templates/python-source/sample_files:/sample_files airbyte/source-template-python:dev discover --config /sample_files/test_config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connector-templates/python-source/sample_files:/sample_files airbyte/source-template-python:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
 ```

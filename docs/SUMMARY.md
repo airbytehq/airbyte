@@ -15,12 +15,15 @@
 
 * [Sources](integrations/sources/README.md)
   * [exchangeratesapi.io](integrations/sources/exchangeratesapi-io.md)
+  * [Github](integrations/sources/github.md)
   * [Postgres](integrations/sources/postgres.md)
+  * [Salesforce](integrations/sources/salesforce.md)
   * [Stripe](integrations/sources/stripe.md)
 * [Destinations](integrations/destinations/README.md)
   * [Local CSV](integrations/destinations/local-csv.md)
   * [BigQuery](integrations/destinations/bigquery.md)
   * [Postgres](integrations/destinations/postgres.md)
+* [Custom Connectors](integrations/adding-your-own-connectors.md)
 
 ## Contributing
 

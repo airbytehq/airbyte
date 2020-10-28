@@ -22,4 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .source import *
+from .source import SourceExchangeRatesApiSinger
+
+__all__ = ["SourceExchangeRatesApiSinger"]

@@ -27,7 +27,8 @@ import pkgutil
 from dataclasses import dataclass
 from typing import Generator
 
-from .models import AirbyteCatalog, AirbyteMessage, ConnectorSpecification
+from .models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification
+
 
 class AirbyteSpec(object):
     @staticmethod
@@ -38,12 +39,6 @@ class AirbyteSpec(object):
 
     def __init__(self, spec_string):
         self.spec_string = spec_string
-
-
-class AirbyteCheckResponse(object):
-    def __init__(self, successful, field_to_error):
-        self.successful = successful
-        self.field_to_error = field_to_error
 
 
 @dataclass
@@ -59,11 +54,11 @@ class Integration(object):
         pass
 
     def spec(self, logger) -> ConnectorSpecification:
-        raw_spec = pkgutil.get_data(self.__class__.__module__.split('.')[0], 'spec.json')
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
         return ConnectorSpecification.parse_obj(json.loads(raw_spec))
 
     def read_config(self, config_path):
-        with open(config_path, 'r') as file:
+        with open(config_path, "r") as file:
             contents = file.read()
         return json.loads(contents)
 
@@ -72,10 +67,10 @@ class Integration(object):
         return raw_config
 
     def write_config(self, config_object, path):
-        with open(path, 'w') as fh:
+        with open(path, "w") as fh:
             fh.write(json.dumps(config_object))
 
-    def check(self, logger, config_container) -> AirbyteCheckResponse:
+    def check(self, logger, config_container) -> AirbyteConnectionStatus:
         raise Exception("Not Implemented")
 
     def discover(self, logger, config_container) -> AirbyteCatalog:

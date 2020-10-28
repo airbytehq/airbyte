@@ -103,7 +103,7 @@ public class PythonTestSource extends TestSource {
     return Jsons.deserialize(IOs.readFile(runExecutableInternal(cmd), OUTPUT_FILENAME));
   }
 
-  private  void runExecutableVoid(Command cmd) throws IOException {
+  private void runExecutableVoid(Command cmd) throws IOException {
     runExecutableInternal(cmd);
   }
 

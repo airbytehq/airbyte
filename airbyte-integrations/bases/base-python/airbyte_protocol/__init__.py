@@ -22,19 +22,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .integration import *
-from .logger import AirbyteLogger
-from .models import AirbyteCatalog
-from .models import AirbyteConnectionStatus
-from .models import Status
-from .models import AirbyteLogMessage
-from .models import AirbyteMessage
-from .models import AirbyteRecordMessage
-from .models import AirbyteStateMessage
-from .models import AirbyteStream
-from .models import Type
-from .models import ConnectorSpecification
+import os
 
-# Must be the last one because the way we load the connector module creates a circular
-# dependency and models might not have been loaded yet
-from .entrypoint import AirbyteEntrypoint
+from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
+from .logger import AirbyteLogger
+from .models import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStream,
+    ConnectorSpecification,
+    Status,
+    Type,
+)
+
+# todo (cgardens) - hack so that standard test library can depend on the airbyte protocol structs. without this, invoking this class tries to run the entrypoint.
+# issue: https://github.com/airbytehq/airbyte/issues/718
+test_case = os.environ.get("AIRBYTE_TEST_CASE")
+if not test_case:
+    # Must be the last one because the way we load the connector module creates a circular
+    # dependency and models might not have been loaded yet
+    from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
+
+__all__ = [
+    "AirbyteSpec",
+    "ConfigContainer",
+    "Integration",
+    "Source",
+    "Destination",
+    "AirbyteCatalog",
+    "AirbyteConnectionStatus",
+    "AirbyteLogMessage",
+    "AirbyteMessage",
+    "AirbyteRecordMessage",
+    "AirbyteStateMessage",
+    "AirbyteStream",
+    "ConnectorSpecification",
+    "Status",
+    "Type",
+    "AirbyteLogger",
+]

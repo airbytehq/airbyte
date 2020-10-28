@@ -44,9 +44,11 @@ public class CsvDestinationIntegrationTest extends TestDestination {
   private static final String COLUMN_NAME = "data";
   private static final Path RELATIVE_PATH = Path.of("integration_test/test");
 
+  private Path localRoot;
+
   @Override
   protected String getImageName() {
-    return "airbyte/airbyte-csv-destination-abprotocol:dev";
+    return "airbyte/destination-csv:dev";
   }
 
   @Override
@@ -54,9 +56,13 @@ public class CsvDestinationIntegrationTest extends TestDestination {
     return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString()));
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/@").resolve(RELATIVE_PATH).toString()));
+    // set the directory to which the integration will try to write to to read only.
+    localRoot.toFile().setReadOnly();
+
+    return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString()));
   }
 
   @Override
@@ -78,6 +84,7 @@ public class CsvDestinationIntegrationTest extends TestDestination {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
+    localRoot = testEnv.getLocalRoot();
     // no op
   }
 

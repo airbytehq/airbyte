@@ -1,0 +1,11 @@
+{
+  "name": "airbyte-connector-generator",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "generate": "plop"
+  },
+  "devDependencies": {
+    "plop": "^2.7.4"
+  }
+}

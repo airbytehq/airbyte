@@ -23,8 +23,8 @@ SOFTWARE.
 """
 
 import sys
-from airbyte_protocol.entrypoint import launch
 
+from airbyte_protocol.entrypoint import launch
 from postgres_singer_source import PostgresSingerSource
 
 if __name__ == "__main__":
