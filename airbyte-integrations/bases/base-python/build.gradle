@@ -11,3 +11,4 @@ generatePythonModels {
 }
 assemble.dependsOn generatePythonModels
 buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'
+rootProject.spotlessPython.dependsOn ':airbyte-integrations:bases:base-python:generatePythonModels'

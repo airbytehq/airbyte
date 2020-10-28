@@ -91,7 +91,8 @@ class GoogleSheetsSource(Source):
         spreadsheet_id = config["spreadsheet_id"]
 
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
-
+        # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
+        # a blank row, emit the row batch
         sheet_to_column_index_to_name = Helpers.get_available_sheets_to_column_index_to_name(client, spreadsheet_id, sheet_to_column_name)
         for sheet in sheet_to_column_index_to_name.keys():
             logger.info(f"Syncing sheet {sheet}")
