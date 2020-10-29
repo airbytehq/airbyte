@@ -48,23 +48,17 @@
     "dependencies": {
       "storage": {
         "oneOf": [
-
           {
             "properties": {
               "storage": {
-                "enum": [
-                  "gs://"
-                ]
+                "enum": ["gs://"]
               },
               "service_account_json": {
                 "type": "string"
               },
               "reader_impl": {
                 "type": "string",
-                "enum": [
-                  "smart_open",
-                  "gcsfs"
-                ],
+                "enum": ["smart_open", "gcsfs"],
                 "default": "gcsfs"
               }
             }
@@ -73,9 +67,7 @@
           {
             "properties": {
               "storage": {
-                "enum": [
-                  "s3://"
-                ]
+                "enum": ["s3://"]
               },
               "aws_secret_access_key_id": {
                 "type": "string"
@@ -85,10 +77,7 @@
               },
               "reader_impl": {
                 "type": "string",
-                "enum": [
-                  "smart_open",
-                  "s3fs"
-                ],
+                "enum": ["smart_open", "s3fs"],
                 "default": "s3fs"
               }
             }
@@ -97,9 +86,7 @@
           {
             "properties": {
               "storage": {
-                "enum": [
-                  "scp://"
-                ]
+                "enum": ["scp://"]
               },
               "user": {
                 "type": "string"
@@ -111,18 +98,13 @@
                 "type": "string"
               }
             },
-            "required": [
-              "user",
-              "host"
-            ]
+            "required": ["user", "host"]
           },
 
           {
             "properties": {
               "storage": {
-                "enum": [
-                  "sftp://"
-                ]
+                "enum": ["sftp://"]
               },
               "user": {
                 "type": "string"
@@ -134,18 +116,13 @@
                 "type": "string"
               }
             },
-            "required": [
-              "user",
-              "host"
-            ]
+            "required": ["user", "host"]
           },
 
           {
             "properties": {
               "storage": {
-                "enum": [
-                  "webhdfs://"
-                ]
+                "enum": ["webhdfs://"]
               },
               "host": {
                 "type": "string"
@@ -154,12 +131,8 @@
                 "type": "number"
               }
             },
-            "required": [
-              "host",
-              "port"
-            ]
+            "required": ["host", "port"]
           }
-
         ]
       }
     }

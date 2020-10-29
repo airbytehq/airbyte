@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-project.ext.pyModule = 'file_source'
+project.ext.pyModule = 'source_file'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/test-image.gradle')

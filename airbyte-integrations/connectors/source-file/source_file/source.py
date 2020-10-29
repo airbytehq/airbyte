@@ -22,10 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+import os
+import tempfile
 from datetime import datetime
 from typing import Generator, List
 
-import json
 import gcsfs
 import pandas as pd
 from airbyte_protocol import (
@@ -39,6 +41,7 @@ from airbyte_protocol import (
     Type,
 )
 from google.cloud.storage import Client
+from s3fs.core import S3FileSystem
 from smart_open import open
 
 
@@ -52,12 +55,11 @@ class FileSource(Source):
     ```
         s3://my_bucket/my_key
         s3://my_key:my_secret@my_bucket/my_key
-        s3://my_key:my_secret@my_server:my_port@my_bucket/my_key
         gs://my_bucket/my_blob
-        azure://my_bucket/my_blob
-        hdfs:///path/file
-        hdfs://path/file
-        webhdfs://host:port/path/file
+        azure://my_bucket/my_blob (not tested)
+        hdfs:///path/file (not tested)
+        hdfs://path/file (not tested)
+        webhdfs://host:port/path/file (not tested)
         ./local/path/file
         ~/local/path/file
         local/path/file
@@ -135,6 +137,7 @@ class FileSource(Source):
         except Exception as err:
             reason = f"Failed to discover schemas of {url}: {repr(err)}"
             logger.error(reason)
+            raise err
         return AirbyteCatalog(streams=streams)
 
     def read(self, logger, config_container, catalog_path, state_path=None) -> Generator[AirbyteMessage, None, None]:
@@ -173,13 +176,10 @@ class FileSource(Source):
         """
         url = config["url"]
         storage = config["storage"]
-        if not url.startswith(storage):
-            url = storage + url
 
         gcs_file = None
-        use_gcs_service_account = "service_account_json" in config and (
-            storage == "gs://" or url.startswith("gcs://") or url.startswith("gs://")
-        )
+        use_gcs_service_account = "service_account_json" in config and storage == "gs://"
+        use_aws_account = "aws_secret_access_key_id" in config and "aws_secret_access_key" in config and storage == "s3://"
 
         # default format reader
         reader_format = "csv"
@@ -198,45 +198,86 @@ class FileSource(Source):
         if "reader_impl" in config:
             reader_impl = config["reader_impl"]
 
-        if reader_impl == "gcfs":
+        if reader_impl == "gcsfs":
             if use_gcs_service_account:
-                # TODO convert service_account_json string to json file
-                fs = gcsfs.GCSFileSystem(token=config["service_account_json"])
-                gcs_file = fs.open(url)
+                token_dict = json.loads(config["service_account_json"])
+                fs = gcsfs.GCSFileSystem(token=token_dict)
+                gcs_file = fs.open(f"gs://{url}")
                 url = gcs_file
-        else:
+        elif reader_impl == "s3fs":
+            if use_aws_account:
+                aws_secret_access_key_id = None
+                if "aws_secret_access_key_id" in config:
+                    aws_secret_access_key_id = config["aws_secret_access_key_id"]
+                aws_secret_access_key = None
+                if "aws_secret_access_key" in config:
+                    aws_secret_access_key = config["aws_secret_access_key"]
+                s3 = S3FileSystem(anon=False, key=aws_secret_access_key_id, secret=aws_secret_access_key)
+                url = s3.open(f"s3://{url}", mode="rb")
+        else:  # using smart_open
             if use_gcs_service_account:
-                # TODO convert service_account_json string to json file
-                client = Client.from_service_account_json(config["service_account_json"])
-                url = open(url, transport_params=dict(client=client))
+                credentials = json.dumps(json.loads(config["service_account_json"]))
+                tmp_service_account = tempfile.NamedTemporaryFile(delete=False)
+                with open(tmp_service_account, "w") as f:
+                    f.write(credentials)
+                tmp_service_account.close()
+                client = Client.from_service_account_json(tmp_service_account.name)
+                url = open(f"gs://{url}", transport_params=dict(client=client))
+                os.remove(tmp_service_account.name)
+            elif use_aws_account:
+                aws_secret_access_key_id = ""
+                if "aws_secret_access_key_id" in config:
+                    aws_secret_access_key_id = config["aws_secret_access_key_id"]
+                aws_secret_access_key = ""
+                if "aws_secret_access_key" in config:
+                    aws_secret_access_key = config["aws_secret_access_key"]
+                url = open(f"s3://{aws_secret_access_key_id}:{aws_secret_access_key}@{url}")
+            elif storage == "webhdfs":
+                host = config["host"]
+                port = config["port"]
+                url = open(f"webhdfs://{host}:{port}/{url}")
+            elif storage == "ssh" or storage == "scp" or storage == "sftp":
+                user = config["user"]
+                host = config["host"]
+                password = None
+                if "password" in config:
+                    password = config["password"]
+                if password:
+                    url = open(f"{storage}{user}:{password}@{host}/{url}")
+                else:
+                    url = open(f"{storage}{user}@{host}/{url}")
             else:
-                url = open(url)
-
-        result = []
+                url = open(f"{storage}{url}")
         try:
-            if reader_format == "csv":
-                # pandas.read_csv additional arguments can be passed to customize how to parse csv.
-                # see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
-                result.append(pd.read_csv(url, **reader_options))
-            elif reader_format == "json":
-                result.append(pd.read_json(url, **reader_options))
-            elif reader_format == "html":
-                result += pd.read_html(url, **reader_options)
-            elif reader_format == "excel":
-                result.append(pd.read_excel(url, **reader_options))
-            elif reader_format == "feather":
-                result.append(pd.read_feather(url, **reader_options))
-            elif reader_format == "parquet":
-                result.append(pd.read_parquet(url, **reader_options))
-            elif reader_format == "orc":
-                result.append(pd.read_orc(url, **reader_options))
-            elif reader_format == "pickle":
-                result.append(pd.read_pickle(url, **reader_options))
-            else:
-                raise Exception(f"Reader {reader_format} is not supported")
+            result = FileSource.parse_file(reader_format, url, reader_options)
         finally:
             if gcs_file:
                 gcs_file.close()
+        return result
+
+    @staticmethod
+    def parse_file(reader_format: str, url, reader_options: dict) -> List:
+        result = []
+        if reader_format == "csv":
+            # pandas.read_csv additional arguments can be passed to customize how to parse csv.
+            # see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
+            result.append(pd.read_csv(url, **reader_options))
+        elif reader_format == "json":
+            result.append(pd.read_json(url, **reader_options))
+        elif reader_format == "html":
+            result += pd.read_html(url, **reader_options)
+        elif reader_format == "excel":
+            result.append(pd.read_excel(url, **reader_options))
+        elif reader_format == "feather":
+            result.append(pd.read_feather(url, **reader_options))
+        elif reader_format == "parquet":
+            result.append(pd.read_parquet(url, **reader_options))
+        elif reader_format == "orc":
+            result.append(pd.read_orc(url, **reader_options))
+        elif reader_format == "pickle":
+            result.append(pd.read_pickle(url, **reader_options))
+        else:
+            raise Exception(f"Reader {reader_format} is not supported")
         return result
 
     @staticmethod

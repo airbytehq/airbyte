@@ -22,11 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import sys
+from .integration_source_test import TestFileSource
 
-from airbyte_protocol.entrypoint import launch
-from source_file import FileSource
-
-if __name__ == "__main__":
-    source = FileSource()
-    launch(source, sys.argv[1:])
+__all__ = ["TestFileSource"]

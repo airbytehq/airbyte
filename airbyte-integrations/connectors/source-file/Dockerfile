@@ -1,7 +1,7 @@
 FROM airbyte/integration-base-python:dev
 
-ENV CODE_PATH="file_source"
-ENV AIRBYTE_IMPL_MODULE="file_source"
+ENV CODE_PATH="source_file"
+ENV AIRBYTE_IMPL_MODULE="source_file"
 ENV AIRBYTE_IMPL_PATH="FileSource"
 
 LABEL io.airbyte.version=0.1.0

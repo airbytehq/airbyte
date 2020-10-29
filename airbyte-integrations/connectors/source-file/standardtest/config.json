@@ -1,8 +1,7 @@
 {
-  "data_url": "gcs://my_own_data_sample/my_epidemiology.csv",
-  "gcs_service_account.json": "secrets/gcs.json",
-  "reader": "csv",
-  "reader_arguments": {
-    "nrows": 20
-  }
+  "format": "csv",
+  "reader_options": "{\"sep\": \",\", \"nrows\": 20}",
+  "storage": "https://",
+  "url": "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv",
+  "reader_impl": "gcsfs"
 }
