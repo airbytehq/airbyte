@@ -26,21 +26,29 @@ package io.airbyte.protocol.models;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class CatalogHelpers {
 
+  public static AirbyteCatalog createAirbyteCatalog(String streamName, Field... fields) {
+    return new AirbyteCatalog().withStreams(Lists.newArrayList(createAirbyteStream(streamName, fields)));
+  }
+
   public static AirbyteStream createAirbyteStream(String streamName, Field... fields) {
-    return new AirbyteStream().withName(streamName).withSchema(fieldsToJsonSchema(fields));
+    return new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
   public static JsonNode fieldsToJsonSchema(Field... fields) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("type", "object")
         .put("properties", Arrays.stream(fields)
-            .collect(Collectors.toMap(Field::getName, field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString())))));
+            .collect(Collectors.toMap(
+                Field::getName,
+                field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString()))))
+        .build());
   }
 
 }

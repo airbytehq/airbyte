@@ -1,0 +1,20 @@
+{
+  "streams": [
+    {
+      "name": "exchange_rate",
+      "json_schema": {
+        "properties": {
+          "date": {
+            "dataType": "string"
+          },
+          "HKD": {
+            "dataType": "number"
+          },
+          "NZD": {
+            "dataType": "number"
+          }
+        }
+      }
+    }
+  ]
+}

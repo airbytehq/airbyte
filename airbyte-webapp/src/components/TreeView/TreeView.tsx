@@ -9,6 +9,7 @@ import "react-checkbox-tree/lib/react-checkbox-tree.css";
 export type INode = {
   value: string;
   label: string;
+  showCheckbox?: boolean;
   children?: Array<INode>;
 };
 
@@ -74,7 +75,14 @@ const Container = styled.div`
 
 const TreeView: React.FC<IProps> = ({ nodes, checked, onCheck }) => {
   const [expanded, setExpanded] = useState<Array<string>>([]);
-
+  // TODO hack for v0.2.0: don't allow checking any of the children aka fields in a stream. This should be removed once it's possible to select
+  // these again.
+  // https://airbytehq.slack.com/archives/C01CWUQT7UJ/p1603173180066800
+  nodes.forEach(n => {
+    if (n.children) {
+      n.children.forEach(child => (child.showCheckbox = false));
+    }
+  });
   return (
     <Container>
       <CheckboxTree

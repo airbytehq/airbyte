@@ -16,20 +16,11 @@ This BigQuery destination is based on the [PipelineWise BigQuery Target](https:/
 
 #### Output schema
 
-Airbyte Streams and Fields are written as BigQuery Tables and Columns respectively, applying the type changes described below. No extra columns are added in the process.
+Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
 
-#### Data type mapping
-
-| Airbyte Type | BigQuery Type | Notes |
-| :--- | :--- | :--- |
-| `array` | `array` or `string` | arrays are converted into BigQuery arrays using the type mappings defined here. If the array's item type is not supported by Airbyte, the whole array is encoded as a string. |
-| `boolean` | `boolean` |  |
-| `date-time` | `timestamp` |  |
-| `integer` | `integer` |  |
-| `number` | `numeric` |  |
-| `object` | `struct`/`record` | fields of the written struct are converted according to the conversions in this table |
-| `string` | `string` |  |
-| Types not listed above | `string` |  |
+* `ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
+* `emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
+* `data`: a json blob representing with the event data. The column type in BigQuery is `String`.
 
 #### Features
 

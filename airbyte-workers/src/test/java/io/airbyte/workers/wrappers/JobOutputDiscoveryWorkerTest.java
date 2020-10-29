@@ -29,12 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Lists;
 import io.airbyte.config.JobOutput;
-import io.airbyte.config.Schema;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.config.Stream;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.workers.DiscoverCatalogWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
@@ -49,14 +47,14 @@ public class JobOutputDiscoveryWorkerTest {
     Path jobRoot = Path.of("fakeroot");
     DiscoverCatalogWorker discoverWorker = mock(DiscoverCatalogWorker.class);
 
-    StandardDiscoverCatalogOutput output = new StandardDiscoverCatalogOutput().withSchema(
-        new Schema().withStreams(Lists.newArrayList(new Stream().withName("table"))));
+    StandardDiscoverCatalogOutput output = new StandardDiscoverCatalogOutput().withCatalog(
+        CatalogHelpers.createAirbyteCatalog("table"));
 
-    when(discoverWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCESSFUL, output));
+    when(discoverWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCEEDED, output));
     OutputAndStatus<JobOutput> run = new JobOutputDiscoverSchemaWorker(discoverWorker).run(input, jobRoot);
 
     JobOutput expected = new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withDiscoverCatalog(output);
-    assertEquals(JobStatus.SUCCESSFUL, run.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(expected, run.getOutput().get());
   }

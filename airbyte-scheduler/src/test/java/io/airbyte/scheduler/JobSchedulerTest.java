@@ -30,17 +30,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.Stream;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
@@ -81,7 +82,7 @@ class JobSchedulerTest {
         .withSchema(schema)
         .withSourceImplementationId(sourceImplementationId)
         .withDestinationImplementationId(destinationImplementationId)
-        .withSyncMode(StandardSync.SyncMode.APPEND);
+        .withSyncMode(SyncMode.FULL_REFRESH);
 
     // empty. contents not needed for any of these unit tests.
     STANDARD_SYNC_SCHEDULE = new StandardSyncSchedule();

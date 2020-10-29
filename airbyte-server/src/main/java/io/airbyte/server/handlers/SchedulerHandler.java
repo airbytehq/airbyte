@@ -29,6 +29,7 @@ import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionSyncRead;
+import io.airbyte.api.model.ConnectionSyncRead.StatusEnum;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
 import io.airbyte.api.model.DestinationSpecificationRead;
@@ -38,23 +39,23 @@ import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.api.model.SourceSpecificationRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.json.JsonValidationException;
-import io.airbyte.config.ConnectorSpecification;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestination;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.server.converters.SchemaConverter;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
@@ -132,11 +133,12 @@ public class SchedulerHandler {
     LOGGER.debug("jobId = " + jobId);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
-    final StandardDiscoverCatalogOutput output = job.getOutput().map(JobOutput::getDiscoverCatalog)
+    final Schema schema = job.getOutput()
+        .map(out -> AirbyteProtocolConverters.toSchema(out.getDiscoverCatalog().getCatalog()))
         // the job should always produce an output, but if does not, we fall back on an empty schema.
-        .orElse(new StandardDiscoverCatalogOutput().withSchema(new Schema().withStreams(Collections.emptyList())));
+        .orElse(new Schema().withStreams(Collections.emptyList()));
 
-    LOGGER.debug("output = " + output);
+    LOGGER.debug("schema = " + schema);
 
     TrackingClientSingleton.get().track("discover_schema", ImmutableMap.<String, Object>builder()
         .put("name", connectionImplementation.getName())
@@ -145,7 +147,7 @@ public class SchedulerHandler {
         .put("job_id", jobId)
         .build());
 
-    return new SourceImplementationDiscoverSchemaRead().schema(SchemaConverter.toApiSchema(output.getSchema()));
+    return new SourceImplementationDiscoverSchemaRead().schema(SchemaConverter.toApiSchema(schema));
   }
 
   public SourceSpecificationRead getSourceSpecification(SourceIdRequestBody sourceIdRequestBody)
@@ -231,7 +233,7 @@ public class SchedulerHandler {
         .build());
 
     return new ConnectionSyncRead()
-        .status(job.getStatus().equals(JobStatus.COMPLETED) ? ConnectionSyncRead.StatusEnum.SUCCESS : ConnectionSyncRead.StatusEnum.FAIL);
+        .status(job.getStatus().equals(JobStatus.COMPLETED) ? StatusEnum.SUCCEEDED : ConnectionSyncRead.StatusEnum.FAILED);
   }
 
   private Job waitUntilJobIsTerminalOrTimeout(final long jobId) throws IOException {
@@ -255,7 +257,7 @@ public class SchedulerHandler {
   private CheckConnectionRead reportConnectionStatus(final Job job) {
     final StandardCheckConnectionOutput output = job.getOutput().map(JobOutput::getCheckConnection)
         // the job should always produce an output, but if it does not, we assume a failure.
-        .orElse(new StandardCheckConnectionOutput().withStatus(StandardCheckConnectionOutput.Status.FAILURE));
+        .orElse(new StandardCheckConnectionOutput().withStatus(StandardCheckConnectionOutput.Status.FAILED));
 
     return new CheckConnectionRead()
         .status(Enums.convertTo(output.getStatus(), CheckConnectionRead.StatusEnum.class))

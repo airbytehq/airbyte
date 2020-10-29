@@ -3,6 +3,7 @@
 
   "sidebar.sources": "Sources",
   "sidebar.destination": "Destination",
+  "sidebar.admin": "Admin",
   "sidebar.help": "Help",
   "sidebar.docs": "Docs",
 
@@ -31,6 +32,8 @@
   "form.dataSync.message": "You’ll be able to change this later on.",
   "form.cancel": "Cancel",
   "form.delete": "Delete",
+  "form.change": "Change",
+  "form.add": "Add",
   "form.saveChanges": "Save changes",
   "form.discardChanges": "Discard changes",
   "form.every": "Every {value}",
@@ -56,9 +59,11 @@
   "form.credentials_json": "Credentials JSON",
   "form.disable_collection": "Disable Collection",
   "form.replication_method": "Replication Method",
-  "form.validationError": "The received form did not pass validation",
+  "form.validationError": "Could not connect with provided credentials",
   "form.someError": "Sorry. Something went wrong... ",
   "form.changesSaved": "Your changes were saved!",
+  "form.savedChange": "Change saved!",
+  "form.imageCannotFound": "The docker image cannot be found. Please ensure that the input tag points to a valid Airbyte docker image",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
@@ -118,5 +123,27 @@
   "sources.second": "{second}s",
   "sources.deleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All past logs and configurations will be deleted\n  - Updates of new data will stop\n  - No existing data in the destination will be altered",
 
-  "destination.destinationSettings": "Destination Settings"
+  "destination.destinationSettings": "Destination Settings",
+
+  "admin.destinations": "Destinations",
+  "admin.sources": "Sources",
+  "admin.newConnector": "+ New connector",
+  "admin.manageSource": "Manage your source connectors",
+  "admin.availableSource": "Available source connectors",
+  "admin.manageDestination": "Manage your destination connectors",
+  "admin.supportMultipleDestinations": "We will soon support multiple destinations within a single Airbyte instance",
+  "admin.connectors": "Connectors",
+  "admin.image": "Image",
+  "admin.codeSource": "Code source",
+  "admin.tag": "Tag",
+  "admin.addNewConnector": "Add new connector",
+  "admin.connectorName": "Connector display name",
+  "admin.connectorName.placeholder": "Connector name",
+  "admin.dockerRepository": "Docker repository name",
+  "admin.dockerRepository.placeholder": "airbytehq/postgres",
+  "admin.dockerImageTag": "Docker image tag",
+  "admin.dockerImageTag.placeholder": "12.3",
+  "admin.documentationUrl": "Connector Documentation URL",
+  "admin.documentationUrl.placeholder": "https://hub.docker.com/r/airbyte/integration-singer-postgres-source",
+  "admin.learnMore": "<lnk>Learn more from our documentation</lnk> to understand how to fill these field."
 }

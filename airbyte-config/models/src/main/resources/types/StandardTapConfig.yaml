@@ -6,12 +6,22 @@ description: StandardTapConfig
 type: object
 additionalProperties: false
 required:
-  - sourceConnectionImplementation
-  - standardSync
+  - sourceConnectionConfiguration
+  - catalog
+  - syncMode
+  - connectionId
 properties:
-  sourceConnectionImplementation:
-    "$ref": SourceConnectionImplementation.yaml
-  standardSync:
-    "$ref": StandardSync.yaml
+  sourceConnectionConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  catalog:
+    type: object
+    existingJavaType: io.airbyte.protocol.models.AirbyteCatalog
+  syncMode:
+    "$ref": SyncMode.yaml
+  connectionId:
+    type: string
+    format: uuid
   state:
     "$ref": State.yaml

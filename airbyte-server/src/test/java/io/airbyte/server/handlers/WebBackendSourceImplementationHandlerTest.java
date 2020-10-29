@@ -36,13 +36,13 @@ import io.airbyte.api.model.SourceImplementationCreate;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.api.model.SourceImplementationRead;
 import io.airbyte.api.model.SourceImplementationRecreate;
-import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardSource;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.server.helpers.SourceImplementationHelpers;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
@@ -84,7 +84,7 @@ public class WebBackendSourceImplementationHandlerTest {
     sourceImplementationIdRequestBody.setSourceImplementationId(sourceImplementationRead.getSourceImplementationId());
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.SUCCESS);
+    checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
     when(schedulerHandler.checkSourceImplementationConnection(sourceImplementationIdRequestBody)).thenReturn(checkConnectionRead);
 
@@ -103,7 +103,7 @@ public class WebBackendSourceImplementationHandlerTest {
     when(sourceImplementationsHandler.createSourceImplementation(sourceImplementationCreate)).thenReturn(sourceImplementationRead);
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.FAILURE);
+    checkConnectionRead.setStatus(StatusEnum.FAILED);
 
     SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody();
     sourceImplementationIdRequestBody.setSourceImplementationId(sourceImplementationRead.getSourceImplementationId());
@@ -131,7 +131,7 @@ public class WebBackendSourceImplementationHandlerTest {
     newSourceId.setSourceImplementationId(newSourceImplementation.getSourceImplementationId());
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.SUCCESS);
+    checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
     when(schedulerHandler.checkSourceImplementationConnection(newSourceId)).thenReturn(checkConnectionRead);
 
@@ -167,7 +167,7 @@ public class WebBackendSourceImplementationHandlerTest {
     newSourceId.setSourceImplementationId(newSourceImplementation.getSourceImplementationId());
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.FAILURE);
+    checkConnectionRead.setStatus(StatusEnum.FAILED);
 
     when(schedulerHandler.checkSourceImplementationConnection(newSourceId)).thenReturn(checkConnectionRead);
 

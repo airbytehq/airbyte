@@ -29,17 +29,26 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 // todo (cgardens) - hack, remove after we've gotten rid of Schema object.
 public class AirbyteProtocolConverters {
 
   public static AirbyteCatalog toCatalog(Schema schema) {
-    return new AirbyteCatalog()
-        .withStreams(schema.getStreams().stream().map(s -> new AirbyteStream()
+    List<AirbyteStream> airbyteStreams = schema.getStreams().stream()
+        .map(s -> new AirbyteStream()
             .withName(s.getName())
-            .withSchema(toJson(s.getFields()))).collect(Collectors.toList()));
+            .withJsonSchema(toJson(s.getFields())))
+        // perform selection based on the output of toJson, which keeps properties if selected=true
+        .filter(s -> !s.getJsonSchema().get("properties").isEmpty())
+        .collect(Collectors.toList());
+    return new AirbyteCatalog().withStreams(airbyteStreams);
   }
 
   // todo (cgardens) - this will only work with table / column schemas. it's hack to get us through
@@ -57,7 +66,73 @@ public class AirbyteProtocolConverters {
         .put("properties", fields
             .stream()
             .filter(Field::getSelected)
-            .collect(Collectors.toMap(Field::getName, field -> ImmutableMap.of("type", field.getDataType().toString())))));
+            .collect(Collectors.toMap(
+                Field::getName,
+                field -> ImmutableMap.of("type", field.getDataType().toString().toLowerCase()))))
+        .build());
+  }
+
+  public static Schema toSchema(AirbyteCatalog catalog) {
+    return new Schema().withStreams(catalog.getStreams().stream().map(airbyteStream -> {
+      final List<Entry<String, JsonNode>> list = new ArrayList<>();
+      // todo (cgardens) - assumes it is json schema type object with properties. not a stellar
+      // assumption.
+      final Iterator<Entry<String, JsonNode>> iterator = airbyteStream.getJsonSchema().get("properties").fields();
+      while (iterator.hasNext()) {
+        list.add(iterator.next());
+      }
+      return new Stream()
+          .withName(airbyteStream.getName())
+          .withFields(list.stream().map(item -> new Field()
+              .withName(item.getKey())
+              .withDataType(getDataType(item.getValue()))
+              .withSelected(true)).collect(Collectors.toList()));
+    }).collect(Collectors.toList()));
+  }
+
+  // todo (cgardens) - add more robust handling for jsonschema types.
+
+  /**
+   * JsonSchema tends to have 2 types for fields one of which is null. The null is pretty irrelevant,
+   * so look at types and find the first non-null one and use that.
+   *
+   * @param node - list of types from jsonschema.
+   * @return reduce down to one type which best matches the field's data type
+   */
+  private static DataType jsonSchemaTypesToDataType(JsonNode node) {
+    if (node.isTextual()) {
+      return DataType.valueOf(convertToNumberIfInteger(node.asText().toUpperCase()));
+    } else if (node.isArray()) {
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(node.elements(), 0), false)
+          .filter(typeString -> !typeString.asText().toUpperCase().equals("NULL"))
+          .map(typeString -> DataType.valueOf(convertToNumberIfInteger(typeString.asText().toUpperCase())))
+          .findFirst()
+          // todo (cgardens) - or throw?
+          .orElse(DataType.STRING);
+    } else {
+      throw new IllegalArgumentException("Unknown jsonschema type:" + Jsons.serialize(node));
+    }
+  }
+
+  // TODO HACK: this defaults to OBJECT in the case of anyOf. May fail with anyOf: [int or string],
+  // for example.
+  private static DataType getDataType(JsonNode node) {
+    JsonNode type = node.get("type");
+
+    if (type == null) {
+      return DataType.OBJECT;
+    } else {
+      return jsonSchemaTypesToDataType(type);
+    }
+  }
+
+  // TODO HACK: convert Integer to Number until we have a more solid typing system
+  private static String convertToNumberIfInteger(String type) {
+    if (type.toUpperCase().equals("INTEGER")) {
+      return "NUMBER";
+    } else {
+      return type;
+    }
   }
 
 }

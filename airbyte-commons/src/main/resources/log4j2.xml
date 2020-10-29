@@ -38,6 +38,7 @@
         <logger name="org.jooq.Constants" level="OFF" />
         <Logger name="com.networknt.schema" level="INFO" />
         <Logger name="me.andrz.jackson" level="INFO" />
+        <Logger name="com.leansoft.bigqueue" level="INFO" />
 
     </Loggers>
 

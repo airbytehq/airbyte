@@ -1,10 +1,17 @@
 .gradle
 .idea
+*.iml
 build
 !tools/build
 .DS_Store
 data
 
+secrets
+
 # Python
 *.egg-info
 __pycache__
+.eggs
+.venv
+.mypy_cache
+

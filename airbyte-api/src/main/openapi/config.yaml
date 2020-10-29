@@ -1336,7 +1336,6 @@ components:
           type: string
           enum:
             - full_refresh
-            - append
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1381,7 +1380,6 @@ components:
           type: string
           enum:
             - full_refresh
-            - append
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1430,8 +1428,8 @@ components:
         status:
           type: string
           enum:
-            - success
-            - fail
+            - succeeded
+            - failed
     # SCHEMA
     SourceSchema:
       description: describes the available schema.
@@ -1582,8 +1580,8 @@ components:
         status:
           type: string
           enum:
-            - success
-            - failure
+            - succeeded
+            - failed
         message:
           type: string
     # Web Backend
@@ -1612,7 +1610,6 @@ components:
           type: string
           enum:
             - full_refresh
-            - append
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:

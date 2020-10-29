@@ -1,11 +1,12 @@
 name: Airbyte CI
 
-on: push
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  push:
 
 jobs:
   build:
-    env:
-      GRADLE_PATH: /tmp/gradle
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
@@ -14,7 +15,7 @@ jobs:
       - name: Cache java deps
         uses: actions/cache@v2
         with:
-          path: ${{ env.GRADLE_PATH }}
+          path: ~/.gradle
           key: gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             gradle-
@@ -35,24 +36,44 @@ jobs:
         with:
           node-version: '14.7'
 
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh
         env:
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
           STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
+          GH_INTEGRATION_TEST_CREDS: ${{ secrets.GH_INTEGRATION_TEST_CREDS }}
+          SALESFORCE_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_INTEGRATION_TESTS_CREDS }}
+          GSHEETS_INTEGRATION_TESTS_CREDS: ${{ secrets.GSHEETS_INTEGRATION_TESTS_CREDS }}
 
       - name: Build
-        run: ./gradlew build --no-daemon -g ${{ env.GRADLE_PATH }}
+        run: ./gradlew --no-daemon build --scan
 
       - name: Ensure no file change
-        run: test -z "$(git status --porcelain)"
+        run: git status --porcelain && test -z "$(git status --porcelain)"
 
-      - name: Run Integration Tests
-        run: ./gradlew integrationTest --no-daemon -g ${{ env.GRADLE_PATH }}
+      - name: Run Integration Tests (PR)
+        if: success() && github.ref != 'refs/heads/master'
+        run: ./tools/bin/integration_test_pr.sh
+
+      - name: Run Integration Tests (Master)
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./gradlew --no-daemon integrationTest --scan
+
+      - name: Run Standard Source Tests (PR)
+        if: success() && github.ref != 'refs/heads/master'
+        run: ./tools/bin/standard_test_pr.sh
+
+      - name: Run Standard Source Tests (Master)
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./gradlew --no-daemon standardSourceTestPython --scan
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew composeBuild --no-daemon -g ${{ env.GRADLE_PATH }}
+        run: ./gradlew --no-daemon composeBuild --scan
         env:
           GIT_REVISION: ${{ github.sha }}
 

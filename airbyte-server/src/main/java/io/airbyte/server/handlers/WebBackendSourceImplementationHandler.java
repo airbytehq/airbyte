@@ -24,16 +24,15 @@
 
 package io.airbyte.server.handlers;
 
-import static io.airbyte.api.model.CheckConnectionRead.StatusEnum.SUCCESS;
-
 import io.airbyte.api.model.CheckConnectionRead;
+import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.SourceImplementationCreate;
 import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.api.model.SourceImplementationRead;
 import io.airbyte.api.model.SourceImplementationRecreate;
-import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +64,7 @@ public class WebBackendSourceImplementationHandler {
     try {
       CheckConnectionRead checkConnectionRead = schedulerHandler
           .checkSourceImplementationConnection(sourceImplementationIdRequestBody);
-      if (checkConnectionRead.getStatus() == SUCCESS) {
+      if (checkConnectionRead.getStatus() == StatusEnum.SUCCEEDED) {
         return sourceImplementation;
       }
     } catch (Exception e) {
@@ -93,7 +92,7 @@ public class WebBackendSourceImplementationHandler {
     try {
       CheckConnectionRead checkConnectionRead = schedulerHandler
           .checkSourceImplementationConnection(sourceImplementationIdRequestBody);
-      if (checkConnectionRead.getStatus() == SUCCESS) {
+      if (checkConnectionRead.getStatus() == StatusEnum.SUCCEEDED) {
         final SourceImplementationIdRequestBody sourceImplementationIdRequestBody1 = new SourceImplementationIdRequestBody()
             .sourceImplementationId(sourceImplementationRecreate.getSourceImplementationId());
 

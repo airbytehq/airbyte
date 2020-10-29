@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+}
+
+project.ext.pyModule = 'source_exchangeratesapi_singer'
+apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+
+dependencies {
+    integrationTestImplementation project(':airbyte-workers')
+    integrationTestImplementation project(':airbyte-config:models')
+    integrationTestImplementation project(':airbyte-protocol:models')
+}
+
+integrationTest.dependsOn(buildImage)
+build.dependsOn ':airbyte-integrations:bases:base-singer:build'
+buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'

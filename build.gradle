@@ -3,6 +3,7 @@ plugins {
     id 'java'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.6.1'
+    id 'ru.vyarus.use-python' version '2.2.0' apply false
     // id 'de.aaschmid.cpd' version '3.1'
 }
 
@@ -17,7 +18,7 @@ if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
 }
 
-def createLicenseWith = { licence ->
+def createJavaLicenseWith = { licence ->
     def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
@@ -32,32 +33,51 @@ def createLicenseWith = { licence ->
     return tmp
 }
 
+def createPythonLicenseWith = { licence ->
+    def tmp = File.createTempFile('tmp', '.tmp')
+    tmp.withWriter {
+        def w = it
+        w.writeLine('"""')
+        licence.eachLine {
+            w.writeLine(it)
+        }
+        w.writeLine('"""')
+        w.writeLine("")
+    }
+    return tmp
+}
+
 spotless {
     java {
         target '**/*.java'
-        targetExclude "**/build/**/*"
+        targetExclude "**/build/**/*", "**/.gradle/**/*"
 
         importOrder()
 
         eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
 
-        licenseHeaderFile createLicenseWith(rootProject.file('LICENSE'))
+        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE'))
         removeUnusedImports()
         trimTrailingWhitespace()
     }
     groovyGradle {
         target '**/*.gradle'
-        targetExclude "**/build/**/*"
+        targetExclude "**/build/**/*", "**/.gradle/**/*"
     }
     sql {
         target '**/*.sql'
-        targetExclude "**/build/**/*"
+        targetExclude "**/build/**/*", "**/.gradle/**/*"
 
         dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
     }
+    python {
+        target '**/*.py'
+        targetExclude "**/build/**/*", "**/.gradle/**/*", "**/.venv/**/*", "**/.eggs/**/*", "**/.mypy_cache/**/*"
+        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|# generated)'
+    }
     format 'styling', {
         target '**/*.json', '**/*.yaml'
-        targetExclude "**/build/**/*", "**/node_modules/**/*"
+        targetExclude "**/build/**/*", "**/node_modules/**/*", "**/.gradle/**/*"
 
         prettier()
     }
@@ -176,3 +196,10 @@ task composeBuild {
     }
 }
 build.dependsOn(composeBuild)
+
+// produce reproducible archives
+// (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}

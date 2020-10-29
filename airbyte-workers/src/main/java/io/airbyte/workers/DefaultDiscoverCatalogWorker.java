@@ -24,9 +24,6 @@
 
 package io.airbyte.workers;
 
-import static io.airbyte.workers.JobStatus.FAILED;
-import static io.airbyte.workers.JobStatus.SUCCESSFUL;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
@@ -34,9 +31,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.process.IntegrationLauncher;
-import java.io.IOException;
+import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
+import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,60 +48,66 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDiscoverCatalogWorker.class);
 
   private final IntegrationLauncher integrationLauncher;
+  private final AirbyteStreamFactory streamFactory;
 
   private volatile Process process;
 
-  public DefaultDiscoverCatalogWorker(final IntegrationLauncher integrationLauncher) {
+  public DefaultDiscoverCatalogWorker(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
+    this.streamFactory = streamFactory;
+  }
+
+  public DefaultDiscoverCatalogWorker(final IntegrationLauncher integrationLauncher) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
   @Override
   public OutputAndStatus<StandardDiscoverCatalogOutput> run(final StandardDiscoverCatalogInput discoverSchemaInput,
                                                             final Path jobRoot) {
-    try {
-      return runInternal(discoverSchemaInput, jobRoot);
-    } catch (final Exception e) {
-      LOGGER.error("Error while discovering schema", e);
-      return new OutputAndStatus<>(FAILED);
-    }
-  }
 
-  private OutputAndStatus<StandardDiscoverCatalogOutput> runInternal(final StandardDiscoverCatalogInput discoverSchemaInput,
-                                                                     final Path jobRoot)
-      throws IOException, WorkerException {
     final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
-
     IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
-    process = integrationLauncher.discover(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)
-        // TODO: we shouldn't trust the tap does not pollute stdout
-        .redirectOutput(jobRoot.resolve(WorkerConstants.CATALOG_JSON_FILENAME).toFile())
-        .start();
+    try {
+      process = integrationLauncher.discover(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)
+          .start();
 
-    LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+      LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+      Optional<AirbyteCatalog> catalog;
+      try (InputStream stdout = process.getInputStream()) {
+        catalog = streamFactory.create(IOs.newBufferedReader(stdout))
+            .filter(message -> message.getType() == Type.CATALOG)
+            .map(AirbyteMessage::getCatalog)
+            .findFirst();
 
-    int exitCode = process.exitValue();
+        WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+      }
 
-    if (exitCode == 0) {
-      return new OutputAndStatus<>(
-          SUCCESSFUL,
-          new StandardDiscoverCatalogOutput()
-              .withCatalog(readCatalog(jobRoot)));
-    } else {
-      LOGGER.debug("Discovery job subprocess finished with exit code {}", exitCode);
-      return new OutputAndStatus<>(FAILED);
+      int exitCode = process.exitValue();
+      if (exitCode == 0) {
+        if (catalog.isEmpty()) {
+          LOGGER.error("integration failed to output a catalog struct.");
+          return new OutputAndStatus<>(JobStatus.FAILED);
+        }
+
+        return new OutputAndStatus<>(
+            JobStatus.SUCCEEDED,
+            new StandardDiscoverCatalogOutput()
+                .withCatalog(catalog.get()));
+      } else {
+        LOGGER.debug("Discover job subprocess finished with exit code {}", exitCode);
+        return new OutputAndStatus<>(JobStatus.FAILED);
+      }
+    } catch (final Exception e) {
+      LOGGER.error("Error while discovering schema", e);
+      return new OutputAndStatus<>(JobStatus.FAILED);
     }
   }
 
   @Override
   public void cancel() {
     WorkerUtils.cancelProcess(process);
-  }
-
-  public static AirbyteCatalog readCatalog(Path jobRoot) {
-    return Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME), AirbyteCatalog.class);
   }
 
 }

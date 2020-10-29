@@ -10,7 +10,11 @@ This Postgres destination is based on the [Singer Postgres Target](https://githu
 
 #### Output schema
 
-Airbyte Streams and Fields are written as Postgres Tables and Columns respectively, applying the type changes described below. No extra columns are added in the process.
+Each stream will be output into its own table in Postgres. Each table will contain 3 columns:
+
+* `ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Postgres is `VARCHAR`.
+* `emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Postgres is `TIMESTAMP WITH TIME ZONE`.
+* `data`: a json blob representing with the event data. The column type in BigQuery is `JSONB`.
 
 #### Features
 

@@ -36,13 +36,13 @@ import io.airbyte.api.model.DestinationImplementationCreate;
 import io.airbyte.api.model.DestinationImplementationIdRequestBody;
 import io.airbyte.api.model.DestinationImplementationRead;
 import io.airbyte.api.model.DestinationImplementationRecreate;
-import io.airbyte.commons.json.JsonValidationException;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.DestinationImplementationHelpers;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
@@ -86,7 +86,7 @@ public class WebBackendDestinationImplementationHandlerTest {
     destinationImplementationIdRequestBody.setDestinationImplementationId(destinationImplementationRead.getDestinationImplementationId());
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.SUCCESS);
+    checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
     when(schedulerHandler.checkDestinationImplementationConnection(destinationImplementationIdRequestBody)).thenReturn(checkConnectionRead);
 
@@ -109,7 +109,7 @@ public class WebBackendDestinationImplementationHandlerTest {
         .thenReturn(destinationImplementationRead);
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.FAILURE);
+    checkConnectionRead.setStatus(StatusEnum.FAILED);
 
     DestinationImplementationIdRequestBody destinationImplementationIdRequestBody = new DestinationImplementationIdRequestBody();
     destinationImplementationIdRequestBody.setDestinationImplementationId(destinationImplementationRead.getDestinationImplementationId());
@@ -138,7 +138,7 @@ public class WebBackendDestinationImplementationHandlerTest {
     newDestinationId.setDestinationImplementationId(newDestinationImplementation.getDestinationImplementationId());
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.SUCCESS);
+    checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
     when(schedulerHandler.checkDestinationImplementationConnection(newDestinationId)).thenReturn(checkConnectionRead);
 
@@ -174,7 +174,7 @@ public class WebBackendDestinationImplementationHandlerTest {
     newDestinationId.setDestinationImplementationId(newDestinationImplementation.getDestinationImplementationId());
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.FAILURE);
+    checkConnectionRead.setStatus(StatusEnum.FAILED);
 
     when(schedulerHandler.checkDestinationImplementationConnection(newDestinationId)).thenReturn(checkConnectionRead);
 

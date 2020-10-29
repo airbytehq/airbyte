@@ -91,7 +91,7 @@ public class JobSubmitter implements Runnable {
 
   private JobStatus getStatus(OutputAndStatus<?> output) {
     switch (output.getStatus()) {
-      case SUCCESSFUL:
+      case SUCCEEDED:
         return JobStatus.COMPLETED;
       case FAILED:
         return JobStatus.FAILED;

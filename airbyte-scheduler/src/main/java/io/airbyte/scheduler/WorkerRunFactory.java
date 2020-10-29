@@ -25,6 +25,7 @@
 package io.airbyte.scheduler;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -37,20 +38,13 @@ import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.DefaultSyncWorker;
-import io.airbyte.workers.DiscoverCatalogWorker;
-import io.airbyte.workers.GetSpecWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.process.SingerIntegrationLauncher;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
-import io.airbyte.workers.protocols.singer.DefaultSingerDestination;
-import io.airbyte.workers.protocols.singer.DefaultSingerSource;
-import io.airbyte.workers.protocols.singer.SingerDiscoverCatalogWorker;
-import io.airbyte.workers.protocols.singer.SingerMessageTracker;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
@@ -100,39 +94,33 @@ public class WorkerRunFactory {
   }
 
   private WorkerRun createGetSpecWorker(JobGetSpecConfig config, Path jobRoot) {
-    final GetSpecWorker worker = new DefaultGetSpecWorker(createLauncher(config.getDockerImage()));
+    final IntegrationLauncher launcher = createLauncher(config.getDockerImage());
 
     return creator.create(
         jobRoot,
         config,
-        new JobOutputGetSpecWorker(worker));
+        new JobOutputGetSpecWorker(new DefaultGetSpecWorker(launcher)));
   }
 
   private WorkerRun createConnectionCheckWorker(JobCheckConnectionConfig config, Path jobRoot) {
     final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(config);
 
-    IntegrationLauncher launcher = createLauncher(config.getDockerImage());
-    DiscoverCatalogWorker discoverCatalogWorker =
-        isAirbyteProtocol(config.getDockerImage()) ? new DefaultDiscoverCatalogWorker(launcher) : new SingerDiscoverCatalogWorker(launcher);
-
+    final IntegrationLauncher launcher = createLauncher(config.getDockerImage());
     return creator.create(
         jobRoot,
         checkConnectionInput,
-        new JobOutputCheckConnectionWorker(
-            new DefaultCheckConnectionWorker(discoverCatalogWorker)));
+        new JobOutputCheckConnectionWorker(new DefaultCheckConnectionWorker(launcher)));
   }
 
   private WorkerRun createDiscoverCatalogWorker(JobDiscoverCatalogConfig config, Path jobRoot) {
     final StandardDiscoverCatalogInput discoverSchemaInput = getDiscoverCatalogInput(config);
 
     IntegrationLauncher launcher = createLauncher(config.getDockerImage());
-    DiscoverCatalogWorker discoverCatalogWorker =
-        isAirbyteProtocol(config.getDockerImage()) ? new DefaultDiscoverCatalogWorker(launcher) : new SingerDiscoverCatalogWorker(launcher);
 
     return creator.create(
         jobRoot,
         discoverSchemaInput,
-        new JobOutputDiscoverSchemaWorker(discoverCatalogWorker));
+        new JobOutputDiscoverSchemaWorker(new DefaultDiscoverCatalogWorker(launcher)));
   }
 
   private WorkerRun createSyncWorker(JobSyncConfig config, Path jobRoot) {
@@ -144,36 +132,18 @@ public class WorkerRunFactory {
     Preconditions.checkArgument(sourceLauncher.getClass().equals(destinationLauncher.getClass()),
         "Source and Destination must be using the same protocol");
 
-    if (!isAirbyteProtocol(config.getDestinationDockerImage())) {
-      final SingerDiscoverCatalogWorker discoverSchemaWorker = new SingerDiscoverCatalogWorker(sourceLauncher);
-
-      return creator.create(
-          jobRoot,
-          syncInput,
-          new JobOutputSyncWorker(
-              new DefaultSyncWorker<>(
-                  new DefaultSingerSource(sourceLauncher, discoverSchemaWorker),
-                  new DefaultSingerDestination(destinationLauncher),
-                  new SingerMessageTracker())));
-
-    } else {
-      return creator.create(
-          jobRoot,
-          syncInput,
-          new JobOutputSyncWorker(
-              new DefaultSyncWorker<>(
-                  new DefaultAirbyteSource(sourceLauncher),
-                  new DefaultAirbyteDestination(destinationLauncher),
-                  new AirbyteMessageTracker())));
-    }
+    return creator.create(
+        jobRoot,
+        syncInput,
+        new JobOutputSyncWorker(
+            new DefaultSyncWorker<>(
+                new DefaultAirbyteSource(sourceLauncher),
+                new DefaultAirbyteDestination(destinationLauncher),
+                new AirbyteMessageTracker())));
   }
 
   private IntegrationLauncher createLauncher(final String image) {
-    return isAirbyteProtocol(image) ? new AirbyteIntegrationLauncher(image, pbf) : new SingerIntegrationLauncher(image, pbf);
-  }
-
-  private boolean isAirbyteProtocol(final String image) {
-    return image != null && image.contains("abprotocol");
+    return new AirbyteIntegrationLauncher(image, pbf);
   }
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
@@ -188,7 +158,10 @@ public class WorkerRunFactory {
     return new StandardSyncInput()
         .withSourceConnectionImplementation(config.getSourceConnectionImplementation())
         .withDestinationConnectionImplementation(config.getDestinationConnectionImplementation())
-        .withStandardSync(config.getStandardSync());
+        .withConnectionId(config.getStandardSync().getConnectionId())
+        .withCatalog(AirbyteProtocolConverters.toCatalog(config.getStandardSync().getSchema()))
+        .withSyncMode(config.getStandardSync().getSyncMode())
+        .withState(config.getState());
   }
 
   /*

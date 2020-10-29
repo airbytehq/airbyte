@@ -32,11 +32,11 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
-import io.airbyte.singer.SingerMessage;
-import io.airbyte.workers.protocols.singer.SingerDestination;
-import io.airbyte.workers.protocols.singer.SingerMessageTracker;
-import io.airbyte.workers.protocols.singer.SingerMessageUtils;
-import io.airbyte.workers.protocols.singer.SingerSource;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
+import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
+import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
+import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import java.nio.file.Path;
 import java.util.Optional;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -52,28 +52,21 @@ class DefaultSyncWorkerTest {
   @Test
   public void test() throws Exception {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
-    final StandardSync standardSync = syncPair.getKey();
     final StandardSyncInput syncInput = syncPair.getValue();
 
-    final StandardTapConfig tapConfig = new StandardTapConfig()
-        .withStandardSync(standardSync)
-        .withSourceConnectionImplementation(syncInput.getSourceConnectionImplementation())
-        .withState(syncInput.getState());
+    final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
+    final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
 
-    final StandardTargetConfig targetConfig = new StandardTargetConfig()
-        .withStandardSync(standardSync)
-        .withDestinationConnectionImplementation(syncInput.getDestinationConnectionImplementation());
+    final AirbyteSource tap = mock(AirbyteSource.class);
+    final AirbyteDestination target = mock(AirbyteDestination.class);
 
-    final SingerSource tap = mock(SingerSource.class);
-    final SingerDestination target = mock(SingerDestination.class);
-
-    SingerMessage recordMessage1 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
-    SingerMessage recordMessage2 = SingerMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
+    AirbyteMessage recordMessage1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
+    AirbyteMessage recordMessage2 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
 
     when(tap.isFinished()).thenReturn(false, false, false, true);
     when(tap.attemptRead()).thenReturn(Optional.of(recordMessage1), Optional.empty(), Optional.of(recordMessage2));
 
-    final DefaultSyncWorker<SingerMessage> defaultSyncWorker = new DefaultSyncWorker<>(tap, target, new SingerMessageTracker());
+    final DefaultSyncWorker<AirbyteMessage> defaultSyncWorker = new DefaultSyncWorker<>(tap, target, new AirbyteMessageTracker());
 
     defaultSyncWorker.run(syncInput, WORKSPACE_ROOT);
 
