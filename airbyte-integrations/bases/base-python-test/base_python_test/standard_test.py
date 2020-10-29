@@ -93,8 +93,8 @@ def launch(source, args):
     StandardSourceTestRunner(source).start(args)
 
 
-impl_module = os.environ.get("AIRBYTE_IMPL_MODULE")
-impl_class = os.environ.get("AIRBYTE_IMPL_PATH")
+impl_module = os.environ.get("AIRBYTE_TEST_MODULE")
+impl_class = os.environ.get("AIRBYTE_TEST_PATH")
 
 module = importlib.import_module(impl_module)
 impl = getattr(module, impl_class)
