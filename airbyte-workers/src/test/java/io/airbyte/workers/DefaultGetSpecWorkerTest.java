@@ -60,7 +60,7 @@ class DefaultGetSpecWorkerTest {
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
-    jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT, "");
+    jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "");
     config = new JobGetSpecConfig().withDockerImage(DUMMY_IMAGE_NAME);
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);

@@ -47,7 +47,7 @@ public class Log4j2ConfigTest {
 
   @BeforeEach
   void setUp() throws IOException {
-    root = Files.createTempDirectory(Files.createDirectories(TEST_ROOT, "test");
+    root = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
     MDC.clear();
   }
 

@@ -84,7 +84,7 @@ class IntegrationRunnerTest {
     cliParser = mock(IntegrationCliParser.class);
     stdoutConsumer = Mockito.mock(Consumer.class);
     destination = mock(Destination.class);
-    Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT, "test");
+    Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
     catalogPath = IOs.writeFile(configDir, CATALOG_FILE_NAME, Jsons.serialize(CATALOG));

@@ -69,7 +69,7 @@ class DefaultAirbyteDestinationTest {
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
-    jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT, JOB_ROOT_PREFIX);
+    jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), JOB_ROOT_PREFIX);
 
     process = mock(Process.class);
     outputStream = spy(new ByteArrayOutputStream());

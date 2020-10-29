@@ -93,7 +93,7 @@ class DefaultAirbyteSourceTest {
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
-    jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT, "test");
+    jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class, RETURNS_DEEP_STUBS);

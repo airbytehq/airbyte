@@ -73,7 +73,7 @@ class WorkerRunFactoryTest {
     when(job.getAttempts()).thenReturn(2);
 
     creator = mock(WorkerRunFactory.Creator.class);
-    rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT, "test");
+    rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     factory = new WorkerRunFactory(rootPath, mock(ProcessBuilderFactory.class), creator);
   }
