@@ -1,6 +1,8 @@
-# High Level Overview
+---
+description: Here is a high level view of Airbyte's components.
+---
 
-Here is a high level view of Airbyte's components:
+# Architecture
 
 ![3.048-Kilometer view](../.gitbook/assets/10-000-feet-view%20%281%29.png)
 

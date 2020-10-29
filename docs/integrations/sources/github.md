@@ -8,7 +8,7 @@ This Github source wraps the [Singer Github Tap](https://github.com/singer-io/ta
 
 ### Output schema
 
-Several output streams are available from this source \(commits, issues, pull_requests, etc.\) For a comprehensive output schema [look at the Singer tap schema files](https://github.com/singer-io/tap-github/tree/master/tap_github/schemas).
+Several output streams are available from this source \(commits, issues, pull\_requests, etc.\) For a comprehensive output schema [look at the Singer tap schema files](https://github.com/singer-io/tap-github/tree/master/tap_github/schemas).
 
 ### Features
 
@@ -35,3 +35,4 @@ The Github connector should not run into Github API limitations under normal usa
 Log into Github and then generate a [personal access token](https://github.com/settings/tokens).
 
 We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+

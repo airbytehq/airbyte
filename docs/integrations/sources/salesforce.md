@@ -8,7 +8,7 @@ This source wraps the Singer.io [tap-salesforce](https://github.com/singer-io/ta
 
 ### Output schema
 
-Several output streams are available from this source. A list of these streams can be found below in the [Streams](#streams) section.
+Several output streams are available from this source. A list of these streams can be found below in the [Streams](salesforce.md#streams) section.
 
 ### Features
 
@@ -34,11 +34,14 @@ The connector is restricted by normal Salesforce rate limiting. For large transf
 
 We recommend the following [walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) for setting up a Salesforce app that can pull data from Salesforce and locating the credentials you need to provide to Airbyte.
 
-#### is_sandbox
-If you log in using at https://login.salesforce.com, then the value is false. If you log in at https://test.salesforce.com then the value should be true. If this is Greek to you, then this value should probably be false.
+#### is\_sandbox
+
+If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then the value is false. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then the value should be true. If this is Greek to you, then this value should probably be false.
 
 ## Streams
+
 List of available streams.
+
 * ServiceAppointmentFeed
 * ThirdPartyAccountLink
 * DataAssessmentFieldMetric
@@ -404,3 +407,4 @@ List of available streams.
 * Stamp
 * OperatingHoursFeed
 * ExternalDataSource
+
