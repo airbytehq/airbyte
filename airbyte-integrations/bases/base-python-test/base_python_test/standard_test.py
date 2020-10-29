@@ -81,7 +81,7 @@ class StandardSourceTestRunner(StandardSourceTestIface):
         elif cmd == TestAction.TEARDOWN:
             self.test.teardown()
         elif cmd == TestAction.GET_REGEX_TESTS:
-            json.dumps({"tests": self.get_regex_tests()})
+            output = json.dumps({"tests": self.test.get_regex_tests()})
         else:
             raise Exception("Unexpected command " + cmd)
 

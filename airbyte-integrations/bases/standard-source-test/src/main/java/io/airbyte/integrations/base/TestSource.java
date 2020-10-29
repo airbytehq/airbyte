@@ -64,8 +64,11 @@ import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class TestSource {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestSource.class);
 
   private TestDestinationEnv testEnv;
 
@@ -211,8 +214,13 @@ public abstract class TestSource {
     // again (as long as we use the worker, which we will not want to do long term).
     assertFalse(recordMessages.isEmpty());
 
+    final List<String> regexTests = getRegexTests();
     final List<String> stringMessages = allMessages.stream().map(Jsons::serialize).collect(Collectors.toList());
-    getRegexTests().forEach(regex -> assertTrue(stringMessages.stream().anyMatch(line -> line.matches(regex))));
+    LOGGER.info("Running " + regexTests.size() + " regex tests...");
+    regexTests.forEach(regex -> {
+      LOGGER.info("Looking for [" + regex + "]");
+      assertTrue("Failed to find regex: " + regex, stringMessages.stream().anyMatch(line -> line.matches(regex)));
+    });
   }
 
   /**
