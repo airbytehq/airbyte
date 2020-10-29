@@ -1,9 +1,13 @@
 module.exports = function (plop) {
+  const javaDestinationInputRoot = '../java-destination'
+  const pythonSourceInputRoot = '../source-python'
+
+
   const outputDir = '../../connectors';
   const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`
   const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`
-  
+
   plop.setGenerator('Java Destination', {
     description: 'Generate an Airbyte destination written in Java',
     prompts: [
@@ -17,39 +21,42 @@ module.exports = function (plop) {
       {
         type: 'add',
         path: `${javaDestinationOutputRoot}/build.gradle`,
-        templateFile: '../java-destination/build.gradle.hbs',
+        templateFile: `${javaDestinationInputRoot}/build.gradle.hbs`,
       },
       {
         type: 'add',
         path: `${javaDestinationOutputRoot}/src/main/java/io/airbyte/integrations/destination/{{snakeCase name}}/{{properCase name}}Destination.java`,
-        templateFile: '../java-destination/Destination.java.hbs',
+        templateFile: `${javaDestinationInputRoot}/Destination.java.hbs`,
       },
       {
         type: 'add',
         path: `${javaDestinationOutputRoot}/Dockerfile`,
-        templateFile: '../java-destination/Dockerfile.hbs',
+        templateFile: `${javaDestinationInputRoot}/Dockerfile.hbs`,
       },
       {
         type: 'add',
         path: `${javaDestinationOutputRoot}/.dockerignore`,
-        templateFile: '../java-destination/.dockerignore.hbs',
+        templateFile: `${javaDestinationInputRoot}/.dockerignore.hbs`,
       },
       {
         type: 'add',
         path: `${javaDestinationOutputRoot}/spec.json`,
-        templateFile: '../java-destination/spec.json.hbs',
+        templateFile: `${javaDestinationInputRoot}/spec.json.hbs`,
       },
       'Your new connector has been created. Happy coding~~',
     ],
   });
   plop.setGenerator('Python Source', {
     description: 'Generate an Airbyte Source written in Python',
-    prompts: [
-
-    ],
+    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
     actions: [
-      {type: 'add', 'path'}
-      'Your new connector has been created. Happy coding~~',
+      {
+        type:'addMany',
+        destination: pythonSourceOutputRoot,
+        base: pythonSourceInputRoot,
+        templateFiles: '**.hbs'
+      },
+      'Your new Python source connector has been created. Follow the instructions and TODOs in the repo for next steps. Happy coding! 🐍🐍',
     ]
   });
 };
