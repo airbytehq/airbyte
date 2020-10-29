@@ -24,7 +24,7 @@ SOFTWARE.
 
 from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, Status, Type
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage
 from base_python import AirbyteLogger, Source
 
 
@@ -33,9 +33,6 @@ class {{properCase name}}Source(Source):
         super().__init__()
 
     def check(self, logger: AirbyteLogger, config_container) -> AirbyteConnectionStatus:
-        config = config_container.rendered_config
-        # return AirbyteConnectionStatus(status=Status.FAILED, message=str(reason)) -- return when check fails
-        # return AirbyteConnectionStatus(status=Status.SUCCEEDED) return when check succeeds
         raise Exception("unimplemented")
 
     def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
@@ -43,6 +40,4 @@ class {{properCase name}}Source(Source):
         raise Exception("unimplemented")
 
     def read(self, logger: AirbyteLogger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
-        config = config_container.rendered_config
-        yield AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="", data={}, emitted_at=1))
         raise Exception("unimplemented")
