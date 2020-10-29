@@ -1,5 +1,6 @@
 {
-  "data_url": "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv",
+  "data_url": "gcs://my_own_data_sample/my_epidemiology.csv",
+  "gcs_service_account.json": "secrets/gcs.json",
   "reader": "csv",
   "reader_arguments": {
     "nrows": 20

@@ -25,6 +25,7 @@ SOFTWARE.
 from datetime import datetime
 from typing import Generator, List
 
+import json
 import gcsfs
 import pandas as pd
 from airbyte_protocol import (
@@ -38,7 +39,7 @@ from airbyte_protocol import (
     Type,
 )
 from google.cloud.storage import Client
-from smart_open import smart_open
+from smart_open import open
 
 
 class FileSource(Source):
@@ -82,7 +83,7 @@ class FileSource(Source):
     All the options of the readers are exposed to the configuration file of this connector so it is possible to
     override header names, types, encoding, etc
 
-    Note that this implementation is handling `data_url` target as a single file at the moment.
+    Note that this implementation is handling `url` target as a single file at the moment.
     We will expand the capabilities of this source to discover and load either glob of multiple files,
     content of directories, etc in a latter iteration.
     """
@@ -96,13 +97,13 @@ class FileSource(Source):
         :return:
         """
         config = config_container.rendered_config
-        data_url = config["data_url"]
-        logger.info(f"Checking access to {data_url}...")
+        url = config["url"]
+        logger.info(f"Checking access to {url}...")
         try:
             self.load_dataframes(config, skip_data=True)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as err:
-            reason = f"Failed to load {data_url}: {repr(err)}"
+            reason = f"Failed to load {url}: {repr(err)}"
             logger.error(reason)
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
 
@@ -114,8 +115,8 @@ class FileSource(Source):
         :return:
         """
         config = config_container.rendered_config
-        data_url = config["data_url"]
-        logger.info(f"Discovering schema of {data_url}...")
+        url = config["url"]
+        logger.info(f"Discovering schema of {url}...")
         streams = []
         try:
             # TODO handle discovery of directories of multiple files instead
@@ -130,9 +131,9 @@ class FileSource(Source):
                 "type": "object",
                 "properties": {field: {"type": fields[field]} for field in fields},
             }
-            streams.append(AirbyteStream(name=data_url, json_schema=json_schema))
+            streams.append(AirbyteStream(name=url, json_schema=json_schema))
         except Exception as err:
-            reason = f"Failed to discover schemas of {data_url}: {repr(err)}"
+            reason = f"Failed to discover schemas of {url}: {repr(err)}"
             logger.error(reason)
         return AirbyteCatalog(streams=streams)
 
@@ -146,8 +147,8 @@ class FileSource(Source):
         :return:
         """
         config = config_container.rendered_config
-        data_url = config["data_url"]
-        logger.info(f"Reading ({data_url}, {catalog_path}, {state_path})...")
+        url = config["url"]
+        logger.info(f"Reading ({url}, {catalog_path}, {state_path})...")
         try:
             df_list = self.load_dataframes(config)
             # TODO get subset of columns from catalog
@@ -155,10 +156,10 @@ class FileSource(Source):
                 for data in df.to_dict(orient="records"):
                     yield AirbyteMessage(
                         type=Type.RECORD,
-                        record=AirbyteRecordMessage(stream=data_url, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+                        record=AirbyteRecordMessage(stream=url, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
                     )
         except Exception as err:
-            reason = f"Failed to discover schemas of {data_url}: {repr(err)}"
+            reason = f"Failed to discover schemas of {url}: {repr(err)}"
             logger.error(reason)
             raise err
 
@@ -170,56 +171,69 @@ class FileSource(Source):
         :param config:
         :return: a list of dataframe loaded from files described in the configuration
         """
-        data_url = config["data_url"]
-
-        # default reader
-        reader = "csv"
-        if "reader" in config:
-            reader = config["reader"]
-
-        reader_arg = {}
-        if "reader_arguments" in config:
-            reader_arg = config["reader_arguments"]
-        if skip_data and reader == "read_csv":
-            reader_arg["nrows"] = 0
-            reader_arg["index_col"] = 0
+        url = config["url"]
+        storage = config["storage"]
+        if not url.startswith(storage):
+            url = storage + url
 
         gcs_file = None
-        use_gcs_service_account = "gcs_service_account.json" in config and (data_url.startswith("gcs://") or data_url.startswith("gs://"))
-        if "use_smart_open" in config and config["use_smart_open"]:
+        use_gcs_service_account = "service_account_json" in config and (
+            storage == "gs://" or url.startswith("gcs://") or url.startswith("gs://")
+        )
+
+        # default format reader
+        reader_format = "csv"
+        if "format" in config:
+            reader_format = config["format"]
+
+        reader_options = {}
+        if "reader_options" in config:
+            reader_options = json.loads(config["reader_options"])
+        if skip_data and reader_format == "csv":
+            reader_options["nrows"] = 0
+            reader_options["index_col"] = 0
+
+        # default reader impl
+        reader_impl = ""
+        if "reader_impl" in config:
+            reader_impl = config["reader_impl"]
+
+        if reader_impl == "gcfs":
             if use_gcs_service_account:
-                client = Client.from_service_account_json(config["gcs_service_account.json"])
-                data_url = smart_open(data_url, transport_params=dict(client=client))
-            else:
-                data_url = smart_open(data_url)
+                # TODO convert service_account_json string to json file
+                fs = gcsfs.GCSFileSystem(token=config["service_account_json"])
+                gcs_file = fs.open(url)
+                url = gcs_file
         else:
             if use_gcs_service_account:
-                fs = gcsfs.GCSFileSystem(token=config["gcs_service_account.json"])
-                gcs_file = fs.open(data_url)
-                data_url = gcs_file
+                # TODO convert service_account_json string to json file
+                client = Client.from_service_account_json(config["service_account_json"])
+                url = open(url, transport_params=dict(client=client))
+            else:
+                url = open(url)
 
         result = []
         try:
-            if reader == "csv":
+            if reader_format == "csv":
                 # pandas.read_csv additional arguments can be passed to customize how to parse csv.
                 # see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
-                result.append(pd.read_csv(data_url, **reader_arg))
-            elif reader == "json":
-                result.append(pd.read_json(data_url, **reader_arg))
-            elif reader == "html":
-                result += pd.read_html(data_url, **reader_arg)
-            elif reader == "excel":
-                result.append(pd.read_excel(data_url, **reader_arg))
-            elif reader == "feather":
-                result.append(pd.read_feather(data_url, **reader_arg))
-            elif reader == "parquet":
-                result.append(pd.read_parquet(data_url, **reader_arg))
-            elif reader == "orc":
-                result.append(pd.read_orc(data_url, **reader_arg))
-            elif reader == "pickle":
-                result.append(pd.read_pickle(data_url, **reader_arg))
+                result.append(pd.read_csv(url, **reader_options))
+            elif reader_format == "json":
+                result.append(pd.read_json(url, **reader_options))
+            elif reader_format == "html":
+                result += pd.read_html(url, **reader_options)
+            elif reader_format == "excel":
+                result.append(pd.read_excel(url, **reader_options))
+            elif reader_format == "feather":
+                result.append(pd.read_feather(url, **reader_options))
+            elif reader_format == "parquet":
+                result.append(pd.read_parquet(url, **reader_options))
+            elif reader_format == "orc":
+                result.append(pd.read_orc(url, **reader_options))
+            elif reader_format == "pickle":
+                result.append(pd.read_pickle(url, **reader_options))
             else:
-                raise Exception(f"Reader {reader} is not supported")
+                raise Exception(f"Reader {reader_format} is not supported")
         finally:
             if gcs_file:
                 gcs_file.close()

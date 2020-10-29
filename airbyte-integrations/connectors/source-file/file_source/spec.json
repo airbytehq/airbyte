@@ -1,23 +1,166 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/file-source",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/file",
+
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "File source Spec",
+    "title": "File Source Spec",
     "type": "object",
-    "required": ["data_url"],
-    "additionalProperties": true,
+    "required": ["url", "storage"],
+
     "properties": {
-      "data_url": {
+      "format": {
         "type": "string",
-        "description": "The path to the file to be replicated."
+        "enum": [
+          "csv",
+          "json",
+          "html",
+          "excel",
+          "feather",
+          "parquet",
+          "orc",
+          "pickle"
+        ],
+        "default": "csv"
       },
-      "reader": {
+      "reader_options": {
+        "type": "string"
+      },
+
+      "storage": {
         "type": "string",
-        "description": "Which reader to use for parsing the file format (csv, json, parquet, etc)"
+        "enum": [
+          "https://",
+          "gs://",
+          "s3://",
+          "scp://",
+          "sftp://",
+          "webhdfs://",
+          "file://"
+        ],
+        "default": "https://"
       },
-      "reader_arguments": {
-        "type": "object",
-        "description": "Extra arguments to provide to the reader"
+
+      "url": {
+        "type": "string"
+      }
+    },
+
+    "dependencies": {
+      "storage": {
+        "oneOf": [
+
+          {
+            "properties": {
+              "storage": {
+                "enum": [
+                  "gs://"
+                ]
+              },
+              "service_account_json": {
+                "type": "string"
+              },
+              "reader_impl": {
+                "type": "string",
+                "enum": [
+                  "smart_open",
+                  "gcsfs"
+                ],
+                "default": "gcsfs"
+              }
+            }
+          },
+
+          {
+            "properties": {
+              "storage": {
+                "enum": [
+                  "s3://"
+                ]
+              },
+              "aws_secret_access_key_id": {
+                "type": "string"
+              },
+              "aws_secret_access_key": {
+                "type": "string"
+              },
+              "reader_impl": {
+                "type": "string",
+                "enum": [
+                  "smart_open",
+                  "s3fs"
+                ],
+                "default": "s3fs"
+              }
+            }
+          },
+
+          {
+            "properties": {
+              "storage": {
+                "enum": [
+                  "scp://"
+                ]
+              },
+              "user": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              },
+              "host": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "user",
+              "host"
+            ]
+          },
+
+          {
+            "properties": {
+              "storage": {
+                "enum": [
+                  "sftp://"
+                ]
+              },
+              "user": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              },
+              "host": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "user",
+              "host"
+            ]
+          },
+
+          {
+            "properties": {
+              "storage": {
+                "enum": [
+                  "webhdfs://"
+                ]
+              },
+              "host": {
+                "type": "string"
+              },
+              "port": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "host",
+              "port"
+            ]
+          }
+
+        ]
       }
     }
   }
