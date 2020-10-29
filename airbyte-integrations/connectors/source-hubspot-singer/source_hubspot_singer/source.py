@@ -34,11 +34,36 @@ class SourceHubspotSinger(SingerSource):
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
         try:
             json_config = config_container.rendered_config
-            api_key = json_config["hapikey"]
+            api_key = json_config.get("hapikey", None)
             if api_key:
-                r = requests.get(f"https://api.github.com/repos/airbytehq/airbyte/commits?hapikey={api_key}")
-            # else:
-            # todo (cgardens)
+                logger.info("checking with api key")
+                r = requests.get(f"https://api.hubapi.com/contacts/v1/lists/all/contacts/all?hapikey={api_key}")
+            else:
+                logger.info("checking with oauth")
+                # borrowing from tap-hubspot
+                # https://github.com/singer-io/tap-hubspot/blob/master/tap_hubspot/__init__.py#L208-L229
+                payload = {
+                    "grant_type": "refresh_token",
+                    "redirect_uri": json_config["redirect_uri"],
+                    "refresh_token": json_config["refresh_token"],
+                    "client_id": json_config["client_id"],
+                    "client_secret": json_config["client_secret"],
+                }
+                resp = requests.post("https://api.hubapi.com/oauth/v1/token", data=payload)
+
+                if resp.status_code == 403:
+                    return AirbyteConnectionStatus(status=Status.FAILED, message=resp.content)
+
+                try:
+                    resp.raise_for_status()
+                except Exception as e:
+                    return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
+
+                auth = resp.json()
+                headers = {"Authorization": "Bearer {}".format(auth["access_token"])}
+                # CONFIG['refresh_token'] = auth['refresh_token']
+
+                r = requests.get("https://api.hubapi.com/contacts/v1/lists/all/contacts/all", headers=headers)
 
             if r.status_code == 200:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
@@ -64,7 +89,7 @@ class SourceHubspotSinger(SingerSource):
         # of the oauth fields get passed as well. it just checks existence. we
         # do not bother our users to provide the extra oauth creds if they are
         # using an api key. so we fill them in with dummy values for them.
-        if rendered_config["credentials"]["api_key"]:
+        if "api_key" in rendered_config["credentials"]:
             singer_config["hapikey"] = rendered_config["credentials"]["api_key"]
             singer_config["redirect_uri"] = "placeholder"
             singer_config["client_id"] = "placeholder"
