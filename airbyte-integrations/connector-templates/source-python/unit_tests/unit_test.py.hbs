@@ -22,13 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import unittest
 
-
-class TestExample(unittest.TestCase):
-    def test_example_method(self):
-        self.assertTrue(True, msg="make sure to write unit tests :)")
-
-
-if __name__ == "__main__":
-    unittest.main()
+def test_example_method():
+    assert True
