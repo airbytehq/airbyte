@@ -26,8 +26,8 @@ import sys
 
 from base_python.entrypoint import launch
 
-from .{{snakeCase name}}_source import {{properCase name}}Source
+from source_{{snakeCase name}} import Source{{properCase name}}
 
 if __name__ == "__main__":
-    source = {{properCase name}}Source()
+    source = Source{{properCase name}}()
     launch(source, sys.argv[1:])
