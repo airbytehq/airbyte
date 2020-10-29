@@ -30,7 +30,7 @@ python main_dev.py read --config sample_files/test_config.json --catalog sample_
 ### Locally running the connector docker image
 ```
 # in airbyte root directory
-./gradlew :airbyte-integrations:connectors:{{dashCase name}}-source:buildImage
+./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}:buildImage
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/sample_files:/sample_files airbyte/source-{{dashCase name}}:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/sample_files:/sample_files airbyte/source-{{dashCase name}}:dev check --config /sample_files/test_config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/sample_files:/sample_files airbyte/source-{{dashCase name}}:dev discover --config /sample_files/test_config.json
