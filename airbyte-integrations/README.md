@@ -1,27 +1,30 @@
-### Updating an Integration
-1. Create an integration using the generator:
+## Creating a new Integration
 
-    ```
-    npm run generate
-    ```
+From the `airbyte-integrations/connector-templates/generator` directory, run: 
+```
+npm run generate
+```
 
-1. Bump the version in the `Dockerfile` of the integration (`LABEL io.airbyte.version=0.1.0`)
-1. Iterate by building the the `dev` tagged image and running tests:
-    ```
-    ./gradlew :airbyte-integrations:singer:postgres:source:integrationTest
-    ```
+This should generate a new integration in the `airbyte-integrations/connectors/<your-integration>` directory. 
+Follow the instructions generated in the CHECKLIST.md file for bootstrapping the integration. The generated
+README.md should also contain instructions on how to develop the integration locally. 
+
+## Updating an integration's default version in Airbyte
+Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions
+to tell Airbyte to use the latest version of your integration.   
+
+1. Bump the version in the `Dockerfile` of the integration (`LABEL io.airbyte.version=X.X.X`)
 1. Build the integration with the semantic version tag locally:
     ```
-    ./tools/integrations/manage.sh build airbyte-integrations/singer/postgres/source
+    ./tools/integrations/manage.sh build airbyte-integrations/connectors/source-postgres-singer
     ```
 1. Publish the new version to Docker Hub. 
-
     ```
-    ./tools/integrations/manage.sh publish airbyte-integrations/singer/postgres/source
+    ./tools/integrations/manage.sh publish airbyte-integrations/connectors/source-postgres-signer
     ```
-1. Update the version of the integration in `Integrations.java` so the new version can be used in Airbyte.
-1. Merge the PR with you integration updates.
-
+1. Update the connector version inside the `STANDARD_SOURCE` (or `STANDARD_DESTINATION` directory) to the one you just published. 
+This will update Airbyte to use this new version by default. 
+1. Merge the PR containing the changes you made.
 
 ## Python Connector Development
 
