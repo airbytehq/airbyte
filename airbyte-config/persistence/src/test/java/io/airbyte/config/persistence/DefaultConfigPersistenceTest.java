@@ -55,6 +55,7 @@ class DefaultConfigPersistenceTest {
 
   public static final UUID UUID_2 = new UUID(0, 2);
   public static final StandardSource SOURCE_2 = new StandardSource();
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   static {
     SOURCE_2.withSourceId(UUID_2)
@@ -69,7 +70,7 @@ class DefaultConfigPersistenceTest {
   @BeforeEach
   void setUp() throws IOException {
     schemaValidator = mock(JsonSchemaValidator.class);
-    rootPath = Files.createTempDirectory(DefaultConfigPersistenceTest.class.getName());
+    rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), DefaultConfigPersistenceTest.class.getName());
 
     configPersistence = new DefaultConfigPersistence(rootPath, schemaValidator);
   }
