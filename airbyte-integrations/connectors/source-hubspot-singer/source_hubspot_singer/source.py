@@ -61,7 +61,6 @@ class SourceHubspotSinger(SingerSource):
 
                 auth = resp.json()
                 headers = {"Authorization": "Bearer {}".format(auth["access_token"])}
-                # CONFIG['refresh_token'] = auth['refresh_token']
 
                 r = requests.get("https://api.hubapi.com/contacts/v1/lists/all/contacts/all", headers=headers)
 
