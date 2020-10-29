@@ -51,12 +51,13 @@ module.exports = function (plop) {
     prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
     actions: [
       {
+        abortOnFail: true,
         type:'addMany',
         destination: pythonSourceOutputRoot,
         base: pythonSourceInputRoot,
-        templateFiles: '**.hbs'
+        templateFiles: `${pythonSourceInputRoot}/**/**`
       },
-      'Your new Python source connector has been created. Follow the instructions and TODOs in the repo for next steps. Happy coding! 🐍🐍',
+      'Your new Python source connector has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🐍🐍',
     ]
   });
 };
