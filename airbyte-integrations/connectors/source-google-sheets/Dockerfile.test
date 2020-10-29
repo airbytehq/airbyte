@@ -19,8 +19,5 @@ COPY google_sheets_source/*.json integration_tests
 COPY setup.py ./
 
 RUN pip install ".[integration_tests]"
-RUN ls integration_tests/*
-RUN ls
-RUN cat ./integration_tests/__init__.py | head
 
 WORKDIR /airbyte

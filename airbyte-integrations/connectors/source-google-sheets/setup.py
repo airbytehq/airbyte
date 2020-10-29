@@ -38,7 +38,6 @@ setup(
         "google-api-python-client",
         "PyYAML==5.3.1",
         "pydantic==1.6.1",
-        "jsonpickle==1.4.1",
     ],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
