@@ -2,6 +2,6 @@
   "format": "csv",
   "reader_options": "{\"sep\": \",\", \"nrows\": 20}",
   "storage": "https://",
-  "url": "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv",
+  "url": "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv",
   "reader_impl": "gcsfs"
 }

@@ -174,8 +174,8 @@ class FileSource(Source):
         :param config:
         :return: a list of dataframe loaded from files described in the configuration
         """
-        url = config["url"]
         storage = config["storage"]
+        url = config["url"]
 
         gcs_file = None
         use_gcs_service_account = "service_account_json" in config and storage == "gs://"

@@ -54,7 +54,7 @@ class TestFileSource(object):
     def create_gcs_private_data(self, download_gcs_public_data):
         print("Upload dataset to private gcs bucket")
         storage_client = storage.Client.from_service_account_json(self.service_account_file)
-        bucket_name = create_unique_bucket(storage_client, self.gcs_bucket_name)
+        bucket_name = create_unique_gcs_bucket(storage_client, self.gcs_bucket_name)
         bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob("myfile.csv")
         blob.upload_from_filename(download_gcs_public_data)
@@ -116,7 +116,7 @@ def get_config():
     return {"format": "csv", "reader_options": '{"sep": ",", "nrows": 42}'}
 
 
-def create_unique_bucket(storage_client, gcs_bucket_name: str) -> str:
+def create_unique_gcs_bucket(storage_client, gcs_bucket_name: str) -> str:
     """
     Make a unique bucket to which we'll upload the file.
     (GCS buckets are part of a single global namespace.)
