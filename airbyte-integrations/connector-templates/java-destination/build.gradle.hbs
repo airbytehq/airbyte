@@ -1,0 +1,17 @@
+plugins {
+    id 'application'
+}
+
+apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-integrations:bases:base-java')
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.{{snakeCase name}}.{{properCase name}}Destination'
+}
+
+buildImage.dependsOn ':airbyte-integrations:bases:base-java:buildImage'
