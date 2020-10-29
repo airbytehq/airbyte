@@ -9,7 +9,7 @@ ENV AIRBYTE_IMPL_PATH="Source{{properCase name}}"
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
-RUN pip install .
+RUN pip install ".[main]"
 
 LABEL io.airbyte.version=0.1.0
 LABEL io.airbyte.name=airbyte/source-{{dashCase name}}
