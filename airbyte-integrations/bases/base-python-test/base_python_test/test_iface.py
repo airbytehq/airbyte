@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import List
+
 from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
 
 
@@ -37,6 +39,9 @@ class StandardSourceTestIface(object):
 
     def get_catalog(self) -> AirbyteCatalog:
         raise Exception("Not Implemented")
+
+    def get_regex_tests(self) -> List[str]:
+        return []
 
     def setup(self) -> None:
         pass

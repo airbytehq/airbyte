@@ -25,6 +25,7 @@ SOFTWARE.
 import json
 import pkgutil
 import urllib.request
+from typing import List
 
 from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
 from base_python_test import StandardSourceTestIface
@@ -47,6 +48,20 @@ class GoogleAnalyticsStandardSourceTest(StandardSourceTestIface):
         tracker = pkgutil.get_data(self.__class__.__module__.split(".")[0], "tracker.txt").strip()
         pageview_url = f"https://www.google-analytics.com/j/collect?v=1&_v=j86&a=1532168960&t=pageview&_s=1&dl=https%3A%2F%2Fairbyte.io&de=UTF-8&dt=Page%20Title&sd=30-bit&sr=1440x900&vp=344x650&je=0&_u=AACAAUABAAAAAC~&jid=1183258623&gjid=1930938845&cid=1690909460.1603818157&tid={tracker}"
         urllib.request.urlopen(pageview_url)
+
+    def get_regex_tests(self) -> List[str]:
+        return [
+            "(.*)RECORD(.*)website_overview(.*)",
+            "(.*)RECORD(.*)traffic_sources(.*)",
+            "(.*)RECORD(.*)pages(.*)",
+            "(.*)RECORD(.*)locations(.*)",
+            "(.*)RECORD(.*)monthly_active_users(.*)",
+            "(.*)RECORD(.*)four_weekly_active_users(.*)",
+            "(.*)RECORD(.*)two_weekly_active_users(.*)",
+            "(.*)RECORD(.*)weekly_active_users(.*)",
+            "(.*)RECORD(.*)daily_active_users(.*)",
+            "(.*)RECORD(.*)devices(.*)",
+        ]
 
     def teardown(self) -> None:
         pass

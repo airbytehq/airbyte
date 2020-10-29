@@ -26,6 +26,7 @@ package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -39,6 +40,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Extends TestSource such that it can be called using resources pulled from the file system. Will
@@ -75,6 +78,13 @@ public class PythonTestSource extends TestSource {
   }
 
   @Override
+  protected List<String> getRegexTests() throws IOException {
+    return Streams.stream(runExecutable(Command.GET_REGEX_TESTS).withArray("tests").elements())
+            .map(JsonNode::textValue)
+            .collect(toList());
+  }
+
+  @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
     testRoot = Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), "pytest");
     runExecutableVoid(Command.SETUP);
@@ -89,6 +99,7 @@ public class PythonTestSource extends TestSource {
     GET_SPEC,
     GET_CONFIG,
     GET_CATALOG,
+    GET_REGEX_TESTS,
     SETUP,
     TEARDOWN
   }

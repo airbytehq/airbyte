@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -52,6 +53,8 @@ import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -100,6 +103,14 @@ public abstract class TestSource {
    * @throws Exception - do what must be done.
    */
   protected abstract AirbyteCatalog getCatalog() throws Exception;
+
+  /**
+   * List of regular expressions that should match the output of the test sync.
+   *
+   * @return the regular expressions to test
+   * @throws Exception - thrown when attempting ot access the regexes fails
+   */
+  protected abstract List<String> getRegexTests() throws Exception;
 
   /**
    * Function that performs any setup of external resources required for the test. e.g. instantiate a
@@ -194,10 +205,14 @@ public abstract class TestSource {
    */
   @Test
   public void testRead() throws Exception {
-    final List<AirbyteMessage> recordMessages = runRead(getCatalog()).stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
+    final List<AirbyteMessage> allMessages = runRead(getCatalog());
+    final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
     // the worker validates the messages, so we just validate the message, so we do not need to validate
     // again (as long as we use the worker, which we will not want to do long term).
     assertFalse(recordMessages.isEmpty());
+
+    final List<String> stringMessages = allMessages.stream().map(Jsons::serialize).collect(Collectors.toList());
+    getRegexTests().forEach(regex -> assertTrue(stringMessages.stream().anyMatch(line -> line.matches(regex))));
   }
 
   /**

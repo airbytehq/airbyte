@@ -30,6 +30,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Extends TestSource such that it can be called using resources pulled from the file system. Will
@@ -89,6 +91,11 @@ public class ExecutableTestSource extends TestSource {
   @Override
   protected AirbyteCatalog getCatalog() {
     return Jsons.deserialize(IOs.readFile(TEST_CONFIG.getCatalogPath()), AirbyteCatalog.class);
+  }
+
+  @Override
+  protected List<String> getRegexTests() throws Exception {
+    return new ArrayList<>();
   }
 
   @Override
