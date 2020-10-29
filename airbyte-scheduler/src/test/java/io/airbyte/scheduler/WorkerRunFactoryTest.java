@@ -45,11 +45,9 @@ import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
 import io.airbyte.workers.wrappers.JobOutputSyncWorker;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,89 +57,89 @@ import org.mockito.ArgumentCaptor;
 
 class WorkerRunFactoryTest {
 
-    private static final JsonNode CONFIG = Jsons.jsonNode(1);
-    private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
+  private static final JsonNode CONFIG = Jsons.jsonNode(1);
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
-    private Job job;
-    private Path rootPath;
-    private WorkerRunFactory.Creator creator;
+  private Job job;
+  private Path rootPath;
+  private WorkerRunFactory.Creator creator;
 
-    private WorkerRunFactory factory;
+  private WorkerRunFactory factory;
 
-    @BeforeEach
-    void setUp() throws IOException {
-        job = mock(Job.class, RETURNS_DEEP_STUBS);
-        when(job.getId()).thenReturn(1L);
-        when(job.getAttempts()).thenReturn(2);
+  @BeforeEach
+  void setUp() throws IOException {
+    job = mock(Job.class, RETURNS_DEEP_STUBS);
+    when(job.getId()).thenReturn(1L);
+    when(job.getAttempts()).thenReturn(2);
 
-        creator = mock(WorkerRunFactory.Creator.class);
-        rootPath = Files.createTempDirectory(TEST_ROOT, "test");
+    creator = mock(WorkerRunFactory.Creator.class);
+    rootPath = Files.createTempDirectory(TEST_ROOT, "test");
 
-        factory = new WorkerRunFactory(rootPath, mock(ProcessBuilderFactory.class), creator);
-    }
+    factory = new WorkerRunFactory(rootPath, mock(ProcessBuilderFactory.class), creator);
+  }
 
-    @SuppressWarnings("unchecked")
-    @ParameterizedTest
-    @EnumSource(value = JobConfig.ConfigType.class,
-            names = {"CHECK_CONNECTION_SOURCE", "CHECK_CONNECTION_DESTINATION"})
-    void testConnection(JobConfig.ConfigType value) {
-        when(job.getConfig().getConfigType()).thenReturn(value);
-        when(job.getConfig().getCheckConnection().getConnectionConfiguration()).thenReturn(CONFIG);
+  @SuppressWarnings("unchecked")
+  @ParameterizedTest
+  @EnumSource(value = JobConfig.ConfigType.class,
+              names = {"CHECK_CONNECTION_SOURCE", "CHECK_CONNECTION_DESTINATION"})
+  void testConnection(JobConfig.ConfigType value) {
+    when(job.getConfig().getConfigType()).thenReturn(value);
+    when(job.getConfig().getCheckConnection().getConnectionConfiguration()).thenReturn(CONFIG);
 
-        factory.create(job);
+    factory.create(job);
 
-        StandardCheckConnectionInput expectedInput = new StandardCheckConnectionInput().withConnectionConfiguration(CONFIG);
-        ArgumentCaptor<Worker<StandardCheckConnectionInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
-        verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
-        Assertions.assertTrue(argument.getValue() instanceof JobOutputCheckConnectionWorker);
-    }
+    StandardCheckConnectionInput expectedInput = new StandardCheckConnectionInput().withConnectionConfiguration(CONFIG);
+    ArgumentCaptor<Worker<StandardCheckConnectionInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
+    Assertions.assertTrue(argument.getValue() instanceof JobOutputCheckConnectionWorker);
+  }
 
-    @SuppressWarnings("unchecked")
-    @Test
-    void testSchema() {
-        when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.DISCOVER_SCHEMA);
-        when(job.getConfig().getDiscoverCatalog().getConnectionConfiguration()).thenReturn(CONFIG);
+  @SuppressWarnings("unchecked")
+  @Test
+  void testSchema() {
+    when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.DISCOVER_SCHEMA);
+    when(job.getConfig().getDiscoverCatalog().getConnectionConfiguration()).thenReturn(CONFIG);
 
-        factory.create(job);
+    factory.create(job);
 
-        StandardDiscoverCatalogInput expectedInput = new StandardDiscoverCatalogInput().withConnectionConfiguration(CONFIG);
-        ArgumentCaptor<Worker<StandardDiscoverCatalogInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
-        verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
-        Assertions.assertTrue(argument.getValue() instanceof JobOutputDiscoverSchemaWorker);
-    }
+    StandardDiscoverCatalogInput expectedInput = new StandardDiscoverCatalogInput().withConnectionConfiguration(CONFIG);
+    ArgumentCaptor<Worker<StandardDiscoverCatalogInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
+    Assertions.assertTrue(argument.getValue() instanceof JobOutputDiscoverSchemaWorker);
+  }
 
-    @SuppressWarnings("unchecked")
-    @Test
-    void testSync() {
-        when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.SYNC);
+  @SuppressWarnings("unchecked")
+  @Test
+  void testSync() {
+    when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.SYNC);
 
-        factory.create(job);
+    factory.create(job);
 
-        StandardSyncInput expectedInput = new StandardSyncInput()
-                .withSourceConnectionImplementation(job.getConfig().getSync().getSourceConnectionImplementation())
-                .withDestinationConnectionImplementation(job.getConfig().getSync().getDestinationConnectionImplementation())
-                .withCatalog(AirbyteProtocolConverters.toCatalog(job.getConfig().getSync().getStandardSync().getSchema()))
-                .withConnectionId(job.getConfig().getSync().getStandardSync().getConnectionId())
-                .withSyncMode(job.getConfig().getSync().getStandardSync().getSyncMode())
-                .withState(job.getConfig().getSync().getState());
+    StandardSyncInput expectedInput = new StandardSyncInput()
+        .withSourceConnectionImplementation(job.getConfig().getSync().getSourceConnectionImplementation())
+        .withDestinationConnectionImplementation(job.getConfig().getSync().getDestinationConnectionImplementation())
+        .withCatalog(AirbyteProtocolConverters.toCatalog(job.getConfig().getSync().getStandardSync().getSchema()))
+        .withConnectionId(job.getConfig().getSync().getStandardSync().getConnectionId())
+        .withSyncMode(job.getConfig().getSync().getStandardSync().getSyncMode())
+        .withState(job.getConfig().getSync().getState());
 
-        ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
-        verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
-        Assertions.assertTrue(argument.getValue() instanceof JobOutputSyncWorker);
-    }
+    ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
+    Assertions.assertTrue(argument.getValue() instanceof JobOutputSyncWorker);
+  }
 
-    @SuppressWarnings("unchecked")
-    @Test
-    void testGetSpec() {
-        when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.GET_SPEC);
-        JobGetSpecConfig expectedConfig = new JobGetSpecConfig().withDockerImage("notarealimage");
-        when(job.getConfig().getGetSpec()).thenReturn(expectedConfig);
+  @SuppressWarnings("unchecked")
+  @Test
+  void testGetSpec() {
+    when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.GET_SPEC);
+    JobGetSpecConfig expectedConfig = new JobGetSpecConfig().withDockerImage("notarealimage");
+    when(job.getConfig().getGetSpec()).thenReturn(expectedConfig);
 
-        factory.create(job);
+    factory.create(job);
 
-        ArgumentCaptor<Worker<JobGetSpecConfig, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
-        verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedConfig), argument.capture());
-        Assertions.assertTrue(argument.getValue() instanceof JobOutputGetSpecWorker);
-    }
+    ArgumentCaptor<Worker<JobGetSpecConfig, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedConfig), argument.capture());
+    Assertions.assertTrue(argument.getValue() instanceof JobOutputGetSpecWorker);
+  }
 
 }

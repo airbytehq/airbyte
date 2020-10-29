@@ -39,6 +39,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class BigQueueTest {
+
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private CloseableQueue<byte[]> queue;
 

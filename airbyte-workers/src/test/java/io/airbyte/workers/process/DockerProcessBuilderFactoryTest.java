@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 // todo (cgardens) - these are not truly "unit" tests as they are check resources on the internet.
 // we should move them to "integration" tests, when we have facility to do so.
 class DockerProcessBuilderFactoryTest {
+
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   @Test
