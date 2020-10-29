@@ -21,6 +21,7 @@
             "required": ["api_key"],
             "properties": {
               "api_key": {
+                "description": "Hubspot API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this key.",
                 "type": "string"
               }
             }
@@ -35,18 +36,22 @@
             ],
             "properties": {
               "redirect_uri": {
+                "description": "Hubspot API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this key.",
                 "type": "string",
                 "examples": ["https://api.hubspot.com/"]
               },
               "client_id": {
+                "description": "Hubspot client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this id.",
                 "type": "string",
                 "examples": ["123456789000,"]
               },
               "client_secret": {
+                "description": "Hubspot client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this secret.",
                 "type": "string",
                 "examples": ["secret"]
               },
               "refresh_token": {
+                "description": "Hubspot refresh_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help generating the token.",
                 "type": "string",
                 "examples": ["refresh_token"]
               }
