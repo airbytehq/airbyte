@@ -45,7 +45,7 @@ class BigQueueTest {
 
   @BeforeEach
   void setup() throws IOException {
-    queue = new BigQueue(Files.createTempDirectory(TEST_ROOT, "test"), "test");
+    queue = new BigQueue(Files.createTempDirectory(Files.createDirectories(TEST_ROOT, "test"), "test");
   }
 
   @AfterEach

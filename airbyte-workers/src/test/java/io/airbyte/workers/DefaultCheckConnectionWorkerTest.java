@@ -70,7 +70,7 @@ public class DefaultCheckConnectionWorkerTest {
   public void setup() throws IOException, WorkerException {
     input = new StandardCheckConnectionInput().withConnectionConfiguration(CREDS);
 
-    jobRoot = Files.createTempDirectory(TEST_ROOT, "");
+    jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT, "");
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 

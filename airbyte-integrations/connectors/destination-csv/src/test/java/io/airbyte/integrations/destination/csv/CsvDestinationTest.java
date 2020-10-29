@@ -99,7 +99,7 @@ class CsvDestinationTest {
 
   @BeforeEach
   void setup() throws IOException {
-    destinationPath = Files.createTempDirectory(TEST_ROOT, "test");
+    destinationPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT, "test");
     config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString()));
   }
 

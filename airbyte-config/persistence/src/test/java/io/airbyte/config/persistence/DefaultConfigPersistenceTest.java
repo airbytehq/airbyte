@@ -70,7 +70,7 @@ class DefaultConfigPersistenceTest {
   @BeforeEach
   void setUp() throws IOException {
     schemaValidator = mock(JsonSchemaValidator.class);
-    rootPath = Files.createTempDirectory(TEST_ROOT, DefaultConfigPersistenceTest.class.getName());
+    rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT, DefaultConfigPersistenceTest.class.getName());
 
     configPersistence = new DefaultConfigPersistence(rootPath, schemaValidator);
   }
