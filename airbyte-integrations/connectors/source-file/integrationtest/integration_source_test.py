@@ -27,12 +27,12 @@ import os
 import tempfile
 import uuid
 
+import boto3
 import pytest
+from botocore.errorfactory import ClientError
 from google.api_core.exceptions import Conflict
 from google.cloud import storage
 from source_file import FileSource
-import boto3
-from botocore.errorfactory import ClientError
 
 
 class TestFileSource(object):
@@ -71,8 +71,13 @@ class TestFileSource(object):
         with open(self.aws_credentials) as json_file:
             aws_config = json.load(json_file)
         region = "eu-west-3"
-        location = {'LocationConstraint': region}
-        s3_client = boto3.client("s3", aws_access_key_id=aws_config["aws_access_key_id"], aws_secret_access_key=aws_config["aws_secret_access_key"], region_name=region)
+        location = {"LocationConstraint": region}
+        s3_client = boto3.client(
+            "s3",
+            aws_access_key_id=aws_config["aws_access_key_id"],
+            aws_secret_access_key=aws_config["aws_secret_access_key"],
+            region_name=region,
+        )
         bucket_name = self.cloud_bucket_name
         try:
             s3_client.head_bucket(Bucket=bucket_name)
@@ -80,7 +85,9 @@ class TestFileSource(object):
             s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=location)
         s3_client.upload_file(download_gcs_public_data, bucket_name, "myfile.csv")
         yield f"{bucket_name}/myfile.csv"
-        s3 = boto3.resource('s3', aws_access_key_id=aws_config["aws_access_key_id"], aws_secret_access_key=aws_config["aws_secret_access_key"])
+        s3 = boto3.resource(
+            "s3", aws_access_key_id=aws_config["aws_access_key_id"], aws_secret_access_key=aws_config["aws_secret_access_key"]
+        )
         bucket = s3.Bucket(bucket_name)
         bucket.objects.all().delete()
 

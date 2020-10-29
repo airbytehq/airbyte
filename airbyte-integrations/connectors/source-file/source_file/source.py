@@ -152,11 +152,13 @@ class FileSource(Source):
         config = config_container.rendered_config
         url = config["url"]
         logger.info(f"Reading ({url}, {catalog_path}, {state_path})...")
+        catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        selection = self.parse_catalog(catalog)
         try:
             df_list = self.load_dataframes(config)
-            # TODO get subset of columns from catalog
             for df in df_list:
-                for data in df.to_dict(orient="records"):
+                columns = selection.intersection(set(df.columns))
+                for data in df[columns].to_dict(orient="records"):
                     yield AirbyteMessage(
                         type=Type.RECORD,
                         record=AirbyteRecordMessage(stream=url, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
@@ -298,3 +300,11 @@ class FileSource(Source):
         elif dtype == "bool":
             return "bool"
         return "string"
+
+    @staticmethod
+    def parse_catalog(catalog: AirbyteCatalog) -> set:
+        columns = set()
+        for stream in catalog.streams:
+            for key in stream.json_schema["properties"].keys():
+                columns.add(key)
+        return columns
