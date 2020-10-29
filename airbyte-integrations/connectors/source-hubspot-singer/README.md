@@ -1,6 +1,6 @@
-# Github Test Configuration
+# Hubspot Test Configuration
 
-This integration wraps the existing singer [tap-github](https://github.com/singer-io/tap-github). In order to test the Github source, you will need an access_key key from github. You can generate one by logging into github and then creating a personal access token [here](https://github.com/settings/tokens).
+This integration wraps the existing singer [tap-hubspot](https://github.com/singer-io/tap-hubspot). In order to test the Hubspot source, you will need api credentials, see the [docs](https://docs.airbyte.io/integrations/sources/hubspot) for details.
 
 ## Community Contributor
 
