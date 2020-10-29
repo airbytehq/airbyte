@@ -16,15 +16,15 @@ const ItemView = styled.div`
   align-items: center;
 `;
 
-const PaddedText = styled(Text)`
-  padding-left: 6px;
+const Icon = styled(ImageBlock)`
+  margin-right: 6px;
 `;
 
 const ValueInput: React.FC<IProps> = ({ item }) => {
   return (
     <ItemView>
-      {item.img ? <ImageBlock img={item.img} /> : null}
-      <PaddedText>{item.text}</PaddedText>
+      {item.img ? <Icon img={item.img} /> : null}
+      <Text>{item.text}</Text>
     </ItemView>
   );
 };
