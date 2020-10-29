@@ -25,8 +25,9 @@ SOFTWARE.
 import json
 from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteLogger, AirbyteMessage, Source, Status, Type
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, Status, Type
 from apiclient import errors
+from base_python import AirbyteLogger, Source
 
 from .helpers import Helpers
 from .models.spreadsheet import Spreadsheet

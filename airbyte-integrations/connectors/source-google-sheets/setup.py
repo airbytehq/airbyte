@@ -44,6 +44,6 @@ setup(
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={
-        "standardtest": ["airbyte_python_test"],
+        "integration_tests": ["airbyte_python_test"],
     },
 )
