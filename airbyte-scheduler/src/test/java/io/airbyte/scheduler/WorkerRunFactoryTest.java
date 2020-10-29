@@ -58,6 +58,7 @@ import org.mockito.ArgumentCaptor;
 class WorkerRunFactoryTest {
 
   private static final JsonNode CONFIG = Jsons.jsonNode(1);
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   private Job job;
   private Path rootPath;
@@ -72,7 +73,7 @@ class WorkerRunFactoryTest {
     when(job.getAttempts()).thenReturn(2);
 
     creator = mock(WorkerRunFactory.Creator.class);
-    rootPath = Files.createTempDirectory("test");
+    rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     factory = new WorkerRunFactory(rootPath, mock(ProcessBuilderFactory.class), creator);
   }
