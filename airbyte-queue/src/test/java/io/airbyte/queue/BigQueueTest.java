@@ -32,18 +32,19 @@ import com.google.common.base.Charsets;
 import io.airbyte.commons.lang.CloseableQueue;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class BigQueueTest {
-
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private CloseableQueue<byte[]> queue;
 
   @BeforeEach
   void setup() throws IOException {
-    queue = new BigQueue(Files.createTempDirectory("test"), "test");
+    queue = new BigQueue(Files.createTempDirectory(TEST_ROOT, "test"), "test");
   }
 
   @AfterEach

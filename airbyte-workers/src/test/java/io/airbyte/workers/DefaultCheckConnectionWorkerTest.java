@@ -55,7 +55,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class DefaultCheckConnectionWorkerTest {
-
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
 
   private Path jobRoot;
@@ -69,7 +69,7 @@ public class DefaultCheckConnectionWorkerTest {
   public void setup() throws IOException, WorkerException {
     input = new StandardCheckConnectionInput().withConnectionConfiguration(CREDS);
 
-    jobRoot = Files.createTempDirectory("");
+    jobRoot = Files.createTempDirectory(TEST_ROOT,"");
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 
