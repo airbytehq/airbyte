@@ -27,7 +27,12 @@
           },
           {
             "title": "oauth",
-            "required": ["redirect_uri", "client_id", "client_secret", "refresh_token"],
+            "required": [
+              "redirect_uri",
+              "client_id",
+              "client_secret",
+              "refresh_token"
+            ],
             "properties": {
               "redirect_uri": {
                 "type": "string",

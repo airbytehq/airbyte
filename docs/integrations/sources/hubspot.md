@@ -28,13 +28,10 @@ The connector is restricted by normal Hubspot [rate limitations](https://legacyd
 ### Requirements
 
 * Hubspot Account
-* There are two ways of performing auth with hubspot (api key and oauth):
-    * For api key auth, in Hubspot, for the account to go settings -> integrations (under the account banner) -> api key. If you already have an api key you can use that. Otherwise generated a new one.
-        * Note: The Hubspot [docs](https://legacydocs.hubspot.com/docs/methods/auth/oauth-overview) recommends that api key auth is only used for testing purposes.
-    * For oauth...
+* Api credentials
 
 ### Setup guide
-
-Log into Github and then generate a [personal access token](https://github.com/settings/tokens).
-
-We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+*There are two ways of performing auth with hubspot (api key and oauth):
+    * For api key auth, in Hubspot, for the account to go settings -> integrations (under the account banner) -> api key. If you already have an api key you can use that. Otherwise generated a new one.
+        * Note: The Hubspot [docs](https://legacydocs.hubspot.com/docs/methods/auth/oauth-overview) recommends that api key auth is only used for testing purposes.
+    * For oauth follow the [oauth instruction](https://developers.hubspot.com/docs/api/oauth-quickstart-guide) in Hubspot to get client_id, client_secret, redirect_uri, and refresh_token.
