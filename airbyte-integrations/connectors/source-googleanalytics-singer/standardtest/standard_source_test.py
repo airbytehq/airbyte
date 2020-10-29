@@ -22,23 +22,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import json
+import pkgutil
 
-setup(
-    name="googleanalytics-singer-source",
-    description="Airbyte Source for Google Analytics (singer-based)",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    # two sets of dependencies: 1) for main 2) for standard test deps. 2 does not have all of the dependencies of 1, which is we cannot use install_requires.
-    extras_require={
-        "main": [
-            "pipelinewise-tap-google-analytics==1.1.1",
-            "pydantic==1.6.1",
-            "base_singer",
-            "airbyte_protocol",
-        ],
-        "standardtest": ["airbyte_python_test"],
-    },
-)
+from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from base_python_test import StandardSourceTestIface
+
+
+class GoogleAnalyticsStandardSourceTest(StandardSourceTestIface):
+    def get_spec(self) -> ConnectorSpecification:
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
+        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
+
+    def get_config(self) -> object:
+        return json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json"))
+
+    def get_catalog(self) -> AirbyteCatalog:
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "test_catalog.json")
+        return AirbyteCatalog.parse_obj(json.loads(raw_spec))
+
+    def setup(self) -> None:
+        # todo: query GA with requests
+        pass
+
+    def teardown(self) -> None:
+        pass
+
+    # todo: add regexes that must match and regexes that must not match

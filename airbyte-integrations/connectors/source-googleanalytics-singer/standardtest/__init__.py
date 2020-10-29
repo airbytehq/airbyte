@@ -22,23 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from .standard_source_test import GoogleAnalyticsStandardSourceTest
 
-setup(
-    name="googleanalytics-singer-source",
-    description="Airbyte Source for Google Analytics (singer-based)",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    # two sets of dependencies: 1) for main 2) for standard test deps. 2 does not have all of the dependencies of 1, which is we cannot use install_requires.
-    extras_require={
-        "main": [
-            "pipelinewise-tap-google-analytics==1.1.1",
-            "pydantic==1.6.1",
-            "base_singer",
-            "airbyte_protocol",
-        ],
-        "standardtest": ["airbyte_python_test"],
-    },
-)
+__all__ = ["GoogleAnalyticsStandardSourceTest"]
