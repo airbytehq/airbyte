@@ -2,6 +2,7 @@
 exclude =
     .venv,
     models # generated protocol models
+    .eggs # python libraries"
 extend-ignore =
   E203,  # whitespace before ':' (conflicts with Black)
   E231,  # Bad trailing comma (conflicts with Black)

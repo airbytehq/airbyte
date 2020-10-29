@@ -18,3 +18,6 @@ echo "GOOGLE_ANALYTICS_TEST_TRACKING_ID" > airbyte-integrations/connectors/sourc
 
 mkdir airbyte-integrations/connectors/source-salesforce-singer/secrets/
 echo "$SALESFORCE_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source-salesforce-singer/secrets/config.json
+
+mkdir airbyte-integrations/connectors/source-google-sheets/secrets
+echo "$GSHEETS_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source-google-sheets/secrets/creds.json
