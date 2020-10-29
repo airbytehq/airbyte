@@ -41,7 +41,7 @@ from airbyte_protocol import (
     Type,
 )
 from google.cloud.storage import Client
-from s3fs.core import S3FileSystem
+from s3fs import S3FileSystem
 from smart_open import open
 
 
@@ -179,7 +179,7 @@ class FileSource(Source):
 
         gcs_file = None
         use_gcs_service_account = "service_account_json" in config and storage == "gs://"
-        use_aws_account = "aws_secret_access_key_id" in config and "aws_secret_access_key" in config and storage == "s3://"
+        use_aws_account = "aws_access_key_id" in config and "aws_secret_access_key" in config and storage == "s3://"
 
         # default format reader
         reader_format = "csv"
@@ -204,16 +204,20 @@ class FileSource(Source):
                 fs = gcsfs.GCSFileSystem(token=token_dict)
                 gcs_file = fs.open(f"gs://{url}")
                 url = gcs_file
+            else:
+                url = open(f"{storage}{url}")
         elif reader_impl == "s3fs":
             if use_aws_account:
-                aws_secret_access_key_id = None
-                if "aws_secret_access_key_id" in config:
-                    aws_secret_access_key_id = config["aws_secret_access_key_id"]
+                aws_access_key_id = None
+                if "aws_access_key_id" in config:
+                    aws_access_key_id = config["aws_access_key_id"]
                 aws_secret_access_key = None
                 if "aws_secret_access_key" in config:
                     aws_secret_access_key = config["aws_secret_access_key"]
-                s3 = S3FileSystem(anon=False, key=aws_secret_access_key_id, secret=aws_secret_access_key)
-                url = s3.open(f"s3://{url}", mode="rb")
+                s3 = S3FileSystem(anon=False, key=aws_access_key_id, secret=aws_secret_access_key)
+                url = s3.open(f"s3://{url}", mode="r")
+            else:
+                url = open(f"{storage}{url}")
         else:  # using smart_open
             if use_gcs_service_account:
                 credentials = json.dumps(json.loads(config["service_account_json"]))
@@ -225,13 +229,13 @@ class FileSource(Source):
                 url = open(f"gs://{url}", transport_params=dict(client=client))
                 os.remove(tmp_service_account.name)
             elif use_aws_account:
-                aws_secret_access_key_id = ""
-                if "aws_secret_access_key_id" in config:
-                    aws_secret_access_key_id = config["aws_secret_access_key_id"]
+                aws_access_key_id = ""
+                if "aws_access_key_id" in config:
+                    aws_access_key_id = config["aws_access_key_id"]
                 aws_secret_access_key = ""
                 if "aws_secret_access_key" in config:
                     aws_secret_access_key = config["aws_secret_access_key"]
-                url = open(f"s3://{aws_secret_access_key_id}:{aws_secret_access_key}@{url}")
+                url = open(f"s3://{aws_access_key_id}:{aws_secret_access_key}@{url}")
             elif storage == "webhdfs":
                 host = config["host"]
                 port = config["port"]

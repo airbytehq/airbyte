@@ -69,7 +69,7 @@
               "storage": {
                 "enum": ["s3://"]
               },
-              "aws_secret_access_key_id": {
+              "aws_access_key_id": {
                 "type": "string"
               },
               "aws_secret_access_key": {

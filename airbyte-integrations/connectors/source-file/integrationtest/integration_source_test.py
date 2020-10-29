@@ -31,18 +31,21 @@ import pytest
 from google.api_core.exceptions import Conflict
 from google.cloud import storage
 from source_file import FileSource
+import boto3
+from botocore.errorfactory import ClientError
 
 
 class TestFileSource(object):
-    service_account_file = "../secrets/gcs.json"
-    gcs_bucket_name = "airbyte_test_bucket"
+    service_account_file: str = "../secrets/gcs.json"
+    aws_credentials: str = "../secrets/aws.json"
+    cloud_bucket_name: str = "airbytetestbucket"
 
     @pytest.fixture(scope="class")
     def download_gcs_public_data(self):
         print("Download public dataset from gcs to local /tmp")
         config = get_config()
         config["storage"] = "https://"
-        config["url"] = "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"
+        config["url"] = "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"
         df = run_load_dataframes(config)
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
         df.to_csv(tmp_file.name, index=False)
@@ -54,23 +57,38 @@ class TestFileSource(object):
     def create_gcs_private_data(self, download_gcs_public_data):
         print("Upload dataset to private gcs bucket")
         storage_client = storage.Client.from_service_account_json(self.service_account_file)
-        bucket_name = create_unique_gcs_bucket(storage_client, self.gcs_bucket_name)
+        bucket_name = create_unique_gcs_bucket(storage_client, self.cloud_bucket_name)
         bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob("myfile.csv")
         blob.upload_from_filename(download_gcs_public_data)
-        yield bucket_name + "/myfile.csv"
+        yield f"{bucket_name}/myfile.csv"
         bucket.delete(force=True)
         print(f"Bucket {bucket_name} is now deleted")
 
     @pytest.fixture(scope="class")
     def create_aws_private_data(self, download_gcs_public_data):
         print("Upload dataset to private aws bucket")
+        with open(self.aws_credentials) as json_file:
+            aws_config = json.load(json_file)
+        region = "eu-west-3"
+        location = {'LocationConstraint': region}
+        s3_client = boto3.client("s3", aws_access_key_id=aws_config["aws_access_key_id"], aws_secret_access_key=aws_config["aws_secret_access_key"], region_name=region)
+        bucket_name = self.cloud_bucket_name
+        try:
+            s3_client.head_bucket(Bucket=bucket_name)
+        except ClientError:
+            s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=location)
+        s3_client.upload_file(download_gcs_public_data, bucket_name, "myfile.csv")
+        yield f"{bucket_name}/myfile.csv"
+        s3 = boto3.resource('s3', aws_access_key_id=aws_config["aws_access_key_id"], aws_secret_access_key=aws_config["aws_secret_access_key"])
+        bucket = s3.Bucket(bucket_name)
+        bucket.objects.all().delete()
 
     @pytest.mark.parametrize(
         "reader_impl, storage, url",
         [
             ("gcfs", "https://", "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"),
-            ("smart_open", "https://", "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"),
+            ("smart_open", "https://", "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"),
             ("smart_open", "file://", "local"),
         ],
     )
@@ -100,7 +118,11 @@ class TestFileSource(object):
         config["storage"] = "s3://"
         config["url"] = create_aws_private_data
         config["reader_impl"] = reader_impl
-        # run_load_dataframes(config)
+        with open(self.aws_credentials) as json_file:
+            aws_config = json.load(json_file)
+        config["aws_access_key_id"] = aws_config["aws_access_key_id"]
+        config["aws_secret_access_key"] = aws_config["aws_secret_access_key"]
+        run_load_dataframes(config)
 
 
 def run_load_dataframes(config):
@@ -116,13 +138,13 @@ def get_config():
     return {"format": "csv", "reader_options": '{"sep": ",", "nrows": 42}'}
 
 
-def create_unique_gcs_bucket(storage_client, gcs_bucket_name: str) -> str:
+def create_unique_gcs_bucket(storage_client, name: str) -> str:
     """
     Make a unique bucket to which we'll upload the file.
     (GCS buckets are part of a single global namespace.)
     """
     for i in range(0, 5):
-        bucket_name = f"{gcs_bucket_name}-{uuid.uuid1()}"
+        bucket_name = f"{name}-{uuid.uuid1()}"
         try:
             bucket = storage_client.bucket(bucket_name)
             bucket.storage_class = "STANDARD"
