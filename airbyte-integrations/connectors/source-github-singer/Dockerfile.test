@@ -17,7 +17,7 @@ WORKDIR /airbyte/integration_code
 # copy all resources to the code path.
 COPY secrets ./$CODE_PATH
 COPY source_github_singer/*.json ./$CODE_PATH
-COPY standardtestresources ./$CODE_PATH
+COPY resourcesstandardtest/*.json ./$CODE_PATH
 
 COPY setup.py ./
 RUN pip install ".[standardtest]"
