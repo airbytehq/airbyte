@@ -17,4 +17,4 @@
 1. Run the tests with the `GOOGLE_ANALYTICS_TEST_TRACKING_ID` environment variable set to the tracking ID for your instance (example: `UA-1234567-1`).
 
 ## For Airbyte employees
-Put the contents of the `google-analytics-test-config` secret on Rippling under the `Engineering` folder into `secrets/config.json` to be able to run integration tests locally.
+Put the contents of the `google-analytics-test-config` secret on Rippling under the `Engineering` folder into `secrets/config.json` and `google-analytics-test-tracker` to `secrets/tracker.txt` to be able to run integration tests locally.

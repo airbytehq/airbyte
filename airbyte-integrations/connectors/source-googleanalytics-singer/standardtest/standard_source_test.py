@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import json
-import os
 import pkgutil
 import urllib.request
 
@@ -45,7 +44,8 @@ class GoogleAnalyticsStandardSourceTest(StandardSourceTestIface):
 
     # send a pageview to GA
     def setup(self) -> None:
-        pageview_url = f"https://www.google-analytics.com/j/collect?v=1&_v=j86&a=1532168960&t=pageview&_s=1&dl=https%3A%2F%2Fairbyte.io&de=UTF-8&dt=Page%20Title&sd=30-bit&sr=1440x900&vp=344x650&je=0&_u=AACAAUABAAAAAC~&jid=1183258623&gjid=1930938845&cid=1690909460.1603818157&tid={os.environ.get('GOOGLE_ANALYTICS_TEST_TRACKING_ID')}"
+        tracker = pkgutil.get_data(self.__class__.__module__.split(".")[0], "tracker.txt").strip()
+        pageview_url = f"https://www.google-analytics.com/j/collect?v=1&_v=j86&a=1532168960&t=pageview&_s=1&dl=https%3A%2F%2Fairbyte.io&de=UTF-8&dt=Page%20Title&sd=30-bit&sr=1440x900&vp=344x650&je=0&_u=AACAAUABAAAAAC~&jid=1183258623&gjid=1930938845&cid=1690909460.1603818157&tid={tracker}"
         urllib.request.urlopen(pageview_url)
 
     def teardown(self) -> None:

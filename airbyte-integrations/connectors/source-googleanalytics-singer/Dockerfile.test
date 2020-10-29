@@ -16,7 +16,8 @@ WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
 
 # copy all resources to the code path.
-COPY secrets ./$CODE_PATH
+COPY secrets/config.json ./$CODE_PATH/config.json
+COPY secrets/tracker.txt ./$CODE_PATH/tracker.txt
 COPY sample_files/test_catalog.json ./$CODE_PATH/test_catalog.json
 COPY googleanalytics_singer_source/spec.json ./$CODE_PATH/spec.json
 
