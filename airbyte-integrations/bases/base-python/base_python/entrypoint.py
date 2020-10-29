@@ -88,7 +88,7 @@ class AirbyteEntrypoint(object):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
-                message = AirbyteMessage(type="SPEC", spec=self.source.spec(logger))
+                message = AirbyteMessage(type=Type.SPEC, spec=self.source.spec(logger))
                 print(message.json(exclude_unset=True))
                 sys.exit(0)
 
