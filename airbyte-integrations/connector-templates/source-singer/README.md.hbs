@@ -11,8 +11,9 @@ First, build the module by running the following from the `airbyte` project root
 ```
 
 This should generate a virtualenv for this module in `source-{{dashCase name}}-singer/.venv`. Make sure this venv is active in your
-development environment of choice. If you are on the terminal, run the following from the `source-{{dashCase name}}-singer` directory:
+development environment of choice. If you are on the terminal, run the following
 ```
+cd airbyte-integrations/connectors/source-{{dashCase name}}-singer # cd into the connector directory
 source .venv/bin/activate
 ```
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv. 
@@ -27,6 +28,13 @@ python main_dev.py discover --config sample_files/test_config.json
 python main_dev.py read --config sample_files/test_config.json --catalog sample_files/test_catalog.json
 ```
 
+### Unit Tests
+To run unit tests locally, from the connector root run:
+```
+python setup.py test
+```
+
+
 ### Locally running the connector docker image
 ```
 # in airbyte root directory
@@ -36,12 +44,6 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}-singer/sample_files:/sample_files airbyte/source-{{dashCase name}}-singer:dev discover --config /sample_files/test_config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}-singer/sample_files:/sample_files airbyte/source-{{dashCase name}}-singer:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
 ```
-
-### Unit Tests
-To run unit tests locally, from the connector root run:
-```
-python setup.py test
-``` 
 
 ### Integration Tests 
 1. Configure credentials as appropriate, described below.

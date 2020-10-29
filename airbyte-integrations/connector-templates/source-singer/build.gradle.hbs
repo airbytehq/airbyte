@@ -19,8 +19,9 @@ task unitTest(type: PythonTask){
 
 build.dependsOn(unitTest)
 build.dependsOn ':airbyte-integrations:bases:base-python-test:build'
-buildImage.dependsOn ':airbyte-integrations:bases:base-python:buildImage'
-integrationTest.dependsOn(buildImage)
 
+buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
 buildTestImage.dependsOn ':airbyte-integrations:bases:base-python-test:buildImage'
+
+integrationTest.dependsOn(buildImage)
 standardSourceTestPython.dependsOn(buildTestImage)

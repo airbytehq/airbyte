@@ -53,6 +53,12 @@ module.exports = function (plop) {
         base: singerSourceInputRoot,
         templateFiles: `${singerSourceInputRoot}/**/**`
       },
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${singerSourceInputRoot}/.secrets/credentials.json.hbs`,
+        path: `${singerSourceOutputRoot}/secrets/credentials.json`
+      },
       'Your new Singer-based source connector has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🐍🐍',
     ]
   });
