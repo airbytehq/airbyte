@@ -1,5 +1,6 @@
 apply plugin: 'ru.vyarus.use-python'
 
+
 python {
     envPath = '.venv'
     minPythonVersion = '3.7'
@@ -32,7 +33,7 @@ task flakeCheck(type: PythonTask, dependsOn: blackFormat) {
     command = ". --config ${rootProject.file('tools/python/.flake8').absolutePath}"
 }
 
-if(project.ext.has('pyModule')) {
+if (project.ext.has('pyModule')) {
     task mypyCheck(type: PythonTask, dependsOn: installReqs) {
         module = "mypy"
         command = "-m ${project.ext.pyModule} --config-file ${rootProject.file('tools/python/.mypy.ini').absolutePath}"
