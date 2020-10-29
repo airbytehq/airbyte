@@ -4,10 +4,9 @@ From the `airbyte-integrations/connector-templates/generator` directory, run:
 ```
 npm run generate
 ```
-
-This should generate a new integration in the `airbyte-integrations/connectors/<your-integration>` directory. 
-Follow the instructions generated in the CHECKLIST.md file for bootstrapping the integration. The generated
-README.md should also contain instructions on how to develop the integration locally. 
+and follow the interactive prompt. This will generate a new integration in the `airbyte-integrations/connectors/<your-integration>` directory. 
+Follow the instructions generated in the checklist md file for bootstrapping the integration. The generated
+README.md will also contain instructions on how to iterate. 
 
 ## Updating an integration's default version in Airbyte
 Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions
