@@ -1,6 +1,11 @@
 module.exports = function (plop) {
-  plop.setGenerator('java-destination', {
-    description: 'generate java destination',
+  const outputDir = '../../connectors';
+  const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`
+  const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`
+  const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`
+  
+  plop.setGenerator('Java Destination', {
+    description: 'Generate an Airbyte destination written in Java',
     prompts: [
       {
         type: 'input',
@@ -11,30 +16,40 @@ module.exports = function (plop) {
     actions: [
       {
         type: 'add',
-        path: '../../connectors/destination-{{dashCase name}}/build.gradle',
+        path: `${javaDestinationOutputRoot}/build.gradle`,
         templateFile: '../java-destination/build.gradle.hbs',
       },
       {
         type: 'add',
-        path: '../../connectors/destination-{{dashCase name}}/src/main/java/io/airbyte/integrations/destination/{{snakeCase name}}/{{properCase name}}Destination.java',
+        path: `${javaDestinationOutputRoot}/src/main/java/io/airbyte/integrations/destination/{{snakeCase name}}/{{properCase name}}Destination.java`,
         templateFile: '../java-destination/Destination.java.hbs',
       },
       {
         type: 'add',
-        path: '../../connectors/destination-{{dashCase name}}/Dockerfile',
+        path: `${javaDestinationOutputRoot}/Dockerfile`,
         templateFile: '../java-destination/Dockerfile.hbs',
       },
       {
         type: 'add',
-        path: '../../connectors/destination-{{dashCase name}}/.dockerignore',
+        path: `${javaDestinationOutputRoot}/.dockerignore`,
         templateFile: '../java-destination/.dockerignore.hbs',
       },
       {
         type: 'add',
-        path: '../../connectors/destination-{{dashCase name}}/spec.json',
+        path: `${javaDestinationOutputRoot}/spec.json`,
         templateFile: '../java-destination/spec.json.hbs',
       },
       'Your new connector has been created. Happy coding~~',
     ],
+  });
+  plop.setGenerator('Python Source', {
+    description: 'Generate an Airbyte Source written in Python',
+    prompts: [
+
+    ],
+    actions: [
+      {type: 'add', 'path'}
+      'Your new connector has been created. Happy coding~~',
+    ]
   });
 };
