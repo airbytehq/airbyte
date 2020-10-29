@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.base;
 
+import static java.util.stream.Collectors.toList;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
@@ -40,8 +42,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Extends TestSource such that it can be called using resources pulled from the file system. Will
@@ -80,8 +80,8 @@ public class PythonTestSource extends TestSource {
   @Override
   protected List<String> getRegexTests() throws IOException {
     return Streams.stream(runExecutable(Command.GET_REGEX_TESTS).withArray("tests").elements())
-            .map(JsonNode::textValue)
-            .collect(toList());
+        .map(JsonNode::textValue)
+        .collect(toList());
   }
 
   @Override
