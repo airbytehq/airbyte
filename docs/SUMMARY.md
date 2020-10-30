@@ -13,6 +13,7 @@
   * [Full Refresh](high-level-overview/full-refresh.md)
 * [Integrations](integrations/README.md)
   * [Sources](integrations/sources/README.md)
+    * [Google Sheets](integrations/sources/google-sheets.md)
     * [exchangeratesapi.io](integrations/sources/exchangeratesapi-io.md)
     * [Github](integrations/sources/github.md)
     * [Postgres](integrations/sources/postgres.md)
