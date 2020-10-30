@@ -34,6 +34,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.io.Resources;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.DatabaseHelper;
@@ -48,20 +50,34 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 class MySqlSourceTest {
 
+  private static final String TEST_USER = "test";
+  private static final String TEST_PASSWORD = "test";
   private static final String STREAM_NAME = "id_and_name";
   private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
       STREAM_NAME,
@@ -80,51 +96,51 @@ class MySqlSourceTest {
   private static MySQLContainer<?> db;
 
   @BeforeAll
-  static void before() {
-    // the start up on this container takes a minute. we can't start and stop between each test and live
-    // to tell the tale.
-    db = new MySQLContainer<>("mysql:8.0");
+  static void init() {
+    MoreResources.writeResource("init.sql",
+            "CREATE USER '"+ TEST_USER + "'@'%' IDENTIFIED BY '" + TEST_PASSWORD + "';\n"
+                + "GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n"
+    );
+    db = new MySQLContainer<>("mysql:8.0").withInitScript("init.sql").withUsername("root").withPassword("");
     db.start();
-  }
-
-  @AfterAll
-  static void after() {
-    db.stop();
   }
 
   @BeforeEach
   void setup() throws SQLException {
-
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put("database", "db_" + RandomStringUtils.randomAlphabetic(10))
+        .put("username", TEST_USER)
+        .put("password", TEST_PASSWORD)
         .build());
 
     final BasicDataSource connectionPool = DatabaseHelper.getConnectionPool(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s",
+        String.format("jdbc:mysql://%s:%s",
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
+            config.get("port").asText()),
         "com.mysql.cj.jdbc.Driver");
 
-    // do the get tables version of this
-    DatabaseHelper.query(connectionPool, ctx -> ctx.dropTableIfExists("id_and_name"));
-    DatabaseHelper.query(connectionPool, ctx -> ctx.fetch("DROP TABLE IF EXISTS id_and_name"));
     DatabaseHelper.query(connectionPool, ctx -> {
+      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
+      ctx.fetch("USE " + config.get("database").asText());
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
 
       return null;
-    });
+    }, SQLDialect.MYSQL);
+  }
+
+  @AfterAll
+  static void cleanUp() {
+    db.stop();
+    db.close();
   }
 
   @Test
-  void testSpec() throws IOException {
+  void testSpec() throws Exception {
     final ConnectorSpecification actual = new MySqlSource().spec();
     final String resourceString = MoreResources.readResource("spec.json");
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
@@ -133,14 +149,14 @@ class MySqlSourceTest {
   }
 
   @Test
-  void testCheckSuccess() {
+  void testCheckSuccess() throws Exception {
     final AirbyteConnectionStatus actual = new MySqlSource().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
   @Test
-  void testCheckFailure() {
+  void testCheckFailure() throws Exception {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = new MySqlSource().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)

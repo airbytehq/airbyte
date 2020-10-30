@@ -61,6 +61,7 @@ import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.Named;
 import org.jooq.SQLDialect;
+import org.jooq.Schema;
 import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,12 +121,14 @@ public abstract class AbstractJdbcSource implements Source {
 
   private List<Table<?>> discoverInternal(JsonNode config) throws Exception {
     final BasicDataSource connectionPool = getConnectionPool(config);
-    return DatabaseHelper.query(connectionPool, context -> context.meta().getTables(), dialect)
-        .stream()
-        // some databases (e.g. mysql) include information_schema tables in getTables. filter them out;
-        // these are not the tables we are looking for!
-        .filter(t -> !t.getSchema().getName().equals("information_schema"))
-        .collect(Collectors.toList());
+    return DatabaseHelper.query(connectionPool, context -> {
+      final List<Schema> databases = context.meta().getSchemas(config.get("database").asText());
+      if(databases.size() > 1) {
+        throw new IllegalStateException("found multiple databases with the same name.");
+      }
+      final Schema database = databases.get(0);
+      return context.meta(database).getTables();
+    }, dialect);
   }
 
   @Override
