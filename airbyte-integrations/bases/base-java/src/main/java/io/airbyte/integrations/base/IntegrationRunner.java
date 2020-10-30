@@ -26,8 +26,10 @@ package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -35,30 +37,46 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Accepts EITHER a destination or a source. Routes commands from the commandline to the appropriate
+ * methods on the integration. Keeps itself DRY for methods that are common between source and
+ * destination.
+ */
 public class IntegrationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunner.class);
 
   private final IntegrationCliParser cliParser;
   private final Consumer<String> stdoutConsumer;
+  private final Integration integration;
   private final Destination destination;
+  private final Source source;
 
   public IntegrationRunner(Destination destination) {
-    this(new IntegrationCliParser(), System.out::println, destination);
+    this(new IntegrationCliParser(), System.out::println, destination, null);
+  }
+
+  public IntegrationRunner(Source source) {
+    this(new IntegrationCliParser(), System.out::println, null, source);
   }
 
   @VisibleForTesting
-  IntegrationRunner(IntegrationCliParser cliParser, Consumer<String> stdoutConsumer, Destination destination) {
+  IntegrationRunner(IntegrationCliParser cliParser, Consumer<String> stdoutConsumer, Destination destination, Source source) {
+    Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.stdoutConsumer = stdoutConsumer;
+    // integration iface covers the commands that are the same for both source and destination.
+    this.integration = source != null ? source : destination;
+    this.source = source;
     this.destination = destination;
   }
 
   public void run(String[] args) throws Exception {
-    LOGGER.info("Running integration: {}", destination.getClass().getName());
+    LOGGER.info("Running integration: {}", integration.getClass().getName());
 
     final IntegrationConfig parsed = cliParser.parse(args);
 
@@ -66,19 +84,30 @@ public class IntegrationRunner {
     LOGGER.info("Integration config: {}", parsed);
 
     switch (parsed.getCommand()) {
-      case SPEC -> stdoutConsumer.accept(Jsons.serialize(new AirbyteMessage().withType(Type.SPEC).withSpec(destination.spec())));
+      // common
+      case SPEC -> stdoutConsumer.accept(Jsons.serialize(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec())));
       case CHECK -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        stdoutConsumer.accept(Jsons.serialize(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(destination.check(config))));
+        stdoutConsumer.accept(Jsons.serialize(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config))));
       }
+      // source only
       case DISCOVER -> {
-        throw new IllegalStateException("Discover is not implemented for destinations");
+        final JsonNode config = parseConfig(parsed.getConfigPath());
+        stdoutConsumer.accept(Jsons.serialize(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config))));
       }
-      case READ ->
-        // final JsonNode config = parseConfig(parsed.getConfig());
-        // final Schema schema = parseConfig(parsed.getSchema(), Schema.class);
-        // final State state = parseConfig(parsed.getState(), State.class);
-        throw new RuntimeException("Not implemented");
+      // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
+      // envelope) while the other commands return what goes inside it.
+      case READ -> {
+        final JsonNode config = parseConfig(parsed.getConfigPath());
+        final AirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), AirbyteCatalog.class);
+        // todo (cgardens) - should we should only send the contents of the state field to the integration,
+        // not the whole struct. this runner obfuscates everything but the contents.
+        final Optional<State> stateOptional = parsed.getStatePath().map(path -> parseConfig(path, State.class));
+        final Stream<AirbyteMessage> messageStream = source.read(config, catalog, stateOptional.map(State::getState).orElse(null));
+        messageStream.map(Jsons::serialize).forEach(stdoutConsumer);
+        messageStream.close();
+      }
+      // destination only
       case WRITE -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         final AirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), AirbyteCatalog.class);
@@ -88,10 +117,10 @@ public class IntegrationRunner {
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
     }
 
-    LOGGER.info("Completed integration: {}", destination.getClass().getName());
+    LOGGER.info("Completed integration: {}", integration.getClass().getName());
   }
 
-  void consumeWriteStream(DestinationConsumer<AirbyteMessage> consumer) throws Exception {
+  static void consumeWriteStream(DestinationConsumer<AirbyteMessage> consumer) throws Exception {
     final Scanner input = new Scanner(System.in);
     try (consumer) {
       while (input.hasNextLine()) {
