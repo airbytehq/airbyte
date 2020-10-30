@@ -24,21 +24,39 @@
 
 package io.airbyte.db;
 
+import static org.jooq.impl.DSL.currentSchema;
+
+import com.google.common.collect.Sets;
+import io.airbyte.commons.json.Jsons;
+import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Record1;
+import org.jooq.Result;
 import org.jooq.SQLDialect;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SchemaImpl;
 
 public class DatabaseHelper {
 
-  public static BasicDataSource getConnectionPool(String username,
-                                                  String password,
-                                                  String jdbcConnectionString) {
+  // default to postgres (which is the driver that is installed with this library).
+  public static BasicDataSource getConnectionPool(String username, String password, String jdbcConnectionString) {
 
-    BasicDataSource connectionPool = new BasicDataSource();
-    connectionPool.setDriverClassName("org.postgresql.Driver");
+    return getConnectionPool(username, password, jdbcConnectionString, "org.postgresql.Driver");
+  }
+
+  public static BasicDataSource getConnectionPool( String username,String password,String jdbcConnectionString, String driverClassName) {
+    final BasicDataSource connectionPool = new BasicDataSource();
+    connectionPool.setDriverClassName(driverClassName);
     connectionPool.setUsername(username);
     connectionPool.setPassword(password);
     connectionPool.setUrl(jdbcConnectionString);
@@ -46,17 +64,20 @@ public class DatabaseHelper {
     return connectionPool;
   }
 
+  // default to postgres dialect
   public static <T> T query(BasicDataSource connectionPool, ContextQueryFunction<T> transform) throws SQLException {
-
-    try (Connection connection = connectionPool.getConnection()) {
-      DSLContext context = getContext(connection);
+    return query(connectionPool, transform, SQLDialect.POSTGRES);
+  }
+  public static <T> T query(BasicDataSource connectionPool, ContextQueryFunction<T> transform, SQLDialect dialect) throws SQLException {
+    try (final Connection connection = connectionPool.getConnection()) {
+      DSLContext context = getContext(connection, dialect);
       return transform.apply(context);
     }
   }
 
   public static <T> T transaction(BasicDataSource connectionPool, ContextQueryFunction<T> transform) throws SQLException {
-    try (Connection connection = connectionPool.getConnection()) {
-      DSLContext context = getContext(connection);
+    try (final Connection connection = connectionPool.getConnection()) {
+      DSLContext context = getContext(connection, SQLDialect.POSTGRES);
       return context.transactionResult(configuration -> {
         DSLContext transactionContext = DSL.using(configuration);
         return transform.apply(transactionContext);
@@ -64,8 +85,7 @@ public class DatabaseHelper {
     }
   }
 
-  private static DSLContext getContext(Connection connection) {
-    return DSL.using(connection, SQLDialect.POSTGRES);
+  public static DSLContext getContext(Connection connection, SQLDialect dialect) {
+    return DSL.using(connection, dialect);
   }
-
 }
