@@ -1,0 +1,23 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "JDBC Source Spec",
+    "type": "object",
+    "required": ["username", "jdbc_url"],
+    "additionalProperties": false,
+    "properties": {},
+    "username": {
+      "description": "Username to use to access the database.",
+      "type": "string"
+    },
+    "password": {
+      "description": "Password associated with the username.",
+      "type": "string"
+    },
+    "jdbc_url": {
+      "description": "JDBC formatted url. See the standard <a href=\"https://docs.oracle.com/cd/E17952_01/connector-j-8.0-en/connector-j-reference-jdbc-url-format.html\">here</a>.",
+      "type": "string"
+    }
+  }
+}

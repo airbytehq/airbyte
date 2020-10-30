@@ -54,7 +54,7 @@ public class TestServerUuid {
     // execInContainer uses Docker's EXEC so it needs to be split up like this
     container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
-    connectionPool = DatabaseHelper.getConnectionPool(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    connectionPool = DatabaseHelper.getPostgresConnectionPool(container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }
 
   @Test
