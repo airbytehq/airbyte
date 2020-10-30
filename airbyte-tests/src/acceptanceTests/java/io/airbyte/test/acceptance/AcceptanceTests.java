@@ -305,7 +305,7 @@ public class AcceptanceTests {
   }
 
   private BasicDataSource getConnectionPool(PostgreSQLContainer db) {
-    return DatabaseHelper.getConnectionPool(
+    return DatabaseHelper.getPostgresConnectionPool(
         db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
