@@ -22,29 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List
+import sys
 
-from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from airbyte_protocol.entrypoint import launch
+from source_googleanalytics_singer import GoogleAnalyticsSingerSource
 
-
-class StandardSourceTestIface(object):
-    def __init__(self):
-        pass
-
-    def get_spec(self) -> ConnectorSpecification:
-        raise Exception("Not Implemented")
-
-    def get_config(self) -> object:
-        raise Exception("Not Implemented")
-
-    def get_catalog(self) -> AirbyteCatalog:
-        raise Exception("Not Implemented")
-
-    def get_regex_tests(self) -> List[str]:
-        return []
-
-    def setup(self) -> None:
-        pass
-
-    def tear_down(self) -> None:
-        pass
+if __name__ == "__main__":
+    source = GoogleAnalyticsSingerSource()
+    launch(source, sys.argv[1:])
