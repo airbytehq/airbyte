@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.integrations.source.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -48,19 +48,23 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.junit.jupiter.api.AfterEach;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.SQLDialect;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.MySQLContainer;
 
-class JdbcSourceTest {
+class MySqlSourceTest {
 
+  private static final String TEST_USER = "test";
+  private static final String TEST_PASSWORD = "test";
   private static final String STREAM_NAME = "id_and_name";
   private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
       STREAM_NAME,
@@ -76,46 +80,56 @@ class JdbcSourceTest {
 
   private JsonNode config;
 
-  private PostgreSQLContainer<?> db;
+  private static MySQLContainer<?> db;
   private BasicDataSource connectionPool;
+
+  @BeforeAll
+  static void init() {
+    // test containers withInitScript only accepts scripts that are mounted as resources.
+    MoreResources.writeResource("init.sql",
+        "CREATE USER '" + TEST_USER + "'@'%' IDENTIFIED BY '" + TEST_PASSWORD + "';\n"
+            + "GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+    db = new MySQLContainer<>("mysql:8.0").withInitScript("init.sql").withUsername("root").withPassword("");
+    db.start();
+  }
 
   @BeforeEach
   void setup() throws SQLException {
-    db = new PostgreSQLContainer<>("postgres:13-alpine");
-    db.start();
-
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()))
+        .put("host", db.getHost())
+        .put("port", db.getFirstMappedPort())
+        .put("database", "db_" + RandomStringUtils.randomAlphabetic(10))
+        .put("username", TEST_USER)
+        .put("password", TEST_PASSWORD)
         .build());
 
-    connectionPool = DatabaseHelper.getConnectionPool(
+    final BasicDataSource connectionPool = DatabaseHelper.getConnectionPool(
         config.get("username").asText(),
         config.get("password").asText(),
-        config.get("jdbc_url").asText(),
-        "org.postgresql.Driver");
+        String.format("jdbc:mysql://%s:%s",
+            config.get("host").asText(),
+            config.get("port").asText()),
+        "com.mysql.cj.jdbc.Driver");
 
     DatabaseHelper.query(connectionPool, ctx -> {
+      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
+      ctx.fetch("USE " + config.get("database").asText());
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
 
       return null;
-    });
+    }, SQLDialect.MYSQL);
   }
 
-  @AfterEach
-  void tearDown() {
+  @AfterAll
+  static void cleanUp() {
     db.stop();
     db.close();
   }
 
   @Test
-  void testSpec() throws IOException {
-    final ConnectorSpecification actual = new JdbcSource().spec();
+  void testSpec() throws Exception {
+    final ConnectorSpecification actual = new MySqlSource().spec();
     final String resourceString = MoreResources.readResource("spec.json");
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
 
@@ -124,7 +138,7 @@ class JdbcSourceTest {
 
   @Test
   void testCheckSuccess() {
-    final AirbyteConnectionStatus actual = new JdbcSource().check(config);
+    final AirbyteConnectionStatus actual = new MySqlSource().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
@@ -132,21 +146,21 @@ class JdbcSourceTest {
   @Test
   void testCheckFailure() {
     ((ObjectNode) config).put("password", "fake");
-    final AirbyteConnectionStatus actual = new JdbcSource().check(config);
+    final AirbyteConnectionStatus actual = new MySqlSource().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Cannot create PoolableConnectionFactory (FATAL: password authentication failed for user \"test\")");
+        .withMessage("Cannot create PoolableConnectionFactory (Access denied for user 'test'@'172.17.0.1' (using password: YES))");
     assertEquals(expected, actual);
   }
 
   @Test
   void testDiscover() throws Exception {
-    final AirbyteCatalog actual = new JdbcSource().discover(config);
+    final AirbyteCatalog actual = new MySqlSource().discover(config);
     assertEquals(CATALOG, actual);
   }
 
   @Test
   void testReadSuccess() throws Exception {
-    final Set<AirbyteMessage> actualMessages = new JdbcSource().read(config, CATALOG, null).collect(Collectors.toSet());
+    final Set<AirbyteMessage> actualMessages = new MySqlSource().read(config, CATALOG, null).collect(Collectors.toSet());
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -157,59 +171,6 @@ class JdbcSourceTest {
     assertEquals(MESSAGES, actualMessages);
   }
 
-  @Test
-  void testReadOneColumn() throws Exception {
-    final AirbyteCatalog catalog = CatalogHelpers.createAirbyteCatalog(STREAM_NAME, Field.of("id", JsonSchemaPrimitive.NUMBER));
-
-    final Set<AirbyteMessage> actualMessages = new JdbcSource().read(config, catalog, null).collect(Collectors.toSet());
-
-    actualMessages.forEach(r -> {
-      if (r.getRecord() != null) {
-        r.getRecord().setEmittedAt(null);
-      }
-    });
-
-    final Set<AirbyteMessage> expectedMessages = MESSAGES.stream()
-        .map(Jsons::clone)
-        .peek(m -> ((ObjectNode) m.getRecord().getData()).remove("name"))
-        .collect(Collectors.toSet());
-    assertEquals(expectedMessages, actualMessages);
-  }
-
-  @Test
-  void testReadMultipleTables() throws Exception {
-    final String streamName2 = STREAM_NAME + 2;
-    DatabaseHelper.query(connectionPool, ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name2(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name2 (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-
-      return null;
-    });
-
-    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(
-        CATALOG.getStreams().get(0),
-        CatalogHelpers.createAirbyteStream(
-            streamName2,
-            Field.of("id", JsonSchemaPrimitive.NUMBER),
-            Field.of("name", JsonSchemaPrimitive.STRING))));
-    final Set<AirbyteMessage> actualMessages = new JdbcSource().read(config, catalog, null).collect(Collectors.toSet());
-
-    actualMessages.forEach(r -> {
-      if (r.getRecord() != null) {
-        r.getRecord().setEmittedAt(null);
-      }
-    });
-
-    final Set<AirbyteMessage> expectedMessages = MESSAGES
-        .stream()
-        .map(Jsons::clone)
-        .peek(m -> m.getRecord().setStream(streamName2))
-        .collect(Collectors.toSet());
-    expectedMessages.addAll(MESSAGES);
-
-    assertEquals(expectedMessages, actualMessages);
-  }
-
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   void testReadFailure() throws Exception {
@@ -217,7 +178,7 @@ class JdbcSourceTest {
     final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
     doThrow(new RuntimeException()).when(spiedAbStream).getName();
 
-    final Stream<AirbyteMessage> stream = new JdbcSource().read(config, catalog, null);
+    final Stream<AirbyteMessage> stream = new MySqlSource().read(config, catalog, null);
 
     assertThrows(RuntimeException.class, () -> stream.collect(Collectors.toList()));
   }
