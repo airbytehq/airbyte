@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler;
 
+import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.workers.OutputAndStatus;
@@ -67,6 +68,8 @@ public class JobSubmitter implements Runnable {
   }
 
   private void submitJob(Job job) {
+    TrackingClientSingleton.get().track(job.getConfig().getConfigType().toString());
+
     final WorkerRun workerRun = workerRunFactory.create(job);
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
