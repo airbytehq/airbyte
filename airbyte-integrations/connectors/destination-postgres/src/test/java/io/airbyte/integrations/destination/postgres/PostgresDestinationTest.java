@@ -204,7 +204,7 @@ class PostgresDestinationTest {
   }
 
   private BasicDataSource getDatabasePool() {
-    return DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl());
+    return DatabaseHelper.getPostgresConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
   private Set<JsonNode> recordRetriever(String streamName) throws Exception {

@@ -27,18 +27,29 @@ package io.airbyte.protocol.models;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class CatalogHelpersTest {
 
   @Test
-  void fieldToJsonSchema() {
+  void testFieldToJsonSchema() {
     final String expected = "{ \"type\": \"object\", \"properties\": { \"name\": { \"type\": \"string\" } } } ";
     final JsonNode actual = CatalogHelpers.fieldsToJsonSchema(Field.of("name", JsonSchemaPrimitive.STRING));
 
     assertEquals(Jsons.deserialize(expected), actual);
+  }
+
+  @Test
+  void testGetTopLevelFieldNames() {
+    final String json = "{ \"type\": \"object\", \"properties\": { \"name\": { \"type\": \"string\" } } } ";
+    final Set<String> expectedFieldNames = Sets.newHashSet("name");
+    final Set<String> actualFieldNames = CatalogHelpers.getTopLevelFieldNames(Jsons.deserialize(json));
+
+    assertEquals(expectedFieldNames, actualFieldNames);
   }
 
 }

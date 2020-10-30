@@ -157,7 +157,7 @@ class DefaultSchedulerPersistenceTest {
     container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
     connectionPool =
-        DatabaseHelper.getConnectionPool(
+        DatabaseHelper.getPostgresConnectionPool(
             container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }
 
