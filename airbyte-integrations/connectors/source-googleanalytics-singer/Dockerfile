@@ -4,8 +4,8 @@ RUN apt-get update && apt-get install -y \
     jq gcc \
     && rm -rf /var/lib/apt/lists/*
 
-ENV CODE_PATH="googleanalytics_singer_source"
-ENV AIRBYTE_IMPL_MODULE="googleanalytics_singer_source"
+ENV CODE_PATH="source_googleanalytics_singer"
+ENV AIRBYTE_IMPL_MODULE="source_googleanalytics_singer"
 ENV AIRBYTE_IMPL_PATH="GoogleAnalyticsSingerSource"
 
 LABEL io.airbyte.version=0.1.0

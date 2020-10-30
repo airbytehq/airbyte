@@ -25,7 +25,7 @@ SOFTWARE.
 import sys
 
 from airbyte_protocol.entrypoint import launch
-from googleanalytics_singer_source import GoogleAnalyticsSingerSource
+from source_googleanalytics_singer import GoogleAnalyticsSingerSource
 
 if __name__ == "__main__":
     source = GoogleAnalyticsSingerSource()
