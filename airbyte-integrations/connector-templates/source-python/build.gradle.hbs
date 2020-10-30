@@ -13,10 +13,16 @@ standardSourceTestPython {
     }
 }
 
-task unitTest(type: PythonTask){
-    command = "setup.py test"
+task installTestDeps(type: PythonTask){
+    module = "pip"
+    command = "install ".[tests]"
 }
 
+task unitTest(type: PythonTask){
+    command = "pytest unit_tests"
+}
+
+unitTest.dependsOn(installTestDeps)
 build.dependsOn(unitTest)
 build.dependsOn ':airbyte-integrations:bases:base-python-test:build'
 buildImage.dependsOn ':airbyte-integrations:bases:base-python:buildImage'
