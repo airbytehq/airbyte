@@ -49,6 +49,7 @@ import org.junit.jupiter.api.Test;
 
 class DefaultGetSpecWorkerTest {
 
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String DUMMY_IMAGE_NAME = "airbyte/notarealimage:1.1";
 
   private DefaultGetSpecWorker worker;
@@ -59,7 +60,7 @@ class DefaultGetSpecWorkerTest {
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
-    jobRoot = Files.createTempDirectory("");
+    jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "");
     config = new JobGetSpecConfig().withDockerImage(DUMMY_IMAGE_NAME);
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);

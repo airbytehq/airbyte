@@ -42,11 +42,12 @@ import org.slf4j.MDC;
 
 public class Log4j2ConfigTest {
 
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private Path root;
 
   @BeforeEach
   void setUp() throws IOException {
-    root = Files.createTempDirectory("test");
+    root = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
     MDC.clear();
   }
 

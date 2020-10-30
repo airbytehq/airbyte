@@ -24,10 +24,10 @@
 
 package io.airbyte.integrations.base;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
@@ -59,9 +59,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,7 +134,7 @@ public abstract class TestSource {
    */
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
-  @Before
+  @BeforeEach
   public void setUpInternal() throws Exception {
     Path testDir = Path.of("/tmp/airbyte_tests/");
     Files.createDirectories(testDir);
@@ -151,7 +152,7 @@ public abstract class TestSource {
         "host");
   }
 
-  @After
+  @AfterEach
   public void tearDownInternal() throws Exception {
     tearDown(testEnv);
   }

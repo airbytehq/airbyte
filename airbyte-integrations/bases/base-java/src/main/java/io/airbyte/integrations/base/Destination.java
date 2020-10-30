@@ -26,30 +26,9 @@ package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConnectorSpecification;
 
-// todo (cgardens) - share common parts of this interface with source.
-public interface Destination {
-
-  /**
-   * Fetch the specification for the integration.
-   *
-   * @return specification.
-   * @throws Exception - any exception.
-   */
-  ConnectorSpecification spec() throws Exception;
-
-  /**
-   * Check whether, given the current configuration, the integration can connect to the destination.
-   *
-   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
-   *        "password": "super secure" }
-   * @return Whether or not the connection was successful. Optional message if it was not.
-   * @throws Exception - any exception.
-   */
-  AirbyteConnectionStatus check(JsonNode config) throws Exception;
+public interface Destination extends Integration {
 
   /**
    * Return a consumer that writes messages to the destination.
