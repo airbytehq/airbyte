@@ -4,7 +4,6 @@ From the `airbyte-integrations/connector-templates/generator` directory, run:
 ```
 npm run generate
 ```
-
 and follow the interactive prompt. This will generate a new integration in the `airbyte-integrations/connectors/<your-integration>` directory. 
 Follow the instructions generated in the checklist md file for bootstrapping the integration. The generated
 README.md will also contain instructions on how to iterate. 

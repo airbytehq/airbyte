@@ -27,6 +27,12 @@ python main_dev.py discover --config sample_files/test_config.json
 python main_dev.py read --config sample_files/test_config.json --catalog sample_files/test_catalog.json
 ```
 
+### Unit Tests
+To run unit tests locally, from the connector directory run:
+```
+python setup.py test
+```
+
 ### Locally running the connector docker image
 ```
 # in airbyte root directory
@@ -36,12 +42,6 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/sample_files:/sample_files airbyte/source-{{dashCase name}}:dev discover --config /sample_files/test_config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/sample_files:/sample_files airbyte/source-{{dashCase name}}:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
 ```
-
-### Unit Tests
-To run unit tests locally, from the connector root run:
-```
-python setup.py test
-``` 
 
 ### Integration Tests 
 1. Configure credentials as appropriate, described below.
