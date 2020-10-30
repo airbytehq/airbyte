@@ -27,7 +27,7 @@ package io.airbyte.integrations.destination.postgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.TestDestination;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,9 +73,7 @@ public class PostgresIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-
-    return DatabaseHelper.query(
-        DatabaseHelper.getPostgresConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl()),
+    return Databases.createPostgresHandle(db.getUsername(), db.getPassword(), db.getJdbcUrl()).query(
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
             .stream()

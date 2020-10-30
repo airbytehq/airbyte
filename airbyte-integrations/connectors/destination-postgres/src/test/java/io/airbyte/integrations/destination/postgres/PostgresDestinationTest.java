@@ -24,13 +24,6 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -38,7 +31,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.DatabaseHandle;
+import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -59,13 +53,19 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 class PostgresDestinationTest {
 
@@ -98,9 +98,9 @@ class PostgresDestinationTest {
           Field.of("id", JsonSchemaPrimitive.STRING)),
       CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
-  private JsonNode config;
-
   private PostgreSQLContainer<?> db;
+  private JsonNode config;
+  private DatabaseHandle databaseHandle;
 
   @BeforeEach
   void setup() {
@@ -115,11 +115,13 @@ class PostgresDestinationTest {
         .put("port", db.getFirstMappedPort())
         .put("database", db.getDatabaseName())
         .build());
+
+    databaseHandle = Databases.createPostgresHandle(db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
   @AfterEach
-  void tearDown() {
-    db.stop();
+  void tearDown() throws Exception {
+    databaseHandle.close();
     db.close();
   }
 
@@ -145,7 +147,8 @@ class PostgresDestinationTest {
   void testCheckFailure() {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = new PostgresDestination().check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus()
+        .withStatus(Status.FAILED)
         .withMessage("Cannot create PoolableConnectionFactory (FATAL: password authentication failed for user \"test\")");
     assertEquals(expected, actual);
   }
@@ -192,7 +195,7 @@ class PostgresDestinationTest {
   }
 
   private List<String> fetchNamesOfTablesInDb() throws SQLException {
-    return DatabaseHelper.query(getDatabasePool(),
+    return databaseHandle.query(
         ctx -> ctx.fetch("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';"))
         .stream()
         .map(record -> (String) record.get("table_name")).collect(Collectors.toList());
@@ -203,14 +206,8 @@ class PostgresDestinationTest {
     assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
   }
 
-  private BasicDataSource getDatabasePool() {
-    return DatabaseHelper.getPostgresConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl());
-  }
-
   private Set<JsonNode> recordRetriever(String streamName) throws Exception {
-
-    return DatabaseHelper.query(
-        getDatabasePool(),
+    return databaseHandle.query(
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
             .stream()

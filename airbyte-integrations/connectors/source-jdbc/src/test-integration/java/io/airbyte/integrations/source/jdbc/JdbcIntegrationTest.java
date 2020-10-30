@@ -28,7 +28,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.DatabaseHandle;
+import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.TestSource;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -36,7 +37,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.sql.SQLException;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class JdbcIntegrationTest extends TestSource {
@@ -59,13 +59,12 @@ public class JdbcIntegrationTest extends TestSource {
             db.getDatabaseName()))
         .build());
 
-    final BasicDataSource connectionPool = DatabaseHelper.getConnectionPool(
+    final DatabaseHandle databaseHandle = Databases.createPostgresHandle(
         config.get("username").asText(),
         config.get("password").asText(),
-        config.get("jdbc_url").asText(),
-        "org.postgresql.Driver");
+        config.get("jdbc_url").asText());
 
-    DatabaseHelper.query(connectionPool, ctx -> {
+    databaseHandle.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
       return null;
@@ -74,7 +73,6 @@ public class JdbcIntegrationTest extends TestSource {
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    db.stop();
     db.close();
   }
 

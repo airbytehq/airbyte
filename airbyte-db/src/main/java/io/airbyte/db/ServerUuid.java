@@ -24,22 +24,20 @@
 
 package io.airbyte.db;
 
-import static org.jooq.impl.DSL.field;
-
 import java.sql.SQLException;
 import java.util.Optional;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.jooq.Result;
+
+import static org.jooq.impl.DSL.field;
 
 /*
  * The server UUID identifies a specific database installation of Airbyte for analytics purposes.
  */
 public class ServerUuid {
 
-  public static Optional<String> get(BasicDataSource connectionPool) throws SQLException {
-    return DatabaseHelper.query(
-        connectionPool,
+  public static Optional<String> get(DatabaseHandle handle) throws SQLException {
+    return handle.query(
         ctx -> {
           Result<Record> result =
               ctx.select().from("airbyte_metadata").where(field("key").eq("server-uuid")).fetch();

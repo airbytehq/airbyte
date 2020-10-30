@@ -24,13 +24,6 @@
 
 package io.airbyte.scheduler.persistence;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -49,7 +42,8 @@ import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.Stream;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.DatabaseHandle;
+import io.airbyte.db.Databases;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.ScopeHelper;
@@ -63,7 +57,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -72,11 +65,18 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 class DefaultSchedulerPersistenceTest {
 
   @SuppressWarnings("rawtypes")
   private static PostgreSQLContainer container;
-  private static BasicDataSource connectionPool;
+  private static DatabaseHandle databaseHandle;
 
   private static final String SOURCE_IMAGE_NAME = "daxtarity/sourceimagename";
   private static final String DESTINATION_IMAGE_NAME = "daxtarity/destinationimagename";
@@ -156,9 +156,7 @@ class DefaultSchedulerPersistenceTest {
     // execInContainer uses Docker's EXEC so it needs to be split up like this
     container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
-    connectionPool =
-        DatabaseHelper.getPostgresConnectionPool(
-            container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    databaseHandle = Databases.createPostgresHandle(container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }
 
   @AfterAll
@@ -170,17 +168,16 @@ class DefaultSchedulerPersistenceTest {
   @BeforeEach
   public void setup() throws SQLException {
     // todo (cgardens) - truncate whole db.
-    DatabaseHelper.query(connectionPool, ctx -> ctx.execute("DELETE FROM jobs"));
+    databaseHandle.query(ctx -> ctx.execute("DELETE FROM jobs"));
 
     timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(NOW);
 
-    schedulerPersistence = new DefaultSchedulerPersistence(connectionPool, timeSupplier);
+    schedulerPersistence = new DefaultSchedulerPersistence(databaseHandle, timeSupplier);
   }
 
   private Record getJobRecord(long jobId) throws SQLException {
-    return DatabaseHelper.query(
-        connectionPool,
+    return databaseHandle.query(
         ctx -> ctx.fetch("SELECT * FROM jobs WHERE id = ?", jobId).stream()
             .findFirst()
             .orElseThrow(
@@ -492,8 +489,7 @@ class DefaultSchedulerPersistenceTest {
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME);
 
-    DatabaseHelper.query(
-        connectionPool,
+    databaseHandle.query(
         ctx -> ctx.execute("UPDATE jobs SET status = CAST(? AS JOB_STATUS) WHERE id = ?", JobStatus.COMPLETED.toString().toLowerCase(), jobId));
 
     final Optional<Job> actual = schedulerPersistence.getOldestPendingJob();

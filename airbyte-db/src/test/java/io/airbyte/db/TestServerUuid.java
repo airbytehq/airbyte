@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -38,13 +39,13 @@ import org.testcontainers.utility.MountableFile;
 
 public class TestServerUuid {
 
-  private static PostgreSQLContainer container;
-  private static BasicDataSource connectionPool;
+  private static PostgreSQLContainer<?> container;
+  private static DatabaseHandle postgresHandle;
 
   @BeforeAll
   public static void dbSetup() throws IOException, InterruptedException {
     container =
-        new PostgreSQLContainer("postgres:13-alpine")
+        new PostgreSQLContainer<>("postgres:13-alpine")
             .withDatabaseName("airbyte")
             .withUsername("docker")
             .withPassword("docker");
@@ -54,20 +55,25 @@ public class TestServerUuid {
     // execInContainer uses Docker's EXEC so it needs to be split up like this
     container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
-    connectionPool = DatabaseHelper.getPostgresConnectionPool(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    postgresHandle = Databases.createPostgresHandle(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+  }
+
+  @AfterAll
+  public static void dbTeardown() {
+    container.close();
   }
 
   @Test
   void testUuidFormat() throws SQLException {
-    Optional<String> uuid = ServerUuid.get(connectionPool);
+    Optional<String> uuid = ServerUuid.get(postgresHandle);
 
     assertTrue(uuid.get().matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
   }
 
   @Test
   void testSameUuidOverInitializations() throws SQLException {
-    Optional<String> uuid1 = ServerUuid.get(connectionPool);
-    Optional<String> uuid2 = ServerUuid.get(connectionPool);
+    Optional<String> uuid1 = ServerUuid.get(postgresHandle);
+    Optional<String> uuid2 = ServerUuid.get(postgresHandle);
 
     assertEquals(uuid1, uuid2);
   }

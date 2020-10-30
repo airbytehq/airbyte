@@ -24,15 +24,12 @@
 
 package io.airbyte.integrations.source.jdbc;
 
-import static org.jooq.impl.DSL.currentSchema;
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.table;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.DatabaseHandle;
+import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -47,7 +44,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
-import java.sql.Connection;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -56,7 +52,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
@@ -68,9 +63,12 @@ import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.jooq.impl.DSL.currentSchema;
+
 public class JdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSource.class);
+
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   private final String driverClass;
   private final SQLDialect dialect;
@@ -93,14 +91,12 @@ public class JdbcSource implements Source {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    try {
-      final BasicDataSource connectionPool = getConnectionPool(config);
+    try (final DatabaseHandle databaseHandle = getDatabaseHandle(config)){
       // attempt to get current schema. this is a cheap query to sanity check that we can connect to the
       // database. `currentSchema()` is a jooq method that will run the appropriate query based on which
       // database it is connected to.
-      DatabaseHelper.query(connectionPool, ctx -> ctx.select(currentSchema()).fetch(), dialect);
+      databaseHandle.query(ctx -> ctx.select(currentSchema()).fetch());
 
-      connectionPool.close();
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
@@ -109,34 +105,29 @@ public class JdbcSource implements Source {
 
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
-    return new AirbyteCatalog()
-        .withStreams(discoverInternal(config)
-            .stream()
-            .map(t -> {
-              final List<Field> fields = Arrays.stream(t.fields()).map(f -> Field.of(f.getName(), jooqDataTypeToJsonSchemaType(f.getDataType())))
-                  .collect(Collectors.toList());
-              return CatalogHelpers.createAirbyteStream(t.getName(), fields);
-            }).collect(Collectors.toList()));
-  }
-
-  private List<Table<?>> discoverInternal(JsonNode config) throws Exception {
-    final BasicDataSource connectionPool = getConnectionPool(config);
-    return DatabaseHelper.query(connectionPool, context -> context.meta().getTables(), dialect);
+    try (final DatabaseHandle databaseHandle = getDatabaseHandle(config)) {
+      return new AirbyteCatalog()
+          .withStreams(discoverInternal(databaseHandle)
+              .stream()
+              .map(t -> {
+                final List<Field> fields = Arrays.stream(t.fields()).map(f -> Field.of(f.getName(), jooqDataTypeToJsonSchemaType(f.getDataType())))
+                    .collect(Collectors.toList());
+                return CatalogHelpers.createAirbyteStream(t.getName(), fields);
+              }).collect(Collectors.toList()));
+    }
   }
 
   @Override
   public Stream<AirbyteMessage> read(JsonNode config, AirbyteCatalog catalog, JsonNode state) throws Exception {
-
     final Instant now = Instant.now();
 
-    final BasicDataSource connectionPool = getConnectionPool(config);
+    final DatabaseHandle databaseHandle = getDatabaseHandle(config);
     // We do not use the typical database wrappers here, because we do not want to close this
     // transaction until the stream is fully consumed by the calling process. We set connect.close() in
     // the close of the stream.
-    final Connection connection = connectionPool.getConnection();
-    final List<Table<?>> tables = discoverInternal(config);
-    final DSLContext context = DatabaseHelper.getContext(connection, dialect);
+    final DSLContext context = databaseHandle.getContext();
 
+    final List<Table<?>> tables = discoverInternal(databaseHandle);
     final Map<String, Table<?>> tableNameToTable = tables.stream().collect(Collectors.toMap(Named::getName, t -> t));
     return catalog.getStreams().stream()
         // iterate over streams in catalog and find corresponding table in the jooq schema.
@@ -171,16 +162,24 @@ public class JdbcSource implements Source {
                       .withStream(airbyteStream.getName())
                       .withEmittedAt(now.toEpochMilli())
                       .withData(Jsons.deserialize(r.formatJSON(DB_JSON_FORMAT)))))
-              .onClose(() -> Exceptions.toRuntime(connection::close));
+              .onClose(() -> {
+                Exceptions.toRuntime(context::close);
+                Exceptions.toRuntime(databaseHandle::close);
+              });
         });
   }
 
-  private BasicDataSource getConnectionPool(JsonNode config) {
-    return DatabaseHelper.getConnectionPool(
+  private DatabaseHandle getDatabaseHandle(JsonNode config) {
+    return Databases.createHandle(
         config.get("username").asText(),
         config.get("password").asText(),
         config.get("jdbc_url").asText(),
-        driverClass);
+        driverClass,
+        dialect);
+  }
+
+  private List<Table<?>> discoverInternal(final DatabaseHandle databaseHandle) throws Exception {
+    return databaseHandle.query(context -> context.meta().getTables());
   }
 
   /**
