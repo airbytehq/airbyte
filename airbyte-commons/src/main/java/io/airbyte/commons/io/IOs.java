@@ -42,8 +42,12 @@ import org.apache.commons.io.input.ReversedLinesFileReader;
 public class IOs {
 
   public static Path writeFile(Path path, String fileName, String contents) {
+    final Path filePath = path.resolve(fileName);
+    return writeFile(filePath, contents);
+  }
+
+  public static Path writeFile(Path filePath, String contents) {
     try {
-      Path filePath = path.resolve(fileName);
       Files.writeString(filePath, contents, StandardCharsets.UTF_8);
       return filePath;
     } catch (IOException e) {

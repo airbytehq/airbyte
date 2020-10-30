@@ -22,34 +22,43 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.integrations.source.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JdbcSource extends AbstractJdbcSource implements Source {
+public class MySqlSource extends AbstractJdbcSource implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
 
-  public JdbcSource() {
-    super("org.postgresql.Driver", SQLDialect.POSTGRES);
+  public MySqlSource() {
+    super("com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
   }
 
-  // no-op for JdbcSource since the config it receives is designed to be use for JDBC.
   @Override
   public JsonNode toJdbcConfig(JsonNode mySqlConfig) {
-    return mySqlConfig;
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("username", mySqlConfig.get("username").asText())
+        .put("password", mySqlConfig.get("password").asText())
+        .put("jdbc_url", String.format("jdbc:mysql://%s:%s/%s",
+            mySqlConfig.get("host").asText(),
+            mySqlConfig.get("port").asText(),
+            mySqlConfig.get("database").asText()))
+        .build());
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new JdbcSource();
-    LOGGER.info("starting source: {}", JdbcSource.class);
+    final Source source = new MySqlSource();
+    LOGGER.info("starting source: {}", MySqlSource.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", JdbcSource.class);
+    LOGGER.info("completed source: {}", MySqlSource.class);
   }
 
 }
