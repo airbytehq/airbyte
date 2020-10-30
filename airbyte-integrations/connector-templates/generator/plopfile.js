@@ -66,11 +66,11 @@ module.exports = function (plop) {
       {
         type:'add',
         abortOnFail: true,
-        templateFile: `${singerSourceInputRoot}/.secrets/credentials.json.hbs`,
-        path: `${singerSourceOutputRoot}/secrets/credentials.json`
+        templateFile: `${pythonSourceInputRoot}/.secrets/credentials.json.hbs`,
+        path: `${pythonSourceOutputRoot}/secrets/credentials.json`
       },
       function(answers, config, plop){
-        const renderedOutputDir = plop.renderString(singerSourceOutputRoot, answers);
+        const renderedOutputDir = plop.renderString(pythonSourceOutputRoot, answers);
         const basesDir = path.resolve(__dirname, '../../bases');
         fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
         fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
