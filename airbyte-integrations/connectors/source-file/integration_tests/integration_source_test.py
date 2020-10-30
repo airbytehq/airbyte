@@ -29,20 +29,21 @@ import uuid
 
 import boto3
 import pytest
+from base_python import AirbyteLogger
 from botocore.errorfactory import ClientError
 from google.api_core.exceptions import Conflict
 from google.cloud import storage
-from source_file import FileSource
+from source_file import SourceFile
 
 
-class TestFileSource(object):
+class TestSourceFile(object):
     service_account_file: str = "../secrets/gcs.json"
     aws_credentials: str = "../secrets/aws.json"
     cloud_bucket_name: str = "airbytetestbucket"
 
     @pytest.fixture(scope="class")
     def download_gcs_public_data(self):
-        print("Download public dataset from gcs to local /tmp")
+        print("\nDownload public dataset from gcs to local /tmp")
         config = get_config()
         config["storage"] = "https://"
         config["url"] = "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"
@@ -51,23 +52,22 @@ class TestFileSource(object):
         df.to_csv(tmp_file.name, index=False)
         yield tmp_file.name
         os.remove(tmp_file.name)
-        print(f"File {tmp_file.name} is now deleted")
+        print(f"\nLocal File {tmp_file.name} is now deleted")
 
     @pytest.fixture(scope="class")
     def create_gcs_private_data(self, download_gcs_public_data):
-        print("Upload dataset to private gcs bucket")
         storage_client = storage.Client.from_service_account_json(self.service_account_file)
         bucket_name = create_unique_gcs_bucket(storage_client, self.cloud_bucket_name)
+        print(f"\nUpload dataset to private gcs bucket {bucket_name}")
         bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob("myfile.csv")
         blob.upload_from_filename(download_gcs_public_data)
         yield f"{bucket_name}/myfile.csv"
         bucket.delete(force=True)
-        print(f"Bucket {bucket_name} is now deleted")
+        print(f"\nGCS Bucket {bucket_name} is now deleted")
 
     @pytest.fixture(scope="class")
     def create_aws_private_data(self, download_gcs_public_data):
-        print("Upload dataset to private aws bucket")
         with open(self.aws_credentials) as json_file:
             aws_config = json.load(json_file)
         region = "eu-west-3"
@@ -79,6 +79,7 @@ class TestFileSource(object):
             region_name=region,
         )
         bucket_name = self.cloud_bucket_name
+        print(f"\nUpload dataset to private aws bucket {bucket_name}")
         try:
             s3_client.head_bucket(Bucket=bucket_name)
         except ClientError:
@@ -90,6 +91,7 @@ class TestFileSource(object):
         )
         bucket = s3.Bucket(bucket_name)
         bucket.objects.all().delete()
+        print(f"\nS3 Bucket {bucket_name} is now deleted")
 
     @pytest.mark.parametrize(
         "reader_impl, storage, url",
@@ -133,7 +135,7 @@ class TestFileSource(object):
 
 
 def run_load_dataframes(config):
-    df_list = FileSource.load_dataframes(config=config, skip_data=False)
+    df_list = SourceFile.load_dataframes(config=config, logger=AirbyteLogger(), skip_data=False)
     assert len(df_list) == 1  # Properly load 1 DataFrame
     df = df_list[0]
     assert len(df.columns) == 10  # DataFrame should have 10 columns
@@ -157,7 +159,7 @@ def create_unique_gcs_bucket(storage_client, name: str) -> str:
             bucket.storage_class = "STANDARD"
             # fixed locations are cheaper...
             storage_client.create_bucket(bucket, location="us-east1")
-            print(f"New GCS bucket created {bucket_name}")
+            print(f"\nNew GCS bucket created {bucket_name}")
             return bucket_name
         except Conflict:
-            print(f"Error: {bucket_name} already exists!")
+            print(f"\nError: {bucket_name} already exists!")

@@ -5,6 +5,7 @@ apply from: rootProject.file('tools/gradle/commons/integrations/test-image.gradl
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/standard-source-test-python.gradle')
 
+
 standardSourceTestPython {
     ext {
         imageName = "${extractImageName(project.file('Dockerfile'))}:dev"
@@ -12,7 +13,14 @@ standardSourceTestPython {
     }
 }
 
-standardSourceTestPython.dependsOn(buildTestImage)
-buildTestImage.dependsOn ':airbyte-integrations:bases:base-python-test:buildImage'
+task unitTest(type: PythonTask){
+    command = "setup.py test"
+}
+
+build.dependsOn(unitTest)
+build.dependsOn ':airbyte-integrations:bases:base-python-test:build'
+buildImage.dependsOn ':airbyte-integrations:bases:base-python:buildImage'
 integrationTest.dependsOn(buildImage)
 
+buildTestImage.dependsOn ':airbyte-integrations:bases:base-python-test:buildImage'
+standardSourceTestPython.dependsOn(buildTestImage)

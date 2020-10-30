@@ -24,9 +24,9 @@ SOFTWARE.
 
 import sys
 
-from airbyte_protocol.entrypoint import launch
-from source_file import FileSource
+from base_python.entrypoint import launch
+from source_file import SourceFile
 
 if __name__ == "__main__":
-    source = FileSource()
+    source = SourceFile()
     launch(source, sys.argv[1:])

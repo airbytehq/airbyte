@@ -26,14 +26,19 @@ from setuptools import find_packages, setup
 
 setup(
     name="source_file",
-    description="Source implementation for Files",
+    description="Source implementation for File",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
+    install_requires=["airbyte-protocol", "base-python", "gcsfs", "google-cloud-storage", "pandas>=0.24.1", "s3fs", "smart-open"],
     package_data={"": ["*.json"]},
-    # install_requires=["airbyte-protocol", "gcsfs", "google-cloud-storage", "pandas>=0.24.1", "smart_open"],
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
     extras_require={
-        "main": ["airbyte-protocol", "gcsfs", "google-cloud-storage", "pandas>=0.24.1", "s3fs", "smart_open"],
-        "standardtest": ["airbyte_python_test"],
+        # Dependencies required by the main package but not integration tests should go in main. Deps required by
+        # integration tests but not the main package go in integration_tests. Deps required by both should go in
+        # install_requires.
+        "main": [],
+        "integration_tests": ["airbyte_python_test", "boto3", "pytest"],
     },
 )

@@ -25,27 +25,20 @@ SOFTWARE.
 import json
 import os
 import tempfile
+import traceback
 from datetime import datetime
 from typing import Generator, List
 
 import gcsfs
 import pandas as pd
-from airbyte_protocol import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStream,
-    Source,
-    Status,
-    Type,
-)
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, AirbyteStream, Status, Type
+from base_python import Source
 from google.cloud.storage import Client
 from s3fs import S3FileSystem
 from smart_open import open
 
 
-class FileSource(Source):
+class SourceFile(Source):
     """This source aims to provide support for readers of different file formats stored in various locations.
 
     It is optionally using s3fs, gcfs or smart_open libraries to handle efficient streaming of very large files
@@ -99,13 +92,14 @@ class FileSource(Source):
         :return:
         """
         config = config_container.rendered_config
+        storage = config["storage"]
         url = config["url"]
-        logger.info(f"Checking access to {url}...")
+        logger.info(f"Checking access to {storage}{url}...")
         try:
-            self.load_dataframes(config, skip_data=True)
+            self.load_dataframes(config, logger, skip_data=True)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as err:
-            reason = f"Failed to load {url}: {repr(err)}"
+            reason = f"Failed to load {storage}{url}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
 
@@ -117,13 +111,14 @@ class FileSource(Source):
         :return:
         """
         config = config_container.rendered_config
+        storage = config["storage"]
         url = config["url"]
-        logger.info(f"Discovering schema of {url}...")
+        logger.info(f"Discovering schema of {storage}{url}...")
         streams = []
         try:
             # TODO handle discovery of directories of multiple files instead
             # Don't skip data when discovering in order to infer column types
-            df_list = self.load_dataframes(config, skip_data=False)
+            df_list = self.load_dataframes(config, logger, skip_data=False)
             fields = {}
             for df in df_list:
                 for col in df.columns:
@@ -135,7 +130,7 @@ class FileSource(Source):
             }
             streams.append(AirbyteStream(name=url, json_schema=json_schema))
         except Exception as err:
-            reason = f"Failed to discover schemas of {url}: {repr(err)}"
+            reason = f"Failed to discover schemas of {storage}{url}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
             raise err
         return AirbyteCatalog(streams=streams)
@@ -150,12 +145,13 @@ class FileSource(Source):
         :return:
         """
         config = config_container.rendered_config
+        storage = config["storage"]
         url = config["url"]
-        logger.info(f"Reading ({url}, {catalog_path}, {state_path})...")
+        logger.info(f"Reading ({storage}{url}, {catalog_path}, {state_path})...")
         catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
         selection = self.parse_catalog(catalog)
         try:
-            df_list = self.load_dataframes(config)
+            df_list = self.load_dataframes(config, logger)
             for df in df_list:
                 columns = selection.intersection(set(df.columns))
                 for data in df[columns].to_dict(orient="records"):
@@ -164,16 +160,17 @@ class FileSource(Source):
                         record=AirbyteRecordMessage(stream=url, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
                     )
         except Exception as err:
-            reason = f"Failed to discover schemas of {url}: {repr(err)}"
+            reason = f"Failed to read data of {storage}{url}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
             raise err
 
     @staticmethod
-    def load_dataframes(config, skip_data=False) -> List:
+    def load_dataframes(config, logger, skip_data=False) -> List:
         """From an Airbyte Configuration file, load and return the appropriate pandas dataframe.
 
         :param skip_data: limit reading data
         :param config:
+        :param logger:
         :return: a list of dataframe loaded from files described in the configuration
         """
         storage = config["storage"]
@@ -187,10 +184,12 @@ class FileSource(Source):
         reader_format = "csv"
         if "format" in config:
             reader_format = config["format"]
-
-        reader_options = {}
+        reader_options: dict = {}
         if "reader_options" in config:
-            reader_options = json.loads(config["reader_options"])
+            try:
+                reader_options = json.loads(config["reader_options"])
+            except json.decoder.JSONDecodeError as err:
+                logger.error(f"Failed to parse reader options {repr(err)}\n{config['reader_options']}\n{traceback.format_exc()}")
         if skip_data and reader_format == "csv":
             reader_options["nrows"] = 0
             reader_options["index_col"] = 0
@@ -202,10 +201,14 @@ class FileSource(Source):
 
         if reader_impl == "gcsfs":
             if use_gcs_service_account:
-                token_dict = json.loads(config["service_account_json"])
-                fs = gcsfs.GCSFileSystem(token=token_dict)
-                gcs_file = fs.open(f"gs://{url}")
-                url = gcs_file
+                try:
+                    token_dict = json.loads(config["service_account_json"])
+                    fs = gcsfs.GCSFileSystem(token=token_dict)
+                    gcs_file = fs.open(f"gs://{url}")
+                    url = gcs_file
+                except json.decoder.JSONDecodeError as err:
+                    logger.error(f"Failed to parse gcs service account json: {repr(err)}\n{traceback.format_exc()}")
+                    raise err
             else:
                 url = open(f"{storage}{url}")
         elif reader_impl == "s3fs":
@@ -222,14 +225,18 @@ class FileSource(Source):
                 url = open(f"{storage}{url}")
         else:  # using smart_open
             if use_gcs_service_account:
-                credentials = json.dumps(json.loads(config["service_account_json"]))
-                tmp_service_account = tempfile.NamedTemporaryFile(delete=False)
-                with open(tmp_service_account, "w") as f:
-                    f.write(credentials)
-                tmp_service_account.close()
-                client = Client.from_service_account_json(tmp_service_account.name)
-                url = open(f"gs://{url}", transport_params=dict(client=client))
-                os.remove(tmp_service_account.name)
+                try:
+                    credentials = json.dumps(json.loads(config["service_account_json"]))
+                    tmp_service_account = tempfile.NamedTemporaryFile(delete=False)
+                    with open(tmp_service_account, "w") as f:
+                        f.write(credentials)
+                    tmp_service_account.close()
+                    client = Client.from_service_account_json(tmp_service_account.name)
+                    url = open(f"gs://{url}", transport_params=dict(client=client))
+                    os.remove(tmp_service_account.name)
+                except json.decoder.JSONDecodeError as err:
+                    logger.error(f"Failed to parse gcs service account json: {repr(err)}\n{traceback.format_exc()}")
+                    raise err
             elif use_aws_account:
                 aws_access_key_id = ""
                 if "aws_access_key_id" in config:
@@ -255,14 +262,14 @@ class FileSource(Source):
             else:
                 url = open(f"{storage}{url}")
         try:
-            result = FileSource.parse_file(reader_format, url, reader_options)
+            result = SourceFile.parse_file(logger, reader_format, url, reader_options)
         finally:
             if gcs_file:
                 gcs_file.close()
         return result
 
     @staticmethod
-    def parse_file(reader_format: str, url, reader_options: dict) -> List:
+    def parse_file(logger, reader_format: str, url, reader_options: dict) -> List:
         result = []
         if reader_format == "csv":
             # pandas.read_csv additional arguments can be passed to customize how to parse csv.
@@ -283,7 +290,9 @@ class FileSource(Source):
         elif reader_format == "pickle":
             result.append(pd.read_pickle(url, **reader_options))
         else:
-            raise Exception(f"Reader {reader_format} is not supported")
+            reason = f"Reader {reader_format} is not supported\n{traceback.format_exc()}"
+            logger.error(reason)
+            raise Exception(reason)
         return result
 
     @staticmethod
