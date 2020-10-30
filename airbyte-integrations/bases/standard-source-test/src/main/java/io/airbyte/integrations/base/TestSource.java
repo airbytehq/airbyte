@@ -220,7 +220,7 @@ public abstract class TestSource {
     LOGGER.info("Running " + regexTests.size() + " regex tests...");
     regexTests.forEach(regex -> {
       LOGGER.info("Looking for [" + regex + "]");
-      assertTrue("Failed to find regex: " + regex, stringMessages.stream().anyMatch(line -> line.matches(regex)));
+      assertTrue(stringMessages.stream().anyMatch(line -> line.matches(regex)), "Failed to find regex: " + regex);
     });
   }
 
