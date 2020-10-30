@@ -7,6 +7,7 @@ const Switch = styled.label`
   position: relative;
   display: inline-block;
   width: 60px;
+  min-width: 60px;
   height: 30px;
 `;
 

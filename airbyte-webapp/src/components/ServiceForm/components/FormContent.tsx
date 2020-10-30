@@ -1,5 +1,5 @@
 import { Field, FieldProps } from "formik";
-import { FormattedHTMLMessage, FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import React from "react";
 import styled from "styled-components";
 
@@ -9,15 +9,15 @@ import { IDataItem } from "../../DropDown/components/ListItem";
 import Instruction from "./Instruction";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
 import { specification } from "../../../core/resources/SourceSpecification";
-import LabeledToggle from "../../LabeledToggle";
 import Spinner from "../../Spinner";
+import PropertyField from "./PropertyField";
 
 type IProps = {
   isEditMode?: boolean;
   isLoadSchema?: boolean;
   allowChangeConnector?: boolean;
   dropDownData: Array<IDataItem>;
-  setFieldValue: (item: any, value: any) => void;
+  setFieldValue: (item: string, value: string) => void;
   onDropDownSelect?: (id: string) => void;
   formType: "source" | "destination" | "connection";
   values: { name: string; serviceType: string; frequency?: string };
@@ -134,65 +134,13 @@ const FormContent: React.FC<IProps> = ({
       ) : (
         properties?.map(item => {
           const condition = specifications?.properties[item];
-
-          if (condition?.type === "boolean") {
-            return (
-              <FormItem key={`form-field-${item}`}>
-                <Field name={item}>
-                  {({ field }: FieldProps<string>) => (
-                    <LabeledToggle
-                      {...field}
-                      label={
-                        condition.title || (
-                          <FormattedMessage
-                            id={`form.${item}`}
-                            defaultMessage={item}
-                          />
-                        )
-                      }
-                      message={condition?.description}
-                      placeholder={
-                        condition?.examples?.length
-                          ? condition?.examples[0]
-                          : ""
-                      }
-                    />
-                  )}
-                </Field>
-              </FormItem>
-            );
-          }
-
           return (
             <FormItem key={`form-field-${item}`}>
-              <Field name={item}>
-                {({ field }: FieldProps<string>) => (
-                  <LabeledInput
-                    {...field}
-                    autoComplete="off"
-                    label={
-                      condition?.title || (
-                        <FormattedMessage
-                          id={`form.${item}`}
-                          defaultMessage={item}
-                        />
-                      )
-                    }
-                    message={
-                      condition?.description ? (
-                        <FormattedHTMLMessage
-                          id="1"
-                          defaultMessage={condition?.description}
-                        />
-                      ) : null
-                    }
-                    placeholder={
-                      condition?.examples?.length ? condition?.examples[0] : ""
-                    }
-                    type={condition?.type === "integer" ? "number" : "text"}
-                  />
-                )}
-              </Field>
+              <PropertyField
+                condition={condition}
+                property={item}
+                setFieldValue={setFieldValue}
+              />
             </FormItem>
           );
         })
