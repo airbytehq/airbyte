@@ -33,7 +33,6 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
@@ -96,17 +95,16 @@ public class IntegrationRunner {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         stdoutConsumer.accept(Jsons.serialize(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config))));
       }
+      // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
+      // envelope) while the other commands return what goes inside it.
       case READ -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         final AirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), AirbyteCatalog.class);
         // todo (cgardens) - should we should only send the contents of the state field to the integration,
         // not the whole struct. this runner obfuscates everything but the contents.
         final Optional<State> stateOptional = parsed.getStatePath().map(path -> parseConfig(path, State.class));
-        final Stream<AirbyteRecordMessage> messageStream = source.read(config, catalog, stateOptional.map(State::getState).orElse(null));
-        messageStream
-            .map(r -> new AirbyteMessage().withType(Type.RECORD).withRecord(r))
-            .map(Jsons::serialize)
-            .forEach(stdoutConsumer);
+        final Stream<AirbyteMessage> messageStream = source.read(config, catalog, stateOptional.map(State::getState).orElse(null));
+        messageStream.map(Jsons::serialize).forEach(stdoutConsumer);
         messageStream.close();
       }
       // destination only

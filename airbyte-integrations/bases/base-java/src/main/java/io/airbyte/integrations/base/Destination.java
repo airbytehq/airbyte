@@ -30,8 +30,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 
 public interface Destination extends Integration {
 
-  // todo (cgardens) this consumer should accept AirbyteRecordMessage not AirbyteMessage to be
-  // consistent with the rest of the interfaces.
   /**
    * Return a consumer that writes messages to the destination.
    *

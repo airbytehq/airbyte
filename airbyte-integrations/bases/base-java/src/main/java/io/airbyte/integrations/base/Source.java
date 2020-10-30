@@ -26,7 +26,7 @@ package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteMessage;
 import java.util.stream.Stream;
 
 // todo (cgardens) - share common parts of this interface with source.
@@ -53,6 +53,6 @@ public interface Source extends Integration {
    *         {@link Stream#close()} will always be called once regardless of success or failure.
    * @throws Exception - any exception.
    */
-  Stream<AirbyteRecordMessage> read(JsonNode config, AirbyteCatalog catalog, JsonNode state) throws Exception;
+  Stream<AirbyteMessage> read(JsonNode config, AirbyteCatalog catalog, JsonNode state) throws Exception;
 
 }

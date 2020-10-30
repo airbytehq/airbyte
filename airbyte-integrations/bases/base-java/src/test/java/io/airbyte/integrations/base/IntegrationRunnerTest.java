@@ -171,8 +171,12 @@ class IntegrationRunnerTest {
   @Test
   void testRead() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.read(configPath, catalogPath, statePath);
-    final AirbyteRecordMessage message1 = new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("names", "byron")));
-    final AirbyteRecordMessage message2 = new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald")));
+    final AirbyteMessage message1 = new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("names", "byron"))));
+    final AirbyteMessage message2 = new AirbyteMessage()
+        .withType(Type.RECORD).withRecord(new AirbyteRecordMessage()
+            .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.read(CONFIG, CATALOG, STATE.getState())).thenReturn(Stream.of(message1, message2));
@@ -180,8 +184,8 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS);
 
     verify(source).read(CONFIG, CATALOG, STATE.getState());
-    verify(stdoutConsumer).accept(Jsons.serialize(new AirbyteMessage().withType(Type.RECORD).withRecord(message1)));
-    verify(stdoutConsumer).accept(Jsons.serialize(new AirbyteMessage().withType(Type.RECORD).withRecord(message2)));
+    verify(stdoutConsumer).accept(Jsons.serialize(message1));
+    verify(stdoutConsumer).accept(Jsons.serialize(message2));
   }
 
   @SuppressWarnings("unchecked")
