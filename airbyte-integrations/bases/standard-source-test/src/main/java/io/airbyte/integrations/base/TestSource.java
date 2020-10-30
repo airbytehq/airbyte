@@ -209,7 +209,7 @@ public abstract class TestSource {
   public void testRead() throws Exception {
     final List<AirbyteMessage> allMessages = runRead(getCatalog());
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
-    // the worker validates the messages, so we just validate the message, so we do not need to validate
+    // the worker validates the message formats, so we just validate the message content
     // again (as long as we use the worker, which we will not want to do long term).
     assertFalse(recordMessages.isEmpty());
 
