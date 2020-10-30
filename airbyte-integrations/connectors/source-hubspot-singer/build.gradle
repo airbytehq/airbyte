@@ -1,7 +1,3 @@
-plugins {
-    id 'java'
-}
-
 project.ext.pyModule = 'source_hubspot_singer'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
