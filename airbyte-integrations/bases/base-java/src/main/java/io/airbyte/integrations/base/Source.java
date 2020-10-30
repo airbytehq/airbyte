@@ -27,20 +27,32 @@ package io.airbyte.integrations.base;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import java.util.stream.Stream;
 
-public interface Destination extends Integration {
+// todo (cgardens) - share common parts of this interface with source.
+public interface Source extends Integration {
 
   /**
-   * Return a consumer that writes messages to the destination.
+   * Discover the current schema in the source.
+   *
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+   *        "password": "super secure" }
+   * @return Description of the schema.
+   * @throws Exception - any exception.
+   */
+  AirbyteCatalog discover(JsonNode config) throws Exception;
+
+  /**
+   * Return a stream of messages pulled from the source.
    *
    * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
    *        "password": "super secure" }
    * @param catalog - schema of the incoming messages.
-   * @return Consumer that accepts message. The {@link DestinationConsumer#accept(Object)} will be
-   *         called n times where n is the number of messages. {@link DestinationConsumer#close()}
-   *         will always be called once regardless of success or failure.
+   * @param state - state of the incoming messages.
+   * @return Stream that produces message. The stream will be consumed until no records remain.
+   *         {@link Stream#close()} will always be called once regardless of success or failure.
    * @throws Exception - any exception.
    */
-  DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws Exception;
+  Stream<AirbyteMessage> read(JsonNode config, AirbyteCatalog catalog, JsonNode state) throws Exception;
 
 }
