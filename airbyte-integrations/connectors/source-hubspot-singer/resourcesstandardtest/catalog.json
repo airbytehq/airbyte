@@ -1,0 +1,79 @@
+{
+  "streams": [
+    {
+      "name": "owners",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "portalId": {
+            "type": ["null", "integer"]
+          },
+          "ownerId": {
+            "type": ["null", "integer"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          },
+          "firstName": {
+            "type": ["null", "string"]
+          },
+          "lastName": {
+            "type": ["null", "string"]
+          },
+          "email": {
+            "type": ["null", "string"]
+          },
+          "createdAt": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "signature": {
+            "type": ["null", "string"]
+          },
+          "updatedAt": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "hasContactsAccess": {
+            "type": ["null", "boolean"]
+          },
+          "isActive": {
+            "type": ["null", "boolean"]
+          },
+          "activeUserId": {
+            "type": ["null", "integer"]
+          },
+          "userIdIncludingInactive": {
+            "type": ["null", "integer"]
+          },
+          "remoteList": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": ["null", "integer"]
+                },
+                "portalId": {
+                  "type": ["null", "integer"]
+                },
+                "ownerId": {
+                  "type": ["null", "integer"]
+                },
+                "remoteId": {
+                  "type": ["null", "string"]
+                },
+                "remoteType": {
+                  "type": ["null", "string"]
+                },
+                "active": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

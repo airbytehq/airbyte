@@ -1,0 +1,7 @@
+{
+  "sourceId": "57eb1576-8f52-463d-beb6-2e107cdf571d",
+  "name": "Hubspot",
+  "dockerRepository": "airbyte/source-hubspot-singer",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://https://docs.airbyte.io/integrations/sources/hubspot"
+}
