@@ -22,29 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List
+from .standard_source_test import GoogleAnalyticsStandardSourceTest
 
-from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
-
-
-class StandardSourceTestIface(object):
-    def __init__(self):
-        pass
-
-    def get_spec(self) -> ConnectorSpecification:
-        raise Exception("Not Implemented")
-
-    def get_config(self) -> object:
-        raise Exception("Not Implemented")
-
-    def get_catalog(self) -> AirbyteCatalog:
-        raise Exception("Not Implemented")
-
-    def get_regex_tests(self) -> List[str]:
-        return []
-
-    def setup(self) -> None:
-        pass
-
-    def tear_down(self) -> None:
-        pass
+__all__ = ["GoogleAnalyticsStandardSourceTest"]

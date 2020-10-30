@@ -22,29 +22,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List
+from setuptools import find_packages, setup
 
-from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
-
-
-class StandardSourceTestIface(object):
-    def __init__(self):
-        pass
-
-    def get_spec(self) -> ConnectorSpecification:
-        raise Exception("Not Implemented")
-
-    def get_config(self) -> object:
-        raise Exception("Not Implemented")
-
-    def get_catalog(self) -> AirbyteCatalog:
-        raise Exception("Not Implemented")
-
-    def get_regex_tests(self) -> List[str]:
-        return []
-
-    def setup(self) -> None:
-        pass
-
-    def tear_down(self) -> None:
-        pass
+setup(
+    name="googleanalytics-singer-source",
+    description="Airbyte Source for Google Analytics (singer-based)",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    package_data={"": ["*.json", "*.txt"]},
+    # two sets of dependencies: 1) for main 2) for standard test deps. 2 does not have all of the dependencies of 1, which is we cannot use install_requires.
+    extras_require={
+        "main": [
+            "pipelinewise-tap-google-analytics==1.1.1",
+            "pydantic==1.6.1",
+            "base-singer",
+            "airbyte-protocol",
+        ],
+        "standardtest": ["airbyte-python-test", "requests"],
+    },
+)
