@@ -48,6 +48,8 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name
 ### Integration Tests 
 1. Configure credentials as appropriate, described below.
 1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}-singer:standardSourceTestPython` to run the standard integration test suite.
+1. To run additional integration tests, place your integration tests in the `integration_tests` directory and run them with `pytest integration_tests`.
+   Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
