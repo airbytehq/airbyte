@@ -29,17 +29,14 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DatabaseHelper;
 import io.airbyte.integrations.base.TestDestination;
-import java.util.AbstractMap;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
-import org.jooq.Record;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresIntegrationTest extends TestDestination {
+
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private static final String COLUMN_NAME = "data";

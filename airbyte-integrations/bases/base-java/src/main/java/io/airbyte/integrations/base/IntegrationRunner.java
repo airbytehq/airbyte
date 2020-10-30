@@ -43,7 +43,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Accepts EITHER a destination or a source. Routes commands from the commandline to the appropriate methods on the integration. Keeps itself DRY for methods that are common between source and destination.
+ * Accepts EITHER a destination or a source. Routes commands from the commandline to the appropriate
+ * methods on the integration. Keeps itself DRY for methods that are common between source and
+ * destination.
  */
 public class IntegrationRunner {
 
@@ -97,7 +99,8 @@ public class IntegrationRunner {
       case READ -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         final AirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), AirbyteCatalog.class);
-        // todo (cgardens) - should we should only send the contents of the state field to the integration, not the whole struct. this runner obfuscates everything but the contents.
+        // todo (cgardens) - should we should only send the contents of the state field to the integration,
+        // not the whole struct. this runner obfuscates everything but the contents.
         final Optional<State> stateOptional = parsed.getStatePath().map(path -> parseConfig(path, State.class));
         final Stream<AirbyteRecordMessage> messageStream = source.read(config, catalog, stateOptional.map(State::getState).orElse(null));
         messageStream
@@ -143,4 +146,5 @@ public class IntegrationRunner {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
   }
+
 }

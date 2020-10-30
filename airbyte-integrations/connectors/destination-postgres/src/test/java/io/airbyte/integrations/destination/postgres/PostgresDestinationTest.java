@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -57,14 +56,10 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.JSONB;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterEach;
@@ -73,7 +68,8 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 class PostgresDestinationTest {
-private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
+
+  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
