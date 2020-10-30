@@ -25,22 +25,27 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.ConnectorSpecification;
 
-public interface Destination extends Integration {
+public interface Integration {
 
   /**
-   * Return a consumer that writes messages to the destination.
+   * Fetch the specification for the integration.
+   *
+   * @return specification.
+   * @throws Exception - any exception.
+   */
+  ConnectorSpecification spec() throws Exception;
+
+  /**
+   * Check whether, given the current configuration, the integration can connect to the integration.
    *
    * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
    *        "password": "super secure" }
-   * @param catalog - schema of the incoming messages.
-   * @return Consumer that accepts message. The {@link DestinationConsumer#accept(Object)} will be
-   *         called n times where n is the number of messages. {@link DestinationConsumer#close()}
-   *         will always be called once regardless of success or failure.
+   * @return Whether or not the connection was successful. Optional message if it was not.
    * @throws Exception - any exception.
    */
-  DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws Exception;
+  AirbyteConnectionStatus check(JsonNode config) throws Exception;
 
 }
