@@ -324,7 +324,7 @@ public class PostgresDestination implements Destination {
   }
 
   private BasicDataSource getConnectionPool(JsonNode config) {
-    return DatabaseHelper.getConnectionPool(
+    return DatabaseHelper.getPostgresConnectionPool(
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:postgresql://%s:%s/%s",

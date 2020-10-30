@@ -34,8 +34,7 @@ import org.jooq.impl.DSL;
 public class DatabaseHelper {
 
   // default to postgres (which is the driver that is installed with this library).
-  public static BasicDataSource getConnectionPool(String username, String password, String jdbcConnectionString) {
-
+  public static BasicDataSource getPostgresConnectionPool(String username, String password, String jdbcConnectionString) {
     return getConnectionPool(username, password, jdbcConnectionString, "org.postgresql.Driver");
   }
 

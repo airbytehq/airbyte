@@ -75,7 +75,7 @@ public class PostgresIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
 
     return DatabaseHelper.query(
-        DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl()),
+        DatabaseHelper.getPostgresConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl()),
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
             .stream()
