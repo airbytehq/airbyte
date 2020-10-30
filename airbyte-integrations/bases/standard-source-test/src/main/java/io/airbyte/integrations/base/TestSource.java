@@ -210,7 +210,8 @@ public abstract class TestSource {
     final List<AirbyteMessage> allMessages = runRead(getCatalog());
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
     // the worker validates the message formats, so we just validate the message content
-    // We don't need to validate message format as long as we use the worker, which we will not want to do long term.
+    // We don't need to validate message format as long as we use the worker, which we will not want to
+    // do long term.
     assertFalse(recordMessages.isEmpty());
 
     final List<String> regexTests = getRegexTests();
