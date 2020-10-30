@@ -1,3 +1,7 @@
+'use strict';
+const fs = require('fs');
+const path = require('path');
+
 module.exports = function (plop) {
   const singerSourceInputRoot = '../source-singer';
 
@@ -51,7 +55,8 @@ module.exports = function (plop) {
         type:'addMany',
         destination: singerSourceOutputRoot,
         base: singerSourceInputRoot,
-        templateFiles: `${singerSourceInputRoot}/**/**`
+        templateFiles: `${singerSourceInputRoot}/**/**`,
+        globOptions: {ignore:'.secrets'}
       },
       {
         type:'add',
