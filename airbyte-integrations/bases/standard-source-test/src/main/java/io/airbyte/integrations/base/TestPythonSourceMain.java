@@ -28,9 +28,6 @@ import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.junit.internal.TextListener;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
 
 /**
  * Parse command line arguments and inject them into the test class before running the test. Then
@@ -63,13 +60,7 @@ public class TestPythonSourceMain {
     PythonTestSource.IMAGE_NAME = imageName;
     PythonTestSource.PYTHON_CONTAINER_NAME = pythonContainerName;
 
-    JUnitCore junit = new JUnitCore();
-    junit.addListener(new TextListener(System.out));
-    final Result result = junit.run(PythonTestSource.class);
-
-    if (result.getFailureCount() > 0) {
-      System.exit(1);
-    }
+    TestRunner.runTestClass(PythonTestSource.class);
   }
 
 }

@@ -9,11 +9,11 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-workers')
 
-    // todo (cgardens) - Using JUnit4 instead of five. See TestMain.java for more details.
-    implementation group: 'junit', name: 'junit', version: '4.12'
-
-
     implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
+
+    runtimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+    implementation 'org.junit.platform:junit-platform-launcher:1.7.0'
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
 }
 
 application {
