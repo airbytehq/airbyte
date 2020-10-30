@@ -22,28 +22,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import urllib.request
+import json
+import pkgutil
 
-from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import SingerSource
+from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from base_python_test import StandardSourceTestIface
 
 
-class TemplateSingerSource(SingerSource):
+class Source{{properCase name}}StandardTest(StandardSourceTestIface):
     def __init__(self):
         pass
 
-    def check(self, logger, config_container) -> AirbyteConnectionStatus:
-        code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
-        logger.info(f"Ping response code: {code}")
-        if code == 200:
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        else:
-            return AirbyteConnectionStatus(status=Status.FAILED)
+    def get_spec(self) -> ConnectorSpecification:
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
+        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
 
-    def discover_cmd(self, logger, config_path) -> str:
-        return 'tap-exchangeratesapi | grep \'"type": "SCHEMA"\' | head -1 | jq -c \'{"streams":[{"stream": .stream, "schema": .schema}]}\''
+    def get_config(self) -> object:
+        return {"fakekey": "fakevalue"}
 
-    def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
-        config_option = f"--config {config_path}"
-        state_option = f"--state {state_path}" if state_path else ""
-        return f"tap-exchangeratesapi {config_option} {state_option}"
+    def get_catalog(self) -> AirbyteCatalog:
+        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
+        return AirbyteCatalog.parse_obj(json.loads(raw_catalog))
+
+    def setup(self) -> None:
+        pass
+
+    def teardown(self) -> None:
+        pass

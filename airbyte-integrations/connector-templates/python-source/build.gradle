@@ -1,5 +1,0 @@
-project.ext.pyModule = 'template_python_source'
-apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-
-buildImage.dependsOn ":airbyte-integrations:bases:base-python:buildImage"

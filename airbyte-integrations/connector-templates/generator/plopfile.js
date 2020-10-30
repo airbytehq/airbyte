@@ -3,13 +3,17 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = function (plop) {
+  const javaDestinationInputRoot = '../java-destination';
+  const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
 
   const outputDir = '../../connectors';
-  const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`;
+  const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`
+  const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`
+  const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`
 
-  plop.setGenerator('java-destination', {
-    description: 'generate java destination',
+  plop.setGenerator('Java Destination', {
+    description: 'Generate an Airbyte destination written in Java',
     prompts: [
       {
         type: 'input',
@@ -20,32 +24,60 @@ module.exports = function (plop) {
     actions: [
       {
         type: 'add',
-        path: '../../connectors/destination-{{dashCase name}}/build.gradle',
-        templateFile: '../java-destination/build.gradle.hbs',
+        path: `${javaDestinationOutputRoot}/build.gradle`,
+        templateFile: `${javaDestinationInputRoot}/build.gradle.hbs`,
       },
       {
         type: 'add',
-        path: '../../connectors/destination-{{dashCase name}}/src/main/java/io/airbyte/integrations/destination/{{snakeCase name}}/{{properCase name}}Destination.java',
-        templateFile: '../java-destination/Destination.java.hbs',
+        path: `${javaDestinationOutputRoot}/src/main/java/io/airbyte/integrations/destination/{{snakeCase name}}/{{properCase name}}Destination.java`,
+        templateFile: `${javaDestinationInputRoot}/Destination.java.hbs`,
       },
       {
         type: 'add',
-        path: '../../connectors/destination-{{dashCase name}}/Dockerfile',
-        templateFile: '../java-destination/Dockerfile.hbs',
+        path: `${javaDestinationOutputRoot}/Dockerfile`,
+        templateFile: `${javaDestinationInputRoot}/Dockerfile.hbs`,
       },
       {
         type: 'add',
-        path: '../../connectors/destination-{{dashCase name}}/.dockerignore',
-        templateFile: '../java-destination/.dockerignore.hbs',
+        path: `${javaDestinationOutputRoot}/.dockerignore`,
+        templateFile: `${javaDestinationInputRoot}/.dockerignore.hbs`,
       },
       {
         type: 'add',
-        path: '../../connectors/destination-{{dashCase name}}/spec.json',
-        templateFile: '../java-destination/spec.json.hbs',
+        path: `${javaDestinationOutputRoot}/spec.json`,
+        templateFile: `${javaDestinationInputRoot}/spec.json.hbs`,
       },
       'Your new connector has been created. Happy coding~~',
     ],
   });
+
+  plop.setGenerator('Python Source', {
+    description: 'Generate an Airbyte Source written in Python',
+    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
+    actions: [
+        {
+        abortOnFail: true,
+        type:'addMany',
+        destination: pythonSourceOutputRoot,
+        base: pythonSourceInputRoot,
+        templateFiles: `${pythonSourceInputRoot}/**/**`,
+        globOptions: {ignore:'.secrets'}
+      },
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${pythonSourceInputRoot}/.secrets/credentials.json.hbs`,
+        path: `${pythonSourceOutputRoot}/secrets/credentials.json`
+      },
+      function(answers, config, plop){
+        const renderedOutputDir = plop.renderString(pythonSourceOutputRoot, answers);
+        const basesDir = path.resolve(__dirname, '../../bases');
+        fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
+        fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
+      },
+      'Your new Python source connector has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🐍🐍',]
+  });
+
   plop.setGenerator('Singer-based Python Source', {
     description: 'Generate an Airbyte Source written on top of a Singer Tap.',
     prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
