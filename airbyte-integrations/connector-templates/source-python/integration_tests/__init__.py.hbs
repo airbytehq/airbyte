@@ -22,11 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import sys
+from .standard_source_test import Source{{properCase name}}StandardTest
 
-from airbyte_protocol.entrypoint import launch
-from template_python_source import TemplatePythonSource
-
-if __name__ == "__main__":
-    source = TemplatePythonSource()
-    launch(source, sys.argv[1:])
+__all__ = ["Source{{properCase name}}StandardTest"]
