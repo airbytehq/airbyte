@@ -51,4 +51,5 @@ class CatalogHelpersTest {
 
     assertEquals(expectedFieldNames, actualFieldNames);
   }
+
 }

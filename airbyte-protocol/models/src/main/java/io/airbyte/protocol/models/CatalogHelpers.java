@@ -25,20 +25,14 @@
 package io.airbyte.protocol.models;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Spliterators;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class CatalogHelpers {
 
@@ -71,6 +65,7 @@ public class CatalogHelpers {
 
   /**
    * Gets the keys from the top-level properties object in the json schema.
+   *
    * @param json - json schema
    * @return field names
    */
@@ -80,4 +75,5 @@ public class CatalogHelpers {
     final Map<String, Object> object = Jsons.object(json.get("properties"), Map.class);
     return object.keySet();
   }
+
 }

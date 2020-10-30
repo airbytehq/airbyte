@@ -24,10 +24,8 @@
 
 package io.airbyte.integrations.source.jdbc;
 
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
@@ -52,7 +50,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -64,7 +61,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 class JdbcSourceTest {
 
-  private static final Instant NOW = Instant.now();
   private static final String STREAM_NAME = "id_and_name";
   private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
       STREAM_NAME,
@@ -76,8 +72,7 @@ class JdbcSourceTest {
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")))),
       new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash"))))
-  );
+          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")))));
 
   private JsonNode config;
 
@@ -101,12 +96,7 @@ class JdbcSourceTest {
         config.get("username").asText(),
         config.get("password").asText(),
         config.get("jdbc_url").asText(),
-        "org.postgresql.Driver"
-    );
-//    connectionPool.setDriverClassName("com.mysql.cj.jdbc.Driver");
-//    connectionPool.setUsername(jdbcConfig.get("username").asText());
-//    connectionPool.setPassword(jdbcConfig.get("password").asText());
-//    connectionPool.setUrl(jdbcConfig.get("jdbc_url").asText());
+        "org.postgresql.Driver");
 
     DatabaseHelper.query(connectionPool, ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -122,7 +112,6 @@ class JdbcSourceTest {
     db.close();
   }
 
-  // todo - same test as csv destination
   @Test
   void testSpec() throws IOException {
     final ConnectorSpecification actual = new JdbcSource().spec();
@@ -132,7 +121,6 @@ class JdbcSourceTest {
     assertEquals(expected, actual);
   }
 
-  // todo - same test as csv destination
   @Test
   void testCheckSuccess() {
     final AirbyteConnectionStatus actual = new JdbcSource().check(config);
@@ -176,7 +164,7 @@ class JdbcSourceTest {
 
     final Set<AirbyteMessage> expectedMessages = MESSAGES.stream()
         .map(Jsons::clone)
-        .peek(m -> ((ObjectNode)m.getRecord().getData()).remove("name"))
+        .peek(m -> ((ObjectNode) m.getRecord().getData()).remove("name"))
         .collect(Collectors.toSet());
     assertEquals(expectedMessages, actualMessages);
   }
@@ -192,4 +180,5 @@ class JdbcSourceTest {
 
     assertThrows(RuntimeException.class, () -> stream.collect(Collectors.toList()));
   }
+
 }

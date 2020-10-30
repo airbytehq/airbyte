@@ -29,17 +29,10 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Charsets;
-import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.time.Instants;
 import io.airbyte.db.DatabaseHelper;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -54,25 +47,13 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -114,7 +95,9 @@ public class JdbcSource implements Source {
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
       final BasicDataSource connectionPool = getConnectionPool(config);
-      // attempt to get current schema. this is a cheap query to sanity check that we can connect to the database. `currentSchema()` is a jooq method that will run the appropriate query based on which database it is connected to.
+      // attempt to get current schema. this is a cheap query to sanity check that we can connect to the
+      // database. `currentSchema()` is a jooq method that will run the appropriate query based on which
+      // database it is connected to.
       DatabaseHelper.query(connectionPool, ctx -> ctx.select(currentSchema()).fetch(), dialect);
 
       connectionPool.close();
@@ -147,7 +130,9 @@ public class JdbcSource implements Source {
     final Instant now = Instant.now();
 
     final BasicDataSource connectionPool = getConnectionPool(config);
-    // We do not use the typical database wrappers here, because we do not want to close this transaction until the stream is fully consumed by the calling process. We set connect.close() in the close of the stream.
+    // We do not use the typical database wrappers here, because we do not want to close this
+    // transaction until the stream is fully consumed by the calling process. We set connect.close() in
+    // the close of the stream.
     final Connection connection = connectionPool.getConnection();
     final List<Table<?>> tables = discoverInternal(config);
     final DSLContext context = DatabaseHelper.getContext(connection, dialect);
@@ -162,7 +147,8 @@ public class JdbcSource implements Source {
         .flatMap(pair -> {
           final AirbyteStream airbyteStream = pair.getLeft();
           final Table<?> table = pair.getRight().get();
-          // extract column names from airbyte catalog. assumes table / column structure in the schema. everything else gets flattened.
+          // extract column names from airbyte catalog. assumes table / column structure in the schema.
+          // everything else gets flattened.
           final Set<String> fieldNames = CatalogHelpers.getTopLevelFieldNames(airbyteStream.getJsonSchema());
           // find columns in the jooq schema.
           final List<org.jooq.Field<?>> selectedFields = Arrays
@@ -170,7 +156,7 @@ public class JdbcSource implements Source {
               .filter(field -> fieldNames.contains(field.getName()))
               .collect(Collectors.toList());
 
-          if(selectedFields.isEmpty()) {
+          if (selectedFields.isEmpty()) {
             return Stream.empty();
           }
 
@@ -194,12 +180,12 @@ public class JdbcSource implements Source {
         config.get("username").asText(),
         config.get("password").asText(),
         config.get("jdbc_url").asText(),
-        driverClass
-    );
+        driverClass);
   }
 
   /**
    * Mapping of jooq data types to airbyte data types. When in doubt, fall back on string.
+   *
    * @param jooqDataType - data type that can be encountered in jooq
    * @return airbyte data type
    */
@@ -243,4 +229,5 @@ public class JdbcSource implements Source {
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", JdbcSource.class);
   }
+
 }

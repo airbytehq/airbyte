@@ -63,8 +63,7 @@ public class JdbcIntegrationTest extends TestSource {
         config.get("username").asText(),
         config.get("password").asText(),
         config.get("jdbc_url").asText(),
-        "org.postgresql.Driver"
-    );
+        "org.postgresql.Driver");
 
     DatabaseHelper.query(connectionPool, ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -101,4 +100,5 @@ public class JdbcIntegrationTest extends TestSource {
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING));
   }
+
 }
