@@ -11,5 +11,7 @@ secrets
 # Python
 *.egg-info
 __pycache__
+.eggs
 .venv
 .mypy_cache
+

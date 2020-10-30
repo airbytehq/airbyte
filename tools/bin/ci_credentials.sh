@@ -14,3 +14,9 @@ jq --arg v "$GH_INTEGRATION_TEST_CREDS" '.access_token = $v' airbyte-integration
 
 mkdir airbyte-integrations/connectors/source-salesforce-singer/secrets/
 echo "$SALESFORCE_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source-salesforce-singer/secrets/config.json
+
+mkdir airbyte-integrations/connectors/source-hubspot-singer/secrets/
+echo "$HUBSPOT_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source-hubspot-singer/secrets/config.json
+
+mkdir airbyte-integrations/connectors/source-google-sheets/secrets
+echo "$GSHEETS_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source-google-sheets/secrets/creds.json

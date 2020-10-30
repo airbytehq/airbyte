@@ -65,6 +65,7 @@ import org.junit.jupiter.api.Test;
 class CsvDestinationTest {
 
   private static final Instant NOW = Instant.now();
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
   private static final String USERS_FILE = USERS_STREAM_NAME + ".csv";
@@ -98,7 +99,7 @@ class CsvDestinationTest {
 
   @BeforeEach
   void setup() throws IOException {
-    destinationPath = Files.createTempDirectory("test");
+    destinationPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
     config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString()));
   }
 

@@ -63,6 +63,7 @@ public class DefaultDiscoverCatalogWorkerTest {
   private static final JsonNode CREDENTIALS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
   private static final StandardDiscoverCatalogInput INPUT = new StandardDiscoverCatalogInput().withConnectionConfiguration(CREDENTIALS);
 
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String STREAM = "users";
   private static final String COLUMN_NAME = "name";
   private static final String COLUMN_AGE = "age";
@@ -80,7 +81,7 @@ public class DefaultDiscoverCatalogWorkerTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    jobRoot = Files.createTempDirectory("");
+    jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "");
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 

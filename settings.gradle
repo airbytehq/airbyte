@@ -41,4 +41,3 @@ integrationsPath.eachFileRecurse(FileType.FILES) { path ->
         include ":airbyte-integrations:${relativePath.parent.join(':')}"
     }
 }
-

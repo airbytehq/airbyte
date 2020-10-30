@@ -34,7 +34,7 @@ setup(
     install_requires=[
         "tap-stripe==1.4.4",
         "requests",
-        "base_singer",
-        "airbyte_protocol",
+        "airbyte-protocol",
+        "base-singer",
     ],
 )

@@ -69,4 +69,3 @@ Check out our [roadmap](https://github.com/airbytehq/airbyte/projects/1) to get 
 ## License
 
 Airbyte is licensed under the MIT license. See the [LICENSE](https://docs.airbyte.io/license) file for licensing information.
-
