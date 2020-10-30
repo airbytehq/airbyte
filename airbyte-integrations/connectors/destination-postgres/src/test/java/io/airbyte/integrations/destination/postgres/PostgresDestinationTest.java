@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -57,19 +58,22 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
+import org.jooq.JSONB;
+import org.jooq.JSONFormat;
+import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 class PostgresDestinationTest {
-
+private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
@@ -221,17 +225,9 @@ class PostgresDestinationTest {
 
               assertTrue(now.toEpochSecond() >= emitted_at.toEpochSecond());
             })
-            .map(Record::intoMap)
-            .map(r -> r.entrySet().stream().map(e -> {
-              if (e.getValue().getClass().equals(org.jooq.JSONB.class)) {
-                // jooq needs more configuration to handle jsonb natively. coerce it to a string for now and handle
-                // deserializing later.
-                return new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue().toString());
-              }
-              return e;
-            }).collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
-            .map(r -> (String) r.get(PostgresDestination.COLUMN_NAME))
+            .map(r -> r.formatJSON(JSON_FORMAT))
             .map(Jsons::deserialize)
+            .map(r -> Jsons.deserialize(r.get(PostgresDestination.COLUMN_NAME).asText()))
             .collect(Collectors.toSet()));
   }
 

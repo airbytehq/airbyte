@@ -32,11 +32,15 @@ import io.airbyte.integrations.base.TestDestination;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
+import org.jooq.JSONFormat;
+import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.Record;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresIntegrationTest extends TestDestination {
+  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private static final String COLUMN_NAME = "data";
   private PostgreSQLContainer<?> db;
@@ -78,17 +82,9 @@ public class PostgresIntegrationTest extends TestDestination {
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
             .stream()
-            .map(Record::intoMap)
-            .map(r -> r.entrySet().stream().map(e -> {
-              // jooq needs more configuration to handle jsonb natively. coerce it to a string for now and handle
-              // deserializing later.
-              if (e.getValue().getClass().equals(org.jooq.JSONB.class)) {
-                return new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue().toString());
-              }
-              return e;
-            }).collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
-            .map(r -> (String) r.get(COLUMN_NAME))
+            .map(r -> r.formatJSON(JSON_FORMAT))
             .map(Jsons::deserialize)
+            .map(r -> Jsons.deserialize(r.get(COLUMN_NAME).asText()))
             .collect(Collectors.toList()));
   }
 
