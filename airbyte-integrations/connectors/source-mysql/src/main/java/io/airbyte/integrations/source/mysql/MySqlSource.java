@@ -22,61 +22,30 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
-
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.table;
+package io.airbyte.integrations.source.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import java.io.IOException;
-import java.util.stream.Stream;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlSource implements Source{
+public class MySqlSource extends AbstractJdbcSource implements Source {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
-  private final JdbcSource jdbcSource;
 
   public MySqlSource() {
-    jdbcSource = new JdbcSource("com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
+    super("com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
   }
 
   @Override
-  public ConnectorSpecification spec() throws IOException {
-    return jdbcSource.spec();
-  }
-
-  @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
-    // convert config
-
-    return jdbcSource.check(toJdbcConfig(config));
-  }
-  @Override
-  public AirbyteCatalog discover(JsonNode config) throws Exception {
-    // convert config
-    return jdbcSource.discover(toJdbcConfig(config));
-  }
-
-  @Override
-  public Stream<AirbyteMessage> read(JsonNode config, AirbyteCatalog catalog, JsonNode state) throws Exception {
-    // convert config
-    return jdbcSource.read(toJdbcConfig(config), catalog, state);
-  }
-
-  public static JsonNode toJdbcConfig(JsonNode mySqlConfig) {
+  public JsonNode toJdbcConfig(JsonNode mySqlConfig) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", mySqlConfig.get("user").asText())
+        .put("username", mySqlConfig.get("username").asText())
         .put("password", mySqlConfig.get("password").asText())
         .put("jdbc_url", String.format("jdbc:mysql://%s:%s/%s",
             mySqlConfig.get("host").asText(),
@@ -91,4 +60,5 @@ public class MySqlSource implements Source{
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MySqlSource.class);
   }
+
 }

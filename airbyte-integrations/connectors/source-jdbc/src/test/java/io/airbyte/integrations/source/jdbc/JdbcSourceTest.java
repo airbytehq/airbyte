@@ -138,6 +138,12 @@ class JdbcSourceTest {
   }
 
   @Test
+  void testDiscover() throws Exception {
+    final AirbyteCatalog actual = new JdbcSource().discover(config);
+    assertEquals(CATALOG, actual);
+  }
+
+  @Test
   void testReadSuccess() throws Exception {
     final Set<AirbyteMessage> actualMessages = new JdbcSource().read(config, CATALOG, null).collect(Collectors.toSet());
 
