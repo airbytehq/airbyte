@@ -1,7 +1,11 @@
-module.exports = function (plop) {
-  const javaDestinationInputRoot = '../java-destination'
-  const pythonSourceInputRoot = '../source-python'
+'use strict';
+const fs = require('fs');
+const path = require('path');
 
+module.exports = function (plop) {
+  const javaDestinationInputRoot = '../java-destination';
+  const pythonSourceInputRoot = '../source-python';
+  const singerSourceInputRoot = '../source-singer';
 
   const outputDir = '../../connectors';
   const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`
@@ -46,18 +50,60 @@ module.exports = function (plop) {
       'Your new connector has been created. Happy coding~~',
     ],
   });
+
   plop.setGenerator('Python Source', {
     description: 'Generate an Airbyte Source written in Python',
+    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
+    actions: [
+        {
+        abortOnFail: true,
+        type:'addMany',
+        destination: pythonSourceOutputRoot,
+        base: pythonSourceInputRoot,
+        templateFiles: `${pythonSourceInputRoot}/**/**`,
+        globOptions: {ignore:'.secrets'}
+      },
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${singerSourceInputRoot}/.secrets/credentials.json.hbs`,
+        path: `${singerSourceOutputRoot}/secrets/credentials.json`
+      },
+      function(answers, config, plop){
+        const renderedOutputDir = plop.renderString(singerSourceOutputRoot, answers);
+        const basesDir = path.resolve(__dirname, '../../bases');
+        fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
+        fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
+      },
+      'Your new Python source connector has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🐍🐍',]
+  });
+
+  plop.setGenerator('Singer-based Python Source', {
+    description: 'Generate an Airbyte Source written on top of a Singer Tap.',
     prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
     actions: [
       {
         abortOnFail: true,
         type:'addMany',
-        destination: pythonSourceOutputRoot,
-        base: pythonSourceInputRoot,
-        templateFiles: `${pythonSourceInputRoot}/**/**`
+        destination: singerSourceOutputRoot,
+        base: singerSourceInputRoot,
+        templateFiles: `${singerSourceInputRoot}/**/**`,
+        globOptions: {ignore:'.secrets'}
       },
-      'Your new Python source connector has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🐍🐍',
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${singerSourceInputRoot}/.secrets/credentials.json.hbs`,
+        path: `${singerSourceOutputRoot}/secrets/credentials.json`
+      },
+      function(answers, config, plop){
+        const renderedOutputDir = plop.renderString(singerSourceOutputRoot, answers);
+        const basesDir = path.resolve(__dirname, '../../bases');
+        fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
+        fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
+        fs.symlinkSync(`${basesDir}/base-singer/base_singer`, `${renderedOutputDir}/base_singer`);
+      },
+      'Your new Singer-based source connector has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🐍🐍',
     ]
   });
 };
