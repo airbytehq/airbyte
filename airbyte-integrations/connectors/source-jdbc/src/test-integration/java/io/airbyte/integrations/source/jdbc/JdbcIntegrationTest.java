@@ -36,6 +36,9 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -99,6 +102,11 @@ public class JdbcIntegrationTest extends TestSource {
         STREAM_NAME,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING));
+  }
+
+  @Override
+  protected List<String> getRegexTests() throws Exception {
+    return new ArrayList<>();
   }
 
 }
