@@ -77,6 +77,7 @@ class JdbcSourceTest {
   private JsonNode config;
 
   private PostgreSQLContainer<?> db;
+  private BasicDataSource connectionPool;
 
   @BeforeEach
   void setup() throws SQLException {
@@ -92,7 +93,7 @@ class JdbcSourceTest {
             db.getDatabaseName()))
         .build());
 
-    final BasicDataSource connectionPool = DatabaseHelper.getConnectionPool(
+    connectionPool = DatabaseHelper.getConnectionPool(
         config.get("username").asText(),
         config.get("password").asText(),
         config.get("jdbc_url").asText(),
@@ -172,6 +173,40 @@ class JdbcSourceTest {
         .map(Jsons::clone)
         .peek(m -> ((ObjectNode) m.getRecord().getData()).remove("name"))
         .collect(Collectors.toSet());
+    assertEquals(expectedMessages, actualMessages);
+  }
+
+  @Test
+  void testReadMultipleTables() throws Exception {
+    final String streamName2 = STREAM_NAME + 2;
+    DatabaseHelper.query(connectionPool, ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name2(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO id_and_name2 (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+
+      return null;
+    });
+
+    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(
+        CATALOG.getStreams().get(0),
+        CatalogHelpers.createAirbyteStream(
+            streamName2,
+            Field.of("id", JsonSchemaPrimitive.NUMBER),
+            Field.of("name", JsonSchemaPrimitive.STRING))));
+    final Set<AirbyteMessage> actualMessages = new JdbcSource().read(config, catalog, null).collect(Collectors.toSet());
+
+    actualMessages.forEach(r -> {
+      if (r.getRecord() != null) {
+        r.getRecord().setEmittedAt(null);
+      }
+    });
+
+    final Set<AirbyteMessage> expectedMessages = MESSAGES
+        .stream()
+        .map(Jsons::clone)
+        .peek(m -> m.getRecord().setStream(streamName2))
+        .collect(Collectors.toSet());
+    expectedMessages.addAll(MESSAGES);
+
     assertEquals(expectedMessages, actualMessages);
   }
 

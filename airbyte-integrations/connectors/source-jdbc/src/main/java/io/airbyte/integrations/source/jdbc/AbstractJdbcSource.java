@@ -73,10 +73,6 @@ public abstract class AbstractJdbcSource implements Source {
   private final String driverClass;
   private final SQLDialect dialect;
 
-  // public JdbcSourceBase() {
-  // this("org.postgresql.Driver", SQLDialect.POSTGRES);
-  // }
-
   public AbstractJdbcSource(String driverClass, SQLDialect dialect) {
     this.driverClass = driverClass;
     this.dialect = dialect;
@@ -122,8 +118,9 @@ public abstract class AbstractJdbcSource implements Source {
   private List<Table<?>> discoverInternal(JsonNode config) throws Exception {
     final BasicDataSource connectionPool = getConnectionPool(config);
     return DatabaseHelper.query(connectionPool, context -> {
-      final List<Schema> databases = context.meta().getSchemas(config.get("database").asText());
-      if(databases.size() > 1) {
+      final String databaseName = context.select(currentSchema()).fetch().get(0).getValue(0, String.class);
+      final List<Schema> databases = context.meta().getSchemas(databaseName);
+      if (databases.size() > 1) {
         throw new IllegalStateException("found multiple databases with the same name.");
       }
       final Schema database = databases.get(0);
@@ -177,9 +174,9 @@ public abstract class AbstractJdbcSource implements Source {
                   .withRecord(new AirbyteRecordMessage()
                       .withStream(airbyteStream.getName())
                       .withEmittedAt(now.toEpochMilli())
-                      .withData(Jsons.deserialize(r.formatJSON(DB_JSON_FORMAT)))))
-              .onClose(() -> Exceptions.toRuntime(connection::close));
-        });
+                      .withData(Jsons.deserialize(r.formatJSON(DB_JSON_FORMAT)))));
+
+        }).onClose(() -> Exceptions.toRuntime(connection::close));
   }
 
   private BasicDataSource getConnectionPool(JsonNode config) {

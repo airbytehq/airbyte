@@ -34,8 +34,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.Resources;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.DatabaseHelper;
@@ -50,18 +48,8 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -72,7 +60,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.utility.MountableFile;
 
 class MySqlSourceTest {
 
@@ -94,13 +81,14 @@ class MySqlSourceTest {
   private JsonNode config;
 
   private static MySQLContainer<?> db;
+  private BasicDataSource connectionPool;
 
   @BeforeAll
   static void init() {
+    // test containers withInitScript only accepts scripts that are mounted as resources.
     MoreResources.writeResource("init.sql",
-            "CREATE USER '"+ TEST_USER + "'@'%' IDENTIFIED BY '" + TEST_PASSWORD + "';\n"
-                + "GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n"
-    );
+        "CREATE USER '" + TEST_USER + "'@'%' IDENTIFIED BY '" + TEST_PASSWORD + "';\n"
+            + "GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
     db = new MySQLContainer<>("mysql:8.0").withInitScript("init.sql").withUsername("root").withPassword("");
     db.start();
   }
@@ -149,14 +137,14 @@ class MySqlSourceTest {
   }
 
   @Test
-  void testCheckSuccess() throws Exception {
+  void testCheckSuccess() {
     final AirbyteConnectionStatus actual = new MySqlSource().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
   @Test
-  void testCheckFailure() throws Exception {
+  void testCheckFailure() {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = new MySqlSource().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)

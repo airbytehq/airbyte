@@ -27,8 +27,6 @@ package io.airbyte.commons.resources;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 import io.airbyte.commons.io.IOs;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
