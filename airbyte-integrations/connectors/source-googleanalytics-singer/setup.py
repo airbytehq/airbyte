@@ -39,6 +39,6 @@ setup(
             "base-singer",
             "airbyte-protocol",
         ],
-        "standardtest": ["airbyte-python-test"],
+        "standardtest": ["airbyte-python-test", "requests"],
     },
 )

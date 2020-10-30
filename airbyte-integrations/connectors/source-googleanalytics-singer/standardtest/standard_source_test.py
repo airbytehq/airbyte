@@ -24,9 +24,9 @@ SOFTWARE.
 
 import json
 import pkgutil
-import urllib.request
 from typing import List
 
+import requests
 from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
 from base_python_test import StandardSourceTestIface
 
@@ -43,11 +43,21 @@ class GoogleAnalyticsStandardSourceTest(StandardSourceTestIface):
         raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "test_catalog.json")
         return AirbyteCatalog.parse_obj(json.loads(raw_spec))
 
-    # send a pageview to GA
+    # send a page view to GA using a URL constructed with
+    # the documentation from https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#page
+    # and the hit builder at https://ga-dev-tools.appspot.com/hit-builder/
+    # and converted into Python
     def setup(self) -> None:
         tracker = pkgutil.get_data(self.__class__.__module__.split(".")[0], "tracker.txt").strip()
-        pageview_url = f"https://www.google-analytics.com/j/collect?v=1&_v=j86&a=1532168960&t=pageview&_s=1&dl=https%3A%2F%2Fairbyte.io&de=UTF-8&dt=Page%20Title&sd=30-bit&sr=1440x900&vp=344x650&je=0&_u=AACAAUABAAAAAC~&jid=1183258623&gjid=1930938845&cid=1690909460.1603818157&tid={tracker}"
-        urllib.request.urlopen(pageview_url)
+        url = "https://www.google-analytics.com/collect"
+        payload = {"v": "1", "t": "pageview", "tid": tracker, "cid": "555", "dh": "mydemo.com", "dp": "/home5", "dt": "homepage"}
+        headers = {
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "origin": "https://ga-dev-tools.appspot.com",
+            "referer": "https://ga-dev-tools.appspot.com/",
+        }
+        requests.post(url, data=payload, headers=headers)
 
     def get_regex_tests(self) -> List[str]:
         return [
