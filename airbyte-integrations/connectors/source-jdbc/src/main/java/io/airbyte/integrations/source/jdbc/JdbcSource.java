@@ -27,7 +27,6 @@ package io.airbyte.integrations.source.jdbc;
 import static org.jooq.impl.DSL.currentSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -53,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.DataType;
@@ -73,21 +71,14 @@ public class JdbcSource implements Source {
 
   private final String driverClass;
   private final SQLDialect dialect;
-  private final Supplier<Instant> instantSupplier;
 
   public JdbcSource() {
     this("org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
   public JdbcSource(final String driverClass, final SQLDialect dialect) {
-    this(driverClass, dialect, Instant::now);
-  }
-
-  @VisibleForTesting
-  JdbcSource(final String driverClass, final SQLDialect dialect, final Supplier<Instant> instantSupplier) {
     this.driverClass = driverClass;
     this.dialect = dialect;
-    this.instantSupplier = instantSupplier;
   }
 
   @Override
@@ -138,14 +129,14 @@ public class JdbcSource implements Source {
 
     Stream<AirbyteMessage> resultStream = Stream.empty();
 
-    for (final AirbyteStream stream : catalog.getStreams()) {
-      if (!tableNameToTable.containsKey(stream.getName())) {
+    for (final AirbyteStream airbyteStream : catalog.getStreams()) {
+      if (!tableNameToTable.containsKey(airbyteStream.getName())) {
         continue;
       }
 
-      final Set<String> selectedFields = CatalogHelpers.getTopLevelFieldNames(stream);
+      final Set<String> selectedFields = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
 
-      final Table<?> table = tableNameToTable.get(stream.getName());
+      final Table<?> table = tableNameToTable.get(airbyteStream.getName());
       final List<org.jooq.Field<?>> selectedDatabaseFields = Arrays.stream(table.fields())
           .filter(field -> selectedFields.contains(field.getName()))
           .collect(Collectors.toList());
@@ -154,7 +145,7 @@ public class JdbcSource implements Source {
         continue;
       }
 
-      final Stream<AirbyteMessage> recordStream = database.query(
+      final Stream<AirbyteMessage> stream = database.query(
           ctx -> ctx
               .select(selectedDatabaseFields)
               .from(table)
@@ -162,11 +153,11 @@ public class JdbcSource implements Source {
               .map(r -> new AirbyteMessage()
                   .withType(Type.RECORD)
                   .withRecord(new AirbyteRecordMessage()
-                      .withStream(stream.getName())
+                      .withStream(airbyteStream.getName())
                       .withEmittedAt(now.toEpochMilli())
                       .withData(Jsons.deserialize(r.formatJSON(DB_JSON_FORMAT))))));
 
-      resultStream = Stream.concat(resultStream, recordStream);
+      resultStream = Stream.concat(resultStream, stream);
     }
 
     return resultStream.onClose(() -> Exceptions.toRuntime(database::close));

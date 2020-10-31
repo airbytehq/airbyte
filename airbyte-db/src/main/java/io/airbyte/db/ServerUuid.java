@@ -24,12 +24,12 @@
 
 package io.airbyte.db;
 
+import static org.jooq.impl.DSL.field;
+
 import java.sql.SQLException;
 import java.util.Optional;
 import org.jooq.Record;
 import org.jooq.Result;
-
-import static org.jooq.impl.DSL.field;
 
 /*
  * The server UUID identifies a specific database installation of Airbyte for analytics purposes.
