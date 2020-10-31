@@ -58,7 +58,8 @@ public class TestServerUuid {
   }
 
   @AfterAll
-  public static void dbTeardown() {
+  public static void dbTeardown() throws Exception {
+    database.close();
     container.close();
   }
 

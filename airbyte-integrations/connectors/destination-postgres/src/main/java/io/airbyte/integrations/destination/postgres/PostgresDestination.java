@@ -280,6 +280,7 @@ public class PostgresDestination implements Destination {
         writeConfig.getWriteBuffer().close();
       }
       cleanupTmpTables(database, writeConfigs);
+      database.close();
     }
 
     private static void cleanupTmpTables(Database database, Map<String, WriteConfig> writeConfigs) {

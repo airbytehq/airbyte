@@ -24,12 +24,12 @@
 
 package io.airbyte.db;
 
-import static org.jooq.impl.DSL.field;
-
 import java.sql.SQLException;
 import java.util.Optional;
 import org.jooq.Record;
 import org.jooq.Result;
+
+import static org.jooq.impl.DSL.field;
 
 /*
  * The server UUID identifies a specific database installation of Airbyte for analytics purposes.
@@ -37,18 +37,17 @@ import org.jooq.Result;
 public class ServerUuid {
 
   public static Optional<String> get(Database database) throws SQLException {
-    return database.query(
-        ctx -> {
-          Result<Record> result =
-              ctx.select().from("airbyte_metadata").where(field("key").eq("server-uuid")).fetch();
-          Optional<Record> first = result.stream().findFirst();
+    return database.query(ctx -> {
+      Result<Record> result =
+          ctx.select().from("airbyte_metadata").where(field("key").eq("server-uuid")).fetch();
+      Optional<Record> first = result.stream().findFirst();
 
-          if (first.isEmpty()) {
-            return Optional.empty();
-          } else {
-            return Optional.of((String) first.get().get("value"));
-          }
-        });
+      if (first.isEmpty()) {
+        return Optional.empty();
+      } else {
+        return Optional.of((String) first.get().get("value"));
+      }
+    });
   }
 
 }

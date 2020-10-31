@@ -24,13 +24,6 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -66,6 +59,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 class PostgresDestinationTest {
 
@@ -207,21 +207,20 @@ class PostgresDestinationTest {
   }
 
   private Set<JsonNode> recordRetriever(String streamName) throws Exception {
-    return database.query(
-        ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
-            .stream()
-            .peek(record -> {
-              // ensure emitted_at is not in the future
-              OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-              OffsetDateTime emitted_at = record.get("emitted_at", OffsetDateTime.class);
+    return database.query(ctx -> ctx
+        .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
+        .stream()
+        .peek(record -> {
+          // ensure emitted_at is not in the future
+          OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+          OffsetDateTime emitted_at = record.get("emitted_at", OffsetDateTime.class);
 
-              assertTrue(now.toEpochSecond() >= emitted_at.toEpochSecond());
-            })
-            .map(r -> r.formatJSON(JSON_FORMAT))
-            .map(Jsons::deserialize)
-            .map(r -> Jsons.deserialize(r.get(PostgresDestination.COLUMN_NAME).asText()))
-            .collect(Collectors.toSet()));
+          assertTrue(now.toEpochSecond() >= emitted_at.toEpochSecond());
+        })
+        .map(r -> r.formatJSON(JSON_FORMAT))
+        .map(Jsons::deserialize)
+        .map(r -> Jsons.deserialize(r.get(PostgresDestination.COLUMN_NAME).asText()))
+        .collect(Collectors.toSet()));
   }
 
 }
