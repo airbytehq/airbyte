@@ -26,7 +26,7 @@ package io.airbyte.integrations.source.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -175,7 +175,7 @@ class MySqlSourceTest {
   void testReadFailure() throws Exception {
     final AirbyteStream spiedAbStream = spy(CATALOG.getStreams().get(0));
     final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-    doThrow(new RuntimeException()).when(spiedAbStream).getName();
+    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getName();
 
     final Stream<AirbyteMessage> stream = new MySqlSource().read(config, catalog, null);
 
