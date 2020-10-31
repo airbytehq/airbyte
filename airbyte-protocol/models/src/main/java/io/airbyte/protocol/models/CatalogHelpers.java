@@ -66,13 +66,13 @@ public class CatalogHelpers {
   /**
    * Gets the keys from the top-level properties object in the json schema.
    *
-   * @param json - json schema
+   * @param stream - airbyte stream
    * @return field names
    */
   @SuppressWarnings("unchecked")
-  public static Set<String> getTopLevelFieldNames(JsonNode json) {
+  public static Set<String> getTopLevelFieldNames(final AirbyteStream stream) {
     // it is json, so the key has to be a string.
-    final Map<String, Object> object = Jsons.object(json.get("properties"), Map.class);
+    final Map<String, Object> object = Jsons.object(stream.getJsonSchema().get("properties"), Map.class);
     return object.keySet();
   }
 

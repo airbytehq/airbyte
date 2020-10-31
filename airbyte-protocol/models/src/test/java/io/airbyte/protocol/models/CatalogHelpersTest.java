@@ -24,7 +24,7 @@
 
 package io.airbyte.protocol.models;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Sets;
@@ -46,10 +46,9 @@ class CatalogHelpersTest {
   @Test
   void testGetTopLevelFieldNames() {
     final String json = "{ \"type\": \"object\", \"properties\": { \"name\": { \"type\": \"string\" } } } ";
-    final Set<String> expectedFieldNames = Sets.newHashSet("name");
-    final Set<String> actualFieldNames = CatalogHelpers.getTopLevelFieldNames(Jsons.deserialize(json));
+    final Set<String> actualFieldNames = CatalogHelpers.getTopLevelFieldNames(new AirbyteStream().withJsonSchema(Jsons.deserialize(json)));
 
-    assertEquals(expectedFieldNames, actualFieldNames);
+    assertEquals(Sets.newHashSet("name"), actualFieldNames);
   }
 
 }

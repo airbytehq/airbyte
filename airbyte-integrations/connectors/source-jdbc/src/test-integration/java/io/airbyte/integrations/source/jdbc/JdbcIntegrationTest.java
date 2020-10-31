@@ -28,7 +28,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.TestSource;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -38,36 +39,35 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class JdbcIntegrationTest extends TestSource {
 
   private static final String STREAM_NAME = "id_and_name";
-  private PostgreSQLContainer<?> db;
+  private PostgreSQLContainer<?> container;
+  private Database database;
   private JsonNode config;
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws SQLException {
-    db = new PostgreSQLContainer<>("postgres:13-alpine");
-    db.start();
+    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()))
+            container.getHost(),
+            container.getFirstMappedPort(),
+            container.getDatabaseName()))
         .build());
 
-    final BasicDataSource connectionPool = DatabaseHelper.getConnectionPool(
+    database = Databases.createPostgresDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        config.get("jdbc_url").asText(),
-        "org.postgresql.Driver");
+        config.get("jdbc_url").asText());
 
-    DatabaseHelper.query(connectionPool, ctx -> {
+    database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
       return null;
@@ -75,9 +75,9 @@ public class JdbcIntegrationTest extends TestSource {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    db.stop();
-    db.close();
+  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+    database.close();
+    container.close();
   }
 
   @Override

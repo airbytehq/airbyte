@@ -30,6 +30,6 @@ import org.jooq.DSLContext;
 @FunctionalInterface
 public interface ContextQueryFunction<T> {
 
-  T apply(DSLContext context) throws SQLException;
+  T query(DSLContext context) throws SQLException;
 
 }

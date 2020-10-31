@@ -26,7 +26,7 @@ package io.airbyte.integrations.source.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,7 +36,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -49,11 +50,9 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,41 +75,39 @@ class JdbcSourceTest {
 
   private JsonNode config;
 
-  private PostgreSQLContainer<?> db;
-  private BasicDataSource connectionPool;
+  private PostgreSQLContainer<?> container;
+  private Database database;
 
   @BeforeEach
-  void setup() throws SQLException {
-    db = new PostgreSQLContainer<>("postgres:13-alpine");
-    db.start();
+  void setup() throws Exception {
+    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()))
+            container.getHost(),
+            container.getFirstMappedPort(),
+            container.getDatabaseName()))
         .build());
 
-    connectionPool = DatabaseHelper.getConnectionPool(
+    database = Databases.createPostgresDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        config.get("jdbc_url").asText(),
-        "org.postgresql.Driver");
+        config.get("jdbc_url").asText());
 
-    DatabaseHelper.query(connectionPool, ctx -> {
+    database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-
       return null;
     });
   }
 
   @AfterEach
-  void tearDown() {
-    db.stop();
-    db.close();
+  void tearDown() throws Exception {
+    database.close();
+    container.close();
   }
 
   @Test
@@ -134,7 +131,7 @@ class JdbcSourceTest {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = new JdbcSource().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Cannot create PoolableConnectionFactory (FATAL: password authentication failed for user \"test\")");
+        .withMessage("Can't connect with provided configuration.");
     assertEquals(expected, actual);
   }
 
@@ -179,7 +176,7 @@ class JdbcSourceTest {
   @Test
   void testReadMultipleTables() throws Exception {
     final String streamName2 = STREAM_NAME + 2;
-    DatabaseHelper.query(connectionPool, ctx -> {
+    database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name2(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name2 (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
 
@@ -215,7 +212,7 @@ class JdbcSourceTest {
   void testReadFailure() throws Exception {
     final AirbyteStream spiedAbStream = spy(CATALOG.getStreams().get(0));
     final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-    doThrow(new RuntimeException()).when(spiedAbStream).getName();
+    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getName();
 
     final Stream<AirbyteMessage> stream = new JdbcSource().read(config, catalog, null);
 

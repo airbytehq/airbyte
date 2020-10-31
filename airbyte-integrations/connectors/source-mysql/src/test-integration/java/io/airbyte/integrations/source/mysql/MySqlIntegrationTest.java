@@ -28,58 +28,61 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.TestSource;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
-import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
 public class MySqlIntegrationTest extends TestSource {
 
   private static final String STREAM_NAME = "id_and_name";
-  private MySQLContainer<?> db;
+
+  private MySQLContainer<?> container;
   private JsonNode config;
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws SQLException {
-    db = new MySQLContainer<>("mysql:8.0");
-    db.start();
+  protected void setup(TestDestinationEnv testEnv) throws Exception {
+    container = new MySQLContainer<>("mysql:8.0");
+    container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("database", container.getDatabaseName())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .build());
 
-    final BasicDataSource connectionPool = DatabaseHelper.getConnectionPool(
+    final Database database = Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:mysql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
-        "com.mysql.cj.jdbc.Driver");
+        "com.mysql.cj.jdbc.Driver",
+        SQLDialect.MYSQL);
 
-    DatabaseHelper.query(connectionPool, ctx -> {
+    database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
       return null;
     });
+
+    database.close();
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    db.stop();
-    db.close();
+    container.close();
   }
 
   @Override

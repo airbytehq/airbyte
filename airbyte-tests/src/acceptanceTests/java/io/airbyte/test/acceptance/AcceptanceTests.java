@@ -53,7 +53,8 @@ import io.airbyte.api.client.model.SourceSchema;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.FileReader;
 import java.io.IOException;
@@ -73,7 +74,6 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.junit.jupiter.api.AfterAll;
@@ -293,25 +293,24 @@ public class AcceptanceTests {
   }
 
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb) throws Exception {
-    BasicDataSource sourceDbPool = getConnectionPool(sourceDb);
+    Database database = getDatabase(sourceDb);
 
-    Set<String> sourceStreams = listStreams(sourceDbPool);
+    Set<String> sourceStreams = listStreams(database);
     Set<String> targetStreams = listCsvStreams();
     assertEquals(sourceStreams, targetStreams);
 
     for (String table : sourceStreams) {
-      assertStreamsEquivalent(sourceDbPool, table);
+      assertStreamsEquivalent(database, table);
     }
   }
 
-  private BasicDataSource getConnectionPool(PostgreSQLContainer db) {
-    return DatabaseHelper.getPostgresConnectionPool(
+  private Database getDatabase(PostgreSQLContainer db) {
+    return Databases.createPostgresDatabase(
         db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
-  private Set<String> listStreams(BasicDataSource connectionPool) throws SQLException {
-    return DatabaseHelper.query(
-        connectionPool,
+  private Set<String> listStreams(Database database) throws SQLException {
+    return database.query(
         context -> {
           Result<Record> fetch =
               context.fetch(
@@ -328,12 +327,12 @@ public class AcceptanceTests {
         .collect(Collectors.toSet());
   }
 
-  private void assertStreamsEquivalent(BasicDataSource sourceDbPool, String table) throws Exception {
+  private void assertStreamsEquivalent(Database database, String table) throws Exception {
     final Set<JsonNode> destinationRecords = new HashSet<>(retrieveCsvRecords(table));
 
-    long sourceStreamCount = getStreamCount(sourceDbPool, table);
+    long sourceStreamCount = getStreamCount(database, table);
     assertEquals(sourceStreamCount, destinationRecords.size());
-    final List<JsonNode> allRecords = retrievePgRecords(sourceDbPool, table);
+    final List<JsonNode> allRecords = retrievePgRecords(database, table);
 
     for (JsonNode sourceStreamRecord : allRecords) {
       assertTrue(destinationRecords.contains(sourceStreamRecord));
@@ -341,9 +340,8 @@ public class AcceptanceTests {
   }
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")
-  private long getStreamCount(BasicDataSource connectionPool, String tableName) throws SQLException {
-    return DatabaseHelper.query(
-        connectionPool,
+  private long getStreamCount(Database database, String tableName) throws SQLException {
+    return database.query(
         context -> {
           Result<Record> record =
               context.fetch(String.format("SELECT COUNT(*) FROM %s;", tableName));
@@ -404,9 +402,8 @@ public class AcceptanceTests {
     return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(relativeDir).toString()));
   }
 
-  private List<JsonNode> retrievePgRecords(BasicDataSource connectionPool, String table) throws SQLException {
-    return DatabaseHelper.query(
-        connectionPool, context -> context.fetch(String.format("SELECT * FROM %s;", table)))
+  private List<JsonNode> retrievePgRecords(Database database, String table) throws SQLException {
+    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
         .map(Jsons::jsonNode)
@@ -469,12 +466,10 @@ public class AcceptanceTests {
   }
 
   private void clearDbData(PostgreSQLContainer db) throws SQLException {
-    final BasicDataSource connectionPool = getConnectionPool(db);
-    final Set<String> tableNames = listStreams(connectionPool);
+    final Database database = getDatabase(db);
+    final Set<String> tableNames = listStreams(database);
     for (final String tableName : tableNames) {
-      DatabaseHelper.query(
-          connectionPool,
-          context -> context.execute(String.format("DELETE FROM %s", tableName)));
+      database.query(context -> context.execute(String.format("DELETE FROM %s", tableName)));
     }
   }
 
