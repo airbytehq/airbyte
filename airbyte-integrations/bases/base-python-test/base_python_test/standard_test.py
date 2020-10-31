@@ -36,6 +36,7 @@ class TestAction(Enum):
     GET_SPEC = "get_spec"
     GET_CONFIG = "get_config"
     GET_CATALOG = "get_catalog"
+    GET_REGEX_TESTS = "get_regex_tests"
     SETUP = "setup"
     TEARDOWN = "teardown"
 
@@ -79,6 +80,8 @@ class StandardSourceTestRunner(StandardSourceTestIface):
             self.test.setup()
         elif cmd == TestAction.TEARDOWN:
             self.test.teardown()
+        elif cmd == TestAction.GET_REGEX_TESTS:
+            output = json.dumps({"tests": self.test.get_regex_tests()})
         else:
             raise Exception("Unexpected command " + cmd)
 

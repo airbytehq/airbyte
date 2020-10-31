@@ -37,29 +37,32 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class JdbcIntegrationTest extends TestSource {
 
   private static final String STREAM_NAME = "id_and_name";
-  private PostgreSQLContainer<?> db;
+  private PostgreSQLContainer<?> container;
+  private Database database;
   private JsonNode config;
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws SQLException {
-    db = new PostgreSQLContainer<>("postgres:13-alpine");
-    db.start();
+    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()))
+            container.getHost(),
+            container.getFirstMappedPort(),
+            container.getDatabaseName()))
         .build());
 
-    final Database database = Databases.createPostgresDatabase(
+    database = Databases.createPostgresDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         config.get("jdbc_url").asText());
@@ -72,8 +75,9 @@ public class JdbcIntegrationTest extends TestSource {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    db.close();
+  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+    database.close();
+    container.close();
   }
 
   @Override
@@ -97,6 +101,11 @@ public class JdbcIntegrationTest extends TestSource {
         STREAM_NAME,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING));
+  }
+
+  @Override
+  protected List<String> getRegexTests() throws Exception {
+    return new ArrayList<>();
   }
 
 }

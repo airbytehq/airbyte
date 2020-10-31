@@ -76,6 +76,7 @@ class JdbcSourceTest {
   private JsonNode config;
 
   private PostgreSQLContainer<?> container;
+  private Database database;
 
   @BeforeEach
   void setup() throws Exception {
@@ -91,22 +92,21 @@ class JdbcSourceTest {
             container.getDatabaseName()))
         .build());
 
-    try (final Database database =
-        Databases.createPostgresDatabase(
+    database = Databases.createPostgresDatabase(
             config.get("username").asText(),
             config.get("password").asText(),
-            config.get("jdbc_url").asText())) {
+            config.get("jdbc_url").asText());
 
       database.query(ctx -> {
         ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
         ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
         return null;
       });
-    }
   }
 
   @AfterEach
-  void tearDown() {
+  void tearDown() throws Exception {
+    database.close();
     container.close();
   }
 
@@ -133,6 +133,12 @@ class JdbcSourceTest {
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
         .withMessage("Can't connect with provided configuration.");
     assertEquals(expected, actual);
+  }
+
+  @Test
+  void testDiscover() throws Exception {
+    final AirbyteCatalog actual = new JdbcSource().discover(config);
+    assertEquals(CATALOG, actual);
   }
 
   @Test
@@ -164,6 +170,40 @@ class JdbcSourceTest {
         .map(Jsons::clone)
         .peek(m -> ((ObjectNode) m.getRecord().getData()).remove("name"))
         .collect(Collectors.toSet());
+    assertEquals(expectedMessages, actualMessages);
+  }
+
+  @Test
+  void testReadMultipleTables() throws Exception {
+    final String streamName2 = STREAM_NAME + 2;
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name2(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO id_and_name2 (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+
+      return null;
+    });
+
+    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(
+        CATALOG.getStreams().get(0),
+        CatalogHelpers.createAirbyteStream(
+            streamName2,
+            Field.of("id", JsonSchemaPrimitive.NUMBER),
+            Field.of("name", JsonSchemaPrimitive.STRING))));
+    final Set<AirbyteMessage> actualMessages = new JdbcSource().read(config, catalog, null).collect(Collectors.toSet());
+
+    actualMessages.forEach(r -> {
+      if (r.getRecord() != null) {
+        r.getRecord().setEmittedAt(null);
+      }
+    });
+
+    final Set<AirbyteMessage> expectedMessages = MESSAGES
+        .stream()
+        .map(Jsons::clone)
+        .peek(m -> m.getRecord().setStream(streamName2))
+        .collect(Collectors.toSet());
+    expectedMessages.addAll(MESSAGES);
+
     assertEquals(expectedMessages, actualMessages);
   }
 

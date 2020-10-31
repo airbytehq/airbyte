@@ -17,6 +17,6 @@ COPY secrets/* $CODE_PATH
 COPY source_{{snakeCase name}}/*.json $CODE_PATH
 COPY setup.py ./
 
-RUN pip install ".[integration_tests]"
+RUN pip install ".[tests]"
 
 WORKDIR /airbyte

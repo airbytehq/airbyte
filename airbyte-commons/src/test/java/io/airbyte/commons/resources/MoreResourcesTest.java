@@ -52,4 +52,11 @@ class MoreResourcesTest {
             .collect(Collectors.toSet()));
   }
 
+  @Test
+  void testWriteResource() throws IOException {
+    final String contents = "something to remember";
+    MoreResources.writeResource("file.txt", contents);
+    assertEquals(contents, MoreResources.readResource("file.txt"));
+  }
+
 }
