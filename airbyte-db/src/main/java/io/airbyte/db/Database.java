@@ -22,34 +22,47 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.db;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
+import java.io.Closeable;
+import java.sql.SQLException;
+import javax.sql.DataSource;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JdbcSource extends AbstractJdbcSource implements Source {
+public class Database implements AutoCloseable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSource.class);
+  private final static Logger LOGGER = LoggerFactory.getLogger(Database.class);
 
-  public JdbcSource() {
-    super("org.postgresql.Driver", SQLDialect.POSTGRES);
+  private final DataSource ds;
+  private final SQLDialect dialect;
+
+  public Database(final DataSource ds, final SQLDialect dialect) {
+    this.ds = ds;
+    this.dialect = dialect;
   }
 
-  // no-op for JdbcSource since the config it receives is designed to be use for JDBC.
+  public <T> T query(ContextQueryFunction<T> transform) throws SQLException {
+    return transform.query(DSL.using(ds, dialect));
+  }
+
+  public <T> T transaction(ContextQueryFunction<T> transform) throws SQLException {
+    return DSL.using(ds, dialect).transactionResult(configuration -> transform.query(DSL.using(configuration)));
+  }
+
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
-    return config;
-  }
+  public void close() throws Exception {
+    // Just a safety in case we are using a datasource implementation that requires closing.
+    // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
 
-  public static void main(String[] args) throws Exception {
-    final Source source = new JdbcSource();
-    LOGGER.info("starting source: {}", JdbcSource.class);
-    new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", JdbcSource.class);
+    if (ds instanceof AutoCloseable) {
+      ((AutoCloseable) ds).close();
+    }
+    if (ds instanceof Closeable) {
+      ((Closeable) ds).close();
+    }
   }
 
 }

@@ -31,7 +31,8 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultSchedulerPersistence;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
@@ -44,7 +45,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,23 +63,23 @@ public class SchedulerApp {
   private static final long JOB_SUBMITTER_DELAY_MILLIS = 5000L;
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
 
-  private final BasicDataSource connectionPool;
+  private final Database database;
   private final Path configRoot;
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
 
-  public SchedulerApp(BasicDataSource connectionPool,
+  public SchedulerApp(Database database,
                       Path configRoot,
                       Path workspaceRoot,
                       ProcessBuilderFactory pbf) {
-    this.connectionPool = connectionPool;
+    this.database = database;
     this.configRoot = configRoot;
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
   }
 
   public void start() {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(connectionPool);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(database);
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
@@ -114,7 +114,7 @@ public class SchedulerApp {
     LOGGER.info("workspaceRoot = " + workspaceRoot);
 
     LOGGER.info("Creating DB connection pool...");
-    final BasicDataSource connectionPool = DatabaseHelper.getPostgresConnectionPool(
+    final Database database = Databases.createPostgresDatabase(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl());
@@ -126,7 +126,7 @@ public class SchedulerApp {
         configs.getDockerNetwork());
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(connectionPool, configRoot, workspaceRoot, pbf).start();
+    new SchedulerApp(database, configRoot, workspaceRoot, pbf).start();
   }
 
 }
