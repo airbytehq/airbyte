@@ -93,15 +93,15 @@ class JdbcSourceTest {
         .build());
 
     database = Databases.createPostgresDatabase(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            config.get("jdbc_url").asText());
+        config.get("username").asText(),
+        config.get("password").asText(),
+        config.get("jdbc_url").asText());
 
-      database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-        return null;
-      });
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+      return null;
+    });
   }
 
   @AfterEach

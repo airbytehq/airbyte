@@ -36,7 +36,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -48,11 +49,9 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
-import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -78,10 +77,9 @@ class MySqlSourceTest {
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")))));
 
-  private JsonNode config;
+  private static MySQLContainer<?> container;
 
-  private static MySQLContainer<?> db;
-  private BasicDataSource connectionPool;
+  private JsonNode config;
 
   @BeforeAll
   static void init() {
@@ -89,42 +87,43 @@ class MySqlSourceTest {
     MoreResources.writeResource("init.sql",
         "CREATE USER '" + TEST_USER + "'@'%' IDENTIFIED BY '" + TEST_PASSWORD + "';\n"
             + "GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
-    db = new MySQLContainer<>("mysql:8.0").withInitScript("init.sql").withUsername("root").withPassword("");
-    db.start();
+    container = new MySQLContainer<>("mysql:8.0").withInitScript("init.sql").withUsername("root").withPassword("");
+    container.start();
   }
 
   @BeforeEach
-  void setup() throws SQLException {
+  void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
         .put("database", "db_" + RandomStringUtils.randomAlphabetic(10))
         .put("username", TEST_USER)
         .put("password", TEST_PASSWORD)
         .build());
 
-    final BasicDataSource connectionPool = DatabaseHelper.getConnectionPool(
+    final Database database = Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:mysql://%s:%s",
             config.get("host").asText(),
             config.get("port").asText()),
-        "com.mysql.cj.jdbc.Driver");
+        "com.mysql.cj.jdbc.Driver",
+        SQLDialect.MYSQL);
 
-    DatabaseHelper.query(connectionPool, ctx -> {
+    database.query(ctx -> {
       ctx.fetch("CREATE DATABASE " + config.get("database").asText());
       ctx.fetch("USE " + config.get("database").asText());
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
 
       return null;
-    }, SQLDialect.MYSQL);
+    });
+    database.close();
   }
 
   @AfterAll
   static void cleanUp() {
-    db.stop();
-    db.close();
+    container.close();
   }
 
   @Test
@@ -148,7 +147,7 @@ class MySqlSourceTest {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = new MySqlSource().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Cannot create PoolableConnectionFactory (Access denied for user 'test'@'172.17.0.1' (using password: YES))");
+        .withMessage("Can't connect with provided configuration.");
     assertEquals(expected, actual);
   }
 

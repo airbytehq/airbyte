@@ -25,7 +25,6 @@
 package io.airbyte.db;
 
 import java.io.Closeable;
-import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.jooq.SQLDialect;
@@ -55,6 +54,9 @@ public class Database implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
+    // Just a safety in case we are using a datasource implementation that requires closing.
+    // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
+
     if (ds instanceof AutoCloseable) {
       ((AutoCloseable) ds).close();
     }
