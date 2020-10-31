@@ -58,29 +58,26 @@ import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.Named;
 import org.jooq.SQLDialect;
+import org.jooq.Schema;
 import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractJdbcSource implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private final String driverClass;
   private final SQLDialect dialect;
 
-  public AbstractJdbcSource() {
-    this("org.postgresql.Driver", SQLDialect.POSTGRES);
-  }
-
   public AbstractJdbcSource(final String driverClass, final SQLDialect dialect) {
     this.driverClass = driverClass;
     this.dialect = dialect;
   }
 
-  public abstract JsonNode toJdbcConfig(JsonNode mySqlConfig);
+  public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
   public ConnectorSpecification spec() throws IOException {
@@ -117,6 +114,18 @@ public abstract class AbstractJdbcSource implements Source {
                 return CatalogHelpers.createAirbyteStream(t.getName(), fields);
               }).collect(Collectors.toList()));
     }
+  }
+
+  private List<Table<?>> discoverInternal(final Database database) throws Exception {
+    return database.query(context -> {
+      final String databaseName = context.select(currentSchema()).fetch().get(0).getValue(0, String.class);
+      final List<Schema> schemas = context.meta().getSchemas(databaseName);
+      if (schemas.size() > 1) {
+        throw new IllegalStateException("found multiple databases with the same name.");
+      }
+      final Schema schema = schemas.get(0);
+      return context.meta(schema).getTables();
+    });
   }
 
   @Override
@@ -171,10 +180,6 @@ public abstract class AbstractJdbcSource implements Source {
         config.get("jdbc_url").asText(),
         driverClass,
         dialect);
-  }
-
-  private List<Table<?>> discoverInternal(final Database database) throws Exception {
-    return database.query(context -> context.meta().getTables());
   }
 
   /**
