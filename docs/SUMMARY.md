@@ -15,6 +15,7 @@
   * [Sources](integrations/sources/README.md)
     * [exchangeratesapi.io](integrations/sources/exchangeratesapi-io.md)
     * [Github](integrations/sources/github.md)
+    * [Google Sheets](integrations/sources/google-sheets.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Postgres](integrations/sources/postgres.md)
     * [Salesforce](integrations/sources/salesforce.md)
