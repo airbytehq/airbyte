@@ -36,8 +36,8 @@ import static org.jooq.impl.DSL.field;
  */
 public class ServerUuid {
 
-  public static Optional<String> get(Database handle) throws SQLException {
-    return handle.query(
+  public static Optional<String> get(Database database) throws SQLException {
+    return database.query(
         ctx -> {
           Result<Record> result =
               ctx.select().from("airbyte_metadata").where(field("key").eq("server-uuid")).fetch();

@@ -39,7 +39,7 @@ import org.testcontainers.utility.MountableFile;
 public class TestServerUuid {
 
   private static PostgreSQLContainer<?> container;
-  private static Database postgresHandle;
+  private static Database database;
 
   @BeforeAll
   public static void dbSetup() throws IOException, InterruptedException {
@@ -54,7 +54,7 @@ public class TestServerUuid {
     // execInContainer uses Docker's EXEC so it needs to be split up like this
     container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
-    postgresHandle = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    database = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }
 
   @AfterAll
@@ -64,15 +64,15 @@ public class TestServerUuid {
 
   @Test
   void testUuidFormat() throws SQLException {
-    Optional<String> uuid = ServerUuid.get(postgresHandle);
+    Optional<String> uuid = ServerUuid.get(database);
 
     assertTrue(uuid.get().matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
   }
 
   @Test
   void testSameUuidOverInitializations() throws SQLException {
-    Optional<String> uuid1 = ServerUuid.get(postgresHandle);
-    Optional<String> uuid2 = ServerUuid.get(postgresHandle);
+    Optional<String> uuid1 = ServerUuid.get(database);
+    Optional<String> uuid2 = ServerUuid.get(database);
 
     assertEquals(uuid1, uuid2);
   }
