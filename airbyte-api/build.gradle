@@ -22,9 +22,9 @@ task generateApiServer(type: GenerateTask) {
     modelPackage = "io.airbyte.api.model"
 
     importMappings = [
-            'SourceSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceConfiguration'     : 'com.fasterxml.jackson.databind.JsonNode',
-            'DestinationSpecification': 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationConfiguration': 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
@@ -53,9 +53,9 @@ task generateApiClient(type: GenerateTask) {
     modelPackage = "io.airbyte.api.client.model"
 
     importMappings = [
-            'SourceSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceConfiguration'     : 'com.fasterxml.jackson.databind.JsonNode',
-            'DestinationSpecification': 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationConfiguration': 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
@@ -84,9 +84,9 @@ task generateApiDocs(type: GenerateTask) {
     modelPackage = "io.airbyte.api.client.model"
 
     importMappings = [
-            'SourceSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceConfiguration'     : 'com.fasterxml.jackson.databind.JsonNode',
-            'DestinationSpecification': 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationConfiguration': 'com.fasterxml.jackson.databind.JsonNode',
     ]
 

@@ -31,10 +31,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationReadList;
-import io.airbyte.api.model.DestinationUpdate;
+import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionRead;
+import io.airbyte.api.model.DestinationDefinitionReadList;
+import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -47,19 +47,19 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DestinationsHandlerTest {
+class DestinationDefinitionsHandlerTest {
 
   private DockerImageValidator dockerImageValidator;
   private ConfigRepository configRepository;
   private StandardDestination destination;
-  private DestinationsHandler destinationHandler;
+  private DestinationDefinitionsHandler destinationHandler;
 
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
     dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
-    destinationHandler = new DestinationsHandler(configRepository, dockerImageValidator);
+    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator);
   }
 
   private StandardDestination generateDestination() {
@@ -79,25 +79,25 @@ class DestinationsHandlerTest {
 
     when(configRepository.listStandardDestinations()).thenReturn(Lists.newArrayList(destination, destination2));
 
-    DestinationRead expectedDestinationRead1 = new DestinationRead()
-        .destinationId(destination.getDestinationId())
+    DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
+        .destinationDefinitionId(destination.getDestinationId())
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()));
 
-    DestinationRead expectedDestinationRead2 = new DestinationRead()
-        .destinationId(destination2.getDestinationId())
+    DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
+        .destinationDefinitionId(destination2.getDestinationId())
         .name(destination2.getName())
         .dockerRepository(destination2.getDockerRepository())
         .dockerImageTag(destination2.getDockerImageTag())
         .documentationUrl(new URI(destination2.getDocumentationUrl()));
 
-    final DestinationReadList actualDestinationReadList = destinationHandler.listDestinations();
+    final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationHandler.listDestinationDefinitions();
 
     assertEquals(
-        Lists.newArrayList(expectedDestinationRead1, expectedDestinationRead2),
-        actualDestinationReadList.getDestinations());
+        Lists.newArrayList(expectedDestinationDefinitionRead1, expectedDestinationDefinitionRead2),
+        actualDestinationDefinitionReadList.getDestinationDefinitions());
   }
 
   @Test
@@ -105,33 +105,33 @@ class DestinationsHandlerTest {
     when(configRepository.getStandardDestination(destination.getDestinationId()))
         .thenReturn(destination);
 
-    DestinationRead expectedDestinationRead = new DestinationRead()
-        .destinationId(destination.getDestinationId())
+    DestinationDefinitionRead expectedDestinationDefinitionRead = new DestinationDefinitionRead()
+        .destinationDefinitionId(destination.getDestinationId())
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()));
 
-    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody()
-        .destinationId(destination.getDestinationId());
+    final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
+        .destinationDefinitionId(destination.getDestinationId());
 
-    final DestinationRead actualDestinationRead = destinationHandler.getDestination(destinationIdRequestBody);
+    final DestinationDefinitionRead actualDestinationDefinitionRead = destinationHandler.getDestinationDefinition(destinationDefinitionIdRequestBody);
 
-    assertEquals(expectedDestinationRead, actualDestinationRead);
+    assertEquals(expectedDestinationDefinitionRead, actualDestinationDefinitionRead);
   }
 
   @Test
   void testUpdateDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getStandardDestination(destination.getDestinationId())).thenReturn(destination);
-    DestinationRead currentDestination =
-        destinationHandler.getDestination(new DestinationIdRequestBody().destinationId(destination.getDestinationId()));
+    DestinationDefinitionRead currentDestination =
+        destinationHandler.getDestinationDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destination.getDestinationId()));
     final String currentTag = currentDestination.getDockerImageTag();
     final String currentRepo = currentDestination.getDockerRepository();
     final String newDockerImageTag = "averydifferenttag";
     assertNotEquals(newDockerImageTag, currentTag);
 
-    final DestinationRead sourceRead = destinationHandler.updateDestination(
-        new DestinationUpdate().destinationId(this.destination.getDestinationId()).dockerImageTag(newDockerImageTag));
+    final DestinationDefinitionRead sourceRead = destinationHandler.updateDestinationDefinition(
+        new DestinationDefinitionUpdate().destinationDefinitionId(this.destination.getDestinationId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
     verify(dockerImageValidator).assertValidIntegrationImage(currentRepo, newDockerImageTag);

@@ -31,8 +31,8 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.Lists;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.server.helpers.DestinationHelpers;
-import io.airbyte.server.helpers.SourceHelpers;
+import io.airbyte.server.helpers.DestinationDefinitionHelpers;
+import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,8 +49,8 @@ class DebugInfoHandlerTest {
 
   @Test
   public void testNoFailures() throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configRepository.listStandardSources()).thenReturn(Lists.newArrayList(SourceHelpers.generateSource()));
-    when(configRepository.listStandardDestinations()).thenReturn(Lists.newArrayList(DestinationHelpers.generateDestination()));
+    when(configRepository.listStandardSources()).thenReturn(Lists.newArrayList(SourceDefinitionHelpers.generateSource()));
+    when(configRepository.listStandardDestinations()).thenReturn(Lists.newArrayList(DestinationDefinitionHelpers.generateDestination()));
     new DebugInfoHandler(configRepository).getInfo();
   }
 

@@ -103,13 +103,13 @@ public class ConnectionHelpers {
   }
 
   public static ConnectionRead generateExpectedConnectionRead(UUID connectionId,
-                                                              UUID sourceImplementationId,
-                                                              UUID destinationImplementationId) {
+                                                              UUID sourceId,
+                                                              UUID destinationId) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
-        .sourceImplementationId(sourceImplementationId)
-        .destinationImplementationId(destinationImplementationId)
+        .sourceId(sourceId)
+        .destinationId(destinationId)
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
         .syncMode(ConnectionRead.SyncModeEnum.FULL_REFRESH)

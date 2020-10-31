@@ -24,10 +24,10 @@
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationReadList;
-import io.airbyte.api.model.DestinationUpdate;
+import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionRead;
+import io.airbyte.api.model.DestinationDefinitionReadList;
+import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.config.StandardDestination;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -39,50 +39,51 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DestinationsHandler {
+public class DestinationDefinitionsHandler {
 
   private final ConfigRepository configRepository;
   private DockerImageValidator dockerImageValidator;
 
-  public DestinationsHandler(final ConfigRepository configRepository, DockerImageValidator dockerImageValidator) {
+  public DestinationDefinitionsHandler(final ConfigRepository configRepository, DockerImageValidator dockerImageValidator) {
     this.configRepository = configRepository;
     this.dockerImageValidator = dockerImageValidator;
   }
 
-  public DestinationReadList listDestinations()
+  public DestinationDefinitionReadList listDestinationDefinitions()
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<DestinationRead> reads = configRepository.listStandardDestinations()
+    final List<DestinationDefinitionRead> reads = configRepository.listStandardDestinations()
         .stream()
-        .map(DestinationsHandler::buildDestinationRead)
+        .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead)
         .collect(Collectors.toList());
 
-    return new DestinationReadList().destinations(reads);
+    return new DestinationDefinitionReadList().destinationDefinitions(reads);
   }
 
-  public DestinationRead getDestination(DestinationIdRequestBody destinationIdRequestBody)
+  public DestinationDefinitionRead getDestinationDefinition(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    return buildDestinationRead(configRepository.getStandardDestination(destinationIdRequestBody.getDestinationId()));
+    return buildDestinationDefinitionRead(configRepository.getStandardDestination(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
-  public DestinationRead updateDestination(DestinationUpdate destinationUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
-    StandardDestination currentDestination = configRepository.getStandardDestination(destinationUpdate.getDestinationId());
-    dockerImageValidator.assertValidIntegrationImage(currentDestination.getDockerRepository(), destinationUpdate.getDockerImageTag());
+  public DestinationDefinitionRead updateDestinationDefinition(DestinationDefinitionUpdate destinationDefinitionUpdate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    StandardDestination currentDestination = configRepository.getStandardDestination(destinationDefinitionUpdate.getDestinationDefinitionId());
+    dockerImageValidator.assertValidIntegrationImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag());
 
     StandardDestination newDestination = new StandardDestination()
         .withDestinationId(currentDestination.getDestinationId())
-        .withDockerImageTag(destinationUpdate.getDockerImageTag())
+        .withDockerImageTag(destinationDefinitionUpdate.getDockerImageTag())
         .withDockerRepository(currentDestination.getDockerRepository())
         .withName(currentDestination.getName())
         .withDocumentationUrl(currentDestination.getDocumentationUrl());
 
     configRepository.writeStandardDestination(newDestination);
-    return buildDestinationRead(newDestination);
+    return buildDestinationDefinitionRead(newDestination);
   }
 
-  private static DestinationRead buildDestinationRead(StandardDestination standardDestination) {
+  private static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestination standardDestination) {
     try {
-      return new DestinationRead()
-          .destinationId(standardDestination.getDestinationId())
+      return new DestinationDefinitionRead()
+          .destinationDefinitionId(standardDestination.getDestinationId())
           .name(standardDestination.getName())
           .dockerRepository(standardDestination.getDockerRepository())
           .dockerImageTag(standardDestination.getDockerImageTag())
