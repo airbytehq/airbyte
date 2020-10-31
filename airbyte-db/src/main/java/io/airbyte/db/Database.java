@@ -45,10 +45,6 @@ public class Database implements AutoCloseable {
     this.dialect = dialect;
   }
 
-  public Connection getConnection() throws SQLException {
-    return ds.getConnection();
-  }
-
   public <T> T query(ContextQueryFunction<T> transform) throws SQLException {
     return transform.query(DSL.using(ds, dialect));
   }
