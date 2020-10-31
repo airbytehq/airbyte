@@ -84,11 +84,10 @@ public class PostgresDestination implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try (final Database database = getDatabase(config)) {
-      database.query(ctx ->
-          ctx.execute(
-              "SELECT *\n"
-                  + "FROM pg_catalog.pg_tables\n"
-                  + "WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema' LIMIT 1;"));
+      database.query(ctx -> ctx.execute(
+          "SELECT *\n"
+              + "FROM pg_catalog.pg_tables\n"
+              + "WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema' LIMIT 1;"));
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
@@ -134,14 +133,13 @@ public class PostgresDestination implements Destination {
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String tableName = stream.getName();
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
-      database.query(
-          ctx -> ctx.execute(String.format(
-              "CREATE TABLE \"%s\" ( \n"
-                  + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
-                  + "\"%s\" JSONB,\n"
-                  + "\"emitted_at\" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
-                  + ");",
-              tmpTableName, COLUMN_NAME)));
+      database.query(ctx -> ctx.execute(String.format(
+          "CREATE TABLE \"%s\" ( \n"
+              + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
+              + "\"%s\" JSONB,\n"
+              + "\"emitted_at\" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
+              + ");",
+          tmpTableName, COLUMN_NAME)));
 
       final Path queueRoot = Files.createTempDirectory("queues");
       final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(stream.getName()), stream.getName());
