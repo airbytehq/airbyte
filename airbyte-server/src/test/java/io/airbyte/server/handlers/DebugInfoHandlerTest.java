@@ -50,7 +50,7 @@ class DebugInfoHandlerTest {
   @Test
   public void testNoFailures() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.listStandardSources()).thenReturn(Lists.newArrayList(SourceDefinitionHelpers.generateSource()));
-    when(configRepository.listStandardDestinations()).thenReturn(Lists.newArrayList(DestinationDefinitionHelpers.generateDestination()));
+    when(configRepository.listStandardDestinationDefinitions()).thenReturn(Lists.newArrayList(DestinationDefinitionHelpers.generateDestination()));
     new DebugInfoHandler(configRepository).getInfo();
   }
 

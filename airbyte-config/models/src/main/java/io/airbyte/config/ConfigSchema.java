@@ -34,12 +34,12 @@ public enum ConfigSchema {
   STANDARD_WORKSPACE("StandardWorkspace.yaml"),
 
   // source
-  STANDARD_SOURCE("StandardSource.yaml"),
-  SOURCE_CONNECTION_IMPLEMENTATION("SourceConnectionImplementation.yaml"),
+  STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml"),
+  SOURCE_CONNECTION("SourceConnection.yaml"),
 
   // destination
-  STANDARD_DESTINATION("StandardDestination.yaml"),
-  DESTINATION_CONNECTION_IMPLEMENTATION("DestinationConnectionImplementation.yaml"),
+  STANDARD_DESTINATION_DEFINITION("StandardDestinationDefinition.yaml"),
+  DESTINATION_CONNECTION("DestinationConnection.yaml"),
 
   // sync
   STANDARD_SYNC("StandardSync.yaml"),

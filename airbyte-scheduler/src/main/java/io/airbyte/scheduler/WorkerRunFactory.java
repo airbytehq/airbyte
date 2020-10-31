@@ -156,8 +156,8 @@ public class WorkerRunFactory {
 
   private static StandardSyncInput getSyncInput(JobSyncConfig config) {
     return new StandardSyncInput()
-        .withSourceConnectionImplementation(config.getSourceConnectionImplementation())
-        .withDestinationConnectionImplementation(config.getDestinationConnectionImplementation())
+        .withSourceConnection(config.getSourceConnection())
+        .withDestinationConnection(config.getDestinationConnection())
         .withConnectionId(config.getStandardSync().getConnectionId())
         .withCatalog(AirbyteProtocolConverters.toCatalog(config.getStandardSync().getSchema()))
         .withSyncMode(config.getStandardSync().getSyncMode())

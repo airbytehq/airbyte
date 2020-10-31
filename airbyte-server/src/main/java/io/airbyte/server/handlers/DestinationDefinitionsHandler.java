@@ -28,7 +28,7 @@ import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
-import io.airbyte.config.StandardDestination;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.validators.DockerImageValidator;
@@ -51,7 +51,7 @@ public class DestinationDefinitionsHandler {
 
   public DestinationDefinitionReadList listDestinationDefinitions()
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<DestinationDefinitionRead> reads = configRepository.listStandardDestinations()
+    final List<DestinationDefinitionRead> reads = configRepository.listStandardDestinationDefinitions()
         .stream()
         .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead)
         .collect(Collectors.toList());
@@ -61,33 +61,35 @@ public class DestinationDefinitionsHandler {
 
   public DestinationDefinitionRead getDestinationDefinition(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    return buildDestinationDefinitionRead(configRepository.getStandardDestination(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
+    return buildDestinationDefinitionRead(
+        configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
   public DestinationDefinitionRead updateDestinationDefinition(DestinationDefinitionUpdate destinationDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    StandardDestination currentDestination = configRepository.getStandardDestination(destinationDefinitionUpdate.getDestinationDefinitionId());
+    StandardDestinationDefinition currentDestination =
+        configRepository.getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
     dockerImageValidator.assertValidIntegrationImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag());
 
-    StandardDestination newDestination = new StandardDestination()
-        .withDestinationId(currentDestination.getDestinationId())
+    StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
+        .withDestinationDefinitionId(currentDestination.getDestinationDefinitionId())
         .withDockerImageTag(destinationDefinitionUpdate.getDockerImageTag())
         .withDockerRepository(currentDestination.getDockerRepository())
         .withName(currentDestination.getName())
         .withDocumentationUrl(currentDestination.getDocumentationUrl());
 
-    configRepository.writeStandardDestination(newDestination);
+    configRepository.writeStandardDestinationDefinition(newDestination);
     return buildDestinationDefinitionRead(newDestination);
   }
 
-  private static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestination standardDestination) {
+  private static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestinationDefinition standardDestinationDefinition) {
     try {
       return new DestinationDefinitionRead()
-          .destinationDefinitionId(standardDestination.getDestinationId())
-          .name(standardDestination.getName())
-          .dockerRepository(standardDestination.getDockerRepository())
-          .dockerImageTag(standardDestination.getDockerImageTag())
-          .documentationUrl(new URI(standardDestination.getDocumentationUrl()));
+          .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+          .name(standardDestinationDefinition.getName())
+          .dockerRepository(standardDestinationDefinition.getDockerRepository())
+          .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
+          .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()));
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }

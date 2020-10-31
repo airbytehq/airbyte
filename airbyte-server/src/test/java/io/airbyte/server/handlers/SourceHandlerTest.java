@@ -45,8 +45,8 @@ import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.StandardSource;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -67,10 +67,10 @@ import org.junit.jupiter.api.Test;
 class SourceHandlerTest {
 
   private ConfigRepository configRepository;
-  private StandardSource standardSource;
+  private StandardSourceDefinition standardSourceDefinition;
   private SourceDefinitionSpecificationRead sourceDefinitionSpecificationRead;
   private SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody;
-  private SourceConnectionImplementation sourceConnectionImplementation;
+  private SourceConnection sourceConnection;
   private SourceHandler sourceHandler;
   private JsonSchemaValidator validator;
   private ConnectionsHandler connectionsHandler;
@@ -86,16 +86,16 @@ class SourceHandlerTest {
     schedulerHandler = mock(SchedulerHandler.class);
     uuidGenerator = mock(Supplier.class);
 
-    standardSource = SourceDefinitionHelpers.generateSource();
-    sourceDefinitionIdRequestBody = new SourceDefinitionIdRequestBody().sourceDefinitionId(standardSource.getSourceId());
+    standardSourceDefinition = SourceDefinitionHelpers.generateSource();
+    sourceDefinitionIdRequestBody = new SourceDefinitionIdRequestBody().sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId());
     ConnectorSpecification connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
     sourceDefinitionSpecificationRead = new SourceDefinitionSpecificationRead()
-        .sourceDefinitionId(standardSource.getSourceId())
+        .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
         .connectionSpecification(connectorSpecification.getConnectionSpecification())
         .documentationUrl(connectorSpecification.getDocumentationUrl().toString());
 
-    sourceConnectionImplementation =
-        SourceHelpers.generateSource(standardSource.getSourceId());
+    sourceConnection =
+        SourceHelpers.generateSource(standardSourceDefinition.getSourceDefinitionId());
 
     sourceHandler = new SourceHandler(configRepository, validator, schedulerHandler, connectionsHandler, uuidGenerator);
   }
@@ -104,27 +104,27 @@ class SourceHandlerTest {
   void testCreateSource()
       throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get())
-        .thenReturn(sourceConnectionImplementation.getSourceImplementationId());
+        .thenReturn(sourceConnection.getSourceId());
 
-    when(configRepository.getSourceConnectionImplementation(sourceConnectionImplementation.getSourceImplementationId()))
-        .thenReturn(sourceConnectionImplementation);
+    when(configRepository.getSourceConnection(sourceConnection.getSourceId()))
+        .thenReturn(sourceConnection);
 
-    when(schedulerHandler.getSourceSpecification(sourceDefinitionIdRequestBody)).thenReturn(sourceDefinitionSpecificationRead);
+    when(schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody)).thenReturn(sourceDefinitionSpecificationRead);
 
     when(configRepository.getStandardSource(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
-        .thenReturn(standardSource);
+        .thenReturn(standardSourceDefinition);
 
     final SourceCreate sourceCreate = new SourceCreate()
-        .name(sourceConnectionImplementation.getName())
-        .workspaceId(sourceConnectionImplementation.getWorkspaceId())
-        .sourceDefinitionId(standardSource.getSourceId())
+        .name(sourceConnection.getName())
+        .workspaceId(sourceConnection.getWorkspaceId())
+        .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
         .connectionConfiguration(SourceHelpers.getTestImplementationJson());
 
     final SourceRead actualSourceRead =
         sourceHandler.createSource(sourceCreate);
 
     final SourceRead expectedSourceRead =
-        SourceHelpers.getSourceRead(sourceConnectionImplementation, standardSource)
+        SourceHelpers.getSourceRead(sourceConnection, standardSourceDefinition)
             .connectionConfiguration(SourceHelpers.getTestImplementationJson());
 
     assertEquals(expectedSourceRead, actualSourceRead);
@@ -132,59 +132,59 @@ class SourceHandlerTest {
     verify(validator)
         .validate(
             sourceDefinitionSpecificationRead.getConnectionSpecification(),
-            sourceConnectionImplementation.getConfiguration());
+            sourceConnection.getConfiguration());
 
-    verify(configRepository).writeSourceConnectionImplementation(sourceConnectionImplementation);
+    verify(configRepository).writeSourceConnection(sourceConnection);
   }
 
   @Test
   void testUpdateSource() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final JsonNode newConfiguration = sourceConnectionImplementation.getConfiguration();
+    final JsonNode newConfiguration = sourceConnection.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
-    final SourceConnectionImplementation expectedSourceConnectionImplementation = Jsons.clone(sourceConnectionImplementation)
+    final SourceConnection expectedSourceConnection = Jsons.clone(sourceConnection)
         .withConfiguration(newConfiguration)
         .withTombstone(false);
 
-    when(configRepository.getSourceConnectionImplementation(sourceConnectionImplementation.getSourceImplementationId()))
-        .thenReturn(sourceConnectionImplementation)
-        .thenReturn(expectedSourceConnectionImplementation);
+    when(configRepository.getSourceConnection(sourceConnection.getSourceId()))
+        .thenReturn(sourceConnection)
+        .thenReturn(expectedSourceConnection);
 
-    when(schedulerHandler.getSourceSpecification(sourceDefinitionIdRequestBody)).thenReturn(sourceDefinitionSpecificationRead);
+    when(schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody)).thenReturn(sourceDefinitionSpecificationRead);
 
     when(configRepository.getStandardSource(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
-        .thenReturn(standardSource);
+        .thenReturn(standardSourceDefinition);
 
     final SourceUpdate sourceUpdate = new SourceUpdate()
-        .name(sourceConnectionImplementation.getName())
-        .sourceId(sourceConnectionImplementation.getSourceImplementationId())
+        .name(sourceConnection.getName())
+        .sourceId(sourceConnection.getSourceId())
         .connectionConfiguration(newConfiguration);
 
     final SourceRead actualSourceRead =
         sourceHandler.updateSource(sourceUpdate);
 
     SourceRead expectedSourceRead =
-        SourceHelpers.getSourceRead(sourceConnectionImplementation, standardSource)
+        SourceHelpers.getSourceRead(sourceConnection, standardSourceDefinition)
             .connectionConfiguration(newConfiguration);
 
     assertEquals(expectedSourceRead, actualSourceRead);
 
-    verify(configRepository).writeSourceConnectionImplementation(expectedSourceConnectionImplementation);
+    verify(configRepository).writeSourceConnection(expectedSourceConnection);
   }
 
   @Test
-  void testGetSourceImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getSourceConnectionImplementation(sourceConnectionImplementation.getSourceImplementationId()))
-        .thenReturn(sourceConnectionImplementation);
+  void testGetSource() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configRepository.getSourceConnection(sourceConnection.getSourceId()))
+        .thenReturn(sourceConnection);
 
-    when(schedulerHandler.getSourceSpecification(sourceDefinitionIdRequestBody))
+    when(schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody))
         .thenReturn(sourceDefinitionSpecificationRead);
 
     when(configRepository.getStandardSource(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
-        .thenReturn(standardSource);
+        .thenReturn(standardSourceDefinition);
 
     SourceRead expectedSourceRead =
-        SourceHelpers.getSourceRead(sourceConnectionImplementation, standardSource);
+        SourceHelpers.getSourceRead(sourceConnection, standardSourceDefinition);
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody()
         .sourceId(expectedSourceRead.getSourceId());
@@ -196,60 +196,60 @@ class SourceHandlerTest {
   }
 
   @Test
-  void testListSourceImplementationsForWorkspace()
+  void testListSourcesForWorkspace()
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getSourceConnectionImplementation(sourceConnectionImplementation.getSourceImplementationId()))
-        .thenReturn(sourceConnectionImplementation);
-    when(configRepository.listSourceConnectionImplementations())
-        .thenReturn(Lists.newArrayList(sourceConnectionImplementation));
-    when(schedulerHandler.getSourceSpecification(sourceDefinitionIdRequestBody)).thenReturn(sourceDefinitionSpecificationRead);
+    when(configRepository.getSourceConnection(sourceConnection.getSourceId()))
+        .thenReturn(sourceConnection);
+    when(configRepository.listSourceConnection())
+        .thenReturn(Lists.newArrayList(sourceConnection));
+    when(schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody)).thenReturn(sourceDefinitionSpecificationRead);
     when(configRepository.getStandardSource(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
-        .thenReturn(standardSource);
+        .thenReturn(standardSourceDefinition);
 
     SourceRead expectedSourceRead =
-        SourceHelpers.getSourceRead(sourceConnectionImplementation, standardSource);
+        SourceHelpers.getSourceRead(sourceConnection, standardSourceDefinition);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody()
-        .workspaceId(sourceConnectionImplementation.getWorkspaceId());
+        .workspaceId(sourceConnection.getWorkspaceId());
 
-    final SourceReadList actualSourceImplementationRead =
+    final SourceReadList actualSourceReadList =
         sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody);
 
-    assertEquals(expectedSourceRead, actualSourceImplementationRead.getSources().get(0));
+    assertEquals(expectedSourceRead, actualSourceReadList.getSources().get(0));
   }
 
   @Test
-  void testDeleteSourceImplementation() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final JsonNode newConfiguration = sourceConnectionImplementation.getConfiguration();
+  void testDeleteSource() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final JsonNode newConfiguration = sourceConnection.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
-    final SourceConnectionImplementation expectedSourceConnectionImplementation = Jsons.clone(sourceConnectionImplementation)
+    final SourceConnection expectedSourceConnection = Jsons.clone(sourceConnection)
         .withTombstone(true);
 
-    when(configRepository.getSourceConnectionImplementation(sourceConnectionImplementation.getSourceImplementationId()))
-        .thenReturn(sourceConnectionImplementation)
-        .thenReturn(expectedSourceConnectionImplementation);
+    when(configRepository.getSourceConnection(sourceConnection.getSourceId()))
+        .thenReturn(sourceConnection)
+        .thenReturn(expectedSourceConnection);
 
-    when(schedulerHandler.getSourceSpecification(sourceDefinitionIdRequestBody)).thenReturn(sourceDefinitionSpecificationRead);
+    when(schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody)).thenReturn(sourceDefinitionSpecificationRead);
 
     when(configRepository.getStandardSource(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
-        .thenReturn(standardSource);
+        .thenReturn(standardSourceDefinition);
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody()
-        .sourceId(sourceConnectionImplementation.getSourceImplementationId());
+        .sourceId(sourceConnection.getSourceId());
 
-    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceImplId(sourceConnectionImplementation.getSourceImplementationId());
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(sourceConnection.getSourceId());
 
     final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
 
     ConnectionReadList connectionReadList = new ConnectionReadList()
         .connections(Collections.singletonList(connectionRead));
 
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(sourceConnectionImplementation.getWorkspaceId());
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(sourceConnection.getWorkspaceId());
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
     sourceHandler.deleteSource(sourceIdRequestBody);
 
-    verify(configRepository).writeSourceConnectionImplementation(expectedSourceConnectionImplementation);
+    verify(configRepository).writeSourceConnection(expectedSourceConnection);
 
     final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
         .connectionId(connectionRead.getConnectionId())

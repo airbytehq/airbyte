@@ -27,8 +27,8 @@ package io.airbyte.server.helpers;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DestinationConnectionImplementation;
-import io.airbyte.config.StandardDestination;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.StandardDestinationDefinition;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,33 +44,33 @@ public class DestinationHelpers {
     return Jsons.deserialize(Files.readString(path));
   }
 
-  public static DestinationConnectionImplementation generateDestination(UUID destinationId)
+  public static DestinationConnection generateDestination(UUID destinationDefinitionId)
       throws IOException {
     final UUID workspaceId = UUID.randomUUID();
-    final UUID destinationImplementationId = UUID.randomUUID();
+    final UUID destinationId = UUID.randomUUID();
 
     JsonNode implementationJson = getTestDestinationJson();
 
-    return new DestinationConnectionImplementation()
+    return new DestinationConnection()
         .withName("my db2 instance")
         .withWorkspaceId(workspaceId)
+        .withDestinationDefinitionId(destinationDefinitionId)
         .withDestinationId(destinationId)
-        .withDestinationImplementationId(destinationImplementationId)
         .withConfiguration(implementationJson)
         .withTombstone(false);
   }
 
-  public static DestinationRead getDestinationImplementationRead(DestinationConnectionImplementation destinationImplementation,
-                                                                 StandardDestination standardDestination) {
+  public static DestinationRead getDestinationRead(DestinationConnection destination,
+                                                   StandardDestinationDefinition standardDestinationDefinition) {
 
     return new DestinationRead()
-        .destinationDefinitionId(standardDestination.getDestinationId())
-        .workspaceId(destinationImplementation.getWorkspaceId())
-        .destinationDefinitionId(destinationImplementation.getDestinationId())
-        .destinationId(destinationImplementation.getDestinationImplementationId())
-        .connectionConfiguration(destinationImplementation.getConfiguration())
-        .name(destinationImplementation.getName())
-        .destinationName(standardDestination.getName());
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(destination.getWorkspaceId())
+        .destinationDefinitionId(destination.getDestinationDefinitionId())
+        .destinationId(destination.getDestinationId())
+        .connectionConfiguration(destination.getConfiguration())
+        .name(destination.getName())
+        .destinationName(standardDestinationDefinition.getName());
   }
 
 }

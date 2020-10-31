@@ -37,8 +37,8 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.StandardSource;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -99,18 +99,18 @@ public class SourceHandler {
   public SourceRead updateSource(SourceUpdate sourceUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing source
-    final SourceConnectionImplementation persistedSource =
-        configRepository.getSourceConnectionImplementation(sourceUpdate.getSourceId());
+    final SourceConnection persistedSource =
+        configRepository.getSourceConnection(sourceUpdate.getSourceId());
 
     // validate configuration
     validateSource(
-        persistedSource.getSourceId(),
+        persistedSource.getSourceDefinitionId(),
         sourceUpdate.getConnectionConfiguration());
 
     // persist
     persistSourceConnection(
         sourceUpdate.getName(),
-        persistedSource.getSourceId(),
+        persistedSource.getSourceDefinitionId(),
         persistedSource.getWorkspaceId(),
         sourceUpdate.getSourceId(),
         persistedSource.getTombstone(),
@@ -129,7 +129,7 @@ public class SourceHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<SourceRead> reads = Lists.newArrayList();
 
-    for (SourceConnectionImplementation sci : configRepository.listSourceConnectionImplementations()) {
+    for (SourceConnection sci : configRepository.listSourceConnection()) {
       if (!sci.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId())) {
         continue;
       }
@@ -137,7 +137,7 @@ public class SourceHandler {
         continue;
       }
 
-      reads.add(buildSourceRead(sci.getSourceImplementationId()));
+      reads.add(buildSourceRead(sci.getSourceId()));
     }
 
     return new SourceReadList().sources(reads);
@@ -179,17 +179,17 @@ public class SourceHandler {
   private SourceRead buildSourceRead(UUID sourceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final SourceConnectionImplementation sourceConnection = configRepository.getSourceConnectionImplementation(sourceId);
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
 
-    final StandardSource standardSource = configRepository.getStandardSource(sourceConnection.getSourceId());
+    final StandardSourceDefinition standardSourceDefinition = configRepository.getStandardSource(sourceConnection.getSourceDefinitionId());
 
-    return toSourceRead(sourceConnection, standardSource);
+    return toSourceRead(sourceConnection, standardSourceDefinition);
   }
 
   private void validateSource(UUID sourceDefinitionId, JsonNode implementationJson)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     SourceDefinitionSpecificationRead sds =
-        schedulerHandler.getSourceSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId));
+        schedulerHandler.getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId));
 
     validator.validate(sds.getConnectionSpecification(), implementationJson);
   }
@@ -201,25 +201,25 @@ public class SourceHandler {
                                        final boolean tombstone,
                                        final JsonNode configurationJson)
       throws JsonValidationException, IOException {
-    final SourceConnectionImplementation sourceConnection = new SourceConnectionImplementation()
+    final SourceConnection sourceConnection = new SourceConnection()
         .withName(name)
-        .withSourceId(sourceDefinitionId)
+        .withSourceDefinitionId(sourceDefinitionId)
         .withWorkspaceId(workspaceId)
-        .withSourceImplementationId(sourceId)
+        .withSourceId(sourceId)
         .withTombstone(tombstone)
         .withConfiguration(configurationJson);
 
-    configRepository.writeSourceConnectionImplementation(sourceConnection);
+    configRepository.writeSourceConnection(sourceConnection);
   }
 
-  private SourceRead toSourceRead(final SourceConnectionImplementation sourceConnection,
-                                  final StandardSource standardSource) {
+  private SourceRead toSourceRead(final SourceConnection sourceConnection,
+                                  final StandardSourceDefinition standardSourceDefinition) {
     return new SourceRead()
-        .sourceDefinitionId(standardSource.getSourceId())
-        .sourceName(standardSource.getName())
-        .sourceId(sourceConnection.getSourceImplementationId())
+        .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+        .sourceName(standardSourceDefinition.getName())
+        .sourceId(sourceConnection.getSourceId())
         .workspaceId(sourceConnection.getWorkspaceId())
-        .sourceDefinitionId(sourceConnection.getSourceId())
+        .sourceDefinitionId(sourceConnection.getSourceDefinitionId())
         .connectionConfiguration(sourceConnection.getConfiguration())
         .name(sourceConnection.getName());
   }
