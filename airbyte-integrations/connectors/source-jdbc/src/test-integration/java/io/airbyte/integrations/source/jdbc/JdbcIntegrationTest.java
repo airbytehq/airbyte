@@ -59,7 +59,7 @@ public class JdbcIntegrationTest extends TestSource {
             db.getDatabaseName()))
         .build());
 
-    final Database database = Databases.createPostgresHandle(
+    final Database database = Databases.createPostgresDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         config.get("jdbc_url").asText());

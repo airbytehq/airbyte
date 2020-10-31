@@ -293,7 +293,7 @@ public class AcceptanceTests {
   }
 
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb) throws Exception {
-    Database database = getDatabaseHandle(sourceDb);
+    Database database = getDatabase(sourceDb);
 
     Set<String> sourceStreams = listStreams(database);
     Set<String> targetStreams = listCsvStreams();
@@ -304,8 +304,8 @@ public class AcceptanceTests {
     }
   }
 
-  private Database getDatabaseHandle(PostgreSQLContainer db) {
-    return Databases.createPostgresHandle(
+  private Database getDatabase(PostgreSQLContainer db) {
+    return Databases.createPostgresDatabase(
         db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
@@ -466,7 +466,7 @@ public class AcceptanceTests {
   }
 
   private void clearDbData(PostgreSQLContainer db) throws SQLException {
-    final Database database = getDatabaseHandle(db);
+    final Database database = getDatabase(db);
     final Set<String> tableNames = listStreams(database);
     for (final String tableName : tableNames) {
       database.query(context -> context.execute(String.format("DELETE FROM %s", tableName)));

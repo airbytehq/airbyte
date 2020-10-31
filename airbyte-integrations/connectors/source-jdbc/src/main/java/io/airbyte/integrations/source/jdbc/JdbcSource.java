@@ -89,7 +89,7 @@ public class JdbcSource implements Source {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    try (final Database database = createDatabaseHandle(config)) {
+    try (final Database database = createDatabase(config)) {
       // attempt to get current schema. this is a cheap query to sanity check that we can connect to the
       // database. `currentSchema()` is a jooq method that will run the appropriate query based on which
       // database it is connected to.
@@ -103,7 +103,7 @@ public class JdbcSource implements Source {
 
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
-    try (final Database database = createDatabaseHandle(config)) {
+    try (final Database database = createDatabase(config)) {
       return new AirbyteCatalog()
           .withStreams(discoverInternal(database).stream()
               .map(t -> {
@@ -119,7 +119,7 @@ public class JdbcSource implements Source {
   public Stream<AirbyteMessage> read(JsonNode config, AirbyteCatalog catalog, JsonNode state) throws Exception {
     final Instant now = Instant.now();
 
-    final Database database = createDatabaseHandle(config);
+    final Database database = createDatabase(config);
 
     final Map<String, Table<?>> tableNameToTable = discoverInternal(database).stream()
         .collect(Collectors.toMap(Named::getName, Function.identity()));
@@ -160,8 +160,8 @@ public class JdbcSource implements Source {
     return resultStream.onClose(() -> Exceptions.toRuntime(database::close));
   }
 
-  private Database createDatabaseHandle(JsonNode config) {
-    return Databases.createHandle(
+  private Database createDatabase(JsonNode config) {
+    return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         config.get("jdbc_url").asText(),

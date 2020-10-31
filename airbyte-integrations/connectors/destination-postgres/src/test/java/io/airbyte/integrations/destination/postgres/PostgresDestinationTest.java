@@ -116,7 +116,7 @@ class PostgresDestinationTest {
         .put("database", db.getDatabaseName())
         .build());
 
-    database = Databases.createPostgresHandle(db.getUsername(), db.getPassword(), db.getJdbcUrl());
+    database = Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
   @AfterEach

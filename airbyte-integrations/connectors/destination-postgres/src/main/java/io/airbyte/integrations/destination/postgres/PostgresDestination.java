@@ -83,7 +83,7 @@ public class PostgresDestination implements Destination {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    try (final Database database = getDatabaseHandle(config)) {
+    try (final Database database = getDatabase(config)) {
       database.query(
           ctx -> ctx.execute(
               "SELECT *\n"
@@ -127,7 +127,7 @@ public class PostgresDestination implements Destination {
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws Exception {
     // connect to db.
-    final Database database = getDatabaseHandle(config);
+    final Database database = getDatabase(config);
     Map<String, WriteConfig> writeBuffers = new HashMap<>();
 
     // create tmp tables if not exist
@@ -323,8 +323,8 @@ public class PostgresDestination implements Destination {
 
   }
 
-  private Database getDatabaseHandle(JsonNode config) {
-    return Databases.createPostgresHandle(
+  private Database getDatabase(JsonNode config) {
+    return Databases.createPostgresDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:postgresql://%s:%s/%s",

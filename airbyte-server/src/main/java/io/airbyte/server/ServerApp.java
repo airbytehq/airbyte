@@ -165,7 +165,7 @@ public class ServerApp {
     TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(Databases.createPostgresHandle(
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(Databases.createPostgresDatabase(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl()));
