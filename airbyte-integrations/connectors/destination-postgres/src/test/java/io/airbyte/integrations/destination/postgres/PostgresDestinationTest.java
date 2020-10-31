@@ -24,6 +24,13 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -60,13 +67,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
-
 class PostgresDestinationTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
@@ -98,31 +98,31 @@ class PostgresDestinationTest {
           Field.of("id", JsonSchemaPrimitive.STRING)),
       CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
-  private PostgreSQLContainer<?> db;
+  private PostgreSQLContainer<?> container;
   private JsonNode config;
   private Database database;
 
   @BeforeEach
   void setup() {
-    db = new PostgreSQLContainer<>("postgres:13-alpine");
-    db.start();
+    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put("host", container.getHost())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .put("schema", "public")
-        .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
+        .put("port", container.getFirstMappedPort())
+        .put("database", container.getDatabaseName())
         .build());
 
-    database = Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
+    database = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }
 
   @AfterEach
   void tearDown() throws Exception {
     database.close();
-    db.close();
+    container.close();
   }
 
   // todo - same test as csv destination
@@ -149,7 +149,7 @@ class PostgresDestinationTest {
     final AirbyteConnectionStatus actual = new PostgresDestination().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus()
         .withStatus(Status.FAILED)
-        .withMessage("Cannot create PoolableConnectionFactory (FATAL: password authentication failed for user \"test\")");
+        .withMessage("Can't connect with provided configuration.");
     assertEquals(expected, actual);
   }
 

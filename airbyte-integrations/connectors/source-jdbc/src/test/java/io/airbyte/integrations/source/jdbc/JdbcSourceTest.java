@@ -24,6 +24,11 @@
 
 package io.airbyte.integrations.source.jdbc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.spy;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -45,7 +50,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,11 +57,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
 
 class JdbcSourceTest {
 
@@ -76,38 +75,39 @@ class JdbcSourceTest {
 
   private JsonNode config;
 
-  private PostgreSQLContainer<?> db;
+  private PostgreSQLContainer<?> container;
 
   @BeforeEach
-  void setup() throws SQLException {
-    db = new PostgreSQLContainer<>("postgres:13-alpine");
-    db.start();
+  void setup() throws Exception {
+    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()))
+            container.getHost(),
+            container.getFirstMappedPort(),
+            container.getDatabaseName()))
         .build());
 
-    final Database database = Databases.createPostgresDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        config.get("jdbc_url").asText());
+    try (final Database database =
+        Databases.createPostgresDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            config.get("jdbc_url").asText())) {
 
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-
-      return null;
-    });
+      database.query(ctx -> {
+        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        return null;
+      });
+    }
   }
 
   @AfterEach
   void tearDown() {
-    db.close();
+    container.close();
   }
 
   @Test
@@ -131,7 +131,7 @@ class JdbcSourceTest {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = new JdbcSource().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Cannot create PoolableConnectionFactory (FATAL: password authentication failed for user \"test\")");
+        .withMessage("Can't connect with provided configuration.");
     assertEquals(expected, actual);
   }
 
@@ -172,7 +172,7 @@ class JdbcSourceTest {
   void testReadFailure() throws Exception {
     final AirbyteStream spiedAbStream = spy(CATALOG.getStreams().get(0));
     final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-    doThrow(new RuntimeException()).when(spiedAbStream).getName();
+    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getName();
 
     final Stream<AirbyteMessage> stream = new JdbcSource().read(config, catalog, null);
 

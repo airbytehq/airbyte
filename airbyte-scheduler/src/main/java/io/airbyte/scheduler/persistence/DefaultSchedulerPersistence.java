@@ -62,7 +62,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   private final Database database;
   private final Supplier<Instant> timeSupplier;
 
-  @VisibleForTesting DefaultSchedulerPersistence(Database database, Supplier<Instant> timeSupplier) {
+  @VisibleForTesting
+  DefaultSchedulerPersistence(Database database, Supplier<Instant> timeSupplier) {
     this.database = database;
     this.timeSupplier = timeSupplier;
   }

@@ -24,6 +24,11 @@
 
 package io.airbyte.test.acceptance;
 
+import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.api.client.AirbyteApiClient;
@@ -81,11 +86,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
-
-import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("rawtypes")
 // We order tests such that earlier tests test more basic behavior that is relied upon in later

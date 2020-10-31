@@ -24,7 +24,10 @@
 
 package io.airbyte.integrations.source.jdbc;
 
+import static org.jooq.impl.DSL.currentSchema;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -50,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.DataType;
@@ -61,23 +65,29 @@ import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.jooq.impl.DSL.currentSchema;
-
 public class JdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSource.class);
 
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
+
   private final String driverClass;
   private final SQLDialect dialect;
+  private final Supplier<Instant> instantSupplier;
 
   public JdbcSource() {
     this("org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
   public JdbcSource(final String driverClass, final SQLDialect dialect) {
+    this(driverClass, dialect, Instant::now);
+  }
+
+  @VisibleForTesting
+  JdbcSource(final String driverClass, final SQLDialect dialect, final Supplier<Instant> instantSupplier) {
     this.driverClass = driverClass;
     this.dialect = dialect;
+    this.instantSupplier = instantSupplier;
   }
 
   @Override
@@ -97,7 +107,9 @@ public class JdbcSource implements Source {
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
-      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage("Can't connect with provided configuration.");
     }
   }
 

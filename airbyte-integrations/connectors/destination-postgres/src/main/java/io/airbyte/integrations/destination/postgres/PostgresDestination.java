@@ -24,6 +24,9 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.table;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
@@ -66,9 +69,6 @@ import org.jooq.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.table;
-
 public class PostgresDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
@@ -92,7 +92,7 @@ public class PostgresDestination implements Destination {
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       // todo (cgardens) - better error messaging for common cases. e.g. wrong password.
-      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
+      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Can't connect with provided configuration.");
     }
   }
 
@@ -117,8 +117,8 @@ public class PostgresDestination implements Destination {
    * the final table name.
    * </p>
    *
-   * @param config  - integration-specific configuration object as json. e.g. { "username": "airbyte",
-   *                "password": "super secure" }
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+   *        "password": "super secure" }
    * @param catalog - schema of the incoming messages.
    * @return consumer that writes singer messages to the database.
    * @throws Exception - anything could happen!
@@ -182,11 +182,11 @@ public class PostgresDestination implements Destination {
     /**
      * Write records from buffer to postgres in batch.
      *
-     * @param minRecords   - the minimum number of records in the buffer before writing. helps avoid
-     *                     wastefully writing one record at a time.
-     * @param batchSize    - the maximum number of records to write in a single insert.
+     * @param minRecords - the minimum number of records in the buffer before writing. helps avoid
+     *        wastefully writing one record at a time.
+     * @param batchSize - the maximum number of records to write in a single insert.
      * @param writeBuffers - map of stream name to its respective buffer.
-     * @param database     - connection to the db.
+     * @param database - connection to the db.
      */
     private static void writeStreamsWithNRecords(int minRecords,
                                                  int batchSize,
