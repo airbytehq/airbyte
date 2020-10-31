@@ -1,31 +1,31 @@
 import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
-export interface Destination {
-  destinationId: string;
+export interface DestinationDefinition {
+  destinationDefinitionId: string;
   name: string;
   dockerRepository: string;
   dockerImageTag: string;
 }
 
-export default class DestinationResource extends BaseResource
-  implements Destination {
-  readonly destinationId: string = "";
+export default class DestinationDefinitionResource extends BaseResource
+  implements DestinationDefinition {
+  readonly destinationDefinitionId: string = "";
   readonly name: string = "";
   readonly dockerRepository: string = "";
   readonly dockerImageTag: string = "";
   readonly documentationUrl: string = "";
 
   pk() {
-    return this.destinationId?.toString();
+    return this.destinationDefinitionId?.toString();
   }
 
-  static urlRoot = "destinations";
+  static urlRoot = "destination_definitions";
 
   static listShape<T extends typeof Resource>(this: T) {
     return {
       ...super.listShape(),
-      schema: { destinations: [this.asSchema()] }
+      schema: { destinationDefinitions: [this.asSchema()] }
     };
   }
 

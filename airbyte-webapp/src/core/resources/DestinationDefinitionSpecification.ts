@@ -1,8 +1,8 @@
 import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
-export interface DestinationSpecification {
-  destinationId: string;
+export interface DestinationDefinitionSpecification {
+  destinationDefinitionId: string;
   connectionSpecification: {
     properties: any;
     required: [string];
@@ -15,9 +15,10 @@ export type specification = {
   required: [string];
 };
 
-export default class DestinationSpecificationResource extends BaseResource
-  implements DestinationSpecification {
-  readonly destinationId: string = "";
+export default class DestinationDefinitionSpecificationResource
+  extends BaseResource
+  implements DestinationDefinitionSpecification {
+  readonly destinationDefinitionId: string = "";
   readonly documentationUrl: string = "";
   readonly connectionSpecification: specification = {
     properties: {},
@@ -25,10 +26,10 @@ export default class DestinationSpecificationResource extends BaseResource
   };
 
   pk() {
-    return this.destinationId?.toString();
+    return this.destinationDefinitionId?.toString();
   }
 
-  static urlRoot = "destination_specifications";
+  static urlRoot = "destination_definition_specifications";
 
   static detailShape<T extends typeof Resource>(this: T) {
     return {

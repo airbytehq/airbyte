@@ -35,8 +35,8 @@ import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.SourceImplementationIdRequestBody;
-import io.airbyte.api.model.SourceImplementationRead;
+import io.airbyte.api.model.SourceIdRequestBody;
+import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -46,8 +46,8 @@ import io.airbyte.config.StandardSource;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.helpers.ConnectionHelpers;
+import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
-import io.airbyte.server.helpers.SourceImplementationHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.Instant;
@@ -61,27 +61,27 @@ class WebBackendConnectionsHandlerTest {
   private ConnectionsHandler connectionsHandler;
   private WebBackendConnectionsHandler wbHandler;
 
-  private SourceImplementationRead sourceImplementationRead;
+  private SourceRead sourceRead;
   private ConnectionRead connectionRead;
   private WbConnectionRead expected;
 
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     connectionsHandler = mock(ConnectionsHandler.class);
-    SourceImplementationsHandler sourceImplementationsHandler = mock(SourceImplementationsHandler.class);
+    SourceHandler sourceHandler = mock(SourceHandler.class);
     JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
-    wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceImplementationsHandler, jobHistoryHandler);
+    wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, jobHistoryHandler);
 
-    final StandardSource standardSource = SourceHelpers.generateSource();
-    SourceConnectionImplementation sourceImplementation = SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID());
-    sourceImplementationRead = SourceImplementationHelpers.getSourceImplementationRead(sourceImplementation, standardSource);
+    final StandardSource standardSource = SourceDefinitionHelpers.generateSource();
+    SourceConnectionImplementation sourceImplementation = SourceHelpers.generateSource(UUID.randomUUID());
+    sourceRead = SourceHelpers.getSourceRead(sourceImplementation, standardSource);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceImplId(sourceImplementation.getSourceImplementationId());
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
 
-    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody();
-    sourceImplementationIdRequestBody.setSourceImplementationId(connectionRead.getSourceImplementationId());
-    when(sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody)).thenReturn(sourceImplementationRead);
+    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
+    sourceIdRequestBody.setSourceId(connectionRead.getSourceId());
+    when(sourceHandler.getSource(sourceIdRequestBody)).thenReturn(sourceRead);
 
     Instant now = Instant.now();
     final JobRead jobRead = new JobRead();
@@ -102,14 +102,14 @@ class WebBackendConnectionsHandlerTest {
 
     expected = new WbConnectionRead();
     expected.setConnectionId(connectionRead.getConnectionId());
-    expected.setSourceImplementationId(connectionRead.getSourceImplementationId());
-    expected.setDestinationImplementationId(connectionRead.getDestinationImplementationId());
+    expected.setSourceId(connectionRead.getSourceId());
+    expected.setDestinationId(connectionRead.getDestinationId());
     expected.setName(connectionRead.getName());
     expected.setSyncSchema(connectionRead.getSyncSchema());
     expected.setStatus(connectionRead.getStatus());
     expected.setSyncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class));
     expected.setSchedule(connectionRead.getSchedule());
-    expected.setSource(this.sourceImplementationRead);
+    expected.setSource(this.sourceRead);
     expected.setLastSync(now.getEpochSecond());
     expected.isSyncing(false);
   }
@@ -117,7 +117,7 @@ class WebBackendConnectionsHandlerTest {
   @Test
   public void testWebBackendListConnectionsForWorkspace() throws ConfigNotFoundException, IOException, JsonValidationException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
-    workspaceIdRequestBody.setWorkspaceId(sourceImplementationRead.getWorkspaceId());
+    workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
 
     final ConnectionReadList connectionReadList = new ConnectionReadList();
     connectionReadList.setConnections(Collections.singletonList(connectionRead));

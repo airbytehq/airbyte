@@ -4,7 +4,7 @@ import { FormattedHTMLMessage, FormattedMessage, useIntl } from "react-intl";
 
 import LabeledInput from "../../LabeledInput";
 import LabeledDropDown from "../../LabeledDropDown";
-import { propertiesType } from "../../../core/resources/SourceSpecification";
+import { propertiesType } from "../../../core/resources/SourceDefinitionSpecification";
 import LabeledToggle from "../../LabeledToggle";
 
 type IProps = {

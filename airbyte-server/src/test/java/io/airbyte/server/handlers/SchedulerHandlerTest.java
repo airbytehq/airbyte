@@ -33,10 +33,10 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationImplementationIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceImplementationIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
@@ -55,8 +55,8 @@ import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.server.helpers.ConnectionHelpers;
-import io.airbyte.server.helpers.DestinationImplementationHelpers;
-import io.airbyte.server.helpers.SourceImplementationHelpers;
+import io.airbyte.server.helpers.DestinationHelpers;
+import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
@@ -98,36 +98,36 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testCheckSourceImplementationConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
-    SourceConnectionImplementation sourceImpl = SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID());
-    final SourceImplementationIdRequestBody request =
-        new SourceImplementationIdRequestBody().sourceImplementationId(sourceImpl.getSourceImplementationId());
+  void testCheckSourceConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
+    SourceConnectionImplementation source = SourceHelpers.generateSource(UUID.randomUUID());
+    final SourceIdRequestBody request =
+        new SourceIdRequestBody().sourceId(source.getSourceImplementationId());
 
-    when(configRepository.getStandardSource(sourceImpl.getSourceId()))
+    when(configRepository.getStandardSource(source.getSourceId()))
         .thenReturn(new StandardSource()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceId(sourceImpl.getSourceId()));
-    when(configRepository.getSourceConnectionImplementation(sourceImpl.getSourceImplementationId())).thenReturn(sourceImpl);
-    when(schedulerPersistence.createSourceCheckConnectionJob(sourceImpl, SOURCE_DOCKER_IMAGE)).thenReturn(JOB_ID);
+            .withSourceId(source.getSourceId()));
+    when(configRepository.getSourceConnectionImplementation(source.getSourceImplementationId())).thenReturn(source);
+    when(schedulerPersistence.createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(JOB_ID);
     when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
 
-    schedulerHandler.checkSourceImplementationConnection(request);
+    schedulerHandler.checkSourceConnection(request);
 
-    verify(configRepository).getSourceConnectionImplementation(sourceImpl.getSourceImplementationId());
-    verify(schedulerPersistence).createSourceCheckConnectionJob(sourceImpl, SOURCE_DOCKER_IMAGE);
+    verify(configRepository).getSourceConnectionImplementation(source.getSourceImplementationId());
+    verify(schedulerPersistence).createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE);
     verify(schedulerPersistence, times(2)).getJob(JOB_ID);
   }
 
   @Test
   void testGetSourceSpec() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
-    SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(UUID.randomUUID());
-    when(configRepository.getStandardSource(sourceIdRequestBody.getSourceId()))
+    SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody = new SourceDefinitionIdRequestBody().sourceDefinitionId(UUID.randomUUID());
+    when(configRepository.getStandardSource(sourceDefinitionIdRequestBody.getSourceDefinitionId()))
         .thenReturn(new StandardSource()
             .withName("name")
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceId(sourceIdRequestBody.getSourceId()));
+            .withSourceId(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
     when(schedulerPersistence.createGetSpecJob(SOURCE_DOCKER_IMAGE)).thenReturn(JOB_ID);
     when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
 
@@ -141,23 +141,24 @@ class SchedulerHandlerTest {
     when(jobOutput.getGetSpec()).thenReturn(specOutput);
     when(completedJob.getOutput()).thenReturn(Optional.of(jobOutput));
 
-    schedulerHandler.getSourceSpecification(sourceIdRequestBody);
+    schedulerHandler.getSourceSpecification(sourceDefinitionIdRequestBody);
 
-    verify(configRepository).getStandardSource(sourceIdRequestBody.getSourceId());
+    verify(configRepository).getStandardSource(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     verify(schedulerPersistence).createGetSpecJob(SOURCE_DOCKER_IMAGE);
     verify(schedulerPersistence, atLeast(2)).getJob(JOB_ID);
   }
 
   @Test
   void testGetDestinationSpec() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
-    DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(UUID.randomUUID());
+    DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody =
+        new DestinationDefinitionIdRequestBody().destinationDefinitionId(UUID.randomUUID());
 
-    when(configRepository.getStandardDestination(destinationIdRequestBody.getDestinationId()))
+    when(configRepository.getStandardDestination(destinationDefinitionIdRequestBody.getDestinationDefinitionId()))
         .thenReturn(new StandardDestination()
             .withName("name")
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationId(destinationIdRequestBody.getDestinationId()));
+            .withDestinationId(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
     when(schedulerPersistence.createGetSpecJob(DESTINATION_DOCKER_IMAGE)).thenReturn(JOB_ID);
     when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
 
@@ -170,9 +171,9 @@ class SchedulerHandlerTest {
     when(jobOutput.getGetSpec()).thenReturn(specOutput);
     when(completedJob.getOutput()).thenReturn(Optional.of(jobOutput));
 
-    schedulerHandler.getDestinationSpecification(destinationIdRequestBody);
+    schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody);
 
-    verify(configRepository).getStandardDestination(destinationIdRequestBody.getDestinationId());
+    verify(configRepository).getStandardDestination(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
     verify(schedulerPersistence).createGetSpecJob(DESTINATION_DOCKER_IMAGE);
     verify(schedulerPersistence, atLeast(2)).getJob(JOB_ID);
   }
@@ -197,46 +198,45 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testCheckDestinationImplementationConnection() throws IOException, JsonValidationException, ConfigNotFoundException {
-    DestinationConnectionImplementation destinationImpl = DestinationImplementationHelpers.generateDestinationImplementation(UUID.randomUUID());
-    final DestinationImplementationIdRequestBody request =
-        new DestinationImplementationIdRequestBody().destinationImplementationId(destinationImpl.getDestinationImplementationId());
+  void testCheckDestinationConnection() throws IOException, JsonValidationException, ConfigNotFoundException {
+    DestinationConnectionImplementation destination = DestinationHelpers.generateDestination(UUID.randomUUID());
+    final DestinationIdRequestBody request = new DestinationIdRequestBody().destinationId(destination.getDestinationImplementationId());
 
-    when(configRepository.getStandardDestination(destinationImpl.getDestinationId()))
+    when(configRepository.getStandardDestination(destination.getDestinationId()))
         .thenReturn(new StandardDestination()
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationId(destinationImpl.getDestinationId()));
-    when(configRepository.getDestinationConnectionImplementation(destinationImpl.getDestinationImplementationId())).thenReturn(destinationImpl);
-    when(schedulerPersistence.createDestinationCheckConnectionJob(destinationImpl, DESTINATION_DOCKER_IMAGE)).thenReturn(JOB_ID);
+            .withDestinationId(destination.getDestinationId()));
+    when(configRepository.getDestinationConnectionImplementation(destination.getDestinationImplementationId())).thenReturn(destination);
+    when(schedulerPersistence.createDestinationCheckConnectionJob(destination, DESTINATION_DOCKER_IMAGE)).thenReturn(JOB_ID);
     when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
 
-    schedulerHandler.checkDestinationImplementationConnection(request);
+    schedulerHandler.checkDestinationConnection(request);
 
-    verify(configRepository).getDestinationConnectionImplementation(destinationImpl.getDestinationImplementationId());
-    verify(schedulerPersistence).createDestinationCheckConnectionJob(destinationImpl, DESTINATION_DOCKER_IMAGE);
+    verify(configRepository).getDestinationConnectionImplementation(destination.getDestinationImplementationId());
+    verify(schedulerPersistence).createDestinationCheckConnectionJob(destination, DESTINATION_DOCKER_IMAGE);
     verify(schedulerPersistence, times(2)).getJob(JOB_ID);
   }
 
   @Test
-  void testDiscoverSchemaForSourceImplementation() throws IOException, JsonValidationException, ConfigNotFoundException {
-    SourceConnectionImplementation sourceImpl = SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID());
-    final SourceImplementationIdRequestBody request =
-        new SourceImplementationIdRequestBody().sourceImplementationId(sourceImpl.getSourceImplementationId());
+  void testDiscoverSchemaForSource() throws IOException, JsonValidationException, ConfigNotFoundException {
+    SourceConnectionImplementation source = SourceHelpers.generateSource(UUID.randomUUID());
+    final SourceIdRequestBody request =
+        new SourceIdRequestBody().sourceId(source.getSourceImplementationId());
 
-    when(configRepository.getStandardSource(sourceImpl.getSourceId()))
+    when(configRepository.getStandardSource(source.getSourceId()))
         .thenReturn(new StandardSource()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceId(sourceImpl.getSourceId()));
-    when(configRepository.getSourceConnectionImplementation(sourceImpl.getSourceImplementationId())).thenReturn(sourceImpl);
-    when(schedulerPersistence.createDiscoverSchemaJob(sourceImpl, SOURCE_DOCKER_IMAGE)).thenReturn(JOB_ID);
+            .withSourceId(source.getSourceId()));
+    when(configRepository.getSourceConnectionImplementation(source.getSourceImplementationId())).thenReturn(source);
+    when(schedulerPersistence.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(JOB_ID);
     when(schedulerPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
 
-    schedulerHandler.discoverSchemaForSourceImplementation(request);
+    schedulerHandler.discoverSchemaForSource(request);
 
-    verify(configRepository).getSourceConnectionImplementation(sourceImpl.getSourceImplementationId());
-    verify(schedulerPersistence).createDiscoverSchemaJob(sourceImpl, SOURCE_DOCKER_IMAGE);
+    verify(configRepository).getSourceConnectionImplementation(source.getSourceImplementationId());
+    verify(schedulerPersistence).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
     verify(schedulerPersistence, times(2)).getJob(JOB_ID);
   }
 
@@ -244,9 +244,9 @@ class SchedulerHandlerTest {
   void testSyncConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceImplId(UUID.randomUUID());
     final ConnectionIdRequestBody request = new ConnectionIdRequestBody().connectionId(standardSync.getConnectionId());
-    SourceConnectionImplementation sourceImpl = SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID())
+    SourceConnectionImplementation sourceImpl = SourceHelpers.generateSource(UUID.randomUUID())
         .withSourceImplementationId(standardSync.getSourceImplementationId());
-    DestinationConnectionImplementation destinationImpl = DestinationImplementationHelpers.generateDestinationImplementation(UUID.randomUUID())
+    DestinationConnectionImplementation destinationImpl = DestinationHelpers.generateDestination(UUID.randomUUID())
         .withDestinationImplementationId(standardSync.getDestinationImplementationId());
 
     when(configRepository.getStandardSource(sourceImpl.getSourceId()))

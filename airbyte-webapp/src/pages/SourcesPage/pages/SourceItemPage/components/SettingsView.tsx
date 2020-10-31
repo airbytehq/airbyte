@@ -8,7 +8,7 @@ import DeleteSource from "./DeleteSource";
 import ServiceForm from "../../../../../components/ServiceForm";
 import { Connection } from "../../../../../core/resources/Connection";
 import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
-import SourceSpecificationResource from "../../../../../core/resources/SourceSpecification";
+import SourceDefinitionSpecificationResource from "../../../../../core/resources/SourceDefinitionSpecification";
 import useSource from "../../../../../components/hooks/services/useSourceHook";
 import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 
@@ -29,11 +29,11 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
   const { updateSource } = useSource();
   const { updateConnection, updateStateConnection } = useConnection();
 
-  const sourceSpecification = useResource(
-    SourceSpecificationResource.detailShape(),
+  const sourceDefinitionSpecification = useResource(
+    SourceDefinitionSpecificationResource.detailShape(),
     sourceData.source
       ? {
-          sourceId: sourceData.source.sourceId
+          sourceDefinitionId: sourceData.source.sourceDefinitionId
         }
       : null
   );
@@ -63,7 +63,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
 
     const result = await updateSource({
       values,
-      sourceImplementationId: sourceData.source?.sourceImplementationId || ""
+      sourceId: sourceData.source?.sourceId || ""
     });
 
     await updateStateConnection({
@@ -89,7 +89,7 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
           formType="connection"
           dropDownData={[
             {
-              value: sourceData.source?.sourceId || "",
+              value: sourceData.source?.sourceDefinitionId || "",
               text: sourceData.source?.sourceName || "",
               img: "/default-logo-catalog.svg"
             }
@@ -99,15 +99,17 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
           formValues={{
             ...sourceData.source?.connectionConfiguration,
             name: sourceData.source?.name,
-            serviceType: sourceData.source?.sourceId || "",
+            serviceType: sourceData.source?.sourceDefinitionId || "",
             frequency: schedule?.value || ""
           }}
-          specifications={sourceSpecification?.connectionSpecification}
+          specifications={
+            sourceDefinitionSpecification?.connectionSpecification
+          }
         />
       </ContentCard>
       <DeleteSource
         afterDelete={afterDelete}
-        sourceImplementationId={sourceData.source?.sourceImplementationId}
+        sourceId={sourceData.source?.sourceId}
         connectionId={sourceData.connectionId}
       />
     </Content>

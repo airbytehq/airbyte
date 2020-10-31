@@ -24,18 +24,51 @@
 
 package io.airbyte.server.helpers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.api.model.SourceRead;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardSource;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 public class SourceHelpers {
 
-  public static StandardSource generateSource() {
-    return new StandardSource()
-        .withSourceId(UUID.randomUUID())
-        .withName("marketo")
-        .withDockerRepository("thebestrepo")
-        .withDockerImageTag("thelatesttag")
-        .withDocumentationUrl("https://wikipedia.org");
+  public static SourceConnectionImplementation generateSource(UUID sourceId)
+      throws IOException {
+    final UUID workspaceId = UUID.randomUUID();
+    final UUID sourceImplementationId = UUID.randomUUID();
+
+    JsonNode implementationJson = getTestImplementationJson();
+
+    return new SourceConnectionImplementation()
+        .withName("my postgres db")
+        .withWorkspaceId(workspaceId)
+        .withSourceId(sourceId)
+        .withSourceImplementationId(sourceImplementationId)
+        .withConfiguration(implementationJson)
+        .withTombstone(false);
+  }
+
+  public static JsonNode getTestImplementationJson() throws IOException {
+    final Path path = Paths.get("../airbyte-server/src/test/resources/json/TestImplementation.json");
+    return Jsons.deserialize(Files.readString(path));
+  }
+
+  public static SourceRead getSourceRead(SourceConnectionImplementation sourceImplementation,
+                                         StandardSource standardSource) {
+
+    return new SourceRead()
+        .sourceDefinitionId(standardSource.getSourceId())
+        .workspaceId(sourceImplementation.getWorkspaceId())
+        .sourceDefinitionId(sourceImplementation.getSourceId())
+        .sourceId(sourceImplementation.getSourceImplementationId())
+        .connectionConfiguration(sourceImplementation.getConfiguration())
+        .name(sourceImplementation.getName())
+        .sourceName(standardSource.getName());
   }
 
 }

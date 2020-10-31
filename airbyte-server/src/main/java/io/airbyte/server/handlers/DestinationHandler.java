@@ -29,13 +29,13 @@ import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.DestinationCreate;
+import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationImplementationCreate;
-import io.airbyte.api.model.DestinationImplementationIdRequestBody;
-import io.airbyte.api.model.DestinationImplementationRead;
-import io.airbyte.api.model.DestinationImplementationReadList;
-import io.airbyte.api.model.DestinationImplementationUpdate;
-import io.airbyte.api.model.DestinationSpecificationRead;
+import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.config.DestinationConnectionImplementation;
 import io.airbyte.config.StandardDestination;
@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class DestinationImplementationsHandler {
+public class DestinationHandler {
 
   private final ConnectionsHandler connectionsHandler;
   private final SchedulerHandler schedulerHandler;
@@ -56,11 +56,11 @@ public class DestinationImplementationsHandler {
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
 
-  public DestinationImplementationsHandler(final ConfigRepository configRepository,
-                                           final JsonSchemaValidator integrationSchemaValidation,
-                                           final SchedulerHandler schedulerHandler,
-                                           final ConnectionsHandler connectionsHandler,
-                                           final Supplier<UUID> uuidGenerator) {
+  public DestinationHandler(final ConfigRepository configRepository,
+                            final JsonSchemaValidator integrationSchemaValidation,
+                            final SchedulerHandler schedulerHandler,
+                            final ConnectionsHandler connectionsHandler,
+                            final Supplier<UUID> uuidGenerator) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
     this.schedulerHandler = schedulerHandler;
@@ -68,45 +68,45 @@ public class DestinationImplementationsHandler {
     this.uuidGenerator = uuidGenerator;
   }
 
-  public DestinationImplementationsHandler(final ConfigRepository configRepository,
-                                           final JsonSchemaValidator integrationSchemaValidation,
-                                           final SchedulerHandler schedulerHandler,
-                                           final ConnectionsHandler connectionsHandler) {
+  public DestinationHandler(final ConfigRepository configRepository,
+                            final JsonSchemaValidator integrationSchemaValidation,
+                            final SchedulerHandler schedulerHandler,
+                            final ConnectionsHandler connectionsHandler) {
     this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID);
   }
 
-  public DestinationImplementationRead createDestinationImplementation(final DestinationImplementationCreate destinationImplementationCreate)
+  public DestinationRead createDestination(final DestinationCreate destinationCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
-    validateDestinationImplementation(
-        destinationImplementationCreate.getDestinationId(),
-        destinationImplementationCreate.getConnectionConfiguration());
+    validateDestination(
+        destinationCreate.getDestinationDefinitionId(),
+        destinationCreate.getConnectionConfiguration());
 
     // persist
-    final UUID destinationImplementationId = uuidGenerator.get();
-    persistDestinationConnectionImplementation(
-        destinationImplementationCreate.getName() != null ? destinationImplementationCreate.getName() : "default",
-        destinationImplementationCreate.getDestinationId(),
-        destinationImplementationCreate.getWorkspaceId(),
-        destinationImplementationId,
-        destinationImplementationCreate.getConnectionConfiguration(),
+    final UUID destinationId = uuidGenerator.get();
+    persistDestinationConnection(
+        destinationCreate.getName() != null ? destinationCreate.getName() : "default",
+        destinationCreate.getDestinationDefinitionId(),
+        destinationCreate.getWorkspaceId(),
+        destinationId,
+        destinationCreate.getConnectionConfiguration(),
         false);
 
     // read configuration from db
-    return buildDestinationImplementationRead(destinationImplementationId);
+    return buildDestinationRead(destinationId);
   }
 
-  public void deleteDestinationImplementation(final DestinationImplementationIdRequestBody destinationImplementationIdRequestBody)
+  public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing implementation
-    final DestinationImplementationRead destinationImpl =
-        buildDestinationImplementationRead(destinationImplementationIdRequestBody.getDestinationImplementationId());
+    final DestinationRead destinationImpl =
+        buildDestinationRead(destinationIdRequestBody.getDestinationId());
 
     // disable all connections associated with this destinationImplemenation
     // Delete connections first in case it it fails in the middle, destination will still be visible
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destinationImpl.getWorkspaceId());
     for (ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
-      if (!connectionRead.getDestinationImplementationId().equals(destinationImpl.getDestinationImplementationId())) {
+      if (!connectionRead.getDestinationId().equals(destinationImpl.getDestinationId())) {
         continue;
       }
 
@@ -120,47 +120,47 @@ public class DestinationImplementationsHandler {
     }
 
     // persist
-    persistDestinationConnectionImplementation(
+    persistDestinationConnection(
         destinationImpl.getName(),
-        destinationImpl.getDestinationId(),
+        destinationImpl.getDestinationDefinitionId(),
         destinationImpl.getWorkspaceId(),
-        destinationImpl.getDestinationImplementationId(),
+        destinationImpl.getDestinationId(),
         destinationImpl.getConnectionConfiguration(),
         true);
   }
 
-  public DestinationImplementationRead updateDestinationImplementation(final DestinationImplementationUpdate destinationImplementationUpdate)
+  public DestinationRead updateDestination(final DestinationUpdate destinationUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing implementation
     final DestinationConnectionImplementation currentDci =
-        configRepository.getDestinationConnectionImplementation(destinationImplementationUpdate.getDestinationImplementationId());
+        configRepository.getDestinationConnectionImplementation(destinationUpdate.getDestinationId());
 
     // validate configuration
-    validateDestinationImplementation(
+    validateDestination(
         currentDci.getDestinationId(),
-        destinationImplementationUpdate.getConnectionConfiguration());
+        destinationUpdate.getConnectionConfiguration());
 
     // persist
-    persistDestinationConnectionImplementation(
-        destinationImplementationUpdate.getName(),
+    persistDestinationConnection(
+        destinationUpdate.getName(),
         currentDci.getDestinationId(),
         currentDci.getWorkspaceId(),
-        destinationImplementationUpdate.getDestinationImplementationId(),
-        destinationImplementationUpdate.getConnectionConfiguration(),
+        destinationUpdate.getDestinationId(),
+        destinationUpdate.getConnectionConfiguration(),
         currentDci.getTombstone());
 
     // read configuration from db
-    return buildDestinationImplementationRead(destinationImplementationUpdate.getDestinationImplementationId());
+    return buildDestinationRead(destinationUpdate.getDestinationId());
   }
 
-  public DestinationImplementationRead getDestinationImplementation(DestinationImplementationIdRequestBody destinationImplementationIdRequestBody)
+  public DestinationRead getDestination(DestinationIdRequestBody destinationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return buildDestinationImplementationRead(destinationImplementationIdRequestBody.getDestinationImplementationId());
+    return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
-  public DestinationImplementationReadList listDestinationImplementationsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
+  public DestinationReadList listDestinationsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<DestinationImplementationRead> reads = Lists.newArrayList();
+    final List<DestinationRead> reads = Lists.newArrayList();
 
     for (DestinationConnectionImplementation dci : configRepository.listDestinationConnectionImplementations()) {
       if (!dci.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId())) {
@@ -171,52 +171,53 @@ public class DestinationImplementationsHandler {
         continue;
       }
 
-      reads.add(buildDestinationImplementationRead(dci.getDestinationImplementationId()));
+      reads.add(buildDestinationRead(dci.getDestinationImplementationId()));
     }
 
-    return new DestinationImplementationReadList().destinations(reads);
+    return new DestinationReadList().destinations(reads);
   }
 
-  private void validateDestinationImplementation(final UUID destinationId,
-                                                 final JsonNode implementationJson)
+  private void validateDestination(final UUID destinationId,
+                                   final JsonNode implementationJson)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    DestinationSpecificationRead dcs = schedulerHandler.getDestinationSpecification(new DestinationIdRequestBody().destinationId(destinationId));
+    DestinationDefinitionSpecificationRead dcs =
+        schedulerHandler.getDestinationSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationId));
     validator.validate(dcs.getConnectionSpecification(), implementationJson);
   }
 
-  private void persistDestinationConnectionImplementation(final String name,
-                                                          final UUID destinationId,
-                                                          final UUID workspaceId,
-                                                          final UUID destinationImplementationId,
-                                                          final JsonNode configurationJson,
-                                                          final boolean tombstone)
+  private void persistDestinationConnection(final String name,
+                                            final UUID destinationDefinitionId,
+                                            final UUID workspaceId,
+                                            final UUID destinationId,
+                                            final JsonNode configurationJson,
+                                            final boolean tombstone)
       throws JsonValidationException, IOException {
     final DestinationConnectionImplementation destinationConnectionImplementation = new DestinationConnectionImplementation()
         .withName(name)
-        .withDestinationId(destinationId)
+        .withDestinationId(destinationDefinitionId)
         .withWorkspaceId(workspaceId)
-        .withDestinationImplementationId(destinationImplementationId)
+        .withDestinationImplementationId(destinationId)
         .withConfiguration(configurationJson)
         .withTombstone(tombstone);
 
     configRepository.writeDestinationConnectionImplementation(destinationConnectionImplementation);
   }
 
-  private DestinationImplementationRead buildDestinationImplementationRead(final UUID destinationImplementationId)
+  private DestinationRead buildDestinationRead(final UUID destinationImplementationId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
     final DestinationConnectionImplementation dci = configRepository.getDestinationConnectionImplementation(destinationImplementationId);
     final StandardDestination standardDestination = configRepository.getStandardDestination(dci.getDestinationId());
-    return buildDestinationImplementationRead(dci, standardDestination);
+    return buildDestinationRead(dci, standardDestination);
   }
 
-  private DestinationImplementationRead buildDestinationImplementationRead(final DestinationConnectionImplementation destinationConnectionImplementation,
-                                                                           final StandardDestination standardDestination) {
-    return new DestinationImplementationRead()
-        .destinationId(standardDestination.getDestinationId())
-        .destinationImplementationId(destinationConnectionImplementation.getDestinationImplementationId())
+  private DestinationRead buildDestinationRead(final DestinationConnectionImplementation destinationConnectionImplementation,
+                                               final StandardDestination standardDestination) {
+    return new DestinationRead()
+        .destinationDefinitionId(standardDestination.getDestinationId())
+        .destinationId(destinationConnectionImplementation.getDestinationImplementationId())
         .workspaceId(destinationConnectionImplementation.getWorkspaceId())
-        .destinationId(destinationConnectionImplementation.getDestinationId())
+        .destinationDefinitionId(destinationConnectionImplementation.getDestinationId())
         .connectionConfiguration(destinationConnectionImplementation.getConfiguration())
         .name(destinationConnectionImplementation.getName())
         .destinationName(standardDestination.getName());

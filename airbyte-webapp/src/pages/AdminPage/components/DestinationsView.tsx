@@ -9,34 +9,36 @@ import ConnectorCell from "./ConnectorCell";
 import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
 import config from "../../../config";
+import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
 import DestinationResource from "../../../core/resources/Destination";
-import DestinationImplementationResource from "../../../core/resources/DestinationImplementation";
 
 const DestinationsView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
-  const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: config.ui.workspaceId
-  });
-  const destinationsImplementation = useResource(
-    DestinationImplementationResource.listShape(),
+  const { destinationDefinitions } = useResource(
+    DestinationDefinitionResource.listShape(),
     {
       workspaceId: config.ui.workspaceId
     }
   );
+  const destinations = useResource(DestinationResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
 
   const [feedback, setFeedback] = useState(""); // only one destination !
   // Now we have only one destination. If we support multiple destinations we will change it
-  const currentDestination = destinationsImplementation.destinations[0];
+  const currentDestination = destinations.destinations[0];
 
-  const updateDestination = useFetcher(DestinationResource.updateShape());
+  const updateDestinationDefinition = useFetcher(
+    DestinationDefinitionResource.updateShape()
+  );
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {
-        await updateDestination(
+        await updateDestinationDefinition(
           {},
           {
-            destinationId: id,
+            destinationDefinitionId: id,
             dockerImageTag: version
           }
         );
@@ -53,7 +55,7 @@ const DestinationsView: React.FC = () => {
         setFeedback(message);
       }
     },
-    [formatMessage, updateDestination]
+    [formatMessage, updateDestinationDefinition]
   );
 
   const columns = React.useMemo(
@@ -91,10 +93,13 @@ const DestinationsView: React.FC = () => {
         ),
         accessor: "dockerImageTag",
         collapse: true,
-        Cell: ({ cell, row }: CellProps<{ destinationId: string }>) => (
+        Cell: ({
+          cell,
+          row
+        }: CellProps<{ destinationDefinitionId: string }>) => (
           <VersionCell
             version={cell.value}
-            id={row.original.destinationId}
+            id={row.original.destinationDefinitionId}
             onChange={onUpdateVersion}
             feedback={feedback}
           />
@@ -128,8 +133,11 @@ const DestinationsView: React.FC = () => {
     [columns]
   );
 
-  const destinationInfo = destinations.find(
-    item => item.destinationId === currentDestination.destinationId
+  const destinationInfo = destinationDefinitions.find(
+    // TODO change to destinationDefId when changing destinationImpl
+    item =>
+      item.destinationDefinitionId ===
+      currentDestination.destinationDefinitionId
   );
 
   const usedDestination = destinationInfo ? [destinationInfo] : [];
@@ -147,7 +155,7 @@ const DestinationsView: React.FC = () => {
         <Title bold>
           <FormattedMessage id="admin.supportMultipleDestinations" />
         </Title>
-        <Table columns={columnsAllDestinations} data={destinations} />
+        <Table columns={columnsAllDestinations} data={destinationDefinitions} />
       </Block>
     </>
   );

@@ -4,7 +4,7 @@ import { useFetcher } from "rest-hooks";
 
 import Button from "../../../components/Button";
 import CreateConnectorModal from "./CreateConnectorModal";
-import SourceResource from "../../../core/resources/Source";
+import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
 import config from "../../../config";
 import useRouter from "../../../components/hooks/useRouterHook";
 import { Routes } from "../../routes";
@@ -16,8 +16,10 @@ const CreateConnector: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const onChangeModalState = () => setIsModalOpen(!isModalOpen);
 
-  const createSource = useFetcher(SourceResource.createShape());
-  const onSubmit = async (source: {
+  const createSourceDefinition = useFetcher(
+    SourceDefinitionResource.createShape()
+  );
+  const onSubmit = async (sourceDefinition: {
     name: string;
     documentationUrl: string;
     dockerImageTag: string;
@@ -25,19 +27,25 @@ const CreateConnector: React.FC = () => {
   }) => {
     setErrorMessage("");
     try {
-      const result = await createSource({}, source, [
+      const result = await createSourceDefinition({}, sourceDefinition, [
         [
-          SourceResource.listShape(),
+          SourceDefinitionResource.listShape(),
           { workspaceId: config.ui.workspaceId },
-          (newSourceId: string, sourcesIds: { sources: string[] }) => ({
-            sources: [...sourcesIds.sources, newSourceId]
+          (
+            newSourceDefinitionId: string,
+            sourceDefinitionIds: { sourceDefinitions: string[] }
+          ) => ({
+            sourceDefinitions: [
+              ...sourceDefinitionIds.sourceDefinitions,
+              newSourceDefinitionId
+            ]
           })
         ]
       ]);
 
       push({
         pathname: `${Routes.Source}${Routes.SourceNew}`,
-        state: { sourceId: result.sourceId }
+        state: { sourceDefinitionId: result.sourceDefinitionId }
       });
     } catch (e) {
       setErrorMessage("form.validationError");

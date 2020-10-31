@@ -50,7 +50,7 @@ import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.helpers.ConnectionHelpers;
-import io.airbyte.server.helpers.SourceImplementationHelpers;
+import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
@@ -74,7 +74,7 @@ class ConnectionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     uuidGenerator = mock(Supplier.class);
 
-    sourceImplementation = SourceImplementationHelpers.generateSourceImplementation(UUID.randomUUID());
+    sourceImplementation = SourceHelpers.generateSource(UUID.randomUUID());
     standardSync = ConnectionHelpers.generateSyncWithSourceImplId(sourceImplementation.getSourceImplementationId());
     standardSyncSchedule = ConnectionHelpers.generateSchedule(standardSync.getConnectionId());
 
@@ -92,8 +92,8 @@ class ConnectionsHandlerTest {
         .thenReturn(standardSyncSchedule);
 
     final ConnectionCreate connectionCreate = new ConnectionCreate()
-        .sourceImplementationId(standardSync.getSourceImplementationId())
-        .destinationImplementationId(standardSync.getDestinationImplementationId())
+        .sourceId(standardSync.getSourceImplementationId())
+        .destinationId(standardSync.getDestinationImplementationId())
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
         .syncMode(ConnectionCreate.SyncModeEnum.FULL_REFRESH)

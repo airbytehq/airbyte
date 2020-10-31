@@ -6,8 +6,8 @@ import styled from "styled-components";
 import ContentCard from "../../../components/ContentCard";
 import ConnectionBlock from "../../../components/ConnectionBlock";
 import ConnectionForm from "./ConnectionForm";
-import SourceResource from "../../../core/resources/Source";
-import DestinationResource from "../../../core/resources/Destination";
+import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
+import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
 import Spinner from "../../../components/Spinner";
 import { SyncSchema } from "../../../core/resources/Schema";
 import { IDataItem } from "../../../components/DropDown/components/ListItem";
@@ -15,17 +15,10 @@ import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import config from "../../../config";
 
 type IProps = {
-  onSubmit: (values: {
-    frequency: string;
-    syncSchema: SyncSchema;
-    source: {
-      name: string;
-      sourceId: string;
-    };
-  }) => void;
-  currentSourceId: string;
-  currentDestinationId: string;
-  sourceImplementationId: string;
+  onSubmit: (values: { frequency: string; syncSchema: SyncSchema }) => void;
+  sourceDefinitionId: string;
+  destinationDefinitionId: string;
+  sourceId: string;
   errorStatus?: number;
 };
 
@@ -44,28 +37,27 @@ const FetchMessage = styled.div`
 
 const ConnectionStep: React.FC<IProps> = ({
   onSubmit,
-  currentSourceId,
-  currentDestinationId,
+  sourceDefinitionId,
+  destinationDefinitionId,
   errorStatus,
-  sourceImplementationId
+  sourceId
 }) => {
-  const currentSource = useResource(SourceResource.detailShape(), {
-    sourceId: currentSourceId
+  const currentSource = useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId
   });
-  const currentDestination = useResource(DestinationResource.detailShape(), {
-    destinationId: currentDestinationId
-  });
+  const currentDestinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    {
+      destinationDefinitionId
+    }
+  );
 
   const onSubmitStep = async (values: {
     frequency: string;
     syncSchema: SyncSchema;
   }) => {
     await onSubmit({
-      ...values,
-      source: {
-        name: currentSource.name,
-        sourceId: currentSource.sourceId
-      }
+      ...values
     });
   };
 
@@ -74,10 +66,11 @@ const ConnectionStep: React.FC<IProps> = ({
       user_id: config.ui.workspaceId,
       action: "Select a frequency",
       frequency: item?.text,
-      connector_source: currentSource?.name,
-      connector_source_id: currentSource?.sourceId,
-      connector_destination: currentDestination?.name,
-      connector_destination_id: currentDestination?.destinationId
+      connector_source_definition: currentSource?.name,
+      connector_source_definition_id: currentSource?.sourceDefinitionId,
+      connector_destination_definition: currentDestinationDefinition?.name,
+      connector_destination_definition_id:
+        currentDestinationDefinition?.destinationDefinitionId
     });
   };
 
@@ -91,7 +84,7 @@ const ConnectionStep: React.FC<IProps> = ({
     <>
       <ConnectionBlock
         itemFrom={{ name: currentSource.name }}
-        itemTo={{ name: currentDestination.name }}
+        itemTo={{ name: currentDestinationDefinition.name }}
       />
       <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
         <Suspense
@@ -108,7 +101,7 @@ const ConnectionStep: React.FC<IProps> = ({
             onSelectFrequency={onSelectFrequency}
             onSubmit={onSubmitStep}
             errorMessage={errorMessage}
-            sourceImplementationId={sourceImplementationId}
+            sourceId={sourceId}
           />
         </Suspense>
       </ContentCard>
