@@ -48,7 +48,7 @@ import io.airbyte.api.client.model.SourceSchema;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.db.DatabaseHandle;
+import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.FileReader;
@@ -293,24 +293,24 @@ public class AcceptanceTests {
   }
 
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb) throws Exception {
-    DatabaseHandle databaseHandle = getDatabaseHandle(sourceDb);
+    Database database = getDatabaseHandle(sourceDb);
 
-    Set<String> sourceStreams = listStreams(databaseHandle);
+    Set<String> sourceStreams = listStreams(database);
     Set<String> targetStreams = listCsvStreams();
     assertEquals(sourceStreams, targetStreams);
 
     for (String table : sourceStreams) {
-      assertStreamsEquivalent(databaseHandle, table);
+      assertStreamsEquivalent(database, table);
     }
   }
 
-  private DatabaseHandle getDatabaseHandle(PostgreSQLContainer db) {
+  private Database getDatabaseHandle(PostgreSQLContainer db) {
     return Databases.createPostgresHandle(
         db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
-  private Set<String> listStreams(DatabaseHandle databaseHandle) throws SQLException {
-    return databaseHandle.query(
+  private Set<String> listStreams(Database database) throws SQLException {
+    return database.query(
         context -> {
           Result<Record> fetch =
               context.fetch(
@@ -327,12 +327,12 @@ public class AcceptanceTests {
         .collect(Collectors.toSet());
   }
 
-  private void assertStreamsEquivalent(DatabaseHandle databaseHandle, String table) throws Exception {
+  private void assertStreamsEquivalent(Database database, String table) throws Exception {
     final Set<JsonNode> destinationRecords = new HashSet<>(retrieveCsvRecords(table));
 
-    long sourceStreamCount = getStreamCount(databaseHandle, table);
+    long sourceStreamCount = getStreamCount(database, table);
     assertEquals(sourceStreamCount, destinationRecords.size());
-    final List<JsonNode> allRecords = retrievePgRecords(databaseHandle, table);
+    final List<JsonNode> allRecords = retrievePgRecords(database, table);
 
     for (JsonNode sourceStreamRecord : allRecords) {
       assertTrue(destinationRecords.contains(sourceStreamRecord));
@@ -340,8 +340,8 @@ public class AcceptanceTests {
   }
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")
-  private long getStreamCount(DatabaseHandle databaseHandle, String tableName) throws SQLException {
-    return databaseHandle.query(
+  private long getStreamCount(Database database, String tableName) throws SQLException {
+    return database.query(
         context -> {
           Result<Record> record =
               context.fetch(String.format("SELECT COUNT(*) FROM %s;", tableName));
@@ -402,8 +402,8 @@ public class AcceptanceTests {
     return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(relativeDir).toString()));
   }
 
-  private List<JsonNode> retrievePgRecords(DatabaseHandle databaseHandle, String table) throws SQLException {
-    return databaseHandle.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
+  private List<JsonNode> retrievePgRecords(Database database, String table) throws SQLException {
+    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
         .map(Jsons::jsonNode)
@@ -466,10 +466,10 @@ public class AcceptanceTests {
   }
 
   private void clearDbData(PostgreSQLContainer db) throws SQLException {
-    final DatabaseHandle databaseHandle = getDatabaseHandle(db);
-    final Set<String> tableNames = listStreams(databaseHandle);
+    final Database database = getDatabaseHandle(db);
+    final Set<String> tableNames = listStreams(database);
     for (final String tableName : tableNames) {
-      databaseHandle.query(context -> context.execute(String.format("DELETE FROM %s", tableName)));
+      database.query(context -> context.execute(String.format("DELETE FROM %s", tableName)));
     }
   }
 

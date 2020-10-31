@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHandle;
+import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -48,12 +48,10 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
@@ -77,7 +75,7 @@ public class JdbcSource implements Source {
     this("org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
-  public JdbcSource(String driverClass, SQLDialect dialect) {
+  public JdbcSource(final String driverClass, final SQLDialect dialect) {
     this.driverClass = driverClass;
     this.dialect = dialect;
   }
@@ -91,11 +89,11 @@ public class JdbcSource implements Source {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    try (final DatabaseHandle databaseHandle = getDatabaseHandle(config)){
+    try (final Database database = createDatabaseHandle(config)) {
       // attempt to get current schema. this is a cheap query to sanity check that we can connect to the
       // database. `currentSchema()` is a jooq method that will run the appropriate query based on which
       // database it is connected to.
-      databaseHandle.query(ctx -> ctx.select(currentSchema()).fetch());
+      database.query(ctx -> ctx.select(currentSchema()).fetch());
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
@@ -105,12 +103,12 @@ public class JdbcSource implements Source {
 
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
-    try (final DatabaseHandle databaseHandle = getDatabaseHandle(config)) {
+    try (final Database database = createDatabaseHandle(config)) {
       return new AirbyteCatalog()
-          .withStreams(discoverInternal(databaseHandle)
-              .stream()
+          .withStreams(discoverInternal(database).stream()
               .map(t -> {
-                final List<Field> fields = Arrays.stream(t.fields()).map(f -> Field.of(f.getName(), jooqDataTypeToJsonSchemaType(f.getDataType())))
+                final List<Field> fields = Arrays.stream(t.fields())
+                    .map(f -> Field.of(f.getName(), jooqDataTypeToJsonSchemaType(f.getDataType())))
                     .collect(Collectors.toList());
                 return CatalogHelpers.createAirbyteStream(t.getName(), fields);
               }).collect(Collectors.toList()));
@@ -121,55 +119,48 @@ public class JdbcSource implements Source {
   public Stream<AirbyteMessage> read(JsonNode config, AirbyteCatalog catalog, JsonNode state) throws Exception {
     final Instant now = Instant.now();
 
-    final DatabaseHandle databaseHandle = getDatabaseHandle(config);
-    // We do not use the typical database wrappers here, because we do not want to close this
-    // transaction until the stream is fully consumed by the calling process. We set connect.close() in
-    // the close of the stream.
-    final DSLContext context = databaseHandle.getContext();
+    final Database database = createDatabaseHandle(config);
 
-    final List<Table<?>> tables = discoverInternal(databaseHandle);
-    final Map<String, Table<?>> tableNameToTable = tables.stream().collect(Collectors.toMap(Named::getName, t -> t));
-    return catalog.getStreams().stream()
-        // iterate over streams in catalog and find corresponding table in the jooq schema.
-        .map(airbyteStream -> ImmutablePair.of(airbyteStream, Optional.ofNullable(tableNameToTable.get(airbyteStream.getName()))))
-        // filter out those that are not present in the jooq schema
-        .filter(pair -> pair.getRight().isPresent())
-        // for each stream pull the data
-        .flatMap(pair -> {
-          final AirbyteStream airbyteStream = pair.getLeft();
-          final Table<?> table = pair.getRight().get();
-          // extract column names from airbyte catalog. assumes table / column structure in the schema.
-          // everything else gets flattened.
-          final Set<String> fieldNames = CatalogHelpers.getTopLevelFieldNames(airbyteStream.getJsonSchema());
-          // find columns in the jooq schema.
-          final List<org.jooq.Field<?>> selectedFields = Arrays
-              .stream(table.fields())
-              .filter(field -> fieldNames.contains(field.getName()))
-              .collect(Collectors.toList());
+    final Map<String, Table<?>> tableNameToTable = discoverInternal(database).stream()
+        .collect(Collectors.toMap(Named::getName, Function.identity()));
 
-          if (selectedFields.isEmpty()) {
-            return Stream.empty();
-          }
+    Stream<AirbyteMessage> resultStream = Stream.empty();
 
-          // return results as a stream that is mapped to an airbyte message.
-          return context.select(selectedFields)
+    for (final AirbyteStream stream : catalog.getStreams()) {
+      if (!tableNameToTable.containsKey(stream.getName())) {
+        continue;
+      }
+
+      final Set<String> selectedFields = CatalogHelpers.getTopLevelFieldNames(stream);
+
+      final Table<?> table = tableNameToTable.get(stream.getName());
+      final List<org.jooq.Field<?>> selectedDatabaseFields = Arrays.stream(table.fields())
+          .filter(field -> selectedFields.contains(field.getName()))
+          .collect(Collectors.toList());
+
+      if (selectedDatabaseFields.isEmpty()) {
+        continue;
+      }
+
+      final Stream<AirbyteMessage> recordStream = database.query(
+          ctx -> ctx
+              .select(selectedDatabaseFields)
               .from(table)
-              .fetch()
-              .stream()
+              .fetchStream()
               .map(r -> new AirbyteMessage()
                   .withType(Type.RECORD)
                   .withRecord(new AirbyteRecordMessage()
-                      .withStream(airbyteStream.getName())
+                      .withStream(stream.getName())
                       .withEmittedAt(now.toEpochMilli())
-                      .withData(Jsons.deserialize(r.formatJSON(DB_JSON_FORMAT)))))
-              .onClose(() -> {
-                Exceptions.toRuntime(context::close);
-                Exceptions.toRuntime(databaseHandle::close);
-              });
-        });
+                      .withData(Jsons.deserialize(r.formatJSON(DB_JSON_FORMAT))))));
+
+      resultStream = Stream.concat(resultStream, recordStream);
+    }
+
+    return resultStream.onClose(() -> Exceptions.toRuntime(database::close));
   }
 
-  private DatabaseHandle getDatabaseHandle(JsonNode config) {
+  private Database createDatabaseHandle(JsonNode config) {
     return Databases.createHandle(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -178,8 +169,8 @@ public class JdbcSource implements Source {
         dialect);
   }
 
-  private List<Table<?>> discoverInternal(final DatabaseHandle databaseHandle) throws Exception {
-    return databaseHandle.query(context -> context.meta().getTables());
+  private List<Table<?>> discoverInternal(final Database database) throws Exception {
+    return database.query(context -> context.meta().getTables());
   }
 
   /**

@@ -36,7 +36,7 @@ import static org.jooq.impl.DSL.field;
  */
 public class ServerUuid {
 
-  public static Optional<String> get(DatabaseHandle handle) throws SQLException {
+  public static Optional<String> get(Database handle) throws SQLException {
     return handle.query(
         ctx -> {
           Result<Record> result =

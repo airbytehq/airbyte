@@ -36,7 +36,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.db.DatabaseHandle;
+import io.airbyte.db.Database;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.ScopeHelper;
@@ -59,16 +59,16 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSchedulerPersistence.class);
 
-  private final DatabaseHandle databaseHandle;
+  private final Database database;
   private final Supplier<Instant> timeSupplier;
 
-  @VisibleForTesting DefaultSchedulerPersistence(DatabaseHandle databaseHandle, Supplier<Instant> timeSupplier) {
-    this.databaseHandle = databaseHandle;
+  @VisibleForTesting DefaultSchedulerPersistence(Database database, Supplier<Instant> timeSupplier) {
+    this.database = database;
     this.timeSupplier = timeSupplier;
   }
 
-  public DefaultSchedulerPersistence(DatabaseHandle databaseHandle) {
-    this(databaseHandle, Instant::now);
+  public DefaultSchedulerPersistence(Database database) {
+    this(database, Instant::now);
   }
 
   @Override
@@ -174,7 +174,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
     try {
-      final Record record = databaseHandle.query(
+      final Record record = database.query(
           ctx -> ctx.fetch(
               "INSERT INTO jobs(scope, created_at, updated_at, status, config, output, attempts) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB), ?, ?) RETURNING id",
               scope,
@@ -199,7 +199,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
     try {
-      databaseHandle.query(
+      database.query(
           ctx -> ctx.execute(
               "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
               status.toString().toLowerCase(),
@@ -214,7 +214,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   public void updateLogPath(long jobId, Path logPath) throws IOException {
     LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     try {
-      databaseHandle.query(
+      database.query(
           ctx -> ctx.execute(
               "UPDATE jobs SET log_path = ?, updated_at = ? WHERE id = ?",
               logPath.toString(),
@@ -228,7 +228,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   @Override
   public void incrementAttempts(long jobId) throws IOException {
     try {
-      databaseHandle.query(
+      database.query(
           ctx -> ctx.execute("UPDATE jobs SET attempts = attempts + 1 WHERE id = ?", jobId));
     } catch (SQLException e) {
       throw new IOException(e);
@@ -240,7 +240,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
     try {
-      databaseHandle.query(
+      database.query(
           ctx -> ctx.execute(
               "UPDATE jobs SET output = CAST(? as JSONB), updated_at = ? WHERE id = ?",
               Jsons.serialize(output),
@@ -254,7 +254,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   @Override
   public Job getJob(long jobId) throws IOException {
     try {
-      return databaseHandle.query(
+      return database.query(
           ctx -> {
             Record jobEntry =
                 ctx.fetch("SELECT * FROM jobs WHERE id = ?", jobId).stream()
@@ -272,7 +272,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   public List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException {
     try {
       String scope = ScopeHelper.createScope(configType, configId);
-      return databaseHandle.query(
+      return database.query(
           ctx -> ctx.fetch("SELECT * FROM jobs WHERE scope = ? ORDER BY created_at DESC", scope).stream()
               .map(DefaultSchedulerPersistence::getJobFromRecord)
               .collect(Collectors.toList()));
@@ -287,7 +287,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     // the string yourself or use their DSL.
     final String likeStatement = "'" + ScopeHelper.getScopePrefix(configType) + "%'";
     try {
-      return databaseHandle.query(
+      return database.query(
           ctx -> ctx
               .fetch("SELECT * FROM jobs WHERE scope LIKE " + likeStatement + " AND CAST(status AS VARCHAR) = ? ORDER BY created_at DESC",
                   status.toString().toLowerCase())
@@ -302,7 +302,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   @Override
   public Optional<Job> getLastSyncJob(UUID connectionId) throws IOException {
     try {
-      return databaseHandle.query(
+      return database.query(
           ctx -> {
             Optional<Record> jobEntryOptional =
                 ctx
@@ -328,7 +328,7 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   @Override
   public Optional<Job> getOldestPendingJob() throws IOException {
     try {
-      return databaseHandle.query(
+      return database.query(
           ctx -> {
             Optional<Record> jobEntryOptional = ctx
                 .fetch("SELECT * FROM jobs WHERE CAST(status AS VARCHAR) = 'pending' ORDER BY created_at ASC LIMIT 1")

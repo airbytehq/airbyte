@@ -31,7 +31,7 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
-import io.airbyte.db.DatabaseHandle;
+import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultSchedulerPersistence;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
@@ -63,23 +63,23 @@ public class SchedulerApp {
   private static final long JOB_SUBMITTER_DELAY_MILLIS = 5000L;
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
 
-  private final DatabaseHandle databaseHandle;
+  private final Database database;
   private final Path configRoot;
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
 
-  public SchedulerApp(DatabaseHandle databaseHandle,
+  public SchedulerApp(Database database,
                       Path configRoot,
                       Path workspaceRoot,
                       ProcessBuilderFactory pbf) {
-    this.databaseHandle = databaseHandle;
+    this.database = database;
     this.configRoot = configRoot;
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
   }
 
   public void start() {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(databaseHandle);
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(database);
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
@@ -114,7 +114,7 @@ public class SchedulerApp {
     LOGGER.info("workspaceRoot = " + workspaceRoot);
 
     LOGGER.info("Creating DB connection pool...");
-    final DatabaseHandle databaseHandle = Databases.createPostgresHandle(
+    final Database database = Databases.createPostgresHandle(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl());
@@ -126,7 +126,7 @@ public class SchedulerApp {
         configs.getDockerNetwork());
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(databaseHandle, configRoot, workspaceRoot, pbf).start();
+    new SchedulerApp(database, configRoot, workspaceRoot, pbf).start();
   }
 
 }

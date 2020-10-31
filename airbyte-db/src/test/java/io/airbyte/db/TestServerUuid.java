@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,7 +39,7 @@ import org.testcontainers.utility.MountableFile;
 public class TestServerUuid {
 
   private static PostgreSQLContainer<?> container;
-  private static DatabaseHandle postgresHandle;
+  private static Database postgresHandle;
 
   @BeforeAll
   public static void dbSetup() throws IOException, InterruptedException {

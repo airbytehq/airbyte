@@ -31,7 +31,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHandle;
+import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -100,7 +100,7 @@ class PostgresDestinationTest {
 
   private PostgreSQLContainer<?> db;
   private JsonNode config;
-  private DatabaseHandle databaseHandle;
+  private Database database;
 
   @BeforeEach
   void setup() {
@@ -116,12 +116,12 @@ class PostgresDestinationTest {
         .put("database", db.getDatabaseName())
         .build());
 
-    databaseHandle = Databases.createPostgresHandle(db.getUsername(), db.getPassword(), db.getJdbcUrl());
+    database = Databases.createPostgresHandle(db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
   @AfterEach
   void tearDown() throws Exception {
-    databaseHandle.close();
+    database.close();
     db.close();
   }
 
@@ -195,7 +195,7 @@ class PostgresDestinationTest {
   }
 
   private List<String> fetchNamesOfTablesInDb() throws SQLException {
-    return databaseHandle.query(
+    return database.query(
         ctx -> ctx.fetch("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';"))
         .stream()
         .map(record -> (String) record.get("table_name")).collect(Collectors.toList());
@@ -207,7 +207,7 @@ class PostgresDestinationTest {
   }
 
   private Set<JsonNode> recordRetriever(String streamName) throws Exception {
-    return databaseHandle.query(
+    return database.query(
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
             .stream()

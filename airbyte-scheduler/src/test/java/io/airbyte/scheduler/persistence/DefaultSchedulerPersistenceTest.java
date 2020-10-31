@@ -42,7 +42,7 @@ import io.airbyte.config.SourceConnectionImplementation;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.Stream;
-import io.airbyte.db.DatabaseHandle;
+import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
@@ -76,7 +76,7 @@ class DefaultSchedulerPersistenceTest {
 
   @SuppressWarnings("rawtypes")
   private static PostgreSQLContainer container;
-  private static DatabaseHandle databaseHandle;
+  private static Database database;
 
   private static final String SOURCE_IMAGE_NAME = "daxtarity/sourceimagename";
   private static final String DESTINATION_IMAGE_NAME = "daxtarity/destinationimagename";
@@ -156,7 +156,7 @@ class DefaultSchedulerPersistenceTest {
     // execInContainer uses Docker's EXEC so it needs to be split up like this
     container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
 
-    databaseHandle = Databases.createPostgresHandle(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    database = Databases.createPostgresHandle(container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }
 
   @AfterAll
@@ -168,16 +168,16 @@ class DefaultSchedulerPersistenceTest {
   @BeforeEach
   public void setup() throws SQLException {
     // todo (cgardens) - truncate whole db.
-    databaseHandle.query(ctx -> ctx.execute("DELETE FROM jobs"));
+    database.query(ctx -> ctx.execute("DELETE FROM jobs"));
 
     timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(NOW);
 
-    schedulerPersistence = new DefaultSchedulerPersistence(databaseHandle, timeSupplier);
+    schedulerPersistence = new DefaultSchedulerPersistence(database, timeSupplier);
   }
 
   private Record getJobRecord(long jobId) throws SQLException {
-    return databaseHandle.query(
+    return database.query(
         ctx -> ctx.fetch("SELECT * FROM jobs WHERE id = ?", jobId).stream()
             .findFirst()
             .orElseThrow(
@@ -489,7 +489,7 @@ class DefaultSchedulerPersistenceTest {
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME);
 
-    databaseHandle.query(
+    database.query(
         ctx -> ctx.execute("UPDATE jobs SET status = CAST(? AS JOB_STATUS) WHERE id = ?", JobStatus.COMPLETED.toString().toLowerCase(), jobId));
 
     final Optional<Job> actual = schedulerPersistence.getOldestPendingJob();

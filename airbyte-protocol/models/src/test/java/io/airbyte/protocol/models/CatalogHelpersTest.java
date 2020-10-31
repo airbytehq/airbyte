@@ -24,14 +24,14 @@
 
 package io.airbyte.protocol.models;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CatalogHelpersTest {
 
@@ -46,10 +46,9 @@ class CatalogHelpersTest {
   @Test
   void testGetTopLevelFieldNames() {
     final String json = "{ \"type\": \"object\", \"properties\": { \"name\": { \"type\": \"string\" } } } ";
-    final Set<String> expectedFieldNames = Sets.newHashSet("name");
-    final Set<String> actualFieldNames = CatalogHelpers.getTopLevelFieldNames(Jsons.deserialize(json));
+    final Set<String> actualFieldNames = CatalogHelpers.getTopLevelFieldNames(new AirbyteStream().withJsonSchema(Jsons.deserialize(json)));
 
-    assertEquals(expectedFieldNames, actualFieldNames);
+    assertEquals(Sets.newHashSet("name"), actualFieldNames);
   }
 
 }
