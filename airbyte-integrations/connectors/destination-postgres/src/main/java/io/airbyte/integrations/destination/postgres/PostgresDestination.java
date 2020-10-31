@@ -84,8 +84,8 @@ public class PostgresDestination implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try (final Database database = getDatabase(config)) {
-      database.query(
-          ctx -> ctx.execute(
+      database.query(ctx ->
+          ctx.execute(
               "SELECT *\n"
                   + "FROM pg_catalog.pg_tables\n"
                   + "WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema' LIMIT 1;"));
@@ -184,11 +184,11 @@ public class PostgresDestination implements Destination {
     /**
      * Write records from buffer to postgres in batch.
      *
-     * @param minRecords     - the minimum number of records in the buffer before writing. helps avoid
-     *                       wastefully writing one record at a time.
-     * @param batchSize      - the maximum number of records to write in a single insert.
-     * @param writeBuffers   - map of stream name to its respective buffer.
-     * @param database - connection to the db.
+     * @param minRecords   - the minimum number of records in the buffer before writing. helps avoid
+     *                     wastefully writing one record at a time.
+     * @param batchSize    - the maximum number of records to write in a single insert.
+     * @param writeBuffers - map of stream name to its respective buffer.
+     * @param database     - connection to the db.
      */
     private static void writeStreamsWithNRecords(int minRecords,
                                                  int batchSize,
@@ -266,16 +266,15 @@ public class PostgresDestination implements Destination {
         writeStreamsWithNRecords(0, 500, writeConfigs, database);
 
         // delete tables if already exist. copy new tables into their place.
-        database.transaction(
-            ctx -> {
-              final StringBuilder query = new StringBuilder();
-              for (final WriteConfig writeConfig : writeConfigs.values()) {
-                query.append(String.format("DROP TABLE IF EXISTS %s;\n", writeConfig.getTableName()));
+        database.transaction(ctx -> {
+          final StringBuilder query = new StringBuilder();
+          for (final WriteConfig writeConfig : writeConfigs.values()) {
+            query.append(String.format("DROP TABLE IF EXISTS %s;\n", writeConfig.getTableName()));
 
-                query.append(String.format("ALTER TABLE %s RENAME TO %s;\n", writeConfig.getTmpTableName(), writeConfig.getTableName()));
-              }
-              return ctx.execute(query.toString());
-            });
+            query.append(String.format("ALTER TABLE %s RENAME TO %s;\n", writeConfig.getTmpTableName(), writeConfig.getTableName()));
+          }
+          return ctx.execute(query.toString());
+        });
       }
 
       // close buffers.
