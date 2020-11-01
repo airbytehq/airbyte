@@ -1,0 +1,36 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mysql",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MySql Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "username"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "description": "Hostname of the database.",
+        "type": "string"
+      },
+      "port": {
+        "description": "Port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 3306,
+        "examples": ["3306"]
+      },
+      "database": {
+        "description": "Name of the database.",
+        "type": "string"
+      },
+      "username": {
+        "description": "Username to use to access the database.",
+        "type": "string"
+      },
+      "password": {
+        "description": "Password associated with the username.",
+        "type": "string"
+      }
+    }
+  }
+}
