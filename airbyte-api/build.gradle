@@ -23,9 +23,9 @@ task generateApiServer(type: GenerateTask) {
 
     importMappings = [
             'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
-            'SourceConfiguration'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceConfiguration'               : 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
-            'DestinationConfiguration': 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationConfiguration'          : 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
     generateApiDocumentation = false
@@ -54,9 +54,9 @@ task generateApiClient(type: GenerateTask) {
 
     importMappings = [
             'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
-            'SourceConfiguration'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceConfiguration'               : 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
-            'DestinationConfiguration': 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationConfiguration'          : 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
     library = "native"
@@ -72,6 +72,7 @@ task generateApiClient(type: GenerateTask) {
 compileJava.dependsOn tasks.generateApiClient
 
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask;
+
 task generateApiDocs(type: GenerateTask) {
     def docsOutputDir = "$buildDir/generated/api/docs"
 
@@ -85,9 +86,9 @@ task generateApiDocs(type: GenerateTask) {
 
     importMappings = [
             'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
-            'SourceConfiguration'     : 'com.fasterxml.jackson.databind.JsonNode',
+            'SourceConfiguration'               : 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
-            'DestinationConfiguration': 'com.fasterxml.jackson.databind.JsonNode',
+            'DestinationConfiguration'          : 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
     generateApiDocumentation = false
