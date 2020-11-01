@@ -1,0 +1,40 @@
+{
+  /*
+    TODO fix this to contain the catalog that should be used for your integration tests.
+     using a catalog.json file for your integration tests is only for convenience and not required. You can dynamically
+     generate an AirbyteCatalog inside your test cases, in which case using this file is not necessary. An example Catalog
+     is included below.
+  */
+  "streams": [
+    {
+      "name": "table1",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "column1": {
+            "type": "string"
+          },
+          "column2": {
+            "type": "number"
+          },
+        }
+      }
+    },
+    {
+      "name": "table1",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "column1": {
+            "type": "string"
+          },
+          "column2": {
+            "type": "number"
+          },
+        }
+      }
+    },
+  ]
+}
