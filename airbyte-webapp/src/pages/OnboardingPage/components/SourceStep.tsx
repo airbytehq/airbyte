@@ -4,20 +4,20 @@ import { useFetcher } from "rest-hooks";
 
 import ContentCard from "../../../components/ContentCard";
 import ServiceForm from "../../../components/ServiceForm";
-import SourceSpecificationResource, {
-  SourceSpecification
-} from "../../../core/resources/SourceSpecification";
+import SourceDefinitionSpecificationResource, {
+  SourceDefinitionSpecification
+} from "../../../core/resources/SourceDefinitionSpecification";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import config from "../../../config";
 import PrepareDropDownLists from "./PrepareDropDownLists";
-import { SourceImplementation } from "../../../core/resources/SourceImplementation";
+import { Source } from "../../../core/resources/Source";
 
 type IProps = {
-  sourceImplementation?: SourceImplementation;
+  source?: Source;
   onSubmit: (values: {
     name: string;
     serviceType: string;
-    specificationId?: string;
+    sourceDefinitionId?: string;
     connectionConfiguration?: any;
   }) => void;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
@@ -25,29 +25,31 @@ type IProps = {
   errorStatus?: number;
 };
 
-const useSourceSpecificationLoad = (sourceId: string) => {
+const useSourceDefinitionSpecificationLoad = (sourceDefinitionId: string) => {
   const [
-    sourceSpecification,
-    setSourceSpecification
-  ] = useState<null | SourceSpecification>(null);
+    sourceDefinitionSpecification,
+    setSourceDefinitionSpecification
+  ] = useState<null | SourceDefinitionSpecification>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchSourceSpecification = useFetcher(
-    SourceSpecificationResource.detailShape(),
+  const fetchSourceDefinitionSpecification = useFetcher(
+    SourceDefinitionSpecificationResource.detailShape(),
     true
   );
 
   useEffect(() => {
     (async () => {
-      if (sourceId) {
+      if (sourceDefinitionId) {
         setIsLoading(true);
-        setSourceSpecification(await fetchSourceSpecification({ sourceId }));
+        setSourceDefinitionSpecification(
+          await fetchSourceDefinitionSpecification({ sourceDefinitionId })
+        );
         setIsLoading(false);
       }
     })();
-  }, [fetchSourceSpecification, sourceId]);
+  }, [fetchSourceDefinitionSpecification, sourceDefinitionId]);
 
-  return { sourceSpecification, isLoading };
+  return { sourceDefinitionSpecification, isLoading };
 };
 
 const SourceStep: React.FC<IProps> = ({
@@ -55,22 +57,23 @@ const SourceStep: React.FC<IProps> = ({
   dropDownData,
   hasSuccess,
   errorStatus,
-  sourceImplementation
+  source
 }) => {
   const [sourceId, setSourceId] = useState("");
-  const { sourceSpecification, isLoading } = useSourceSpecificationLoad(
-    sourceId
-  );
-  const { getSourceById } = PrepareDropDownLists();
+  const {
+    sourceDefinitionSpecification,
+    isLoading
+  } = useSourceDefinitionSpecificationLoad(sourceId);
+  const { getSourceDefinitionById } = PrepareDropDownLists();
 
   const onDropDownSelect = (sourceId: string) => {
-    const connector = getSourceById(sourceId);
+    const sourceDefinition = getSourceDefinitionById(sourceId);
 
     AnalyticsService.track("New Source - Action", {
       user_id: config.ui.workspaceId,
       action: "Select a connector",
-      connector_source: connector?.name,
-      connector_source_id: connector?.sourceId
+      connector_source: sourceDefinition?.name,
+      connector_source_id: sourceDefinition?.sourceDefinitionId
     });
 
     setSourceId(sourceId);
@@ -81,7 +84,7 @@ const SourceStep: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      specificationId: sourceSpecification?.sourceId
+      sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId
     });
   };
 
@@ -92,9 +95,7 @@ const SourceStep: React.FC<IProps> = ({
       <FormattedMessage id="form.someError" />
     );
 
-  useEffect(() => setSourceId(sourceImplementation?.sourceId || ""), [
-    sourceImplementation
-  ]);
+  useEffect(() => setSourceId(source?.sourceDefinitionId || ""), [source]);
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
@@ -106,15 +107,15 @@ const SourceStep: React.FC<IProps> = ({
         dropDownData={dropDownData}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
-        specifications={sourceSpecification?.connectionSpecification}
-        documentationUrl={sourceSpecification?.documentationUrl}
+        specifications={sourceDefinitionSpecification?.connectionSpecification}
+        documentationUrl={sourceDefinitionSpecification?.documentationUrl}
         isLoading={isLoading}
         formValues={
-          sourceImplementation
+          source
             ? {
-                ...sourceImplementation.connectionConfiguration,
-                name: sourceImplementation.name,
-                serviceType: sourceImplementation.sourceId
+                ...source.connectionConfiguration,
+                name: source.name,
+                serviceType: source.sourceDefinitionId
               }
             : null
         }

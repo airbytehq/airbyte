@@ -1,7 +1,7 @@
 import { useFetcher } from "rest-hooks";
 
 import config from "../../../config";
-import DestinationImplementationResource from "../../../core/resources/DestinationImplementation";
+import DestinationResource from "../../../core/resources/Destination";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 
 type ValuesProps = {
@@ -10,20 +10,16 @@ type ValuesProps = {
   connectionConfiguration?: any;
 };
 
-type ConnectorProps = { name: string; destinationId: string };
+type ConnectorProps = { name: string; destinationDefinitionId: string };
 
 const useDestination = () => {
   const createDestinationsImplementation = useFetcher(
-    DestinationImplementationResource.createShape()
+    DestinationResource.createShape()
   );
 
-  const updateDestinationImplementation = useFetcher(
-    DestinationImplementationResource.updateShape()
-  );
+  const updatedestination = useFetcher(DestinationResource.updateShape());
 
-  const recreateDestinationImplementation = useFetcher(
-    DestinationImplementationResource.recreateShape()
-  );
+  const recreatedestination = useFetcher(DestinationResource.recreateShape());
 
   const createDestination = async ({
     values,
@@ -36,7 +32,8 @@ const useDestination = () => {
       user_id: config.ui.workspaceId,
       action: "Test a connector",
       connector_destination: destinationConnector?.name,
-      connector_destination_id: destinationConnector?.destinationId
+      connector_destination_definition_id:
+        destinationConnector?.destinationDefinitionId
     });
 
     try {
@@ -44,21 +41,22 @@ const useDestination = () => {
         {},
         {
           name: values.name,
-          destinationId: destinationConnector?.destinationId,
+          destinationDefinitionId:
+            destinationConnector?.destinationDefinitionId,
           workspaceId: config.ui.workspaceId,
           connectionConfiguration: values.connectionConfiguration
         },
         [
           [
-            DestinationImplementationResource.listShape(),
+            DestinationResource.listShape(),
             { workspaceId: config.ui.workspaceId },
             (
-              newDestinationImplementationId: string,
-              destinationsImplementationIds: { destinations: string[] }
+              newdestinationId: string,
+              destinationIds: { destinations: string[] }
             ) => ({
-              destinations: [
-                ...(destinationsImplementationIds?.destinations || []),
-                newDestinationImplementationId
+              destinationDefinitions: [
+                ...(destinationIds?.destinations || []),
+                newdestinationId
               ]
             })
           ]
@@ -69,7 +67,8 @@ const useDestination = () => {
         user_id: config.ui.workspaceId,
         action: "Tested connector - success",
         connector_destination: destinationConnector?.name,
-        connector_destination_id: destinationConnector?.destinationId
+        connector_destination_definition_id:
+          destinationConnector?.destinationDefinitionId
       });
 
       return result;
@@ -78,7 +77,8 @@ const useDestination = () => {
         user_id: config.ui.workspaceId,
         action: "Tested connector - failure",
         connector_destination: destinationConnector?.name,
-        connector_destination_id: destinationConnector?.destinationId
+        connector_destination_definition_id:
+          destinationConnector?.destinationDefinitionId
       });
       throw e;
     }
@@ -86,18 +86,18 @@ const useDestination = () => {
 
   const updateDestination = async ({
     values,
-    destinationImplementationId
+    destinationId
   }: {
     values: ValuesProps;
-    destinationImplementationId: string;
+    destinationId: string;
   }) => {
-    return await updateDestinationImplementation(
+    return await updatedestination(
       {
-        destinationImplementationId
+        destinationId
       },
       {
         name: values.name,
-        destinationImplementationId,
+        destinationId,
         connectionConfiguration: values.connectionConfiguration
       }
     );
@@ -105,30 +105,30 @@ const useDestination = () => {
 
   const recreateDestination = async ({
     values,
-    destinationImplementationId
+    destinationId
   }: {
     values: ValuesProps;
-    destinationImplementationId: string;
+    destinationId: string;
   }) => {
-    return await recreateDestinationImplementation(
+    return await recreatedestination(
       {
-        destinationImplementationId
+        destinationId
       },
       {
         name: values.name,
-        destinationImplementationId,
+        destinationId,
         connectionConfiguration: values.connectionConfiguration,
         workspaceId: config.ui.workspaceId,
-        destinationId: values.serviceType
+        destinationDefinitionId: values.serviceType
       },
       // Method used only in onboarding.
-      // Replace all DestinationImplementation List to new item in UpdateParams (to change id)
+      // Replace all destination List to new item in UpdateParams (to change id)
       [
         [
-          DestinationImplementationResource.listShape(),
+          DestinationResource.listShape(),
           { workspaceId: config.ui.workspaceId },
-          (newDestinationImplementationId: string) => ({
-            destinations: [newDestinationImplementationId]
+          (newdestinationId: string) => ({
+            destinations: [newdestinationId]
           })
         ]
       ]

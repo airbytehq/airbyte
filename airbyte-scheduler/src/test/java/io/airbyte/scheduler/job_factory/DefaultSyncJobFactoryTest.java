@@ -30,10 +30,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.docker.DockerUtils;
-import io.airbyte.config.DestinationConnectionImplementation;
-import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.StandardDestination;
-import io.airbyte.config.StandardSource;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -47,22 +47,22 @@ class DefaultSyncJobFactoryTest {
 
   @Test
   void createSyncJobFromConnectionId() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID sourceDefinitionId = UUID.randomUUID();
+    final UUID destinationDefinitionId = UUID.randomUUID();
+    final UUID connectionId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
-    final UUID connectionId = UUID.randomUUID();
-    final UUID sourceImplId = UUID.randomUUID();
-    final UUID destinationImplId = UUID.randomUUID();
     final SchedulerPersistence schedulerPersistence = mock(SchedulerPersistence.class);
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final long jobId = 11L;
 
     final StandardSync standardSync = new StandardSync()
-        .withSourceImplementationId(sourceImplId)
-        .withDestinationImplementationId(destinationImplId);
+        .withSourceId(sourceId)
+        .withDestinationId(destinationId);
 
-    final SourceConnectionImplementation sourceConnectionImplementation = new SourceConnectionImplementation().withSourceId(sourceId);
-    final DestinationConnectionImplementation destinationConnectionImplementation =
-        new DestinationConnectionImplementation().withDestinationId(destinationId);
+    final SourceConnection sourceConnection = new SourceConnection().withSourceDefinitionId(sourceDefinitionId);
+    final DestinationConnection destinationConnection =
+        new DestinationConnection().withDestinationDefinitionId(destinationDefinitionId);
     final String srcDockerRepo = "srcrepo";
     final String srcDockerTag = "tag";
     final String srcDockerImage = DockerUtils.getTaggedImageName(srcDockerRepo, srcDockerTag);
@@ -72,23 +72,25 @@ class DefaultSyncJobFactoryTest {
     final String dstDockerImage = DockerUtils.getTaggedImageName(dstDockerRepo, dstDockerTag);
 
     when(configRepository.getStandardSync(connectionId)).thenReturn(standardSync);
-    when(configRepository.getSourceConnectionImplementation(sourceImplId)).thenReturn(sourceConnectionImplementation);
-    when(configRepository.getDestinationConnectionImplementation(destinationImplId)).thenReturn(destinationConnectionImplementation);
+    when(configRepository.getSourceConnection(sourceId)).thenReturn(sourceConnection);
+    when(configRepository.getDestinationConnection(destinationId)).thenReturn(destinationConnection);
     when(schedulerPersistence
-        .createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync, srcDockerImage, dstDockerImage))
+        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage))
             .thenReturn(jobId);
-    when(configRepository.getStandardSource(sourceId))
-        .thenReturn(new StandardSource().withSourceId(sourceId).withDockerRepository(srcDockerRepo).withDockerImageTag(srcDockerTag));
+    when(configRepository.getStandardSource(sourceDefinitionId))
+        .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinitionId).withDockerRepository(srcDockerRepo)
+            .withDockerImageTag(srcDockerTag));
 
-    when(configRepository.getStandardDestination(destinationId))
-        .thenReturn(new StandardDestination().withDestinationId(destinationId).withDockerRepository(dstDockerRepo).withDockerImageTag(dstDockerTag));
+    when(configRepository.getStandardDestinationDefinition(destinationDefinitionId))
+        .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(destinationDefinitionId).withDockerRepository(dstDockerRepo)
+            .withDockerImageTag(dstDockerTag));
 
     final SyncJobFactory factory = new DefaultSyncJobFactory(schedulerPersistence, configRepository);
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 
     verify(schedulerPersistence)
-        .createSyncJob(sourceConnectionImplementation, destinationConnectionImplementation, standardSync, srcDockerImage, dstDockerImage);
+        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage);
   }
 
 }

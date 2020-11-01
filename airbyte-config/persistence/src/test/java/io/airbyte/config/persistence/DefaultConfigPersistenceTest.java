@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 import com.google.common.collect.Sets;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Schema;
-import io.airbyte.config.StandardSource;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -46,19 +46,19 @@ import org.junit.jupiter.api.Test;
 class DefaultConfigPersistenceTest {
 
   public static final UUID UUID_1 = new UUID(0, 1);
-  public static final StandardSource SOURCE_1 = new StandardSource();
+  public static final StandardSourceDefinition SOURCE_1 = new StandardSourceDefinition();
 
   static {
-    SOURCE_1.withSourceId(UUID_1)
+    SOURCE_1.withSourceDefinitionId(UUID_1)
         .withName("apache storm");
   }
 
   public static final UUID UUID_2 = new UUID(0, 2);
-  public static final StandardSource SOURCE_2 = new StandardSource();
+  public static final StandardSourceDefinition SOURCE_2 = new StandardSourceDefinition();
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   static {
-    SOURCE_2.withSourceId(UUID_2)
+    SOURCE_2.withSourceDefinitionId(UUID_2)
         .withName("apache storm");
   }
 
@@ -77,24 +77,24 @@ class DefaultConfigPersistenceTest {
 
   @Test
   void testReadWriteConfig() throws IOException, JsonValidationException, ConfigNotFoundException {
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE, UUID_1.toString(), SOURCE_1);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
 
     assertEquals(
         SOURCE_1,
         configPersistence.getConfig(
-            ConfigSchema.STANDARD_SOURCE,
+            ConfigSchema.STANDARD_SOURCE_DEFINITION,
             UUID_1.toString(),
-            StandardSource.class));
+            StandardSourceDefinition.class));
   }
 
   @Test
   void testListConfigs() throws JsonValidationException, IOException, ConfigNotFoundException {
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE, UUID_1.toString(), SOURCE_1);
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE, UUID_2.toString(), SOURCE_2);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_2.toString(), SOURCE_2);
 
     assertEquals(
         Sets.newHashSet(SOURCE_1, SOURCE_2),
-        Sets.newHashSet(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE, StandardSource.class)));
+        Sets.newHashSet(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)));
   }
 
   @Test
@@ -104,8 +104,8 @@ class DefaultConfigPersistenceTest {
     final StandardSync standardSync = new StandardSync()
         .withName("sync")
         .withConnectionId(UUID_1)
-        .withSourceImplementationId(UUID.randomUUID())
-        .withDestinationImplementationId(UUID.randomUUID())
+        .withSourceId(UUID.randomUUID())
+        .withDestinationId(UUID.randomUUID())
         .withSyncMode(StandardSync.SyncMode.FULL_REFRESH)
         .withStatus(StandardSync.Status.ACTIVE)
         .withSchema(schema);
@@ -119,14 +119,14 @@ class DefaultConfigPersistenceTest {
 
   @Test
   void writeConfigInvalidConfig() throws JsonValidationException {
-    StandardSource standardSource = SOURCE_1.withName(null);
+    StandardSourceDefinition standardSourceDefinition = SOURCE_1.withName(null);
 
     doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
 
     assertThrows(JsonValidationException.class, () -> configPersistence.writeConfig(
-        ConfigSchema.STANDARD_SOURCE,
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
         UUID_1.toString(),
-        standardSource));
+        standardSourceDefinition));
   }
 
 }

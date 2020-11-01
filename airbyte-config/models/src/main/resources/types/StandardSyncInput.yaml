@@ -6,15 +6,15 @@ description: job sync config
 type: object
 additionalProperties: false
 required:
-  - sourceConnectionImplementation
-  - destinationConnectionImplementation
+  - sourceConnection
+  - destinationConnection
   - standardSync
   - connectionId
 properties:
-  sourceConnectionImplementation:
-    "$ref": SourceConnectionImplementation.yaml
-  destinationConnectionImplementation:
-    "$ref": DestinationConnectionImplementation.yaml
+  sourceConnection:
+    "$ref": SourceConnection.yaml
+  destinationConnection:
+    "$ref": DestinationConnection.yaml
   syncMode:
     "$ref": SyncMode.yaml
   catalog:

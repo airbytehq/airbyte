@@ -5,10 +5,10 @@ import { useFetcher } from "rest-hooks";
 import ConnectionBlock from "../../../../../components/ConnectionBlock";
 import ContentCard from "../../../../../components/ContentCard";
 import ServiceForm from "../../../../../components/ServiceForm";
-import { Destination } from "../../../../../core/resources/Destination";
-import SourceSpecificationResource, {
-  SourceSpecification
-} from "../../../../../core/resources/SourceSpecification";
+import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
+import SourceDefinitionSpecificationResource, {
+  SourceDefinitionSpecification
+} from "../../../../../core/resources/SourceDefinitionSpecification";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import config from "../../../../../config";
 import useRouter from "../../../../../components/hooks/useRouterHook";
@@ -17,62 +17,69 @@ type IProps = {
   onSubmit: (values: {
     name: string;
     serviceType: string;
-    specificationId?: string;
+    sourceDefinitionId?: string;
     connectionConfiguration?: any;
   }) => void;
-  destination: Destination;
+  destinationDefinition: DestinationDefinition;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
   hasSuccess?: boolean;
   errorStatus?: number;
 };
 
-const useSourceSpecificationLoad = (sourceId: string) => {
+const useSourceDefinitionSpecificationLoad = (sourceDefinitionId: string) => {
   const [
-    sourceSpecification,
-    setSourceSpecification
-  ] = useState<null | SourceSpecification>(null);
+    sourceDefinitionSpecification,
+    setSourceDefinitionSpecification
+  ] = useState<null | SourceDefinitionSpecification>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchSourceSpecification = useFetcher(
-    SourceSpecificationResource.detailShape(),
+  const fetchSourceDefinitionSpecification = useFetcher(
+    SourceDefinitionSpecificationResource.detailShape(),
     true
   );
 
   useEffect(() => {
     (async () => {
-      if (sourceId) {
+      if (sourceDefinitionId) {
         setIsLoading(true);
-        setSourceSpecification(await fetchSourceSpecification({ sourceId }));
+        setSourceDefinitionSpecification(
+          await fetchSourceDefinitionSpecification({ sourceDefinitionId })
+        );
         setIsLoading(false);
       }
     })();
-  }, [fetchSourceSpecification, sourceId]);
+  }, [fetchSourceDefinitionSpecification, sourceDefinitionId]);
 
-  return { sourceSpecification, isLoading };
+  return { sourceDefinitionSpecification, isLoading };
 };
 
 const CreateSourcePage: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
-  destination,
+  destinationDefinition,
   errorStatus,
   hasSuccess
 }) => {
   const { location }: any = useRouter();
 
-  const [sourceId, setSourceId] = useState(location.state?.sourceId || "");
-  const { sourceSpecification, isLoading } = useSourceSpecificationLoad(
-    sourceId
+  const [sourceDefinitionId, setSourceDefinitionId] = useState(
+    location.state?.sourceDefinitionId || ""
   );
-  const onDropDownSelect = (sourceId: string) => {
-    setSourceId(sourceId);
-    const connector = dropDownData.find(item => item.value === sourceId);
+  const {
+    sourceDefinitionSpecification,
+    isLoading
+  } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+  const onDropDownSelect = (sourceDefinitionId: string) => {
+    setSourceDefinitionId(sourceDefinitionId);
+    const connector = dropDownData.find(
+      item => item.value === sourceDefinitionId
+    );
 
     AnalyticsService.track("New Source - Action", {
       user_id: config.ui.workspaceId,
       action: "Select a connector",
-      connector_source: connector?.text,
-      connector_source_id: sourceId
+      connector_source_definition: connector?.text,
+      connector_source_definition_id: sourceDefinitionId
     });
   };
 
@@ -82,7 +89,7 @@ const CreateSourcePage: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      specificationId: sourceSpecification?.sourceId
+      sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId
     });
   };
 
@@ -95,19 +102,23 @@ const CreateSourcePage: React.FC<IProps> = ({
 
   return (
     <>
-      <ConnectionBlock itemTo={{ name: destination.name }} />
+      <ConnectionBlock itemTo={{ name: destinationDefinition.name }} />
       <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
         <ServiceForm
           onDropDownSelect={onDropDownSelect}
           onSubmit={onSubmitForm}
           formType="source"
           dropDownData={dropDownData}
-          specifications={sourceSpecification?.connectionSpecification}
+          specifications={
+            sourceDefinitionSpecification?.connectionSpecification
+          }
           hasSuccess={hasSuccess}
           errorMessage={errorMessage}
           isLoading={isLoading}
           formValues={
-            sourceId ? { serviceType: sourceId, name: "" } : undefined
+            sourceDefinitionId
+              ? { serviceType: sourceDefinitionId, name: "" }
+              : undefined
           }
           allowChangeConnector
         />

@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { specification } from "../../../core/resources/SourceSpecification";
+import { specification } from "../../../core/resources/SourceDefinitionSpecification";
 
 const ConstructValidationSchema = (
   specifications?: specification,

@@ -13,9 +13,9 @@ import SchemaView from "./components/SchemaView";
 import ConnectionResource from "../../../../core/resources/Connection";
 import LoadingPage from "../../../../components/LoadingPage";
 import MainPageWithScroll from "../../../../components/MainPageWithScroll";
-import DestinationImplementationResource from "../../../../core/resources/DestinationImplementation";
-import config from "../../../../config";
 import DestinationResource from "../../../../core/resources/Destination";
+import config from "../../../../config";
+import DestinationDefinitionResource from "../../../../core/resources/DestinationDefinition";
 import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
 import FrequencyConfig from "../../../../data/FrequencyConfig.json";
 import useConnection from "../../../../components/hooks/services/useConnectionHook";
@@ -30,15 +30,12 @@ const SourceItemPage: React.FC = () => {
     connectionId: query.id
   });
 
-  const { destinations } = useResource(
-    DestinationImplementationResource.listShape(),
-    {
-      workspaceId: config.ui.workspaceId
-    }
-  );
+  const { destinations } = useResource(DestinationResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
   const currentDestination = destinations[0]; // Now we have only one destination. If we support multiple destinations we will fix this line
-  const destination = useResource(DestinationResource.detailShape(), {
-    destinationId: currentDestination.destinationId
+  const destination = useResource(DestinationDefinitionResource.detailShape(), {
+    destinationDefinitionId: currentDestination.destinationDefinitionId
   });
 
   const frequency = FrequencyConfig.find(
@@ -88,9 +85,9 @@ const SourceItemPage: React.FC = () => {
           ? "Disable connection"
           : "Reenable connection",
       connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceId,
+      connector_source_id: connection.source?.sourceDefinitionId,
       connector_destination: destination.name,
-      connector_destination_id: destination.destinationId,
+      connector_destination_definition_id: destination.destinationDefinitionId,
       frequency: frequency?.text
     });
   };
@@ -100,9 +97,9 @@ const SourceItemPage: React.FC = () => {
       user_id: config.ui.workspaceId,
       action: "Edit schema",
       connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceId,
+      connector_source_id: connection.source?.sourceDefinitionId,
       connector_destination: destination.name,
-      connector_destination_id: destination.destinationId,
+      connector_destination_definition_id: destination.destinationDefinitionId,
       frequency: frequency?.text
     });
   };
@@ -112,9 +109,9 @@ const SourceItemPage: React.FC = () => {
       user_id: config.ui.workspaceId,
       action: "Delete source",
       connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceId,
+      connector_source_id: connection.source?.sourceDefinitionId,
       connector_destination: destination.name,
-      connector_destination_id: destination.destinationId,
+      connector_destination_definition_id: destination.destinationDefinitionId,
       frequency: frequency?.text
     });
   };
@@ -125,7 +122,7 @@ const SourceItemPage: React.FC = () => {
         <StatusView
           sourceData={connection}
           onEnabledChange={onChangeStatus}
-          destination={destination}
+          destinationDefinition={destination}
           frequencyText={frequency?.text}
         />
       );
