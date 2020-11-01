@@ -26,14 +26,14 @@ package io.airbyte.scheduler.persistence;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
-import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.db.Database;
@@ -73,14 +73,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation, String dockerImageName) throws IOException {
+  public long createSourceCheckConnectionJob(SourceConnection source, String dockerImageName) throws IOException {
     final String scope =
         ScopeHelper.createScope(
             JobConfig.ConfigType.CHECK_CONNECTION_SOURCE,
-            sourceImplementation.getSourceImplementationId().toString());
+            source.getSourceId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withConnectionConfiguration(sourceImplementation.getConfiguration())
+        .withConnectionConfiguration(source.getConfiguration())
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
@@ -91,15 +91,15 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation, String dockerImageName)
+  public long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImageName)
       throws IOException {
     final String scope =
         ScopeHelper.createScope(
             JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION,
-            destinationImplementation.getDestinationImplementationId().toString());
+            destination.getDestinationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withConnectionConfiguration(destinationImplementation.getConfiguration())
+        .withConnectionConfiguration(destination.getConfiguration())
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
@@ -110,14 +110,14 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation, String dockerImageName) throws IOException {
+  public long createDiscoverSchemaJob(SourceConnection source, String dockerImageName) throws IOException {
 
     final String scope = ScopeHelper.createScope(
         JobConfig.ConfigType.DISCOVER_SCHEMA,
-        sourceImplementation.getSourceImplementationId().toString());
+        source.getSourceId().toString());
 
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
-        .withConnectionConfiguration(sourceImplementation.getConfiguration())
+        .withConnectionConfiguration(source.getConfiguration())
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
@@ -141,8 +141,8 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
   }
 
   @Override
-  public long createSyncJob(SourceConnectionImplementation sourceImplementation,
-                            DestinationConnectionImplementation destinationImplementation,
+  public long createSyncJob(SourceConnection source,
+                            DestinationConnection destination,
                             StandardSync standardSync,
                             String sourceDockerImageName,
                             String destinationDockerImageName)
@@ -152,9 +152,9 @@ public class DefaultSchedulerPersistence implements SchedulerPersistence {
     final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withSourceConnectionImplementation(sourceImplementation)
+        .withSourceConnection(source)
         .withSourceDockerImage(sourceDockerImageName)
-        .withDestinationConnectionImplementation(destinationImplementation)
+        .withDestinationConnection(destination)
         .withDestinationDockerImage(destinationDockerImageName)
         .withStandardSync(standardSync);
 

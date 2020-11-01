@@ -41,24 +41,24 @@ import io.airbyte.api.client.invoker.ApiClient;
 public class AirbyteApiClient {
 
   private final ConnectionApi connectionApi;
+  private final DestinationDefinitionApi destinationDefinitionApi;
   private final DestinationApi destinationApi;
-  private final DestinationImplementationApi destinationImplementationApi;
-  private final DestinationSpecificationApi destinationSpecificationApi;
+  private final DestinationDefinitionSpecificationApi destinationSpecificationApi;
   private final JobsApi jobsApi;
+  private final SourceDefinitionApi sourceDefinitionApi;
   private final SourceApi sourceApi;
-  private final SourceImplementationApi sourceImplementationApi;
-  private final SourceSpecificationApi sourceSpecificationApi;
+  private final SourceDefinitionSpecificationApi sourceDefinitionSpecificationApi;
   private final WorkspaceApi workspaceApi;
 
   public AirbyteApiClient(ApiClient apiClient) {
     connectionApi = new ConnectionApi(apiClient);
+    destinationDefinitionApi = new DestinationDefinitionApi(apiClient);
     destinationApi = new DestinationApi(apiClient);
-    destinationImplementationApi = new DestinationImplementationApi(apiClient);
-    destinationSpecificationApi = new DestinationSpecificationApi(apiClient);
+    destinationSpecificationApi = new DestinationDefinitionSpecificationApi(apiClient);
     jobsApi = new JobsApi(apiClient);
+    sourceDefinitionApi = new SourceDefinitionApi(apiClient);
     sourceApi = new SourceApi(apiClient);
-    sourceImplementationApi = new SourceImplementationApi(apiClient);
-    sourceSpecificationApi = new SourceSpecificationApi(apiClient);
+    sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(apiClient);
     workspaceApi = new WorkspaceApi(apiClient);
   }
 
@@ -66,15 +66,15 @@ public class AirbyteApiClient {
     return connectionApi;
   }
 
+  public DestinationDefinitionApi getDestinationDefinitionApi() {
+    return destinationDefinitionApi;
+  }
+
   public DestinationApi getDestinationApi() {
     return destinationApi;
   }
 
-  public DestinationImplementationApi getDestinationImplementationApi() {
-    return destinationImplementationApi;
-  }
-
-  public DestinationSpecificationApi getDestinationSpecificationApi() {
+  public DestinationDefinitionSpecificationApi getDestinationDefinitionSpecificationApi() {
     return destinationSpecificationApi;
   }
 
@@ -82,16 +82,16 @@ public class AirbyteApiClient {
     return jobsApi;
   }
 
+  public SourceDefinitionApi getSourceDefinitionApi() {
+    return sourceDefinitionApi;
+  }
+
   public SourceApi getSourceApi() {
     return sourceApi;
   }
 
-  public SourceImplementationApi getSourceImplementationApi() {
-    return sourceImplementationApi;
-  }
-
-  public SourceSpecificationApi getSourceSpecificationApi() {
-    return sourceSpecificationApi;
+  public SourceDefinitionSpecificationApi getSourceDefinitionSpecificationApi() {
+    return sourceDefinitionSpecificationApi;
   }
 
   public WorkspaceApi getWorkspaceApi() {
