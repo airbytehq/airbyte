@@ -7,9 +7,9 @@ import ConnectionResource, {
 } from "../../../core/resources/Connection";
 import WorkspaceResource from "../../../core/resources/Workspace";
 import { SyncSchema } from "../../../core/resources/Schema";
-import { Source } from "../../../core/resources/Source";
+import { SourceDefinition } from "../../../core/resources/SourceDefinition";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
-import { SourceImplementation } from "../../../core/resources/SourceImplementation";
+import { Source } from "../../../core/resources/Source";
 
 type ValuesProps = {
   frequency: string;
@@ -19,10 +19,10 @@ type ValuesProps = {
 
 type CreateConnectionProps = {
   values: ValuesProps;
-  sourceImplementation?: SourceImplementation;
-  destinationImplementationId: string;
-  sourceConnector?: Source;
-  destinationConnector?: { name: string; destinationId: string };
+  source?: Source;
+  destinationId: string;
+  sourceDefinition?: SourceDefinition;
+  destinationDefinition?: { name: string; destinationDefinitionId: string };
 };
 
 const useConnection = () => {
@@ -37,10 +37,10 @@ const useConnection = () => {
   );
   const createConnection = async ({
     values,
-    sourceImplementation,
-    destinationImplementationId,
-    sourceConnector,
-    destinationConnector
+    source,
+    destinationId,
+    sourceDefinition,
+    destinationDefinition
   }: CreateConnectionProps) => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
@@ -51,11 +51,11 @@ const useConnection = () => {
         {
           sourceId: values.source?.sourceId || "",
           sourceName: values.source?.name || "",
-          name: sourceImplementation?.name || ""
+          name: source?.name || ""
         },
         {
-          sourceImplementationId: sourceImplementation?.sourceImplementationId,
-          destinationImplementationId,
+          sourceId: source?.sourceId,
+          destinationId,
           syncMode: "full_refresh",
           schedule: frequencyData?.config,
           status: "active",
@@ -81,10 +81,11 @@ const useConnection = () => {
         user_id: config.ui.workspaceId,
         action: "Set up connection",
         frequency: frequencyData?.text,
-        connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceId,
-        connector_destination: destinationConnector?.name,
-        connector_destination_id: destinationConnector?.destinationId
+        connector_source_definition: sourceDefinition?.name,
+        connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
+        connector_destination: destinationDefinition?.name,
+        connector_destination_definition_id:
+          destinationDefinition?.destinationDefinitionId
       });
 
       if (!workspace.onboardingComplete) {

@@ -1,27 +1,27 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/DestinationConnectionImplementation.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/DestinationConnection.yaml
 title: DestinationConnectionImplementation
 description: information required for connection to a destination.
 type: object
 required:
   - name
-  - destinationId
+  - destinationDefinitionId
   - workspaceId
-  - destinationImplementationId
+  - destinationId
   - configuration
   - tombstone
 additionalProperties: false
 properties:
   name:
     type: string
-  destinationId:
+  destinationDefinitionId:
     type: string
     format: uuid
   workspaceId:
     type: string
     format: uuid
-  destinationImplementationId:
+  destinationId:
     type: string
     format: uuid
   configuration:

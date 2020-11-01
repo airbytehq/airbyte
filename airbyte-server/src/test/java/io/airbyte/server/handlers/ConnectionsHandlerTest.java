@@ -44,7 +44,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schema;
-import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -66,7 +66,7 @@ class ConnectionsHandlerTest {
   private StandardSync standardSync;
   private StandardSyncSchedule standardSyncSchedule;
   private ConnectionsHandler connectionsHandler;
-  private SourceConnectionImplementation sourceImplementation;
+  private SourceConnection source;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -74,8 +74,8 @@ class ConnectionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     uuidGenerator = mock(Supplier.class);
 
-    sourceImplementation = SourceHelpers.generateSource(UUID.randomUUID());
-    standardSync = ConnectionHelpers.generateSyncWithSourceImplId(sourceImplementation.getSourceImplementationId());
+    source = SourceHelpers.generateSource(UUID.randomUUID());
+    standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
     standardSyncSchedule = ConnectionHelpers.generateSchedule(standardSync.getConnectionId());
 
     connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator);
@@ -92,8 +92,8 @@ class ConnectionsHandlerTest {
         .thenReturn(standardSyncSchedule);
 
     final ConnectionCreate connectionCreate = new ConnectionCreate()
-        .sourceId(standardSync.getSourceImplementationId())
-        .destinationId(standardSync.getDestinationImplementationId())
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
         .syncMode(ConnectionCreate.SyncModeEnum.FULL_REFRESH)
@@ -105,8 +105,8 @@ class ConnectionsHandlerTest {
     final ConnectionRead expectedConnectionRead =
         ConnectionHelpers.generateExpectedConnectionRead(
             standardSync.getConnectionId(),
-            standardSync.getSourceImplementationId(),
-            standardSync.getDestinationImplementationId());
+            standardSync.getSourceId(),
+            standardSync.getDestinationId());
 
     assertEquals(expectedConnectionRead, actualConnectionRead);
 
@@ -132,8 +132,8 @@ class ConnectionsHandlerTest {
     final StandardSync updatedStandardSync = new StandardSync()
         .withConnectionId(standardSync.getConnectionId())
         .withName("presto to hudi")
-        .withSourceImplementationId(standardSync.getSourceImplementationId())
-        .withDestinationImplementationId(standardSync.getDestinationImplementationId())
+        .withSourceId(standardSync.getSourceId())
+        .withDestinationId(standardSync.getDestinationId())
         .withSyncMode(standardSync.getSyncMode())
         .withStatus(StandardSync.Status.INACTIVE)
         .withSchema(newPersistenceSchema);
@@ -155,8 +155,8 @@ class ConnectionsHandlerTest {
     final ConnectionRead expectedConnectionRead =
         ConnectionHelpers.generateExpectedConnectionRead(
             standardSync.getConnectionId(),
-            standardSync.getSourceImplementationId(),
-            standardSync.getDestinationImplementationId())
+            standardSync.getSourceId(),
+            standardSync.getDestinationId())
             .schedule(null)
             .syncSchema(newApiSchema)
             .status(ConnectionStatus.INACTIVE);
@@ -186,14 +186,14 @@ class ConnectionsHandlerTest {
   void testListConnectionsForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.listStandardSyncs())
         .thenReturn(Lists.newArrayList(standardSync));
-    when(configRepository.getSourceConnectionImplementation(sourceImplementation.getSourceImplementationId()))
-        .thenReturn(sourceImplementation);
+    when(configRepository.getSourceConnection(source.getSourceId()))
+        .thenReturn(source);
     when(configRepository.getStandardSync(standardSync.getConnectionId()))
         .thenReturn(standardSync);
     when(configRepository.getStandardSyncSchedule(standardSync.getConnectionId()))
         .thenReturn(standardSyncSchedule);
 
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(sourceImplementation.getWorkspaceId());
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(source.getWorkspaceId());
     final ConnectionReadList actualConnectionReadList = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
 
     assertEquals(

@@ -35,7 +35,7 @@ import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
-import io.airbyte.config.StandardDestination;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.validators.DockerImageValidator;
@@ -51,7 +51,7 @@ class DestinationDefinitionsHandlerTest {
 
   private DockerImageValidator dockerImageValidator;
   private ConfigRepository configRepository;
-  private StandardDestination destination;
+  private StandardDestinationDefinition destination;
   private DestinationDefinitionsHandler destinationHandler;
 
   @BeforeEach
@@ -62,11 +62,9 @@ class DestinationDefinitionsHandlerTest {
     destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator);
   }
 
-  private StandardDestination generateDestination() {
-    final UUID destinationId = UUID.randomUUID();
-
-    return new StandardDestination()
-        .withDestinationId(destinationId)
+  private StandardDestinationDefinition generateDestination() {
+    return new StandardDestinationDefinition()
+        .withDestinationDefinitionId(UUID.randomUUID())
         .withName("presto")
         .withDockerImageTag("12.3")
         .withDockerRepository("repo")
@@ -75,19 +73,19 @@ class DestinationDefinitionsHandlerTest {
 
   @Test
   void testListDestinations() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
-    final StandardDestination destination2 = generateDestination();
+    final StandardDestinationDefinition destination2 = generateDestination();
 
-    when(configRepository.listStandardDestinations()).thenReturn(Lists.newArrayList(destination, destination2));
+    when(configRepository.listStandardDestinationDefinitions()).thenReturn(Lists.newArrayList(destination, destination2));
 
     DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
-        .destinationDefinitionId(destination.getDestinationId())
+        .destinationDefinitionId(destination.getDestinationDefinitionId())
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()));
 
     DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
-        .destinationDefinitionId(destination2.getDestinationId())
+        .destinationDefinitionId(destination2.getDestinationDefinitionId())
         .name(destination2.getName())
         .dockerRepository(destination2.getDockerRepository())
         .dockerImageTag(destination2.getDockerImageTag())
@@ -102,18 +100,18 @@ class DestinationDefinitionsHandlerTest {
 
   @Test
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
-    when(configRepository.getStandardDestination(destination.getDestinationId()))
+    when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
         .thenReturn(destination);
 
     DestinationDefinitionRead expectedDestinationDefinitionRead = new DestinationDefinitionRead()
-        .destinationDefinitionId(destination.getDestinationId())
+        .destinationDefinitionId(destination.getDestinationDefinitionId())
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()));
 
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
-        .destinationDefinitionId(destination.getDestinationId());
+        .destinationDefinitionId(destination.getDestinationDefinitionId());
 
     final DestinationDefinitionRead actualDestinationDefinitionRead = destinationHandler.getDestinationDefinition(destinationDefinitionIdRequestBody);
 
@@ -122,16 +120,17 @@ class DestinationDefinitionsHandlerTest {
 
   @Test
   void testUpdateDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configRepository.getStandardDestination(destination.getDestinationId())).thenReturn(destination);
+    when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId())).thenReturn(destination);
     DestinationDefinitionRead currentDestination =
-        destinationHandler.getDestinationDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destination.getDestinationId()));
+        destinationHandler
+            .getDestinationDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destination.getDestinationDefinitionId()));
     final String currentTag = currentDestination.getDockerImageTag();
     final String currentRepo = currentDestination.getDockerRepository();
     final String newDockerImageTag = "averydifferenttag";
     assertNotEquals(newDockerImageTag, currentTag);
 
     final DestinationDefinitionRead sourceRead = destinationHandler.updateDestinationDefinition(
-        new DestinationDefinitionUpdate().destinationDefinitionId(this.destination.getDestinationId()).dockerImageTag(newDockerImageTag));
+        new DestinationDefinitionUpdate().destinationDefinitionId(this.destination.getDestinationDefinitionId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
     verify(dockerImageValidator).assertValidIntegrationImage(currentRepo, newDockerImageTag);

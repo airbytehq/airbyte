@@ -41,8 +41,8 @@ import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.StandardSource;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.helpers.ConnectionHelpers;
@@ -72,11 +72,11 @@ class WebBackendConnectionsHandlerTest {
     JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, jobHistoryHandler);
 
-    final StandardSource standardSource = SourceDefinitionHelpers.generateSource();
-    SourceConnectionImplementation sourceImplementation = SourceHelpers.generateSource(UUID.randomUUID());
-    sourceRead = SourceHelpers.getSourceRead(sourceImplementation, standardSource);
+    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSource();
+    SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
-    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceImplId(sourceImplementation.getSourceImplementationId());
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();

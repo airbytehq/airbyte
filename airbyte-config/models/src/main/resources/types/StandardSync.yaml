@@ -5,17 +5,17 @@ title: StandardSync
 description: configuration required for sync for ALL taps
 type: object
 required:
-  - sourceImplementationId
-  - destinationImplementationId
+  - sourceId
+  - destinationId
   - name
   - syncMode
   - schema
 additionalProperties: false
 properties:
-  sourceImplementationId:
+  sourceId:
     type: string
     format: uuid
-  destinationImplementationId:
+  destinationId:
     type: string
     format: uuid
   connectionId:

@@ -10,15 +10,15 @@ export type specification = {
   required: string[];
 };
 
-export interface SourceSpecification {
-  sourceId: string;
+export interface SourceDefinitionSpecification {
+  sourceDefinitionId: string;
   documentationUrl: string;
   connectionSpecification: specification;
 }
 
-export default class SourceSpecificationResource extends BaseResource
-  implements SourceSpecification {
-  readonly sourceId: string = "";
+export default class SourceDefinitionSpecificationResource extends BaseResource
+  implements SourceDefinitionSpecification {
+  readonly sourceDefinitionId: string = "";
   readonly documentationUrl: string = "";
   readonly connectionSpecification: specification = {
     properties: {},
@@ -26,10 +26,10 @@ export default class SourceSpecificationResource extends BaseResource
   };
 
   pk() {
-    return this.sourceId?.toString();
+    return this.sourceDefinitionId?.toString();
   }
 
-  static urlRoot = "source_specifications";
+  static urlRoot = "source_definition_specifications";
 
   static detailShape<T extends typeof Resource>(this: T) {
     return {

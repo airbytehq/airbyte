@@ -36,8 +36,8 @@ import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationRecreate;
-import io.airbyte.config.DestinationConnectionImplementation;
-import io.airbyte.config.StandardDestination;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
@@ -52,7 +52,7 @@ import org.mockito.Mockito;
 
 public class WebBackendDestinationHandlerTest {
 
-  private WebBackendDestinationHandler wbDestinationImplementationHandler;
+  private WebBackendDestinationHandler wbDestinationHandler;
 
   private DestinationHandler destinationHandler;
   private SchedulerHandler schedulerHandler;
@@ -63,12 +63,12 @@ public class WebBackendDestinationHandlerTest {
   public void setup() throws IOException {
     destinationHandler = mock(DestinationHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
-    wbDestinationImplementationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
+    wbDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
 
-    final StandardDestination standardDestination = DestinationDefinitionHelpers.generateDestination();
-    DestinationConnectionImplementation destinationImplementation =
+    final StandardDestinationDefinition standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
+    DestinationConnection destination =
         DestinationHelpers.generateDestination(UUID.randomUUID());
-    destinationRead = DestinationHelpers.getDestinationImplementationRead(destinationImplementation, standardDestination);
+    destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
   }
 
   @Test
@@ -91,7 +91,7 @@ public class WebBackendDestinationHandlerTest {
     when(schedulerHandler.checkDestinationConnection(destinationIdRequestBody)).thenReturn(checkConnectionRead);
 
     DestinationRead returnedDestination =
-        wbDestinationImplementationHandler.webBackendCreateDestinationAndCheck(destinationCreate);
+        wbDestinationHandler.webBackendCreateDestinationAndCheck(destinationCreate);
 
     verify(destinationHandler, times(0)).deleteDestination(Mockito.any());
     assertEquals(destinationRead, returnedDestination);
@@ -116,7 +116,7 @@ public class WebBackendDestinationHandlerTest {
     when(schedulerHandler.checkDestinationConnection(destinationIdRequestBody)).thenReturn(checkConnectionRead);
 
     Assertions.assertThrows(KnownException.class,
-        () -> wbDestinationImplementationHandler.webBackendCreateDestinationAndCheck(destinationCreate));
+        () -> wbDestinationHandler.webBackendCreateDestinationAndCheck(destinationCreate));
 
     verify(destinationHandler).deleteDestination(destinationIdRequestBody);
   }
@@ -128,14 +128,14 @@ public class WebBackendDestinationHandlerTest {
     destinationCreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationCreate.setWorkspaceId(destinationRead.getWorkspaceId());
 
-    DestinationRead newDestinationImplementation = DestinationHelpers
-        .getDestinationImplementationRead(DestinationHelpers.generateDestination(UUID.randomUUID()), DestinationDefinitionHelpers
+    DestinationRead newDestination = DestinationHelpers
+        .getDestinationRead(DestinationHelpers.generateDestination(UUID.randomUUID()), DestinationDefinitionHelpers
             .generateDestination());
 
-    when(destinationHandler.createDestination(destinationCreate)).thenReturn(newDestinationImplementation);
+    when(destinationHandler.createDestination(destinationCreate)).thenReturn(newDestination);
 
     DestinationIdRequestBody newDestinationId = new DestinationIdRequestBody();
-    newDestinationId.setDestinationId(newDestinationImplementation.getDestinationId());
+    newDestinationId.setDestinationId(newDestination.getDestinationId());
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
@@ -152,10 +152,10 @@ public class WebBackendDestinationHandlerTest {
     oldDestinationIdBody.setDestinationId(destinationRead.getDestinationId());
 
     DestinationRead returnedDestination =
-        wbDestinationImplementationHandler.webBackendRecreateDestinationAndCheck(destinationRecreate);
+        wbDestinationHandler.webBackendRecreateDestinationAndCheck(destinationRecreate);
 
     verify(destinationHandler, times(1)).deleteDestination(Mockito.eq(oldDestinationIdBody));
-    assertEquals(newDestinationImplementation, returnedDestination);
+    assertEquals(newDestination, returnedDestination);
   }
 
   @Test
@@ -165,13 +165,13 @@ public class WebBackendDestinationHandlerTest {
     destinationCreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationCreate.setWorkspaceId(destinationRead.getWorkspaceId());
 
-    DestinationRead newDestinationImplementation = DestinationHelpers.getDestinationImplementationRead(
+    DestinationRead newDestination = DestinationHelpers.getDestinationRead(
         DestinationHelpers.generateDestination(UUID.randomUUID()), DestinationDefinitionHelpers.generateDestination());
 
-    when(destinationHandler.createDestination(destinationCreate)).thenReturn(newDestinationImplementation);
+    when(destinationHandler.createDestination(destinationCreate)).thenReturn(newDestination);
 
     DestinationIdRequestBody newDestinationId = new DestinationIdRequestBody();
-    newDestinationId.setDestinationId(newDestinationImplementation.getDestinationId());
+    newDestinationId.setDestinationId(newDestination.getDestinationId());
 
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.FAILED);
@@ -185,7 +185,7 @@ public class WebBackendDestinationHandlerTest {
     destinationRecreate.setDestinationId(destinationRead.getDestinationId());
 
     Assertions.assertThrows(KnownException.class,
-        () -> wbDestinationImplementationHandler.webBackendRecreateDestinationAndCheck(destinationRecreate));
+        () -> wbDestinationHandler.webBackendRecreateDestinationAndCheck(destinationRecreate));
     verify(destinationHandler, times(1)).deleteDestination(Mockito.eq(newDestinationId));
   }
 

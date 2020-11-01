@@ -42,7 +42,7 @@ import java.util.UUID;
 
 public class ConnectionHelpers {
 
-  public static StandardSync generateSyncWithSourceImplId(UUID sourceImplementationId) {
+  public static StandardSync generateSyncWithSourceId(UUID sourceId) {
     final UUID connectionId = UUID.randomUUID();
 
     return new StandardSync()
@@ -50,12 +50,12 @@ public class ConnectionHelpers {
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withSchema(generateBasicPersistenceSchema())
-        .withSourceImplementationId(sourceImplementationId)
-        .withDestinationImplementationId(UUID.randomUUID())
+        .withSourceId(sourceId)
+        .withDestinationId(UUID.randomUUID())
         .withSyncMode(StandardSync.SyncMode.FULL_REFRESH);
   }
 
-  public static StandardSync generateSyncWithDestinationImplId(UUID destinationImplementationId) {
+  public static StandardSync generateSyncWithDestinationId(UUID destinationId) {
     final UUID connectionId = UUID.randomUUID();
 
     return new StandardSync()
@@ -63,8 +63,8 @@ public class ConnectionHelpers {
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withSchema(generateBasicPersistenceSchema())
-        .withSourceImplementationId(UUID.randomUUID())
-        .withDestinationImplementationId(destinationImplementationId)
+        .withSourceId(UUID.randomUUID())
+        .withDestinationId(destinationId)
         .withSyncMode(StandardSync.SyncMode.FULL_REFRESH);
   }
 
@@ -120,8 +120,8 @@ public class ConnectionHelpers {
   public static ConnectionRead generateExpectedConnectionRead(StandardSync standardSync) {
     return generateExpectedConnectionRead(
         standardSync.getConnectionId(),
-        standardSync.getSourceImplementationId(),
-        standardSync.getDestinationImplementationId());
+        standardSync.getSourceId(),
+        standardSync.getDestinationId());
   }
 
   public static StandardSyncSchedule generateSchedule(UUID connectionId) {

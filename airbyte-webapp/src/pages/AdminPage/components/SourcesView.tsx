@@ -10,7 +10,7 @@ import VersionCell from "./VersionCell";
 import ConnectionResource from "../../../core/resources/Connection";
 import config from "../../../config";
 import { Block, Title, FormContent, FormContentTitle } from "./PageComponents";
-import SourceResource from "../../../core/resources/Source";
+import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
 
 const SourcesView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
@@ -18,20 +18,25 @@ const SourcesView: React.FC = () => {
     workspaceId: config.ui.workspaceId
   });
 
-  const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId
-  });
+  const { sourceDefinitions } = useResource(
+    SourceDefinitionResource.listShape(),
+    {
+      workspaceId: config.ui.workspaceId
+    }
+  );
 
   const [feedbackList, setFeedbackList] = useState<any>({});
 
-  const updateSource = useFetcher(SourceResource.updateShape());
+  const updateSourceDefinition = useFetcher(
+    SourceDefinitionResource.updateShape()
+  );
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {
-        await updateSource(
+        await updateSourceDefinition(
           {},
           {
-            sourceId: id,
+            sourceDefinitionId: id,
             dockerImageTag: version
           }
         );
@@ -48,7 +53,7 @@ const SourcesView: React.FC = () => {
         setFeedbackList({ ...feedbackList, [id]: message });
       }
     },
-    [feedbackList, formatMessage, updateSource]
+    [feedbackList, formatMessage, updateSourceDefinition]
   );
 
   const columns = React.useMemo(
@@ -86,12 +91,12 @@ const SourcesView: React.FC = () => {
         ),
         accessor: "dockerImageTag",
         collapse: true,
-        Cell: ({ cell, row }: CellProps<{ sourceId: string }>) => (
+        Cell: ({ cell, row }: CellProps<{ sourceDefinitionId: string }>) => (
           <VersionCell
             version={cell.value}
-            id={row.original.sourceId}
+            id={row.original.sourceDefinitionId}
             onChange={onUpdateVersion}
-            feedback={feedbackList[row.original.sourceId]}
+            feedback={feedbackList[row.original.sourceDefinitionId]}
           />
         )
       }
@@ -115,19 +120,20 @@ const SourcesView: React.FC = () => {
   const usedSources = useMemo(
     () =>
       connections.map(item => {
-        const sourceInfo = sources.find(
-          source => source.sourceId === item.source?.sourceId
+        const sourceInfo = sourceDefinitions.find(
+          source =>
+            source.sourceDefinitionId === item.source?.sourceDefinitionId
         );
         return {
           name: item.source?.sourceName,
-          sourceId: item.source?.sourceId,
+          sourceDefinitionId: item.source?.sourceDefinitionId,
           dockerRepository: sourceInfo?.dockerRepository,
           dockerImageTag: sourceInfo?.dockerImageTag,
           documentationUrl: sourceInfo?.documentationUrl,
           feedback: ""
         };
       }),
-    [connections, sources]
+    [connections, sourceDefinitions]
   );
 
   return (
@@ -145,7 +151,7 @@ const SourcesView: React.FC = () => {
         <Title bold>
           <FormattedMessage id="admin.availableSource" />
         </Title>
-        <Table columns={columnsAllSources} data={sources} />
+        <Table columns={columnsAllSources} data={sourceDefinitions} />
       </Block>
     </>
   );

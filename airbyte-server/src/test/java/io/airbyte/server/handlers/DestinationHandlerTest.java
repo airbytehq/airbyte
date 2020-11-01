@@ -45,8 +45,8 @@ import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DestinationConnectionImplementation;
-import io.airbyte.config.StandardDestination;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -67,10 +67,10 @@ import org.junit.jupiter.api.Test;
 class DestinationHandlerTest {
 
   private ConfigRepository configRepository;
-  private StandardDestination standardDestination;
+  private StandardDestinationDefinition standardDestinationDefinition;
   private DestinationDefinitionSpecificationRead destinationDefinitionSpecificationRead;
   private DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody;
-  private DestinationConnectionImplementation destinationConnectionImplementation;
+  private DestinationConnection destinationConnection;
   private DestinationHandler destinationHandler;
   private ConnectionsHandler connectionsHandler;
   private SchedulerHandler schedulerHandler;
@@ -87,15 +87,16 @@ class DestinationHandlerTest {
     connectionsHandler = mock(ConnectionsHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
 
-    standardDestination = DestinationDefinitionHelpers.generateDestination();
-    destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody().destinationDefinitionId(standardDestination.getDestinationId());
+    standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
+    destinationDefinitionIdRequestBody =
+        new DestinationDefinitionIdRequestBody().destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId());
     ConnectorSpecification connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
     destinationDefinitionSpecificationRead = new DestinationDefinitionSpecificationRead()
         .connectionSpecification(connectorSpecification.getConnectionSpecification())
-        .destinationDefinitionId(standardDestination.getDestinationId())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .documentationUrl(connectorSpecification.getDocumentationUrl().toString());
 
-    destinationConnectionImplementation = DestinationHelpers.generateDestination(standardDestination.getDestinationId());
+    destinationConnection = DestinationHelpers.generateDestination(standardDestinationDefinition.getDestinationDefinitionId());
     destinationHandler =
         new DestinationHandler(configRepository, validator, schedulerHandler, connectionsHandler, uuidGenerator);
   }
@@ -104,63 +105,64 @@ class DestinationHandlerTest {
   void testCreateDestination()
       throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get())
-        .thenReturn(destinationConnectionImplementation.getDestinationImplementationId());
+        .thenReturn(destinationConnection.getDestinationId());
 
-    when(configRepository.getDestinationConnectionImplementation(destinationConnectionImplementation.getDestinationImplementationId()))
-        .thenReturn(destinationConnectionImplementation);
+    when(configRepository.getDestinationConnection(destinationConnection.getDestinationId()))
+        .thenReturn(destinationConnection);
 
     when(schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody)).thenReturn(destinationDefinitionSpecificationRead);
 
-    when(configRepository.getStandardDestination(standardDestination.getDestinationId()))
-        .thenReturn(standardDestination);
+    when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
+        .thenReturn(standardDestinationDefinition);
 
     final DestinationCreate destinationCreate = new DestinationCreate()
-        .name(destinationConnectionImplementation.getName())
-        .workspaceId(destinationConnectionImplementation.getWorkspaceId())
-        .destinationDefinitionId(standardDestination.getDestinationId())
+        .name(destinationConnection.getName())
+        .workspaceId(destinationConnection.getWorkspaceId())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .connectionConfiguration(DestinationHelpers.getTestDestinationJson());
 
     final DestinationRead actualDestinationRead =
         destinationHandler.createDestination(destinationCreate);
 
     DestinationRead expectedDestinationRead = new DestinationRead()
-        .name(destinationConnectionImplementation.getName())
-        .destinationDefinitionId(standardDestination.getDestinationId())
-        .workspaceId(destinationConnectionImplementation.getWorkspaceId())
-        .destinationId(destinationConnectionImplementation.getDestinationImplementationId())
+        .name(destinationConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(destinationConnection.getWorkspaceId())
+        .destinationId(destinationConnection.getDestinationId())
         .connectionConfiguration(DestinationHelpers.getTestDestinationJson())
-        .destinationName(standardDestination.getName());
+        .destinationName(standardDestinationDefinition.getName());
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
 
     verify(validator)
         .validate(
             destinationDefinitionSpecificationRead.getConnectionSpecification(),
-            destinationConnectionImplementation.getConfiguration());
+            destinationConnection.getConfiguration());
 
-    verify(configRepository).writeDestinationConnectionImplementation(destinationConnectionImplementation);
+    verify(configRepository).writeDestinationConnection(destinationConnection);
   }
 
   @Test
   void testDeleteDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final JsonNode newConfiguration = destinationConnectionImplementation.getConfiguration();
+    final JsonNode newConfiguration = destinationConnection.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
-    final DestinationConnectionImplementation expectedDestinationConnectionImplementation = Jsons.clone(destinationConnectionImplementation)
+    final DestinationConnection expectedDestinationConnection = Jsons.clone(destinationConnection)
         .withTombstone(true);
 
-    when(configRepository.getDestinationConnectionImplementation(destinationConnectionImplementation.getDestinationImplementationId()))
-        .thenReturn(destinationConnectionImplementation)
-        .thenReturn(expectedDestinationConnectionImplementation);
+    when(configRepository.getDestinationConnection(destinationConnection.getDestinationId()))
+        .thenReturn(destinationConnection)
+        .thenReturn(expectedDestinationConnection);
 
     when(schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody)).thenReturn(destinationDefinitionSpecificationRead);
-    when(configRepository.getStandardDestination(standardDestination.getDestinationId())).thenReturn(standardDestination);
+    when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
+        .thenReturn(standardDestinationDefinition);
 
     final DestinationIdRequestBody destinationId = new DestinationIdRequestBody()
-        .destinationId(destinationConnectionImplementation.getDestinationImplementationId());
+        .destinationId(destinationConnection.getDestinationId());
 
     final StandardSync standardSync =
-        ConnectionHelpers.generateSyncWithDestinationImplId(destinationConnectionImplementation.getDestinationImplementationId());
+        ConnectionHelpers.generateSyncWithDestinationId(destinationConnection.getDestinationId());
 
     final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
 
@@ -168,11 +170,11 @@ class DestinationHandlerTest {
         .connections(Collections.singletonList(connectionRead));
 
     final WorkspaceIdRequestBody workspaceIdRequestBody =
-        new WorkspaceIdRequestBody().workspaceId(destinationConnectionImplementation.getWorkspaceId());
+        new WorkspaceIdRequestBody().workspaceId(destinationConnection.getWorkspaceId());
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
     destinationHandler.deleteDestination(destinationId);
 
-    verify(configRepository).writeDestinationConnectionImplementation(expectedDestinationConnectionImplementation);
+    verify(configRepository).writeDestinationConnection(expectedDestinationConnection);
 
     final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
         .connectionId(connectionRead.getConnectionId())
@@ -187,57 +189,59 @@ class DestinationHandlerTest {
   @Test
   void testUpdateDestination()
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final JsonNode newConfiguration = destinationConnectionImplementation.getConfiguration();
+    final JsonNode newConfiguration = destinationConnection.getConfiguration();
 
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
 
-    final DestinationConnectionImplementation expectedDestinationConnectionImplementation = Jsons.clone(destinationConnectionImplementation)
+    final DestinationConnection expectedDestinationConnection = Jsons.clone(destinationConnection)
         .withConfiguration(newConfiguration)
         .withTombstone(false);
 
-    when(configRepository.getDestinationConnectionImplementation(destinationConnectionImplementation.getDestinationImplementationId()))
-        .thenReturn(destinationConnectionImplementation)
-        .thenReturn(expectedDestinationConnectionImplementation);
+    when(configRepository.getDestinationConnection(destinationConnection.getDestinationId()))
+        .thenReturn(destinationConnection)
+        .thenReturn(expectedDestinationConnection);
 
     when(schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody)).thenReturn(destinationDefinitionSpecificationRead);
-    when(configRepository.getStandardDestination(standardDestination.getDestinationId())).thenReturn(standardDestination);
+    when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
+        .thenReturn(standardDestinationDefinition);
 
     final DestinationUpdate destinationUpdate = new DestinationUpdate()
-        .destinationId(destinationConnectionImplementation.getDestinationImplementationId())
-        .name(destinationConnectionImplementation.getName())
+        .destinationId(destinationConnection.getDestinationId())
+        .name(destinationConnection.getName())
         .connectionConfiguration(newConfiguration);
 
     final DestinationRead actualDestinationRead =
         destinationHandler.updateDestination(destinationUpdate);
 
     DestinationRead expectedDestinationRead = new DestinationRead()
-        .name(destinationConnectionImplementation.getName())
-        .destinationDefinitionId(standardDestination.getDestinationId())
-        .workspaceId(destinationConnectionImplementation.getWorkspaceId())
-        .destinationId(destinationConnectionImplementation.getDestinationImplementationId())
+        .name(destinationConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(destinationConnection.getWorkspaceId())
+        .destinationId(destinationConnection.getDestinationId())
         .connectionConfiguration(newConfiguration)
-        .destinationName(standardDestination.getName());
+        .destinationName(standardDestinationDefinition.getName());
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
 
-    verify(configRepository).writeDestinationConnectionImplementation(expectedDestinationConnectionImplementation);
+    verify(configRepository).writeDestinationConnection(expectedDestinationConnection);
   }
 
   @Test
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getDestinationConnectionImplementation(destinationConnectionImplementation.getDestinationImplementationId()))
-        .thenReturn(destinationConnectionImplementation);
+    when(configRepository.getDestinationConnection(destinationConnection.getDestinationId()))
+        .thenReturn(destinationConnection);
 
     when(schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody)).thenReturn(destinationDefinitionSpecificationRead);
-    when(configRepository.getStandardDestination(standardDestination.getDestinationId())).thenReturn(standardDestination);
+    when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
+        .thenReturn(standardDestinationDefinition);
 
     DestinationRead expectedDestinationRead = new DestinationRead()
-        .name(destinationConnectionImplementation.getName())
-        .destinationDefinitionId(standardDestination.getDestinationId())
-        .workspaceId(destinationConnectionImplementation.getWorkspaceId())
-        .destinationId(destinationConnectionImplementation.getDestinationImplementationId())
-        .connectionConfiguration(destinationConnectionImplementation.getConfiguration())
-        .destinationName(standardDestination.getName());
+        .name(destinationConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(destinationConnection.getWorkspaceId())
+        .destinationId(destinationConnection.getDestinationId())
+        .connectionConfiguration(destinationConnection.getConfiguration())
+        .destinationName(standardDestinationDefinition.getName());
 
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody()
         .destinationId(expectedDestinationRead.getDestinationId());
@@ -251,23 +255,24 @@ class DestinationHandlerTest {
   @Test
   void testListDestinationForWorkspace()
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getDestinationConnectionImplementation(destinationConnectionImplementation.getDestinationImplementationId()))
-        .thenReturn(destinationConnectionImplementation);
-    when(configRepository.listDestinationConnectionImplementations())
-        .thenReturn(Lists.newArrayList(destinationConnectionImplementation));
+    when(configRepository.getDestinationConnection(destinationConnection.getDestinationId()))
+        .thenReturn(destinationConnection);
+    when(configRepository.listDestinationConnection())
+        .thenReturn(Lists.newArrayList(destinationConnection));
     when(schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody)).thenReturn(destinationDefinitionSpecificationRead);
-    when(configRepository.getStandardDestination(standardDestination.getDestinationId())).thenReturn(standardDestination);
+    when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
+        .thenReturn(standardDestinationDefinition);
 
     DestinationRead expectedDestinationRead = new DestinationRead()
-        .name(destinationConnectionImplementation.getName())
-        .destinationDefinitionId(standardDestination.getDestinationId())
-        .workspaceId(destinationConnectionImplementation.getWorkspaceId())
-        .destinationId(destinationConnectionImplementation.getDestinationImplementationId())
-        .connectionConfiguration(destinationConnectionImplementation.getConfiguration())
-        .destinationName(standardDestination.getName());
+        .name(destinationConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(destinationConnection.getWorkspaceId())
+        .destinationId(destinationConnection.getDestinationId())
+        .connectionConfiguration(destinationConnection.getConfiguration())
+        .destinationName(standardDestinationDefinition.getName());
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody()
-        .workspaceId(destinationConnectionImplementation.getWorkspaceId());
+        .workspaceId(destinationConnection.getWorkspaceId());
 
     final DestinationReadList actualDestinationRead =
         destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody);

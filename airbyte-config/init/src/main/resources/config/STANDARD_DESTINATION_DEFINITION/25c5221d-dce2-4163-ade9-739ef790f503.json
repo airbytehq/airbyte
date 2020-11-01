@@ -1,5 +1,5 @@
 {
-  "destinationId": "25c5221d-dce2-4163-ade9-739ef790f503",
+  "destinationDefinitionId": "25c5221d-dce2-4163-ade9-739ef790f503",
   "name": "Postgres",
   "dockerRepository": "airbyte/destination-postgres",
   "dockerImageTag": "0.1.0",

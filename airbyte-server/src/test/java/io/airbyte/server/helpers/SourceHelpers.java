@@ -27,8 +27,8 @@ package io.airbyte.server.helpers;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.StandardSource;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSourceDefinition;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,18 +37,18 @@ import java.util.UUID;
 
 public class SourceHelpers {
 
-  public static SourceConnectionImplementation generateSource(UUID sourceId)
+  public static SourceConnection generateSource(UUID sourceDefinitionId)
       throws IOException {
     final UUID workspaceId = UUID.randomUUID();
-    final UUID sourceImplementationId = UUID.randomUUID();
+    final UUID sourceId = UUID.randomUUID();
 
     JsonNode implementationJson = getTestImplementationJson();
 
-    return new SourceConnectionImplementation()
+    return new SourceConnection()
         .withName("my postgres db")
         .withWorkspaceId(workspaceId)
+        .withSourceDefinitionId(sourceDefinitionId)
         .withSourceId(sourceId)
-        .withSourceImplementationId(sourceImplementationId)
         .withConfiguration(implementationJson)
         .withTombstone(false);
   }
@@ -58,17 +58,17 @@ public class SourceHelpers {
     return Jsons.deserialize(Files.readString(path));
   }
 
-  public static SourceRead getSourceRead(SourceConnectionImplementation sourceImplementation,
-                                         StandardSource standardSource) {
+  public static SourceRead getSourceRead(SourceConnection source,
+                                         StandardSourceDefinition standardSourceDefinition) {
 
     return new SourceRead()
-        .sourceDefinitionId(standardSource.getSourceId())
-        .workspaceId(sourceImplementation.getWorkspaceId())
-        .sourceDefinitionId(sourceImplementation.getSourceId())
-        .sourceId(sourceImplementation.getSourceImplementationId())
-        .connectionConfiguration(sourceImplementation.getConfiguration())
-        .name(sourceImplementation.getName())
-        .sourceName(standardSource.getName());
+        .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+        .workspaceId(source.getWorkspaceId())
+        .sourceDefinitionId(source.getSourceDefinitionId())
+        .sourceId(source.getSourceId())
+        .connectionConfiguration(source.getConfiguration())
+        .name(source.getName())
+        .sourceName(standardSourceDefinition.getName());
   }
 
 }

@@ -36,7 +36,7 @@ import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
-import io.airbyte.config.StandardSource;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.validators.DockerImageValidator;
@@ -53,7 +53,7 @@ class SourceDefinitionsHandlerTest {
 
   private ConfigRepository configRepository;
   private DockerImageValidator dockerImageValidator;
-  private StandardSource source;
+  private StandardSourceDefinition source;
   private SourceDefinitionsHandler sourceHandler;
   private Supplier<UUID> uuidSupplier;
 
@@ -68,11 +68,11 @@ class SourceDefinitionsHandlerTest {
     sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier);
   }
 
-  private StandardSource generateSource() {
+  private StandardSourceDefinition generateSource() {
     final UUID sourceId = UUID.randomUUID();
 
-    return new StandardSource()
-        .withSourceId(sourceId)
+    return new StandardSourceDefinition()
+        .withSourceDefinitionId(sourceId)
         .withName("presto")
         .withDocumentationUrl("https://netflix.com")
         .withDockerRepository("dockerstuff")
@@ -81,19 +81,19 @@ class SourceDefinitionsHandlerTest {
 
   @Test
   void testListSourceDefinitions() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
-    final StandardSource source2 = generateSource();
+    final StandardSourceDefinition source2 = generateSource();
 
     when(configRepository.listStandardSources()).thenReturn(Lists.newArrayList(source, source2));
 
     SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
-        .sourceDefinitionId(source.getSourceId())
+        .sourceDefinitionId(source.getSourceDefinitionId())
         .name(source.getName())
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()));
 
     SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
-        .sourceDefinitionId(source2.getSourceId())
+        .sourceDefinitionId(source2.getSourceDefinitionId())
         .name(source2.getName())
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
@@ -107,17 +107,18 @@ class SourceDefinitionsHandlerTest {
 
   @Test
   void testGetSourceDefinition() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
-    when(configRepository.getStandardSource(source.getSourceId()))
+    when(configRepository.getStandardSource(source.getSourceDefinitionId()))
         .thenReturn(source);
 
     SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
-        .sourceDefinitionId(source.getSourceId())
+        .sourceDefinitionId(source.getSourceDefinitionId())
         .name(source.getName())
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()));
 
-    final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody = new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceId());
+    final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
+        new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId());
 
     final SourceDefinitionRead actualSourceDefinitionRead = sourceHandler.getSourceDefinition(sourceDefinitionIdRequestBody);
 
@@ -126,8 +127,8 @@ class SourceDefinitionsHandlerTest {
 
   @Test
   void testCreateSourceDefinition() throws URISyntaxException, ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardSource source = generateSource();
-    when(uuidSupplier.get()).thenReturn(source.getSourceId());
+    final StandardSourceDefinition source = generateSource();
+    when(uuidSupplier.get()).thenReturn(source.getSourceDefinitionId());
     final SourceDefinitionCreate create = new SourceDefinitionCreate()
         .name(source.getName())
         .dockerRepository(source.getDockerRepository())
@@ -139,7 +140,7 @@ class SourceDefinitionsHandlerTest {
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()))
-        .sourceDefinitionId(source.getSourceId());
+        .sourceDefinitionId(source.getSourceDefinitionId());
 
     final SourceDefinitionRead actualRead = sourceHandler.createSourceDefinition(create);
 
@@ -149,14 +150,15 @@ class SourceDefinitionsHandlerTest {
 
   @Test
   void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configRepository.getStandardSource(source.getSourceId())).thenReturn(source);
+    when(configRepository.getStandardSource(source.getSourceDefinitionId())).thenReturn(source);
     final String newDockerImageTag = "averydifferenttag";
     final String currentTag =
-        sourceHandler.getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceId())).getDockerImageTag();
+        sourceHandler.getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId())).getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
     SourceDefinitionRead sourceDefinitionRead =
-        sourceHandler.updateSourceDefinition(new SourceDefinitionUpdate().sourceDefinitionId(source.getSourceId()).dockerImageTag(newDockerImageTag));
+        sourceHandler.updateSourceDefinition(
+            new SourceDefinitionUpdate().sourceDefinitionId(source.getSourceDefinitionId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
     verify(dockerImageValidator).assertValidIntegrationImage(source.getDockerRepository(), newDockerImageTag);

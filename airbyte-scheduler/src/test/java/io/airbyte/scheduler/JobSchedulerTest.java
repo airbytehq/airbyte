@@ -57,9 +57,9 @@ class JobSchedulerTest {
   private Job previousJob;
 
   static {
-    final UUID sourceImplementationId = UUID.randomUUID();
+    final UUID sourceId = UUID.randomUUID();
 
-    final UUID destinationImplementationId = UUID.randomUUID();
+    final UUID destinationId = UUID.randomUUID();
 
     final Field field = new Field()
         .withDataType(DataType.STRING)
@@ -80,8 +80,8 @@ class JobSchedulerTest {
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withSchema(schema)
-        .withSourceImplementationId(sourceImplementationId)
-        .withDestinationImplementationId(destinationImplementationId)
+        .withSourceId(sourceId)
+        .withDestinationId(destinationId)
         .withSyncMode(SyncMode.FULL_REFRESH);
 
     // empty. contents not needed for any of these unit tests.

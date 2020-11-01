@@ -1,32 +1,31 @@
 import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
-export interface DestinationImplementation {
-  destinationImplementationId: string;
+export interface Source {
+  sourceId: string;
   name: string;
   workspaceId: string;
-  destinationId: string;
+  sourceDefinitionId: string;
   connectionConfiguration: any; // TODO: fix type
 }
 
-export default class DestinationImplementationResource extends BaseResource
-  implements DestinationImplementation {
-  readonly destinationImplementationId: string = "";
+export default class SourceResource extends BaseResource implements Source {
+  readonly sourceId: string = "";
   readonly name: string = "";
+  readonly sourceDefinitionId: string = "";
   readonly workspaceId: string = "";
-  readonly destinationId: string = "";
   readonly connectionConfiguration: any = [];
 
   pk() {
-    return this.destinationImplementationId?.toString();
+    return this.sourceId?.toString();
   }
 
-  static urlRoot = "destination_implementations";
+  static urlRoot = "sources";
 
   static listShape<T extends typeof Resource>(this: T) {
     return {
       ...super.listShape(),
-      schema: { destinations: [this.asSchema()] }
+      schema: { sources: [this.asSchema()] }
     };
   }
 
@@ -40,11 +39,8 @@ export default class DestinationImplementationResource extends BaseResource
   static updateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.partialUpdateShape(),
-      fetch: async (
-        params: { destinationImplementationId: string },
-        body: any
-      ): Promise<any> => {
-        const destinationResult = await this.fetch(
+      fetch: async (params: { sourceId: string }, body: any): Promise<any> => {
+        const sourceResult = await this.fetch(
           "post",
           `${this.url(params)}/update`,
           body
@@ -57,11 +53,11 @@ export default class DestinationImplementationResource extends BaseResource
         );
 
         return {
-          destination: destinationResult,
+          source: sourceResult,
           ...checkConnectionResult
         };
       },
-      schema: { destination: this.asSchema(), status: "", message: "" }
+      schema: { source: this.asSchema(), status: "", message: "" }
     };
   }
 
@@ -74,7 +70,7 @@ export default class DestinationImplementationResource extends BaseResource
       ): Promise<any> => {
         const response = await this.fetch(
           "post",
-          `${super.rootUrl()}web_backend/destination_implementations/create`,
+          `${super.rootUrl()}web_backend/sources/create`,
           body
         );
         return response;
@@ -85,14 +81,14 @@ export default class DestinationImplementationResource extends BaseResource
 
   static recreateShape<T extends typeof Resource>(this: T) {
     return {
-      ...super.updateShape(),
+      ...super.detailShape(),
       fetch: async (
         _: Readonly<Record<string, string | number>>,
-        body: Readonly<object>
-      ): Promise<any> => {
+        body: Readonly<any>
+      ): Promise<object> => {
         const response = await this.fetch(
           "post",
-          `${super.rootUrl()}web_backend/destination_implementations/recreate`,
+          `${super.rootUrl()}web_backend/sources/recreate`,
           body
         );
         return response;
