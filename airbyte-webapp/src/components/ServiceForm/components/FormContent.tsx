@@ -8,7 +8,7 @@ import LabeledDropDown from "../../LabeledDropDown";
 import { IDataItem } from "../../DropDown/components/ListItem";
 import Instruction from "./Instruction";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
-import { specification } from "../../../core/resources/SourceSpecification";
+import { specification } from "../../../core/resources/SourceDefinitionSpecification";
 import Spinner from "../../Spinner";
 import PropertyField from "./PropertyField";
 

@@ -5,54 +5,58 @@ import { useResource, useFetcher } from "rest-hooks";
 import ContentCard from "../../../components/ContentCard";
 import ServiceForm from "../../../components/ServiceForm";
 import ConnectionBlock from "../../../components/ConnectionBlock";
-import DestinationSpecificationResource, {
-  DestinationSpecification
-} from "../../../core/resources/DestinationSpecification";
-import SourceResource from "../../../core/resources/Source";
+import DestinationDefinitionSpecificationResource, {
+  DestinationDefinitionSpecification
+} from "../../../core/resources/DestinationDefinitionSpecification";
+import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import config from "../../../config";
 import PrepareDropDownLists from "./PrepareDropDownLists";
-import { DestinationImplementation } from "../../../core/resources/DestinationImplementation";
+import { Destination } from "../../../core/resources/Destination";
 
 type IProps = {
-  destinationImplementation?: DestinationImplementation;
+  destination?: Destination;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
   hasSuccess?: boolean;
   onSubmit: (values: {
     name: string;
     serviceType: string;
-    specificationId?: string;
+    destinationDefinitionId?: string;
     connectionConfiguration?: any;
   }) => void;
   errorStatus?: number;
-  currentSourceId: string;
+  currentSourceDefinitionId: string;
 };
 
-const useDestinationSpecificationLoad = (destinationId: string) => {
+const useDestinationDefinitionSpecificationLoad = (
+  destinationDefinitionId: string
+) => {
   const [
-    destinationSpecification,
+    destinationDefinitionSpecification,
     setDestinationSpecification
-  ] = useState<null | DestinationSpecification>(null);
+  ] = useState<null | DestinationDefinitionSpecification>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchSourceSpecification = useFetcher(
-    DestinationSpecificationResource.detailShape(),
+  const fetchDestinationDefinitionSpecification = useFetcher(
+    DestinationDefinitionSpecificationResource.detailShape(),
     true
   );
 
   useEffect(() => {
     (async () => {
-      if (destinationId) {
+      if (destinationDefinitionId) {
         setIsLoading(true);
         setDestinationSpecification(
-          await fetchSourceSpecification({ destinationId })
+          await fetchDestinationDefinitionSpecification({
+            destinationDefinitionId
+          })
         );
         setIsLoading(false);
       }
     })();
-  }, [fetchSourceSpecification, destinationId]);
+  }, [fetchDestinationDefinitionSpecification, destinationDefinitionId]);
 
-  return { destinationSpecification, isLoading };
+  return { destinationDefinitionSpecification, isLoading };
 };
 
 const DestinationStep: React.FC<IProps> = ({
@@ -60,26 +64,27 @@ const DestinationStep: React.FC<IProps> = ({
   dropDownData,
   hasSuccess,
   errorStatus,
-  currentSourceId,
-  destinationImplementation
+  currentSourceDefinitionId,
+  destination
 }) => {
   const [destinationId, setDestinationId] = useState("");
   const {
-    destinationSpecification,
+    destinationDefinitionSpecification,
     isLoading
-  } = useDestinationSpecificationLoad(destinationId);
-  const currentSource = useResource(SourceResource.detailShape(), {
-    sourceId: currentSourceId
+  } = useDestinationDefinitionSpecificationLoad(destinationId);
+  const currentSource = useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId: currentSourceDefinitionId
   });
-  const { getDestinationById } = PrepareDropDownLists();
+  const { getDestinationDefinitionById } = PrepareDropDownLists();
 
   const onDropDownSelect = (sourceId: string) => {
-    const destinationConnector = getDestinationById(sourceId);
+    const destinationConnector = getDestinationDefinitionById(sourceId);
     AnalyticsService.track("New Destination - Action", {
       user_id: config.ui.workspaceId,
       action: "Select a connector",
       connector_destination: destinationConnector?.name,
-      connector_destination_id: destinationConnector?.destinationId
+      connector_destination_definition_id:
+        destinationConnector?.destinationDefinitionId
     });
     setDestinationId(sourceId);
   };
@@ -89,7 +94,8 @@ const DestinationStep: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      specificationId: destinationSpecification?.destinationId
+      destinationDefinitionId:
+        destinationDefinitionSpecification?.destinationDefinitionId
     });
   };
 
@@ -101,8 +107,8 @@ const DestinationStep: React.FC<IProps> = ({
     );
 
   useEffect(
-    () => setDestinationId(destinationImplementation?.destinationId || ""),
-    [destinationImplementation]
+    () => setDestinationId(destination?.destinationDefinitionId || ""),
+    [destination]
   );
 
   return (
@@ -119,15 +125,19 @@ const DestinationStep: React.FC<IProps> = ({
           formType="destination"
           dropDownData={dropDownData}
           errorMessage={errorMessage}
-          specifications={destinationSpecification?.connectionSpecification}
-          documentationUrl={destinationSpecification?.documentationUrl}
+          specifications={
+            destinationDefinitionSpecification?.connectionSpecification
+          }
+          documentationUrl={
+            destinationDefinitionSpecification?.documentationUrl
+          }
           isLoading={isLoading}
           formValues={
-            destinationImplementation
+            destination
               ? {
-                  ...destinationImplementation.connectionConfiguration,
-                  name: destinationImplementation.name,
-                  serviceType: destinationImplementation.destinationId
+                  ...destination.connectionConfiguration,
+                  name: destination.name,
+                  serviceType: destination.destinationDefinitionId
                 }
               : null
           }

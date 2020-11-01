@@ -7,7 +7,7 @@ import FormContent from "./components/FormContent";
 import BottomBlock from "./components/BottomBlock";
 import EditControls from "./components/EditControls";
 import ConstructValidationSchema from "./components/ConstructValidationSchema";
-import { specification } from "../../core/resources/SourceSpecification";
+import { specification } from "../../core/resources/SourceDefinitionSpecification";
 
 type formInitialValues = {
   [key: string]: any;

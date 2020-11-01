@@ -20,9 +20,9 @@ export type SyncSchema = {
 };
 
 type SourceInformation = {
-  sourceId: string;
+  sourceDefinitionId: string;
   sourceName: string;
-  sourceImplementationId: string;
+  sourceId: string;
   name: string;
   connectionConfiguration: any;
 };
@@ -30,8 +30,8 @@ type SourceInformation = {
 export interface Connection {
   connectionId: string;
   name: string;
-  sourceImplementationId: string;
-  destinationImplementationId: string;
+  sourceId: string;
+  destinationId: string;
   syncMode: string;
   status: string;
   schedule: ScheduleProperties | null;
@@ -45,8 +45,8 @@ export default class ConnectionResource extends BaseResource
   implements Connection {
   readonly connectionId: string = "";
   readonly name: string = "";
-  readonly sourceImplementationId: string = "";
-  readonly destinationImplementationId: string = "";
+  readonly sourceId: string = "";
+  readonly destinationId: string = "";
   readonly syncMode: string = "";
   readonly status: string = "";
   readonly schedule: ScheduleProperties | null = null;

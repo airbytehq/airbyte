@@ -14,7 +14,7 @@ import StatusIcon from "../../../components/StatusIcon";
 export type IProps = {
   errorMessage?: string;
   onClose: () => void;
-  onSubmit: (source: {
+  onSubmit: (sourceDefinition: {
     name: string;
     documentationUrl: string;
     dockerImageTag: string;
