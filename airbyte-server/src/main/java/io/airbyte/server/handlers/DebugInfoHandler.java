@@ -100,7 +100,7 @@ public class DebugInfoHandler {
       Stream<String> sourceImages =
           configRepository.listStandardSources().stream().map(s -> DockerUtils.getTaggedImageName(s.getDockerRepository(), s.getDockerImageTag()));
       Stream<String> destinationImages =
-          configRepository.listStandardDestinations().stream()
+          configRepository.listStandardDestinationDefinitions().stream()
               .map(d -> DockerUtils.getTaggedImageName(d.getDockerRepository(), d.getDockerImageTag()));
       return Stream.concat(sourceImages, destinationImages)
           .map(image -> {

@@ -15,13 +15,13 @@ import JobResource from "../../../../../core/resources/Job";
 import JobsList from "./JobsList";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import config from "../../../../../config";
-import { Destination } from "../../../../../core/resources/Destination";
+import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
 import EmptyResource from "../../../components/EmptyResource";
 
 type IProps = {
   sourceData: Connection;
   onEnabledChange: () => void;
-  destination: Destination;
+  destinationDefinition: DestinationDefinition;
   frequencyText?: string;
 };
 
@@ -54,7 +54,7 @@ const SyncButton = styled(Button)`
 const StatusView: React.FC<IProps> = ({
   sourceData,
   onEnabledChange,
-  destination,
+  destinationDefinition,
   frequencyText
 }) => {
   const { jobs } = useResource(JobResource.listShape(), {
@@ -73,9 +73,10 @@ const StatusView: React.FC<IProps> = ({
       user_id: config.ui.workspaceId,
       action: "Full refresh sync",
       connector_source: sourceData.source?.sourceName,
-      connector_source_id: sourceData.source?.sourceId,
-      connector_destination: destination.name,
-      connector_destination_id: destination.destinationId,
+      connector_source_id: sourceData.source?.sourceDefinitionId,
+      connector_destination: destinationDefinition.name,
+      connector_destination_definition_id:
+        destinationDefinition.destinationDefinitionId,
       frequency: frequencyText
     });
     SyncConnection({
@@ -88,7 +89,7 @@ const StatusView: React.FC<IProps> = ({
       <StatusMainInfo
         sourceData={sourceData}
         onEnabledChange={onEnabledChange}
-        destination={destination}
+        destinationDefinition={destinationDefinition}
         frequencyText={frequencyText}
       />
       <StyledContentCard

@@ -18,8 +18,8 @@ import ConnectionResource, {
 import config from "../../../../../config";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
-import DestinationImplementationResource from "../../../../../core/resources/DestinationImplementation";
 import DestinationResource from "../../../../../core/resources/Destination";
+import DestinationDefinitionResource from "../../../../../core/resources/DestinationDefinition";
 import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 
 const Content = styled.div`
@@ -47,22 +47,19 @@ const SourcesTable: React.FC<IProps> = ({ connections }) => {
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
 
   const { updateConnection } = useConnection();
-  const { destinations } = useResource(
-    DestinationImplementationResource.listShape(),
-    {
-      workspaceId: config.ui.workspaceId
-    }
-  );
+  const { destinations } = useResource(DestinationResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
   const currentDestination = destinations[0]; // Now we have only one destination. If we support multiple destinations we will fix this line
-  const destination = useResource(DestinationResource.detailShape(), {
-    destinationId: currentDestination.destinationId
+  const destination = useResource(DestinationDefinitionResource.detailShape(), {
+    destinationDefinitionId: currentDestination.destinationDefinitionId
   });
 
   const data = connections.map(item => ({
     connectionId: item.connectionId,
     name: item.source?.name,
     enabled: item.status === "active",
-    sourceId: item.source?.sourceId,
+    sourceDefinitionId: item.source?.sourceDefinitionId,
     sourceName: item.source?.sourceName,
     schedule: item.schedule,
     lastSync: item.lastSync,
@@ -94,13 +91,19 @@ const SourcesTable: React.FC<IProps> = ({ connections }) => {
             ? "Disable connection"
             : "Reenable connection",
         connector_source: connection?.source?.sourceName,
-        connector_source_id: connection?.source?.sourceId,
+        connector_source_id: connection?.source?.sourceDefinitionId,
         connector_destination: destination.name,
-        connector_destination_id: destination.destinationId,
+        connector_destination_definition_id:
+          destination.destinationDefinitionId,
         frequency: frequency?.text
       });
     },
-    [connections, destination.destinationId, destination.name, updateConnection]
+    [
+      connections,
+      destination.destinationDefinitionId,
+      destination.name,
+      updateConnection
+    ]
   );
 
   const onSync = useCallback(
@@ -113,16 +116,22 @@ const SourcesTable: React.FC<IProps> = ({ connections }) => {
         user_id: config.ui.workspaceId,
         action: "Full refresh sync",
         connector_source: connection?.source?.sourceName,
-        connector_source_id: connection?.source?.sourceId,
+        connector_source_id: connection?.source?.sourceDefinitionId,
         connector_destination: destination.name,
-        connector_destination_id: destination.destinationId,
+        connector_destination_definition_id:
+          destination.destinationDefinitionId,
         frequency: "manual" // Only manual connections have this button
       });
       SyncConnection({
         connectionId: connectionId
       });
     },
-    [SyncConnection, connections, destination.destinationId, destination.name]
+    [
+      SyncConnection,
+      connections,
+      destination.destinationDefinitionId,
+      destination.name
+    ]
   );
 
   const columns = React.useMemo(

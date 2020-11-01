@@ -1,44 +1,50 @@
 import { useMemo } from "react";
 import { useResource } from "rest-hooks";
 
-import SourceResource from "../../../core/resources/Source";
-import DestinationResource from "../../../core/resources/Destination";
+import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
+import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
 
 const PrepareDropDownLists = () => {
-  const { sources } = useResource(SourceResource.listShape(), {});
-  const { destinations } = useResource(DestinationResource.listShape(), {});
+  const { sourceDefinitions } = useResource(
+    SourceDefinitionResource.listShape(),
+    {}
+  );
+  const { destinationDefinitions } = useResource(
+    DestinationDefinitionResource.listShape(),
+    {}
+  );
 
   const sourcesDropDownData = useMemo(
     () =>
-      sources.map(item => ({
+      sourceDefinitions.map(item => ({
         text: item.name,
-        value: item.sourceId,
+        value: item.sourceDefinitionId,
         img: "/default-logo-catalog.svg"
       })),
-    [sources]
+    [sourceDefinitions]
   );
 
   const destinationsDropDownData = useMemo(
     () =>
-      destinations.map(item => ({
+      destinationDefinitions.map(item => ({
         text: item.name,
-        value: item.destinationId,
+        value: item.destinationDefinitionId,
         img: "/default-logo-catalog.svg"
       })),
-    [destinations]
+    [destinationDefinitions]
   );
 
-  const getSourceById = (id: string) =>
-    sources.find(item => item.sourceId === id);
+  const getSourceDefinitionById = (id: string) =>
+    sourceDefinitions.find(item => item.sourceDefinitionId === id);
 
-  const getDestinationById = (id: string) =>
-    destinations.find(item => item.destinationId === id);
+  const getDestinationDefinitionById = (id: string) =>
+    destinationDefinitions.find(item => item.destinationDefinitionId === id);
 
   return {
     sourcesDropDownData,
     destinationsDropDownData,
-    getSourceById,
-    getDestinationById
+    getSourceDefinitionById: getSourceDefinitionById,
+    getDestinationDefinitionById
   };
 };
 

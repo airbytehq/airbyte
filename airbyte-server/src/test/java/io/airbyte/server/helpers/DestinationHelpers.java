@@ -24,18 +24,53 @@
 
 package io.airbyte.server.helpers;
 
-import io.airbyte.config.StandardDestination;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.api.model.DestinationRead;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 public class DestinationHelpers {
 
-  public static StandardDestination generateDestination() {
-    return new StandardDestination()
-        .withDestinationId(UUID.randomUUID())
-        .withName("db2")
-        .withDockerRepository("thebestrepo")
-        .withDockerImageTag("thelatesttag")
-        .withDocumentationUrl("https://wikipedia.org");
+  public static JsonNode getTestDestinationJson() throws IOException {
+    final Path path =
+        Paths.get("../airbyte-server/src/test/resources/json/TestImplementation.json");
+
+    return Jsons.deserialize(Files.readString(path));
+  }
+
+  public static DestinationConnection generateDestination(UUID destinationDefinitionId)
+      throws IOException {
+    final UUID workspaceId = UUID.randomUUID();
+    final UUID destinationId = UUID.randomUUID();
+
+    JsonNode implementationJson = getTestDestinationJson();
+
+    return new DestinationConnection()
+        .withName("my db2 instance")
+        .withWorkspaceId(workspaceId)
+        .withDestinationDefinitionId(destinationDefinitionId)
+        .withDestinationId(destinationId)
+        .withConfiguration(implementationJson)
+        .withTombstone(false);
+  }
+
+  public static DestinationRead getDestinationRead(DestinationConnection destination,
+                                                   StandardDestinationDefinition standardDestinationDefinition) {
+
+    return new DestinationRead()
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(destination.getWorkspaceId())
+        .destinationDefinitionId(destination.getDestinationDefinitionId())
+        .destinationId(destination.getDestinationId())
+        .connectionConfiguration(destination.getConfiguration())
+        .name(destination.getName())
+        .destinationName(standardDestinationDefinition.getName());
   }
 
 }

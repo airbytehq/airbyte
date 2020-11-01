@@ -24,9 +24,9 @@
 
 package io.airbyte.scheduler.persistence;
 
-import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
-import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
@@ -38,16 +38,16 @@ import java.util.UUID;
 
 public interface SchedulerPersistence {
 
-  long createSourceCheckConnectionJob(SourceConnectionImplementation sourceImplementation, String dockerImage) throws IOException;
+  long createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
 
-  long createDestinationCheckConnectionJob(DestinationConnectionImplementation destinationImplementation, String dockerImage) throws IOException;
+  long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException;
 
-  long createDiscoverSchemaJob(SourceConnectionImplementation sourceImplementation, String dockerImage) throws IOException;
+  long createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
 
   long createGetSpecJob(String integrationImage) throws IOException;
 
-  long createSyncJob(SourceConnectionImplementation sourceImplementation,
-                     DestinationConnectionImplementation destinationImplementation,
+  long createSyncJob(SourceConnection source,
+                     DestinationConnection destination,
                      StandardSync standardSync,
                      String sourceDockerImage,
                      String destinationDockerImage)
