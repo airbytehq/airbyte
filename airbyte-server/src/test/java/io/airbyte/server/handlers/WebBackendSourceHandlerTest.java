@@ -36,8 +36,8 @@ import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceRecreate;
-import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.StandardSource;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
@@ -65,9 +65,9 @@ public class WebBackendSourceHandlerTest {
     schedulerHandler = mock(SchedulerHandler.class);
     wbSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
 
-    final StandardSource standardSource = SourceDefinitionHelpers.generateSource();
-    SourceConnectionImplementation source = SourceHelpers.generateSource(UUID.randomUUID());
-    sourceRead = SourceHelpers.getSourceRead(source, standardSource);
+    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSource();
+    SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
   }
 
   @Test

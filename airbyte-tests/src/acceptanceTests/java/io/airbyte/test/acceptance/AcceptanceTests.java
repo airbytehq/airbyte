@@ -104,9 +104,9 @@ public class AcceptanceTests {
           .setPort(8001)
           .setBasePath("/api"));
 
-  private List<UUID> sourceImplIds;
+  private List<UUID> sourceIds;
   private List<UUID> connectionIds;
-  private List<UUID> destinationImplIds;
+  private List<UUID> destinationIds;
   private Path outputDir;
   private Path relativeDir;
 
@@ -123,9 +123,9 @@ public class AcceptanceTests {
 
   @BeforeEach
   public void setup() throws IOException {
-    sourceImplIds = Lists.newArrayList();
+    sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
-    destinationImplIds = Lists.newArrayList();
+    destinationIds = Lists.newArrayList();
 
     final Path outputRoot = Files.createTempDirectory(AIRBYTE_LOCAL_ROOT, "acceptance_test");
     outputDir = outputRoot.resolve(RELATIVE_PATH);
@@ -140,22 +140,22 @@ public class AcceptanceTests {
   public void tearDown() throws ApiException, SQLException {
     clearDbData(sourcePsql);
 
-    for (UUID sourceImplId : sourceImplIds) {
-      deleteSource(sourceImplId);
+    for (UUID sourceId : sourceIds) {
+      deleteSource(sourceId);
     }
 
     for (UUID connectionId : connectionIds) {
       disableConnection(connectionId);
     }
 
-    for (UUID destinationImplId : destinationImplIds) {
-      deleteDestination(destinationImplId);
+    for (UUID destinationId : destinationIds) {
+      deleteDestination(destinationId);
     }
   }
 
   @Test
   @Order(1)
-  public void testCreateDestinationImpl() throws ApiException {
+  public void testCreateDestination() throws ApiException {
     final UUID destinationDefId = getDestinationDefId();
     final JsonNode destinationConfig = getDestinationConfig();
     final UUID workspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
@@ -176,11 +176,11 @@ public class AcceptanceTests {
   @Test
   @Order(2)
   public void testDestinationCheckConnection() throws ApiException {
-    UUID destinationImplId = createCsvDestination().getDestinationId();
+    UUID destinationId = createCsvDestination().getDestinationId();
 
     CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationApi()
         .checkConnectionToDestination(
-            new DestinationIdRequestBody().destinationId(destinationImplId))
+            new DestinationIdRequestBody().destinationId(destinationId))
         .getStatus();
 
     assertEquals(CheckConnectionRead.StatusEnum.SUCCEEDED, checkOperationStatus);
@@ -252,14 +252,14 @@ public class AcceptanceTests {
   @Order(7)
   public void testManualSync() throws Exception {
     String connectionName = "test-connection";
-    UUID sourceImplId = createPostgresSource().getSourceId();
-    UUID destinationImplId = createCsvDestination().getDestinationId();
-    SourceSchema schema = discoverSourceSchema(sourceImplId);
+    UUID sourceId = createPostgresSource().getSourceId();
+    UUID destinationId = createCsvDestination().getDestinationId();
+    SourceSchema schema = discoverSourceSchema(sourceId);
     schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
     ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(100L).timeUnit(MINUTES);
     ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
 
-    ConnectionRead createdConnection = createConnection(connectionName, sourceImplId, destinationImplId, schema, connectionSchedule, syncMode);
+    ConnectionRead createdConnection = createConnection(connectionName, sourceId, destinationId, schema, connectionSchedule, syncMode);
 
     ConnectionSyncRead connectionSyncRead =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(createdConnection.getConnectionId()));
@@ -271,14 +271,14 @@ public class AcceptanceTests {
   @Order(8)
   public void testScheduledSync() throws Exception {
     String connectionName = "test-connection";
-    UUID sourceImplId = createPostgresSource().getSourceId();
-    UUID destinationImplId = createCsvDestination().getDestinationId();
-    SourceSchema schema = discoverSourceSchema(sourceImplId);
+    UUID sourceId = createPostgresSource().getSourceId();
+    UUID destinationId = createCsvDestination().getDestinationId();
+    SourceSchema schema = discoverSourceSchema(sourceId);
     schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
     ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
     ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
 
-    createConnection(connectionName, sourceImplId, destinationImplId, schema, connectionSchedule, syncMode);
+    createConnection(connectionName, sourceId, destinationId, schema, connectionSchedule, syncMode);
 
     // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
     // Then it will wait the sync interval.
@@ -351,8 +351,8 @@ public class AcceptanceTests {
   }
 
   private ConnectionRead createConnection(String name,
-                                          UUID sourceImplId,
-                                          UUID destinationImplId,
+                                          UUID sourceId,
+                                          UUID destinationId,
                                           SourceSchema schema,
                                           ConnectionSchedule schedule,
                                           ConnectionCreate.SyncModeEnum syncMode)
@@ -360,8 +360,8 @@ public class AcceptanceTests {
     ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
             .status(ConnectionStatus.ACTIVE)
-            .sourceId(sourceImplId)
-            .destinationId(destinationImplId)
+            .sourceId(sourceId)
+            .destinationId(destinationId)
             .syncMode(syncMode)
             .syncSchema(schema)
             .schedule(schedule)
@@ -386,7 +386,7 @@ public class AcceptanceTests {
             .connectionConfiguration(Jsons.jsonNode(destinationConfig))
             .workspaceId(workspaceId)
             .destinationDefinitionId(destinationId));
-    destinationImplIds.add(destination.getDestinationId());
+    destinationIds.add(destination.getDestinationId());
     return destination;
   }
 
@@ -454,7 +454,7 @@ public class AcceptanceTests {
         .sourceDefinitionId(sourceDefId)
         .workspaceId(workspaceId)
         .connectionConfiguration(Jsons.jsonNode(sourceConfig)));
-    sourceImplIds.add(source.getSourceId());
+    sourceIds.add(source.getSourceId());
     return source;
   }
 
@@ -477,8 +477,8 @@ public class AcceptanceTests {
     }
   }
 
-  private void deleteSource(UUID sourceImplId) throws ApiException {
-    apiClient.getSourceApi().deleteSource(new SourceIdRequestBody().sourceId(sourceImplId));
+  private void deleteSource(UUID sourceId) throws ApiException {
+    apiClient.getSourceApi().deleteSource(new SourceIdRequestBody().sourceId(sourceId));
   }
 
   private void disableConnection(UUID connectionId) throws ApiException {
@@ -492,9 +492,9 @@ public class AcceptanceTests {
     apiClient.getConnectionApi().updateConnection(connectionUpdate);
   }
 
-  private void deleteDestination(UUID destinationImplId) throws ApiException {
+  private void deleteDestination(UUID destinationId) throws ApiException {
     apiClient.getDestinationApi()
-        .deleteDestination(new DestinationIdRequestBody().destinationId(destinationImplId));
+        .deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
   }
 
 }

@@ -1,13 +1,13 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/SourceConnectionConfiguration.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/SourceConnection.yaml
 title: SourceConnectionConfiguration
 description: information required for connection to a destination.
 type: object
 required:
   - name
+  - sourceDefinitionId
   - sourceId
-  - sourceImplementationId
   - workspaceId
   - configuration
   - tombstone
@@ -15,13 +15,13 @@ additionalProperties: false
 properties:
   name:
     type: string
-  sourceId:
+  sourceDefinitionId:
     type: string
     format: uuid
   workspaceId:
     type: string
     format: uuid
-  sourceImplementationId:
+  sourceId:
     type: string
     format: uuid
   configuration:

@@ -39,13 +39,13 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.AirbyteProtocolConverters;
-import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.Schema;
-import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDestination;
-import io.airbyte.config.StandardSource;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -77,10 +77,10 @@ public class SchedulerHandler {
 
   public CheckConnectionRead checkSourceConnection(SourceIdRequestBody sourceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final SourceConnectionImplementation connectionImplementation =
-        configRepository.getSourceConnectionImplementation(sourceIdRequestBody.getSourceId());
+    final SourceConnection connectionImplementation =
+        configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
 
-    final StandardSource source = configRepository.getStandardSource(connectionImplementation.getSourceId());
+    final StandardSourceDefinition source = configRepository.getStandardSource(connectionImplementation.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final long jobId = schedulerPersistence.createSourceCheckConnectionJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
@@ -89,8 +89,8 @@ public class SchedulerHandler {
     TrackingClientSingleton.get().track("check_connection", ImmutableMap.<String, Object>builder()
         .put("type", "source")
         .put("name", connectionImplementation.getName())
-        .put("source_id", connectionImplementation.getSourceId())
-        .put("source_implementation_id", connectionImplementation.getSourceImplementationId())
+        .put("source_id", connectionImplementation.getSourceDefinitionId())
+        .put("source_implementation_id", connectionImplementation.getSourceId())
         .put("check_connection_result", checkConnectionRead.getStatus())
         .put("job_id", jobId)
         .build());
@@ -100,10 +100,11 @@ public class SchedulerHandler {
 
   public CheckConnectionRead checkDestinationConnection(DestinationIdRequestBody destinationIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final DestinationConnectionImplementation connectionImplementation =
-        configRepository.getDestinationConnectionImplementation(destinationIdRequestBody.getDestinationId());
+    final DestinationConnection connectionImplementation =
+        configRepository.getDestinationConnection(destinationIdRequestBody.getDestinationId());
 
-    final StandardDestination destination = configRepository.getStandardDestination(connectionImplementation.getDestinationId());
+    final StandardDestinationDefinition destination =
+        configRepository.getStandardDestinationDefinition(connectionImplementation.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
     final long jobId = schedulerPersistence.createDestinationCheckConnectionJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
@@ -112,8 +113,8 @@ public class SchedulerHandler {
     TrackingClientSingleton.get().track("check_connection", ImmutableMap.<String, Object>builder()
         .put("type", "destination")
         .put("name", connectionImplementation.getName())
-        .put("destination_implementation_id", connectionImplementation.getDestinationImplementationId())
-        .put("destination_id", connectionImplementation.getDestinationId())
+        .put("destination_implementation_id", connectionImplementation.getDestinationId())
+        .put("destination_id", connectionImplementation.getDestinationDefinitionId())
         .put("check_connection_result", checkConnectionRead.getStatus())
         .put("job_id", jobId)
         .build());
@@ -123,10 +124,10 @@ public class SchedulerHandler {
 
   public SourceDiscoverSchemaRead discoverSchemaForSource(SourceIdRequestBody sourceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final SourceConnectionImplementation connectionImplementation =
-        configRepository.getSourceConnectionImplementation(sourceIdRequestBody.getSourceId());
+    final SourceConnection connectionImplementation =
+        configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
 
-    StandardSource source = configRepository.getStandardSource(connectionImplementation.getSourceId());
+    StandardSourceDefinition source = configRepository.getStandardSource(connectionImplementation.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final long jobId = schedulerPersistence.createDiscoverSchemaJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
@@ -141,23 +142,23 @@ public class SchedulerHandler {
 
     TrackingClientSingleton.get().track("discover_schema", ImmutableMap.<String, Object>builder()
         .put("name", connectionImplementation.getName())
-        .put("source_id", connectionImplementation.getSourceId())
-        .put("source_implementation_id", connectionImplementation.getSourceImplementationId())
+        .put("source_id", connectionImplementation.getSourceDefinitionId())
+        .put("source_implementation_id", connectionImplementation.getSourceId())
         .put("job_id", jobId)
         .build());
 
     return new SourceDiscoverSchemaRead().schema(SchemaConverter.toApiSchema(schema));
   }
 
-  public SourceDefinitionSpecificationRead getSourceSpecification(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
+  public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     UUID sourceId = sourceDefinitionIdRequestBody.getSourceDefinitionId();
-    StandardSource source = configRepository.getStandardSource(sourceId);
+    StandardSourceDefinition source = configRepository.getStandardSource(sourceId);
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final ConnectorSpecification spec = getConnectorSpecification(imageName);
 
     TrackingClientSingleton.get().track("get_source_spec", ImmutableMap.<String, Object>builder()
-        .put("source_id", source.getSourceId())
+        .put("source_id", source.getSourceDefinitionId())
         .put("source_name", source.getName())
         .put("image_name", imageName)
         .build());
@@ -180,14 +181,14 @@ public class SchedulerHandler {
   public DestinationDefinitionSpecificationRead getDestinationSpecification(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     UUID destinationId = destinationDefinitionIdRequestBody.getDestinationDefinitionId();
-    StandardDestination destination = configRepository.getStandardDestination(destinationId);
+    StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationId);
     final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
     final ConnectorSpecification spec = getConnectorSpecification(imageName);
 
     TrackingClientSingleton.get().track("get_destination_spec", ImmutableMap.<String, Object>builder()
         .put("image_name", imageName)
         .put("destination_name", destination.getName())
-        .put("destination_id", destination.getDestinationId())
+        .put("destination_id", destination.getDestinationDefinitionId())
         .build());
 
     return new DestinationDefinitionSpecificationRead()
@@ -201,20 +202,20 @@ public class SchedulerHandler {
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
-    final SourceConnectionImplementation sourceConnectionImplementation =
-        configRepository.getSourceConnectionImplementation(standardSync.getSourceImplementationId());
-    final DestinationConnectionImplementation destinationConnectionImplementation =
-        configRepository.getDestinationConnectionImplementation(standardSync.getDestinationImplementationId());
+    final SourceConnection sourceConnection =
+        configRepository.getSourceConnection(standardSync.getSourceId());
+    final DestinationConnection destinationConnection =
+        configRepository.getDestinationConnection(standardSync.getDestinationId());
 
-    StandardSource source = configRepository.getStandardSource(sourceConnectionImplementation.getSourceId());
+    StandardSourceDefinition source = configRepository.getStandardSource(sourceConnection.getSourceDefinitionId());
     final String sourceImageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
 
-    StandardDestination destination = configRepository.getStandardDestination(destinationConnectionImplementation.getDestinationId());
+    StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
     final String destinationImageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
 
     final long jobId = schedulerPersistence.createSyncJob(
-        sourceConnectionImplementation,
-        destinationConnectionImplementation,
+        sourceConnection,
+        destinationConnection,
         standardSync,
         sourceImageName,
         destinationImageName);
@@ -224,10 +225,10 @@ public class SchedulerHandler {
         .put("name", standardSync.getName())
         .put("connection_id", standardSync.getConnectionId())
         .put("sync_mode", standardSync.getSyncMode())
-        .put("source_id", sourceConnectionImplementation.getSourceId())
-        .put("source_implementation_id", sourceConnectionImplementation.getSourceImplementationId())
-        .put("destination_implementation_id", destinationConnectionImplementation.getDestinationImplementationId())
-        .put("destination_id", destinationConnectionImplementation.getDestinationId())
+        .put("source_id", sourceConnection.getSourceDefinitionId())
+        .put("source_implementation_id", sourceConnection.getSourceId())
+        .put("destination_implementation_id", destinationConnection.getDestinationId())
+        .put("destination_id", destinationConnection.getDestinationDefinitionId())
         .put("job_id", jobId)
         .build());
 

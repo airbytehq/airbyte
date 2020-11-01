@@ -1,18 +1,18 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardDestination.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardDestinationDefinition.yaml
 title: Source
 description: describes a destination
 type: object
 required:
-  - destinationId
+  - destinationDefinitionId
   - name
   - dockerRepository
   - dockerImageTag
   - documentationUrl
 additionalProperties: false
 properties:
-  destinationId:
+  destinationDefinitionId:
     type: string
     format: uuid
   name:

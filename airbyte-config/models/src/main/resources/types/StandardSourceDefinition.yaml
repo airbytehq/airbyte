@@ -5,14 +5,14 @@ title: Source
 description: describes a source
 type: object
 required:
-  - sourceId
+  - sourceDefinitionId
   - name
   - dockerRepository
   - dockerImageTag
   - documentationUrl
 additionalProperties: false
 properties:
-  sourceId:
+  sourceDefinitionId:
     type: string
     format: uuid
   name:
