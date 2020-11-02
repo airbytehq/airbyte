@@ -7,6 +7,7 @@ module.exports = function (plop) {
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
 
+  const basesDir = '../../bases';
   const outputDir = '../../connectors';
   const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`
@@ -71,8 +72,8 @@ module.exports = function (plop) {
       },
       function(answers, config, plop){
         const renderedOutputDir = plop.renderString(pythonSourceOutputRoot, answers);
-        fs.symlinkSync(`../../bases/base-python/base_python`, `${renderedOutputDir}/base_python`);
-        fs.symlinkSync(`../../bases/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
+        fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
+        fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
       },
       'Your new Python source connector has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🐍🐍',]
   });
@@ -97,9 +98,9 @@ module.exports = function (plop) {
       },
       function(answers, config, plop){
         const renderedOutputDir = plop.renderString(singerSourceOutputRoot, answers);
-        fs.symlinkSync(`../../base-python/base_python`, `${renderedOutputDir}/base_python`);
-        fs.symlinkSync(`../../airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
-        fs.symlinkSync(`../../base-singer/base_singer`, `${renderedOutputDir}/base_singer`);
+        fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
+        fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
+        fs.symlinkSync(`${basesDir}/base-singer/base_singer`, `${renderedOutputDir}/base_singer`);
       },
       'Your new Singer-based source connector has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🐍🐍',
     ]
