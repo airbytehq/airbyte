@@ -24,3 +24,7 @@ echo "$HUBSPOT_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source
 
 mkdir airbyte-integrations/connectors/source-google-sheets/secrets
 echo "$GSHEETS_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source-google-sheets/secrets/creds.json
+
+mkdir airbyte-integrations/connectors/source-file/secrets
+echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > airbyte-integrations/connectors/source-file/secrets/gcs.json
+echo "{}" > airbyte-integrations/connectors/source-file/secrets/aws.json
