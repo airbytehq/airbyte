@@ -16,8 +16,6 @@ Each stream will be output into its own file. Each file will contain 3 columns:
 
 #### Features
 
-This section should contain a table with the following format:
-
 | Feature | Supported |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
