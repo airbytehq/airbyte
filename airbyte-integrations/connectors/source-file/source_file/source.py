@@ -253,11 +253,11 @@ class SourceFile(Source):
             elif storage == "ssh://" or storage == "scp://" or storage == "sftp://":
                 user = config["user"]
                 host = config["host"]
-                password = None
                 if "password" in config:
                     password = config["password"]
-                if password:
-                    url = open(f"{storage}{user}:{password}@{host}/{url}")
+                    # Explicitly turn off ssh keys stored in ~/.ssh
+                    transport_params = {"connect_kwargs": {"look_for_keys": False}}
+                    url = open(f"{storage}{user}:{password}@{host}/{url}", transport_params=transport_params)
                 else:
                     url = open(f"{storage}{user}@{host}/{url}")
             else:
