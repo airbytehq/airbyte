@@ -4,7 +4,11 @@ description: Be sure to not miss out on new features and improvements!
 
 # Changelog
 
-Airbyte is not built on top of Singer, but is compatible with Singer's protocol. Airbyte's ambitions go beyond what Singer enables to do, so we are building our own protocol that will keep its compatibility with Singer's one.
+If you're interested in our changelog on which new connectors are available out of the box on Airbyte, please check our [integrations changelog](https://docs.airbyte.io/integrations/integrations-changelog). 
+
+If you're interested in our progress on the Airbyte platform, please read below!
+
+Note: Airbyte is not built on top of Singer, but is compatible with Singer's protocol. Airbyte's ambitions go beyond what Singer enables to do, so we are building our own protocol that will keep its compatibility with Singer's one.
 
 ## 0.4.0 - expected around 11/04/2020
 
