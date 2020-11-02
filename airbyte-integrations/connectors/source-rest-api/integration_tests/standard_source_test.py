@@ -41,7 +41,7 @@ class SourceRestApiStandardTest(StandardSourceTestIface):
         return {
             "http_method": "get",
             "url": "http://api.bart.gov/api/route.aspx?cmd=routes&key=MW9S-E7SL-26DU-VV8V&json=y",
-            "headers": '{"Content-Typ": "application/json"}',
+            "headers": '{"Content-Type": "application/json"}',
         }
 
     def get_catalog(self) -> AirbyteCatalog:
