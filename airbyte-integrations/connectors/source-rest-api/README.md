@@ -38,10 +38,10 @@ pytest unit_tests
 ```
 # in airbyte root directory
 ./gradlew :airbyte-integrations:connectors:source-rest-api:buildImage
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api/sample_files:/sample_files airbyte/source-rest-api:dev spec
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api/sample_files:/sample_files airbyte/source-rest-api:dev check --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api/sample_files:/sample_files airbyte/source-rest-api:dev discover --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api/sample_files:/sample_files airbyte/source-rest-api:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api:/sample_files airbyte/source-rest-api:dev spec
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api:/sample_files airbyte/source-rest-api:dev check --config /sample_files/sample_files/config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api:/sample_files airbyte/source-rest-api:dev discover --config /sample_files/sample_files/config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api:/sample_files airbyte/source-rest-api:dev read --config /sample_files/sample_files/config.json --catalog /sample_files/integration_tests/catalog.json
 ```
 
 ### Integration Tests 
@@ -52,11 +52,3 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api/sample
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
-
-## Configure credentials
-### Configuring credentials as a community contributor
-Follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/rest-api) to generate credentials, then put those
-in `secrets/credentials.json`.
-
-### Airbyte Employee
-Credentials are available in RPass under the secret name `source-rest-api-integration-test-creds}}`.
