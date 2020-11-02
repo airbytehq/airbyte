@@ -18,14 +18,7 @@ Before you can start building your own connector, you need to understand [Airbyt
 
 It's easy to code your own integrations on Airbyte. Here are some links to instruct on how to code new sources and destinations.
 
-#### **Coding new source connectors:**
-
-* [In Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/python-source/README.md)
-* [Based on Singer Taps in Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/singer-source/README.md)
-
-#### **Coding new destination connectors:**
-
-* [In Java](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/java-destination/README.md)
+* [Creating a new Integration](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/README.md)
 
 While the guides above are specific to the languages used most frequently to write integrations, **Airbyte integrations can be written in any language**. Please reach out to us if you'd like help developing integrations in other languages.
 
