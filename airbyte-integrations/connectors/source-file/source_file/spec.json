@@ -6,7 +6,7 @@
     "title": "File Source Spec",
     "type": "object",
     "required": ["url", "storage"],
-
+    "additionalProperties": true,
     "properties": {
       "format": {
         "type": "string",
@@ -20,20 +20,26 @@
           "orc",
           "pickle"
         ],
-        "default": "csv"
+        "default": "csv",
+        "description": "File Format of the file to be replicated. Common formats are (csv, json or excel) but more advanced formats can be specified (html, parquet, orc, feather, pickle)",
+        "examples": ["csv"]
       },
       "reader_options": {
-        "type": "string"
+        "type": "string",
+        "description": "Parsers for File Formats are currently using the `read_*` methods from the Pandas Library. Each of these readers provides additional options that can be specified as part of this JSON string. As an example, it is possible to change the read_csv behavior to a TSV (tab separated instead of comma) when redefining the delimiter character. See documentation of each `read_*` primitive from here: https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html",
+        "examples": ["{}", "{'sep': ' '}"]
       },
 
       "storage": {
         "type": "string",
         "enum": ["HTTPS", "GCS", "S3", "SSH", "SFTP", "WebHDFS", "local"],
+        "description": "Storage Provider or Location of the file(s) to be replicated. (Note that local storage of directory where csv files will be read must start with the local mount \"/local\" at the moment until we implement more advanced mounting options)",
         "default": "HTTPS"
       },
 
       "url": {
-        "type": "string"
+        "type": "string",
+        "description": "URL path to access the file to be replicated"
       }
     },
 
@@ -46,12 +52,14 @@
                 "enum": ["GCS"]
               },
               "service_account_json": {
-                "type": "string"
+                "type": "string",
+                "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described here: https://cloud.google.com/iam/docs/service-accounts Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
               },
               "reader_impl": {
                 "type": "string",
                 "enum": ["smart_open", "gcsfs"],
-                "default": "gcsfs"
+                "default": "gcsfs",
+                "description": "This connector provides multiple methods to retrieve data from GCS using either smart-open python libraries or GCSFS"
               }
             }
           },
@@ -62,15 +70,18 @@
                 "enum": ["S3"]
               },
               "aws_access_key_id": {
-                "type": "string"
+                "type": "string",
+                "description": "In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary."
               },
               "aws_secret_access_key": {
-                "type": "string"
+                "type": "string",
+                "description": "In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary."
               },
               "reader_impl": {
                 "type": "string",
                 "enum": ["smart_open", "s3fs"],
-                "default": "s3fs"
+                "default": "s3fs",
+                "description": "This connector provides multiple methods to retrieve data from AWS S3 using either smart-open python libraries or S3FS"
               }
             }
           },
