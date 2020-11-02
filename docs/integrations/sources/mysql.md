@@ -44,7 +44,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 ### Requirements
 
 1. MySQL Server `8.0`, `5.7`, or `5.6`.
-3. Create a dedicated read-only Airbyte user with access to all tables needed for replication
+2. Create a dedicated read-only Airbyte user with access to all tables needed for replication
 
 ### Setup guide
 
