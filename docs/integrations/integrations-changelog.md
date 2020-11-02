@@ -4,6 +4,8 @@ description: Do not miss the new connectors we support!
 
 # Integrations Changelog
 
+Note: Airbyte is not built on top of Singer, but is compatible with Singer's protocol. Airbyte's ambitions go beyond what Singer enables to do, so we are building our own protocol that will keep its compatibility with Singer's one.
+
 ## Currently under construction
 
 **New sources:** Hubspot, Facebook Ads, Google Ads, MSSQL, GCS CSV, S3 CSV, SFTP CSV  
