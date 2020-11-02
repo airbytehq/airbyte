@@ -36,7 +36,9 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -105,7 +107,8 @@ public class SnowflakeRecordConsumer extends FailureTrackingConsumer<AirbyteMess
       conn.setAutoCommit(false);
 
       try (PreparedStatement statement = conn.prepareStatement(
-          String.format("INSERT INTO \"%s\" (\"ab_id\", \"%s\") SELECT ?, parse_json(?)", tmpTableName, SnowflakeDestination.COLUMN_NAME))) {
+          String.format("INSERT INTO \"%s\" (\"ab_id\", \"%s\", \"emitted_at\") SELECT ?, parse_json(?), ?", tmpTableName,
+              SnowflakeDestination.COLUMN_NAME))) {
 
         for (int i = 0; i < batchSize; i++) {
           final byte[] record = writeBuffer.poll();
@@ -117,6 +120,7 @@ public class SnowflakeRecordConsumer extends FailureTrackingConsumer<AirbyteMess
           // 1-indexed
           statement.setString(1, UUID.randomUUID().toString());
           statement.setString(2, Jsons.serialize(message.getData()));
+          statement.setTimestamp(3, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
           statement.addBatch();
         }
 
