@@ -18,8 +18,6 @@ Each stream will be output into its own table in Postgres. Each table will conta
 
 #### Features
 
-This section should contain a table with the following format:
-
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
