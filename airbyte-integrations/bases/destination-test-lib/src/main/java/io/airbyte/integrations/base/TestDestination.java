@@ -55,6 +55,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
@@ -128,6 +129,17 @@ public abstract class TestDestination {
    */
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
+  /**
+   * Function that is applied to all of the resources (catalogs, sample messages, etc) in order to
+   * allow renaming streams. This is useful if there's a non-trivial amount of setup involved for the
+   * integration or it isn't easy to namespace.
+   *
+   * @return - function to transform resource (usually the identity function)
+   */
+  protected Function<String, String> renameFunction() {
+    return x -> x;
+  }
+
   @BeforeEach
   void setUpInternal() throws Exception {
     Path testDir = Path.of("/tmp/airbyte_tests/");
@@ -200,8 +212,8 @@ public abstract class TestDestination {
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   void testSync(String messagesFilename, String catalogFilename) throws Exception {
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
-    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+    final AirbyteCatalog catalog = Jsons.deserialize(renameFunction().apply(MoreResources.readResource(catalogFilename)), AirbyteCatalog.class);
+    final List<AirbyteMessage> messages = renameFunction().apply(MoreResources.readResource(messagesFilename)).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(messages, catalog);
 
@@ -213,8 +225,9 @@ public abstract class TestDestination {
    */
   @Test
   void testSecondSync() throws Exception {
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), AirbyteCatalog.class);
-    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(renameFunction().apply(MoreResources.readResource("exchange_rate_catalog.json")), AirbyteCatalog.class);
+    final List<AirbyteMessage> firstSyncMessages = renameFunction().apply(MoreResources.readResource("exchange_rate_messages.txt")).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(firstSyncMessages, catalog);
 
@@ -262,6 +275,7 @@ public abstract class TestDestination {
         .map(AirbyteMessage::getRecord)
         .map(AirbyteRecordMessage::getData)
         .collect(Collectors.toList());
+
     // we want to ignore order in this comparison.
     assertEquals(expectedJson.size(), actual.size());
     assertTrue(expectedJson.containsAll(actual));
