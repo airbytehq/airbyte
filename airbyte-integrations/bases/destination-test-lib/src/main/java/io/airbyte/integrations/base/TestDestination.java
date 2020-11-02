@@ -137,7 +137,7 @@ public abstract class TestDestination {
    * @return - function to transform resource (usually the identity function)
    */
   protected Function<String, String> renameFunction() {
-    return x -> x;
+    return Function.identity();
   }
 
   @BeforeEach
