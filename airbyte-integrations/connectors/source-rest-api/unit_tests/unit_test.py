@@ -22,6 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import unittest
 
-def test_example_method():
-    assert True
+from source_rest_api import SourceRestApi
+
+
+class TestSourceRestApi(unittest.TestCase):
+    def test_parse_config(self):
+        config = {
+            "http_method": "get",
+            "url": "http://api.bart.gov/api",
+            "headers": '{"Content-Type": "application/json"}',
+            "body": '{"something": "good"}',
+        }
+
+        source = SourceRestApi()
+        actual = source._parse_config(config)
+        expected = {
+            "http_method": "get",
+            "url": "http://api.bart.gov/api",
+            "headers": {"Content-Type": "application/json"},
+            "body": {"something": "good"},
+        }
+        self.assertEqual(expected, actual)

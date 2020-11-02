@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Rest Api Spec",
     "type": "object",
-    "required": ["url","http_method"],
+    "required": ["url", "http_method"],
     "additionalProperties": false,
     "properties": {
       "url": {
@@ -20,7 +20,9 @@
       "headers": {
         "description": "json object where keys are header names and values the values.",
         "type": "string",
-        "examples": ["{ \"Accept-Charset\": \"utf-8\", \"Content-Type\": \"application/json\"}"]
+        "examples": [
+          "{ \"Accept-Charset\": \"utf-8\", \"Content-Type\": \"application/json\"}"
+        ]
       },
       "body": {
         "description": "json body to be included in the request",

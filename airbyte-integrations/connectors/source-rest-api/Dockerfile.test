@@ -13,7 +13,6 @@ LABEL io.airbyte.name=airbyte/source-rest-api-standard-test
 WORKDIR /airbyte/integration_code
 COPY source_rest_api source_rest_api
 COPY $CODE_PATH $CODE_PATH
-COPY secrets/* $CODE_PATH
 COPY source_rest_api/*.json $CODE_PATH
 COPY setup.py ./
 

@@ -22,15 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Generator
-import requests
+import json
 from datetime import datetime
+from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteStream, AirbyteConnectionStatus, AirbyteMessage, Status, AirbyteRecordMessage
+import requests
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, AirbyteStream, Status, Type
 from base_python import AirbyteLogger, Source
 
 
 class SourceRestApi(Source):
+    STREAM_NAME = "data"
+
     def __init__(self):
         super().__init__()
 
@@ -42,24 +45,29 @@ class SourceRestApi(Source):
             return AirbyteConnectionStatus(status=Status.FAILED, message=r.text)
 
     def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
-        json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "additionalProperties": True,
-            "type": "object"
-        }
+        json_schema = {"$schema": "http://json-schema.org/draft-07/schema#", "additionalProperties": True, "type": "object"}
 
         # json body will be returned as the "data" stream". we can't know its schema ahead of time, so we assume it's object (i.e. valid json).
-        return AirbyteCatalog(streams=[AirbyteStream(name="data", json_schema=json_schema)])
+        return AirbyteCatalog(streams=[AirbyteStream(name=SourceRestApi.STREAM_NAME, json_schema=json_schema)])
 
     def read(self, logger: AirbyteLogger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         r = self._make_request(config_container.rendered_config)
-        return AirbyteRecordMessage(stream="data", data=r.json, emitted_at=int(datetime.now().timestamp()) * 1000)
+        if r.status_code != 200:
+            raise Exception(f"Request failed. {r.text}")
+
+        # need to eagerly fetch the json.
+        message = AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(stream=SourceRestApi.STREAM_NAME, data=r.json(), emitted_at=int(datetime.now().timestamp()) * 1000),
+        )
+        return (m for m in [message])
 
     def _make_request(self, config):
-        url = config.get("url")
-        http_method = config["http_method"]
-        headers = config.get("headers", {})
-        body = config.get("body", {})
+        parsed_config = self._parse_config(config)
+        http_method = parsed_config.get("http_method")
+        url = parsed_config.get("url")
+        headers = parsed_config.get("headers", {})
+        body = parsed_config.get("body", {})
 
         if http_method == "get":
             r = requests.get(url, headers=headers, data=body)
@@ -69,3 +77,12 @@ class SourceRestApi(Source):
             raise Exception(f"Did not recognize http_method: {http_method}")
 
         return r
+
+    # visible / separated for testing
+    def _parse_config(self, config):
+        return {
+            "url": config.get("url"),
+            "http_method": config["http_method"],
+            "headers": json.loads(config.get("headers", "{}")),
+            "body": json.loads(config.get("body", "{}")),
+        }

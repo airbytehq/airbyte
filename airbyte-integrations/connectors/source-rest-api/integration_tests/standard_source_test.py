@@ -38,7 +38,11 @@ class SourceRestApiStandardTest(StandardSourceTestIface):
         return ConnectorSpecification.parse_obj(json.loads(raw_spec))
 
     def get_config(self) -> object:
-        return {"fakekey": "fakevalue"}
+        return {
+            "http_method": "get",
+            "url": "http://api.bart.gov/api/route.aspx?cmd=routes&key=MW9S-E7SL-26DU-VV8V&json=y",
+            "headers": '{"Content-Typ": "application/json"}',
+        }
 
     def get_catalog(self) -> AirbyteCatalog:
         raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
