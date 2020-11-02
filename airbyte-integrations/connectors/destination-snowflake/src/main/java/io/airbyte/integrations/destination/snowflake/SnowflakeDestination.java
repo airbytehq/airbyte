@@ -101,7 +101,7 @@ public class SnowflakeDestination implements Destination {
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws Exception {
     // connect to snowflake
     final Supplier<Connection> connectionFactory = SnowflakeDatabase.getConnectionFactory(config);
-    Map<String, SnowflakeWriteConfig> writeBuffers = new HashMap<>();
+    Map<String, SnowflakeWriteContext> writeBuffers = new HashMap<>();
 
     // create transient tables if they do not exist
     // we use transient instead of temporary because all of our statements don't run in a single session
@@ -121,7 +121,7 @@ public class SnowflakeDestination implements Destination {
 
       final Path queueRoot = Files.createTempDirectory("queues");
       final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(stream.getName()), stream.getName());
-      writeBuffers.put(stream.getName(), new SnowflakeWriteConfig(tableName, tmpTableName, writeBuffer));
+      writeBuffers.put(stream.getName(), new SnowflakeWriteContext(tableName, tmpTableName, writeBuffer));
     }
 
     // write to transient tables

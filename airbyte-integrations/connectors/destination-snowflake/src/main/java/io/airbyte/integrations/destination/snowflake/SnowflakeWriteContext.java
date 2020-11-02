@@ -26,7 +26,7 @@ package io.airbyte.integrations.destination.snowflake;
 
 import io.airbyte.commons.lang.CloseableQueue;
 
-class SnowflakeWriteContext {
+public class SnowflakeWriteContext {
 
   private final String tableName;
   private final String tmpTableName;
