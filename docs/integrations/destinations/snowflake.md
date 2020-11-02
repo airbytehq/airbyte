@@ -16,7 +16,6 @@ Each stream will be output into its own table in Snowflake. Each table will cont
 
 #### Features
 
-This section should contain a table with the following format:
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
