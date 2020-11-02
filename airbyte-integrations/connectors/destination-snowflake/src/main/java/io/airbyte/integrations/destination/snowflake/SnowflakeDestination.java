@@ -103,14 +103,14 @@ public class SnowflakeDestination implements Destination {
     final Supplier<Connection> connectionFactory = SnowflakeDatabase.getConnectionFactory(config);
     Map<String, SnowflakeWriteContext> writeBuffers = new HashMap<>();
 
-    // create transient tables if they do not exist
-    // we use transient instead of temporary because all of our statements don't run in a single session
+    // create temporary tables if they do not exist
+    // we don't use temporary/transient since we want to control the lifecycle
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String tableName = stream.getName();
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
 
       final String query = String.format(
-          "CREATE TRANSIENT TABLE IF NOT EXISTS \"%s\" ( \n"
+          "CREATE TABLE IF NOT EXISTS \"%s\" ( \n"
               + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
               + "\"%s\" VARIANT,\n"
               + "\"emitted_at\" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
