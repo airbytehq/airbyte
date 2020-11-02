@@ -54,7 +54,7 @@ class TestSourceFile(object):
         os.remove(tmp_file.name)
         print(f"\nLocal File {tmp_file.name} is now deleted")
 
-    @pytest.fixture(scope="class")
+    # @pytest.fixture(scope="class")
     def create_gcs_private_data(self, download_gcs_public_data):
         storage_client = storage.Client.from_service_account_json(self.service_account_file)
         bucket_name = create_unique_gcs_bucket(storage_client, self.cloud_bucket_name)
@@ -66,7 +66,7 @@ class TestSourceFile(object):
         bucket.delete(force=True)
         print(f"\nGCS Bucket {bucket_name} is now deleted")
 
-    @pytest.fixture(scope="class")
+    # @pytest.fixture(scope="class")
     def create_aws_private_data(self, download_gcs_public_data):
         with open(self.aws_credentials) as json_file:
             aws_config = json.load(json_file)
