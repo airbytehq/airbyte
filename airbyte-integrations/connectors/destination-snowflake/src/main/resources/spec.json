@@ -4,7 +4,15 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Snowflake Destination Spec",
     "type": "object",
-    "required": ["host", "role", "warehouse", "database", "schema", "username", "password"],
+    "required": [
+      "host",
+      "role",
+      "warehouse",
+      "database",
+      "schema",
+      "username",
+      "password"
+    ],
 
     "additionalProperties": false,
     "properties": {
