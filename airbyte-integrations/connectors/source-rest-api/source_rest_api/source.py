@@ -23,8 +23,10 @@ SOFTWARE.
 """
 
 from typing import Generator
+import requests
+from datetime import datetime
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage
+from airbyte_protocol import AirbyteCatalog, AirbyteStream, AirbyteConnectionStatus, AirbyteMessage, Status, AirbyteRecordMessage
 from base_python import AirbyteLogger, Source
 
 
@@ -33,11 +35,37 @@ class SourceRestApi(Source):
         super().__init__()
 
     def check(self, logger: AirbyteLogger, config_container) -> AirbyteConnectionStatus:
-        raise Exception("unimplemented")
+        r = self._make_request(config_container.rendered_config)
+        if r.status_code == 200:
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        else:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=r.text)
 
     def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
-        # discover the schema with the provided config
-        raise Exception("unimplemented")
+        json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
+            "type": "object"
+        }
+
+        # json body will be returned as the "data" stream". we can't know its schema ahead of time, so we assume it's object (i.e. valid json).
+        return AirbyteCatalog(streams=[AirbyteStream(name="data", json_schema=json_schema)])
 
     def read(self, logger: AirbyteLogger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
-        raise Exception("unimplemented")
+        r = self._make_request(config_container.rendered_config)
+        return AirbyteRecordMessage(stream="data", data=r.json, emitted_at=int(datetime.now().timestamp()) * 1000)
+
+    def _make_request(self, config):
+        url = config.get("url")
+        http_method = config["http_method"]
+        headers = config.get("headers", {})
+        body = config.get("body", {})
+
+        if http_method == "get":
+            r = requests.get(url, headers=headers, data=body)
+        elif http_method == "post":
+            r = requests.post(url, headers=headers, data=body)
+        else:
+            raise Exception(f"Did not recognize http_method: {http_method}")
+
+        return r

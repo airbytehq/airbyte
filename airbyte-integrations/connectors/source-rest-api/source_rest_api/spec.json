@@ -4,12 +4,27 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Rest Api Spec",
     "type": "object",
-    "required": ["fix-me"],
+    "required": ["url","http_method"],
     "additionalProperties": false,
     "properties": {
-      "fix-me": {
+      "url": {
+        "description": "url for the request, including query params. must start with http:// or https://",
         "type": "string",
-        "description": "describe me"
+        "pattern": "^http(s)?:\\/\\/.*$"
+      },
+      "http_method": {
+        "description": "http method to use for the request",
+        "type": "string",
+        "enum": ["GET", "POST"]
+      },
+      "headers": {
+        "description": "json object where keys are header names and values the values.",
+        "type": "string",
+        "examples": ["{ \"Accept-Charset\": \"utf-8\", \"Content-Type\": \"application/json\"}"]
+      },
+      "body": {
+        "description": "json body to be included in the request",
+        "type": "string"
       }
     }
   }
