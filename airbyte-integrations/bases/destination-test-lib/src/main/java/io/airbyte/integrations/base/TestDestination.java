@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -54,6 +55,7 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -74,6 +76,9 @@ public abstract class TestDestination {
   private Path jobRoot;
   protected Path localRoot;
   private ProcessBuilderFactory pbf;
+
+  private static final Set<String> ALL_RAW_STREAM_NAMES = Sets.newHashSet(
+      "exchange_rate");
 
   /**
    * Name of the docker image that the tests will run against.
@@ -130,14 +135,20 @@ public abstract class TestDestination {
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
   /**
-   * Function that is applied to all of the resources (catalogs, sample messages, etc) in order to
-   * allow renaming streams. This is useful if there's a non-trivial amount of setup involved for the
-   * integration or it isn't easy to namespace.
+   * Function that is applied to stream names in destination tests before emitting records/schemas.
+   * This is useful if there's a non-trivial amount of setup involved for the integration or it isn't
+   * easy to namespace.
    *
    * @return - function to transform resource (usually the identity function)
    */
-  protected Function<String, String> renameFunction() {
+  protected Function<String, String> streamRenamer() {
     return Function.identity();
+  }
+
+  protected Set<String> getAllStreamNames() {
+    return ALL_RAW_STREAM_NAMES.stream()
+        .map(x -> streamRenamer().apply(x))
+        .collect(Collectors.toSet());
   }
 
   @BeforeEach
@@ -212,8 +223,8 @@ public abstract class TestDestination {
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   void testSync(String messagesFilename, String catalogFilename) throws Exception {
-    final AirbyteCatalog catalog = Jsons.deserialize(renameFunction().apply(MoreResources.readResource(catalogFilename)), AirbyteCatalog.class);
-    final List<AirbyteMessage> messages = renameFunction().apply(MoreResources.readResource(messagesFilename)).lines()
+    final AirbyteCatalog catalog = Jsons.deserialize(renameAllStreams(MoreResources.readResource(catalogFilename)), AirbyteCatalog.class);
+    final List<AirbyteMessage> messages = renameAllStreams(MoreResources.readResource(messagesFilename)).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(messages, catalog);
 
@@ -226,8 +237,8 @@ public abstract class TestDestination {
   @Test
   void testSecondSync() throws Exception {
     final AirbyteCatalog catalog =
-        Jsons.deserialize(renameFunction().apply(MoreResources.readResource("exchange_rate_catalog.json")), AirbyteCatalog.class);
-    final List<AirbyteMessage> firstSyncMessages = renameFunction().apply(MoreResources.readResource("exchange_rate_messages.txt")).lines()
+        Jsons.deserialize(renameAllStreams(MoreResources.readResource("exchange_rate_catalog.json")), AirbyteCatalog.class);
+    final List<AirbyteMessage> firstSyncMessages = renameAllStreams(MoreResources.readResource("exchange_rate_messages.txt")).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(firstSyncMessages, catalog);
 
@@ -280,6 +291,17 @@ public abstract class TestDestination {
     assertEquals(expectedJson.size(), actual.size());
     assertTrue(expectedJson.containsAll(actual));
     assertTrue(actual.containsAll(expectedJson));
+  }
+
+  private String renameAllStreams(String input) {
+    String output = input;
+
+    for (String streamName : ALL_RAW_STREAM_NAMES) {
+      final String newStreamName = streamRenamer().apply(streamName);
+      output = output.replace(streamName, newStreamName);
+    }
+
+    return output;
   }
 
   public static class TestDestinationEnv {

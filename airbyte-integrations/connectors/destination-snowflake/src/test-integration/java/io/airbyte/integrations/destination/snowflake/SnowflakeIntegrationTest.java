@@ -41,14 +41,11 @@ import org.junit.jupiter.api.Test;
 public class SnowflakeIntegrationTest extends TestDestination {
 
   private static final String COLUMN_NAME = "data";
-
-  // use a unique stream name from the source so we can write to the same schema/database in Snowflake
-  private static final String OLD_STREAM_NAME = "exchange_rate";
-  private static final String NEW_STREAM_NAME = "exchange_rate_" + RandomStringUtils.randomAlphanumeric(5);
+  private static final String STREAM_SUFFIX = "_" + RandomStringUtils.randomAlphanumeric(5);
 
   @Override
-  protected Function<String, String> renameFunction() {
-    return x -> x.replace(OLD_STREAM_NAME, NEW_STREAM_NAME);
+  protected Function<String, String> streamRenamer() {
+    return x -> x + STREAM_SUFFIX;
   }
 
   @Override
@@ -105,9 +102,11 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
-    SnowflakeDatabase.executeSync(
-        SnowflakeDatabase.getConnectionFactory(getStaticConfig()),
-        String.format("DROP TABLE IF EXISTS \"%s\";", NEW_STREAM_NAME));
+    for (String stream : getAllStreamNames()) {
+      SnowflakeDatabase.executeSync(
+          SnowflakeDatabase.getConnectionFactory(getStaticConfig()),
+          String.format("DROP TABLE IF EXISTS \"%s\";", stream));
+    }
   }
 
 }
