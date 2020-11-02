@@ -39,6 +39,6 @@ setup(
         # integration tests but not the main package go in integration_tests. Deps required by both should go in
         # install_requires.
         "main": [],
-        "integration_tests": ["airbyte_python_test", "boto3", "pytest"],
+        "integration_tests": ["airbyte-python-test", "boto3", "pytest"],
     },
 )

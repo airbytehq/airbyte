@@ -28,6 +28,7 @@ import tempfile
 import traceback
 from datetime import datetime
 from typing import Generator, List
+from urllib.parse import urlparse
 
 import gcsfs
 import pandas as pd
@@ -92,11 +93,11 @@ class SourceFile(Source):
         :return:
         """
         config = config_container.rendered_config
-        storage = config["storage"]
-        url = config["url"]
+        storage = SourceFile.get_storage_scheme(logger, config["storage"], config["url"])
+        url = SourceFile.get_simple_url(config["url"])
         logger.info(f"Checking access to {storage}{url}...")
         try:
-            self.load_dataframes(config, logger, skip_data=True)
+            SourceFile.load_dataframes(config, logger, skip_data=True)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as err:
             reason = f"Failed to load {storage}{url}: {repr(err)}\n{traceback.format_exc()}"
@@ -111,18 +112,18 @@ class SourceFile(Source):
         :return:
         """
         config = config_container.rendered_config
-        storage = config["storage"]
-        url = config["url"]
+        storage = SourceFile.get_storage_scheme(logger, config["storage"], config["url"])
+        url = SourceFile.get_simple_url(config["url"])
         logger.info(f"Discovering schema of {storage}{url}...")
         streams = []
         try:
             # TODO handle discovery of directories of multiple files instead
             # Don't skip data when discovering in order to infer column types
-            df_list = self.load_dataframes(config, logger, skip_data=False)
+            df_list = SourceFile.load_dataframes(config, logger, skip_data=False)
             fields = {}
             for df in df_list:
                 for col in df.columns:
-                    fields[col] = self.convert_dtype(df[col].dtype)
+                    fields[col] = SourceFile.convert_dtype(df[col].dtype)
             json_schema = {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
@@ -145,13 +146,13 @@ class SourceFile(Source):
         :return:
         """
         config = config_container.rendered_config
-        storage = config["storage"]
-        url = config["url"]
+        storage = SourceFile.get_storage_scheme(logger, config["storage"], config["url"])
+        url = SourceFile.get_simple_url(config["url"])
         logger.info(f"Reading ({storage}{url}, {catalog_path}, {state_path})...")
         catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
-        selection = self.parse_catalog(catalog)
+        selection = SourceFile.parse_catalog(catalog)
         try:
-            df_list = self.load_dataframes(config, logger)
+            df_list = SourceFile.load_dataframes(config, logger)
             for df in df_list:
                 columns = selection.intersection(set(df.columns))
                 for data in df[columns].to_dict(orient="records"):
@@ -173,8 +174,8 @@ class SourceFile(Source):
         :param logger:
         :return: a list of dataframe loaded from files described in the configuration
         """
-        storage = config["storage"]
-        url = config["url"]
+        storage = SourceFile.get_storage_scheme(logger, config["storage"], config["url"])
+        url = SourceFile.get_simple_url(config["url"])
 
         gcs_file = None
         use_gcs_service_account = "service_account_json" in config and storage == "gs://"
@@ -245,11 +246,11 @@ class SourceFile(Source):
                 if "aws_secret_access_key" in config:
                     aws_secret_access_key = config["aws_secret_access_key"]
                 url = open(f"s3://{aws_access_key_id}:{aws_secret_access_key}@{url}")
-            elif storage == "webhdfs":
+            elif storage == "webhdfs://":
                 host = config["host"]
                 port = config["port"]
                 url = open(f"webhdfs://{host}:{port}/{url}")
-            elif storage == "ssh" or storage == "scp" or storage == "sftp":
+            elif storage == "ssh://" or storage == "scp://" or storage == "sftp://":
                 user = config["user"]
                 host = config["host"]
                 password = None
@@ -294,6 +295,49 @@ class SourceFile(Source):
             logger.error(reason)
             raise Exception(reason)
         return result
+
+    @staticmethod
+    def get_storage_scheme(logger, storage_name, url) -> str:
+        """Convert Storage Names to the proper URL Prefix
+
+        :param logger: Logger for printing messages
+        :param storage_name: Name of the Storage Provider
+        :param url: URL of the file in case Storage is not provided but included in the URL
+        :return: the corresponding URL prefix / scheme
+        """
+        storage_name = storage_name.upper()
+        parse_result = urlparse(url)
+        if storage_name == "GCS":
+            return "gs://"
+        elif storage_name == "S3":
+            return "s3://"
+        elif storage_name == "HTTPS":
+            return "https://"
+        elif storage_name == "SSH" or storage_name == "SCP":
+            return "scp://"
+        elif storage_name == "SFTP":
+            return "sftp://"
+        elif storage_name == "WEBHDFS":
+            return "webhdfs://"
+        elif storage_name == "LOCAL":
+            return "file://"
+        elif parse_result.scheme:
+            return parse_result.scheme
+        logger.error(f"Unknown Storage provider in: {storage_name} {url}")
+        return ""
+
+    @staticmethod
+    def get_simple_url(url) -> str:
+        """Convert URL to remove the URL prefix (scheme)
+
+        :param url: URL of the file
+        :return: the corresponding URL without URL prefix / scheme
+        """
+        parse_result = urlparse(url)
+        if parse_result.scheme:
+            return url.split("://")[-1]
+        else:
+            return url
 
     @staticmethod
     def convert_dtype(dtype) -> str:

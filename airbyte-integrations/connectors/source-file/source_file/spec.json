@@ -28,16 +28,8 @@
 
       "storage": {
         "type": "string",
-        "enum": [
-          "https://",
-          "gs://",
-          "s3://",
-          "scp://",
-          "sftp://",
-          "webhdfs://",
-          "file://"
-        ],
-        "default": "https://"
+        "enum": ["HTTPS", "GCS", "S3", "SSH", "SFTP", "WebHDFS", "local"],
+        "default": "HTTPS"
       },
 
       "url": {
@@ -51,7 +43,7 @@
           {
             "properties": {
               "storage": {
-                "enum": ["gs://"]
+                "enum": ["GCS"]
               },
               "service_account_json": {
                 "type": "string"
@@ -67,7 +59,7 @@
           {
             "properties": {
               "storage": {
-                "enum": ["s3://"]
+                "enum": ["S3"]
               },
               "aws_access_key_id": {
                 "type": "string"
@@ -86,7 +78,7 @@
           {
             "properties": {
               "storage": {
-                "enum": ["scp://"]
+                "enum": ["SSH"]
               },
               "user": {
                 "type": "string"
@@ -104,7 +96,7 @@
           {
             "properties": {
               "storage": {
-                "enum": ["sftp://"]
+                "enum": ["SFTP"]
               },
               "user": {
                 "type": "string"
@@ -122,7 +114,7 @@
           {
             "properties": {
               "storage": {
-                "enum": ["webhdfs://"]
+                "enum": ["WebHDFS"]
               },
               "host": {
                 "type": "string"

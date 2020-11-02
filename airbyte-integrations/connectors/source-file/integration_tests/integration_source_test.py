@@ -45,8 +45,8 @@ class TestSourceFile(object):
     def download_gcs_public_data(self):
         print("\nDownload public dataset from gcs to local /tmp")
         config = get_config()
-        config["storage"] = "https://"
-        config["url"] = "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"
+        config["storage"] = "HTTPS"
+        config["url"] = "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"
         df = run_load_dataframes(config)
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
         df.to_csv(tmp_file.name, index=False)
@@ -96,17 +96,18 @@ class TestSourceFile(object):
     @pytest.mark.parametrize(
         "reader_impl, storage, url",
         [
-            ("gcfs", "https://", "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"),
-            ("smart_open", "https://", "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"),
-            ("smart_open", "file://", "local"),
+            ("gcfs", "HTTPS", "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"),
+            ("smart_open", "HTTPS", "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"),
+            ("smart_open", "local", "injected by tests"),
         ],
     )
     def test_local_data(self, download_gcs_public_data, reader_impl, storage, url):
         config = get_config()
         config["storage"] = storage
-        if url != "local":
+        if storage != "local":
             config["url"] = url
         else:
+            # inject temp file path that was downloaded by the test as URL
             config["url"] = download_gcs_public_data
         config["reader_impl"] = reader_impl
         run_load_dataframes(config)
@@ -114,7 +115,7 @@ class TestSourceFile(object):
     @pytest.mark.parametrize("reader_impl", ["gcsfs", "smart_open"])
     def test_remote_gcs_load(self, create_gcs_private_data, reader_impl):
         config = get_config()
-        config["storage"] = "gs://"
+        config["storage"] = "GCS"
         config["url"] = create_gcs_private_data
         config["reader_impl"] = reader_impl
         with open(self.service_account_file) as json_file:
@@ -124,7 +125,7 @@ class TestSourceFile(object):
     @pytest.mark.parametrize("reader_impl", ["s3fs", "smart_open"])
     def test_remote_aws_load(self, create_aws_private_data, reader_impl):
         config = get_config()
-        config["storage"] = "s3://"
+        config["storage"] = "S3"
         config["url"] = create_aws_private_data
         config["reader_impl"] = reader_impl
         with open(self.aws_credentials) as json_file:
