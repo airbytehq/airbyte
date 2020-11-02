@@ -32,14 +32,9 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.TestDestination;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 
@@ -82,34 +77,10 @@ public class SnowflakeIntegrationTest extends TestDestination {
     assertTrue(true);
   }
 
-  // todo: DRY
-  private static Supplier<Connection> getConnectionFactory(JsonNode config) {
-    final String connectUrl = String.format("jdbc:snowflake://%s", config.get("host").asText());
-
-    Properties properties = new Properties();
-    properties.put("user", config.get("username").asText());
-    properties.put("password", config.get("password").asText());
-    properties.put("warehouse", config.get("warehouse").asText());
-    properties.put("database", config.get("database").asText());
-    properties.put("role", config.get("role").asText());
-    properties.put("schema", config.get("schema").asText());
-
-    // todo: queryTimeout
-    // todo: networkTimeout
-
-    return () -> {
-      try {
-        return DriverManager.getConnection(connectUrl, properties);
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
-    };
-  }
-
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     return SnowflakeDatabase.executeSync(
-        getConnectionFactory(getConfig()),
+        SnowflakeDatabase.getConnectionFactory(getConfig()),
         String.format("SELECT * FROM \"%s\" ORDER BY \"emitted_at\" ASC;", streamName),
         false,
         rs -> {
@@ -135,7 +106,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
     SnowflakeDatabase.executeSync(
-        getConnectionFactory(getStaticConfig()),
+        SnowflakeDatabase.getConnectionFactory(getStaticConfig()),
         String.format("DROP TABLE IF EXISTS \"%s\";", NEW_STREAM_NAME));
   }
 
