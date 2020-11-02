@@ -18,8 +18,6 @@ Airbyte only supports replicating Grid sheets. See the [Google Sheets API docs](
 
 ### Features
 
-This section should contain a table with the following format:
-
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
