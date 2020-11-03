@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
+set -e
+
 TRANSFORMED_CONFIG=transformed_config.json
 DBT_MODEL=dbt_model.json
-set -e
 
 function echo2() {
   echo >&2 "$@"

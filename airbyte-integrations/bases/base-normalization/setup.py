@@ -31,7 +31,7 @@ setuptools.setup(
     author_email="contact@airbyte.io",
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
-    install_requires=["airbyte-protocol"],
+    install_requires=["airbyte-protocol", "dbt==0.18.1"],
     entry_points={
         "console_scripts": [
             "transform-config=normalization.transform_config.transform:main",
