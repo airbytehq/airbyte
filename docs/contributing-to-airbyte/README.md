@@ -39,8 +39,8 @@ It's easy to add your own integrations to Airbyte! **Since Airbyte connectors ar
 
 #### **Contributing sources:**
 
-* [In Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/python-source/README.md)
-* [Based on Singer Taps in Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/singer-source/README.md)
+* [In Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/source-python/README.md)
+* [Based on Singer Taps in Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/source-singer/README.md)
 
 #### **Contributing destinations:**
 
