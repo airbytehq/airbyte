@@ -22,18 +22,28 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.normalization;
 
-public class WorkerConstants {
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import java.nio.file.Path;
 
-  public static final String TAP_CONFIG_JSON_FILENAME = "tap_config.json";
-  public static final String TARGET_CONFIG_JSON_FILENAME = "target_config.json";
+public interface NormalizationRunner extends AutoCloseable {
 
-  public static final String CATALOG_JSON_FILENAME = "catalog.json";
-  public static final String INPUT_STATE_JSON_FILENAME = "input_state.json";
+  boolean normalize(Path jobRoot, JsonNode config, AirbyteCatalog catalog) throws Exception;
 
-  public static final String LOG_FILENAME = "logs.log";
+  class NoOpNormalizationRunner implements NormalizationRunner {
 
-  public static final String BASIC_NORMALIZATION_KEY = "basic_normalization";
+    @Override
+    public boolean normalize(Path jobRoot, JsonNode config, AirbyteCatalog catalog) {
+      return true;
+    }
+
+    @Override
+    public void close() {
+      // no op.
+    }
+
+  }
 
 }
