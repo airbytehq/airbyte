@@ -39,8 +39,8 @@ It's easy to add your own integrations to Airbyte! **Since Airbyte connectors ar
 
 #### **Contributing sources:**
 
-* [In Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/python-source/README.md)
-* [Based on Singer Taps in Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/singer-source/README.md)
+* [In Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/source-python/README.md)
+* [Based on Singer Taps in Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/source-singer/README.md)
 
 #### **Contributing destinations:**
 
@@ -78,7 +78,7 @@ First, a big thank you! A few things to keep in mind when contributing code:
 * If you're working on an issue, please comment that you are doing so to prevent duplicate work by others also.
 * Rebase master with your branch before submitting a pull request.
 
-Here are some details about [our review process](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#6-review-process).
+Here are some details about [our review process](./#6-review-process).
 
 ### **Upvoting issues, feature and integration requests**
 
@@ -95,7 +95,7 @@ If you would like to suggest a new feature, we ask that you please use our issue
 
 To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/community_new).
 
-Watch out for duplicates! If you are creating a new issue, please check [existing open](https://github.com/airbyte.io/airbyte/issues), or [recently closed](https://github.com/airbytehq/airbyte/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20). Having a single voted for issue is far easier for us to prioritize
+Watch out for duplicates! If you are creating a new issue, please check [existing open](https://github.com/airbytehq/airbyte/issues), or [recently closed](https://github.com/airbytehq/airbyte/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20). Having a single voted for issue is far easier for us to prioritize
 
 ### **Requesting new integrations**
 
