@@ -20,7 +20,6 @@
     * [Hubspot](integrations/sources/hubspot.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Postgres](integrations/sources/postgres.md)
-    * [Rest API](integrations/sources/rest-api.md)
     * [Salesforce](integrations/sources/salesforce.md)
     * [Stripe](integrations/sources/stripe.md)
   * [Destinations](integrations/destinations/README.md)
