@@ -4,7 +4,7 @@ description: Be sure to not miss out on new features and improvements!
 
 # Changelog
 
-If you're interested in our changelog on which new connectors are available out of the box on Airbyte, please check our [integrations changelog](https://docs.airbyte.io/integrations/integrations-changelog). 
+If you're interested in our changelog on which new connectors are available out of the box on Airbyte, please check our [integrations changelog](docs/integrations/integrations-changelog). 
 
 If you're interested in our progress on the Airbyte platform, please read below!
 
