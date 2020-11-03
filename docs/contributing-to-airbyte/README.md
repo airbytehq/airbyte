@@ -45,7 +45,7 @@ Our goal is to keep our docs comprehensive and updated. If you would like to hel
 * Fix errors in existing docs
 * Help us in adding to the docs
 
-The contributing guide for docs can be found [here](https://github.com/airbytehq/airbyte/tree/c2e19be57f32cd82d2699970d30bfb70c20ad061/updating-documentation/README.md).
+The contributing guide for docs can be found [here](updating-documentation.md).
 
 ### **Community content**
 
