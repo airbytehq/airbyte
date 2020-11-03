@@ -25,10 +25,10 @@
 package io.airbyte.scheduler.job_factory;
 
 import io.airbyte.commons.docker.DockerUtils;
-import io.airbyte.config.DestinationConnectionImplementation;
-import io.airbyte.config.SourceConnectionImplementation;
-import io.airbyte.config.StandardDestination;
-import io.airbyte.config.StandardSource;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -52,20 +52,22 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
   public Long create(final UUID connectionId) {
     try {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-      final SourceConnectionImplementation sourceConnectionImplementation =
-          configRepository.getSourceConnectionImplementation(standardSync.getSourceImplementationId());
-      final DestinationConnectionImplementation destinationConnectionImplementation =
-          configRepository.getDestinationConnectionImplementation(standardSync.getDestinationImplementationId());
+      final SourceConnection sourceConnection =
+          configRepository.getSourceConnection(standardSync.getSourceId());
+      final DestinationConnection destinationConnection =
+          configRepository.getDestinationConnection(standardSync.getDestinationId());
 
-      final StandardSource source = configRepository.getStandardSource(sourceConnectionImplementation.getSourceId());
-      final StandardDestination destination = configRepository.getStandardDestination(destinationConnectionImplementation.getDestinationId());
+      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSource(sourceConnection.getSourceDefinitionId());
+      final StandardDestinationDefinition destinationDefinition =
+          configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
 
-      final String sourceImageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
-      final String destinationImageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
+      final String sourceImageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
+      final String destinationImageName =
+          DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
 
       return schedulerPersistence.createSyncJob(
-          sourceConnectionImplementation,
-          destinationConnectionImplementation,
+          sourceConnection,
+          destinationConnection,
           standardSync,
           sourceImageName,
           destinationImageName);

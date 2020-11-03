@@ -31,8 +31,8 @@ import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead.StatusEnum;
 import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.SourceImplementationIdRequestBody;
-import io.airbyte.api.model.SourceImplementationRead;
+import io.airbyte.api.model.SourceIdRequestBody;
+import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -45,14 +45,14 @@ import java.util.List;
 public class WebBackendConnectionsHandler {
 
   private final ConnectionsHandler connectionsHandler;
-  private final SourceImplementationsHandler sourceImplementationsHandler;
+  private final SourceHandler sourceHandler;
   private final JobHistoryHandler jobHistoryHandler;
 
   public WebBackendConnectionsHandler(final ConnectionsHandler connectionsHandler,
-                                      final SourceImplementationsHandler sourceImplementationsHandler,
+                                      final SourceHandler sourceHandler,
                                       final JobHistoryHandler jobHistoryHandler) {
     this.connectionsHandler = connectionsHandler;
-    this.sourceImplementationsHandler = sourceImplementationsHandler;
+    this.sourceHandler = sourceHandler;
     this.jobHistoryHandler = jobHistoryHandler;
   }
 
@@ -72,9 +72,9 @@ public class WebBackendConnectionsHandler {
   }
 
   private WbConnectionRead buildWbConnectionRead(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final SourceImplementationIdRequestBody sourceImplementationIdRequestBody = new SourceImplementationIdRequestBody()
-        .sourceImplementationId(connectionRead.getSourceImplementationId());
-    final SourceImplementationRead sourceImplementation = sourceImplementationsHandler.getSourceImplementation(sourceImplementationIdRequestBody);
+    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody()
+        .sourceId(connectionRead.getSourceId());
+    final SourceRead source = sourceHandler.getSource(sourceIdRequestBody);
 
     final JobListRequestBody jobListRequestBody = new JobListRequestBody()
         .configId(connectionRead.getConnectionId().toString())
@@ -82,14 +82,14 @@ public class WebBackendConnectionsHandler {
 
     final WbConnectionRead wbConnectionRead = new WbConnectionRead()
         .connectionId(connectionRead.getConnectionId())
-        .sourceImplementationId(connectionRead.getSourceImplementationId())
-        .destinationImplementationId(connectionRead.getDestinationImplementationId())
+        .sourceId(connectionRead.getSourceId())
+        .destinationId(connectionRead.getDestinationId())
         .name(connectionRead.getName())
         .syncSchema(connectionRead.getSyncSchema())
         .status(connectionRead.getStatus())
         .syncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class))
         .schedule(connectionRead.getSchedule())
-        .source(sourceImplementation);
+        .source(source);
 
     final JobReadList jobReadList = jobHistoryHandler.listJobsFor(jobListRequestBody);
     wbConnectionRead.setIsSyncing(

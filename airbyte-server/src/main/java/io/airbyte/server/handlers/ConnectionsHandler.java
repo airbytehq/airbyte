@@ -78,8 +78,8 @@ public class ConnectionsHandler {
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
-        .withSourceImplementationId(connectionCreate.getSourceImplementationId())
-        .withDestinationImplementationId(connectionCreate.getDestinationImplementationId())
+        .withSourceId(connectionCreate.getSourceId())
+        .withDestinationId(connectionCreate.getDestinationId())
         .withSyncMode(Enums.convertTo(connectionCreate.getSyncMode(), StandardSync.SyncMode.class))
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
 
@@ -166,7 +166,7 @@ public class ConnectionsHandler {
   private boolean isStandardSyncInWorkspace(final UUID workspaceId,
                                             final StandardSync standardSync)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    return configRepository.getSourceConnectionImplementation(standardSync.getSourceImplementationId()).getWorkspaceId().equals(workspaceId);
+    return configRepository.getSourceConnection(standardSync.getSourceId()).getWorkspaceId().equals(workspaceId);
   }
 
   private ConnectionRead buildConnectionRead(UUID connectionId)
@@ -191,8 +191,8 @@ public class ConnectionsHandler {
 
     return new ConnectionRead()
         .connectionId(standardSync.getConnectionId())
-        .sourceImplementationId(standardSync.getSourceImplementationId())
-        .destinationImplementationId(standardSync.getDestinationImplementationId())
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
         .syncMode(toApiSyncMode(standardSync.getSyncMode()))

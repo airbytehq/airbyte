@@ -27,13 +27,13 @@ export default class SchemaResource extends BaseResource implements Schema {
     return this.id?.toString();
   }
 
-  static urlRoot = "source_implementations";
+  static urlRoot = "sources";
 
   static schemaShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      getFetchKey: (params: { sourceImplementationId: string }) =>
-        `POST /source_implementations/discover_schema` + JSON.stringify(params),
+      getFetchKey: (params: { sourceId: string }) =>
+        `POST /sources/discover_schema` + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
       ): Promise<any> => {
@@ -44,7 +44,7 @@ export default class SchemaResource extends BaseResource implements Schema {
         );
         return {
           schema: result?.schema,
-          id: params.sourceImplementationId
+          id: params.sourceId
         };
       },
       schema: this.asSchema()

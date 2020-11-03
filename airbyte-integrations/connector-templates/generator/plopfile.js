@@ -7,6 +7,7 @@ module.exports = function (plop) {
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
 
+  const basesDir = '../../bases';
   const outputDir = '../../connectors';
   const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`
@@ -71,7 +72,6 @@ module.exports = function (plop) {
       },
       function(answers, config, plop){
         const renderedOutputDir = plop.renderString(pythonSourceOutputRoot, answers);
-        const basesDir = path.resolve(__dirname, '../../bases');
         fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
         fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
       },
@@ -98,7 +98,6 @@ module.exports = function (plop) {
       },
       function(answers, config, plop){
         const renderedOutputDir = plop.renderString(singerSourceOutputRoot, answers);
-        const basesDir = path.resolve(__dirname, '../../bases');
         fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
         fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
         fs.symlinkSync(`${basesDir}/base-singer/base_singer`, `${renderedOutputDir}/base_singer`);

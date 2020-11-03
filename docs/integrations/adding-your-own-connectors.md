@@ -1,41 +1,28 @@
 # Custom Connectors
 
-If you'd like to build new connectors and make them part of the pool of pre-built connectors on Airbyte, first a big thank you, and we invite you to check our [contributing guide](https://docs.airbyte.io/contributing/contributing-to-airbyte).
+If you'd like to build new connectors and make them part of the pool of pre-built connectors on Airbyte, first a big thank you, and we invite you to check our [contributing guide](../contributing-to-airbyte/).
 
 If you'd like to build new connectors, or update existing ones, for your own usage, without contributing to the Airbyte codebase, read along.
 
-## Table of Contents
+## The Airbyte specification
 
-1. [Airbyte specification](https://docs.airbyte.io/v/dx-to-add-own-connector_suggestion/integrations/adding-your-own-connectors#1-the-airbyte-specification)
-2. [Developing your own connectors](https://docs.airbyte.io/v/dx-to-add-own-connector_suggestion/integrations/adding-your-own-connectors#2-developing-your-own-connectors)
-3. [Adding your connectors on our UI to run them](https://docs.airbyte.io/v/dx-to-add-own-connector_suggestion/integrations/adding-your-own-connectors#3-adding-your-connectors-on-our-ui-to-run-them)
+Before you can start building your own connector, you need to understand [Airbyte's data protocol specification](../architecture/airbyte-specification.md).
 
-## 1. The Airbyte specification
-
-Before you can start building your own connector, you need to understand [Airbyte's data protocol specification](https://docs.airbyte.io/architecture/airbyte-specification).
-
-## 2. Developing your own connectors
+## Developing your own connectors
 
 It's easy to code your own integrations on Airbyte. Here are some links to instruct on how to code new sources and destinations.
 
-#### **Coding new source connectors:**
-
-* [In Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/python-source/README.md)
-* [Based on Singer Taps in Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/singer-source/README.md)
-
-#### **Coding new destination connectors:**
-
-* [In Java](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/java-destination/README.md)
+* [Creating a new Integration](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/README.md)
 
 While the guides above are specific to the languages used most frequently to write integrations, **Airbyte integrations can be written in any language**. Please reach out to us if you'd like help developing integrations in other languages.
 
-## 3. Adding your connectors in the UI
+## Adding your connectors in the UI
 
 There are only 3 easy steps to do that:
 
 1.Publish your custom connector onto Dockerhub first \(or any image hub that Airbyte can access\).
 
-2.In the UI, go to the Admin section, and click on \[+ New connector\] on the top right
+2.In the UI, go to the Admin section, and click on `[+ New connector]` on the top right
 
 ![](https://lh4.googleusercontent.com/8lW_KRkw8w8q96JUJ7Snxj9MRC8toOyd7avLEj9anID53Q7Vj1bkPRSp8skV1VcIJPWsjWugX0pj0jCZ2jdaBwqhZED9E7DN5SRX_FWyRMdQu1eRojCTGm3xW2R8xYC9JE_kQtwn)
 
@@ -46,6 +33,4 @@ There are only 3 easy steps to do that:
 Once this is filled, you will see your connector in the UI and your team will be able to use it, **from the UI and Airbyte's API too.**
 
 Note that this new connector could just be an updated version of an existing connector that you adapted to your specific edge case. Anything is possible!
-
-### \*\*\*\*
 
