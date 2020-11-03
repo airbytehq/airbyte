@@ -3,7 +3,7 @@
 ## **Michel Tricot**
 
 Michel was a director of engineering and head of integrations at LiveRamp \(NYSE: RAMP\), and founding member at rideOS \(raised $35M\). His expertise includes B2B products, data infrastructure, scale and deep integrations.  
-[**LinkedIn**](https://www.linkedin.com/in/micheltricot/)\*\*\*\*
+[**LinkedIn**](https://www.linkedin.com/in/micheltricot/) **\|** [**Twitter**](https://twitter.com/MichelTricot)
 
 ## **John Lafleur**
 
