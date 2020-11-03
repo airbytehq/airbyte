@@ -2,7 +2,7 @@
 
 You can access our short-term roadmap here on our [Github project](https://github.com/airbytehq/airbyte/projects/1).
 
-You can also see our last release in our [changelog](https://docs.airbyte.io/changelog). We try to have a weekly release cadence.
+You can also see our last release in our [changelog](../changelog.md). We try to have a weekly release cadence.
 
 We also wanted to share with you how we think about the high-level roadmap over the next few months and years. We foresee several high-level phases that we will try to share here.
 
