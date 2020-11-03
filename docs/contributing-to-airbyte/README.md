@@ -78,7 +78,7 @@ First, a big thank you! A few things to keep in mind when contributing code:
 * If you're working on an issue, please comment that you are doing so to prevent duplicate work by others also.
 * Rebase master with your branch before submitting a pull request.
 
-Here are some details about [our review process](https://docs.airbyte.io/v/dx-to-contribute_suggestion/contributing/contributing-to-airbyte#6-review-process).
+Here are some details about [our review process](./#6-review-process).
 
 ### **Upvoting issues, feature and integration requests**
 
