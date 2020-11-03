@@ -8,30 +8,21 @@ Thank you for your interest in contributing! We love community contributions. Co
 
 However, for those who want a bit more guidance on the best way to contribute to Airbyte, read on. This document will cover what we're looking for. By addressing the points below, the chances that we can quickly merge or address your contributions will increase.
 
-## Table of Contents
+## Code of conduct
 
-1. [Code of conduct](https://docs.airbyte.io/contributing/contributing-to-airbyte/#1-code-of-conduct)
-2. [Airbyte specification](https://docs.airbyte.io/contributing/contributing-to-airbyte#2-airbyte-specification)
-3. [First-time contributors, welcome!](https://docs.airbyte.io/contributing/contributing-to-airbyte#3-first-time-contributors-welcome)
-4. [Areas for contributing](https://docs.airbyte.io/contributing/contributing-to-airbyte#4-areas-for-contributing)
-5. [Ways you can contribute](https://docs.airbyte.io/contributing/contributing-to-airbyte#5-ways-you-can-contribute)
-6. [Review process](https://docs.airbyte.io/contributing/contributing-to-airbyte#6-review-process)
+Please follow our [Code of conduct](code-of-conduct.md) in the context of any contributions made to Airbyte.
 
-## 1. Code of conduct
+## Airbyte specification
 
-Please follow our [Code of conduct](https://docs.airbyte.io/contributing/code-of-conduct) in the context of any contributions made to Airbyte.
+Before you can start contributing, you need to understand [Airbyte's data protocol specification](../architecture/airbyte-specification.md).
 
-## 2. Airbyte specification
-
-Before you can start contributing, you need to understand [Airbyte's data protocol specification](https://docs.airbyte.io/architecture/airbyte-specification).
-
-## 3. First-time contributors, welcome!
+## First-time contributors, welcome!
 
 We appreciate first time contributors and we are happy to assist you in getting started. In case of questions, just reach out to us via [email](mailto:hey@airbyte.io) or [Slack](https://slack.airbyte.io)!
 
 Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to do.
 
-## 4. Areas for contributing
+## Areas for contributing
 
 ### **New integrations**
 
@@ -54,11 +45,11 @@ Our goal is to keep our docs comprehensive and updated. If you would like to hel
 * Fix errors in existing docs
 * Help us in adding to the docs
 
-The contributing guide for docs can be found [here](https://docs.airbyte.io/contributing/contributing-to-airbyte/updating-documentation).
+The contributing guide for docs can be found [here](updating-documentation.md).
 
 ### **Community content**
 
-We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](http://airbyte.io/tutorials):
+We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](https://airbyte.io/tutorials):
 
 * Fix errors in existing tutorials
 * Add new tutorials \(please reach out to us if you have ideas to avoid duplicate work\)
@@ -68,7 +59,7 @@ We have a repo dedicated to community content. Everything is documented [there](
 
 Feel free to submit a pull request in this repo, if you have something to add even if it's not related to anything mentioned above.
 
-## 5. Ways you can contribute
+## Ways you can contribute
 
 ### **Adding to the codebase for an integration or issue**
 
@@ -78,7 +69,7 @@ First, a big thank you! A few things to keep in mind when contributing code:
 * If you're working on an issue, please comment that you are doing so to prevent duplicate work by others also.
 * Rebase master with your branch before submitting a pull request.
 
-Here are some details about [our review process](./#6-review-process).
+Here are some details about [our review process](./#review-process).
 
 ### **Upvoting issues, feature and integration requests**
 
@@ -113,7 +104,7 @@ To see what has already been proposed by the community, you can look [here](http
 
 Please do not create a public GitHub issue. If you've found a security issue, please email us directly at [security@airbyte.io](mailto:security@airbyte.io) instead of raising an issue.
 
-## **6. Review process**
+## **Review process**
 
 **‌‌**If you are considering adding to the codebase or contributing a new integration: a big thank you! We sincerely appreciate your help.
 
