@@ -26,7 +26,6 @@ package io.airbyte.integrations.source.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
@@ -51,15 +50,10 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
-
-import java.io.BufferedReader;
-import java.io.StringReader;
-import java.util.List;
+import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
