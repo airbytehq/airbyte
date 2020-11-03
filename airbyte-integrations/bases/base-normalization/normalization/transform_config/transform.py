@@ -34,8 +34,6 @@ class DestinationType(Enum):
     bigquery = "bigquery"
     postgres = "postgres"
     snowflake = "snowflake"
->>>>>>> skeleton for config transform
-
 
 class TransformConfig:
     def run(self, args):
