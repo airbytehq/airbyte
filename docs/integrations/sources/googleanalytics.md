@@ -4,7 +4,7 @@
 
 The Google Analytics source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
 
-This Google Analytics source wraps the [Pipelinewise Singer Google Anaytics Tap](https://github.com/transferwise/pipelinewise-tap-google-analytics).
+This Google Analytics source wraps the [Pipelinewise Singer Google Analytics Tap](https://github.com/transferwise/pipelinewise-tap-google-analytics).
 
 ### Output streams
 
