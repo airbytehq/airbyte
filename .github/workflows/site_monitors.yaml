@@ -1,0 +1,15 @@
+name: Site Monitors
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
+      - name: Check documentation
+        run: ./tools/site/link_checker.sh check_docs
