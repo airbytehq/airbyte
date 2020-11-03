@@ -43,6 +43,11 @@ jobs:
         with:
           python-version: '3.7'
 
+      - name: Check documentation links (Master)
+        if: success() #&& github.ref == 'refs/heads/master'
+        run: ./tools/site/link_checker.sh check_docs
+
+
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh
         env:
@@ -61,9 +66,6 @@ jobs:
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
-      - name: Check documentation links (Master)
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./tools/site/link_checker.sh check_docs
 
       - name: Run Integration Tests (PR)
         if: success() && github.ref != 'refs/heads/master'
