@@ -43,14 +43,14 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode mySqlConfig) {
+  public JsonNode toJdbcConfig(JsonNode config) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", mySqlConfig.get("username").asText())
-        .put("password", mySqlConfig.get("password").asText())
+        .put("username", config.get("username").asText())
+        .put("password", config.get("password").asText())
         .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            mySqlConfig.get("host").asText(),
-            mySqlConfig.get("port").asText(),
-            mySqlConfig.get("database").asText()))
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()))
         .build());
   }
 
