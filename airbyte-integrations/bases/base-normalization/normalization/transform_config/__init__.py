@@ -22,20 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import setuptools
+from .transform import TransformConfig
 
-setuptools.setup(
-    name="normalization",
-    description="Normalizes data in the destination.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    install_requires=["airbyte-protocol"],
-    entry_points={
-        "console_scripts": [
-            "transform-config=normalization.transform_config.transform:main",
-            "transform-catalog=normalization.transform_catalog.transform:main",
-        ],
-    },
-)
+__all__ = ["TransformConfig"]
