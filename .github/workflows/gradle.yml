@@ -12,6 +12,9 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
+      - name: Check documentation
+        run: ./tools/site/link_checker.sh check_docs
+
       - name: Cache java deps
         uses: actions/cache@v2
         with:
