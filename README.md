@@ -49,7 +49,7 @@ Here is a [step-by-step guide](docs/getting-started-tutorial.md) showing you how
 
 We love contributions to Airbyte, big or small.
 
-See our [Contributing guide](https://docs.airbyte.io/contributing/contributing-to-airbyte) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
+See our [Contributing guide](https://docs.airbyte.io/contributing-to-airbyte) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
 
 **Note that you are able to create integrations using the language you want, as Airbyte connections run as Docker containers.**
 
