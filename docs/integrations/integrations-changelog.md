@@ -15,14 +15,14 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## 10/30/2020
 
-**New sources:** [Salesforce](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/salesforce/README.md), [Google Analytics](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/googleanalytics/README.md), [Hubspot](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/hubspot/README.md), [GitHub](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/github/README.md), [Google Sheets](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/google-sheets/README.md), [Rest APIs](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/rest-api/README.md), and [MySQL](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/mysql/README.md)
+**New sources:** [Salesforce](sources/salesforce.md), [Google Analytics](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/googleanalytics/README.md), [Hubspot](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/hubspot/README.md), [GitHub](sources/github.md), [Google Sheets](sources/google-sheets.md), [Rest APIs](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/rest-api/README.md), and [MySQL](sources/mysql.md)
 
 ## 10/21/2020
 
-**New destinations:** we built our own connectors for [BigQuery](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/destinations/bigquery/README.md) and [Postgres](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/destinations/postgres/README.md), to ensure they are of the highest quality.
+**New destinations:** we built our own connectors for [BigQuery](destinations/bigquery.md) and [Postgres](destinations/postgres.md), to ensure they are of the highest quality.
 
 ## 09/23/2020
 
-**New sources:** [Stripe](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/stripe/README.md), [Postgres](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/postgres/README.md)  
-**New destinations:** [BigQuery](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/destinations/bigquery/README.md), [Postgres](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/destinations/postgres/README.md), [local CSV](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/destinations/local-csv/README.md)
+**New sources:** [Stripe](sources/stripe.md), [Postgres](sources/postgres.md)  
+**New destinations:** [BigQuery](destinations/bigquery.md), [Postgres](destinations/postgres.md), [local CSV](destinations/local-csv.md)
 
