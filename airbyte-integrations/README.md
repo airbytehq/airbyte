@@ -1,8 +1,9 @@
 ## Creating a new Integration
 
-From the `airbyte-integrations/connector-templates/generator` directory, run: 
+First, make sure you built the project by running `./gradlew build` from the project root directory. 
+
+Then, from the `airbyte-integrations/connector-templates/generator` directory, run: 
 ```
-npm install
 npm run generate
 ```
 and follow the interactive prompt. This will generate a new integration in the `airbyte-integrations/connectors/<your-integration>` directory. 
