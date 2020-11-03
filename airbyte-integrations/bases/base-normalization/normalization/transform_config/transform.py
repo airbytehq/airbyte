@@ -45,6 +45,7 @@ class TransformConfig:
         base_profile = yaml.load(
             pkgutil.get_data(self.__class__.__module__.split(".")[0], "transform_config/profile_base.yml"), Loader=yaml.FullLoader
         )
+        # merge pre-populated base_profile with destination-specific configuration.
         base_profile["normalize"]["outputs"]["prod"] = transformed_config
 
         self.write_yaml_config(inputs["output_path"], base_profile)
