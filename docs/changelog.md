@@ -21,12 +21,12 @@ Here is what we have in mind:
 Here is what we are working on right now:
 
 * **New destination**: our own **Snowflake** warehouse integration
-* **New sources:** Hubspot, Facebook Ads, Google Ads, MSSQL, GCS CSV, S3 CSV, SFTP CSV
+* **New sources:** Facebook Ads, Google Ads, MSSQL, GCS CSV, S3 CSV, SFTP CSV
 * as a bonus if we can, update the onboarding experience with pre-filled demo data for the users who just want to see how Airbyte works with the least effort.
 
 ## 0.3.0 - delivered on 10/30/2020
 
-* **New sources:** Salesforce, GitHub, Google Sheets, Google Analytics, and MySQL
+* **New sources:** Salesforce, GitHub, Google Sheets, Google Analytics, Hubspot, Rest APIs, and MySQL
 * Integration test suite for sources
 * Improve build speed
 
