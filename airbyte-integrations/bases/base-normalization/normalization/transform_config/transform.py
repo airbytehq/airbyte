@@ -22,15 +22,68 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import os
+import argparse
+import json
+from enum import Enum
 
-print(os)
+
+class DestinationType(Enum):
+    bigquery = "bigquery"
+    postgres = "postgres"
+    snowflake = "snowflake"
+>>>>>>> skeleton for config transform
 
 
 class TransformConfig:
-    def run(self):
-        print("running config transform")
+    def run(self, args):
+        inputs = self.parse(args)
+        # original_config = self.read_config(inputs["config"])
+        original_config = {}
+        transformed_config = self.transform(inputs["integration_type"], original_config)
+        self.write_config(inputs["output_path"], transformed_config)
+
+    def parse(self, args):
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument("--config", type=str, required=True, help="path to original config")
+        parser.add_argument(
+            "--integration-type", type=DestinationType, choices=list(DestinationType), required=True, help="type of integration"
+        )
+        parser.add_argument("--out", type=str, required=True, help="path to output transformed config to")
+
+        parsed_args = parser.parse_args(args)
+        print(str(parsed_args))
+
+        return {
+            "config": parsed_args.config,
+            "integration_type": parsed_args.integration_type,
+            "output_path": parsed_args.out,
+        }
+
+    def transform(self, integration_type: DestinationType, config: dict):
+        return {
+            DestinationType.bigquery: self.transform_bigquery,
+            DestinationType.postgres: self.transform_postgres,
+            DestinationType.snowflake: self.transform_snowflake,
+        }[integration_type](config)
+
+    def transform_bigquery(self, config: dict):
+        print("transform_bigquery")
+
+    def transform_postgres(self, config: dict):
+        print("transform_postgres")
+
+    def transform_snowflake(self, config: dict):
+        print("transform_snowflake")
+
+    def read_config(self, input_path: str):
+        with open(input_path, "r") as file:
+            contents = file.read()
+        return json.loads(contents)
+
+    def write_config(self, output_path: str, config: dict):
+        with open(output_path, "w") as fh:
+            fh.write(json.dumps(config))
 
 
-def main():
-    TransformConfig().run()
+def main(args=None):
+    TransformConfig().run(args)
