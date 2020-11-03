@@ -95,7 +95,7 @@ If you would like to suggest a new feature, we ask that you please use our issue
 
 To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/community_new).
 
-Watch out for duplicates! If you are creating a new issue, please check [existing open](https://github.com/airbyte.io/airbyte/issues), or [recently closed](https://github.com/airbytehq/airbyte/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20). Having a single voted for issue is far easier for us to prioritize
+Watch out for duplicates! If you are creating a new issue, please check [existing open](https://github.com/airbytehq/airbyte/issues), or [recently closed](https://github.com/airbytehq/airbyte/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20). Having a single voted for issue is far easier for us to prioritize
 
 ### **Requesting new integrations**
 
