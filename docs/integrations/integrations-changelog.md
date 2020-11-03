@@ -15,16 +15,16 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## 10/30/2020
 
-**New sources:** [Salesforce](https://docs.airbyte.io/integrations/sources/salesforce), [Google Analytics](https://docs.airbyte.io/integrations/sources/googleanalytics), [Hubspot](https://docs.airbyte.io/integrations/sources/hubspot), [GitHub](https://docs.airbyte.io/integrations/sources/github), [Google Sheets](https://docs.airbyte.io/integrations/sources/google-sheets), [Rest APIs](https://docs.airbyte.io/integrations/sources/rest-api), and [MySQL](https://docs.airbyte.io/integrations/sources/mysql)
+**New sources:** [Salesforce](../integrations/sources/salesforce), [Google Analytics](../integrations/sources/googleanalytics), [Hubspot](../integrations/sources/hubspot), [GitHub](../integrations/sources/github), [Google Sheets](../integrations/sources/google-sheets), [Rest APIs](../integrations/sources/rest-api), and [MySQL](../integrations/sources/mysql)
 
 ## 10/21/2020
 
-**New destinations:** we built our own connectors for [BigQuery](https://docs.airbyte.io/integrations/destinations/bigquery) and [Postgres](https://docs.airbyte.io/integrations/destinations/postgres), to ensure they are of the highest quality.
+**New destinations:** we built our own connectors for [BigQuery](../integrations/destinations/bigquery) and [Postgres](../integrations/destinations/postgres), to ensure they are of the highest quality.
 
 ## 09/23/2020
 
-**New sources:** [Stripe](https://docs.airbyte.io/integrations/sources/stripe), [Postgres](https://docs.airbyte.io/integrations/sources/postgres)  
-**New destinations:** [BigQuery](https://docs.airbyte.io/integrations/destinations/bigquery), [Postgres](https://docs.airbyte.io/integrations/destinations/postgres), [local CSV](https://docs.airbyte.io/integrations/destinations/local-csv)
+**New sources:** [Stripe](../integrations/sources/stripe), [Postgres](../integrations/sources/postgres)  
+**New destinations:** [BigQuery](../integrations/destinations/bigquery), [Postgres](../integrations/destinations/postgres), [local CSV](../integrations/destinations/local-csv)
 
 
 
