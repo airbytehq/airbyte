@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Check documentation
+        if: success() #&& github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
 
       - name: Cache java deps
@@ -43,11 +44,6 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Check documentation links (Master)
-        if: success() #&& github.ref == 'refs/heads/master'
-        run: ./tools/site/link_checker.sh check_docs
-
-
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh
         env:
@@ -65,7 +61,6 @@ jobs:
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
-
 
       - name: Run Integration Tests (PR)
         if: success() && github.ref != 'refs/heads/master'
