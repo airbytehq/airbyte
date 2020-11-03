@@ -37,8 +37,7 @@ class DestinationType(Enum):
 class TransformConfig:
     def run(self, args):
         inputs = self.parse(args)
-        # original_config = self.read_config(inputs["config"])
-        original_config = {}
+        original_config = self.read_config(inputs["config"])
         transformed_config = self.transform(inputs["integration_type"], original_config)
         self.write_config(inputs["output_path"], transformed_config)
 
