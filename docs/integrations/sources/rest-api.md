@@ -1,4 +1,4 @@
-# REST API
+# Rest API
 
 ## Overview
 
@@ -23,4 +23,5 @@ It contains one stream: `data`. That stream will contain one record which is the
 
 #### Setup guide
 
-Provide a url, http_method, (optional) headers, (optional) request body. The source will make exactly this http request.
+Provide a url, http\_method, \(optional\) headers, \(optional\) request body. The source will make exactly this http request.
+
