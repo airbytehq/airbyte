@@ -61,6 +61,10 @@ jobs:
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
+      - name: Check documentation links (Master)
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./tools/site/link_checker.sh check_docs
+
       - name: Run Integration Tests (PR)
         if: success() && github.ref != 'refs/heads/master'
         run: ./tools/bin/integration_test_pr.sh
@@ -95,7 +99,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Slack Notification - Failure
-        if: failure() #&& github.ref == 'refs/heads/master'
+        if: failure() && github.ref == 'refs/heads/master'
         uses: rtCamp/action-slack-notify@master
         env:
           SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}

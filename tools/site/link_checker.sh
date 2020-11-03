@@ -29,7 +29,10 @@ function main() {
     local res; res=$(mktemp)
 
     run https://docs.airbyte.io -r --filter-level 1 | grep -E '(^Getting|HTTP_404)' > $res
-    grep -q BROKEN $res && error "Found broken links: \n$(cat $res)"
+    if grep -q BROKEN $res; then
+      cat $res
+      error "Found broken links"
+    fi
   else
     error "Unknown command: $1"
   fi
