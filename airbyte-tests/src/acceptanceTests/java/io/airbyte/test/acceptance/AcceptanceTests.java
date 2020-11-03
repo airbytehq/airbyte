@@ -431,8 +431,8 @@ public class AcceptanceTests {
     dbConfig.put("host", sourcePsql.getHost());
     dbConfig.put("password", sourcePsql.getPassword());
     dbConfig.put("port", sourcePsql.getFirstMappedPort());
-    dbConfig.put("dbname", sourcePsql.getDatabaseName());
-    dbConfig.put("user", sourcePsql.getUsername());
+    dbConfig.put("database", sourcePsql.getDatabaseName());
+    dbConfig.put("username", sourcePsql.getUsername());
     return dbConfig;
   }
 
