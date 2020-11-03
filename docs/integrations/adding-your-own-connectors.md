@@ -6,7 +6,7 @@ If you'd like to build new connectors, or update existing ones, for your own usa
 
 ## The Airbyte specification
 
-Before you can start building your own connector, you need to understand [Airbyte's data protocol specification](../architecture/airbyte-specification).
+Before you can start building your own connector, you need to understand [Airbyte's data protocol specification](https://github.com/airbytehq/airbyte/tree/c2e19be57f32cd82d2699970d30bfb70c20ad061/docs/architecture/airbyte-specification/README.md).
 
 ## Developing your own connectors
 

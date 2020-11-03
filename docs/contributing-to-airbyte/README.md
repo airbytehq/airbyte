@@ -10,11 +10,11 @@ However, for those who want a bit more guidance on the best way to contribute to
 
 ## Code of conduct
 
-Please follow our [Code of conduct](https://docs.airbyte.io/contributing/code-of-conduct) in the context of any contributions made to Airbyte.
+Please follow our [Code of conduct](code-of-conduct.md) in the context of any contributions made to Airbyte.
 
 ## Airbyte specification
 
-Before you can start contributing, you need to understand [Airbyte's data protocol specification](https://docs.airbyte.io/architecture/airbyte-specification).
+Before you can start contributing, you need to understand [Airbyte's data protocol specification](../architecture/airbyte-specification.md).
 
 ## First-time contributors, welcome!
 
@@ -45,11 +45,11 @@ Our goal is to keep our docs comprehensive and updated. If you would like to hel
 * Fix errors in existing docs
 * Help us in adding to the docs
 
-The contributing guide for docs can be found [here](/updating-documentation).
+The contributing guide for docs can be found [here](https://github.com/airbytehq/airbyte/tree/c2e19be57f32cd82d2699970d30bfb70c20ad061/updating-documentation/README.md).
 
 ### **Community content**
 
-We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](http://airbyte.io/tutorials):
+We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](https://airbyte.io/tutorials):
 
 * Fix errors in existing tutorials
 * Add new tutorials \(please reach out to us if you have ideas to avoid duplicate work\)
@@ -69,7 +69,7 @@ First, a big thank you! A few things to keep in mind when contributing code:
 * If you're working on an issue, please comment that you are doing so to prevent duplicate work by others also.
 * Rebase master with your branch before submitting a pull request.
 
-Here are some details about [our review process](./#6-review-process).
+Here are some details about [our review process](./#review-process).
 
 ### **Upvoting issues, feature and integration requests**
 
