@@ -25,7 +25,7 @@ SOFTWARE.
 from typing import Generator
 
 from airbyte_protocol import AirbyteCatalog, AirbyteMessage
-from base_python import AirbyteLogger, Source, ConfigContainer
+from base_python import AirbyteLogger, ConfigContainer, Source
 
 from .singer_helpers import SingerHelper
 
@@ -55,8 +55,9 @@ class SingerSource(Source):
 
         return catalogs.airbyte_catalog
 
-    def read(self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state_path: str = None) -> Generator[
-            AirbyteMessage, None, None]:
+    def read(
+        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
+    ) -> Generator[AirbyteMessage, None, None]:
         """
         Implements the parent class read method.
         """
