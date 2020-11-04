@@ -15,3 +15,6 @@ __pycache__
 .venv
 .mypy_cache
 
+# dbt
+airbyte-integrations/bases/base-normalization/normalization/dbt-transform/logs/
+airbyte-integrations/bases/base-normalization/normalization/dbt-transform/models/generated
