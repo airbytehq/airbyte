@@ -28,6 +28,7 @@
     * [BigQuery](integrations/destinations/bigquery.md)
     * [Postgres](integrations/destinations/postgres.md)
   * [Custom Connectors](integrations/adding-your-own-connectors.md)
+  * [Integrations Changelog](integrations/integrations-changelog.md)
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
   * [Code of Conduct](contributing-to-airbyte/code-of-conduct.md)
   * [Developing Locally](contributing-to-airbyte/developing-locally.md)
