@@ -10,7 +10,7 @@ First, build the module by running the following from the `airbyte` project root
 ./gradlew :airbyte-integrations:connectors:source-facebook-marketing-api-singer:build
 ```
 
-This should generate a virtualenv for this module in `source-facebook-marketing-api-singer/.venv`. Make sure this venv is active in your
+This will generate a virtualenv for this module in `source-facebook-marketing-api-singer/.venv`. Make sure this venv is active in your
 development environment of choice. If you are on the terminal, run the following
 ```
 cd airbyte-integrations/connectors/source-facebook-marketing-api # cd into the connector directory
@@ -36,13 +36,16 @@ pytest unit_tests
 
 
 ### Locally running the connector docker image
+Follow the instructions in the "Configure Credentials" section to generate the connector config in `secrets/config.json`, then run the following 
+commands from the airbyte root directory. 
+
 ```
 # in airbyte root directory
 ./gradlew :airbyte-integrations:connectors:source-facebook-marketing-api-singer:buildImage
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-facebook-marketing-api-singer/sample_files:/sample_files airbyte/source-facebook-marketing-api-singer:dev spec
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-facebook-marketing-api-singer/sample_files:/sample_files $(pwd)/airbyte-integrations/connectors/source-facebook-marketing-api-singer/secrets:/secrets airbyte/source-facebook-marketing-api-singer:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-facebook-marketing-api-singer/sample_files:/sample_files airbyte/source-facebook-marketing-api-singer:dev discover --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-facebook-marketing-api-singer/sample_files:/sample_files airbyte/source-facebook-marketing-api-singer:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
+docker run --rm airbyte/source-facebook-marketing-api-singer:dev spec
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-facebook-marketing-api-singer/secrets:/secrets airbyte/source-facebook-marketing-api-singer:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-facebook-marketing-api-singer/secrets:/secrets airbyte/source-facebook-marketing-api-singer:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-facebook-marketing-api-singer/secrets:/secrets -v $(pwd)/airbyte-integrations/connectors/source-facebook-marketing-api-singer/sample_files:/sample_files airbyte/source-facebook-marketing-api-singer:dev read --config /secrets/config.json --catalog /sample_files/sample_catalog.json
 ```
 
 ### Integration Tests 
@@ -52,12 +55,12 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-facebook-market
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
 ## Dependency Management
-All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
+All dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
 
 ## Configure credentials
 ### Configuring credentials as a community contributor
-Follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/facebook-marketing-api) to generate credentials, then put those
-in `secrets/credentials.json`.
+Follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/facebook-marketing-api) to generate an access token. 
+Then create a file `secrets/config.json` conforming to the `spec.json` file. See `sample_files/sample_config.json` for a sample config file.
 
 ### Airbyte Employee
-Credentials are available in RPass under the secret name `source-facebook-marketing-api-singer-integration-test-creds}}`.
+Credentials are available in RPass under the secret name `source-facebook-marketing-api-singer-integration-test-creds`.
