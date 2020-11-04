@@ -8,15 +8,16 @@ This Source Connector is based on the [Singer Facebook Tap](https://github.com/s
 
 ### Output schema
 
-This Source is capable of syncing the following Streams: 
+This Source is capable of syncing the following core Streams: 
 
-* Campaigns
-* AdSets
-* Ads
-* AdCreatives
-* AdInsights
+* AdSets. [Facebook docs](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)
+* Ads. [Facebook docs](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)
+* AdCreatives. [Facebook docs](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)
+* Campaigns. [Facebook docs](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
 
-AdsInsights can also be segmented by the following categories, where each segment is synced as a separate Airbyte stream:
+The linked Facebook docs go into detail about the fields present on those streams. 
+
+In addition, this source is capable of syncing ad insights as a stream. Ad insights can also be segmented by the following categories, where each segment is synced as a separate Airbyte stream:
 
 * Country
 * DMA \(Designated Market Area\)
