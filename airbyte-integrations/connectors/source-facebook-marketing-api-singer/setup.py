@@ -36,6 +36,6 @@ setup(
     tests_require=["pytest"],
     extras_require={
         "main": ["base-singer", "base-python", "tap-facebook==1.9.4"],
-        "tests": ["airbyte_python_test", "pytest"],
+        "tests": ["airbyte-python-test", "pytest"],
     },
 )
