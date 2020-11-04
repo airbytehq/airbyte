@@ -8,4 +8,6 @@ node {
     version = "14.11.0"
 }
 
+assemble.dependsOn(npmInstall)
+
 // TODO add gradle tasks which generate one module for each generator we support and tests that the resulting code is valid.
