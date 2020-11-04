@@ -24,7 +24,7 @@ SOFTWARE.
 
 
 from airbyte_protocol import AirbyteConnectionStatus
-from base_python import AirbyteLogger
+from base_python import AirbyteLogger, ConfigContainer
 from base_singer import SingerSource
 
 
@@ -32,12 +32,12 @@ class Source{{properCase name}}Singer(SingerSource):
     def __init__(self):
         super().__init__()
 
-    def check(self, logger: AirbyteLogger, config_container) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         raise Exception("unimplemented")
 
-    def discover_cmd(self, logger: AirbyteLogger, config_container) -> str:
+    def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         # discover the schema with the provided config
         raise Exception("unimplemented")
 
-    def read_cmd(self, logger: AirbyteLogger, config_path, catalog_path, state_path=None) -> str:
+    def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
         raise Exception("unimplemented")
