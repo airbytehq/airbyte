@@ -25,33 +25,40 @@ SOFTWARE.
 import argparse
 import json
 import os
-from typing import Tuple, Union, Optional
+from typing import Optional, Tuple, Union
 
 
 class TransformCatalog:
+    """
+To run this transformation:
+```
+python3 main_dev_transform_catalog.py \
+  --catalog integration_tests/catalog.json \
+  --out normalization/dbt-transform/models/generated/ \
+  --json json_blob \
+  --table airbytesandbox.data.one_recipe_json
+```
+    """
+
     config: dict = {}
 
     def run(self, args):
         self.parse(args)
-        catalog = self.read_json_catalog()
-        result = generate_dbt_model(catalog=catalog, json_col="json_blob", from_table="`airbytesandbox.data.one_recipe_json`")
-        self.output_sql_models(result)
+        for catalog_file in self.config["catalog"]:
+            print(f"Processing {catalog_file}...")
+            catalog = read_json_catalog(catalog_file)
+            result = generate_dbt_model(catalog=catalog, json_col=self.config["json"], from_table=self.config["table"])
+            self.output_sql_models(result)
 
     def parse(self, args):
         parser = argparse.ArgumentParser(add_help=False)
-        parser.add_argument("--catalog", type=str, required=True, help="path to Catalog (JSON Schema) file")
+        parser.add_argument("--catalog", nargs="+", type=str, required=True, help="path to Catalog (JSON Schema) file")
         parser.add_argument("--out", type=str, required=True, help="path to output generated DBT Models to")
+        parser.add_argument("--json", type=str, required=True, help="name of the column containing the json blob")
+        parser.add_argument("--table", type=str, required=True, help="schema and table name containing the json blob")
         parsed_args = parser.parse_args(args)
-        self.config = {
-            "catalog": parsed_args.catalog,
-            "output_path": parsed_args.out,
-        }
-
-    def read_json_catalog(self) -> dict:
-        input_path = self.config["catalog"]
-        with open(input_path, "r") as file:
-            contents = file.read()
-        return json.loads(contents)
+        self.config = {"catalog": parsed_args.catalog, "output_path": parsed_args.out, "json": parsed_args.json, "table": parsed_args.table}
+        print(self.config)
 
     def output_sql_models(self, result: dict):
         output = self.config["output_path"]
@@ -62,6 +69,12 @@ class TransformCatalog:
                 print(f"Generating {file.lower()}.sql in {output}")
                 with open(os.path.join(output, f"{file}.sql").lower(), "w") as f:
                     f.write(sql)
+
+
+def read_json_catalog(input_path: str) -> dict:
+    with open(input_path, "r") as file:
+        contents = file.read()
+    return json.loads(contents)
 
 
 def is_string(property_type) -> bool:
@@ -198,7 +211,7 @@ def process_node(path: str, json_col: str, name: str, properties: dict, from_tab
     )
     node_sql = f"""{prefix}
 {name}_node as (
-  select     
+  select
     {inject_cols}
     {node_columns}
   from {from_table}
@@ -220,7 +233,7 @@ def process_node(path: str, json_col: str, name: str, properties: dict, from_tab
             child_col, join_child_table = json_extract_nested_property(path=path, json_col=json_col, name=col, definition=properties[col])
             child_sql = f"""{prefix}
 {name}_node as (
-  select     
+  select
     {child_col},
     {node_columns}
   from {from_table}
@@ -260,7 +273,11 @@ def process_node(path: str, json_col: str, name: str, properties: dict, from_tab
 def generate_dbt_model(catalog: dict, json_col: str, from_table: str) -> dict:
     result = {}
     for obj in catalog["streams"]:
-        name = obj["name"]
+        name = "undefined"
+        if "name" in obj:
+            name = obj["name"]
+        elif "stream" in obj:
+            name = obj["stream"]
         properties = {}
         if "json_schema" in obj:
             properties = obj["json_schema"]["properties"]
