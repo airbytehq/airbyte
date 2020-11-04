@@ -65,6 +65,14 @@ public class ConfigRepository {
         workspace);
   }
 
+  public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceDefinitionId.toString(),
+        StandardSourceDefinition.class);
+  }
+
   public StandardSourceDefinition getStandardSource(final UUID sourceId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(

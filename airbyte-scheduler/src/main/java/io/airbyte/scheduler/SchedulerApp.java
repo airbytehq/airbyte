@@ -69,7 +69,7 @@ public class SchedulerApp {
   private final Path configRoot;
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
-  private TrackingStrategy trackingStrategy;
+  private final TrackingStrategy trackingStrategy;
 
   public SchedulerApp(Database database,
                       Path configRoot,
@@ -96,7 +96,7 @@ public class SchedulerApp {
 
     final JobRetrier jobRetrier = new JobRetrier(schedulerPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, configRepository);
-    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, schedulerPersistence, workerRunFactory);
+    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, schedulerPersistence, configRepository, workerRunFactory);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
