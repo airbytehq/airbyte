@@ -1,6 +1,8 @@
 ## Creating a new Integration
 
-From the `airbyte-integrations/connector-templates/generator` directory, run: 
+First, make sure you built the project by running `./gradlew build` from the project root directory. 
+
+Then, from the `airbyte-integrations/connector-templates/generator` directory, run: 
 ```
 npm run generate
 ```
@@ -21,7 +23,7 @@ to tell Airbyte to use the latest version of your integration.
     ```
     ./tools/integrations/manage.sh publish airbyte-integrations/connectors/source-postgres-singer
     ```
-1. Update the connector version inside the `STANDARD_SOURCE` (or `STANDARD_DESTINATION` directory) to the one you just published. 
+1. Update the connector version inside the `STANDARD_SOURCE_DEFINITION` (or `STANDARD_DESTINATION_DEFINITION` directory) to the one you just published. 
 This will update Airbyte to use this new version by default. 
 1. Merge the PR containing the changes you made.
 
