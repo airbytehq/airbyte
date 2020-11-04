@@ -5,6 +5,8 @@ For information about how to use this connector within Airbyte, see [the User Do
 
 ## Local development
 ### Prerequisites
+**To iterate on this connector, make sure to complete this prerequisites section.**
+
 #### Build & Activate Virtual Environment
 First, build the module by running the following from the `airbyte` project root directory: 
 ```
@@ -19,15 +21,13 @@ source .venv/bin/activate
 ```
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv. 
 
-**All the instructions below assume you have correctly activated the virtualenv.**.
-
 #### Create credentials
 If you are an Airbyte core member, copy the credentials in RPass under the secret name `source-facebook-marketing-api-singer-integration-test-creds`
 and place them into `secrets/config.json`.
 
 If you are a contributor, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/facebook-marketing-api) to generate an access token and  obtain your ad account ID. 
 Then create a file `secrets/config.json` conforming to the `spec.json` file. See `sample_files/sample_config.json` for a sample config file.
- 
+
 ### Locally running the connector
 ```
 python main_dev.py spec
