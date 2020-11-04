@@ -1,2 +1,0 @@
-{"stream": "id_and_name", "data": {"id": 1, "name": "\u2013 someutfstring"}, "emitted_at":1}
-{"stream": "id_and_name", "data": {"id": 2, "name": "\u2215"}, "emitted_at":1}
