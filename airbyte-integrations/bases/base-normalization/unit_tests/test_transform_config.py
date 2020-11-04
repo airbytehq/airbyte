@@ -30,7 +30,7 @@ from normalization import TransformConfig
 from normalization.transform_config.transform import DestinationType
 
 
-class TestTransformCatalog(unittest.TestCase):
+class TestTransformConfig(unittest.TestCase):
     def test_transform_bigquery(self):
         input = {"project_id": "my_project_id", "dataset_id": "my_dataset_id", "credentials_json": '{ "type": "service_account" }'}
 
