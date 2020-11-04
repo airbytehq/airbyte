@@ -25,6 +25,7 @@
 package io.airbyte.workers.normalization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -59,7 +60,8 @@ class NormalizationRunnerFactoryTest {
     assertEquals(DestinationType.SNOWFLAKE,
         ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
             "airbyte/destination-snowflake:0.1.0", pbf, CONFIG_WITH_NORMALIZATION)).getDestinationType());
-    assertTrue(NormalizationRunnerFactory.create("airbyte/destination-csv:0.1.0", pbf, CONFIG_WITH_NORMALIZATION) instanceof NoOpNormalizationRunner);
+    assertThrows(IllegalStateException.class,
+        () -> NormalizationRunnerFactory.create("airbyte/destination-csv:0.1.0", pbf, CONFIG_WITH_NORMALIZATION));
   }
 
   @Test

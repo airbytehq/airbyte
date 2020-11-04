@@ -24,7 +24,6 @@
 
 package io.airbyte.workers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -54,9 +53,9 @@ public class DefaultSyncWorker<T> implements SyncWorker {
   private final AtomicBoolean cancelled;
 
   public DefaultSyncWorker(final Source<T> source,
-      final Destination<T> destination,
-      final MessageTracker<T> messageTracker,
-      final NormalizationRunner normalizationRunner) {
+                           final Destination<T> destination,
+                           final MessageTracker<T> messageTracker,
+                           final NormalizationRunner normalizationRunner) {
     this.source = source;
     this.destination = destination;
     this.messageTracker = messageTracker;

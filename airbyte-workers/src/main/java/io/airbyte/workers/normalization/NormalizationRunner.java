@@ -33,8 +33,11 @@ import org.slf4j.LoggerFactory;
 public interface NormalizationRunner extends AutoCloseable {
 
   /**
-   * After this method is called, the caller must call close. Previous to this method being called a NormalizationRunner can be instantiated and not worry about close being called.
-   * @throws Exception - any exception thrown from normalization will be handled gracefully by the caller.
+   * After this method is called, the caller must call close. Previous to this method being called a
+   * NormalizationRunner can be instantiated and not worry about close being called.
+   *
+   * @throws Exception - any exception thrown from normalization will be handled gracefully by the
+   *         caller.
    */
   default void start() throws Exception {
     // no-op.
@@ -42,16 +45,21 @@ public interface NormalizationRunner extends AutoCloseable {
 
   /**
    * Executes normalization of the data in the destination.
+   *
    * @param jobRoot - root dir available for the runner to use.
    * @param config - configuration for connecting to the destination
-   * @param catalog - the schema of the json blob in the destination. it is used normalize the blob into typed columns.
+   * @param catalog - the schema of the json blob in the destination. it is used normalize the blob
+   *        into typed columns.
    * @return true of normalization succeeded. otherwise false.
-   * @throws Exception - any exception thrown from normalization will be handled gracefully by the caller.
+   * @throws Exception - any exception thrown from normalization will be handled gracefully by the
+   *         caller.
    */
   boolean normalize(Path jobRoot, JsonNode config, AirbyteCatalog catalog) throws Exception;
 
   class NoOpNormalizationRunner implements NormalizationRunner {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(NoOpNormalizationRunner.class);
+
     @Override
     public boolean normalize(Path jobRoot, JsonNode config, AirbyteCatalog catalog) {
       LOGGER.info("Running no op logger");

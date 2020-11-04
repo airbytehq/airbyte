@@ -27,10 +27,8 @@ package io.airbyte.workers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
@@ -106,4 +104,5 @@ class DefaultSyncWorkerTest {
     verify(tap).close();
     verify(target).close();
   }
+
 }

@@ -51,7 +51,8 @@ public class NormalizationRunnerFactory {
     if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
       return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag), pbf);
     } else {
-      return new NoOpNormalizationRunner();
+      throw new IllegalStateException(
+          String.format("Requested normalization for %s, but it is not included in the normalization mapping.", imageName));
     }
   }
 

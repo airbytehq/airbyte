@@ -141,7 +141,9 @@ public class WorkerRunFactory {
                 new DefaultAirbyteSource(sourceLauncher),
                 new DefaultAirbyteDestination(destinationLauncher),
                 new AirbyteMessageTracker(),
-                NormalizationRunnerFactory.create(config.getDestinationDockerImage(), pbf,
+                NormalizationRunnerFactory.create(
+                    config.getDestinationDockerImage(),
+                    pbf,
                     syncInput.getDestinationConnection().getConfiguration()))));
   }
 
