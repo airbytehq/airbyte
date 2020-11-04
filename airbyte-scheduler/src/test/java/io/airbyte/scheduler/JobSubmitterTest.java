@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -68,7 +67,7 @@ public class JobSubmitterTest {
 
   @BeforeEach
   public void setup() throws IOException {
-    Job job = mock(Job.class, RETURNS_DEEP_STUBS);
+    Job job = mock(Job.class);
     when(job.getId()).thenReturn(1L);
     persistence = mock(SchedulerPersistence.class);
     when(persistence.getOldestPendingJob()).thenReturn(Optional.of(job));
