@@ -2,6 +2,12 @@ project.ext.pyModule = 'normalization'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
+task unitTest(type: PythonTask){
+    command = "setup.py test"
+}
+
+unitTest.dependsOn(installReqs)
+build.dependsOn(unitTest)
 build.dependsOn ':airbyte-integrations:bases:airbyte-protocol:build'
 buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'
 buildImage.dependsOn ':airbyte-integrations:bases:airbyte-protocol:buildImage'
