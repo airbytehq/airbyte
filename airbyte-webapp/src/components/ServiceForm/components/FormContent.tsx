@@ -12,8 +12,11 @@ import Instruction from "./Instruction";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
 import Spinner from "../../Spinner";
 import PropertyField from "./PropertyField";
-import { FormBaseItem, FormBlock } from "../../../core/form/types";
-import { WidgetConfig } from "../useBuildForm";
+import {
+  FormBaseItem,
+  FormBlock,
+  WidgetConfigMap
+} from "../../../core/form/types";
 
 type IProps = {
   formFields: FormBlock[];
@@ -26,7 +29,7 @@ type IProps = {
   formType: "source" | "destination" | "connection";
   values: { name: string; serviceType: string; frequency?: string };
   specifications?: JSONSchema6;
-  widgetsInfo: { [key: string]: WidgetConfig };
+  widgetsInfo: WidgetConfigMap;
   documentationUrl?: string;
 };
 

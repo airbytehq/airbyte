@@ -4,7 +4,7 @@ import { FormBlock } from "../form/types";
 export const jsonSchemaToUiWidget = (
   jsonSchema: JSONSchema6Definition,
   key: string,
-  path?: string,
+  path: string = key,
   parentSchema?: JSONSchema6Definition
 ): FormBlock => {
   const isRequired =
@@ -30,7 +30,7 @@ export const jsonSchemaToUiWidget = (
         if (typeof condition === "boolean") {
           return [];
         }
-        return [condition.title, jsonSchemaToUiWidget(condition, key)];
+        return [condition.title, jsonSchemaToUiWidget(condition, key, path)];
       })
     );
 
@@ -47,7 +47,7 @@ export const jsonSchemaToUiWidget = (
     const properties = Object.entries(
       jsonSchema.properties
     ).map(([k, schema]) =>
-      jsonSchemaToUiWidget(schema, k, `${key}.${k}`, jsonSchema)
+      jsonSchemaToUiWidget(schema, k, `${path}.${k}`, jsonSchema)
     );
 
     return {

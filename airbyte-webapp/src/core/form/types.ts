@@ -37,3 +37,6 @@ type FormConditionItem = {
 };
 
 export type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem;
+
+export type WidgetConfig = { [key: string]: any };
+export type WidgetConfigMap = { [key: string]: WidgetConfig };

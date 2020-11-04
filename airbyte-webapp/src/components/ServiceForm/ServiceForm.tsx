@@ -10,7 +10,8 @@ import EditControls from "./components/EditControls";
 import {
   useBuildForm,
   FormInitialValues,
-  useBuildUiWidgets
+  useBuildUiWidgets,
+  useConstructValidationSchema
 } from "./useBuildForm";
 
 const FormContainer = styled(Form)`
@@ -54,21 +55,20 @@ const ServiceForm: React.FC<IProps> = ({
   isLoading,
   isEditMode
 }) => {
-  const serviceValues = {
-    name: "",
-    serviceType: "",
-    ...formValues
-  };
-
-  const { formFields, initialValues, validationSchema } = useBuildForm(
-    serviceValues,
+  const { formFields, initialValues } = useBuildForm(
     formType,
+    formValues,
     specifications
   );
 
   const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgets(
     formFields,
     initialValues
+  );
+
+  const validationSchema = useConstructValidationSchema(
+    uiWidgetsInfo,
+    specifications
   );
 
   return (

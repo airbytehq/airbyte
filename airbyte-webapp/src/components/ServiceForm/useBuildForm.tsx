@@ -3,11 +3,13 @@ import { useCallback, useMemo, useState } from "react";
 import { JSONSchema6 } from "json-schema";
 import at from "lodash.at";
 
-import { FormBlock } from "../../core/form/types";
+import {
+  FormBlock,
+  WidgetConfig,
+  WidgetConfigMap
+} from "../../core/form/types";
 import { jsonSchemaToUiWidget } from "../../core/jsonSchema/uiWidget";
 import { buildYupFormForJsonSchema } from "../../core/jsonSchema/yupHelper";
-
-export type WidgetConfig = { [key: string]: any };
 
 export type FormInitialValues = {
   name: string;
@@ -16,7 +18,10 @@ export type FormInitialValues = {
   connectionConfiguration?: any;
 };
 
-const useConstructValidationSchema = (jsonSchema?: JSONSchema6) => {
+export const useConstructValidationSchema = (
+  uiWidgetsInfo: WidgetConfigMap,
+  jsonSchema?: JSONSchema6
+) => {
   return useMemo(() => {
     let validationShape: yup.ObjectSchema<any> = yup.object().shape({
       name: yup.string().required("form.empty.error"),
@@ -26,7 +31,10 @@ const useConstructValidationSchema = (jsonSchema?: JSONSchema6) => {
     // We have additional fields. Lets build schema for them
     if (jsonSchema?.properties) {
       validationShape = validationShape.shape({
-        connectionConfiguration: buildYupFormForJsonSchema(jsonSchema)
+        connectionConfiguration: buildYupFormForJsonSchema(
+          jsonSchema,
+          uiWidgetsInfo
+        )
       });
     }
 
@@ -35,13 +43,12 @@ const useConstructValidationSchema = (jsonSchema?: JSONSchema6) => {
 };
 
 export function useBuildForm(
-  initialValues: Partial<FormInitialValues>,
   formType: "connection" | "source" | "destination",
+  initialValues?: Partial<FormInitialValues>,
   jsonSchema?: JSONSchema6
 ): {
   initialValues: FormInitialValues;
   formFields: FormBlock[];
-  validationSchema: yup.ObjectSchema;
 } {
   const startValues = useMemo<FormInitialValues>(() => {
     const initVals: FormInitialValues = { name: "", serviceType: "" };
@@ -56,7 +63,7 @@ export function useBuildForm(
     };
 
     return values;
-  }, [formType]);
+  }, [formType, initialValues]);
 
   const formFields = useMemo<FormBlock[]>(() => {
     return [
@@ -95,20 +102,17 @@ export function useBuildForm(
     ];
   }, [jsonSchema, formType]);
 
-  const validationSchema = useConstructValidationSchema(jsonSchema);
-
   return {
     initialValues: startValues,
-    formFields,
-    validationSchema
+    formFields
   };
 }
 
 const buildPathInitialState = (
   formBlock: FormBlock[],
   formValues: FormInitialValues,
-  widgetState: { [key: string]: WidgetConfig }
-): { [key: string]: WidgetConfig } =>
+  widgetState: WidgetConfigMap
+): { [key: string]: WidgetConfigMap } =>
   formBlock.reduce((widgetStateBuilder, formItem) => {
     switch (formItem._type) {
       case "formGroup":
@@ -118,7 +122,7 @@ const buildPathInitialState = (
           widgetStateBuilder
         );
       case "formItem":
-        break;
+        return widgetStateBuilder;
       case "formCondition":
         const defaultCondition = Object.entries(formItem.conditions).find(
           ([, subConditionItems]) => {
@@ -156,16 +160,17 @@ export const useBuildUiWidgets = (
   formValues: FormInitialValues
   // defaultConfig?: { [key: string]: object }
 ) => {
-  const initialUiWidgetsState = useMemo(() => {
-    return buildPathInitialState(formFields, formValues, {});
-  }, [formFields]);
+  const initialUiWidgetsState = useMemo(
+    () => buildPathInitialState(formFields, formValues, {}),
+    [formFields, formValues]
+  );
 
   const [uiWidgetsInfo, setUiWidgetsInfo] = useState(initialUiWidgetsState);
 
   const setUiWidgetsInfoSubState = useCallback(
     (widgetId: string, updatedValues: WidgetConfig) =>
       setUiWidgetsInfo({ ...uiWidgetsInfo, [widgetId]: updatedValues }),
-    [setUiWidgetsInfo]
+    [uiWidgetsInfo, setUiWidgetsInfo]
   );
 
   return {

@@ -175,13 +175,13 @@ test("should reformat jsonSchema to internal widget representation when has oneO
           "api key": {
             _type: "formGroup",
             fieldKey: "credentials",
-            fieldName: "credentials",
+            fieldName: "key.credentials",
             isRequired: false,
             properties: [
               {
                 _type: "formItem",
                 fieldKey: "api_key",
-                fieldName: "credentials.api_key",
+                fieldName: "key.credentials.api_key",
                 isRequired: true,
                 type: "string"
               }
@@ -190,14 +190,14 @@ test("should reformat jsonSchema to internal widget representation when has oneO
           oauth: {
             _type: "formGroup",
             fieldKey: "credentials",
-            fieldName: "credentials",
+            fieldName: "key.credentials",
             isRequired: false,
             properties: [
               {
                 _type: "formItem",
                 examples: ["https://api.hubspot.com/"],
                 fieldKey: "redirect_uri",
-                fieldName: "credentials.redirect_uri",
+                fieldName: "key.credentials.redirect_uri",
                 isRequired: true,
                 type: "string"
               }
