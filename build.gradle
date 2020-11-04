@@ -66,7 +66,7 @@ spotless {
     }
     sql {
         target '**/*.sql'
-        targetExclude "**/build/**/*", "**/.gradle/**/*"
+        targetExclude "**/build/**/*", "**/.gradle/**/*", "**/.venv/**"
 
         dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
     }
