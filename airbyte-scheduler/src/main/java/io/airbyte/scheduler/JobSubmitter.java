@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.LifecycledCallable;
-import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigHelpers;
@@ -107,9 +106,8 @@ public class JobSubmitter implements Runnable {
 
   private void track(Job job, ConfigRepository configRepository) {
     try {
-      final ConfigType configType = job.getConfig().getConfigType();
       final Builder<String, Object> metadata = ImmutableMap.builder();
-      switch (configType) {
+      switch (job.getConfig().getConfigType()) {
         case CHECK_CONNECTION_SOURCE, DISCOVER_SCHEMA -> {
           final StandardSourceDefinition sourceDefinition = ConfigHelpers
               .getSourceDefinitionFromSource(configRepository, UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
@@ -140,7 +138,7 @@ public class JobSubmitter implements Runnable {
         }
       }
 
-      TrackingClientSingleton.get().track(job.getConfig().getConfigType().toString(), metadata.build());
+      TrackingClientSingleton.get().track("job", metadata.build());
     } catch (Exception e) {
       LOGGER.error("failed while reporting usage.");
     }
