@@ -33,6 +33,8 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=["airbyte-protocol", "dbt==0.18.1"],
     package_data={"": ["*.yml"]},
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
     entry_points={
         "console_scripts": [
             "transform-config=normalization.transform_config.transform:main",
