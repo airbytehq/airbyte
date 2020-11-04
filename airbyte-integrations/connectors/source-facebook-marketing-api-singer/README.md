@@ -31,9 +31,9 @@ Then create a file `secrets/config.json` conforming to the `spec.json` file. See
 ### Locally running the connector
 ```
 python main_dev.py spec
-python main_dev.py check --config sample_files/test_config.json
-python main_dev.py discover --config sample_files/test_config.json
-python main_dev.py read --config sample_files/test_config.json --catalog sample_files/test_catalog.json
+python main_dev.py check --config secrets/config.json
+python main_dev.py discover --config secrets/config.json
+python main_dev.py read --config secrets/config.json --catalog sample_files/sample_catalog.json
 ```
 
 ### Unit Tests
