@@ -182,7 +182,7 @@ public class DestinationHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     DestinationDefinitionSpecificationRead dcs =
         schedulerHandler.getDestinationSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationId));
-    validator.validate(dcs.getConnectionSpecification(), implementationJson);
+    validator.ensure(dcs.getConnectionSpecification(), implementationJson);
   }
 
   private void persistDestinationConnection(final String name,
