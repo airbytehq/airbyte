@@ -24,12 +24,19 @@
 
 package io.airbyte.scheduler;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.LifecycledCallable;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,13 +48,16 @@ public class JobSubmitter implements Runnable {
 
   private final ExecutorService threadPool;
   private final SchedulerPersistence persistence;
+  private final ConfigRepository configRepository;
   private final WorkerRunFactory workerRunFactory;
 
   public JobSubmitter(final ExecutorService threadPool,
                       final SchedulerPersistence persistence,
+                      final ConfigRepository configRepository,
                       final WorkerRunFactory workerRunFactory) {
     this.threadPool = threadPool;
     this.persistence = persistence;
+    this.configRepository = configRepository;
     this.workerRunFactory = workerRunFactory;
   }
 
@@ -58,7 +68,10 @@ public class JobSubmitter implements Runnable {
 
       Optional<Job> oldestPendingJob = persistence.getOldestPendingJob();
 
-      oldestPendingJob.ifPresent(this::submitJob);
+      oldestPendingJob.ifPresent(job -> {
+        track(job, configRepository);
+        submitJob(job);
+      });
 
       LOGGER.info("Completed job-submitter...");
     } catch (Throwable e) {
@@ -87,6 +100,46 @@ public class JobSubmitter implements Runnable {
         .setOnException(noop -> persistence.updateStatus(job.getId(), JobStatus.FAILED))
         .setOnFinish(MDC::clear)
         .build());
+  }
+
+  private void track(Job job, ConfigRepository configRepository) {
+    try {
+      final Builder<String, Object> metadata = ImmutableMap.builder();
+      switch (job.getConfig().getConfigType()) {
+        case CHECK_CONNECTION_SOURCE, DISCOVER_SCHEMA -> {
+          final StandardSourceDefinition sourceDefinition = configRepository
+              .getSourceDefinitionFromSource(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+
+          metadata.put("source_definition_name", sourceDefinition.getName());
+          metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
+        }
+        case CHECK_CONNECTION_DESTINATION -> {
+          final StandardDestinationDefinition destinationDefinition = configRepository
+              .getDestinationDefinitionFromDestination(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+
+          metadata.put("destination_definition_name", destinationDefinition.getName());
+          metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+        }
+        case GET_SPEC -> {
+          // no op because this will be noisy as heck.
+        }
+        case SYNC -> {
+          final StandardSourceDefinition sourceDefinition = configRepository
+              .getSourceDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+          final StandardDestinationDefinition destinationDefinition = configRepository
+              .getDestinationDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+
+          metadata.put("source_definition_name", sourceDefinition.getName());
+          metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
+          metadata.put("destination_definition_name", destinationDefinition.getName());
+          metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+        }
+      }
+
+      TrackingClientSingleton.get().track("job", metadata.build());
+    } catch (Exception e) {
+      LOGGER.error("failed while reporting usage.");
+    }
   }
 
   private JobStatus getStatus(OutputAndStatus<?> output) {
