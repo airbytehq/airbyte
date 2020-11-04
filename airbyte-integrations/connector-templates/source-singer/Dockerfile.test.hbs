@@ -1,6 +1,6 @@
 FROM airbyte/base-python-test:dev
 
-# Bash is installed for convenient debugging. 
+# Bash is installed for convenient debugging.
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 ENV MODULE_NAME="source_{{snakeCase name}}_singer"
