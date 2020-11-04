@@ -65,6 +65,32 @@ public class ConfigRepository {
         workspace);
   }
 
+  public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceDefinitionId.toString(),
+        StandardSourceDefinition.class);
+  }
+
+  public StandardSourceDefinition getSourceDefinitionFromSource(UUID sourceId) {
+    try {
+      final SourceConnection source = getSourceConnection(sourceId);
+      return getStandardSourceDefinition(source.getSourceDefinitionId());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public StandardSourceDefinition getSourceDefinitionFromConnection(UUID connectionId) {
+    try {
+      final StandardSync sync = getStandardSync(connectionId);
+      return getSourceDefinitionFromSource(sync.getSourceId());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public StandardSourceDefinition getStandardSource(final UUID sourceId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(
@@ -89,6 +115,24 @@ public class ConfigRepository {
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         destinationDefinitionId.toString(),
         StandardDestinationDefinition.class);
+  }
+
+  public StandardDestinationDefinition getDestinationDefinitionFromDestination(UUID destinationId) {
+    try {
+      final DestinationConnection destination = getDestinationConnection(destinationId);
+      return getStandardDestinationDefinition(destination.getDestinationDefinitionId());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public StandardDestinationDefinition getDestinationDefinitionFromConnection(UUID connectionId) {
+    try {
+      final StandardSync sync = getStandardSync(connectionId);
+      return getDestinationDefinitionFromDestination(sync.getDestinationId());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public List<StandardDestinationDefinition> listStandardDestinationDefinitions()
@@ -181,7 +225,6 @@ public class ConfigRepository {
 
   public void writeStandardSchedule(final StandardSyncSchedule schedule)
       throws JsonValidationException, IOException {
-    // todo (cgardens) - stored on sync id (there is no schedule id concept). this is non-intuitive.
     persistence.writeConfig(
         ConfigSchema.STANDARD_SYNC_SCHEDULE,
         schedule.getConnectionId().toString(),
