@@ -50,18 +50,22 @@ python3 main_dev_transform_catalog.py \
         for catalog_file in self.config["catalog"]:
             print(f"Processing {catalog_file}...")
             catalog = read_json_catalog(catalog_file)
-            result = generate_dbt_model(catalog=catalog, json_col=self.config["json"], from_table=self.config["table"])
+            result = generate_dbt_model(catalog=catalog, json_col=self.config["json_column"], from_table=self.config["table"])
             self.output_sql_models(result)
 
     def parse(self, args):
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument("--catalog", nargs="+", type=str, required=True, help="path to Catalog (JSON Schema) file")
         parser.add_argument("--out", type=str, required=True, help="path to output generated DBT Models to")
-        parser.add_argument("--json", type=str, required=True, help="name of the column containing the json blob")
+        parser.add_argument("--json-column", type=str, required=True, help="name of the column containing the json blob")
         parser.add_argument("--table", type=str, required=True, help="schema and table name containing the json blob")
         parsed_args = parser.parse_args(args)
-        self.config = {"catalog": parsed_args.catalog, "output_path": parsed_args.out, "json": parsed_args.json, "table": parsed_args.table}
-        print(self.config)
+        self.config = {
+            "catalog": parsed_args.catalog,
+            "output_path": parsed_args.out,
+            "json_column": parsed_args.json_column,
+            "table": parsed_args.table,
+        }
 
     def output_sql_models(self, result: dict):
         output = self.config["output_path"]
@@ -69,7 +73,7 @@ python3 main_dev_transform_catalog.py \
             if not os.path.exists(output):
                 os.makedirs(output)
             for file, sql in result.items():
-                print(f"Generating {file.lower()}.sql in {output}")
+                print(f"  Generating {file.lower()}.sql in {output}")
                 with open(os.path.join(output, f"{file}.sql").lower(), "w") as f:
                     f.write(sql)
 
@@ -86,6 +90,10 @@ def is_string(property_type) -> bool:
 
 def is_integer(property_type) -> bool:
     return property_type == "integer" or "integer" in property_type
+
+
+def is_number(property_type) -> bool:
+    return property_type == "number" or "number" in property_type
 
 
 def is_boolean(property_type) -> bool:
@@ -117,6 +125,11 @@ def json_extract_base_property(path: str, json_col: str, name: str, definition: 
         return (
             f"cast({MACRO_START} json_extract_scalar('{json_col}', \"'{current}'\") "
             + f"{MACRO_END} as {MACRO_START} dbt_utils.type_int() {MACRO_END}) as {name}"
+        )
+    elif is_number(definition["type"]):
+        return (
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', \"'{current}'\") "
+            + f"{MACRO_END} as {MACRO_START} dbt_utils.type_numeric() {MACRO_END}) as {name}"
         )
     elif is_boolean(definition["type"]):
         return f"cast({MACRO_START} json_extract_scalar('{json_col}', \"'{current}'\") {MACRO_END} as boolean) as {name}"
@@ -276,16 +289,14 @@ def process_node(path: str, json_col: str, name: str, properties: dict, from_tab
 def generate_dbt_model(catalog: dict, json_col: str, from_table: str) -> dict:
     result = {}
     for obj in catalog["streams"]:
-        name = "undefined"
         if "name" in obj:
             name = obj["name"]
-        elif "stream" in obj:
-            name = obj["stream"]
-        properties = {}
-        if "json_schema" in obj:
+        else:
+            name = "undefined"
+        if "json_schema" in obj and "properties" in obj["json_schema"]:
             properties = obj["json_schema"]["properties"]
-        elif "schema" in obj:
-            properties = obj["schema"]["properties"]
+        else:
+            properties = {}
         result.update(process_node(path="$", json_col=json_col, name=name, properties=properties, from_table=from_table))
         # TODO check if jsonpath are expressed similarly on different databases... (using $?)
     return result
