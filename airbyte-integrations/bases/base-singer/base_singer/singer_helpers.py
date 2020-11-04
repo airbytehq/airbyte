@@ -61,7 +61,7 @@ class SingerHelper:
             field_object["type"] = SingerHelper._parse_type(field_object["type"])
 
     @staticmethod
-    def singer_catalog_to_airbyte_catalog(singer_catalog: Dict[str, str]) -> AirbyteCatalog:
+    def singer_catalog_to_airbyte_catalog(singer_catalog: Dict[str, any]) -> AirbyteCatalog:
         airbyte_streams = []
         for stream in singer_catalog.get("streams"):
             name = stream.get("stream")

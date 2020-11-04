@@ -1,6 +1,7 @@
 FROM airbyte/integration-base-python:dev
 
-RUN apt-get update && apt-get install -y jq curl bash && rm -rf /var/lib/apt/lists/*
+# Bash is installed for more convenient debugging.
+RUN apt-get update && apt-get install bash && rm -rf /var/lib/apt/lists/*
 
 ENV CODE_PATH="source_{{snakeCase name}}"
 ENV AIRBYTE_IMPL_MODULE="source_{{snakeCase name}}"

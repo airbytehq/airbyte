@@ -6,7 +6,6 @@ ENV MODULE_NAME="source_facebook_marketing_api_singer"
 ENV CODE_PATH="integration_tests"
 ENV AIRBYTE_TEST_MODULE="integration_tests"
 ENV AIRBYTE_TEST_PATH="SourceFacebookMarketingApiSingerStandardTest"
-ENV AIRBYTE_TEST_CASE=true
 
 LABEL io.airbyte.version=0.1.0
 LABEL io.airbyte.name=airbyte/source-facebook-marketing-api-singer-standard-test
