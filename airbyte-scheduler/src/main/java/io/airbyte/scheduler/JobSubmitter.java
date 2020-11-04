@@ -30,7 +30,6 @@ import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigHelpers;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.workers.OutputAndStatus;
@@ -81,7 +80,6 @@ public class JobSubmitter implements Runnable {
   }
 
   private void submitJob(Job job) {
-
     final WorkerRun workerRun = workerRunFactory.create(job);
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
@@ -109,32 +107,32 @@ public class JobSubmitter implements Runnable {
       final Builder<String, Object> metadata = ImmutableMap.builder();
       switch (job.getConfig().getConfigType()) {
         case CHECK_CONNECTION_SOURCE, DISCOVER_SCHEMA -> {
-          final StandardSourceDefinition sourceDefinition = ConfigHelpers
-              .getSourceDefinitionFromSource(configRepository, UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+          final StandardSourceDefinition sourceDefinition = configRepository
+              .getSourceDefinitionFromSource(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
 
-          metadata.put("source_name", sourceDefinition.getName());
-          metadata.put("source_id", sourceDefinition.getSourceDefinitionId());
+          metadata.put("source_definition_name", sourceDefinition.getName());
+          metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
         }
         case CHECK_CONNECTION_DESTINATION -> {
-          final StandardDestinationDefinition destinationDefinition = ConfigHelpers
-              .getDestinationDefinitionFromDestination(configRepository, UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+          final StandardDestinationDefinition destinationDefinition = configRepository
+              .getDestinationDefinitionFromDestination(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
 
-          metadata.put("destination_name", destinationDefinition.getName());
-          metadata.put("destination_id", destinationDefinition.getDestinationDefinitionId());
+          metadata.put("destination_definition_name", destinationDefinition.getName());
+          metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
         }
         case GET_SPEC -> {
           // no op because this will be noisy as heck.
         }
         case SYNC -> {
-          final StandardSourceDefinition sourceDefinition = ConfigHelpers
-              .getSourceDefinitionFromConnection(configRepository, UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
-          final StandardDestinationDefinition destinationDefinition = ConfigHelpers
-              .getDestinationDefinitionFromConnection(configRepository, UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+          final StandardSourceDefinition sourceDefinition = configRepository
+              .getSourceDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+          final StandardDestinationDefinition destinationDefinition = configRepository
+              .getDestinationDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
 
-          metadata.put("source_name", sourceDefinition.getName());
-          metadata.put("source_id", sourceDefinition.getSourceDefinitionId());
-          metadata.put("destination_name", destinationDefinition.getName());
-          metadata.put("destination_id", destinationDefinition.getDestinationDefinitionId());
+          metadata.put("source_definition_name", sourceDefinition.getName());
+          metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
+          metadata.put("destination_definition_name", destinationDefinition.getName());
+          metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
         }
       }
 
