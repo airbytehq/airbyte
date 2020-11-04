@@ -30,9 +30,11 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
+import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.protocols.Destination;
 import io.airbyte.workers.protocols.MessageTracker;
 import io.airbyte.workers.protocols.Source;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,15 +48,18 @@ public class DefaultSyncWorker<T> implements SyncWorker {
   private final Source<T> source;
   private final Destination<T> destination;
   private final MessageTracker<T> messageTracker;
+  private final NormalizationRunner normalizationRunner;
 
   private final AtomicBoolean cancelled;
 
   public DefaultSyncWorker(final Source<T> source,
                            final Destination<T> destination,
-                           final MessageTracker<T> messageTracker) {
+                           final MessageTracker<T> messageTracker,
+                           final NormalizationRunner normalizationRunner) {
     this.source = source;
     this.destination = destination;
     this.messageTracker = messageTracker;
+    this.normalizationRunner = normalizationRunner;
 
     this.cancelled = new AtomicBoolean(false);
   }
@@ -82,6 +87,14 @@ public class DefaultSyncWorker<T> implements SyncWorker {
 
       destination.notifyEndOfStream();
 
+      try (normalizationRunner) {
+        LOGGER.info("Running normalization.");
+        normalizationRunner.start();
+        final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
+        if (!normalizationRunner.normalize(normalizationRoot, syncInput.getDestinationConnection().getConfiguration(), syncInput.getCatalog())) {
+          throw new WorkerException("Normalization Failed.");
+        }
+      }
     } catch (Exception e) {
       LOGGER.error("Sync worker failed.", e);
 
