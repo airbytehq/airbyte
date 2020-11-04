@@ -4,7 +4,8 @@ This is the repository for the Facebook Marketing Api source connector, based on
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/facebook-marketing-api).
 
 ## Local development
-### Build
+### Prerequisites
+#### Build & Activate Virtual Environment
 First, build the module by running the following from the `airbyte` project root directory: 
 ```
 ./gradlew :airbyte-integrations:connectors:source-facebook-marketing-api-singer:build
@@ -20,6 +21,13 @@ If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
 **All the instructions below assume you have correctly activated the virtualenv.**.
 
+#### Create credentials
+If you are an Airbyte core member, copy the credentials in RPass under the secret name `source-facebook-marketing-api-singer-integration-test-creds`
+and place them into `secrets/config.json`.
+
+If you are a contributor, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/facebook-marketing-api) to generate an access token and  obtain your ad account ID. 
+Then create a file `secrets/config.json` conforming to the `spec.json` file. See `sample_files/sample_config.json` for a sample config file.
+ 
 ### Locally running the connector
 ```
 python main_dev.py spec
@@ -34,10 +42,7 @@ To run unit tests locally, from the connector root run:
 pytest unit_tests
 ```
 
-
 ### Locally running the connector docker image
-Follow the instructions in the "Configure Credentials" section to generate the connector config in `secrets/config.json`, then run the following 
-commands from the airbyte root directory. 
 
 ```
 # in airbyte root directory
@@ -56,11 +61,3 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-facebook-market
 
 ## Dependency Management
 All dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
-
-## Configure credentials
-### Configuring credentials as a community contributor
-Follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/facebook-marketing-api) to generate an access token. 
-Then create a file `secrets/config.json` conforming to the `spec.json` file. See `sample_files/sample_config.json` for a sample config file.
-
-### Airbyte Employee
-Credentials are available in RPass under the secret name `source-facebook-marketing-api-singer-integration-test-creds`.
