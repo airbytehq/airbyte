@@ -1,2 +1,2 @@
 # Contributing
-View on [docs.airbyte.io](https://docs.airbyte.io/contributing/contributing-to-airbyte)
+View on [docs.airbyte.io](https://docs.airbyte.io/contributing-to-airbyte)

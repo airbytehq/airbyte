@@ -1,5 +1,0 @@
-{"stream":"id_and_name", "data":{"id":1, "name":"sherif"}, "emitted_at":1}
-{"stream":"id_and_name", "data":{"id":2, "name":"charles"}, "emitted_at":1}
-{"stream":"id_and_name", "data":{"id":3, "name":"jared"}, "emitted_at":1}
-{"stream":"id_and_name", "data":{"id":4, "name":"michel"}, "emitted_at":1}
-{"stream":"id_and_name", "data":{"id":5, "name":"john"}, "emitted_at":1}

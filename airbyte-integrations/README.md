@@ -1,6 +1,8 @@
 ## Creating a new Integration
 
-From the `airbyte-integrations/connector-templates/generator` directory, run: 
+First, make sure you built the project by running `./gradlew build` from the project root directory. 
+
+Then, from the `airbyte-integrations/connector-templates/generator` directory, run: 
 ```
 npm run generate
 ```
@@ -15,13 +17,13 @@ to tell Airbyte to use the latest version of your integration.
 1. Bump the version in the `Dockerfile` of the integration (`LABEL io.airbyte.version=X.X.X`)
 1. Build the integration with the semantic version tag locally:
     ```
-    ./tools/integrations/manage.sh build airbyte-integrations/connectors/source-postgres-singer
+    ./tools/integrations/manage.sh build airbyte-integrations/connectors/<connector-name>
     ```
 1. Publish the new version to Docker Hub. 
     ```
-    ./tools/integrations/manage.sh publish airbyte-integrations/connectors/source-postgres-signer
+    ./tools/integrations/manage.sh publish airbyte-integrations/connectors/<connector-name>
     ```
-1. Update the connector version inside the `STANDARD_SOURCE` (or `STANDARD_DESTINATION` directory) to the one you just published. 
+1. Update the connector version inside the `STANDARD_SOURCE_DEFINITION` (or `STANDARD_DESTINATION_DEFINITION` directory) to the one you just published. 
 This will update Airbyte to use this new version by default. 
 1. Merge the PR containing the changes you made.
 

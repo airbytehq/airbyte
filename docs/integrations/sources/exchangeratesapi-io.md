@@ -21,8 +21,6 @@ Currencies are `number` and the date is a `string`.
 
 #### Features
 
-This section should contain a table with the following format:
-
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |

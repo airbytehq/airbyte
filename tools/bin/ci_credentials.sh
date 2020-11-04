@@ -24,3 +24,6 @@ echo "$HUBSPOT_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source
 
 mkdir airbyte-integrations/connectors/source-google-sheets/secrets
 echo "$GSHEETS_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source-google-sheets/secrets/creds.json
+
+mkdir airbyte-integrations/connectors/destination-snowflake/secrets
+echo "$SNOWFLAKE_INTEGRATION_TEST_CREDS" > airbyte-integrations/connectors/destination-snowflake/secrets/config.json
