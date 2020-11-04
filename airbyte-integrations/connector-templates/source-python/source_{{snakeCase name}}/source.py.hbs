@@ -25,19 +25,19 @@ SOFTWARE.
 from typing import Generator
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage
-from base_python import AirbyteLogger, Source
+from base_python import AirbyteLogger, Source, ConfigContainer
 
 
 class Source{{properCase name}}(Source):
     def __init__(self):
         super().__init__()
 
-    def check(self, logger: AirbyteLogger, config_container) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         raise Exception("unimplemented")
 
-    def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
+    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
         # discover the schema with the provided config
         raise Exception("unimplemented")
 
-    def read(self, logger: AirbyteLogger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
+    def read(self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         raise Exception("unimplemented")
