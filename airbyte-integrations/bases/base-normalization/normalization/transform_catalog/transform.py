@@ -27,6 +27,9 @@ import json
 import os
 from typing import Optional, Tuple, Union
 
+MACRO_START = "{{"
+MACRO_END = "}}"
+
 
 class TransformCatalog:
     """
@@ -106,11 +109,17 @@ def json_extract_base_property(path: str, json_col: str, name: str, definition: 
     if "type" not in definition:
         return None
     elif is_string(definition["type"]):
-        return f"cast(json_extract_scalar({json_col}, '{current}') as string) as {name}"
+        return (
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', \"'{current}'\") "
+            + f"{MACRO_END} as {MACRO_START} dbt_utils.type_string() {MACRO_END}) as {name}"
+        )
     elif is_integer(definition["type"]):
-        return f"cast(json_extract_scalar({json_col}, '{current}') as int64) as {name}"
+        return (
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', \"'{current}'\") "
+            + f"{MACRO_END} as {MACRO_START} dbt_utils.type_int() {MACRO_END}) as {name}"
+        )
     elif is_boolean(definition["type"]):
-        return f"cast(json_extract_scalar({json_col}, '{current}') as boolean) as {name}"
+        return f"cast({MACRO_START} json_extract_scalar('{json_col}', \"'{current}'\") {MACRO_END} as boolean) as {name}"
     else:
         return None
 
@@ -120,9 +129,12 @@ def json_extract_nested_property(path: str, json_col: str, name: str, definition
     if definition is None or "type" not in definition:
         return None, None
     elif is_array(definition["type"]):
-        return f"json_extract_array({json_col}, '{current}') as {name}", f"cross join unnest({name}) as {name}"
+        return (
+            f"{MACRO_START} json_extract_array('{json_col}', \"'{current}'\") {MACRO_END} as {name}",
+            f"cross join {MACRO_START} unnest('{name}') {MACRO_END} as {name}",
+        )
     elif is_object(definition["type"]):
-        return f"json_extract({json_col}, '{current}') as {name}", ""
+        return f"{MACRO_START} json_extract('{json_col}', \"'{current}'\") {MACRO_END} as {name}", ""
     else:
         return None, None
 
@@ -203,25 +215,18 @@ def process_node(path: str, json_col: str, name: str, properties: dict, from_tab
         prefix = previous + ","
     node_properties = extract_node_properties(path=path, json_col=json_col, properties=properties)
     node_columns = ",\n    ".join([sql for sql in node_properties.values()])
-    # FIXME: use DBT macros to be cross_db compatible instead
-    hash_node_columns = (
-        "coalesce(cast("
-        + ' as string), ""),\n      coalesce(cast('.join([column for column in node_properties.keys()])
-        + ' as string), "")'
-    )
+    hash_node_columns = ", ".join([f'"{column}"' for column in node_properties.keys()])
+    hash_node_columns = f"{MACRO_START} dbt_utils.surrogate_key([{hash_node_columns}]) {MACRO_END}"
     node_sql = f"""{prefix}
 {name}_node as (
-  select
-    {inject_cols}
+  select {inject_cols}
     {node_columns}
   from {from_table}
 ),
 {name}_with_id as (
   select
     *,
-    to_hex(md5(concat(
-      {hash_node_columns}
-    ))) as _{name}_hashid
+    {hash_node_columns} as _{name}_hashid
   from {name}_node
 )"""
     # SQL Query for current node's basic properties
@@ -240,9 +245,7 @@ def process_node(path: str, json_col: str, name: str, properties: dict, from_tab
 ),
 {name}_with_id as (
   select
-    to_hex(md5(concat(
-      {hash_node_columns}
-    ))) as _{name}_hashid,
+    {hash_node_columns} as _{name}_hashid,
     {col}
   from {name}_node
   {join_child_table}
@@ -255,7 +258,7 @@ def process_node(path: str, json_col: str, name: str, properties: dict, from_tab
                     properties=children_columns[col],
                     from_table=f"{name}_with_id",
                     previous=child_sql,
-                    inject_cols=f"_{name}_hashid as _{name}_foreign_hashid,",
+                    inject_cols=f"\n    _{name}_hashid as _{name}_foreign_hashid,",
                 )
                 result.update(children)
             else:
@@ -284,6 +287,7 @@ def generate_dbt_model(catalog: dict, json_col: str, from_table: str) -> dict:
         elif "schema" in obj:
             properties = obj["schema"]["properties"]
         result.update(process_node(path="$", json_col=json_col, name=name, properties=properties, from_table=from_table))
+        # TODO check if jsonpath are expressed similarly on different databases... (using $?)
     return result
 
 

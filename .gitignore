@@ -18,3 +18,4 @@ __pycache__
 # dbt
 airbyte-integrations/bases/base-normalization/normalization/dbt-transform/logs/
 airbyte-integrations/bases/base-normalization/normalization/dbt-transform/models/generated
+airbyte-integrations/bases/base-normalization/normalization/dbt-transform/dbt_modules/
