@@ -28,8 +28,7 @@ from dataclasses import dataclass
 from typing import Generator
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification
-from base_python import AirbyteLogger
-
+from .logger import AirbyteLogger
 
 class AirbyteSpec(object):
     @staticmethod
