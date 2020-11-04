@@ -191,7 +191,7 @@ public class SourceHandler {
     SourceDefinitionSpecificationRead sds =
         schedulerHandler.getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId));
 
-    validator.validate(sds.getConnectionSpecification(), implementationJson);
+    validator.ensure(sds.getConnectionSpecification(), implementationJson);
   }
 
   private void persistSourceConnection(final String name,
