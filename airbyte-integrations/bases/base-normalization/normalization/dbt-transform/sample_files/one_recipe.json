@@ -1,0 +1,108 @@
+{
+  "Name": "Christmas pie",
+  "url": "https://www.bbcgoodfood.com/recipes/2793/christmas-pie",
+  "Description": "Combine a few key Christmas flavours here to make a pie that both children and adults will adore",
+  "Author": "Mary Cadogan",
+  "Ingredients": [
+    {
+      "quantity": "2 tbsp",
+      "ingredient": "olive oil",
+      "nutritionfacts": {
+        "calories": 119,
+        "fat": "13.5g"
+      }
+    },
+    {
+      "quantity": "knob",
+      "ingredient": "butter",
+      "nutritionfacts": {
+        "calories": 102,
+        "fat": "11.5g"
+      }
+    },
+    {
+      "quantity": "1",
+      "ingredient": "onion",
+      "preparation": "finely chopped",
+      "nutritionfacts": {
+        "calories": 102,
+        "fat": "11.5g"
+      }
+    },
+    {
+      "quantity": "500g",
+      "ingredient": "sausagemeat or skinned sausages",
+      "nutritionfacts": {
+        "calories": 268,
+        "fat": "18g"
+      }
+    },
+    {
+      "quantity": "1",
+      "ingredient": "lemon",
+      "preparation": "grated zest",
+      "nutritionfacts": {
+        "calories": 13
+      }
+    },
+    {
+      "quantity": "100g",
+      "ingredient": "fresh white breadcrumbs"
+    },
+    {
+      "quantity": "85g",
+      "ingredient": "ready-to-eat dried apricots",
+      "preparation": "chopped",
+      "nutritionfacts": {
+        "calories": 34,
+        "fat": "0.27g"
+      }
+    },
+    {
+      "quantity": "58g",
+      "ingredient": "chestnut, canned or vacuum-packed",
+      "preparation": "chopped",
+      "nutritionfacts": {
+        "calories": 77,
+        "fat": "1g"
+      }
+    },
+    {
+      "quantity": "2 tsp",
+      "ingredient": "fresh or dried thyme",
+      "preparation": "chopped"
+    },
+    {
+      "quantity": "100g",
+      "ingredient": "cranberries, fresh or frozen"
+    },
+    {
+      "quantity": "500g",
+      "ingredient": "boneless, skinless chicken breasts",
+      "nutritionfacts": {
+        "calories": 284,
+        "fat": "6.2g"
+      }
+    },
+    {
+      "quantity": "500g",
+      "ingredient": "pack ready-made shortcrust pastry"
+    },
+    {
+      "quantity": "1",
+      "ingredient": "beaten egg",
+      "preparation": "to glaze",
+      "nutritionfacts": {
+        "calories": 75,
+        "fat": "5g"
+      }
+    }
+  ],
+  "Method": [
+    "Heat oven to 190C/fan 170C/gas 5. Heat 1 tbsp oil and the butter in a frying pan, then add the onion and fry for 5 mins until softened. Cool slightly. Tip the sausagemeat, lemon zest, breadcrumbs, apricots, chestnuts and thyme into a bowl. Add the onion and cranberries, and mix everything together with your hands, adding plenty of pepper and a little salt.",
+    "Cut each chicken breast into three fillets lengthwise and season all over with salt and pepper. Heat the remaining oil in the frying pan, and fry the chicken fillets quickly until browned, about 6-8 mins.",
+    "Roll out two-thirds of the pastry to line a 20-23cm springform or deep loose-based tart tin. Press in half the sausage mix and spread to level. Then add the chicken pieces in one layer and cover with the rest of the sausage. Press down lightly.",
+    "Roll out the remaining pastry. Brush the edges of the pastry with beaten egg and cover with the pastry lid. Pinch the edges to seal, then trim. Brush the top of the pie with egg, then roll out the trimmings to make holly leaf shapes and berries. Decorate the pie and brush again with egg.",
+    "Set the tin on a baking sheet and bake for 50-60 mins, then cool in the tin for 15 mins. Remove and leave to cool completely. Serve with a winter salad and pickles."
+  ]
+}

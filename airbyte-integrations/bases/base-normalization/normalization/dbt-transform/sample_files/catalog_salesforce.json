@@ -1,0 +1,22 @@
+{
+  "streams": [
+    {
+      "name": "User",
+      "json_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "Id": {
+            "type": "string"
+          },
+          "Username": {
+            "type": ["null", "string"]
+          },
+          "Name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  ]
+}

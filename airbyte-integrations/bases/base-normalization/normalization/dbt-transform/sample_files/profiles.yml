@@ -1,0 +1,40 @@
+
+# This configuration file specifies information about connections to
+# your data warehouse(s). The file contains a series of "profiles."
+# Profiles specify database credentials and connection information
+#
+
+# Top-level configs that apply to all profiles are set here
+config:
+    partial_parse: true
+    printer_width: 120
+    send_anonymous_usage_stats: False
+    use_colors: True
+
+# see https://docs.getdbt.com/docs/supported-databases for more details
+#
+# Commonly, it's helpful to define multiple targets for a profile. For example,
+# these targets might be `dev` and `prod`. Whereas the `dev` target points to
+# a development schema (eg. dbt_dev), the `prod` schema should point to the
+# prod schema (eg. analytics). Analytical/BI tools should point to the
+# prod schema so that local development does not interfere with analysis.
+#
+
+dev:
+    target: dev                   # default target is dev unless changed at run time
+    outputs:
+        dev:
+            type: bigquery
+            method: service-account
+            project: airbytesandbox
+            schema: dbt_chris
+            threads: 32
+            timeout_seconds: 300
+            location: europe-west1
+            priority: interactive
+            keyfile: /home/user/Workspace/secrets/gcs.json
+            retries: 2
+            # If a query would bill more than a gigabyte of data, then
+            # BigQuery will reject the query
+            # maximum_bytes_billed: 1000000000
+            maximum_bytes_billed: 10000000
