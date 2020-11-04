@@ -1,5 +1,6 @@
-import { jsonSchemaToUiWidget } from "./uiWidget";
 import { JSONSchema6 } from "json-schema";
+
+import { jsonSchemaToUiWidget } from "./uiWidget";
 
 test("should reformat jsonSchema to internal widget representation", () => {
   const schema: JSONSchema6 = {
@@ -30,42 +31,48 @@ test("should reformat jsonSchema to internal widget representation", () => {
   const builtSchema = jsonSchemaToUiWidget(schema, "key");
 
   const expected = {
-    _type: "group",
+    _type: "formGroup",
     fieldName: "key",
+    fieldKey: "key",
     isRequired: false,
     properties: [
       {
-        _type: "form-fieldKey",
+        _type: "formItem",
         description: "Hostname of the database.",
         fieldName: "key.host",
+        fieldKey: "host",
         isRequired: true,
         type: "string"
       },
       {
-        _type: "form-fieldKey",
+        _type: "formItem",
         description: "Port of the database.",
         fieldName: "key.port",
+        fieldKey: "port",
         isRequired: true,
         type: "integer"
       },
       {
-        _type: "form-fieldKey",
+        _type: "formItem",
         description: "Username to use to access the database.",
         fieldName: "key.user",
+        fieldKey: "user",
         isRequired: true,
         type: "string"
       },
       {
-        _type: "form-fieldKey",
+        _type: "formItem",
         description: "Name of the database.",
         fieldName: "key.dbname",
+        fieldKey: "dbname",
         isRequired: true,
         type: "string"
       },
       {
-        _type: "form-fieldKey",
+        _type: "formItem",
         description: "Password associated with the username.",
         fieldName: "key.password",
+        fieldKey: "password",
         isRequired: false,
         type: "string"
       }
@@ -91,14 +98,16 @@ test("should reformat jsonSchema to internal widget representation with parent s
   });
 
   const expected = {
-    _type: "group",
+    _type: "formGroup",
     fieldName: "key",
+    fieldKey: "key",
     isRequired: true,
     properties: [
       {
-        _type: "form-fieldKey",
+        _type: "formItem",
         description: "Hostname of the database.",
         fieldName: "key.host",
+        fieldKey: "host",
         isRequired: true,
         type: "string"
       }
@@ -114,11 +123,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
     required: ["start_date", "credentials"],
     properties: {
       start_date: {
-        type: "string",
-        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        description:
-          "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
-        examples: ["2017-01-25T00:00:00Z"]
+        type: "string"
       },
       credentials: {
         type: "object",
@@ -134,28 +139,11 @@ test("should reformat jsonSchema to internal widget representation when has oneO
           },
           {
             title: "oauth",
-            required: [
-              "redirect_uri",
-              "client_id",
-              "client_secret",
-              "refresh_token"
-            ],
+            required: ["redirect_uri"],
             properties: {
               redirect_uri: {
                 type: "string",
                 examples: ["https://api.hubspot.com/"]
-              },
-              client_id: {
-                type: "string",
-                examples: ["123456789000,"]
-              },
-              client_secret: {
-                type: "string",
-                examples: ["secret"]
-              },
-              refresh_token: {
-                type: "string",
-                examples: ["refresh_token"]
               }
             }
           }
@@ -169,16 +157,56 @@ test("should reformat jsonSchema to internal widget representation when has oneO
   });
 
   const expected = {
-    _type: "group",
+    _type: "formGroup",
+    fieldKey: "key",
     fieldName: "key",
     isRequired: true,
     properties: [
       {
-        _type: "form-fieldKey",
-        description: "Hostname of the database.",
-        fieldName: "key.host",
+        _type: "formItem",
+        fieldKey: "start_date",
+        fieldName: "key.start_date",
         isRequired: true,
         type: "string"
+      },
+      {
+        _type: "formCondition",
+        conditions: {
+          "api key": {
+            _type: "formGroup",
+            fieldKey: "credentials",
+            fieldName: "credentials",
+            isRequired: false,
+            properties: [
+              {
+                _type: "formItem",
+                fieldKey: "api_key",
+                fieldName: "credentials.api_key",
+                isRequired: true,
+                type: "string"
+              }
+            ]
+          },
+          oauth: {
+            _type: "formGroup",
+            fieldKey: "credentials",
+            fieldName: "credentials",
+            isRequired: false,
+            properties: [
+              {
+                _type: "formItem",
+                examples: ["https://api.hubspot.com/"],
+                fieldKey: "redirect_uri",
+                fieldName: "credentials.redirect_uri",
+                isRequired: true,
+                type: "string"
+              }
+            ]
+          }
+        },
+        fieldKey: "credentials",
+        fieldName: "key.credentials",
+        isRequired: true
       }
     ]
   };

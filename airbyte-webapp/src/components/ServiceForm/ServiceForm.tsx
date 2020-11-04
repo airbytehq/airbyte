@@ -1,13 +1,17 @@
 import React from "react";
 import { Formik, Form } from "formik";
 import styled from "styled-components";
+import { JSONSchema6 } from "json-schema";
 
 import { IDataItem } from "../DropDown/components/ListItem";
 import FormContent from "./components/FormContent";
 import BottomBlock from "./components/BottomBlock";
 import EditControls from "./components/EditControls";
-import { specification } from "../../core/resources/SourceSpecification";
-import { useBuildForm, FormInitialValues } from "./useBuildForm";
+import {
+  useBuildForm,
+  FormInitialValues,
+  useBuildUiWidgets
+} from "./useBuildForm";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -30,7 +34,7 @@ type IProps = {
   hasSuccess?: boolean;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  specifications?: specification;
+  specifications?: JSONSchema6;
   documentationUrl?: string;
 };
 
@@ -50,8 +54,6 @@ const ServiceForm: React.FC<IProps> = ({
   isLoading,
   isEditMode
 }) => {
-  const properties = Object.keys(specifications?.properties || {});
-
   const serviceValues = {
     name: "",
     serviceType: "",
@@ -62,6 +64,11 @@ const ServiceForm: React.FC<IProps> = ({
     serviceValues,
     formType,
     specifications
+  );
+
+  const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgets(
+    formFields,
+    initialValues
   );
 
   return (
@@ -83,12 +90,13 @@ const ServiceForm: React.FC<IProps> = ({
             dropDownData={dropDownData}
             formType={formType}
             formFields={formFields}
-            setFieldValue={setFieldValue}
+            specifications={specifications}
+            widgetsInfo={uiWidgetsInfo}
             values={values}
             isEditMode={isEditMode}
             onDropDownSelect={onDropDownSelect}
-            specifications={specifications}
-            properties={properties}
+            setUiWidgetsInfo={setUiWidgetsInfo}
+            setFieldValue={setFieldValue}
             documentationUrl={documentationUrl}
           />
 

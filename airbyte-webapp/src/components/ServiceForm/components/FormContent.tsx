@@ -1,4 +1,5 @@
 import React from "react";
+import { JSONSchema6 } from "json-schema";
 
 import { Field, FieldInputProps, FieldProps, useField } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -9,22 +10,23 @@ import LabeledDropDown from "../../LabeledDropDown";
 import { IDataItem } from "../../DropDown/components/ListItem";
 import Instruction from "./Instruction";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
-import { specification } from "../../../core/resources/SourceSpecification";
 import Spinner from "../../Spinner";
 import PropertyField from "./PropertyField";
 import { FormBaseItem, FormBlock } from "../../../core/form/types";
+import { WidgetConfig } from "../useBuildForm";
 
 type IProps = {
   formFields: FormBlock[];
   dropDownData: Array<IDataItem>;
-  setFieldValue: (item: string, value: string) => void;
+  setFieldValue: (name: string, value: string) => void;
+  setUiWidgetsInfo: (path: string, value: object) => void;
   isEditMode?: boolean;
   allowChangeConnector?: boolean;
   onDropDownSelect?: (id: string) => void;
   formType: "source" | "destination" | "connection";
   values: { name: string; serviceType: string; frequency?: string };
-  specifications?: specification;
-  properties?: Array<string>;
+  specifications?: JSONSchema6;
+  widgetsInfo: { [key: string]: WidgetConfig };
   documentationUrl?: string;
 };
 
@@ -90,6 +92,8 @@ const FormContent: React.FC<IProps> = ({
   formType,
   setFieldValue,
   values,
+  widgetsInfo,
+  setUiWidgetsInfo,
   isEditMode,
   onDropDownSelect,
   documentationUrl,
@@ -157,24 +161,43 @@ const FormContent: React.FC<IProps> = ({
     }
   };
 
-  const renderFormMeta = (formMetaField: FormBlock[]): React.ReactNode => {
-    return formMetaField.map(f => {
-      if (f._type === "formGroup") {
-        if (f.isLoading) {
+  const renderFormMeta = (formMetaFields: FormBlock[]): React.ReactNode => {
+    return formMetaFields.map(formField => {
+      if (formField._type === "formGroup") {
+        if (formField.isLoading) {
           return (
             <LoaderContainer>
               <Spinner />
             </LoaderContainer>
           );
-        } else {
-          return <>{renderFormMeta(f.properties)}</>;
         }
+        return renderFormMeta(formField.properties);
+      } else if (formField._type === "formCondition") {
+        const currentlySelectedCondition =
+          widgetsInfo[formField.fieldName]?.selectedItem;
+        return (
+          <>
+            <LabeledDropDown
+              data={Object.keys(formField.conditions).map(dataItem => ({
+                text: dataItem,
+                value: dataItem
+              }))}
+              onSelect={selectedItem =>
+                setUiWidgetsInfo(formField.fieldName, {
+                  selectedItem: selectedItem.value
+                })
+              }
+              value={currentlySelectedCondition}
+            />
+            {renderFormMeta([formField.conditions[currentlySelectedCondition]])}
+          </>
+        );
       } else {
         return (
-          <FormItem key={`form-field-${f.fieldKey}`}>
-            <Field name={f.fieldKey}>
+          <FormItem key={`form-field-${formField.fieldKey}`}>
+            <Field name={formField.fieldKey}>
               {(fieldProps: FieldProps<string>) =>
-                renderItem(f, fieldProps.field)
+                renderItem(formField, fieldProps.field)
               }
             </Field>
           </FormItem>

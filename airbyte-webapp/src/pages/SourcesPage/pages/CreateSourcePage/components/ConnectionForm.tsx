@@ -17,7 +17,7 @@ type IProps = {
   onSelectFrequency: (item: IDataItem) => void;
 };
 
-const ConnectionStep: React.FC<IProps> = ({
+const ConnectionForm: React.FC<IProps> = ({
   onSubmit,
   sourceImplementationId,
   onSelectFrequency
@@ -48,4 +48,4 @@ const ConnectionStep: React.FC<IProps> = ({
   );
 };
 
-export default ConnectionStep;
+export default ConnectionForm;

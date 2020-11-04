@@ -7,7 +7,7 @@ export type FormBaseItem = {
   fieldName: string;
   isRequired: boolean;
   meta?: { [key: string]: any };
-  // title?: string;
+  title?: string;
   // description?: string;
   // default?: JSONSchema6Type;
   // examples?: JSONSchema6Type[] | undefined;
@@ -26,4 +26,14 @@ type FormGroupItem = {
   examples?: JSONSchema6Type[] | undefined;
 };
 
-export type FormBlock = FormGroupItem | FormBaseItem;
+type FormConditionItem = {
+  _type: "formCondition";
+  title?: string;
+  fieldName: string;
+  fieldKey: string;
+  isRequired: boolean;
+  conditions: { [key: string]: FormGroupItem | FormBaseItem };
+  isLoading?: boolean;
+};
+
+export type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem;

@@ -24,6 +24,25 @@ export const jsonSchemaToUiWidget = (
     };
   }
 
+  if (jsonSchema.oneOf?.length && jsonSchema.oneOf.length > 0) {
+    const conditions = Object.fromEntries(
+      jsonSchema.oneOf.map(condition => {
+        if (typeof condition === "boolean") {
+          return [];
+        }
+        return [condition.title, jsonSchemaToUiWidget(condition, key)];
+      })
+    );
+
+    return {
+      _type: "formCondition",
+      fieldName: path || key,
+      fieldKey: key,
+      conditions,
+      isRequired
+    };
+  }
+
   if (jsonSchema.properties) {
     const properties = Object.entries(
       jsonSchema.properties
