@@ -27,3 +27,6 @@ echo "$GSHEETS_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source
 
 mkdir airbyte-integrations/connectors/destination-snowflake/secrets
 echo "$SNOWFLAKE_INTEGRATION_TEST_CREDS" > airbyte-integrations/connectors/destination-snowflake/secrets/config.json
+
+mkdir airbyte-integrations/connectors/source-google-adwords/secrets
+echo "$ADWORDS_INTEGRATION_TEST_CREDS" > airbyte-integrations/connectors/source-google-adwords/secrets/config.json
