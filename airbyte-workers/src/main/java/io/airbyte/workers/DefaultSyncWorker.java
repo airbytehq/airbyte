@@ -54,9 +54,9 @@ public class DefaultSyncWorker<T> implements SyncWorker {
   private final AtomicBoolean cancelled;
 
   public DefaultSyncWorker(final Source<T> source,
-                           final Destination<T> destination,
-                           final MessageTracker<T> messageTracker,
-                           final NormalizationRunner normalizationRunner) {
+      final Destination<T> destination,
+      final MessageTracker<T> messageTracker,
+      final NormalizationRunner normalizationRunner) {
     this.source = source;
     this.destination = destination;
     this.messageTracker = messageTracker;
@@ -88,19 +88,12 @@ public class DefaultSyncWorker<T> implements SyncWorker {
 
       destination.notifyEndOfStream();
 
-      final boolean shouldNormalize = Optional
-          .ofNullable(syncInput.getDestinationConnection().getConfiguration().get(WorkerConstants.BASIC_NORMALIZATION_KEY))
-          .map(JsonNode::asBoolean)
-          .orElse(false);
-      if (shouldNormalize) {
-        try (normalizationRunner) {
-          LOGGER.info("Running normalization.");
-          final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-          if (!normalizationRunner.normalize(normalizationRoot, syncInput.getDestinationConnection().getConfiguration(), syncInput.getCatalog())) {
-            throw new WorkerException("Normalization Failed.");
-          }
-        } finally {
-          normalizationRunner.close();
+      try (normalizationRunner) {
+        LOGGER.info("Running normalization.");
+        normalizationRunner.start();
+        final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
+        if (!normalizationRunner.normalize(normalizationRoot, syncInput.getDestinationConnection().getConfiguration(), syncInput.getCatalog())) {
+          throw new WorkerException("Normalization Failed.");
         }
       }
     } catch (Exception e) {

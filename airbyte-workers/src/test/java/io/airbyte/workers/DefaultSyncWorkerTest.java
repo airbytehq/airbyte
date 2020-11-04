@@ -90,8 +90,6 @@ class DefaultSyncWorkerTest {
 
   @Test
   void test() throws Exception {
-    ((ObjectNode) targetConfig.getDestinationConnectionConfiguration()).put("basic_normalization", true);
-
     final DefaultSyncWorker<AirbyteMessage> defaultSyncWorker =
         new DefaultSyncWorker<>(tap, target, new AirbyteMessageTracker(), normalizationRunner);
     final OutputAndStatus<StandardSyncOutput> run = defaultSyncWorker.run(syncInput, jobRoot);
@@ -102,21 +100,10 @@ class DefaultSyncWorkerTest {
     verify(target).start(targetConfig, jobRoot);
     verify(target).accept(RECORD_MESSAGE1);
     verify(target).accept(RECORD_MESSAGE2);
+    verify(normalizationRunner).start();
     verify(normalizationRunner).normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog());
     verify(normalizationRunner).close();
     verify(tap).close();
     verify(target).close();
   }
-
-  @Test
-  void skipNormalizationWhenNotConfigured() {
-    final DefaultSyncWorker<AirbyteMessage> defaultSyncWorker =
-        new DefaultSyncWorker<>(tap, target, new AirbyteMessageTracker(), normalizationRunner);
-    final OutputAndStatus<StandardSyncOutput> run = defaultSyncWorker.run(syncInput, jobRoot);
-
-    assertEquals(JobStatus.SUCCEEDED, run.getStatus());
-
-    verifyNoInteractions(normalizationRunner);
-  }
-
 }
