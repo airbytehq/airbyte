@@ -1,3 +1,4 @@
+// todo: move this file?
 String extractLabelValue(dockerFile, String labelName) {
     def file = dockerFile instanceof File ? dockerFile : new File(dockerFile)
     return file.readLines()

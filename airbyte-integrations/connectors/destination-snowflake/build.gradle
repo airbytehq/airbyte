@@ -17,6 +17,7 @@ dependencies {
     integrationTestImplementation project(':airbyte-integrations:bases:destination-test-lib')
     integrationTestImplementation 'org.apache.commons:commons-lang3:3.11'
     integrationTestImplementation project(':airbyte-integrations:connectors:destination-snowflake')
+    implementation files(project(':airbyte-integrations:bases:base-java').buildImage.outputs)
 }
 
 application {

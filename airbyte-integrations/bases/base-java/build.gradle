@@ -9,6 +9,7 @@ dependencies {
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')
+    implementation files(project(':airbyte-integrations:bases:base').buildImage.outputs)
 }
 
 buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'
