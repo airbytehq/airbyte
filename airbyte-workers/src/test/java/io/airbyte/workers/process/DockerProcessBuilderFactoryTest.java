@@ -35,9 +35,11 @@ import org.junit.jupiter.api.Test;
 // we should move them to "integration" tests, when we have facility to do so.
 class DockerProcessBuilderFactoryTest {
 
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
+
   @Test
   public void testImageExists() throws IOException {
-    Path workspaceRoot = Files.createTempDirectory("pbf");
+    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "pbf");
 
     final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
     assertTrue(pbf.checkImageExists("airbyte/scheduler:dev"));
@@ -45,7 +47,7 @@ class DockerProcessBuilderFactoryTest {
 
   @Test
   public void testImageDoesNotExist() throws IOException {
-    Path workspaceRoot = Files.createTempDirectory("pbf");
+    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "pbf");
 
     final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
     assertFalse(pbf.checkImageExists("airbyte/fake:0.1.2"));

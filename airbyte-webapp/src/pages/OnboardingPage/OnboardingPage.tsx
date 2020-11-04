@@ -10,8 +10,8 @@ import StepsMenu from "../../components/StepsMenu";
 import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
-import SourceImplementationResource from "../../core/resources/SourceImplementation";
-import DestinationImplementationResource from "../../core/resources/DestinationImplementation";
+import SourceResource from "../../core/resources/Source";
+import DestinationResource from "../../core/resources/Destination";
 import config from "../../config";
 import StepsConfig, { StepsTypes } from "./components/StepsConfig";
 import PrepareDropDownLists from "./components/PrepareDropDownLists";
@@ -77,15 +77,12 @@ const OnboardingPage: React.FC = () => {
   const { createDestination, recreateDestination } = useDestination();
   const { createConnection } = useConnection();
 
-  const { sources } = useResource(SourceImplementationResource.listShape(), {
+  const { sources } = useResource(SourceResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
-  const { destinations } = useResource(
-    DestinationImplementationResource.listShape(),
-    {
-      workspaceId: config.ui.workspaceId
-    }
-  );
+  const { destinations } = useResource(DestinationResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
 
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
@@ -104,8 +101,8 @@ const OnboardingPage: React.FC = () => {
   const {
     sourcesDropDownData,
     destinationsDropDownData,
-    getSourceById,
-    getDestinationById
+    getSourceDefinitionById,
+    getDestinationDefinitionById
   } = PrepareDropDownLists();
 
   const onSubmitSourceStep = async (values: {
@@ -115,13 +112,13 @@ const OnboardingPage: React.FC = () => {
     connectionConfiguration?: any;
   }) => {
     setErrorStatusRequest(0);
-    const sourceConnector = getSourceById(values.serviceType);
+    const sourceConnector = getSourceDefinitionById(values.serviceType);
 
     try {
       if (!!sources.length) {
         await recreateSource({
           values,
-          sourceImplementationId: sources[0].sourceImplementationId
+          sourceId: sources[0].sourceId
         });
       } else {
         await createSource({ values, sourceConnector });
@@ -140,18 +137,19 @@ const OnboardingPage: React.FC = () => {
   const onSubmitDestinationStep = async (values: {
     name: string;
     serviceType: string;
-    destinationId?: string;
+    destinationDefinitionId?: string;
     connectionConfiguration?: any;
   }) => {
     setErrorStatusRequest(0);
-    const destinationConnector = getDestinationById(values.serviceType);
+    const destinationConnector = getDestinationDefinitionById(
+      values.serviceType
+    );
 
     try {
       if (!!destinations.length) {
         await recreateDestination({
           values,
-          destinationImplementationId:
-            destinations[0].destinationImplementationId
+          destinationId: destinations[0].destinationId
         });
       } else {
         await createDestination({
@@ -173,25 +171,22 @@ const OnboardingPage: React.FC = () => {
   const onSubmitConnectionStep = async (values: {
     frequency: string;
     syncSchema: SyncSchema;
-    source?: {
-      name: string;
-      sourceId: string;
-    };
   }) => {
-    const sourceConnector = getSourceById(sources[0].sourceId);
-    const destinationConnector = getDestinationById(
-      destinations[0].destinationId
+    const sourceDefinition = getSourceDefinitionById(
+      sources[0].sourceDefinitionId
+    );
+    const destinationDefinition = getDestinationDefinitionById(
+      destinations[0].destinationDefinitionId
     );
 
     setErrorStatusRequest(0);
     try {
       await createConnection({
         values,
-        sourceImplementation: sources[0],
-        destinationImplementationId:
-          destinations[0].destinationImplementationId,
-        sourceConnector,
-        destinationConnector
+        source: sources[0],
+        destinationId: destinations[0].destinationId,
+        sourceDefinition,
+        destinationDefinition
       });
 
       push(Routes.Root);
@@ -208,9 +203,7 @@ const OnboardingPage: React.FC = () => {
           dropDownData={sourcesDropDownData}
           hasSuccess={successRequest}
           errorStatus={errorStatusRequest}
-          sourceImplementation={
-            sources.length && !successRequest ? sources[0] : undefined
-          }
+          source={sources.length && !successRequest ? sources[0] : undefined}
         />
       );
     }
@@ -221,8 +214,8 @@ const OnboardingPage: React.FC = () => {
           dropDownData={destinationsDropDownData}
           hasSuccess={successRequest}
           errorStatus={errorStatusRequest}
-          currentSourceId={sources[0].sourceId}
-          destinationImplementation={
+          currentSourceDefinitionId={sources[0].sourceDefinitionId}
+          destination={
             destinations.length && !successRequest ? destinations[0] : undefined
           }
         />
@@ -232,10 +225,10 @@ const OnboardingPage: React.FC = () => {
     return (
       <ConnectionStep
         onSubmit={onSubmitConnectionStep}
-        currentSourceId={sources[0].sourceId}
-        currentDestinationId={destinations[0].destinationId}
+        sourceDefinitionId={sources[0].sourceDefinitionId}
+        destinationDefinitionId={destinations[0].destinationDefinitionId}
         errorStatus={errorStatusRequest}
-        sourceImplementationId={sources[0].sourceImplementationId}
+        sourceId={sources[0].sourceId}
       />
     );
   };

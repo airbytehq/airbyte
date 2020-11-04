@@ -78,6 +78,14 @@ public class WorkerUtils {
     }
   }
 
+  public static void wait(Process process) {
+    try {
+      process.waitFor();
+    } catch (InterruptedException e) {
+      LOGGER.error("Exception while while waiting for process to finish", e);
+    }
+  }
+
   public static void cancelProcess(Process process) {
     closeProcess(process, 10, TimeUnit.SECONDS);
   }
@@ -88,7 +96,7 @@ public class WorkerUtils {
    */
   public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
     return new StandardTapConfig()
-        .withSourceConnectionConfiguration(sync.getSourceConnectionImplementation().getConfiguration())
+        .withSourceConnectionConfiguration(sync.getSourceConnection().getConfiguration())
         .withCatalog(sync.getCatalog())
         .withSyncMode(sync.getSyncMode())
         .withState(sync.getState());
@@ -100,7 +108,7 @@ public class WorkerUtils {
    */
   public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
     return new StandardTargetConfig()
-        .withDestinationConnectionConfiguration(sync.getDestinationConnectionImplementation().getConfiguration())
+        .withDestinationConnectionConfiguration(sync.getDestinationConnection().getConfiguration())
         .withCatalog(sync.getCatalog())
         .withSyncMode(sync.getSyncMode())
         .withState(sync.getState());

@@ -10,7 +10,7 @@ import {
   Cell
 } from "../../../../../components/SimpleTableComponents";
 import Toggle from "../../../../../components/Toggle";
-import { Destination } from "../../../../../core/resources/Destination";
+import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
 import { Connection } from "../../../../../core/resources/Connection";
 
 const MainInfo = styled(ContentCard)`
@@ -55,7 +55,7 @@ type IProps = {
 const StatusMainInfo: React.FC<IProps> = ({
   sourceData,
   onEnabledChange,
-  destination,
+  destinationDefinition,
   frequencyText
 }) => {
   return (
@@ -79,7 +79,7 @@ const StatusMainInfo: React.FC<IProps> = ({
         </SourceCell>
         <SourceCell flex={2}>
           <Img />
-          {destination.name}
+          {destinationDefinition.name}
         </SourceCell>
         <Cell>{frequencyText}</Cell>
         <EnabledCell flex={1.1}>

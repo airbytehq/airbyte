@@ -15,7 +15,7 @@
 2. [Integration primitives](airbyte-specification.md#primitives)
 3. [Details of the protocol to pass information between integrations](airbyte-specification.md#the-airbyte-protocol)
 
-This document is focused on the interfaces and primitives around integrations. You can better understand how that fits into the bigger picture by checking out the [Airbyte Architecture](high-level-overview.md).
+This document is focused on the interfaces and primitives around integrations. You can better understand how that fits into the bigger picture by checking out the [Airbyte Architecture]().
 
 ## General
 

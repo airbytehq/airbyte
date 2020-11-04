@@ -66,13 +66,13 @@ spotless {
     }
     sql {
         target '**/*.sql'
-        targetExclude "**/build/**/*", "**/.gradle/**/*"
+        targetExclude "**/build/**/*", "**/.gradle/**/*", "**/.venv/**"
 
         dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
     }
     python {
         target '**/*.py'
-        targetExclude "**/build/**/*", "**/.gradle/**/*", "**/.venv/**/*", "**/.eggs/**/*"
+        targetExclude "**/build/**/*", "**/.gradle/**/*", "**/.venv/**/*", "**/.eggs/**/*", "**/.mypy_cache/**/*"
         licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|# generated)'
     }
     format 'styling', {

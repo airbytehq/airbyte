@@ -1,0 +1,23 @@
+FROM airbyte/base-python-test:dev
+
+RUN apt-get update && rm -rf /var/lib/apt/lists/*
+
+ENV MODULE_NAME="source_{{snakeCase name}}_singer"
+ENV CODE_PATH="integration_tests"
+ENV AIRBYTE_TEST_MODULE="integration_tests"
+ENV AIRBYTE_TEST_PATH="Source{{properCase name}}SingerStandardTest"
+ENV AIRBYTE_TEST_CASE=true
+
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-{{dashCase name}}-singer-standard-test
+
+WORKDIR /airbyte/integration_code
+COPY $MODULE_NAME $MODULE_NAME
+COPY $CODE_PATH $CODE_PATH
+COPY secrets/* $CODE_PATH
+COPY $MODULE_NAME/*.json $CODE_PATH
+COPY setup.py ./
+
+RUN pip install ".[tests]"
+
+WORKDIR /airbyte

@@ -1,7 +1,7 @@
 import { useFetcher } from "rest-hooks";
 
 import config from "../../../config";
-import SourceImplementationResource from "../../../core/resources/SourceImplementation";
+import SourceResource from "../../../core/resources/Source";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 
 type ValuesProps = {
@@ -11,20 +11,14 @@ type ValuesProps = {
   frequency?: string;
 };
 
-type ConnectorProps = { name: string; sourceId: string };
+type ConnectorProps = { name: string; sourceDefinitionId: string };
 
 const useSource = () => {
-  const createSourcesImplementation = useFetcher(
-    SourceImplementationResource.createShape()
-  );
+  const createSourcesImplementation = useFetcher(SourceResource.createShape());
 
-  const updateSourceImplementation = useFetcher(
-    SourceImplementationResource.updateShape()
-  );
+  const updatesource = useFetcher(SourceResource.updateShape());
 
-  const recreateSourceImplementation = useFetcher(
-    SourceImplementationResource.recreateShape()
-  );
+  const recreatesource = useFetcher(SourceResource.recreateShape());
 
   const createSource = async ({
     values,
@@ -37,7 +31,7 @@ const useSource = () => {
       user_id: config.ui.workspaceId,
       action: "Test a connector",
       connector_source: sourceConnector?.name,
-      connector_source_id: sourceConnector?.sourceId
+      connector_source_id: sourceConnector?.sourceDefinitionId
     });
 
     try {
@@ -45,22 +39,16 @@ const useSource = () => {
         {},
         {
           name: values.name,
-          sourceId: sourceConnector?.sourceId,
+          sourceDefinitionId: sourceConnector?.sourceDefinitionId,
           workspaceId: config.ui.workspaceId,
           connectionConfiguration: values.connectionConfiguration
         },
         [
           [
-            SourceImplementationResource.listShape(),
+            SourceResource.listShape(),
             { workspaceId: config.ui.workspaceId },
-            (
-              newSourceImplementationId: string,
-              sourcesImplementationIds: { sources: string[] }
-            ) => ({
-              sources: [
-                ...(sourcesImplementationIds?.sources || []),
-                newSourceImplementationId
-              ]
+            (newsourceId: string, sourceIds: { sources: string[] }) => ({
+              sources: [...(sourceIds?.sources || []), newsourceId]
             })
           ]
         ]
@@ -69,7 +57,7 @@ const useSource = () => {
         user_id: config.ui.workspaceId,
         action: "Tested connector - success",
         connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceId
+        connector_source_id: sourceConnector?.sourceDefinitionId
       });
 
       return result;
@@ -78,7 +66,7 @@ const useSource = () => {
         user_id: config.ui.workspaceId,
         action: "Tested connector - failure",
         connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceId
+        connector_source_id: sourceConnector?.sourceDefinitionId
       });
       throw e;
     }
@@ -86,18 +74,18 @@ const useSource = () => {
 
   const updateSource = async ({
     values,
-    sourceImplementationId
+    sourceId
   }: {
     values: ValuesProps;
-    sourceImplementationId: string;
+    sourceId: string;
   }) => {
-    return await updateSourceImplementation(
+    return await updatesource(
       {
-        sourceImplementationId: sourceImplementationId
+        sourceId: sourceId
       },
       {
         name: values.name,
-        sourceImplementationId,
+        sourceId,
         connectionConfiguration: values.connectionConfiguration
       }
     );
@@ -105,30 +93,30 @@ const useSource = () => {
 
   const recreateSource = async ({
     values,
-    sourceImplementationId
+    sourceId
   }: {
     values: ValuesProps;
-    sourceImplementationId: string;
+    sourceId: string;
   }) => {
-    return await recreateSourceImplementation(
+    return await recreatesource(
       {
-        sourceImplementationId: sourceImplementationId
+        sourceId: sourceId
       },
       {
         name: values.name,
-        sourceImplementationId,
+        sourceId,
         connectionConfiguration: values.connectionConfiguration,
         workspaceId: config.ui.workspaceId,
-        sourceId: values.serviceType
+        sourceDefinitionId: values.serviceType
       },
       // Method used only in onboarding.
-      // Replace all SourceImplementation List to new item in UpdateParams (to change id)
+      // Replace all source List to new item in UpdateParams (to change id)
       [
         [
-          SourceImplementationResource.listShape(),
+          SourceResource.listShape(),
           { workspaceId: config.ui.workspaceId },
-          (newSourceImplementationId: string) => ({
-            sources: [newSourceImplementationId]
+          (newsourceId: string) => ({
+            sources: [newsourceId]
           })
         ]
       ]

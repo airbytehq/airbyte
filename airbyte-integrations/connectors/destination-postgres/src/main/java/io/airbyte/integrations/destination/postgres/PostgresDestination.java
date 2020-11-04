@@ -33,7 +33,8 @@ import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
@@ -61,7 +62,6 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.DSLContext;
 import org.jooq.InsertValuesStep3;
 import org.jooq.JSONB;
@@ -83,18 +83,16 @@ public class PostgresDestination implements Destination {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    try {
-      final BasicDataSource connectionPool = getConnectionPool(config);
-      DatabaseHelper.query(connectionPool, ctx -> ctx.execute(
+    try (final Database database = getDatabase(config)) {
+      database.query(ctx -> ctx.execute(
           "SELECT *\n"
               + "FROM pg_catalog.pg_tables\n"
               + "WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema' LIMIT 1;"));
 
-      connectionPool.close();
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       // todo (cgardens) - better error messaging for common cases. e.g. wrong password.
-      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
+      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Can't connect with provided configuration.");
     }
   }
 
@@ -128,14 +126,14 @@ public class PostgresDestination implements Destination {
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws Exception {
     // connect to db.
-    final BasicDataSource connectionPool = getConnectionPool(config);
+    final Database database = getDatabase(config);
     Map<String, WriteConfig> writeBuffers = new HashMap<>();
 
     // create tmp tables if not exist
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String tableName = stream.getName();
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
-      DatabaseHelper.query(connectionPool, ctx -> ctx.execute(String.format(
+      database.query(ctx -> ctx.execute(String.format(
           "CREATE TABLE \"%s\" ( \n"
               + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
               + "\"%s\" JSONB,\n"
@@ -150,7 +148,7 @@ public class PostgresDestination implements Destination {
 
     // write to tmp tables
     // if success copy delete main table if exists. rename tmp tables to real tables.
-    return new RecordConsumer(connectionPool, writeBuffers, catalog);
+    return new RecordConsumer(database, writeBuffers, catalog);
   }
 
   public static class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
@@ -162,12 +160,12 @@ public class PostgresDestination implements Destination {
     private static final int BATCH_SIZE = 500;
 
     private final ScheduledExecutorService writerPool;
-    private final BasicDataSource connectionPool;
+    private final Database database;
     private final Map<String, WriteConfig> writeConfigs;
     private final AirbyteCatalog catalog;
 
-    public RecordConsumer(BasicDataSource connectionPool, Map<String, WriteConfig> writeConfigs, AirbyteCatalog catalog) {
-      this.connectionPool = connectionPool;
+    public RecordConsumer(Database database, Map<String, WriteConfig> writeConfigs, AirbyteCatalog catalog) {
+      this.database = database;
       this.writeConfigs = writeConfigs;
       this.catalog = catalog;
       this.writerPool = Executors.newSingleThreadScheduledExecutor();
@@ -175,7 +173,7 @@ public class PostgresDestination implements Destination {
       Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofMinutes(GRACEFUL_SHUTDOWN_MINUTES), writerPool));
 
       writerPool.scheduleWithFixedDelay(
-          () -> writeStreamsWithNRecords(MIN_RECORDS, BATCH_SIZE, writeConfigs, connectionPool),
+          () -> writeStreamsWithNRecords(MIN_RECORDS, BATCH_SIZE, writeConfigs, database),
           THREAD_DELAY_MILLIS,
           THREAD_DELAY_MILLIS,
           TimeUnit.MILLISECONDS);
@@ -188,18 +186,18 @@ public class PostgresDestination implements Destination {
      *        wastefully writing one record at a time.
      * @param batchSize - the maximum number of records to write in a single insert.
      * @param writeBuffers - map of stream name to its respective buffer.
-     * @param connectionPool - connection to the db.
+     * @param database - connection to the db.
      */
     private static void writeStreamsWithNRecords(int minRecords,
                                                  int batchSize,
                                                  Map<String, WriteConfig> writeBuffers,
-                                                 BasicDataSource connectionPool) {
+                                                 Database database) {
       for (final Map.Entry<String, WriteConfig> entry : writeBuffers.entrySet()) {
         final String tmpTableName = entry.getValue().getTmpTableName();
         final CloseableQueue<byte[]> writeBuffer = entry.getValue().getWriteBuffer();
         while (writeBuffer.size() > minRecords) {
           try {
-            DatabaseHelper.query(connectionPool, ctx -> buildWriteQuery(ctx, batchSize, writeBuffer, tmpTableName).execute());
+            database.query(ctx -> buildWriteQuery(ctx, batchSize, writeBuffer, tmpTableName).execute());
           } catch (SQLException e) {
             throw new RuntimeException(e);
           }
@@ -263,10 +261,10 @@ public class PostgresDestination implements Destination {
         writerPool.awaitTermination(GRACEFUL_SHUTDOWN_MINUTES, TimeUnit.MINUTES);
 
         // write anything that is left in the buffers.
-        writeStreamsWithNRecords(0, 500, writeConfigs, connectionPool);
+        writeStreamsWithNRecords(0, 500, writeConfigs, database);
 
         // delete tables if already exist. copy new tables into their place.
-        DatabaseHelper.transaction(connectionPool, ctx -> {
+        database.transaction(ctx -> {
           final StringBuilder query = new StringBuilder();
           for (final WriteConfig writeConfig : writeConfigs.values()) {
             query.append(String.format("DROP TABLE IF EXISTS %s;\n", writeConfig.getTableName()));
@@ -275,20 +273,20 @@ public class PostgresDestination implements Destination {
           }
           return ctx.execute(query.toString());
         });
-
       }
 
       // close buffers.
       for (final WriteConfig writeConfig : writeConfigs.values()) {
         writeConfig.getWriteBuffer().close();
       }
-      cleanupTmpTables(connectionPool, writeConfigs);
+      cleanupTmpTables(database, writeConfigs);
+      database.close();
     }
 
-    private static void cleanupTmpTables(BasicDataSource connectionPool, Map<String, WriteConfig> writeConfigs) {
+    private static void cleanupTmpTables(Database database, Map<String, WriteConfig> writeConfigs) {
       for (WriteConfig writeConfig : writeConfigs.values()) {
         try {
-          DatabaseHelper.query(connectionPool, ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS %s;", writeConfig.getTmpTableName())));
+          database.query(ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS %s;", writeConfig.getTmpTableName())));
         } catch (SQLException e) {
           throw new RuntimeException(e);
         }
@@ -323,8 +321,8 @@ public class PostgresDestination implements Destination {
 
   }
 
-  private BasicDataSource getConnectionPool(JsonNode config) {
-    return DatabaseHelper.getConnectionPool(
+  private Database getDatabase(JsonNode config) {
+    return Databases.createPostgresDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:postgresql://%s:%s/%s",

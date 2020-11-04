@@ -28,10 +28,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DataType;
-import io.airbyte.config.DestinationConnectionImplementation;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
-import io.airbyte.config.SourceConnectionImplementation;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardSyncInput;
@@ -51,10 +51,10 @@ public class TestConfigHelpers {
 
   public static ImmutablePair<StandardSync, StandardSyncInput> createSyncConfig() {
     final UUID workspaceId = UUID.randomUUID();
+    final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
-    final UUID sourceImplementationId = UUID.randomUUID();
+    final UUID destinationDefinitionId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
-    final UUID destinationImplementationId = UUID.randomUUID();
     final UUID connectionId = UUID.randomUUID();
 
     final JsonNode sourceConnection =
@@ -69,18 +69,18 @@ public class TestConfigHelpers {
                 "username", "airbyte",
                 "token", "anau81b"));
 
-    final SourceConnectionImplementation sourceConnectionConfig = new SourceConnectionImplementation()
+    final SourceConnection sourceConnectionConfig = new SourceConnection()
         .withConfiguration(sourceConnection)
         .withWorkspaceId(workspaceId)
+        .withSourceDefinitionId(sourceDefinitionId)
         .withSourceId(sourceId)
-        .withSourceImplementationId(sourceImplementationId)
         .withTombstone(false);
 
-    final DestinationConnectionImplementation destinationConnectionConfig = new DestinationConnectionImplementation()
+    final DestinationConnection destinationConnectionConfig = new DestinationConnection()
         .withConfiguration(destinationConnection)
         .withWorkspaceId(workspaceId)
+        .withDestinationDefinitionId(destinationDefinitionId)
         .withDestinationId(destinationId)
-        .withDestinationImplementationId(destinationImplementationId)
         .withTombstone(false);
 
     final Field field = new Field()
@@ -97,8 +97,8 @@ public class TestConfigHelpers {
 
     StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
-        .withDestinationImplementationId(destinationImplementationId)
-        .withSourceImplementationId(sourceImplementationId)
+        .withDestinationId(destinationId)
+        .withSourceId(sourceId)
         .withStatus(StandardSync.Status.ACTIVE)
         .withSyncMode(SyncMode.FULL_REFRESH)
         .withName(CONNECTION_NAME)
@@ -111,11 +111,11 @@ public class TestConfigHelpers {
         .withState(Jsons.jsonNode(stateValue));
 
     StandardSyncInput syncInput = new StandardSyncInput()
-        .withDestinationConnectionImplementation(destinationConnectionConfig)
+        .withDestinationConnection(destinationConnectionConfig)
         .withSyncMode(standardSync.getSyncMode())
         .withCatalog(AirbyteProtocolConverters.toCatalog(standardSync.getSchema()))
         .withConnectionId(standardSync.getConnectionId())
-        .withSourceConnectionImplementation(sourceConnectionConfig)
+        .withSourceConnection(sourceConnectionConfig)
         .withState(state);
 
     return new ImmutablePair<>(standardSync, syncInput);

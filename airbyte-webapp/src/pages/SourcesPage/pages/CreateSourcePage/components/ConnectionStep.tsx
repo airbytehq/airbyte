@@ -5,8 +5,8 @@ import styled from "styled-components";
 
 import ConnectionBlock from "../../../../../components/ConnectionBlock";
 import ContentCard from "../../../../../components/ContentCard";
-import { Destination } from "../../../../../core/resources/Destination";
-import SourceResource from "../../../../../core/resources/Source";
+import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
+import SourceDefinitionResource from "../../../../../core/resources/SourceDefinition";
 import Spinner from "../../../../../components/Spinner";
 import { SyncSchema } from "../../../../../core/resources/Schema";
 import ConnectionForm from "./ConnectionForm";
@@ -16,9 +16,9 @@ import config from "../../../../../config";
 
 type IProps = {
   onSubmit: (values: { frequency: string; syncSchema: SyncSchema }) => void;
-  destination: Destination;
+  destinationDefinition: DestinationDefinition;
+  sourceDefinitionId: string;
   sourceId: string;
-  sourceImplementationId: string;
 };
 
 const SpinnerBlock = styled.div`
@@ -36,12 +36,12 @@ const FetchMessage = styled.div`
 
 const ConnectionStep: React.FC<IProps> = ({
   onSubmit,
-  destination,
-  sourceId,
-  sourceImplementationId
+  destinationDefinition,
+  sourceDefinitionId,
+  sourceId
 }) => {
-  const source = useResource(SourceResource.detailShape(), {
-    sourceId
+  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId
   });
 
   const onSelectFrequency = (item: IDataItem) => {
@@ -49,18 +49,19 @@ const ConnectionStep: React.FC<IProps> = ({
       user_id: config.ui.workspaceId,
       action: "Select a frequency",
       frequency: item?.text,
-      connector_source: source.name,
-      connector_source_id: source.sourceId,
-      connector_destination: destination.name,
-      connector_destination_id: destination.destinationId
+      connector_source: sourceDefinition.name,
+      connector_source_definition_id: sourceDefinition.sourceDefinitionId,
+      connector_destination: destinationDefinition.name,
+      connector_destination_definition_id:
+        destinationDefinition.destinationDefinitionId
     });
   };
 
   return (
     <>
       <ConnectionBlock
-        itemFrom={{ name: source.name }}
-        itemTo={{ name: destination.name }}
+        itemFrom={{ name: sourceDefinition.name }}
+        itemTo={{ name: destinationDefinition.name }}
       />
       <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
         <Suspense
@@ -76,7 +77,7 @@ const ConnectionStep: React.FC<IProps> = ({
           <ConnectionForm
             onSelectFrequency={onSelectFrequency}
             onSubmit={onSubmit}
-            sourceImplementationId={sourceImplementationId}
+            sourceId={sourceId}
           />
         </Suspense>
       </ContentCard>

@@ -38,7 +38,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -56,13 +57,11 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.AbstractMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.Record;
+import org.jooq.JSONFormat;
+import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,6 +69,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 class PostgresDestinationTest {
 
+  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
@@ -98,29 +98,31 @@ class PostgresDestinationTest {
           Field.of("id", JsonSchemaPrimitive.STRING)),
       CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
+  private PostgreSQLContainer<?> container;
   private JsonNode config;
-
-  private PostgreSQLContainer<?> db;
+  private Database database;
 
   @BeforeEach
   void setup() {
-    db = new PostgreSQLContainer<>("postgres:13-alpine");
-    db.start();
+    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put("host", container.getHost())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .put("schema", "public")
-        .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
+        .put("port", container.getFirstMappedPort())
+        .put("database", container.getDatabaseName())
         .build());
+
+    database = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }
 
   @AfterEach
-  void tearDown() {
-    db.stop();
-    db.close();
+  void tearDown() throws Exception {
+    database.close();
+    container.close();
   }
 
   // todo - same test as csv destination
@@ -145,8 +147,9 @@ class PostgresDestinationTest {
   void testCheckFailure() {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = new PostgresDestination().check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Cannot create PoolableConnectionFactory (FATAL: password authentication failed for user \"test\")");
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus()
+        .withStatus(Status.FAILED)
+        .withMessage("Can't connect with provided configuration.");
     assertEquals(expected, actual);
   }
 
@@ -192,7 +195,7 @@ class PostgresDestinationTest {
   }
 
   private List<String> fetchNamesOfTablesInDb() throws SQLException {
-    return DatabaseHelper.query(getDatabasePool(),
+    return database.query(
         ctx -> ctx.fetch("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';"))
         .stream()
         .map(record -> (String) record.get("table_name")).collect(Collectors.toList());
@@ -203,36 +206,21 @@ class PostgresDestinationTest {
     assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
   }
 
-  private BasicDataSource getDatabasePool() {
-    return DatabaseHelper.getConnectionPool(db.getUsername(), db.getPassword(), db.getJdbcUrl());
-  }
-
   private Set<JsonNode> recordRetriever(String streamName) throws Exception {
+    return database.query(ctx -> ctx
+        .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
+        .stream()
+        .peek(record -> {
+          // ensure emitted_at is not in the future
+          OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+          OffsetDateTime emitted_at = record.get("emitted_at", OffsetDateTime.class);
 
-    return DatabaseHelper.query(
-        getDatabasePool(),
-        ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
-            .stream()
-            .peek(record -> {
-              // ensure emitted_at is not in the future
-              OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-              OffsetDateTime emitted_at = record.get("emitted_at", OffsetDateTime.class);
-
-              assertTrue(now.toEpochSecond() >= emitted_at.toEpochSecond());
-            })
-            .map(Record::intoMap)
-            .map(r -> r.entrySet().stream().map(e -> {
-              if (e.getValue().getClass().equals(org.jooq.JSONB.class)) {
-                // jooq needs more configuration to handle jsonb natively. coerce it to a string for now and handle
-                // deserializing later.
-                return new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue().toString());
-              }
-              return e;
-            }).collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
-            .map(r -> (String) r.get(PostgresDestination.COLUMN_NAME))
-            .map(Jsons::deserialize)
-            .collect(Collectors.toSet()));
+          assertTrue(now.toEpochSecond() >= emitted_at.toEpochSecond());
+        })
+        .map(r -> r.formatJSON(JSON_FORMAT))
+        .map(Jsons::deserialize)
+        .map(r -> Jsons.deserialize(r.get(PostgresDestination.COLUMN_NAME).asText()))
+        .collect(Collectors.toSet()));
   }
 
 }

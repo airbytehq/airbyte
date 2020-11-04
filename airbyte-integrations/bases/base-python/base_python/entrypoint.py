@@ -33,11 +33,6 @@ from airbyte_protocol import AirbyteMessage, Status, Type
 from .integration import ConfigContainer, Source
 from .logger import AirbyteLogger
 
-impl_module = os.environ.get("AIRBYTE_IMPL_MODULE", Source.__module__)
-impl_class = os.environ.get("AIRBYTE_IMPL_PATH", Source.__name__)
-module = importlib.import_module(impl_module)
-impl = getattr(module, impl_class)
-
 logger = AirbyteLogger()
 
 
@@ -88,7 +83,7 @@ class AirbyteEntrypoint(object):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
-                message = AirbyteMessage(type="SPEC", spec=self.source.spec(logger))
+                message = AirbyteMessage(type=Type.SPEC, spec=self.source.spec(logger))
                 print(message.json(exclude_unset=True))
                 sys.exit(0)
 
@@ -130,10 +125,16 @@ class AirbyteEntrypoint(object):
 
 
 def launch(source, args):
+
     AirbyteEntrypoint(source).start(args)
 
 
 def main():
+    impl_module = os.environ.get("AIRBYTE_IMPL_MODULE", Source.__module__)
+    impl_class = os.environ.get("AIRBYTE_IMPL_PATH", Source.__name__)
+    module = importlib.import_module(impl_module)
+    impl = getattr(module, impl_class)
+
     # set up and run entrypoint
     source = impl()
 

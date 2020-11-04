@@ -13,17 +13,17 @@ import { IDataItem } from "../../../../../components/DropDown/components/ListIte
 
 type IProps = {
   onSubmit: (values: { frequency: string; syncSchema: SyncSchema }) => void;
-  sourceImplementationId: string;
+  sourceId: string;
   onSelectFrequency: (item: IDataItem) => void;
 };
 
 const ConnectionForm: React.FC<IProps> = ({
   onSubmit,
-  sourceImplementationId,
+  sourceId,
   onSelectFrequency
 }) => {
   const { schema } = useResource(SchemaResource.schemaShape(), {
-    sourceImplementationId
+    sourceId
   });
 
   const { formSyncSchema, initialChecked } = constructInitialSchemaState(

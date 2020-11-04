@@ -24,12 +24,13 @@
 
 package io.airbyte.integrations.base;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -58,11 +59,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class TestSource {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestSource.class);
 
   private TestDestinationEnv testEnv;
 
@@ -102,6 +107,14 @@ public abstract class TestSource {
   protected abstract AirbyteCatalog getCatalog() throws Exception;
 
   /**
+   * List of regular expressions that should match the output of the test sync.
+   *
+   * @return the regular expressions to test
+   * @throws Exception - thrown when attempting ot access the regexes fails
+   */
+  protected abstract List<String> getRegexTests() throws Exception;
+
+  /**
    * Function that performs any setup of external resources required for the test. e.g. instantiate a
    * postgres database. This function will be called before EACH test.
    *
@@ -120,7 +133,7 @@ public abstract class TestSource {
    */
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
-  @Before
+  @BeforeEach
   public void setUpInternal() throws Exception {
     Path testDir = Path.of("/tmp/airbyte_tests/");
     Files.createDirectories(testDir);
@@ -138,7 +151,7 @@ public abstract class TestSource {
         "host");
   }
 
-  @After
+  @AfterEach
   public void tearDownInternal() throws Exception {
     tearDown(testEnv);
   }
@@ -194,10 +207,20 @@ public abstract class TestSource {
    */
   @Test
   public void testRead() throws Exception {
-    final List<AirbyteMessage> recordMessages = runRead(getCatalog()).stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
-    // the worker validates the messages, so we just validate the message, so we do not need to validate
-    // again (as long as we use the worker, which we will not want to do long term).
+    final List<AirbyteMessage> allMessages = runRead(getCatalog());
+    final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
+    // the worker validates the message formats, so we just validate the message content
+    // We don't need to validate message format as long as we use the worker, which we will not want to
+    // do long term.
     assertFalse(recordMessages.isEmpty());
+
+    final List<String> regexTests = getRegexTests();
+    final List<String> stringMessages = allMessages.stream().map(Jsons::serialize).collect(Collectors.toList());
+    LOGGER.info("Running " + regexTests.size() + " regex tests...");
+    regexTests.forEach(regex -> {
+      LOGGER.info("Looking for [" + regex + "]");
+      assertTrue(stringMessages.stream().anyMatch(line -> line.matches(regex)), "Failed to find regex: " + regex);
+    });
   }
 
   /**

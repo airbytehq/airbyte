@@ -7,4 +7,4 @@ set -e
 assert_root
 
 ./gradlew --no-daemon --scan -x generateProtocolClassFiles \
-  :airbyte-integrations:connectors:source-github-singer:standardSourceTestPython
+  :airbyte-integrations:connectors:source-github-singer:standardSourceTestPython 

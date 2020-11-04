@@ -33,7 +33,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultSchedulerPersistence;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
@@ -165,7 +165,7 @@ public class ServerApp {
     TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(DatabaseHelper.getConnectionPool(
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(Databases.createPostgresDatabase(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl()));

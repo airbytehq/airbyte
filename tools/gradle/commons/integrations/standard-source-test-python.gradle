@@ -12,6 +12,15 @@ task standardSourceTestPython {
             println("imageName: ${imageName}")
             println("pythonContainerName: ${pythonContainerName}")
             workingDir rootDir
+            println(""" Running:
+docker run --rm -i \\
+  -v "/var/run/docker.sock:/var/run/docker.sock" \\
+  -v "/tmp:/tmp" \\
+  -v "${project.projectDir.absolutePath}:/test_input" \\
+  --name "std-test-${project.name}" airbyte/standard-source-test:dev \\
+  --imageName ${imageName} \\
+  --pythonContainerName ${pythonContainerName}
+                    """)
             commandLine 'docker', 'run', '--rm', '-i',
                     // so that it has access to docker
                     '-v', "/var/run/docker.sock:/var/run/docker.sock",

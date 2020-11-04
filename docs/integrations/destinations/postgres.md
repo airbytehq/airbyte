@@ -14,11 +14,9 @@ Each stream will be output into its own table in Postgres. Each table will conta
 
 * `ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Postgres is `VARCHAR`.
 * `emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Postgres is `TIMESTAMP WITH TIME ZONE`.
-* `data`: a json blob representing with the event data. The column type in BigQuery is `JSONB`.
+* `data`: a json blob representing with the event data. The column type in Postgres is `JSONB`.
 
 #### Features
-
-This section should contain a table with the following format:
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |

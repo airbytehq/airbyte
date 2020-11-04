@@ -58,6 +58,7 @@ import org.mockito.ArgumentCaptor;
 class WorkerRunFactoryTest {
 
   private static final JsonNode CONFIG = Jsons.jsonNode(1);
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   private Job job;
   private Path rootPath;
@@ -70,9 +71,10 @@ class WorkerRunFactoryTest {
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(1L);
     when(job.getAttempts()).thenReturn(2);
+    when(job.getConfig().getSync().getDestinationDockerImage()).thenReturn("airbyte/destination-moon:0.1.0");
 
     creator = mock(WorkerRunFactory.Creator.class);
-    rootPath = Files.createTempDirectory("test");
+    rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     factory = new WorkerRunFactory(rootPath, mock(ProcessBuilderFactory.class), creator);
   }
@@ -115,8 +117,8 @@ class WorkerRunFactoryTest {
     factory.create(job);
 
     StandardSyncInput expectedInput = new StandardSyncInput()
-        .withSourceConnectionImplementation(job.getConfig().getSync().getSourceConnectionImplementation())
-        .withDestinationConnectionImplementation(job.getConfig().getSync().getDestinationConnectionImplementation())
+        .withSourceConnection(job.getConfig().getSync().getSourceConnection())
+        .withDestinationConnection(job.getConfig().getSync().getDestinationConnection())
         .withCatalog(AirbyteProtocolConverters.toCatalog(job.getConfig().getSync().getStandardSync().getSchema()))
         .withConnectionId(job.getConfig().getSync().getStandardSync().getConnectionId())
         .withSyncMode(job.getConfig().getSync().getStandardSync().getSyncMode())

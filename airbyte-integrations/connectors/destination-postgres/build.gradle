@@ -6,7 +6,6 @@ apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 
 dependencies {
-    implementation project(':airbyte-config:models')
     implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')

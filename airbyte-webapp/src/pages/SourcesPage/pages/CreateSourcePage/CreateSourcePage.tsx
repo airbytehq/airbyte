@@ -9,11 +9,11 @@ import SourceStep from "./components/SourceStep";
 import ConnectionStep from "./components/ConnectionStep";
 import { Routes } from "../../../routes";
 import useRouter from "../../../../components/hooks/useRouterHook";
-import DestinationImplementationResource from "../../../../core/resources/DestinationImplementation";
-import config from "../../../../config";
-import SourceResource from "../../../../core/resources/Source";
 import DestinationResource from "../../../../core/resources/Destination";
-import { SourceImplementation } from "../../../../core/resources/SourceImplementation";
+import config from "../../../../config";
+import SourceDefinitionResource from "../../../../core/resources/SourceDefinition";
+import DestinationDefinitionResource from "../../../../core/resources/DestinationDefinition";
+import { Source } from "../../../../core/resources/Source";
 import { SyncSchema } from "../../../../core/resources/Schema";
 import useSource from "../../../../components/hooks/services/useSourceHook";
 import useConnection from "../../../../components/hooks/services/useConnectionHook";
@@ -33,19 +33,22 @@ const CreateSourcePage: React.FC = () => {
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
 
-  const { destinations } = useResource(
-    DestinationImplementationResource.listShape(),
+  const { destinations } = useResource(DestinationResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
+  const currentDestination = destinations[0]; // Now we have only one destination. If we support multiple destinations we will fix this line
+  const { sourceDefinitions } = useResource(
+    SourceDefinitionResource.listShape(),
     {
       workspaceId: config.ui.workspaceId
     }
   );
-  const currentDestination = destinations[0]; // Now we have only one destination. If we support multiple destinations we will fix this line
-  const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId
-  });
-  const destination = useResource(DestinationResource.detailShape(), {
-    destinationId: currentDestination.destinationId
-  });
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    {
+      destinationDefinitionId: currentDestination.destinationDefinitionId
+    }
+  );
   const { createSource } = useSource();
   const { createConnection } = useConnection();
 
@@ -53,32 +56,30 @@ const CreateSourcePage: React.FC = () => {
 
   const sourcesDropDownData = useMemo(
     () =>
-      sources.map(item => ({
+      sourceDefinitions.map(item => ({
         text: item.name,
-        value: item.sourceId,
+        value: item.sourceDefinitionId,
         img: "/default-logo-catalog.svg"
       })),
-    [sources]
+    [sourceDefinitions]
   );
 
-  const [
-    currentSourceImplementation,
-    setCurrentSourceImplementation
-  ] = useState<SourceImplementation | undefined>(undefined);
+  const [currentsource, setCurrentsource] = useState<Source | undefined>(
+    undefined
+  );
 
   const onSubmitSourceStep = async (values: {
     name: string;
     serviceType: string;
-    sourceId?: string;
     connectionConfiguration?: any;
   }) => {
-    const connector = sources.find(
-      item => item.sourceId === values.serviceType
+    const connector = sourceDefinitions.find(
+      item => item.sourceDefinitionId === values.serviceType
     );
     setErrorStatusRequest(0);
     try {
       const result = await createSource({ values, sourceConnector: connector });
-      setCurrentSourceImplementation(result);
+      setCurrentsource(result);
       setSuccessRequest(true);
       setTimeout(() => {
         setSuccessRequest(false);
@@ -93,18 +94,17 @@ const CreateSourcePage: React.FC = () => {
     frequency: string;
     syncSchema: SyncSchema;
   }) => {
-    const sourceInfo = sources.find(
-      item => item.sourceId === currentSourceImplementation?.sourceId
+    const sourceInfo = sourceDefinitions.find(
+      item => item.sourceDefinitionId === currentsource?.sourceDefinitionId
     );
     setErrorStatusRequest(0);
     try {
       await createConnection({
         values,
-        sourceImplementation: currentSourceImplementation,
-        destinationImplementationId:
-          destinations[0].destinationImplementationId,
-        sourceConnector: sourceInfo,
-        destinationConnector: currentDestination
+        source: currentsource,
+        destinationId: destinations[0].destinationId,
+        sourceDefinition: sourceInfo,
+        destinationDefinition
       });
 
       push(Routes.Root);
@@ -118,7 +118,7 @@ const CreateSourcePage: React.FC = () => {
         <SourceStep
           onSubmit={onSubmitSourceStep}
           dropDownData={sourcesDropDownData}
-          destination={destination}
+          destinationDefinition={destinationDefinition}
           hasSuccess={successRequest}
           errorStatus={errorStatusRequest}
         />
@@ -128,11 +128,9 @@ const CreateSourcePage: React.FC = () => {
     return (
       <ConnectionStep
         onSubmit={onSubmitConnectionStep}
-        destination={destination}
-        sourceId={currentSourceImplementation?.sourceId || ""}
-        sourceImplementationId={
-          currentSourceImplementation?.sourceImplementationId || ""
-        }
+        destinationDefinition={destinationDefinition}
+        sourceDefinitionId={currentsource?.sourceDefinitionId || ""}
+        sourceId={currentsource?.sourceId || ""}
       />
     );
   };
