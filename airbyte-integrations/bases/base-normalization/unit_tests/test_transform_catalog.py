@@ -22,20 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import unittest
-import os
 import json
+import os
+import unittest
+
 from normalization import TransformConfig
 from normalization.transform_config.transform import DestinationType
 
 
 class TestTransformCatalog(unittest.TestCase):
     def test_transform_bigquery(self):
-        input = {
-            "project_id": "my_project_id",
-            "dataset_id": "my_dataset_id",
-            "credentials_json": "{ \"type\": \"service_account\" }"
-        }
+        input = {"project_id": "my_project_id", "dataset_id": "my_dataset_id", "credentials_json": '{ "type": "service_account" }'}
 
         actual_output = TransformConfig().transform_bigquery(input)
         expected_output = {
@@ -50,7 +47,7 @@ class TestTransformCatalog(unittest.TestCase):
 
         with open("/tmp/bq_keyfile.json", "r") as file:
             actual_keyfile = json.loads(file.read())
-        expected_keyfile = { "type": "service_account" }
+        expected_keyfile = {"type": "service_account"}
 
         self.assertEqual(expected_output, actual_output)
         self.assertEqual(expected_keyfile, actual_keyfile)
@@ -65,7 +62,7 @@ class TestTransformCatalog(unittest.TestCase):
             "username": "a user",
             "password": "password123",
             "database": "my_db",
-            "schema": "public"
+            "schema": "public",
         }
 
         actual = TransformConfig().transform_postgres(input)
@@ -90,7 +87,7 @@ class TestTransformCatalog(unittest.TestCase):
             "database": "AIRBYTE_DATABASE",
             "schema": "AIRBYTE_SCHEMA",
             "username": "AIRBYTE_USER",
-            "password": "password123"
+            "password": "password123",
         }
 
         actual = TransformConfig().transform_snowflake(input)
@@ -118,7 +115,7 @@ class TestTransformCatalog(unittest.TestCase):
             "username": "a user",
             "password": "password123",
             "database": "my_db",
-            "schema": "public"
+            "schema": "public",
         }
 
         expected = self.get_base_config()
@@ -144,20 +141,16 @@ class TestTransformCatalog(unittest.TestCase):
                 "send_anonymous_usage_stats": False,
                 "use_colors": True,
             },
-            "normalize":{
-                "target": "prod",
-                "outputs":{
-                    "prod": {}
-                }
-            }
+            "normalize": {"target": "prod", "outputs": {"prod": {}}},
         }
 
     def test_parse(self):
         t = TransformConfig()
         self.assertEqual(
             {"integration_type": DestinationType.postgres, "config": "config.json", "output_path": "out.yml"},
-            t.parse(["--integration-type","postgres",  "--config", "config.json", "--out", "out.yml"])
+            t.parse(["--integration-type", "postgres", "--config", "config.json", "--out", "out.yml"]),
         )
+
 
 if __name__ == "__main__":
     unittest.main()

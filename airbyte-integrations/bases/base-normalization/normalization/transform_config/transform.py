@@ -25,13 +25,16 @@ SOFTWARE.
 import argparse
 import json
 import pkgutil
-import yaml
 from enum import Enum
+
+import yaml
+
 
 class DestinationType(Enum):
     bigquery = "bigquery"
     postgres = "postgres"
     snowflake = "snowflake"
+
 
 class TransformConfig:
     def run(self, args):
