@@ -47,7 +47,11 @@ For more information, see the [Facebook Insights API documentation. ](https://de
 
 ### Performance considerations
 
-**Important note:** In order for Airbyte syncs to complete successfully, you will need to apply with Facebook to upgrade your access token to the Ads Management Standard Tier as specified in the [Facebook Access documentation](https://developers.facebook.com/docs/marketing-api/access). Otherwise, Facebook will most likely throttle Airbyte syncs, since the default tier \(Dev Access\) is heavily throttled by Facebook. 
+**Important note:** In order for data synced from your Facebook account to be up to date, you might need to apply with Facebook to upgrade your access token to the Ads Management Standard Tier as specified in the [Facebook Access documentation](https://developers.facebook.com/docs/marketing-api/access). Otherwise, Facebook might throttle Airbyte syncs, since the default tier \(Dev Access\) is heavily throttled by Facebook. 
+
+
+
+Note that Airbyte can adapt to throttling from Facebook. In the worst case scenario syncs from Facebook will take longer to complete and data will be less fresh. 
 
 ## Getting started
 
