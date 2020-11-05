@@ -2,6 +2,9 @@ project.ext.pyModule = 'base_python'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply plugin: 'docker-build'
 
-build.dependsOn ':airbyte-integrations:bases:airbyte-protocol:build'
-buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'
-buildImage.dependsOn ':airbyte-integrations:bases:airbyte-protocol:buildImage'
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:airbyte-protocol').buildImage.outputs)
+    implementation files(project(':airbyte-integrations:bases:base').buildImage.outputs)
+}
+
+// todo: handle case where caching identifies the same outputs but doesn't regenerate because it just places the outputs

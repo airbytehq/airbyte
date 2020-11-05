@@ -2,6 +2,12 @@ import java.nio.file.Paths
 import java.security.MessageDigest
 import java.nio.file.Paths
 
+
+class DockerBuildConfiguration {
+//    String message
+//    String greeter
+}
+
 @CacheableTask
 abstract class DockerBuildTask extends DefaultTask {
     @Input
@@ -23,7 +29,7 @@ abstract class DockerBuildTask extends DefaultTask {
     @TaskAction
     def buildImage() {
         def scriptPath = Paths.get(rootDir.absolutePath, 'tools/bin/build_image.sh').toString()
-        def tag = "${extractImageName(Paths.get(projectDir.absolutePath, dockerfileName).toString())}:dev"
+        def tag = getTaggedImage(projectDir, dockerfileName)
 
         project.exec {
             commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath
@@ -45,28 +51,50 @@ abstract class DockerBuildTask extends DefaultTask {
     static String extractImageVersion(String dockerFile) {
         return extractLabelValue(dockerFile, "io.airbyte.version")
     }
-}
 
-
-class DockerBuildConfiguration {
-//    String message
-//    String greeter
+    static String getTaggedImage(projectDir, dockerfileName) {
+        return "${extractImageName(Paths.get(projectDir.absolutePath, dockerfileName).toString())}:dev"
+    }
 }
 
 class DockerBuildPlugin implements Plugin<Project> {
-    def getBaseImageHashes2(Map imageToVersion, File dockerfile) {
-        println("getting hashes for ${dockerfile}")
 
+    static def getBaseTaggedImages(File dockerfile) {
         def result = [] as Set<String>
 
         dockerfile.eachLine { line ->
             if (line.startsWith("FROM ")) {
                 def image = line.split()[1]
-                result.add((String)imageToVersion.get(image))
+                result.add(image)
+            } else if(line.startsWith("COPY --from=")) {
+                def image = line.substring("COPY --from=".length()).split()[0]
+                result.add(image)
             }
         }
 
         return result
+    }
+
+    def getBaseImageHashes2(Map imageToVersion, File dockerfile) {
+        println("getting hashes for ${dockerfile}")
+
+        def result = [] as Set<String>
+
+        getBaseTaggedImages(dockerfile).forEach { taggedImage ->
+            result.add((String)imageToVersion.get(taggedImage))
+        }
+
+        return result
+    }
+
+    String getImageHash(Project project, String taggedImage) {
+        def stdout = new ByteArrayOutputStream()
+        project.exec {
+            commandLine "docker", "images", "--no-trunc", "-f", "dangling=false", "--format", "{{.ID}}", taggedImage
+            standardOutput = stdout;
+        }
+
+       return "$stdout".toString().trim()
     }
 
     void apply(Project project) {
@@ -99,7 +127,52 @@ class DockerBuildPlugin implements Plugin<Project> {
             projectDir = project.projectDir
             idFileOutput = project.file(Paths.get(project.rootProject.rootDir.absolutePath, '.dockerversions', hash).toString())
             baseImageHashes = getBaseImageHashes2(project.rootProject.imageToVersion, dockerPath.toFile()) // todo: parameterize by dockerfile name
-            dependsOn project.build
+            dependsOn project.assemble
+
+            outputs.upToDateWhen {
+                if(idFileOutput.exists()) {
+                        def taggedImage = DockerBuildTask.getTaggedImage(project.projectDir, 'Dockerfile')
+                        println "taggedImage " + taggedImage
+
+                        def current = getImageHash(project, taggedImage)
+                        println "current " + current
+                        def stored = ((String)project.rootProject.imageToVersion.get(taggedImage)).trim()
+                        println "stored " + stored
+
+
+                        def notUpToDate = new ArrayList<String>(getBaseTaggedImages(dockerPath.toFile())).any {baseImage ->
+                            println "checking base image " + baseImage
+                            def storedBase = ((String)project.rootProject.imageToVersion.get(baseImage)).trim()
+                            def currentBase = getImageHash(project, baseImage)
+
+                            println "storedBase " + storedBase
+                            println "currentBase " + currentBase
+                            if(!currentBase.equals(storedBase)) {
+                                println "did not match"
+                                return true
+                            } else {
+                                println "did match"
+                                return false
+                            }
+                        }
+
+                        if(notUpToDate) {
+                            return false;
+                        }
+
+                        println "stored " + stored.trim()
+
+                        def upToDate = current.equals(stored.trim())
+
+                        println "uptodate " + upToDate.toString()
+
+                        return upToDate
+                } else {
+                    return false
+                }
+            }
         }
+
+        project.build.dependsOn project.buildImage
     }
 }

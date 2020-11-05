@@ -24,6 +24,4 @@ application {
     mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestination'
 }
 
-buildImage.dependsOn(assemble)
-buildImage.dependsOn(':airbyte-integrations:bases:base-java:buildImage')
 integrationTest.dependsOn(buildImage)
