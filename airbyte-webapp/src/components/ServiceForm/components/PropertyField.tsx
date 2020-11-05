@@ -8,48 +8,49 @@ import LabeledToggle from "../../LabeledToggle";
 import { FormBaseItem } from "../../../core/form/types";
 
 type IProps = {
-  condition: FormBaseItem;
+  property: FormBaseItem;
 };
 
-const PropertyField: React.FC<IProps> = ({ condition }) => {
+const PropertyField: React.FC<IProps> = ({ property }) => {
   const formatMessage = useIntl().formatMessage;
-  const { fieldName, fieldKey } = condition;
-  const [field, , { setValue }] = useField(fieldName);
+  const { fieldName, fieldKey } = property;
+  const [field, { error }, form] = useField(fieldName);
 
   const defaultLabel = formatMessage({
     id: `form.${fieldKey}`,
     defaultMessage: fieldKey
   });
 
-  const label = `${condition.title || defaultLabel}${
-    condition.isRequired ? " *" : ""
+  const label = `${property.title || defaultLabel}${
+    property.isRequired ? " *" : ""
   }`;
 
   // TODO: fix
-  const placeholder = condition.examples?.[0] as string;
+  const placeholder = property.examples?.[0] as string;
 
-  if (condition.type === "boolean") {
+  if (property.type === "boolean") {
     return (
       <LabeledToggle
         {...field}
-        label={condition.title || defaultLabel}
+        label={property.title || defaultLabel}
         message={
-          <FormattedHTMLMessage id="1" defaultMessage={condition.description} />
+          <FormattedHTMLMessage id="1" defaultMessage={property.description} />
         }
         placeholder={placeholder}
-        value={field.value || condition.default}
+        value={field.value || property.default}
       />
     );
-  } else if (condition.enum) {
+  } else if (property.enum) {
     return (
       <LabeledDropDown
         {...field}
+        error={!!error}
         label={label}
         message={
-          condition.description ? (
+          property.description ? (
             <FormattedHTMLMessage
               id="1"
-              defaultMessage={condition.description}
+              defaultMessage={property.description}
             />
           ) : null
         }
@@ -57,31 +58,32 @@ const PropertyField: React.FC<IProps> = ({ condition }) => {
         filterPlaceholder={formatMessage({
           id: "form.searchName"
         })}
-        data={condition.enum.map(dataItem => ({
+        data={property.enum.map(dataItem => ({
           text: dataItem?.toString() ?? "",
           value: dataItem?.toString() ?? ""
         }))}
-        onSelect={selectedItem => setValue(selectedItem.value)}
-        value={field.value || condition.default}
+        onSelect={selectedItem => form.setValue(selectedItem.value)}
+        value={field.value || property.default}
       />
     );
   } else {
     return (
       <LabeledInput
         {...field}
+        error={!!error}
         autoComplete="off"
         label={label}
         message={
-          condition.description ? (
+          property.description ? (
             <FormattedHTMLMessage
               id="1"
-              defaultMessage={condition.description}
+              defaultMessage={property.description}
             />
           ) : null
         }
         placeholder={placeholder}
-        type={condition.type === "integer" ? "number" : "text"}
-        value={field.value || condition.default}
+        type={property.type === "integer" ? "number" : "text"}
+        value={field.value || property.default}
       />
     );
   }

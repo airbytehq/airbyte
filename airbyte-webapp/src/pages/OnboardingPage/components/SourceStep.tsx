@@ -110,7 +110,7 @@ const SourceStep: React.FC<IProps> = ({
         specifications={sourceDefinitionSpecification?.connectionSpecification}
         documentationUrl={sourceDefinitionSpecification?.documentationUrl}
         isLoading={isLoading}
-        formValues={sourceImplementation}
+        formValues={source}
       />
     </ContentCard>
   );

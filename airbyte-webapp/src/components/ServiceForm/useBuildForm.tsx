@@ -1,15 +1,15 @@
 import * as yup from "yup";
 import { useCallback, useMemo, useState } from "react";
 import { JSONSchema6 } from "json-schema";
-import at from "lodash.at";
 
 import {
   FormBlock,
   WidgetConfig,
   WidgetConfigMap
 } from "../../core/form/types";
-import { jsonSchemaToUiWidget } from "../../core/jsonSchema/uiWidget";
-import { buildYupFormForJsonSchema } from "../../core/jsonSchema/yupHelper";
+import { jsonSchemaToUiWidget } from "../../core/jsonSchema/schemaToUiWidget";
+import { buildYupFormForJsonSchema } from "../../core/jsonSchema/schemaToYup";
+import { buildPathInitialState } from "../../core/form/uiWidget";
 
 export type FormInitialValues = {
   name: string;
@@ -44,6 +44,7 @@ export const useConstructValidationSchema = (
 
 export function useBuildForm(
   formType: "connection" | "source" | "destination",
+  isLoading?: boolean,
   initialValues?: Partial<FormInitialValues>,
   jsonSchema?: JSONSchema6
 ): {
@@ -79,13 +80,13 @@ export function useBuildForm(
         type: "string",
         fieldKey: "serviceType",
         fieldName: "serviceType",
-        isRequired: true,
-        // TODO: move to UI widget config
+        // TODO: find better approach and possibly move to UIWidget
         meta: {
           includeInstruction: formType !== "connection"
-        }
+        },
+        isRequired: true
       },
-      ...(jsonSchema
+      ...(jsonSchema && !isLoading
         ? [jsonSchemaToUiWidget(jsonSchema, "connectionConfiguration")]
         : []),
       ...((formType === "connection"
@@ -94,66 +95,19 @@ export function useBuildForm(
               _type: "formItem",
               fieldKey: "frequency",
               fieldName: "frequency",
-              type: "array",
+              type: "string",
               isRequired: true
             }
           ]
         : []) as FormBlock[])
     ];
-  }, [jsonSchema, formType]);
+  }, [jsonSchema, isLoading, formType]);
 
   return {
     initialValues: startValues,
     formFields
   };
 }
-
-const buildPathInitialState = (
-  formBlock: FormBlock[],
-  formValues: FormInitialValues,
-  widgetState: WidgetConfigMap
-): { [key: string]: WidgetConfigMap } =>
-  formBlock.reduce((widgetStateBuilder, formItem) => {
-    switch (formItem._type) {
-      case "formGroup":
-        return buildPathInitialState(
-          formItem.properties,
-          formValues,
-          widgetStateBuilder
-        );
-      case "formItem":
-        return widgetStateBuilder;
-      case "formCondition":
-        const defaultCondition = Object.entries(formItem.conditions).find(
-          ([, subConditionItems]) => {
-            switch (subConditionItems._type) {
-              case "formGroup":
-                return subConditionItems.properties.every(
-                  p => at(formValues, p.fieldName) !== undefined
-                );
-              case "formItem":
-                return at(formValues, subConditionItems.fieldName);
-            }
-            return false;
-          }
-        )?.[0];
-
-        const selectedPath =
-          defaultCondition ?? Object.keys(formItem.conditions)?.[0];
-        widgetStateBuilder[formItem.fieldName] = {
-          selectedItem: selectedPath
-        };
-        if (formItem.conditions[selectedPath]) {
-          return buildPathInitialState(
-            [formItem.conditions[selectedPath]],
-            formValues,
-            widgetStateBuilder
-          );
-        }
-    }
-
-    return widgetStateBuilder;
-  }, widgetState);
 
 export const useBuildUiWidgets = (
   formFields: FormBlock[],

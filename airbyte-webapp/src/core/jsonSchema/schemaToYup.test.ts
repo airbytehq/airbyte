@@ -1,7 +1,9 @@
 import { JSONSchema6 } from "json-schema";
 import * as yup from "yup";
-import { buildYupFormForJsonSchema } from "./yupHelper";
+import { buildYupFormForJsonSchema } from "./schemaToYup";
 
+// Note: We have to check yup schema with JSON.stringify
+// as exactly same objects throw now equality due to `Received: serializes to the same string` error
 test("should build schema for simple case", () => {
   const schema: JSONSchema6 = {
     type: "object",
@@ -29,19 +31,19 @@ test("should build schema for simple case", () => {
   };
   const yupSchema = buildYupFormForJsonSchema(schema);
 
-  expect(yupSchema).toEqual(
-    yup.object().shape({
-      host: yup.string().required("form.empty.error"),
-      port: yup
-        .number()
-        .min(0)
-        .max(65536)
-        .required("form.empty.error"),
-      user: yup.string().required("form.empty.error"),
-      dbname: yup.string().required("form.empty.error"),
-      password: yup.string()
-    })
-  );
+  const expectedSchema = yup.object().shape({
+    host: yup.string().required("form.empty.error"),
+    port: yup
+      .number()
+      .min(0)
+      .max(65536)
+      .required("form.empty.error"),
+    user: yup.string().required("form.empty.error"),
+    dbname: yup.string().required("form.empty.error"),
+    password: yup.string()
+  });
+
+  expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));
 });
 
 test("should build schema for conditional case", () => {
@@ -82,12 +84,12 @@ test("should build schema for conditional case", () => {
     { credentials: { selectedItem: "api key" } }
   );
 
-  const expected = yup.object().shape({
+  const expectedSchema = yup.object().shape({
     start_date: yup.string().required("form.empty.error"),
     credentials: yup.object().shape({
       api_key: yup.string().required("form.empty.error")
     })
   });
 
-  expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expected));
+  expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));
 });

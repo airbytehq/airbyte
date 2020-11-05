@@ -1,6 +1,19 @@
 import { JSONSchema6Definition } from "json-schema";
+import pick from "lodash.pick";
+
 import { FormBlock } from "../form/types";
 
+/**
+ * Returns {@link FormBlock} representation of jsonSchema
+ *
+ * Builds internal {@link FormBlock} from jsonSchema recursively.
+ * Allows to walk through and validate schema in a more convenient way
+ *
+ * @param jsonSchema
+ * @param key
+ * @param path
+ * @param parentSchema
+ */
 export const jsonSchemaToUiWidget = (
   jsonSchema: JSONSchema6Definition,
   key: string,
@@ -51,9 +64,13 @@ export const jsonSchemaToUiWidget = (
     );
 
     return {
-      default: jsonSchema.default,
-      examples: jsonSchema.examples,
-      description: jsonSchema.description,
+      ...pick(jsonSchema, [
+        "default",
+        "examples",
+        "description",
+        "title",
+        "enum"
+      ]),
       _type: "formGroup",
       fieldName: path || key,
       fieldKey: key,
@@ -63,16 +80,19 @@ export const jsonSchemaToUiWidget = (
   }
 
   return {
-    title: jsonSchema.title,
-    default: jsonSchema.default,
-    examples: jsonSchema.examples,
-    description: jsonSchema.description,
+    ...pick(jsonSchema, [
+      "default",
+      "examples",
+      "description",
+      "title",
+      "enum"
+    ]),
+    _type: "formItem",
     fieldName: path || key,
     fieldKey: key,
     isRequired,
     type:
       (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ??
-      "any",
-    _type: "formItem"
+      "any"
   };
 };

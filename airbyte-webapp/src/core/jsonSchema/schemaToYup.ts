@@ -1,6 +1,21 @@
 import { JSONSchema6 } from "json-schema";
 import * as yup from "yup";
+
 import { WidgetConfigMap } from "../form/types";
+
+/**
+ * Returns yup.schema for validation
+ *
+ * This method builds yup schema based on jsonSchema ${@link JSONSchema6} and widgetConfig ${@link WidgetConfigMap}.
+ * Every property is walked through recursively in case it is condition | object | array.
+ *
+ * uiConfig is used to select currently selected oneOf conditions to build proper schema
+ * As uiConfig widget paths are .dot based (key1.innerModule1.innerModule2) propertyKey is provided recursively
+ * @param jsonSchema
+ * @param uiConfig uiConfig of widget currently selected in form
+ * @param parentSchema used in recursive schema building as required fields can be described in parentSchema
+ * @param propertyKey used in recursive schema building for building path for uiConfig
+ */
 
 export const buildYupFormForJsonSchema = (
   jsonSchema: JSONSchema6,
@@ -67,6 +82,10 @@ export const buildYupFormForJsonSchema = (
             ])
           )
         );
+  }
+
+  if (schema && jsonSchema.default) {
+    schema = schema.default(jsonSchema.default);
   }
 
   const isRequired =

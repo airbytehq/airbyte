@@ -1,18 +1,15 @@
 import { JSONSchema6 } from "json-schema";
 
-import { jsonSchemaToUiWidget } from "./uiWidget";
+import { jsonSchemaToUiWidget } from "./schemaToUiWidget";
 
 test("should reformat jsonSchema to internal widget representation", () => {
   const schema: JSONSchema6 = {
     type: "object",
-    title: "Postgres Source Spec",
     required: ["host", "port", "user", "dbname"],
     properties: {
       host: { type: "string", description: "Hostname of the database." },
       port: {
         type: "integer",
-        maximum: 65536,
-        minimum: 0,
         description: "Port of the database."
       },
       user: {
@@ -24,8 +21,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
         type: "string",
         description: "Password associated with the username."
       }
-    },
-    additionalProperties: false
+    }
   };
 
   const builtSchema = jsonSchemaToUiWidget(schema, "key");
@@ -89,8 +85,7 @@ test("should reformat jsonSchema to internal widget representation with parent s
     required: ["host", "port", "user", "dbname"],
     properties: {
       host: { type: "string", description: "Hostname of the database." }
-    },
-    additionalProperties: false
+    }
   };
 
   const builtSchema = jsonSchemaToUiWidget(schema, "key", undefined, {
@@ -98,6 +93,7 @@ test("should reformat jsonSchema to internal widget representation with parent s
   });
 
   const expected = {
+    title: "Postgres Source Spec",
     _type: "formGroup",
     fieldName: "key",
     fieldKey: "key",
@@ -173,6 +169,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
         _type: "formCondition",
         conditions: {
           "api key": {
+            title: "api key",
             _type: "formGroup",
             fieldKey: "credentials",
             fieldName: "key.credentials",
@@ -188,6 +185,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
             ]
           },
           oauth: {
+            title: "oauth",
             _type: "formGroup",
             fieldKey: "credentials",
             fieldName: "key.credentials",

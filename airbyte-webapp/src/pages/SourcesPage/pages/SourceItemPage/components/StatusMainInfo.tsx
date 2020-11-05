@@ -48,7 +48,7 @@ const ToggleLabel = styled.label`
 type IProps = {
   sourceData: Connection;
   onEnabledChange: () => void;
-  destination: Destination;
+  destinationDefinition: DestinationDefinition;
   frequencyText?: string;
 };
 

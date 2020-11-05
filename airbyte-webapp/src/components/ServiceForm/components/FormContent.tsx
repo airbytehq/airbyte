@@ -1,7 +1,7 @@
 import React from "react";
 import { JSONSchema6 } from "json-schema";
 
-import { Field, FieldInputProps, FieldProps, useField } from "formik";
+import { Field, FieldProps, useField } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
@@ -23,9 +23,10 @@ type IProps = {
   dropDownData: Array<IDataItem>;
   setFieldValue: (name: string, value: string) => void;
   setUiWidgetsInfo: (path: string, value: object) => void;
+  isLoadingSchema?: boolean;
   isEditMode?: boolean;
   allowChangeConnector?: boolean;
-  onDropDownSelect?: (id: string) => void;
+  onChangeServiceType?: (id: string) => void;
   formType: "source" | "destination" | "connection";
   values: { name: string; serviceType: string; frequency?: string };
   specifications?: JSONSchema6;
@@ -89,7 +90,6 @@ const FrequencyInput: React.FC = () => {
   );
 };
 
-// @ts-ignore
 const FormContent: React.FC<IProps> = ({
   dropDownData,
   formType,
@@ -97,8 +97,9 @@ const FormContent: React.FC<IProps> = ({
   values,
   widgetsInfo,
   setUiWidgetsInfo,
+  isLoadingSchema,
   isEditMode,
-  onDropDownSelect,
+  onChangeServiceType,
   documentationUrl,
   allowChangeConnector,
   formFields
@@ -107,13 +108,14 @@ const FormContent: React.FC<IProps> = ({
 
   const renderItem = (
     formItem: FormBaseItem,
-    field: FieldInputProps<string>
+    fieldProps: FieldProps<string>
   ) => {
     switch (formItem.fieldKey) {
       case "name":
         return (
           <LabeledInput
-            {...field}
+            {...fieldProps.field}
+            error={!!fieldProps.meta.error}
             label={<FormattedMessage id="form.name" />}
             placeholder={formatMessage({
               id: `form.${formType}Name.placeholder`
@@ -128,7 +130,8 @@ const FormContent: React.FC<IProps> = ({
         return (
           <>
             <SmallLabeledDropDown
-              {...field}
+              {...fieldProps.field}
+              error={!!fieldProps.meta.error}
               disabled={isEditMode && !allowChangeConnector}
               label={formatMessage({
                 id: `form.${formType}Type`
@@ -143,8 +146,8 @@ const FormContent: React.FC<IProps> = ({
               data={dropDownData}
               onSelect={item => {
                 setFieldValue("serviceType", item.value);
-                if (onDropDownSelect) {
-                  onDropDownSelect(item.value);
+                if (onChangeServiceType) {
+                  onChangeServiceType(item.value);
                 }
               }}
             />
@@ -160,20 +163,13 @@ const FormContent: React.FC<IProps> = ({
       case "frequency":
         return <FrequencyInput />;
       default:
-        return <PropertyField condition={formItem} />;
+        return <PropertyField property={formItem} />;
     }
   };
 
   const renderFormMeta = (formMetaFields: FormBlock[]): React.ReactNode => {
     return formMetaFields.map(formField => {
       if (formField._type === "formGroup") {
-        if (formField.isLoading) {
-          return (
-            <LoaderContainer>
-              <Spinner />
-            </LoaderContainer>
-          );
-        }
         return renderFormMeta(formField.properties);
       } else if (formField._type === "formCondition") {
         const currentlySelectedCondition =
@@ -200,7 +196,7 @@ const FormContent: React.FC<IProps> = ({
           <FormItem key={`form-field-${formField.fieldKey}`}>
             <Field name={formField.fieldKey}>
               {(fieldProps: FieldProps<string>) =>
-                renderItem(formField, fieldProps.field)
+                renderItem(formField, fieldProps)
               }
             </Field>
           </FormItem>
@@ -209,7 +205,16 @@ const FormContent: React.FC<IProps> = ({
     });
   };
 
-  return renderFormMeta(formFields);
+  return (
+    <>
+      {renderFormMeta(formFields)}
+      {isLoadingSchema && (
+        <LoaderContainer>
+          <Spinner />
+        </LoaderContainer>
+      )}
+    </>
+  );
 };
 
 export default FormContent;

@@ -2,6 +2,7 @@ import React from "react";
 import { Formik, Form } from "formik";
 import styled from "styled-components";
 import { JSONSchema6 } from "json-schema";
+import merge from "lodash.merge";
 
 import { IDataItem } from "../DropDown/components/ListItem";
 import FormContent from "./components/FormContent";
@@ -57,6 +58,7 @@ const ServiceForm: React.FC<IProps> = ({
 }) => {
   const { formFields, initialValues } = useBuildForm(
     formType,
+    isLoading,
     formValues,
     specifications
   );
@@ -77,9 +79,9 @@ const ServiceForm: React.FC<IProps> = ({
       validateOnBlur={true}
       validateOnChange={true}
       validateOnMount={true}
-      validationSchema={() => validationSchema}
+      validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting }) => {
-        await onSubmit(values);
+        await onSubmit(merge(validationSchema.cast(), values));
         setSubmitting(false);
       }}
     >
@@ -94,7 +96,8 @@ const ServiceForm: React.FC<IProps> = ({
             widgetsInfo={uiWidgetsInfo}
             values={values}
             isEditMode={isEditMode}
-            onDropDownSelect={onDropDownSelect}
+            isLoadingSchema={isLoading}
+            onChangeServiceType={onDropDownSelect}
             setUiWidgetsInfo={setUiWidgetsInfo}
             setFieldValue={setFieldValue}
             documentationUrl={documentationUrl}
