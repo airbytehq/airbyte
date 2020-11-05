@@ -38,7 +38,7 @@ To run this transformation:
 python3 main_dev_transform_catalog.py \
   --catalog integration_tests/catalog.json \
   --out normalization/dbt-transform/models/generated/ \
-  --json json_blob \
+  --json-column json_blob \
   --table airbytesandbox.data.one_recipe_json
 ```
     """

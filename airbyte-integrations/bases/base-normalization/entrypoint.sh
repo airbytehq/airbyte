@@ -44,11 +44,9 @@ function main() {
   case "$CMD" in
   run)
     transform-config --config "$CONFIG_FILE" --integration-type "$INTEGRATION_TYPE" --out "$DBT_PROFILE"
-    # todo (cgardens) - @ChristopheDuong adjust these args if necessary.
-    transform-catalog --catalog "$CATALOG_FILE" --integration-type "$INTEGRATION_TYPE" --out "$DBT_MODEL"
-
-    # todo (cgardens) - @ChristopheDuong this is my best guess at how we are supposed to invoke dbt. adjust when they are inevitably not quite right.
-    dbt run --profiles-dir $(pwd) --project-dir $(pwd) --full-refresh --fail-fast
+    transform-catalog --catalog "$CATALOG_FILE" --out "$DBT_MODEL" --json-column data --table "???"
+    dbt deps --profiles-dir $(pwd) --project-dir $(pwd)
+    dbt run --profiles-dir $(pwd) --project-dir $(pwd)
     ;;
   dry-run)
     error "Not Implemented"

@@ -2,8 +2,7 @@
   "streams": [
     {
       "name": "one_recipe",
-      "json_schema":
-      {
+      "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema",
         "$id": "http://example.com/example.json",
         "type": "object",
@@ -135,9 +134,7 @@
             "title": "The Name schema",
             "description": "An explanation about the purpose of this instance.",
             "default": "",
-            "examples": [
-              "Christmas pie"
-            ]
+            "examples": ["Christmas pie"]
           },
           "url": {
             "$id": "#/properties/url",
@@ -165,9 +162,7 @@
             "title": "The Author schema",
             "description": "An explanation about the purpose of this instance.",
             "default": "",
-            "examples": [
-              "Mary Cadogan"
-            ]
+            "examples": ["Mary Cadogan"]
           },
           "Ingredients": {
             "$id": "#/properties/Ingredients",
@@ -215,11 +210,7 @@
                       }
                     }
                   ],
-                  "required": [
-                    "quantity",
-                    "ingredient",
-                    "nutritionfacts"
-                  ],
+                  "required": ["quantity", "ingredient", "nutritionfacts"],
                   "properties": {
                     "quantity": {
                       "$id": "#/properties/Ingredients/items/anyOf/0/properties/quantity",
@@ -227,9 +218,7 @@
                       "title": "The quantity schema",
                       "description": "An explanation about the purpose of this instance.",
                       "default": "",
-                      "examples": [
-                        "2 tbsp"
-                      ]
+                      "examples": ["2 tbsp"]
                     },
                     "ingredient": {
                       "$id": "#/properties/Ingredients/items/anyOf/0/properties/ingredient",
@@ -237,9 +226,7 @@
                       "title": "The ingredient schema",
                       "description": "An explanation about the purpose of this instance.",
                       "default": "",
-                      "examples": [
-                        "olive oil"
-                      ]
+                      "examples": ["olive oil"]
                     },
                     "nutritionfacts": {
                       "$id": "#/properties/Ingredients/items/anyOf/0/properties/nutritionfacts",
@@ -253,10 +240,7 @@
                           "fat": "13.5g"
                         }
                       ],
-                      "required": [
-                        "calories",
-                        "fat"
-                      ],
+                      "required": ["calories", "fat"],
                       "properties": {
                         "calories": {
                           "$id": "#/properties/Ingredients/items/anyOf/0/properties/nutritionfacts/properties/calories",
@@ -264,9 +248,7 @@
                           "title": "The calories schema",
                           "description": "An explanation about the purpose of this instance.",
                           "default": 0,
-                          "examples": [
-                            119
-                          ]
+                          "examples": [119]
                         },
                         "fat": {
                           "$id": "#/properties/Ingredients/items/anyOf/0/properties/nutritionfacts/properties/fat",
@@ -274,9 +256,7 @@
                           "title": "The fat schema",
                           "description": "An explanation about the purpose of this instance.",
                           "default": "",
-                          "examples": [
-                            "13.5g"
-                          ]
+                          "examples": ["13.5g"]
                         }
                       },
                       "additionalProperties": true
@@ -314,9 +294,7 @@
                       "title": "The quantity schema",
                       "description": "An explanation about the purpose of this instance.",
                       "default": "",
-                      "examples": [
-                        "1"
-                      ]
+                      "examples": ["1"]
                     },
                     "ingredient": {
                       "$id": "#/properties/Ingredients/items/anyOf/1/properties/ingredient",
@@ -324,9 +302,7 @@
                       "title": "The ingredient schema",
                       "description": "An explanation about the purpose of this instance.",
                       "default": "",
-                      "examples": [
-                        "onion"
-                      ]
+                      "examples": ["onion"]
                     },
                     "preparation": {
                       "$id": "#/properties/Ingredients/items/anyOf/1/properties/preparation",
@@ -334,9 +310,7 @@
                       "title": "The preparation schema",
                       "description": "An explanation about the purpose of this instance.",
                       "default": "",
-                      "examples": [
-                        "finely chopped"
-                      ]
+                      "examples": ["finely chopped"]
                     },
                     "nutritionfacts": {
                       "$id": "#/properties/Ingredients/items/anyOf/1/properties/nutritionfacts",
@@ -350,10 +324,7 @@
                           "fat": "11.5g"
                         }
                       ],
-                      "required": [
-                        "calories",
-                        "fat"
-                      ],
+                      "required": ["calories", "fat"],
                       "properties": {
                         "calories": {
                           "$id": "#/properties/Ingredients/items/anyOf/1/properties/nutritionfacts/properties/calories",
@@ -361,9 +332,7 @@
                           "title": "The calories schema",
                           "description": "An explanation about the purpose of this instance.",
                           "default": 0,
-                          "examples": [
-                            102
-                          ]
+                          "examples": [102]
                         },
                         "fat": {
                           "$id": "#/properties/Ingredients/items/anyOf/1/properties/nutritionfacts/properties/fat",
@@ -371,9 +340,7 @@
                           "title": "The fat schema",
                           "description": "An explanation about the purpose of this instance.",
                           "default": "",
-                          "examples": [
-                            "11.5g"
-                          ]
+                          "examples": ["11.5g"]
                         }
                       },
                       "additionalProperties": true
@@ -393,10 +360,7 @@
                       "ingredient": "fresh white breadcrumbs"
                     }
                   ],
-                  "required": [
-                    "quantity",
-                    "ingredient"
-                  ],
+                  "required": ["quantity", "ingredient"],
                   "properties": {
                     "quantity": {
                       "$id": "#/properties/Ingredients/items/anyOf/2/properties/quantity",
@@ -404,9 +368,7 @@
                       "title": "The quantity schema",
                       "description": "An explanation about the purpose of this instance.",
                       "default": "",
-                      "examples": [
-                        "100g"
-                      ]
+                      "examples": ["100g"]
                     },
                     "ingredient": {
                       "$id": "#/properties/Ingredients/items/anyOf/2/properties/ingredient",
@@ -414,9 +376,7 @@
                       "title": "The ingredient schema",
                       "description": "An explanation about the purpose of this instance.",
                       "default": "",
-                      "examples": [
-                        "fresh white breadcrumbs"
-                      ]
+                      "examples": ["fresh white breadcrumbs"]
                     }
                   },
                   "additionalProperties": true
@@ -434,11 +394,7 @@
                       "preparation": "chopped"
                     }
                   ],
-                  "required": [
-                    "quantity",
-                    "ingredient",
-                    "preparation"
-                  ],
+                  "required": ["quantity", "ingredient", "preparation"],
                   "properties": {
                     "quantity": {
                       "$id": "#/properties/Ingredients/items/anyOf/3/properties/quantity",
@@ -446,9 +402,7 @@
                       "title": "The quantity schema",
                       "description": "An explanation about the purpose of this instance.",
                       "default": "",
-                      "examples": [
-                        "2 tsp"
-                      ]
+                      "examples": ["2 tsp"]
                     },
                     "ingredient": {
                       "$id": "#/properties/Ingredients/items/anyOf/3/properties/ingredient",
@@ -456,9 +410,7 @@
                       "title": "The ingredient schema",
                       "description": "An explanation about the purpose of this instance.",
                       "default": "",
-                      "examples": [
-                        "fresh or dried thyme"
-                      ]
+                      "examples": ["fresh or dried thyme"]
                     },
                     "preparation": {
                       "$id": "#/properties/Ingredients/items/anyOf/3/properties/preparation",
@@ -466,9 +418,7 @@
                       "title": "The preparation schema",
                       "description": "An explanation about the purpose of this instance.",
                       "default": "",
-                      "examples": [
-                        "chopped"
-                      ]
+                      "examples": ["chopped"]
                     }
                   },
                   "additionalProperties": true
