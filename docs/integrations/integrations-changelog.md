@@ -10,8 +10,13 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## Currently under construction
 
-**New sources:** Hubspot, Facebook Ads, Google Ads, MSSQL, GCS CSV, S3 CSV, SFTP CSV  
-**New destinations:** Snowflake
+**New sources:** MSSQL, GCS CSV, S3 CSV, SFTP CSV  
+**New destinations:** Redshift
+
+## 11/04/2020
+
+**New sources:** [Facebook Ads](sources/facebook-marketing-api.md), [Google Ads](sources/google-adwords.md)  
+**New destination:** [Snowflake](destinations/snowflake.md)
 
 ## 10/30/2020
 
