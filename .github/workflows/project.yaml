@@ -16,5 +16,5 @@ jobs:
         uses: srggrs/assign-one-project-github-action@1.2.0
         if: github.event.action == 'opened'
         with:
-          project: 'https://github.com/airbytehq/airbyte/projects/1'
-          column_name: 'backlog'
+          project: "https://github.com/airbytehq/airbyte/projects/1"
+          column_name: "backlog"
