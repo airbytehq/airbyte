@@ -1,5 +1,8 @@
 FROM airbyte/base-airbyte-protocol-python:dev
 
+# dbt needs git in order to run.
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /airbyte
 COPY entrypoint.sh .
 

@@ -24,7 +24,7 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/
 
 You should see an onboarding page. Enter your email if you want updates about Airbyte and continue.
 
-![](.gitbook/assets/01_set-up-preferences%20%281%29.png)
+![](.gitbook/assets/airbyte_get-started.png)
 
 ## 2. Set up your first connection
 

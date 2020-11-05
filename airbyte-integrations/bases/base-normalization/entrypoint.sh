@@ -2,8 +2,9 @@
 
 set -e
 
-TRANSFORMED_CONFIG=transformed_config.json
-DBT_MODEL=dbt_model.json
+# dbt looks specifically for files named profiles.yml and dbt_project.yml
+DBT_PROFILE=profiles.yml
+DBT_MODEL=dbt_project.yml
 
 function echo2() {
   echo >&2 "$@"
@@ -42,11 +43,12 @@ function main() {
 
   case "$CMD" in
   run)
-    transform-config --config "$CONFIG_FILE" --integration-type "$INTEGRATION_TYPE" --out "$TRANSFORMED_CONFIG"
-#    transform-catalog --catalog "$CATALOG_FILE" --out "$DBT_MODEL"
-    cat $TRANSFORMED_CONFIG
-#    cat $DBT_MODEL
-#    execute-dbt --config "$TRANSFORMED_CONFIG" --model "$DBT_MODEL"
+    transform-config --config "$CONFIG_FILE" --integration-type "$INTEGRATION_TYPE" --out "$DBT_PROFILE"
+    # todo (cgardens) - @ChristopheDuong adjust these args if necessary.
+    transform-catalog --catalog "$CATALOG_FILE" --integration-type "$INTEGRATION_TYPE" --out "$DBT_MODEL"
+
+    # todo (cgardens) - @ChristopheDuong this is my best guess at how we are supposed to invoke dbt. adjust when they are inevitably not quite right.
+    dbt run --profiles-dir $(pwd) --project-dir $(pwd) --full-refresh --fail-fast
     ;;
   dry-run)
     error "Not Implemented"

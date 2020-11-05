@@ -4,26 +4,33 @@ description: Be sure to not miss out on new features and improvements!
 
 # Changelog
 
-Airbyte is not built on top of Singer, but is compatible with Singer's protocol. Airbyte's ambitions go beyond what Singer enables to do, so we are building our own protocol that will keep its compatibility with Singer's one.
+If you're interested in our changelog on which new connectors are available out of the box on Airbyte, please check our [integrations changelog](integrations/integrations-changelog.md).
+
+If you're interested in our progress on the Airbyte platform, please read below!
+
+## 0.5.0 - expected around 11/11/2020
+
+Here is what we have in mind:
+
+* Support multiple destinations 
+* **New destination:** our own Redshift warehouse integration 
+* **New sources:** 10 additional sources connectors. 
 
 ## 0.4.0 - expected around 11/04/2020
 
-Here is what we have in mind:
+Here is what we are working on right now:
 
-* our own **Snowflake** warehouse integration
-* **10 additional Singer taps** 
+* **New destination**: our own **Snowflake** warehouse integration
+* **New sources:** Facebook Ads, Google Ads, MSSQL, GCS CSV, S3 CSV, SFTP CSV
 * as a bonus if we can, update the onboarding experience with pre-filled demo data for the users who just want to see how Airbyte works with the least effort.
 
-## 0.3.0 - expected around 10/28/2020
+## 0.3.0 - delivered on 10/30/2020
 
-Here is what we have in mind:
-
-* new guides \(how to build scratch/singer\) 
-* **5 additional Singer taps**
+* **New sources:** Salesforce, GitHub, Google Sheets, Google Analytics, Hubspot, Rest APIs, and MySQL
+* Integration test suite for sources
+* Improve build speed
 
 ## 0.2.0 - delivered on 10/21/2020
-
-Here is what we are working on right now:
 
 * **a new Admin section** to enable users to add their own connectors, in addition to upgrading the ones they currently use 
 * improve the developer experience \(DX\) for **contributing new connectors** with additional documentation and a connector protocol 
