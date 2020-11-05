@@ -30,3 +30,7 @@ echo "$SNOWFLAKE_INTEGRATION_TEST_CREDS" > airbyte-integrations/connectors/desti
 
 mkdir airbyte-integrations/connectors/source-google-adwords-singer/secrets
 echo "$ADWORDS_INTEGRATION_TEST_CREDS" > airbyte-integrations/connectors/source-google-adwords-singer/secrets/config.json
+
+FB_SECRETS_DIR=airbyte-integrations/connectors/source-facebook-marketing-api-singer/secrets
+mkdir $FB_SECRETS_DIR
+echo "$FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS" > "${FB_SECRETS_DIR}/config.json"
