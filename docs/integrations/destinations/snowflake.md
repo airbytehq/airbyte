@@ -16,23 +16,17 @@ Each stream will be output into its own table in Snowflake. Each table will cont
 
 #### Features
 
-
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 
 ## Getting started
 
-We recommend creating an Airbyte-specific warehouse, database, schema, user, and role for writing data into Snowflake so 
-it is possible to track costs specifically related to Airbyte (including the cost of running this warehouse) and control permissions at a granular level. 
-Since the Airbyte user creates, drops, and alters tables, `OWNERSHIP` permissions are required in Snowflake. If you are not 
-following the recommended script below, please limit the `OWNERSHIP` permissions to only the necessary database and schema for the Airbyte user.
+We recommend creating an Airbyte-specific warehouse, database, schema, user, and role for writing data into Snowflake so it is possible to track costs specifically related to Airbyte \(including the cost of running this warehouse\) and control permissions at a granular level. Since the Airbyte user creates, drops, and alters tables, `OWNERSHIP` permissions are required in Snowflake. If you are not following the recommended script below, please limit the `OWNERSHIP` permissions to only the necessary database and schema for the Airbyte user.
 
-We provide the following script to create these resources. 
-Before running, you must change the password to something secure. 
-You may change the names of the other resources if you desire.
+We provide the following script to create these resources. Before running, you must change the password to something secure. You may change the names of the other resources if you desire.
 
-```
+```text
 -- set variables (these need to be uppercase)
 set airbyte_role = 'AIRBYTE_ROLE';
 set airbyte_username = 'AIRBYTE_USER';
@@ -106,3 +100,4 @@ You should now have all the requirements needed to configure Snowflake as a dest
 * **Schema**
 * **Username**
 * **Password**
+
