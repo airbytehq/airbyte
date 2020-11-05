@@ -101,6 +101,8 @@
   "sources.launch": "Launch",
   "sources.status": "Status",
   "sources.schema": "Schema",
+  "sources.schemaSelectAll": "select all",
+  "sources.schemaUnselectAll": "unselect all",
   "sources.settings": "Settings",
   "sources.syncHistory": "Sync history",
   "sources.syncNow": "Sync now",
