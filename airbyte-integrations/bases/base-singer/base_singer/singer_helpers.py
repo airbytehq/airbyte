@@ -28,7 +28,7 @@ import selectors
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
-from typing import DefaultDict, Generator
+from typing import DefaultDict, Dict, Generator
 
 from airbyte_protocol import AirbyteCatalog, AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream
 
@@ -61,6 +61,15 @@ class SingerHelper:
             field_object["type"] = SingerHelper._parse_type(field_object["type"])
 
     @staticmethod
+    def singer_catalog_to_airbyte_catalog(singer_catalog: Dict[str, any]) -> AirbyteCatalog:
+        airbyte_streams = []
+        for stream in singer_catalog.get("streams"):
+            name = stream.get("stream")
+            schema = stream.get("schema")
+            airbyte_streams += [AirbyteStream(name=name, json_schema=schema)]
+        return AirbyteCatalog(streams=airbyte_streams)
+
+    @staticmethod
     def get_catalogs(
         logger, shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)
     ) -> Catalogs:
@@ -71,15 +80,8 @@ class SingerHelper:
         for line in completed_process.stderr.splitlines():
             logger.log_by_prefix(line, "ERROR")
 
-        airbyte_streams = []
         singer_catalog = singer_transform(json.loads(completed_process.stdout))
-
-        for stream in singer_catalog.get("streams"):
-            name = stream.get("stream")
-            schema = stream.get("schema")
-            airbyte_streams += [AirbyteStream(name=name, json_schema=schema)]
-
-        airbyte_catalog = airbyte_transform(AirbyteCatalog(streams=airbyte_streams))
+        airbyte_catalog = airbyte_transform(SingerHelper.singer_catalog_to_airbyte_catalog(singer_catalog))
 
         return Catalogs(singer_catalog=singer_catalog, airbyte_catalog=airbyte_catalog)
 
@@ -89,7 +91,6 @@ class SingerHelper:
             sel = selectors.DefaultSelector()
             sel.register(p.stdout, selectors.EVENT_READ)
             sel.register(p.stderr, selectors.EVENT_READ)
-
             ok = True
             while ok:
                 for key, val1 in sel.select():
