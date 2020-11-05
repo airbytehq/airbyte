@@ -1,0 +1,30 @@
+{
+  "streams": [
+    {
+      "stream": "accounts",
+      "tap_stream_id": "accounts",
+      "schema": {
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "metadata": [
+        {
+          "metadata": {
+            "inclusion": "available",
+            "selected": true
+          },
+          "breadcrumb": []
+        },
+        {
+          "metadata": {
+            "inclusion": "available"
+          },
+          "breadcrumb": ["properties", "name"]
+        }
+      ]
+    }
+  ]
+}
