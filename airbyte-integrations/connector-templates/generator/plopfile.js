@@ -83,18 +83,6 @@ module.exports = function (plop) {
         templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
         path: `${pythonSourceOutputRoot}/.dockerignore`
       },
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${pythonSourceInputRoot}/.gitignore.hbs`,
-        path: `${pythonSourceOutputRoot}/.gitignore`
-      },
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
-        path: `${pythonSourceOutputRoot}/.dockerignore`
-      },
       function(answers, config, plop){
         const renderedOutputDir = plop.renderString(pythonSourceOutputRoot, answers);
         fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
@@ -120,18 +108,6 @@ module.exports = function (plop) {
         abortOnFail: true,
         templateFile: `${singerSourceInputRoot}/.secrets/config.json.hbs`,
         path: `${singerSourceOutputRoot}/secrets/config.json`
-      },
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${singerSourceInputRoot}/.gitignore.hbs`,
-        path: `${singerSourceOutputRoot}/.gitignore`
-      },
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${singerSourceInputRoot}/.dockerignore.hbs`,
-        path: `${singerSourceOutputRoot}/.dockerignore`
       },
       {
         type:'add',
