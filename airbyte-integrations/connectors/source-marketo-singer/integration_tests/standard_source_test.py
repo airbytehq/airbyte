@@ -22,26 +22,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import json
+import pkgutil
 
-setup(
-    name="source_{{snakeCase name}}",
-    description="Source implementation for {{titleCase name}}.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python"
-    ],
-    package_data={"": ["*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        # Dependencies required by the main package but not integration tests should go in main. Deps required by
-        # integration tests but not the main package go in integration_tests. Deps required by both should go in
-        # install_requires.
-        "main": [],
-        "tests": ["airbyte_python_test", "pytest"],
-    },
-)
+from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from base_python_test import StandardSourceTestIface
+
+
+class SourceMarketoSingerStandardTest(StandardSourceTestIface):
+    def __init__(self):
+        pass
+
+    def get_spec(self) -> ConnectorSpecification:
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
+        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
+
+    def get_config(self) -> object:
+        return json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json"))
+
+    def get_catalog(self) -> AirbyteCatalog:
+        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
+        return AirbyteCatalog.parse_obj(json.loads(raw_catalog))
+
+    def setup(self) -> None:
+        pass
+
+    def teardown(self) -> None:
+        pass

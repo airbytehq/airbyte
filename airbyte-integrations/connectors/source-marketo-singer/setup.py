@@ -25,15 +25,12 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="source_{{snakeCase name}}",
-    description="Source implementation for {{titleCase name}}.",
+    name="source_marketo_singer",
+    description="Source implementation for Marketo, built on the Singer tap implementation.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python"
-    ],
+    install_requires=["airbyte-protocol"],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
@@ -41,7 +38,7 @@ setup(
         # Dependencies required by the main package but not integration tests should go in main. Deps required by
         # integration tests but not the main package go in integration_tests. Deps required by both should go in
         # install_requires.
-        "main": [],
+        "main": ["base-singer", "base-python", "tap-marketo==2.4.1"],
         "tests": ["airbyte_python_test", "pytest"],
     },
 )

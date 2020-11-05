@@ -22,26 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import sys
 
-setup(
-    name="source_{{snakeCase name}}",
-    description="Source implementation for {{titleCase name}}.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python"
-    ],
-    package_data={"": ["*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        # Dependencies required by the main package but not integration tests should go in main. Deps required by
-        # integration tests but not the main package go in integration_tests. Deps required by both should go in
-        # install_requires.
-        "main": [],
-        "tests": ["airbyte_python_test", "pytest"],
-    },
-)
+from base_python.entrypoint import launch
+from source_marketo_singer import SourceMarketoSinger
+
+if __name__ == "__main__":
+    source = SourceMarketoSinger()
+    launch(source, sys.argv[1:])

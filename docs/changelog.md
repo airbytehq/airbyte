@@ -14,15 +14,15 @@ Here is what we have in mind:
 
 * Support multiple destinations 
 * **New destination:** our own Redshift warehouse integration 
-* **New sources:** 10 additional sources connectors. 
+* **New sources:** 10 additional sources connectors, including MSSQL, GCS CSV, S3 CSV, SFTP CSV
+* As a bonus if we can, update the onboarding experience with pre-filled demo data for the users who just want to see how Airbyte works with the least effort.
 
-## 0.4.0 - expected around 11/04/2020
+## 0.4.0 - delivered on 11/04/2020
 
 Here is what we are working on right now:
 
 * **New destination**: our own **Snowflake** warehouse integration
-* **New sources:** Facebook Ads, Google Ads, MSSQL, GCS CSV, S3 CSV, SFTP CSV
-* as a bonus if we can, update the onboarding experience with pre-filled demo data for the users who just want to see how Airbyte works with the least effort.
+* **New sources:** Facebook Ads, Google Ads.
 
 ## 0.3.0 - delivered on 10/30/2020
 
