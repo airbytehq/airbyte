@@ -32,3 +32,9 @@ models:
     # Schema (dataset) defined in profiles.yml is concatenated with schema below for dbt's final output
     +schema: normalized
     +materialized: view
+
+# https://docs.getdbt.com/reference/project-configs/quoting/
+quoting:
+  database: true
+  schema: true
+  identifier: true
