@@ -36,8 +36,6 @@ class SourceGoogleAdwordsSinger(SingerSource):
         try:
             # singer catalog that attempts to pull a stream ("accounts") that should always exists, though it may be empty.
             singer_check_catalog_path = os.path.abspath(os.path.dirname(__file__)) + "/singer_check_catalog.json"
-            print("singer_check_catalog_path")
-            print(singer_check_catalog_path)
             if self.read(logger, config_container, singer_check_catalog_path, None) is not None:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:
