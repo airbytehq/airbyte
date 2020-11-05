@@ -14,6 +14,7 @@
 * [Integrations](integrations/README.md)
   * [Sources](integrations/sources/README.md)
     * [exchangeratesapi.io](integrations/sources/exchangeratesapi-io.md)
+    * [Facebook Marketing API](integrations/sources/facebook-marketing-api.md)
     * [Github](integrations/sources/github.md)
     * [Google Analytics](integrations/sources/googleanalytics.md)
     * [Google Sheets](integrations/sources/google-sheets.md)
