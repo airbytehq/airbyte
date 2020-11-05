@@ -119,8 +119,8 @@ class TransformConfig:
 
         # https://docs.getdbt.com/reference/warehouse-profiles/snowflake-profile
         dbt_config["type"] = "snowflake"
-        # account is the first term subdomain of the host.
-        dbt_config["account"] = config["host"].split(".")[0]
+        # here account is everything before ".snowflakecomputing.com" as it can include account, region & cloud environment information)
+        dbt_config["account"] = config["host"].replace(".snowflakecomputing.com", "")
         dbt_config["user"] = config["username"]
         dbt_config["password"] = config["password"]
         dbt_config["role"] = config["role"]

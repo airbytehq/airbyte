@@ -19,6 +19,10 @@
     unnest({{ array_col }})
 {%- endmacro %}
 
+{% macro postgres__unnest(array_col) -%}
+    unnest({{ array_col }})
+{%- endmacro %}
+
 {% macro redshift__unnest(array_col) -%}
     -- FIXME to implement as described here? https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/
 {%- endmacro %}

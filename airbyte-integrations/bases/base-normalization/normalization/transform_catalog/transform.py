@@ -100,7 +100,11 @@ python3 main_dev_transform_catalog.py \
 def extract_schema(profile_dir: str):
     with open(os.path.join(profile_dir, "profiles.yml"), "r") as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
-        return config["normalize"]["outputs"]["prod"]["dataset"]
+        obj = config["normalize"]["outputs"]["prod"]
+        if "dataset" in obj:
+            return obj["dataset"]
+        else:
+            return obj["schema"]
 
 
 def read_json_catalog(input_path: str) -> dict:
