@@ -68,8 +68,8 @@ module.exports = function (plop) {
       {
         type:'add',
         abortOnFail: true,
-        templateFile: `${pythonSourceInputRoot}/.secrets/credentials.json.hbs`,
-        path: `${pythonSourceOutputRoot}/secrets/credentials.json`
+        templateFile: `${pythonSourceInputRoot}/.secrets/config.json.hbs`,
+        path: `${pythonSourceOutputRoot}/secrets/config.json`
       },
       {
         type:'add',
@@ -106,8 +106,8 @@ module.exports = function (plop) {
       {
         type:'add',
         abortOnFail: true,
-        templateFile: `${singerSourceInputRoot}/.secrets/credentials.json.hbs`,
-        path: `${singerSourceOutputRoot}/secrets/credentials.json`
+        templateFile: `${singerSourceInputRoot}/.secrets/config.json.hbs`,
+        path: `${singerSourceOutputRoot}/secrets/config.json`
       },
       {
         type:'add',
