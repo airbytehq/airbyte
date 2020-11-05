@@ -27,6 +27,8 @@ package io.airbyte.server.handlers;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.DestinationIdRequestBody;
+import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead.StatusEnum;
@@ -46,13 +48,16 @@ public class WebBackendConnectionsHandler {
 
   private final ConnectionsHandler connectionsHandler;
   private final SourceHandler sourceHandler;
+  private final DestinationHandler destinationHandler;
   private final JobHistoryHandler jobHistoryHandler;
 
   public WebBackendConnectionsHandler(final ConnectionsHandler connectionsHandler,
                                       final SourceHandler sourceHandler,
+                                      final DestinationHandler destinationHandler,
                                       final JobHistoryHandler jobHistoryHandler) {
     this.connectionsHandler = connectionsHandler;
     this.sourceHandler = sourceHandler;
+    this.destinationHandler = destinationHandler;
     this.jobHistoryHandler = jobHistoryHandler;
   }
 
@@ -76,6 +81,9 @@ public class WebBackendConnectionsHandler {
         .sourceId(connectionRead.getSourceId());
     final SourceRead source = sourceHandler.getSource(sourceIdRequestBody);
 
+    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(connectionRead.getDestinationId());
+    final DestinationRead destination = destinationHandler.getDestination(destinationIdRequestBody);
+
     final JobListRequestBody jobListRequestBody = new JobListRequestBody()
         .configId(connectionRead.getConnectionId().toString())
         .configType(JobConfigType.SYNC);
@@ -89,7 +97,8 @@ public class WebBackendConnectionsHandler {
         .status(connectionRead.getStatus())
         .syncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class))
         .schedule(connectionRead.getSchedule())
-        .source(source);
+        .source(source)
+        .destination(destination);
 
     final JobReadList jobReadList = jobHistoryHandler.listJobsFor(jobListRequestBody);
     wbConnectionRead.setIsSyncing(
