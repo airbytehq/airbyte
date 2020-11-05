@@ -64,11 +64,24 @@ module.exports = function (plop) {
         templateFiles: `${pythonSourceInputRoot}/**/**`,
         globOptions: {ignore:'.secrets'}
       },
+        // plop doesn't add dotfiles by default so we manually add them
       {
         type:'add',
         abortOnFail: true,
         templateFile: `${pythonSourceInputRoot}/.secrets/credentials.json.hbs`,
         path: `${pythonSourceOutputRoot}/secrets/credentials.json`
+      },
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${pythonSourceInputRoot}/.gitignore.hbs`,
+        path: `${pythonSourceOutputRoot}/.gitignore`
+      },
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
+        path: `${pythonSourceOutputRoot}/.dockerignore`
       },
       function(answers, config, plop){
         const renderedOutputDir = plop.renderString(pythonSourceOutputRoot, answers);
@@ -95,6 +108,18 @@ module.exports = function (plop) {
         abortOnFail: true,
         templateFile: `${singerSourceInputRoot}/.secrets/credentials.json.hbs`,
         path: `${singerSourceOutputRoot}/secrets/credentials.json`
+      },
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${pythonSourceInputRoot}/.gitignore.hbs`,
+        path: `${pythonSourceOutputRoot}/.gitignore`
+      },
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
+        path: `${pythonSourceOutputRoot}/.dockerignore`
       },
       function(answers, config, plop){
         const renderedOutputDir = plop.renderString(singerSourceOutputRoot, answers);
