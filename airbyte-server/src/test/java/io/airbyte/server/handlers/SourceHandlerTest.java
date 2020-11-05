@@ -118,23 +118,19 @@ class SourceHandlerTest {
         .name(sourceConnection.getName())
         .workspaceId(sourceConnection.getWorkspaceId())
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
-        .connectionConfiguration(SourceHelpers.getTestImplementationJson());
+        .connectionConfiguration(sourceConnection.getConfiguration());
 
     final SourceRead actualSourceRead =
         sourceHandler.createSource(sourceCreate);
 
     final SourceRead expectedSourceRead =
         SourceHelpers.getSourceRead(sourceConnection, standardSourceDefinition)
-            .connectionConfiguration(SourceHelpers.getTestImplementationJson());
+            .connectionConfiguration(sourceConnection.getConfiguration());
 
     assertEquals(expectedSourceRead, actualSourceRead);
 
-    verify(validator)
-        .validate(
-            sourceDefinitionSpecificationRead.getConnectionSpecification(),
-            sourceConnection.getConfiguration());
-
     verify(configRepository).writeSourceConnection(sourceConnection);
+    verify(validator).ensure(sourceDefinitionSpecificationRead.getConnectionSpecification(), sourceConnection.getConfiguration());
   }
 
   @Test
@@ -170,6 +166,7 @@ class SourceHandlerTest {
     assertEquals(expectedSourceRead, actualSourceRead);
 
     verify(configRepository).writeSourceConnection(expectedSourceConnection);
+    verify(validator).ensure(sourceDefinitionSpecificationRead.getConnectionSpecification(), newConfiguration);
   }
 
   @Test

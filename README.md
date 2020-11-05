@@ -1,8 +1,8 @@
 # Overview
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte) [![StackShare](https://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](https://stackshare.io/airbyte/airbyte)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)
 
-[![](docs/.gitbook/assets/airbyte_white-background%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29.svg)](https://airbyte.io)
+![](docs/.gitbook/assets/airbyte_horizontal_dark.svg)
 
 ### Data integration made simple, secure and extensible.
 
@@ -10,7 +10,7 @@ The new open-source standard to sync data from applications, APIs & databases to
 
 [![](docs/.gitbook/assets/deploy-locally%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29.svg)](docs/deploying-airbyte/on-your-workstation.md) [![](docs/.gitbook/assets/deploy-on-aws%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
 
-![](docs/.gitbook/assets/sources_list%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29.png)
+![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines.png)
 
 Airbyte is on a mission to make data integration pipelines a commodity.
 

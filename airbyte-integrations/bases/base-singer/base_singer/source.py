@@ -25,25 +25,42 @@ SOFTWARE.
 from typing import Generator
 
 from airbyte_protocol import AirbyteCatalog, AirbyteMessage
-from base_python import Source
+from base_python import AirbyteLogger, ConfigContainer, Source
 
 from .singer_helpers import SingerHelper
 
 
 class SingerSource(Source):
-    def discover_cmd(self, logger, config_path) -> str:
+    def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
+        """
+        Returns the command used to run discovery in the singer tap. For example, if the bash command used to invoke the singer tap is `tap-postgres`,
+        and the config JSON lived in "/path/config.json", this method would return "tap-postgres --config /path/config.json"
+        """
         raise Exception("Not Implemented")
 
-    def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
+    def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
+        """
+        Returns the command used to read data from the singer tap. For example, if the bash command used to invoke the singer tap is `tap-postgres`,
+        and the config JSON lived in "/path/config.json", and the catalog was in "/path/catalog.json",
+        this method would return "tap-postgres --config /path/config.json --catalog /path/catalog.json"
+        """
         raise Exception("Not Implemented")
 
-    def discover(self, logger, config_container) -> AirbyteCatalog:
+    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+        """
+        Implements the parent class discover method.
+        """
         cmd = self.discover_cmd(logger, config_container.rendered_config_path)
         catalogs = SingerHelper.get_catalogs(logger, cmd)
 
         return catalogs.airbyte_catalog
 
-    def read(self, logger, config_container, catalog_path, state_path=None) -> Generator[AirbyteMessage, None, None]:
+    def read(
+        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
+    ) -> Generator[AirbyteMessage, None, None]:
+        """
+        Implements the parent class read method.
+        """
         discover_cmd = self.discover_cmd(logger, config_container.rendered_config_path)
         catalogs = SingerHelper.get_catalogs(logger, discover_cmd)
         masked_airbyte_catalog = self.read_config(catalog_path)

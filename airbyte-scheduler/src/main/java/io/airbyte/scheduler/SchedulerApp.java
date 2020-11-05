@@ -25,8 +25,10 @@
 package io.airbyte.scheduler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -67,15 +69,18 @@ public class SchedulerApp {
   private final Path configRoot;
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
+  private final TrackingStrategy trackingStrategy;
 
   public SchedulerApp(Database database,
                       Path configRoot,
                       Path workspaceRoot,
-                      ProcessBuilderFactory pbf) {
+                      ProcessBuilderFactory pbf,
+                      TrackingStrategy trackingStrategy) {
     this.database = database;
     this.configRoot = configRoot;
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
+    this.trackingStrategy = trackingStrategy;
   }
 
   public void start() {
@@ -87,9 +92,11 @@ public class SchedulerApp {
 
     final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
 
+    TrackingClientSingleton.initialize(trackingStrategy, configRepository);
+
     final JobRetrier jobRetrier = new JobRetrier(schedulerPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, configRepository);
-    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, schedulerPersistence, workerRunFactory);
+    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, schedulerPersistence, configRepository, workerRunFactory);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
@@ -126,7 +133,7 @@ public class SchedulerApp {
         configs.getDockerNetwork());
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(database, configRoot, workspaceRoot, pbf).start();
+    new SchedulerApp(database, configRoot, workspaceRoot, pbf, configs.getTrackingStrategy()).start();
   }
 
 }
