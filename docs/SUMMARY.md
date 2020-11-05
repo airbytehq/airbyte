@@ -20,6 +20,7 @@
     * [Google Analytics](integrations/sources/googleanalytics.md)
     * [Google Sheets](integrations/sources/google-sheets.md)
     * [Hubspot](integrations/sources/hubspot.md)
+    * [Marketo](integrations/sources/marketo.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Postgres](integrations/sources/postgres.md)
     * [Rest API](integrations/sources/rest-api.md)
