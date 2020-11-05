@@ -112,14 +112,14 @@ module.exports = function (plop) {
       {
         type:'add',
         abortOnFail: true,
-        templateFile: `${pythonSourceInputRoot}/.gitignore.hbs`,
-        path: `${pythonSourceOutputRoot}/.gitignore`
+        templateFile: `${singerSourceInputRoot}/.gitignore.hbs`,
+        path: `${singerSourceOutputRoot}/.gitignore`
       },
       {
         type:'add',
         abortOnFail: true,
-        templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
-        path: `${pythonSourceOutputRoot}/.dockerignore`
+        templateFile: `${singerSourceInputRoot}/.dockerignore.hbs`,
+        path: `${singerSourceOutputRoot}/.dockerignore`
       },
       function(answers, config, plop){
         const renderedOutputDir = plop.renderString(singerSourceOutputRoot, answers);
