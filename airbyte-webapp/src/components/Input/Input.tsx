@@ -12,7 +12,7 @@ const getBackgroundColor = (props: IStyleProps) => {
 };
 
 export type InputProps = {
-  error?: string | boolean;
+  error?: boolean;
   light?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 

@@ -39,7 +39,7 @@ export const useConstructValidationSchema = (
     }
 
     return validationShape;
-  }, [jsonSchema]);
+  }, [uiWidgetsInfo, jsonSchema]);
 };
 
 export function useBuildForm(
