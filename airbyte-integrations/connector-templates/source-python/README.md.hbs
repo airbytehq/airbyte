@@ -55,8 +55,7 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/secrets:/secrets -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/sample_files:/sample_files airbyte/source-{{dashCase name}}:dev read --config /secrets/config.json --catalog /sample_files/sample_catalog.json
 ```
 
-### Integration Tests 
-1. Configure credentials as appropriate, described below.
+### Integration Tests
 1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}:standardSourceTestPython` to run the standard integration test suite.
 1. To run additional integration tests, place your integration tests in the `integration_tests` directory and run them with `pytest integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
