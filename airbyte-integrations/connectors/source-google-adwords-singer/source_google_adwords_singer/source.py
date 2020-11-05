@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import os
+
 from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_singer import SingerSource
 
@@ -33,7 +35,9 @@ class SourceGoogleAdwordsSinger(SingerSource):
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
         try:
             # singer catalog that attempts to pull a stream ("accounts") that should always exists, though it may be empty.
-            singer_check_catalog_path = self.__class__.__module__.split(".")[0] + "/singer_check_catalog.json"
+            singer_check_catalog_path = os.path.abspath(os.path.dirname(__file__)) + "/singer_check_catalog.json"
+            print("singer_check_catalog_path")
+            print(singer_check_catalog_path)
             if self.read(logger, config_container, singer_check_catalog_path, None) is not None:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:
