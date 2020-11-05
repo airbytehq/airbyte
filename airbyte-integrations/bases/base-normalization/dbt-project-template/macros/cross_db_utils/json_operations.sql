@@ -19,6 +19,10 @@
     json_extract({{json_column}}, {{json_path}})
 {%- endmacro %}
 
+{% macro postgres__json_extract(json_column, json_path) -%}
+    json_extract_path_text({{json_column}}, {{json_path}})
+{%- endmacro %}
+
 {% macro redshift__json_extract(json_column, json_path) -%}
     json_extract_path_text({{json_column}}, {{json_path}})
 {%- endmacro %}
@@ -41,6 +45,10 @@
     json_extract_scalar({{json_column}}, {{json_path}})
 {%- endmacro %}
 
+{% macro postgres__json_extract_scalar(json_column, json_path) -%}
+    json_extract_path_text({{json_column}}, {{json_path}})
+{%- endmacro %}
+
 {% macro redshift__json_extract_scalar(json_column, json_path) -%}
     json_extract_path_text({{json_column}}, {{json_path}})
 {%- endmacro %}
@@ -61,6 +69,10 @@
 
 {% macro bigquery__json_extract_array(json_column, json_path) -%}
     json_extract_array({{json_column}}, {{json_path}})
+{%- endmacro %}
+
+{% macro postgres__json_extract_array(json_column, json_path) -%}
+    json_array_elements(json_extract_path({{json_column}}, {{json_path}}))
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path) -%}
