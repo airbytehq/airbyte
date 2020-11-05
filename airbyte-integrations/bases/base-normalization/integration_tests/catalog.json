@@ -1,7 +1,7 @@
 {
   "streams": [
     {
-      "name": "one_recipe",
+      "name": "recipes_json",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema",
         "$id": "http://example.com/example.json",

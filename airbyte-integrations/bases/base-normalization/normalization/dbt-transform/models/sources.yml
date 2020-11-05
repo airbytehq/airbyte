@@ -1,7 +1,0 @@
-version: 2
-
-sources:
-  - name: data
-    tables:
-      - name: recipes
-      - name: recipes_json

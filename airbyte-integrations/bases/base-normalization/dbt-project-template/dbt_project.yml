@@ -7,7 +7,7 @@ config-version: 2
 
 # This setting configures which "profile" dbt uses for this project. Profiles contain
 # database connection information, and should be configured in the  ~/.dbt/profiles.yml file
-profile: 'dev'
+profile: 'normalize'
 
 # These configurations specify where dbt should look for different types of files.
 # The `source-paths` config, for example, states that source models can be found
@@ -29,5 +29,6 @@ clean-targets:         # directories to be removed by `dbt clean`
 # are materialized, and more!
 models:
   airbyte:
-    +schema: normalization
+    # Schema (dataset) defined in profiles.yml is concatenated with schema below for dbt's final output
+    +schema: normalized
     +materialized: view

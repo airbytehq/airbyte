@@ -25,7 +25,9 @@ SOFTWARE.
 import argparse
 import json
 import os
-from typing import Optional, Tuple, Union
+from typing import Optional, Set, Tuple, Union
+
+import yaml
 
 MACRO_START = "{{"
 MACRO_END = "}}"
@@ -36,10 +38,10 @@ class TransformCatalog:
 To run this transformation:
 ```
 python3 main_dev_transform_catalog.py \
+  --profile-config-dir . \
   --catalog integration_tests/catalog.json \
-  --out normalization/dbt-transform/models/generated/ \
-  --json-column json_blob \
-  --table airbytesandbox.data.one_recipe_json
+  --out dir \
+  --json-column json_blob
 ```
     """
 
@@ -47,28 +49,36 @@ python3 main_dev_transform_catalog.py \
 
     def run(self, args):
         self.parse(args)
-        for catalog_file in self.config["catalog"]:
-            print(f"Processing {catalog_file}...")
-            catalog = read_json_catalog(catalog_file)
-            result = generate_dbt_model(catalog=catalog, json_col=self.config["json_column"], from_table=self.config["table"])
-            self.output_sql_models(result)
+        self.process_catalog()
 
     def parse(self, args):
         parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument("--profile-config-dir", type=str, required=True, help="path to directory containing DBT profiles.yml")
         parser.add_argument("--catalog", nargs="+", type=str, required=True, help="path to Catalog (JSON Schema) file")
         parser.add_argument("--out", type=str, required=True, help="path to output generated DBT Models to")
-        parser.add_argument("--json-column", type=str, required=True, help="name of the column containing the json blob")
-        parser.add_argument("--table", type=str, required=True, help="schema and table name containing the json blob")
+        parser.add_argument("--json-column", type=str, required=False, help="name of the column containing the json blob")
         parsed_args = parser.parse_args(args)
         self.config = {
+            "schema": extract_schema(parsed_args.profile_config_dir),
             "catalog": parsed_args.catalog,
             "output_path": parsed_args.out,
             "json_column": parsed_args.json_column,
-            "table": parsed_args.table,
         }
 
-    def output_sql_models(self, result: dict):
+    def process_catalog(self):
+        source_tables: set = set()
+        schema = self.config["schema"]
         output = self.config["output_path"]
+        for catalog_file in self.config["catalog"]:
+            print(f"Processing {catalog_file}...")
+            catalog = read_json_catalog(catalog_file)
+            result, tables = generate_dbt_model(catalog=catalog, json_col=self.config["json_column"], schema=schema)
+            self.output_sql_models(output, result)
+            source_tables = source_tables.union(tables)
+        self.write_yaml_sources(output, schema, source_tables)
+
+    @staticmethod
+    def output_sql_models(output: str, result: dict) -> None:
         if result:
             if not os.path.exists(output):
                 os.makedirs(output)
@@ -76,6 +86,21 @@ python3 main_dev_transform_catalog.py \
                 print(f"  Generating {file.lower()}.sql in {output}")
                 with open(os.path.join(output, f"{file}.sql").lower(), "w") as f:
                     f.write(sql)
+
+    @staticmethod
+    def write_yaml_sources(output: str, schema: str, sources: set) -> None:
+        tables = [{"name": source} for source in sources]
+        source_config = {"version": 2, "sources": [{"name": schema, "tables": tables}]}
+        source_path = os.path.join(output, "sources.yml")
+        if not os.path.exists(source_path):
+            with open(source_path, "w") as fh:
+                fh.write(yaml.dump(source_config))
+
+
+def extract_schema(profile_dir: str):
+    with open(os.path.join(profile_dir, "profiles.yml"), "r") as file:
+        config = yaml.load(file, Loader=yaml.FullLoader)
+        return config["normalize"]["outputs"]["prod"]["dataset"]
 
 
 def read_json_catalog(input_path: str) -> dict:
@@ -286,8 +311,9 @@ def process_node(path: str, json_col: str, name: str, properties: dict, from_tab
     return result
 
 
-def generate_dbt_model(catalog: dict, json_col: str, from_table: str) -> dict:
+def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict, Set[Union[str]]]:
     result = {}
+    source_tables = set()
     for obj in catalog["streams"]:
         if "name" in obj:
             name = obj["name"]
@@ -297,9 +323,11 @@ def generate_dbt_model(catalog: dict, json_col: str, from_table: str) -> dict:
             properties = obj["json_schema"]["properties"]
         else:
             properties = {}
-        result.update(process_node(path="$", json_col=json_col, name=name, properties=properties, from_table=from_table))
+        table = f"{MACRO_START} source('{schema}','{name}') {MACRO_END}"
         # TODO check if jsonpath are expressed similarly on different databases... (using $?)
-    return result
+        result.update(process_node(path="$", json_col=json_col, name=name, properties=properties, from_table=table))
+        source_tables.add(name)
+    return result, source_tables
 
 
 def main(args=None):
