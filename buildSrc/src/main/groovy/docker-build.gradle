@@ -1,0 +1,105 @@
+import java.nio.file.Paths
+import java.security.MessageDigest
+import java.nio.file.Paths
+
+@CacheableTask
+abstract class DockerBuildTask extends DefaultTask {
+    @Input
+    abstract File rootDir
+
+    // todo: parse tree of exclusions for inputs
+    @InputDirectory
+    abstract File projectDir
+
+    @Input
+    abstract Set<String> baseImageHashes
+
+    @Input
+    String dockerfileName = 'Dockerfile'
+
+    @OutputFile
+    abstract File idFileOutput
+
+    @TaskAction
+    def buildImage() {
+        def scriptPath = Paths.get(rootDir.absolutePath, 'tools/bin/build_image.sh').toString()
+        def tag = "${extractImageName(Paths.get(projectDir.absolutePath, dockerfileName).toString())}:dev"
+
+        project.exec {
+            commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath
+        }
+    }
+
+    static String extractLabelValue(String dockerFile, String labelName) {
+        def file = dockerFile instanceof File ? dockerFile : new File(dockerFile)
+        return file.readLines()
+                .grep({ it.startsWith('LABEL') && it.contains(labelName) })
+                .get(0)
+                .split('=')[1]
+    }
+
+    static String extractImageName(String dockerFile) {
+        return extractLabelValue(dockerFile, "io.airbyte.name")
+    }
+
+    static String extractImageVersion(String dockerFile) {
+        return extractLabelValue(dockerFile, "io.airbyte.version")
+    }
+}
+
+
+class DockerBuildConfiguration {
+//    String message
+//    String greeter
+}
+
+class DockerBuildPlugin implements Plugin<Project> {
+    def getBaseImageHashes2(Map imageToVersion, File dockerfile) {
+        println("getting hashes for ${dockerfile}")
+
+        def result = [] as Set<String>
+
+        dockerfile.eachLine { line ->
+            if (line.startsWith("FROM ")) {
+                def image = line.split()[1]
+                result.add((String)imageToVersion.get(image))
+            }
+        }
+
+        return result
+    }
+
+    void apply(Project project) {
+        def extension = project.extensions.create('image', DockerBuildConfiguration)
+
+        project.rootProject.ext.imageToVersion = {
+            if(!project.rootProject.hasProperty("imageToVersion")) {
+                def imageToVersion = [:]
+                def stdout = new ByteArrayOutputStream()
+                project.exec {
+                    commandLine "docker", "images", "--no-trunc", "-f", "dangling=false", "--format", "{{.Repository}}:{{.Tag}} {{.ID}}"
+                    standardOutput = stdout;
+                }
+
+                "$stdout".eachLine { line ->
+                    def splits = line.split()
+                    imageToVersion.put(splits[0], splits[1])
+                }
+
+                return imageToVersion
+            } else {
+                return project.rootProject.imageToVersion
+            }
+        }()
+
+        project.task('buildImage', type: DockerBuildTask) {
+            def dockerPath = Paths.get(project.projectDir.absolutePath, 'Dockerfile')
+            def hash = MessageDigest.getInstance("MD5").digest(dockerPath.getBytes()).encodeHex().toString()
+            rootDir = project.rootProject.rootDir
+            projectDir = project.projectDir
+            idFileOutput = project.file(Paths.get(project.rootProject.rootDir.absolutePath, '.dockerversions', hash).toString())
+            baseImageHashes = getBaseImageHashes2(project.rootProject.imageToVersion, dockerPath.toFile()) // todo: parameterize by dockerfile name
+            dependsOn project.build
+        }
+    }
+}

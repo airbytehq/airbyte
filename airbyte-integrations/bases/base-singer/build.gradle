@@ -1,6 +1,6 @@
 project.ext.pyModule = 'base_singer'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+apply plugin: 'docker-build'
 
 build.dependsOn ':airbyte-integrations:bases:airbyte-protocol:build'
 build.dependsOn ':airbyte-integrations:bases:base-python:build'

@@ -1,6 +1,6 @@
 project.ext.pyModule = 'source_rest_api'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+apply plugin: 'docker-build'
 apply from: rootProject.file('tools/gradle/commons/integrations/test-image.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/standard-source-test-python.gradle')

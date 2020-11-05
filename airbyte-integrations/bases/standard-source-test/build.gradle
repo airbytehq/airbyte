@@ -2,7 +2,7 @@ plugins {
     id 'application'
 }
 
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+apply plugin: 'docker-build'
 
 dependencies {
     implementation project(':airbyte-config:models')

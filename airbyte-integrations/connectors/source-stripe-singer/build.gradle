@@ -4,7 +4,7 @@ plugins {
 
 project.ext.pyModule = 'source_stripe_singer'
 apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+apply plugin: 'docker-build'
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 
 dependencies {
