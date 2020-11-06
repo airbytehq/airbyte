@@ -48,6 +48,7 @@ def createSpotlessTarget = { pattern ->
         '.mypy_cache',
         '.venv',
         '*.egg-info',
+        'build'
     ]
     return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect {"**/${it}"})
 }
