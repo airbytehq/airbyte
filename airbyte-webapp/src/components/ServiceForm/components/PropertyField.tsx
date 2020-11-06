@@ -26,8 +26,8 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
     property.isRequired ? " *" : ""
   }`;
 
-  // TODO: fix
-  const placeholder = property.examples?.[0] as string;
+  // TODO: think what to do with other cases
+  const placeholder = property.examples + "";
 
   if (property.type === "boolean") {
     return (
