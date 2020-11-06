@@ -1,6 +1,7 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.tasks.testing.Test
+
+import java.nio.file.Paths
 
 /*
 TODO:
@@ -15,20 +16,34 @@ todo: this needs to depend on building the test image
 
  */
 
-
 class AirbyteSourceTestPlugin implements Plugin<Project> {
+    static String extractLabelValue(String dockerFile, String labelName) {
+        def file = dockerFile instanceof File ? dockerFile : new File(dockerFile)
+        return file.readLines()
+                .grep({ it.startsWith('LABEL') && it.contains(labelName) })
+                .get(0)
+                .split('=')[1]
+    }
+
+    static String extractImageName(String dockerFile) {
+        return extractLabelValue(dockerFile, "io.airbyte.name")
+    }
+
+    static String extractImageVersion(String dockerFile) {
+        return extractLabelValue(dockerFile, "io.airbyte.version")
+    }
+
+    static String getTaggedImage(projectDir, dockerfileName) {
+        return "${extractImageName(Paths.get(projectDir.absolutePath, dockerfileName).toString())}:dev"
+    }
+
     void apply(Project project) {
         project.task('standardSourceTestPython') {
-            project.ext {
-                imageName = ''
-                pythonContainerName = ''
-            }
-
             doFirst {
                 project.exec {
-                    println('standard test inputs')
-                    println("imageName: ${imageName}")
-                    println("pythonContainerName: ${pythonContainerName}")
+                    logger.info('standard test inputs')
+                    logger.info("imageName: ${getTaggedImage(project.projectDir, 'Dockerfile')}")
+                    logger.info("pythonContainerName: ${project.extensions.airbytePython.moduleDirectory}")
                     workingDir project.rootDir
                     commandLine 'docker', 'run', '--rm', '-i',
                             // so that it has access to docker
@@ -40,12 +55,12 @@ class AirbyteSourceTestPlugin implements Plugin<Project> {
                             // mount the project dir. all provided input paths must be relative to that dir.
                             '-v', "${project.projectDir.absolutePath}:/test_input",
                             '--name', "std-test-${project.name}", 'airbyte/standard-source-test:dev',
-                            '--imageName', imageName,
-                            '--pythonContainerName', pythonContainerName
+                            '--imageName', getTaggedImage(project.projectDir, 'Dockerfile'),
+                            '--pythonContainerName', project.extensions.airbytePython.moduleDirectory
                 }
             }
         }
         project.standardSourceTestPython.dependsOn(':airbyte-integrations:bases:standard-source-test:airbyteDocker')
-        project.standardSourceTestPython.dependsOn(project.airbyteDocker)
+        project.standardSourceTestPython.dependsOn(project.build)
     }
 }

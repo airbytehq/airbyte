@@ -93,8 +93,6 @@ class AirbyteDockerPlugin implements Plugin<Project> {
     }
 
     static def getBaseImageHashes(Map imageToVersion, File dockerfile) {
-        println("getting hashes for ${dockerfile}")
-
         def result = [] as Set<String>
 
         getBaseTaggedImages(dockerfile).forEach { taggedImage ->
