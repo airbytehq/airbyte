@@ -4,7 +4,7 @@
 
 ![](docs/.gitbook/assets/airbyte_horizontal_dark%20%281%29%20%281%29.svg)
 
-### Data integration made simple, secure and extensible.
+**Data integration made simple, secure and extensible.**
 
 The new open-source standard to sync data from applications, APIs & databases to warehouses.
 
@@ -65,6 +65,17 @@ For general help using Airbyte, please refer to the official Airbyte documentati
 ## Roadmap
 
 Check out our [roadmap](https://github.com/airbytehq/airbyte/projects/1) to get informed of the latest features released and the upcoming ones. You may also give us insights and vote for a specific feature. For our high-level roadmap and strategy, you can check [our handbook](docs/company-handbook/roadmap.md).
+
+Here are some of the features we are planning on releasing:
+
+* Incremental syncs \([\#247](https://github.com/airbytehq/airbyte/issues/247)\)
+* Kubernetes support \([\#835](https://github.com/airbytehq/airbyte/issues/835)\)
+* Airflow support \([\#836](https://github.com/airbytehq/airbyte/issues/836)\)
+* Credential and secrets vaulting \([\#837](https://github.com/airbytehq/airbyte/issues/837)\)
+* OAuth support for connector configuration \([\#768](https://github.com/airbytehq/airbyte/issues/768)\)
+* Webhook connector
+* Upgrade strategy
+* [DBT](https://www.getdbt.com/) Integration
 
 ## License
 
