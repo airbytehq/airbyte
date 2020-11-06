@@ -1,7 +1,7 @@
 import React from "react";
 import { Formik, Form } from "formik";
 import styled from "styled-components";
-import { JSONSchema6 } from "json-schema";
+import { JSONSchema7 } from "json-schema";
 import merge from "lodash.merge";
 
 import { IDataItem } from "../DropDown/components/ListItem";
@@ -36,7 +36,7 @@ type IProps = {
   hasSuccess?: boolean;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  specifications?: JSONSchema6;
+  specifications?: JSONSchema7;
   documentationUrl?: string;
 };
 

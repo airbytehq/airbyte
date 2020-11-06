@@ -1,5 +1,5 @@
 import React from "react";
-import { JSONSchema6 } from "json-schema";
+import { JSONSchema7 } from "json-schema";
 
 import { Field, FieldProps, useField } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -29,7 +29,7 @@ type IProps = {
   onChangeServiceType?: (id: string) => void;
   formType: "source" | "destination" | "connection";
   values: { name: string; serviceType: string; frequency?: string };
-  specifications?: JSONSchema6;
+  specifications?: JSONSchema7;
   widgetsInfo: WidgetConfigMap;
   documentationUrl?: string;
 };

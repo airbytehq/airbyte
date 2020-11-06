@@ -1,4 +1,4 @@
-import { JSONSchema6 } from "json-schema";
+import { JSONSchema7 } from "json-schema";
 import * as yup from "yup";
 
 import { WidgetConfigMap } from "../form/types";
@@ -6,7 +6,7 @@ import { WidgetConfigMap } from "../form/types";
 /**
  * Returns yup.schema for validation
  *
- * This method builds yup schema based on jsonSchema ${@link JSONSchema6} and widgetConfig ${@link WidgetConfigMap}.
+ * This method builds yup schema based on jsonSchema ${@link JSONSchema7} and widgetConfig ${@link WidgetConfigMap}.
  * Every property is walked through recursively in case it is condition | object | array.
  *
  * uiConfig is used to select currently selected oneOf conditions to build proper schema
@@ -18,9 +18,9 @@ import { WidgetConfigMap } from "../form/types";
  */
 
 export const buildYupFormForJsonSchema = (
-  jsonSchema: JSONSchema6,
+  jsonSchema: JSONSchema7,
   uiConfig?: WidgetConfigMap,
-  parentSchema?: JSONSchema6,
+  parentSchema?: JSONSchema7,
   propertyKey?: string
 ): yup.Schema<any> => {
   let schema:

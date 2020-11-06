@@ -1,9 +1,9 @@
-import { JSONSchema6 } from "json-schema";
+import { JSONSchema7 } from "json-schema";
 
 import { jsonSchemaToUiWidget } from "./schemaToUiWidget";
 
 test("should reformat jsonSchema to internal widget representation", () => {
-  const schema: JSONSchema6 = {
+  const schema: JSONSchema7 = {
     type: "object",
     required: ["host", "port", "user", "dbname"],
     properties: {
@@ -79,7 +79,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
 });
 
 test("should reformat jsonSchema to internal widget representation with parent schema", () => {
-  const schema: JSONSchema6 = {
+  const schema: JSONSchema7 = {
     type: "object",
     title: "Postgres Source Spec",
     required: ["host", "port", "user", "dbname"],
@@ -114,7 +114,7 @@ test("should reformat jsonSchema to internal widget representation with parent s
 });
 
 test("should reformat jsonSchema to internal widget representation when has oneOf", () => {
-  const schema: JSONSchema6 = {
+  const schema: JSONSchema7 = {
     type: "object",
     required: ["start_date", "credentials"],
     properties: {

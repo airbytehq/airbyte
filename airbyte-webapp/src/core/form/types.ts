@@ -1,14 +1,14 @@
-import { JSONSchema6, JSONSchema6Type, JSONSchema6TypeName } from "json-schema";
+import { JSONSchema7, JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
 
 export type FormBaseItem = {
   _type: "formItem";
-  type: JSONSchema6TypeName;
+  type: JSONSchema7TypeName;
   fieldKey: string;
   fieldName: string;
   isRequired: boolean;
   meta?: { [key: string]: any };
   title?: string;
-} & Partial<JSONSchema6>;
+} & Partial<JSONSchema7>;
 
 type FormGroupItem = {
   _type: "formGroup";
@@ -19,8 +19,8 @@ type FormGroupItem = {
   isLoading?: boolean;
   title?: string;
   description?: string;
-  default?: JSONSchema6Type;
-  examples?: JSONSchema6Type[];
+  default?: JSONSchema7Type;
+  examples?: JSONSchema7Type;
 };
 
 type FormConditionItem = {

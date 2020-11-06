@@ -1,6 +1,6 @@
 import * as yup from "yup";
 import { useCallback, useMemo, useState } from "react";
-import { JSONSchema6 } from "json-schema";
+import { JSONSchema7 } from "json-schema";
 import merge from "lodash.merge";
 
 import {
@@ -21,7 +21,7 @@ export type FormInitialValues = {
 
 export const useConstructValidationSchema = (
   uiWidgetsInfo: WidgetConfigMap,
-  jsonSchema?: JSONSchema6
+  jsonSchema?: JSONSchema7
 ) => {
   return useMemo(() => {
     let validationShape: yup.ObjectSchema<any> = yup.object().shape({
@@ -47,7 +47,7 @@ export function useBuildForm(
   formType: "connection" | "source" | "destination",
   isLoading?: boolean,
   initialValues?: Partial<FormInitialValues>,
-  jsonSchema?: JSONSchema6
+  jsonSchema?: JSONSchema7
 ): {
   initialValues: FormInitialValues;
   formFields: FormBlock[];

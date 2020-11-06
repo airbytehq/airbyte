@@ -1,4 +1,4 @@
-import { JSONSchema6Definition } from "json-schema";
+import { JSONSchema7Definition } from "json-schema";
 import pick from "lodash.pick";
 
 import { FormBlock } from "../form/types";
@@ -15,10 +15,10 @@ import { FormBlock } from "../form/types";
  * @param parentSchema
  */
 export const jsonSchemaToUiWidget = (
-  jsonSchema: JSONSchema6Definition,
+  jsonSchema: JSONSchema7Definition,
   key: string,
   path: string = key,
-  parentSchema?: JSONSchema6Definition
+  parentSchema?: JSONSchema7Definition
 ): FormBlock => {
   const isRequired =
     (typeof parentSchema !== "boolean" &&
@@ -32,7 +32,7 @@ export const jsonSchemaToUiWidget = (
       _type: "formItem",
       fieldName: key,
       fieldKey: key,
-      type: "any",
+      type: "null",
       isRequired
     };
   }
@@ -93,6 +93,6 @@ export const jsonSchemaToUiWidget = (
     isRequired,
     type:
       (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ??
-      "any"
+      "null"
   };
 };
