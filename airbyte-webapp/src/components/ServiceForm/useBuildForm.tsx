@@ -1,6 +1,7 @@
 import * as yup from "yup";
 import { useCallback, useMemo, useState } from "react";
 import { JSONSchema6 } from "json-schema";
+import merge from "lodash.merge";
 
 import {
   FormBlock,
@@ -112,7 +113,6 @@ export function useBuildForm(
 export const useBuildUiWidgets = (
   formFields: FormBlock[],
   formValues: FormInitialValues
-  // defaultConfig?: { [key: string]: object }
 ) => {
   const initialUiWidgetsState = useMemo(
     () => buildPathInitialState(formFields, formValues, {}),
@@ -127,8 +127,14 @@ export const useBuildUiWidgets = (
     [uiWidgetsInfo, setUiWidgetsInfo]
   );
 
+  // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
+  const mergedState = useMemo(
+    () => merge(initialUiWidgetsState, uiWidgetsInfo),
+    [initialUiWidgetsState, uiWidgetsInfo]
+  );
+
   return {
-    uiWidgetsInfo,
+    uiWidgetsInfo: mergedState,
     setUiWidgetsInfo: setUiWidgetsInfoSubState
   };
 };

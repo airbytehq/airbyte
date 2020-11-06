@@ -70,23 +70,21 @@ const FrequencyInput: React.FC = () => {
   );
 
   return (
-    <FormItem>
-      <SmallLabeledDropDown
-        {...field}
-        labelAdditionLength={300}
-        label={formatMessage({
-          id: "form.frequency"
-        })}
-        message={formatMessage({
-          id: "form.frequency.message"
-        })}
-        placeholder={formatMessage({
-          id: "form.frequency.placeholder"
-        })}
-        data={dropdownData}
-        onSelect={item => setValue(item.value)}
-      />
-    </FormItem>
+    <SmallLabeledDropDown
+      {...field}
+      labelAdditionLength={300}
+      label={formatMessage({
+        id: "form.frequency"
+      })}
+      message={formatMessage({
+        id: "form.frequency.message"
+      })}
+      placeholder={formatMessage({
+        id: "form.frequency.placeholder"
+      })}
+      data={dropdownData}
+      onSelect={item => setValue(item.value)}
+    />
   );
 };
 
@@ -176,18 +174,20 @@ const FormContent: React.FC<IProps> = ({
           widgetsInfo[formField.fieldName]?.selectedItem;
         return (
           <>
-            <LabeledDropDown
-              data={Object.keys(formField.conditions).map(dataItem => ({
-                text: dataItem,
-                value: dataItem
-              }))}
-              onSelect={selectedItem =>
-                setUiWidgetsInfo(formField.fieldName, {
-                  selectedItem: selectedItem.value
-                })
-              }
-              value={currentlySelectedCondition}
-            />
+            <FormItem key={`form-field-${formField.fieldKey}`}>
+              <LabeledDropDown
+                data={Object.keys(formField.conditions).map(dataItem => ({
+                  text: dataItem,
+                  value: dataItem
+                }))}
+                onSelect={selectedItem =>
+                  setUiWidgetsInfo(formField.fieldName, {
+                    selectedItem: selectedItem.value
+                  })
+                }
+                value={currentlySelectedCondition}
+              />
+            </FormItem>
             {renderFormMeta([formField.conditions[currentlySelectedCondition]])}
           </>
         );

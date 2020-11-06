@@ -4,7 +4,7 @@ import at from "lodash.at";
 export const buildPathInitialState = (
   formBlock: FormBlock[],
   formValues: { [key: string]: any },
-  widgetState: WidgetConfigMap
+  widgetState: WidgetConfigMap = {}
 ): { [key: string]: WidgetConfigMap } =>
   formBlock.reduce((widgetStateBuilder, formItem) => {
     switch (formItem._type) {
@@ -21,11 +21,15 @@ export const buildPathInitialState = (
           ([, subConditionItems]) => {
             switch (subConditionItems._type) {
               case "formGroup":
-                return subConditionItems.properties.every(
-                  p => at(formValues, p.fieldName) !== undefined
+                const fieldPath = subConditionItems.properties.map(
+                  property => property.fieldName
+                );
+                return (
+                  at(formValues, fieldPath).filter(value => value !== undefined)
+                    .length === fieldPath.length
                 );
               case "formItem":
-                return at(formValues, subConditionItems.fieldName);
+                return at(formValues, subConditionItems.fieldName)[0];
             }
             return false;
           }
