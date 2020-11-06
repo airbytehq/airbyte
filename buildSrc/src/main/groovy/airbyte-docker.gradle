@@ -6,7 +6,9 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.slf4j.Logger
 
+import java.nio.file.Path
 import java.security.MessageDigest
 import java.nio.file.Paths
 
@@ -17,7 +19,6 @@ abstract class AirbyteDockerTask extends DefaultTask {
     @Input
     abstract File rootDir
 
-    // todo: parse tree of exclusions for inputs
     @InputDirectory
     abstract File projectDir
 
@@ -27,17 +28,27 @@ abstract class AirbyteDockerTask extends DefaultTask {
     @Input
     String dockerfileName = 'Dockerfile'
 
+    @Input
+    String testDockerfileName = 'Dockerfile.test'
+
     @OutputFile
     abstract File idFileOutput
+
+    def buildDockerfile(String scriptPath, String fileName) {
+        if(project.file(fileName).exists()) {
+            def tag = getTaggedImage(projectDir, dockerfileName)
+
+            project.exec {
+                commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath
+            }
+        }
+    }
 
     @TaskAction
     def airbyteDocker() {
         def scriptPath = Paths.get(rootDir.absolutePath, 'tools/bin/build_image.sh').toString()
-        def tag = getTaggedImage(projectDir, dockerfileName)
-
-        project.exec {
-            commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath
-        }
+        buildDockerfile(scriptPath, dockerfileName)
+        buildDockerfile(scriptPath, testDockerfileName)
     }
 
     static String extractLabelValue(String dockerFile, String labelName) {
@@ -79,7 +90,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         return result
     }
 
-    def getBaseImageHashes2(Map imageToVersion, File dockerfile) {
+    static def getBaseImageHashes(Map imageToVersion, File dockerfile) {
         println("getting hashes for ${dockerfile}")
 
         def result = [] as Set<String>
@@ -91,8 +102,9 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         return result
     }
 
-    String getImageHash(Project project, String taggedImage) {
+    static String getImageHash(Project project, String taggedImage) {
         def stdout = new ByteArrayOutputStream()
+
         project.exec {
             commandLine "docker", "images", "--no-trunc", "-f", "dangling=false", "--format", "{{.ID}}", taggedImage
             standardOutput = stdout;
@@ -101,7 +113,72 @@ class AirbyteDockerPlugin implements Plugin<Project> {
        return "$stdout".toString().trim()
     }
 
+    static boolean isUpToDate(Logger logger, File idFileOutput, Project project, Path dockerPath) {
+        if(idFileOutput.exists()) {
+            def taggedImage = AirbyteDockerTask.getTaggedImage(project.projectDir, 'Dockerfile')
+            logger.debug "taggedImage " + taggedImage
+
+            def current = getImageHash(project, taggedImage)
+            logger.debug "current " + current
+            def stored = ((String)project.rootProject.imageToVersion.get(taggedImage)).trim()
+            logger.debug "stored " + stored
+
+            def notUpToDate = new ArrayList<String>(getBaseTaggedImages(dockerPath.toFile())).any {baseImage ->
+                logger.debug "checking base image " + baseImage
+                def storedBase = ((String)project.rootProject.imageToVersion.get(baseImage)).trim()
+                def currentBase = getImageHash(project, baseImage)
+
+                logger.debug "storedBase " + storedBase
+                logger.debug "currentBase " + currentBase
+                if(!currentBase.equals(storedBase)) {
+                    logger.debug "did not match"
+                    return true
+                } else {
+                    logger.debug "did match"
+                    return false
+                }
+            }
+
+            if(notUpToDate) {
+                return false;
+            }
+
+            logger.debug "stored " + stored.trim()
+
+            def upToDate = current.equals(stored.trim())
+
+            logger.debug "uptodate " + upToDate.toString()
+
+            return upToDate
+        } else {
+            return false
+        }
+    }
+
+    static def createTask(Project project, String taskName, String dockerFile) {
+        if (project.file(dockerFile).exists()) {
+            project.task(taskName, type: AirbyteDockerTask) {
+                def dockerPath = Paths.get(project.projectDir.absolutePath, dockerFile)
+                def hash = MessageDigest.getInstance("MD5").digest(dockerPath.getBytes()).encodeHex().toString()
+                rootDir = project.rootProject.rootDir
+                projectDir = project.projectDir
+                idFileOutput = project.file(Paths.get(project.rootProject.rootDir.absolutePath, '.dockerversions', hash).toString())
+                baseImageHashes = getBaseImageHashes(project.rootProject.imageToVersion, dockerPath.toFile())
+                dependsOn project.assemble
+
+                outputs.upToDateWhen {
+                    return isUpToDate(logger, idFileOutput, project, dockerPath)
+                }
+            }
+        } else {
+            project.task(taskName) {
+                logger.info "Skipping ${taskName} because ${dockerFile} does not exist."
+            }
+        }
+    }
+
     void apply(Project project) {
+        // set (and cache) global image to version map
         project.rootProject.ext.imageToVersion = {
             if(!project.rootProject.hasProperty("imageToVersion")) {
                 def imageToVersion = [:]
@@ -122,57 +199,12 @@ class AirbyteDockerPlugin implements Plugin<Project> {
             }
         }()
 
-        project.task('airbyteDocker', type: AirbyteDockerTask) {
-            def dockerPath = Paths.get(project.projectDir.absolutePath, 'Dockerfile')
-            def hash = MessageDigest.getInstance("MD5").digest(dockerPath.getBytes()).encodeHex().toString()
-            rootDir = project.rootProject.rootDir
-            projectDir = project.projectDir
-            idFileOutput = project.file(Paths.get(project.rootProject.rootDir.absolutePath, '.dockerversions', hash).toString())
-            baseImageHashes = getBaseImageHashes2(project.rootProject.imageToVersion, dockerPath.toFile()) // todo: parameterize by dockerfile name
-            dependsOn project.assemble
+        createTask(project, 'airbyteDockerBuildMain', 'Dockerfile')
+        createTask(project, 'airbyteDockerBuildTest', 'Dockerfile.test')
 
-            outputs.upToDateWhen {
-                if(idFileOutput.exists()) {
-                        def taggedImage = AirbyteDockerTask.getTaggedImage(project.projectDir, 'Dockerfile')
-                        println "taggedImage " + taggedImage
-
-                        def current = getImageHash(project, taggedImage)
-                        println "current " + current
-                        def stored = ((String)project.rootProject.imageToVersion.get(taggedImage)).trim()
-                        println "stored " + stored
-
-
-                        def notUpToDate = new ArrayList<String>(getBaseTaggedImages(dockerPath.toFile())).any {baseImage ->
-                            println "checking base image " + baseImage
-                            def storedBase = ((String)project.rootProject.imageToVersion.get(baseImage)).trim()
-                            def currentBase = getImageHash(project, baseImage)
-
-                            println "storedBase " + storedBase
-                            println "currentBase " + currentBase
-                            if(!currentBase.equals(storedBase)) {
-                                println "did not match"
-                                return true
-                            } else {
-                                println "did match"
-                                return false
-                            }
-                        }
-
-                        if(notUpToDate) {
-                            return false;
-                        }
-
-                        println "stored " + stored.trim()
-
-                        def upToDate = current.equals(stored.trim())
-
-                        println "uptodate " + upToDate.toString()
-
-                        return upToDate
-                } else {
-                    return false
-                }
-            }
+        project.task('airbyteDocker') {
+            dependsOn project.airbyteDockerBuildMain
+            dependsOn project.airbyteDockerBuildTest
         }
 
         project.build.dependsOn project.airbyteDocker
