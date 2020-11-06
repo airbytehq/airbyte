@@ -152,18 +152,18 @@ def json_extract_base_property(path: List[str], json_col: str, name: str, defini
         return None
     elif is_string(definition["type"]):
         return (
-                f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
-                + f"{MACRO_END} as {MACRO_START} dbt_utils.type_string() {MACRO_END}) as {name}"
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
+            + f"{MACRO_END} as {MACRO_START} dbt_utils.type_string() {MACRO_END}) as {name}"
         )
     elif is_integer(definition["type"]):
         return (
-                f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
-                + f"{MACRO_END} as {MACRO_START} dbt_utils.type_int() {MACRO_END}) as {name}"
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
+            + f"{MACRO_END} as {MACRO_START} dbt_utils.type_int() {MACRO_END}) as {name}"
         )
     elif is_number(definition["type"]):
         return (
-                f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
-                + f"{MACRO_END} as {MACRO_START} dbt_utils.type_numeric() {MACRO_END}) as {name}"
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
+            + f"{MACRO_END} as {MACRO_START} dbt_utils.type_numeric() {MACRO_END}) as {name}"
         )
     elif is_boolean(definition["type"]):
         return f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as boolean) as {name}"
@@ -255,7 +255,7 @@ def extract_nested_properties(path: str, field: str, properties: dict) -> dict:
 
 
 def process_node(
-        path: List[str], json_col: str, name: str, properties: dict, from_table: str = "", previous="with ", inject_cols=""
+    path: List[str], json_col: str, name: str, properties: dict, from_table: str = "", previous="with ", inject_cols=""
 ) -> dict:
     result = {}
     if previous == "with ":

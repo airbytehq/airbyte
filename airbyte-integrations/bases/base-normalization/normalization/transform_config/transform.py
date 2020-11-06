@@ -26,10 +26,9 @@ import argparse
 import json
 import os
 import pkgutil
+from enum import Enum
 
 import yaml
-
-from enum import Enum
 
 
 class DestinationType(Enum):
