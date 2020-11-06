@@ -3,3 +3,4 @@
 !entrypoint.sh
 !setup.py
 !normalization
+!dbt-project-template

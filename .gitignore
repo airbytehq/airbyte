@@ -15,3 +15,5 @@ __pycache__
 .venv
 .mypy_cache
 
+# dbt
+profiles.yml
