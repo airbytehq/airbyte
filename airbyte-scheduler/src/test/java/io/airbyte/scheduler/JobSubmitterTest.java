@@ -39,6 +39,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
@@ -71,6 +72,8 @@ public class JobSubmitterTest {
     persistence = mock(SchedulerPersistence.class);
     when(persistence.getOldestPendingJob()).thenReturn(Optional.of(job));
 
+    final ConfigRepository configRepository = mock(ConfigRepository.class);
+
     workerRun = mock(WorkerRun.class);
     when(workerRun.getJobRoot()).thenReturn(Files.createTempDirectory("test"));
     workerRunFactory = mock(WorkerRunFactory.class);
@@ -79,6 +82,7 @@ public class JobSubmitterTest {
     jobSubmitter = new JobSubmitter(
         MoreExecutors.newDirectExecutorService(),
         persistence,
+        configRepository,
         workerRunFactory);
   }
 

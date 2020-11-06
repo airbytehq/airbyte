@@ -1,10 +1,8 @@
 plugins {
     id 'base'
-    id 'java'
     id 'pmd'
-    id 'com.diffplug.spotless' version '5.6.1'
+    id 'com.diffplug.spotless' version '5.7.0'
     id 'ru.vyarus.use-python' version '2.2.0' apply false
-    // id 'de.aaschmid.cpd' version '3.1'
 }
 
 repositories {
@@ -18,39 +16,46 @@ if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
 }
 
-def createJavaLicenseWith = { licence ->
+def createLicenseWith = { File license, String startComment, String endComment, String lineComment ->
     def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
-        w.writeLine("/*")
-        licence.eachLine {
-            w << " * "
+        w.writeLine(startComment)
+        license.eachLine {
+            w << lineComment
             w.writeLine(it)
         }
-        w.writeLine(" */")
+        w.writeLine(endComment)
         w.writeLine("")
     }
     return tmp
 }
 
-def createPythonLicenseWith = { licence ->
-    def tmp = File.createTempFile('tmp', '.tmp')
-    tmp.withWriter {
-        def w = it
-        w.writeLine('"""')
-        licence.eachLine {
-            w.writeLine(it)
-        }
-        w.writeLine('"""')
-        w.writeLine("")
-    }
-    return tmp
+def createPythonLicenseWith = { license ->
+    return createLicenseWith(license, '"""', '"""', "")
+}
+
+def createJavaLicenseWith = { license ->
+    return createLicenseWith(license, '/*', ' */', " * ")
+}
+
+// We are the spotless exclusions rules using file tree. It seems the excludeTarget option is super finicky in a
+// monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
+def createSpotlessTarget = { pattern ->
+    def excludes = [
+        '.gradle',
+        'node_modules',
+        '.eggs',
+        '.mypy_cache',
+        '.venv',
+        '*.egg-info',
+    ]
+    return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect {"**/${it}"})
 }
 
 spotless {
     java {
-        target '**/*.java'
-        targetExclude "**/build/**/*", "**/.gradle/**/*"
+        target createSpotlessTarget('**/*.java')
 
         importOrder()
 
@@ -61,38 +66,25 @@ spotless {
         trimTrailingWhitespace()
     }
     groovyGradle {
-        target '**/*.gradle'
-        targetExclude "**/build/**/*", "**/.gradle/**/*"
+        target createSpotlessTarget('**/*.gradle')
     }
     sql {
-        target '**/*.sql'
-        targetExclude "**/build/**/*", "**/.gradle/**/*"
+        target createSpotlessTarget('**/*.sql')
 
         dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
     }
     python {
-        target '**/*.py'
-        targetExclude "**/build/**/*", "**/.gradle/**/*", "**/.venv/**/*", "**/.eggs/**/*", "**/.mypy_cache/**/*"
+        target createSpotlessTarget('**/*.py')
+
         licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|# generated)'
     }
     format 'styling', {
-        target '**/*.json', '**/*.yaml'
-        targetExclude "**/build/**/*", "**/node_modules/**/*", "**/.gradle/**/*"
+        target createSpotlessTarget(['**/*.yaml', '**/*.json'])
 
         prettier()
     }
 }
 check.dependsOn 'spotlessApply'
-
-// Disabled because it generate an obnoxious warning
-// TODO: https://github.com/airbytehq/airbyte/issues/225
-//
-//    cpdCheck {
-//        ignoreFailures = true
-//        reports {
-//            text.enabled = true
-//        }
-//    }
 
 allprojects {
     apply plugin: 'base'

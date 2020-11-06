@@ -40,6 +40,11 @@
       "url": {
         "type": "string",
         "description": "URL path to access the file to be replicated"
+      },
+
+      "filename": {
+        "type": "string",
+        "description": "Name of the file (should include only letters, numbers dash and underscores)"
       }
     },
 

@@ -134,11 +134,7 @@ class DestinationHandlerTest {
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
 
-    verify(validator)
-        .validate(
-            destinationDefinitionSpecificationRead.getConnectionSpecification(),
-            destinationConnection.getConfiguration());
-
+    verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), destinationConnection.getConfiguration());
     verify(configRepository).writeDestinationConnection(destinationConnection);
   }
 
@@ -224,6 +220,7 @@ class DestinationHandlerTest {
     assertEquals(expectedDestinationRead, actualDestinationRead);
 
     verify(configRepository).writeDestinationConnection(expectedDestinationConnection);
+    verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), destinationConnection.getConfiguration());
   }
 
   @Test
