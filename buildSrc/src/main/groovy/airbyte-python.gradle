@@ -5,6 +5,18 @@ class AirbytePythonConfiguration {
     String moduleDirectory
 }
 
+// todo:
+//task installTestDeps(type: PythonTask){
+//    module = "pip"
+//    command = "install .[tests]"
+//}
+//
+//task unitTest(type: PythonTask){
+//    module = "pytest"
+//    command = "unit_tests"
+//}
+
+
 // todo: handle cacheability
 class AirbytePythonPlugin implements Plugin<Project> {
 

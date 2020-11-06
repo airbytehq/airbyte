@@ -1,9 +1,11 @@
 plugins {
     id 'application'
+    id 'airbyte-docker'
 }
 
-apply plugin: 'docker-build'
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+application {
+    mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestination'
+}
 
 dependencies {
     implementation 'net.snowflake:snowflake-jdbc:3.12.14'
@@ -17,11 +19,6 @@ dependencies {
     integrationTestImplementation project(':airbyte-integrations:bases:destination-test-lib')
     integrationTestImplementation 'org.apache.commons:commons-lang3:3.11'
     integrationTestImplementation project(':airbyte-integrations:connectors:destination-snowflake')
-    implementation files(project(':airbyte-integrations:bases:base-java').buildImage.outputs)
-}
 
-application {
-    mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestination'
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
-
-integrationTest.dependsOn(buildImage)

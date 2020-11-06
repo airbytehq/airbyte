@@ -1,9 +1,11 @@
 plugins {
     id 'application'
+    id 'airbyte-docker'
 }
 
-apply plugin: 'docker-build'
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+application {
+    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
+}
 
 dependencies {
     implementation project(':airbyte-db')
@@ -15,12 +17,6 @@ dependencies {
 
     integrationTestImplementation project(':airbyte-integrations:bases:destination-test-lib')
     integrationTestImplementation "org.testcontainers:postgresql:1.15.0-rc2"
-}
 
-application {
-    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
-
-buildImage.dependsOn(assemble)
-buildImage.dependsOn(':airbyte-integrations:bases:base-java:buildImage')
-integrationTest.dependsOn(buildImage)
