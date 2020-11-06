@@ -10,6 +10,9 @@ WORKDIR /airbyte/normalization_code
 COPY normalization ./normalization
 COPY setup.py .
 RUN pip install .
+COPY dbt-project-template/macros ./dbt-template/macros
+COPY dbt-project-template/dbt_project.yml ./dbt-template/dbt_project.yml
+COPY dbt-project-template/packages.yml ./dbt-template/packages.yml
 
 WORKDIR /airbyte
 

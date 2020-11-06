@@ -22,23 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import setuptools
+from enum import Enum
 
-setuptools.setup(
-    name="normalization",
-    description="Normalizes data in the destination.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    install_requires=["airbyte-protocol", "dbt>=0.18.1", "pyyaml"],
-    package_data={"": ["*.yml"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    entry_points={
-        "console_scripts": [
-            "transform-config=normalization.transform_config.transform:main",
-            "transform-catalog=normalization.transform_catalog.transform:main",
-        ],
-    },
-)
+
+class DestinationType(Enum):
+    bigquery = "bigquery"
+    postgres = "postgres"
+    snowflake = "snowflake"
