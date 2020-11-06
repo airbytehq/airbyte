@@ -42,7 +42,15 @@ class AirbytePythonPlugin implements Plugin<Project> {
             command = ". --config ${project.rootProject.file('tools/python/.flake8').absolutePath}"
         }
 
-        project.task('installTestReqs', type: PythonTask){
+        project.task('installReqs', type: PythonTask) {
+            module = "pip"
+            command = "install -r requirements.txt"
+            inputs.file('requirements.txt')
+            outputs.file('build/installedreqs.txt')
+            outputs.cacheIf { true }
+        }
+
+        project.task('installTestReqs', type: PythonTask, dependsOn: project.installReqs) {
             module = "pip"
             command = "install .[tests]"
             inputs.file('setup.py')
@@ -71,6 +79,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
         }
 
         project.task('airbytePythonApply', type: DefaultTask) {
+            dependsOn project.installReqs
             dependsOn project.blackFormat
             dependsOn project.isortFormat
             dependsOn project.flakeCheck
