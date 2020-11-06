@@ -26,15 +26,10 @@ import argparse
 import json
 import os
 import pkgutil
-from enum import Enum
 
 import yaml
 
-
-class DestinationType(Enum):
-    bigquery = "bigquery"
-    postgres = "postgres"
-    snowflake = "snowflake"
+from ..destination_type import DestinationType
 
 
 class TransformConfig:
