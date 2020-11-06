@@ -58,7 +58,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             outputs.cacheIf { true }
         }
 
-        project.task('installTestDeps', type: PythonTask){
+        project.task('installTestReqs', type: PythonTask){
             module = "pip"
             command = "install .[tests]"
             inputs.file('setup.py')
@@ -73,7 +73,6 @@ class AirbytePythonPlugin implements Plugin<Project> {
             outputs.dir(project.projectDir)
             outputs.cacheIf { true }
         }
-
 
         if (extension.moduleDirectory) {
             project.task('mypyCheck', type: PythonTask, dependsOn: installReqs) {
@@ -94,6 +93,13 @@ class AirbytePythonPlugin implements Plugin<Project> {
             dependsOn project.flakeCheck
         }
 
+
+        project.task('airbytePythonTest', type: DefaultTask) {
+            dependsOn project.installTestReqs
+            dependsOn project.unitTest
+        }
+
         project.build.dependsOn project.airbytePythonApply
+        project.test.dependsOn project.airbytePythonTest
     }
 }
