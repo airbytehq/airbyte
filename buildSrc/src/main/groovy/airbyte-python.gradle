@@ -1,25 +1,12 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.CacheableTask
 import ru.vyarus.gradle.plugin.python.task.PythonTask;
 
 class AirbytePythonConfiguration {
     String moduleDirectory
 }
 
-// todo:
-//task installTestDeps(type: PythonTask){
-//    module = "pip"
-//    command = "install .[tests]"
-//}
-//
-//task unitTest(type: PythonTask){
-//    module = "pytest"
-//    command = "unit_tests"
-//}
-
-
-
-// todo: handle cacheability
 class AirbytePythonPlugin implements Plugin<Project> {
 
     void apply(Project project) {
@@ -41,28 +28,60 @@ class AirbytePythonPlugin implements Plugin<Project> {
         project.task('installReqs', type: PythonTask) {
             module = "pip"
             command = "install -r requirements.txt"
+            inputs.file('requirements.txt')
+            outputs.dir('.venv/lib/python3.8/site-packages')
+            outputs.cacheIf { true }
         }
 
         project.task('blackFormat', type: PythonTask) {
             module = "black"
             // the line length should match .isort.cfg
             command = ". --line-length 140"
+            inputs.dir(project.projectDir)
+            outputs.dir(project.projectDir)
+            outputs.cacheIf { true }
         }
 
         project.task('isortFormat', type: PythonTask) {
             module = "isort"
             command = ". --settings-file ${project.rootProject.file('tools/python/.isort.cfg').absolutePath}"
+            inputs.dir(project.projectDir)
+            outputs.dir(project.projectDir)
+            outputs.cacheIf { true }
         }
 
         project.task('flakeCheck', type: PythonTask, dependsOn: project.blackFormat) {
             module = "flake8"
             command = ". --config ${project.rootProject.file('tools/python/.flake8').absolutePath}"
+            inputs.dir(project.projectDir)
+            outputs.dir(project.projectDir)
+            outputs.cacheIf { true }
         }
+
+        project.task('installTestDeps', type: PythonTask){
+            module = "pip"
+            command = "install .[tests]"
+            inputs.file('setup.py')
+            outputs.dir('.venv/lib/python3.8/site-packages')
+            outputs.cacheIf { true }
+        }
+
+        project.task('unitTest', type: PythonTask){
+            module = "pytest"
+            command = "unit_tests"
+            inputs.dir(project.projectDir)
+            outputs.dir(project.projectDir)
+            outputs.cacheIf { true }
+        }
+
 
         if (extension.moduleDirectory) {
             project.task('mypyCheck', type: PythonTask, dependsOn: installReqs) {
                 module = "mypy"
                 command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('tools/python/.mypy.ini').absolutePath}"
+                inputs.dir(project.projectDir)
+                outputs.dir(project.projectDir)
+                outputs.cacheIf { true }
             }
 
             project.check.dependsOn mypyCheck
