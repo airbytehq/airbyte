@@ -25,7 +25,7 @@ SOFTWARE.
 import argparse
 import json
 import os
-from typing import Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 import yaml
 
@@ -58,8 +58,9 @@ python3 main_dev_transform_catalog.py \
         parser.add_argument("--out", type=str, required=True, help="path to output generated DBT Models to")
         parser.add_argument("--json-column", type=str, required=False, help="name of the column containing the json blob")
         parsed_args = parser.parse_args(args)
+        profiles_yml = read_profiles_yml(parsed_args.profile_config_dir)
         self.config = {
-            "schema": extract_schema(parsed_args.profile_config_dir),
+            "schema": extract_schema(profiles_yml),
             "catalog": parsed_args.catalog,
             "output_path": parsed_args.out,
             "json_column": parsed_args.json_column,
@@ -97,14 +98,18 @@ python3 main_dev_transform_catalog.py \
                 fh.write(yaml.dump(source_config))
 
 
-def extract_schema(profile_dir: str):
+def read_profiles_yml(profile_dir: str) -> Dict[str, any]:
     with open(os.path.join(profile_dir, "profiles.yml"), "r") as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
         obj = config["normalize"]["outputs"]["prod"]
-        if "dataset" in obj:
-            return obj["dataset"]
-        else:
-            return obj["schema"]
+        return obj
+
+
+def extract_schema(profiles_yml: Dict[str, any]):
+    if "dataset" in profiles_yml:
+        return profiles_yml["dataset"]
+    else:
+        return profiles_yml["schema"]
 
 
 def read_json_catalog(input_path: str) -> dict:
@@ -141,42 +146,42 @@ def find_combining_schema(properties: dict):
     return set(properties).intersection({"anyOf", "oneOf", "allOf"})
 
 
-def json_extract_base_property(path: str, json_col: str, name: str, definition: dict) -> Optional[str]:
-    current = ".".join([path, name])
+def json_extract_base_property(path: List[str], json_col: str, name: str, definition: dict) -> Optional[str]:
+    current = path + [name]
     if "type" not in definition:
         return None
     elif is_string(definition["type"]):
         return (
-            f"cast({MACRO_START} json_extract_scalar('{json_col}', \"'{current}'\") "
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
             + f"{MACRO_END} as {MACRO_START} dbt_utils.type_string() {MACRO_END}) as {name}"
         )
     elif is_integer(definition["type"]):
         return (
-            f"cast({MACRO_START} json_extract_scalar('{json_col}', \"'{current}'\") "
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
             + f"{MACRO_END} as {MACRO_START} dbt_utils.type_int() {MACRO_END}) as {name}"
         )
     elif is_number(definition["type"]):
         return (
-            f"cast({MACRO_START} json_extract_scalar('{json_col}', \"'{current}'\") "
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
             + f"{MACRO_END} as {MACRO_START} dbt_utils.type_numeric() {MACRO_END}) as {name}"
         )
     elif is_boolean(definition["type"]):
-        return f"cast({MACRO_START} json_extract_scalar('{json_col}', \"'{current}'\") {MACRO_END} as boolean) as {name}"
+        return f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as boolean) as {name}"
     else:
         return None
 
 
-def json_extract_nested_property(path: str, json_col: str, name: str, definition: dict) -> Union[Tuple[None, None], Tuple[str, str]]:
-    current = ".".join([path, name])
+def json_extract_nested_property(path: List[str], json_col: str, name: str, definition: dict) -> Union[Tuple[None, None], Tuple[str, str]]:
+    current = path + [name]
     if definition is None or "type" not in definition:
         return None, None
     elif is_array(definition["type"]):
         return (
-            f"{MACRO_START} json_extract_array('{json_col}', \"'{current}'\") {MACRO_END} as {name}",
+            f"{MACRO_START} json_extract_array('{json_col}', {current}) {MACRO_END} as {name}",
             f"cross join {MACRO_START} unnest('{name}') {MACRO_END} as {name}",
         )
     elif is_object(definition["type"]):
-        return f"{MACRO_START} json_extract('{json_col}', \"'{current}'\") {MACRO_END} as {name}", ""
+        return f"{MACRO_START} json_extract('{json_col}', {current}) {MACRO_END} as {name}", ""
     else:
         return None, None
 
@@ -185,7 +190,7 @@ def select_table(table: str, columns="*"):
     return f"\nselect {columns} from {table}"
 
 
-def extract_node_properties(path: str, json_col: str, properties: dict) -> dict:
+def extract_node_properties(path: List[str], json_col: str, properties: dict) -> dict:
     result = {}
     if properties:
         for field in properties.keys():
@@ -249,7 +254,9 @@ def extract_nested_properties(path: str, field: str, properties: dict) -> dict:
     return result
 
 
-def process_node(path: str, json_col: str, name: str, properties: dict, from_table: str = "", previous="with ", inject_cols="") -> dict:
+def process_node(
+    path: List[str], json_col: str, name: str, properties: dict, from_table: str = "", previous="with ", inject_cols=""
+) -> dict:
     result = {}
     if previous == "with ":
         prefix = previous
@@ -294,7 +301,7 @@ def process_node(path: str, json_col: str, name: str, properties: dict, from_tab
 )"""
             if children_columns[col]:
                 children = process_node(
-                    path="$",
+                    path=[],
                     json_col=col,
                     name=f"{name}_{col}",
                     properties=children_columns[col],
@@ -329,7 +336,8 @@ def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict,
             properties = {}
         table = f"{MACRO_START} source('{schema}','{name}') {MACRO_END}"
         # TODO check if jsonpath are expressed similarly on different databases... (using $?)
-        result.update(process_node(path="$", json_col=json_col, name=name, properties=properties, from_table=table))
+
+        result.update(process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table))
         source_tables.add(name)
     return result, source_tables
 
