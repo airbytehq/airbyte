@@ -32,7 +32,7 @@ from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMes
 from base_python import AirbyteLogger, ConfigContainer, Source
 
 
-def connecting(json_config):
+def connect_to_hive(json_config):
     conn = connect(host=json_config["host"],
                    port=json_config["port"],
                    database=json_config["database"],
@@ -54,7 +54,7 @@ class SourceHive(Source):
         json_config = config_container.rendered_config
         try:
             logger.info("Hive Source: Start to connect to Hive server ......")
-            conn, cur = connecting(json_config)
+            conn, cur = connect_to_hive(json_config)
             cur.execute("SELECT VERSION()")
             version = cur.fetchone()
             logger.info("Hive Source: Connect successful! The Hive version is " + str(version))
@@ -70,7 +70,7 @@ class SourceHive(Source):
     def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
         json_config = config_container.rendered_config
         logger.info("Hive source: Start to connect to Hive server ...... ")
-        conn, cur = connecting(json_config)
+        conn, cur = connect_to_hive(json_config)
         try:
             logger.info("Hive source: Start to query all tables from Hive server ...... ")
             cur.execute("show tables")
@@ -115,7 +115,7 @@ class SourceHive(Source):
 
         json_config = config_container.rendered_config
         logger.info("Hive source: Start to connect to Hive server ...... ")
-        conn, cur = connecting(json_config)
+        conn, cur = connect_to_hive(json_config)
         logger.info("Hive source: Connecting to Hive server successful ...... ")
 
         try:
