@@ -58,13 +58,12 @@ class SourceHive(Source):
             cur.execute("SELECT VERSION()")
             version = cur.fetchone()
             logger.info("Hive Source: Connect successful! The Hive version is " + str(version))
-            cur.close()
-            conn.close()
 
         except Exception as e:
             logger.error("Hive Source: Connect failed! The reason is " + str(e))
             return AirbyteConnectionStatus(status=Status.FAILED)
-
+        cur.close()
+        conn.close()
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
@@ -135,3 +134,5 @@ class SourceHive(Source):
             reason = f"Hive source: Failed to read data"
             logger.error(reason)
             raise err
+        cur.close()
+        conn.close()
