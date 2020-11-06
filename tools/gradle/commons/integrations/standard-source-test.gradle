@@ -1,5 +1,3 @@
-apply from: rootProject.file('tools/gradle/commons/docker.gradle')
-
 task standardSourceTest {
     ext {
         imageName = ''

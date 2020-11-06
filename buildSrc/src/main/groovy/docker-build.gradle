@@ -4,7 +4,7 @@ import java.nio.file.Paths
 
 
 class DockerBuildConfiguration {
-//    String message
+//    String message // todo: allow each
 //    String greeter
 }
 
