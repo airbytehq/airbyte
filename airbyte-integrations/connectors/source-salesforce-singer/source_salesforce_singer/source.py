@@ -37,16 +37,16 @@ class SourceSalesforceSinger(SingerSource):
 
             # pulled from tap-salesforce singer impl
             # https://github.com/singer-io/tap-salesforce/blob/master/tap_salesforce/salesforce/__init__.py#L295-L327
-            if json_config['is_sandbox']:
-                login_url = 'https://test.salesforce.com/services/oauth2/token'
+            if json_config["is_sandbox"]:
+                login_url = "https://test.salesforce.com/services/oauth2/token"
             else:
-                login_url = 'https://login.salesforce.com/services/oauth2/token'
+                login_url = "https://login.salesforce.com/services/oauth2/token"
 
             login_body = {
-                'grant_type': 'refresh_token',
-                'client_id': json_config['client_id'],
-                'client_secret': json_config['client_secret'],
-                'refresh_token': json_config['refresh_token']
+                "grant_type": "refresh_token",
+                "client_id": json_config["client_id"],
+                "client_secret": json_config["client_secret"],
+                "refresh_token": json_config["refresh_token"],
             }
 
             logger.info("Attempting login via OAuth2")
@@ -54,7 +54,7 @@ class SourceSalesforceSinger(SingerSource):
             r = None
             try:
                 logger.info(f"Making POST request to {login_url} with body {login_body}")
-                headers={"Content-Type": "application/x-www-form-urlencoded"}
+                headers = {"Content-Type": "application/x-www-form-urlencoded"}
                 r = requests.post(login_url, headers=headers, data=login_body)
                 if r.status_code == 200:
                     logger.info("OAuth2 login successful")
@@ -64,8 +64,8 @@ class SourceSalesforceSinger(SingerSource):
 
             except Exception as e:
                 error_message = str(e)
-                if r is None and hasattr(e, 'response') and e.response is not None: #pylint:disable=no-member
-                    r = e.response #pylint:disable=no-member
+                if r is None and hasattr(e, "response") and e.response is not None:  # pylint:disable=no-member
+                    r = e.response  # pylint:disable=no-member
                 # NB: requests.models.Response is always falsy here. It is false if status code >= 400
                 if isinstance(r, requests.models.Response):
                     error_message = error_message + ", Response from Salesforce: {}".format(r.text)
@@ -85,5 +85,5 @@ class SourceSalesforceSinger(SingerSource):
     def transform_config(self, raw_config):
         # the select_fields_by_default is opinionated about schema changes. we want to reserve the right for the Airbyte system to handle these changes, instead of the singer source.
         rendered_config = dict(raw_config)
-        rendered_config['select_fields_by_default'] = True
+        rendered_config["select_fields_by_default"] = True
         return rendered_config

@@ -23,8 +23,8 @@ SOFTWARE.
 """
 
 import sys
-from airbyte_protocol.entrypoint import launch
 
+from airbyte_protocol.entrypoint import launch
 from source_salesforce_singer import SourceSalesforceSinger
 
 if __name__ == "__main__":
