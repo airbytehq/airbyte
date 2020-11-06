@@ -1,9 +1,12 @@
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
+import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.slf4j.Logger
@@ -19,11 +22,14 @@ abstract class AirbyteDockerTask extends DefaultTask {
     @Input
     abstract File rootDir
 
-    @InputDirectory
-    abstract File projectDir
+    @InputFiles
+    abstract FileCollection projectFiles
 
     @Input
     abstract Set<String> baseImageHashes
+
+    @Input
+    abstract File projectDir
 
     @Input
     String dockerfileName = 'Dockerfile'
@@ -157,11 +163,15 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
     static def createTask(Project project, String taskName, String dockerFile) {
         if (project.file(dockerFile).exists()) {
+            def filteredProjectFiles = project.fileTree(project.projectDir).filter {
+                file -> !file.toString().contains(".venv")
+            }
             project.task(taskName, type: AirbyteDockerTask) {
                 def dockerPath = Paths.get(project.projectDir.absolutePath, dockerFile)
                 def hash = MessageDigest.getInstance("MD5").digest(dockerPath.getBytes()).encodeHex().toString()
                 rootDir = project.rootProject.rootDir
                 projectDir = project.projectDir
+                projectFiles = filteredProjectFiles
                 idFileOutput = project.file(Paths.get(project.rootProject.rootDir.absolutePath, '.dockerversions', hash).toString())
                 baseImageHashes = getBaseImageHashes(project.rootProject.imageToVersion, dockerPath.toFile())
                 dependsOn project.assemble
