@@ -29,6 +29,5 @@
 {%- endmacro %}
 
 {% macro snowflake__unnest(array_col) -%}
-    -- TODO test this!! not so sure yet...
     table(flatten({{ adapter.quote_as_configured(array_col, 'identifier')|trim }}))
 {%- endmacro %}
