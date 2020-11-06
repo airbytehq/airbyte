@@ -29,6 +29,7 @@ build.dependsOn ':airbyte-integrations:bases:base-python-test:build'
 
 buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
 buildTestImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
+buildTestImage.dependsOn ':airbyte-integrations:bases:base-python-test:buildImage'
 
 integrationTest.dependsOn(buildImage)
 standardSourceTestPython.dependsOn(buildTestImage)
