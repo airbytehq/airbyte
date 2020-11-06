@@ -22,11 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from datetime import datetime
 from typing import Generator
 
 from impala.dbapi import connect
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, Status, AirbyteStream
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, Status, AirbyteStream, Type, \
+    AirbyteRecordMessage
 from base_python import AirbyteLogger, ConfigContainer, Source
 
 
@@ -98,3 +100,38 @@ class SourceHive(Source):
         cur.close()
         conn.close()
         return AirbyteCatalog(streams=streams)
+
+    def read(
+            self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None
+    ) -> Generator[AirbyteMessage, None, None]:
+        logger.info(f"Hive source: Reading catalog file({catalog_path}) from discover phase ...")
+        catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        tables = {}
+        for stream in catalog.streams:
+            columns = []
+            for key in stream.json_schema["properties"].keys():
+                columns.append(key)
+            tables[stream.name] = columns
+
+        json_config = config_container.rendered_config
+        logger.info("Hive source: Start to connect to Hive server ...... ")
+        conn, cur = connecting(json_config)
+        logger.info("Hive source: Connecting to Hive server successful ...... ")
+
+        try:
+            for table_name in tables:
+                all_pros = ",".join(tables[table_name])
+                logger.info(f"Hive source: Reading data from table {table_name} ...... ")
+                cur.execute(f"select {all_pros} from {table_name}")
+                for value_tuple in cur.fetchall():
+                    data = {name: value_tuple[num] for num, name in enumerate(tables[table_name])}
+                    yield AirbyteMessage(
+                        type=Type.RECORD,
+                        record=AirbyteRecordMessage(stream=table_name,
+                                                    data=data,
+                                                    emitted_at=int(datetime.now().timestamp()) * 1000),
+                    )
+        except Exception as err:
+            reason = f"Hive source: Failed to read data"
+            logger.error(reason)
+            raise err
