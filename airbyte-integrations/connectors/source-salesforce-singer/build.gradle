@@ -2,7 +2,7 @@ plugins {
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
     id 'airbyte-python'
-    id 'airbyte-source'
+    id 'airbyte-source-test'
 }
 
 airbytePython {

@@ -9,5 +9,5 @@ airbytePython {
 
 dependencies {
     implementation files(project(':airbyte-integrations:bases:airbyte-protocol').airbyteDocker.outputs)
-    implementation files(project(':airbyte-integrations:bases:base').buildImage.outputs)
+    implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
 }

@@ -1,3 +1,7 @@
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import ru.vyarus.gradle.plugin.python.task.PythonTask;
+
 class AirbytePythonConfiguration {
     String moduleDirectory
 }
@@ -13,7 +17,7 @@ class AirbytePythonConfiguration {
 //    command = "unit_tests"
 //}
 
-apply plugin: 'ru.vyarus.use-python'
+
 
 // todo: handle cacheability
 class AirbytePythonPlugin implements Plugin<Project> {
@@ -21,10 +25,12 @@ class AirbytePythonPlugin implements Plugin<Project> {
     void apply(Project project) {
         def extension = project.extensions.create('airbytePython', AirbytePythonConfiguration)
 
-        python {
+        project.plugins.apply 'ru.vyarus.use-python'
+
+        project.python {
             envPath = '.venv'
             minPythonVersion = '3.7'
-            scope = VIRTUALENV
+            scope = 'VIRTUALENV'
             installVirtualenv = true
             pip 'flake8:3.8.4'
             pip 'black:20.8b1'
@@ -32,43 +38,43 @@ class AirbytePythonPlugin implements Plugin<Project> {
             pip 'isort:5.6.4'
         }
 
-        task installReqs(type: PythonTask) {
+        project.task('installReqs', type: PythonTask) {
             module = "pip"
             command = "install -r requirements.txt"
         }
 
-        task blackFormat(type: PythonTask) {
+        project.task('blackFormat', type: PythonTask) {
             module = "black"
             // the line length should match .isort.cfg
             command = ". --line-length 140"
         }
 
-        task isortFormat(type: PythonTask) {
+        project.task('isortFormat', type: PythonTask) {
             module = "isort"
-            command = ". --settings-file ${rootProject.file('tools/python/.isort.cfg').absolutePath}"
+            command = ". --settings-file ${project.rootProject.file('tools/python/.isort.cfg').absolutePath}"
         }
 
-        task flakeCheck(type: PythonTask, dependsOn: blackFormat) {
+        project.task('flakeCheck', type: PythonTask, dependsOn: project.blackFormat) {
             module = "flake8"
-            command = ". --config ${rootProject.file('tools/python/.flake8').absolutePath}"
+            command = ". --config ${project.rootProject.file('tools/python/.flake8').absolutePath}"
         }
 
-        if (extension.has('moduleDirectory')) {
-            task mypyCheck(type: PythonTask, dependsOn: installReqs) {
+        if (extension.moduleDirectory) {
+            project.task('mypyCheck', type: PythonTask, dependsOn: installReqs) {
                 module = "mypy"
-                command = "-m ${extension.moduleDirectory} --config-file ${rootProject.file('tools/python/.mypy.ini').absolutePath}"
+                command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('tools/python/.mypy.ini').absolutePath}"
             }
 
             project.check.dependsOn mypyCheck
         }
 
-        project.task('airbytePython', type: DefaultTask) {
-            dependsOn installReqs
-            dependsOn blackFormat
-            dependsOn isortFormat
-            dependsOn flakeCheck
+        project.task('airbytePythonApply', type: DefaultTask) {
+            dependsOn project.installReqs
+            dependsOn project.blackFormat
+            dependsOn project.isortFormat
+            dependsOn project.flakeCheck
         }
 
-        project.build.dependsOn project.airbytePython
+        project.build.dependsOn project.airbytePythonApply
     }
 }
