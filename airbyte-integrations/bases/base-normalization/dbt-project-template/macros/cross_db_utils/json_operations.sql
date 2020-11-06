@@ -6,48 +6,55 @@
     - Postgres: json_extract_path_text(<from_json>, 'path' [, 'path' [, ...]]) -> https://www.postgresql.org/docs/12/functions-json.html
 #}
 
-{# format_path --------------------------------------------------     #}
-{% macro format_path(json_path_list) -%}
-  {{ adapter.dispatch('format_path')(json_path_list) }}
+{# format_json_path --------------------------------------------------     #}
+{% macro format_json_path(json_path_list) -%}
+  {{ adapter.dispatch('format_json_path')(json_path_list) }}
 {%- endmacro %}
 
-{% macro default__format_path(json_path_list) -%}
+{% macro default__format_json_path(json_path_list) -%}
   {{ '.' ~ json_path_list|join('.') }}
 {%- endmacro %}
 
-{% macro postgres__format_path(json_path_list) -%}
- {{"'" ~ json_path_list|join("','") ~ "'" }}
+{% macro bigquery__format_json_path(json_path_list) -%}
+  {{ '"$.' ~ json_path_list|join('"."') ~ '"' }}
 {%- endmacro %}
 
-{% macro bigquery__format_path(json_path_list) -%}
-  {{'"$' ~ json_path_list|join('"."') ~ '"'}}
+{% macro postgres__format_json_path(json_path_list) -%}
+ {{ "'" ~ json_path_list|join("','") ~ "'" }}
 {%- endmacro %}
 
+{% macro redshift__format_json_path(json_path_list) -%}
+ {{ "'" ~ json_path_list|join("','") ~ "'" }}
+{%- endmacro %}
+
+{% macro snowflake__format_json_path(json_path_list) -%}
+  {{ "'" ~ json_path_list|join('"."') ~ "'" }}
+{%- endmacro %}
 
 {# json_extract -------------------------------------------------     #}
 
 {% macro json_extract(json_column, json_path_list) -%}
-  {{ adapter.dispatch('json_extract')(json_column, format_path(json_path_list)) }}
+  {{ adapter.dispatch('json_extract')(json_column, json_path_list) }}
 {%- endmacro %}
 
 {% macro default__json_extract(json_column, json_path_list) -%}
-    json_extract({{json_column}}, {{ format_path(json_path_list)}})
+    json_extract({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro bigquery__json_extract(json_column, json_path_list) -%}
-    json_extract({{json_column}}, {{format_path(json_path_list)}})
+    json_extract({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro postgres__json_extract(json_column, json_path_list) -%}
-    jsonb_extract_path_text({{json_column}}, {{format_path(json_path_list)}})
+    jsonb_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract(json_column, json_path_list) -%}
-    json_extract_path_text({{json_column}}, {{format_path(json_path_list)}})
+    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro snowflake__json_extract(json_column, json_path_list) -%}
-    json_extract_path_text({{json_column}}, {{format_path(json_path_list)}})
+    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_scalar -------------------------------------------------     #}
@@ -57,23 +64,23 @@
 {%- endmacro %}
 
 {% macro default__json_extract_scalar(json_column, json_path_list) -%}
-    json_extract_scalar({{json_column}}, {{format_path(json_path_list)}})
+    json_extract_scalar({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro bigquery__json_extract_scalar(json_column, json_path_list) -%}
-    json_extract_scalar({{json_column}}, {{format_path(json_path_list)}})
+    json_extract_scalar({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro postgres__json_extract_scalar(json_column, json_path_list) -%}
-    jsonb_extract_path_text({{json_column}},{{format_path(json_path_list)}})
+    jsonb_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }},{{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract_scalar(json_column, json_path_list) -%}
-    json_extract_path_text({{json_column}}, {{format_path(json_path_list)}})
+    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro snowflake__json_extract_scalar(json_column, json_path_list) -%}
-    json_extract_path_text({{json_column}}, {{format_path(json_path_list)}})
+    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_array -------------------------------------------------     #}
@@ -83,21 +90,21 @@
 {%- endmacro %}
 
 {% macro default__json_extract_array(json_column, json_path_list) -%}
-    json_extract_array({{json_column}}, {{format_path(json_path_list)}})
+    json_extract_array({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro bigquery__json_extract_array(json_column, json_path_list) -%}
-    json_extract_array({{json_column}}, {{format_path(json_path_list)}})
+    json_extract_array({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro postgres__json_extract_array(json_column, json_path_list) -%}
-    jsonb_array_elements(jsonb_extract_path({{json_column}},{{format_path(json_path_list)}})
+    jsonb_array_elements(jsonb_extract_path({{ adapter.quote_as_configured(json_column, 'identifier')|trim }},{{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path_list) -%}
-    json_extract_path_text({{json_column}}, {{format_path(json_path_list)}})
+    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro snowflake__json_extract_array(json_column, json_path_list) -%}
-    json_extract_path_text({{json_column}}, {{format_path(json_path_list)}})
+    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}

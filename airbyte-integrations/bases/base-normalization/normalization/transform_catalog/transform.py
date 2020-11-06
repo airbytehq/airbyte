@@ -47,11 +47,11 @@ python3 main_dev_transform_catalog.py \
 
     config: dict = {}
 
-    def run(self, args):
+    def run(self, args) -> None:
         self.parse(args)
         self.process_catalog()
 
-    def parse(self, args):
+    def parse(self, args) -> None:
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument("--profile-config-dir", type=str, required=True, help="path to directory containing DBT profiles.yml")
         parser.add_argument("--catalog", nargs="+", type=str, required=True, help="path to Catalog (JSON Schema) file")
@@ -66,7 +66,7 @@ python3 main_dev_transform_catalog.py \
             "json_column": parsed_args.json_column,
         }
 
-    def process_catalog(self):
+    def process_catalog(self) -> None:
         source_tables: set = set()
         schema = self.config["schema"]
         output = self.config["output_path"]
@@ -91,7 +91,23 @@ python3 main_dev_transform_catalog.py \
     @staticmethod
     def write_yaml_sources(output: str, schema: str, sources: set) -> None:
         tables = [{"name": source} for source in sources]
-        source_config = {"version": 2, "sources": [{"name": schema, "tables": tables}]}
+        source_config = {
+            "version": 2,
+            "sources": [
+                {
+                    "name": schema,
+                    "tables": tables,
+                    "quoting": {
+                        "database": True,
+                        "schema": True,
+                        "identifier": True,
+                    },
+                },
+            ],
+        }
+        # Quoting options are hardcoded and passed down to the sources instead of
+        # inheriting them from dbt_project.yml (does not work well for some reasons?)
+        # Apparently, Snowflake needs this quoting configuration to work properly...
         source_path = os.path.join(output, "sources.yml")
         if not os.path.exists(source_path):
             with open(source_path, "w") as fh:
@@ -142,7 +158,7 @@ def is_object(property_type) -> bool:
     return property_type == "object" or "object" in property_type
 
 
-def find_combining_schema(properties: dict):
+def find_combining_schema(properties: dict) -> set:
     return set(properties).intersection({"anyOf", "oneOf", "allOf"})
 
 
@@ -152,21 +168,24 @@ def json_extract_base_property(path: List[str], json_col: str, name: str, defini
         return None
     elif is_string(definition["type"]):
         return (
-            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
-            + f"{MACRO_END} as {MACRO_START} dbt_utils.type_string() {MACRO_END}) as {name}"
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as {MACRO_START} dbt_utils.type_string()"
+            + f" {MACRO_END}) as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
         )
     elif is_integer(definition["type"]):
         return (
-            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
-            + f"{MACRO_END} as {MACRO_START} dbt_utils.type_int() {MACRO_END}) as {name}"
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as {MACRO_START} dbt_utils.type_int()"
+            + f" {MACRO_END}) as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
         )
     elif is_number(definition["type"]):
         return (
-            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) "
-            + f"{MACRO_END} as {MACRO_START} dbt_utils.type_numeric() {MACRO_END}) as {name}"
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as {MACRO_START} dbt_utils.type_numeric()"
+            + f" {MACRO_END}) as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
         )
     elif is_boolean(definition["type"]):
-        return f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as boolean) as {name}"
+        return (
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as boolean"
+            + f") as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
+        )
     else:
         return None
 
@@ -177,11 +196,17 @@ def json_extract_nested_property(path: List[str], json_col: str, name: str, defi
         return None, None
     elif is_array(definition["type"]):
         return (
-            f"{MACRO_START} json_extract_array('{json_col}', {current}) {MACRO_END} as {name}",
-            f"cross join {MACRO_START} unnest('{name}') {MACRO_END} as {name}",
+            f"{MACRO_START} json_extract_array('{json_col}', {current}) {MACRO_END} as "
+            + f"{MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}",
+            f"cross join {MACRO_START} unnest('{name}') {MACRO_END} as "
+            + f"{MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}",
         )
     elif is_object(definition["type"]):
-        return f"{MACRO_START} json_extract('{json_col}', {current}) {MACRO_END} as {name}", ""
+        return (
+            f"{MACRO_START} json_extract('{json_col}', {current}) {MACRO_END} as "
+            + f"{MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}",
+            "",
+        )
     else:
         return None, None
 
@@ -264,8 +289,8 @@ def process_node(
         prefix = previous + ","
     node_properties = extract_node_properties(path=path, json_col=json_col, properties=properties)
     node_columns = ",\n    ".join([sql for sql in node_properties.values()])
-    hash_node_columns = ", ".join([f'"{column}"' for column in node_properties.keys()])
-    hash_node_columns = f"{MACRO_START} dbt_utils.surrogate_key([{hash_node_columns}]) {MACRO_END}"
+    hash_node_columns = ",\n        ".join([f"adapter.quote_as_configured('{column}', 'identifier')" for column in node_properties.keys()])
+    hash_node_columns = f"{MACRO_START} dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ]) {MACRO_END}"
     node_sql = f"""{prefix}
 {name}_node as (
   select {inject_cols}
@@ -275,7 +300,7 @@ def process_node(
 {name}_with_id as (
   select
     *,
-    {hash_node_columns} as _{name}_hashid
+    {hash_node_columns} as {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END}
   from {name}_node
 )"""
     # SQL Query for current node's basic properties
@@ -294,8 +319,8 @@ def process_node(
 ),
 {name}_with_id as (
   select
-    {hash_node_columns} as _{name}_hashid,
-    {col}
+    {hash_node_columns} as {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END},
+    {MACRO_START} adapter.quote_as_configured('{col}', 'identifier') {MACRO_END}
   from {name}_node
   {join_child_table}
 )"""
@@ -307,7 +332,7 @@ def process_node(
                     properties=children_columns[col],
                     from_table=f"{name}_with_id",
                     previous=child_sql,
-                    inject_cols=f"\n    _{name}_hashid as _{name}_foreign_hashid,",
+                    inject_cols=f"\n    {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END} as _{name}_foreign_hashid,",
                 )
                 result.update(children)
             else:
@@ -315,7 +340,7 @@ def process_node(
                 result[f"{name}_{col}"] = child_sql + select_table(
                     f"{name}_with_id",
                     columns=f"""
-  _{name}_hashid as _{name}_foreign_hashid,
+  {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END} as _{name}_foreign_hashid,
   {col}
 """,
                 )
