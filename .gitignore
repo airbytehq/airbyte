@@ -17,6 +17,3 @@ __pycache__
 
 # dbt
 profiles.yml
-airbyte-integrations/bases/base-normalization/dbt-project-template/logs/
-airbyte-integrations/bases/base-normalization/dbt-project-template/models/generated
-airbyte-integrations/bases/base-normalization/dbt-project-template/dbt_modules/

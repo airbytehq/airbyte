@@ -25,7 +25,7 @@ SOFTWARE.
 import argparse
 import json
 import os
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import List, Optional, Set, Tuple, Union
 
 import yaml
 
@@ -98,14 +98,14 @@ python3 main_dev_transform_catalog.py \
                 fh.write(yaml.dump(source_config))
 
 
-def read_profiles_yml(profile_dir: str) -> Dict[str, any]:
+def read_profiles_yml(profile_dir: str) -> dict:
     with open(os.path.join(profile_dir, "profiles.yml"), "r") as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
         obj = config["normalize"]["outputs"]["prod"]
         return obj
 
 
-def extract_schema(profiles_yml: Dict[str, any]):
+def extract_schema(profiles_yml: dict) -> str:
     if "dataset" in profiles_yml:
         return profiles_yml["dataset"]
     else:
@@ -200,7 +200,7 @@ def extract_node_properties(path: List[str], json_col: str, properties: dict) ->
     return result
 
 
-def find_properties_object(path: str, field: str, properties) -> dict:
+def find_properties_object(path: List[str], field: str, properties) -> dict:
     if isinstance(properties, str) or isinstance(properties, int):
         return {}
     else:
@@ -226,7 +226,7 @@ def find_properties_object(path: str, field: str, properties) -> dict:
     return {}
 
 
-def extract_nested_properties(path: str, field: str, properties: dict) -> dict:
+def extract_nested_properties(path: List[str], field: str, properties: dict) -> dict:
     result = {}
     if properties:
         for key in properties.keys():
@@ -234,7 +234,7 @@ def extract_nested_properties(path: str, field: str, properties: dict) -> dict:
             if combining:
                 # skip combining schemas
                 for combo in combining:
-                    found = find_properties_object(path=f"{path}.{field}.{key}", field=key, properties=properties[key][combo])
+                    found = find_properties_object(path=path + [field, key], field=key, properties=properties[key][combo])
                     result.update(found)
             elif "type" not in properties[key]:
                 pass
@@ -243,13 +243,13 @@ def extract_nested_properties(path: str, field: str, properties: dict) -> dict:
                 if combining:
                     # skip combining schemas
                     for combo in combining:
-                        found = find_properties_object(path=f"{path}.{key}", field=key, properties=properties[key]["items"][combo])
+                        found = find_properties_object(path=path + [field, key], field=key, properties=properties[key]["items"][combo])
                         result.update(found)
                 else:
-                    found = find_properties_object(path=f"{path}.{key}", field=key, properties=properties[key]["items"])
+                    found = find_properties_object(path=path + [field, key], field=key, properties=properties[key]["items"])
                     result.update(found)
             elif is_object(properties[key]["type"]):
-                found = find_properties_object(path=f"{path}.{key}", field=key, properties=properties[key])
+                found = find_properties_object(path=path + [field, key], field=key, properties=properties[key])
                 result.update(found)
     return result
 
@@ -335,8 +335,6 @@ def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict,
         else:
             properties = {}
         table = f"{MACRO_START} source('{schema}','{name}') {MACRO_END}"
-        # TODO check if jsonpath are expressed similarly on different databases... (using $?)
-
         result.update(process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table))
         source_tables.add(name)
     return result, source_tables
