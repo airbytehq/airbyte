@@ -19,6 +19,7 @@
     "@types/lodash.at": "^4.6.6",
     "@types/lodash.merge": "^4.6.6",
     "@types/lodash.pick": "^4.4.6",
+    "@types/sanitize-html": "^1.27.0",
     "dayjs": "^1.8.35",
     "formik": "2.1.5",
     "lodash.at": "^4.6.0",
@@ -37,6 +38,7 @@
     "react-table": "^7.5.0",
     "react-widgets": "^4.5.0",
     "rest-hooks": "^4.5.9",
+    "sanitize-html": "^2.1.2",
     "styled-components": "^5.1.1",
     "yup": "^0.28.1"
   },

@@ -1,10 +1,11 @@
 import React from "react";
 import { useField } from "formik";
-import { FormattedHTMLMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 
 import LabeledInput from "../../LabeledInput";
 import LabeledDropDown from "../../LabeledDropDown";
 import LabeledToggle from "../../LabeledToggle";
+import TextWithHTML from "../../TextWithHTML";
 import { FormBaseItem } from "../../../core/form/types";
 
 type IProps = {
@@ -33,9 +34,7 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
       <LabeledToggle
         {...field}
         label={property.title || defaultLabel}
-        message={
-          <FormattedHTMLMessage id="1" defaultMessage={property.description} />
-        }
+        message={<TextWithHTML text={property.description} />}
         placeholder={placeholder}
         value={field.value || property.default}
       />
@@ -48,10 +47,7 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
         label={label}
         message={
           property.description ? (
-            <FormattedHTMLMessage
-              id="1"
-              defaultMessage={property.description}
-            />
+            <TextWithHTML text={property.description} />
           ) : null
         }
         placeholder={placeholder}
@@ -75,10 +71,7 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
         label={label}
         message={
           property.description ? (
-            <FormattedHTMLMessage
-              id="1"
-              defaultMessage={property.description}
-            />
+            <TextWithHTML text={property.description} />
           ) : null
         }
         placeholder={placeholder}
