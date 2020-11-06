@@ -1,15 +1,49 @@
 {
-  "documentationUrl": "https://docsurl.com",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/hive",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Hive Spec",
+    "title": "Hive Source Spec",
     "type": "object",
-    "required": ["fix-me"],
+    "required": [
+      "host",
+      "port",
+      "database",
+      "username",
+      "password",
+      "authMechanism"
+    ],
     "additionalProperties": false,
     "properties": {
-      "fix-me": {
+      "host": {
+        "description": "Hostname of the hive database.",
+        "type": "string"
+      },
+      "port": {
+        "description": "Port of the hive database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 10001,
+        "examples": [
+          "10001"
+        ]
+      },
+      "database": {
+        "description": "Name of the database.",
+        "type": "string"
+      },
+      "username": {
+        "description": "Username to use to access the hive database.",
+        "type": "string"
+      },
+      "password": {
+        "description": "Password associated with the hive username.",
+        "type": "string"
+      },
+      "authMechanism": {
+        "description": "Specify the auth mechanism for Hive",
         "type": "string",
-        "description": "describe me"
+        "default": "NOSASL"
       }
     }
   }
