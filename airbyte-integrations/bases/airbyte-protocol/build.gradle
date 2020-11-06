@@ -1,6 +1,15 @@
-project.ext.pyModule = 'airbyte_protocol'
-apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply plugin: 'docker-build'
+plugins {
+    id 'airbyte-python'
+    id 'airbyte-docker'
+}
+
+airbytePython {
+    moduleDirectory 'airbyte_protocol'
+}
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
+}
 
 task generateProtocolClassFilesWithoutLicense(type: Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
@@ -8,7 +17,7 @@ task generateProtocolClassFilesWithoutLicense(type: Exec) {
     dependsOn ':airbyte-integrations:bases:airbyte-protocol:code-generator:buildImage'
 }
 
+// todo: figure out dependencies
 task generateProtocolClassFiles(dependsOn: [generateProtocolClassFilesWithoutLicense, rootProject.spotlessPython])
 rootProject.spotlessPython.mustRunAfter(generateProtocolClassFilesWithoutLicense)
-
 rootProject.build.dependsOn generateProtocolClassFiles

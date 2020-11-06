@@ -8,5 +8,4 @@ dependencies {
 
     implementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
     implementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
-
 }

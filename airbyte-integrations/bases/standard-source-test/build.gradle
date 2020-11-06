@@ -2,7 +2,9 @@ plugins {
     id 'application'
 }
 
-apply plugin: 'docker-build'
+application {
+    mainClass = 'io.airbyte.integrations.base.TestPythonSourceMain'
+}
 
 dependencies {
     implementation project(':airbyte-config:models')
@@ -15,9 +17,3 @@ dependencies {
     implementation 'org.junit.platform:junit-platform-launcher:1.7.0'
     implementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
 }
-
-application {
-    mainClass = 'io.airbyte.integrations.base.TestPythonSourceMain'
-}
-
-buildImage.dependsOn(assemble)

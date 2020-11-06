@@ -1,1 +1,3 @@
-apply plugin: 'docker-build'
+plugins {
+    id 'airbyte-docker'
+}

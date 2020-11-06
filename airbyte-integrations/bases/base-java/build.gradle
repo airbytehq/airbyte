@@ -1,13 +1,13 @@
 plugins {
     id 'java-library'
+    id 'airbyte-docker'
 }
-
-apply plugin: 'docker-build'
 
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')
+
     implementation files(project(':airbyte-integrations:bases:base').buildImage.outputs)
 }
