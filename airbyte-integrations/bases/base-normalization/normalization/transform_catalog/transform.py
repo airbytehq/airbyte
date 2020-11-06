@@ -263,7 +263,7 @@ def extract_nested_properties(path: List[str], field: str, properties: dict) -> 
                     result.update(found)
             elif "type" not in properties[key]:
                 pass
-            elif is_array(properties[key]["type"]):
+            elif is_array(properties[key]["type"]) and "items" in properties[key]:
                 combining = find_combining_schema(properties[key]["items"])
                 if combining:
                     # skip combining schemas
