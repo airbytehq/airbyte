@@ -7,7 +7,7 @@
 #}
 
 {# format_path --------------------------------------------------     #}
-{% format_path(json_path_list) -%}
+{% macro format_path(json_path_list) -%}
   {{ adapter.dispatch('format_path')(json_path_list) }}
 {%- endmacro %}
 
