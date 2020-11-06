@@ -6,6 +6,8 @@ description: Be sure to not miss out on new features and improvements!
 
 If you're interested in our changelog on which new connectors are available out of the box on Airbyte, please check our [integrations changelog](integrations/integrations-changelog.md).
 
+For a non-exhaustive list of the features we will support in the next few months, please visit our [roadmap overview](../#roadmap).
+
 If you're interested in our progress on the Airbyte platform, please read below!
 
 ## 0.5.0 - expected around 11/11/2020
