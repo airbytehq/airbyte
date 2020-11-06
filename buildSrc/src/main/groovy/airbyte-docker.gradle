@@ -10,6 +10,8 @@ import org.gradle.api.tasks.TaskAction
 import java.security.MessageDigest
 import java.nio.file.Paths
 
+// todo: handle test image if it exists as well
+
 @CacheableTask
 abstract class AirbyteDockerTask extends DefaultTask {
     @Input

@@ -4,22 +4,18 @@ import org.gradle.api.tasks.testing.Test
 
 class AirbyteSourceTestPlugin implements Plugin<Project> {
     void apply(Project project) {
-        project.task('standardSourceTest') {
+        project.task('standardSourceTestPython') {
             project.ext {
                 imageName = ''
-                specPath = ''
-                configPath = ''
-                catalogPath = ''
+                pythonContainerName = ''
             }
 
             doFirst {
                 project.exec {
                     println('standard test inputs')
                     println("imageName: ${imageName}")
-                    println("specPath: ${specPath}")
-                    println("configPath: ${configPath}")
-                    println("catalogPath: ${catalogPath}")
-                    workingDir rootDir
+                    println("pythonContainerName: ${pythonContainerName}")
+                    workingDir project.rootDir
                     commandLine 'docker', 'run', '--rm', '-i',
                             // so that it has access to docker
                             '-v', "/var/run/docker.sock:/var/run/docker.sock",
@@ -31,14 +27,11 @@ class AirbyteSourceTestPlugin implements Plugin<Project> {
                             '-v', "${project.projectDir.absolutePath}:/test_input",
                             '--name', "std-test-${project.name}", 'airbyte/standard-source-test:dev',
                             '--imageName', imageName,
-                            '--spec', "/test_input/${specPath}",
-                            '--config', "/test_input/${configPath}",
-                            '--catalog', "/test_input/${catalogPath}"
+                            '--pythonContainerName', pythonContainerName
                 }
             }
         }
-        project.standardSourceTest.dependsOn(':airbyte-integrations:bases:standard-source-test:buildImage')
-        project.standardSourceTest.dependsOn(project.airbyteDocker)
-
+        project.standardSourceTestPython.dependsOn(':airbyte-integrations:bases:standard-source-test:airbyteDocker')
+        project.standardSourceTestPython.dependsOn(project.airbyteDocker)
     }
 }
