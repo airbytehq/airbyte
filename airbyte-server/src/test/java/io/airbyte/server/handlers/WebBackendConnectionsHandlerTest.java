@@ -31,6 +31,8 @@ import static org.mockito.Mockito.when;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
+import io.airbyte.api.model.DestinationIdRequestBody;
+import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead;
@@ -41,11 +43,15 @@ import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.helpers.ConnectionHelpers;
+import io.airbyte.server.helpers.DestinationDefinitionHelpers;
+import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
@@ -62,6 +68,7 @@ class WebBackendConnectionsHandlerTest {
   private WebBackendConnectionsHandler wbHandler;
 
   private SourceRead sourceRead;
+  private DestinationRead destinationRead;
   private ConnectionRead connectionRead;
   private WbConnectionRead expected;
 
@@ -69,12 +76,17 @@ class WebBackendConnectionsHandlerTest {
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     connectionsHandler = mock(ConnectionsHandler.class);
     SourceHandler sourceHandler = mock(SourceHandler.class);
+    DestinationHandler destinationHandler = mock(DestinationHandler.class);
     JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
-    wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, jobHistoryHandler);
+    wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSource();
     SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
+
+    final StandardDestinationDefinition destinationDefinition = DestinationDefinitionHelpers.generateDestination();
+    final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
+    destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
@@ -82,6 +94,10 @@ class WebBackendConnectionsHandlerTest {
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
     sourceIdRequestBody.setSourceId(connectionRead.getSourceId());
     when(sourceHandler.getSource(sourceIdRequestBody)).thenReturn(sourceRead);
+
+    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody();
+    destinationIdRequestBody.setDestinationId(connectionRead.getDestinationId());
+    when(destinationHandler.getDestination(destinationIdRequestBody)).thenReturn(destinationRead);
 
     Instant now = Instant.now();
     final JobRead jobRead = new JobRead();
@@ -109,7 +125,8 @@ class WebBackendConnectionsHandlerTest {
     expected.setStatus(connectionRead.getStatus());
     expected.setSyncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class));
     expected.setSchedule(connectionRead.getSchedule());
-    expected.setSource(this.sourceRead);
+    expected.setSource(sourceRead);
+    expected.setDestination(destinationRead);
     expected.setLastSync(now.getEpochSecond());
     expected.isSyncing(false);
   }

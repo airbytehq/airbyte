@@ -1598,6 +1598,7 @@ components:
         - syncSchema
         - status
         - source
+        - destination
         - isSyncing
       properties:
         connectionId:
@@ -1620,6 +1621,8 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         source:
           $ref: "#/components/schemas/SourceRead"
+        destination:
+          $ref: "#/components/schemas/DestinationRead"
         lastSync:
           description: epoch time of last sync. null if no sync has taken place.
           type: integer
