@@ -1,6 +1,5 @@
 apply plugin: 'ru.vyarus.use-python'
 
-
 python {
     envPath = '.venv'
     minPythonVersion = '3.7'

@@ -2,7 +2,7 @@ plugins {
     id 'application'
 }
 
-apply plugin: 'docker-build'
+apply plugin: 'airbyte-docker'
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 
 dependencies {

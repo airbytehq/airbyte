@@ -2,9 +2,13 @@ plugins {
     id 'java'
 }
 
-project.ext.pyModule = 'source_github_singer'
-apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
 apply plugin: 'docker-build'
+apply plugin: 'airbyte-python'
+
+airbytePython {
+    moduleDirectory 'source_github_singer'
+}
+
 apply from: rootProject.file('tools/gradle/commons/integrations/test-image.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
 apply from: rootProject.file('tools/gradle/commons/integrations/standard-source-test-python.gradle')

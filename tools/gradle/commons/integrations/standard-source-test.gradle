@@ -32,5 +32,4 @@ task standardSourceTest {
     }
 }
 standardSourceTest.dependsOn(':airbyte-integrations:bases:standard-source-test:buildImage')
-standardSourceTest.dependsOn(compileJava)
 standardSourceTest.dependsOn(buildImage)

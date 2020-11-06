@@ -35,5 +35,4 @@ docker run --rm -i \\
     }
 }
 standardSourceTestPython.dependsOn(':airbyte-integrations:bases:standard-source-test:buildImage')
-standardSourceTestPython.dependsOn(compileJava)
 standardSourceTestPython.dependsOn(buildImage)

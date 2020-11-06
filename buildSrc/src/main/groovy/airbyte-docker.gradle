@@ -1,15 +1,8 @@
-import java.nio.file.Paths
 import java.security.MessageDigest
 import java.nio.file.Paths
 
-
-class DockerBuildConfiguration {
-//    String message // todo: allow each
-//    String greeter
-}
-
 @CacheableTask
-abstract class DockerBuildTask extends DefaultTask {
+abstract class AirbyteDockerTask extends DefaultTask {
     @Input
     abstract File rootDir
 
@@ -27,7 +20,7 @@ abstract class DockerBuildTask extends DefaultTask {
     abstract File idFileOutput
 
     @TaskAction
-    def buildImage() {
+    def airbyteDocker() {
         def scriptPath = Paths.get(rootDir.absolutePath, 'tools/bin/build_image.sh').toString()
         def tag = getTaggedImage(projectDir, dockerfileName)
 
@@ -57,7 +50,7 @@ abstract class DockerBuildTask extends DefaultTask {
     }
 }
 
-class DockerBuildPlugin implements Plugin<Project> {
+class AirbyteDockerPlugin implements Plugin<Project> {
 
     static def getBaseTaggedImages(File dockerfile) {
         def result = [] as Set<String>
@@ -98,8 +91,6 @@ class DockerBuildPlugin implements Plugin<Project> {
     }
 
     void apply(Project project) {
-        def extension = project.extensions.create('image', DockerBuildConfiguration)
-
         project.rootProject.ext.imageToVersion = {
             if(!project.rootProject.hasProperty("imageToVersion")) {
                 def imageToVersion = [:]
@@ -120,7 +111,7 @@ class DockerBuildPlugin implements Plugin<Project> {
             }
         }()
 
-        project.task('buildImage', type: DockerBuildTask) {
+        project.task('airbyteDocker', type: AirbyteDockerTask) {
             def dockerPath = Paths.get(project.projectDir.absolutePath, 'Dockerfile')
             def hash = MessageDigest.getInstance("MD5").digest(dockerPath.getBytes()).encodeHex().toString()
             rootDir = project.rootProject.rootDir
@@ -131,7 +122,7 @@ class DockerBuildPlugin implements Plugin<Project> {
 
             outputs.upToDateWhen {
                 if(idFileOutput.exists()) {
-                        def taggedImage = DockerBuildTask.getTaggedImage(project.projectDir, 'Dockerfile')
+                        def taggedImage = AirbyteDockerTask.getTaggedImage(project.projectDir, 'Dockerfile')
                         println "taggedImage " + taggedImage
 
                         def current = getImageHash(project, taggedImage)
@@ -173,6 +164,6 @@ class DockerBuildPlugin implements Plugin<Project> {
             }
         }
 
-        project.build.dependsOn project.buildImage
+        project.build.dependsOn project.airbyteDocker
     }
 }
