@@ -1090,10 +1090,13 @@ components:
       type: object
       required:
         - workspaceId
+        - sourceDefinitionId
         - sourceId
         - connectionConfiguration
         - name
       properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
         sourceId:
           $ref: "#/components/schemas/SourceId"
         workspaceId:
@@ -1253,9 +1256,12 @@ components:
       required:
         - workspaceId
         - destinationId
+        - destinationDefinitionId
         - connectionConfiguration
         - name
       properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         workspaceId:

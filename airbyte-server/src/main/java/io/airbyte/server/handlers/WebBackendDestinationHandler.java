@@ -81,6 +81,7 @@ public class WebBackendDestinationHandler {
     destinationCreate.setConnectionConfiguration(destinationRecreate.getConnectionConfiguration());
     destinationCreate.setName(destinationRecreate.getName());
     destinationCreate.setWorkspaceId(destinationRecreate.getWorkspaceId());
+    destinationCreate.setDestinationDefinitionId(destinationRecreate.getDestinationDefinitionId());
 
     DestinationRead destination = destinationHandler.createDestination(destinationCreate);
 
