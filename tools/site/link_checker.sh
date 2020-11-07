@@ -22,7 +22,7 @@ function run() {
 function check_docs() {
   local res; res=$(mktemp)
 
-  run -e --no-check-anchors https://docs.airbyte.io | grep -v '<link>' | grep -E 'HTTP 404' > $res
+  run -e --no-check-anchors https://docs.airbyte.io | grep -v '<link>' | grep -E 'HTTP 404' > $res || true
   if grep -q 404 $res; then
     cat $res
     error "Found broken links"
