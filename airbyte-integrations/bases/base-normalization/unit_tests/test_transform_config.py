@@ -81,7 +81,7 @@ class TestTransformConfig(unittest.TestCase):
 
     def test_transform_snowflake(self):
         input = {
-            "host": "123.airbyte.io",
+            "host": "123abc.us-east-7.aws.snowflakecomputing.com",
             "role": "AIRBYTE_ROLE",
             "warehouse": "AIRBYTE_WAREHOUSE",
             "database": "AIRBYTE_DATABASE",
@@ -92,7 +92,7 @@ class TestTransformConfig(unittest.TestCase):
 
         actual = TransformConfig().transform_snowflake(input)
         expected = {
-            "account": "123",
+            "account": "123abc.us-east-7.aws",
             "client_session_keep_alive": False,
             "database": "AIRBYTE_DATABASE",
             "password": "password123",

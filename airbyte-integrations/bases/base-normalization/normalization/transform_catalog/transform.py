@@ -22,15 +22,348 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import argparse
+import json
 import os
+from typing import List, Optional, Set, Tuple, Union
 
-print(os)
+import yaml
+
+MACRO_START = "{{"
+MACRO_END = "}}"
 
 
 class TransformCatalog:
-    def run(self):
-        print("running catalog transform")
+    """
+To run this transformation:
+```
+python3 main_dev_transform_catalog.py \
+  --profile-config-dir . \
+  --catalog integration_tests/catalog.json \
+  --out dir \
+  --json-column json_blob
+```
+    """
+
+    config: dict = {}
+
+    def run(self, args) -> None:
+        self.parse(args)
+        self.process_catalog()
+
+    def parse(self, args) -> None:
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument("--profile-config-dir", type=str, required=True, help="path to directory containing DBT profiles.yml")
+        parser.add_argument("--catalog", nargs="+", type=str, required=True, help="path to Catalog (JSON Schema) file")
+        parser.add_argument("--out", type=str, required=True, help="path to output generated DBT Models to")
+        parser.add_argument("--json-column", type=str, required=False, help="name of the column containing the json blob")
+        parsed_args = parser.parse_args(args)
+        profiles_yml = read_profiles_yml(parsed_args.profile_config_dir)
+        self.config = {
+            "schema": extract_schema(profiles_yml),
+            "catalog": parsed_args.catalog,
+            "output_path": parsed_args.out,
+            "json_column": parsed_args.json_column,
+        }
+
+    def process_catalog(self) -> None:
+        source_tables: set = set()
+        schema = self.config["schema"]
+        output = self.config["output_path"]
+        for catalog_file in self.config["catalog"]:
+            print(f"Processing {catalog_file}...")
+            catalog = read_json_catalog(catalog_file)
+            result, tables = generate_dbt_model(catalog=catalog, json_col=self.config["json_column"], schema=schema)
+            self.output_sql_models(output, result)
+            source_tables = source_tables.union(tables)
+        self.write_yaml_sources(output, schema, source_tables)
+
+    @staticmethod
+    def output_sql_models(output: str, result: dict) -> None:
+        if result:
+            if not os.path.exists(output):
+                os.makedirs(output)
+            for file, sql in result.items():
+                print(f"  Generating {file.lower()}.sql in {output}")
+                with open(os.path.join(output, f"{file}.sql").lower(), "w") as f:
+                    f.write(sql)
+
+    @staticmethod
+    def write_yaml_sources(output: str, schema: str, sources: set) -> None:
+        tables = [{"name": source} for source in sources]
+        source_config = {
+            "version": 2,
+            "sources": [
+                {
+                    "name": schema,
+                    "tables": tables,
+                    "quoting": {
+                        "database": True,
+                        "schema": True,
+                        "identifier": True,
+                    },
+                },
+            ],
+        }
+        # Quoting options are hardcoded and passed down to the sources instead of
+        # inheriting them from dbt_project.yml (does not work well for some reasons?)
+        # Apparently, Snowflake needs this quoting configuration to work properly...
+        source_path = os.path.join(output, "sources.yml")
+        if not os.path.exists(source_path):
+            with open(source_path, "w") as fh:
+                fh.write(yaml.dump(source_config))
 
 
-def main():
-    TransformCatalog().run()
+def read_profiles_yml(profile_dir: str) -> dict:
+    with open(os.path.join(profile_dir, "profiles.yml"), "r") as file:
+        config = yaml.load(file, Loader=yaml.FullLoader)
+        obj = config["normalize"]["outputs"]["prod"]
+        return obj
+
+
+def extract_schema(profiles_yml: dict) -> str:
+    if "dataset" in profiles_yml:
+        return profiles_yml["dataset"]
+    else:
+        return profiles_yml["schema"]
+
+
+def read_json_catalog(input_path: str) -> dict:
+    with open(input_path, "r") as file:
+        contents = file.read()
+    return json.loads(contents)
+
+
+def is_string(property_type) -> bool:
+    return property_type == "string" or "string" in property_type
+
+
+def is_integer(property_type) -> bool:
+    return property_type == "integer" or "integer" in property_type
+
+
+def is_number(property_type) -> bool:
+    return property_type == "number" or "number" in property_type
+
+
+def is_boolean(property_type) -> bool:
+    return property_type == "boolean" or "boolean" in property_type
+
+
+def is_array(property_type) -> bool:
+    return property_type == "array" or "array" in property_type
+
+
+def is_object(property_type) -> bool:
+    return property_type == "object" or "object" in property_type
+
+
+def find_combining_schema(properties: dict) -> set:
+    return set(properties).intersection({"anyOf", "oneOf", "allOf"})
+
+
+def json_extract_base_property(path: List[str], json_col: str, name: str, definition: dict) -> Optional[str]:
+    current = path + [name]
+    if "type" not in definition:
+        return None
+    elif is_string(definition["type"]):
+        return (
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as {MACRO_START} dbt_utils.type_string()"
+            + f" {MACRO_END}) as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
+        )
+    elif is_integer(definition["type"]):
+        return (
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as {MACRO_START} dbt_utils.type_int()"
+            + f" {MACRO_END}) as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
+        )
+    elif is_number(definition["type"]):
+        return (
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as {MACRO_START} dbt_utils.type_numeric()"
+            + f" {MACRO_END}) as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
+        )
+    elif is_boolean(definition["type"]):
+        return (
+            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as boolean"
+            + f") as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
+        )
+    else:
+        return None
+
+
+def json_extract_nested_property(path: List[str], json_col: str, name: str, definition: dict) -> Union[Tuple[None, None], Tuple[str, str]]:
+    current = path + [name]
+    if definition is None or "type" not in definition:
+        return None, None
+    elif is_array(definition["type"]):
+        return (
+            f"{MACRO_START} json_extract_array('{json_col}', {current}) {MACRO_END} as "
+            + f"{MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}",
+            f"cross join {MACRO_START} unnest('{name}') {MACRO_END} as "
+            + f"{MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}",
+        )
+    elif is_object(definition["type"]):
+        return (
+            f"{MACRO_START} json_extract('{json_col}', {current}) {MACRO_END} as "
+            + f"{MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}",
+            "",
+        )
+    else:
+        return None, None
+
+
+def select_table(table: str, columns="*"):
+    return f"\nselect {columns} from {table}"
+
+
+def extract_node_properties(path: List[str], json_col: str, properties: dict) -> dict:
+    result = {}
+    if properties:
+        for field in properties.keys():
+            sql_field = json_extract_base_property(path=path, json_col=json_col, name=field, definition=properties[field])
+            if sql_field:
+                result[field] = sql_field
+    return result
+
+
+def find_properties_object(path: List[str], field: str, properties) -> dict:
+    if isinstance(properties, str) or isinstance(properties, int):
+        return {}
+    else:
+        if "items" in properties:
+            return find_properties_object(path, field, properties["items"])
+        elif "properties" in properties:
+            # we found a properties object
+            return {field: properties["properties"]}
+        elif "type" in properties and json_extract_base_property(path=path, json_col="", name="", definition=properties):
+            # we found a basic type
+            return {field: None}
+        elif isinstance(properties, dict):
+            for key in properties.keys():
+                if not json_extract_base_property(path, "", key, properties[key]):
+                    child = find_properties_object(path, key, properties[key])
+                    if child:
+                        return child
+        elif isinstance(properties, list):
+            for item in properties:
+                child = find_properties_object(path=path, field=field, properties=item)
+                if child:
+                    return child
+    return {}
+
+
+def extract_nested_properties(path: List[str], field: str, properties: dict) -> dict:
+    result = {}
+    if properties:
+        for key in properties.keys():
+            combining = find_combining_schema(properties[key])
+            if combining:
+                # skip combining schemas
+                for combo in combining:
+                    found = find_properties_object(path=path + [field, key], field=key, properties=properties[key][combo])
+                    result.update(found)
+            elif "type" not in properties[key]:
+                pass
+            elif is_array(properties[key]["type"]) and "items" in properties[key]:
+                combining = find_combining_schema(properties[key]["items"])
+                if combining:
+                    # skip combining schemas
+                    for combo in combining:
+                        found = find_properties_object(path=path + [field, key], field=key, properties=properties[key]["items"][combo])
+                        result.update(found)
+                else:
+                    found = find_properties_object(path=path + [field, key], field=key, properties=properties[key]["items"])
+                    result.update(found)
+            elif is_object(properties[key]["type"]):
+                found = find_properties_object(path=path + [field, key], field=key, properties=properties[key])
+                result.update(found)
+    return result
+
+
+def process_node(
+    path: List[str], json_col: str, name: str, properties: dict, from_table: str = "", previous="with ", inject_cols=""
+) -> dict:
+    result = {}
+    if previous == "with ":
+        prefix = previous
+    else:
+        prefix = previous + ","
+    node_properties = extract_node_properties(path=path, json_col=json_col, properties=properties)
+    node_columns = ",\n    ".join([sql for sql in node_properties.values()])
+    hash_node_columns = ",\n        ".join([f"adapter.quote_as_configured('{column}', 'identifier')" for column in node_properties.keys()])
+    hash_node_columns = f"{MACRO_START} dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ]) {MACRO_END}"
+    node_sql = f"""{prefix}
+{name}_node as (
+  select {inject_cols}
+    {node_columns}
+  from {from_table}
+),
+{name}_with_id as (
+  select
+    *,
+    {hash_node_columns} as {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END}
+  from {name}_node
+)"""
+    # SQL Query for current node's basic properties
+    result[name] = node_sql + select_table(f"{name}_with_id")
+
+    children_columns = extract_nested_properties(path=path, field=name, properties=properties)
+    if children_columns:
+        for col in children_columns.keys():
+            child_col, join_child_table = json_extract_nested_property(path=path, json_col=json_col, name=col, definition=properties[col])
+            child_sql = f"""{prefix}
+{name}_node as (
+  select
+    {child_col},
+    {node_columns}
+  from {from_table}
+),
+{name}_with_id as (
+  select
+    {hash_node_columns} as {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END},
+    {MACRO_START} adapter.quote_as_configured('{col}', 'identifier') {MACRO_END}
+  from {name}_node
+  {join_child_table}
+)"""
+            if children_columns[col]:
+                children = process_node(
+                    path=[],
+                    json_col=col,
+                    name=f"{name}_{col}",
+                    properties=children_columns[col],
+                    from_table=f"{name}_with_id",
+                    previous=child_sql,
+                    inject_cols=f"\n    {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END} as _{name}_foreign_hashid,",
+                )
+                result.update(children)
+            else:
+                # SQL Query for current node's basic properties
+                result[f"{name}_{col}"] = child_sql + select_table(
+                    f"{name}_with_id",
+                    columns=f"""
+  {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END} as _{name}_foreign_hashid,
+  {col}
+""",
+                )
+    return result
+
+
+def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict, Set[Union[str]]]:
+    result = {}
+    source_tables = set()
+    for obj in catalog["streams"]:
+        if "name" in obj:
+            name = obj["name"]
+        else:
+            name = "undefined"
+        if "json_schema" in obj and "properties" in obj["json_schema"]:
+            properties = obj["json_schema"]["properties"]
+        else:
+            properties = {}
+        table = f"{MACRO_START} source('{schema}','{name}') {MACRO_END}"
+        result.update(process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table))
+        source_tables.add(name)
+    return result, source_tables
+
+
+def main(args=None):
+    TransformCatalog().run(args)
