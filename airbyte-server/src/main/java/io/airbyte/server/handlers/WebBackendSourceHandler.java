@@ -82,6 +82,7 @@ public class WebBackendSourceHandler {
     sourceCreate.setConnectionConfiguration(sourceRecreate.getConnectionConfiguration());
     sourceCreate.setName(sourceRecreate.getName());
     sourceCreate.setWorkspaceId(sourceRecreate.getWorkspaceId());
+    sourceCreate.setSourceDefinitionId(sourceRecreate.getSourceDefinitionId());
 
     SourceRead source = sourceHandler.createSource(sourceCreate);
 
