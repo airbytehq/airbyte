@@ -24,6 +24,5 @@ application {
 }
 
 buildImage.dependsOn(assemble)
-buildImage.dependsOn(':airbyte-integrations:bases:base-normalization:buildImage')
 buildImage.dependsOn(':airbyte-integrations:bases:base-java:buildImage')
 integrationTest.dependsOn(buildImage)
