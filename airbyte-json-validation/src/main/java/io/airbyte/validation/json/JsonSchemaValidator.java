@@ -83,4 +83,5 @@ public class JsonSchemaValidator {
       throw new RuntimeException(e);
     }
   }
+
 }
