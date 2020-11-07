@@ -30,13 +30,11 @@ It's easy to add your own integrations to Airbyte! **Since Airbyte connectors ar
 
 #### **Contributing sources:**
 
-You can build a Source in any language. Since we frequently build integrations in Python or on top of Singer taps, we've created generator libraries to get you started quickly. 
-See [Creating a new integration](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations#creating-a-new-integration) to get started.
+You can build a Source in any language. Since we frequently build integrations in Python or on top of Singer taps, we've created generator libraries to get you started quickly. See [Creating a new integration](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations#creating-a-new-integration) to get started.
 
 #### **Contributing destinations:**
 
-You can build a Destination in any language. Since we frequently build destinations with Java, we've created generator libraries to get you started quickly. 
-See [Creating a new integration](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations#creating-a-new-integration) to get started.
+You can build a Destination in any language. Since we frequently build destinations with Java, we've created generator libraries to get you started quickly. See [Creating a new integration](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations#creating-a-new-integration) to get started.
 
 ### **Documentation**
 
