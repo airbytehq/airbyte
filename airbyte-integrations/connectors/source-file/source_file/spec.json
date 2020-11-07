@@ -54,6 +54,13 @@
           {
             "properties": {
               "storage": {
+                "enum": ["HTTPS"]
+              }
+            }
+          },
+          {
+            "properties": {
+              "storage": {
                 "enum": ["GCS"]
               },
               "service_account_json": {
