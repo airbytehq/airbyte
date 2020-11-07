@@ -84,4 +84,177 @@ public class JsonSchemaValidator {
     }
   }
 
+  public static void main(String[] args) {
+    String s = "{\n" +
+        "  \"documentationUrl\": \"https://docs.airbyte.io/integrations/sources/file\",\n" +
+        "\n" +
+        "  \"connectionSpecification\": {\n" +
+        "    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n" +
+        "    \"title\": \"File Source Spec\",\n" +
+        "    \"type\": \"object\",\n" +
+        "    \"required\": [\"url\", \"storage\"],\n" +
+        "    \"additionalProperties\": true,\n" +
+        "    \"properties\": {\n" +
+        "      \"format\": {\n" +
+        "        \"type\": \"string\",\n" +
+        "        \"enum\": [\n" +
+        "          \"csv\",\n" +
+        "          \"json\",\n" +
+        "          \"html\",\n" +
+        "          \"excel\",\n" +
+        "          \"feather\",\n" +
+        "          \"parquet\",\n" +
+        "          \"orc\",\n" +
+        "          \"pickle\"\n" +
+        "        ],\n" +
+        "        \"default\": \"csv\",\n" +
+        "        \"description\": \"File Format of the file to be replicated. Common formats are (csv, json or excel) but more advanced formats can be specified (html, parquet, orc, feather, pickle)\",\n"
+        +
+        "        \"examples\": [\"csv\"]\n" +
+        "      },\n" +
+        "      \"reader_options\": {\n" +
+        "        \"type\": \"string\",\n" +
+        "        \"description\": \"Parsers for File Formats are currently using the `read_*` methods from the Pandas Library. Each of these readers provides additional options that can be specified as part of this JSON string. As an example, it is possible to change the read_csv behavior to a TSV (tab separated instead of comma) when redefining the delimiter character. See documentation of each `read_*` primitive from here: https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html\",\n"
+        +
+        "        \"examples\": [\"{}\", \"{'sep': ' '}\"]\n" +
+        "      },\n" +
+        "\n" +
+        "      \"storage\": {\n" +
+        "        \"type\": \"string\",\n" +
+        "        \"enum\": [\"HTTPS\", \"GCS\", \"S3\", \"SSH\", \"SFTP\", \"WebHDFS\", \"local\"],\n" +
+        "        \"description\": \"Storage Provider or Location of the file(s) to be replicated. (Note that local storage of directory where csv files will be read must start with the local mount \\\"/local\\\" at the moment until we implement more advanced mounting options)\",\n"
+        +
+        "        \"default\": \"HTTPS\"\n" +
+        "      },\n" +
+        "\n" +
+        "      \"url\": {\n" +
+        "        \"type\": \"string\",\n" +
+        "        \"description\": \"URL path to access the file to be replicated\"\n" +
+        "      },\n" +
+        "\n" +
+        "      \"filename\": {\n" +
+        "        \"type\": \"string\",\n" +
+        "        \"description\": \"Name of the file (should include only letters, numbers dash and underscores)\"\n" +
+        "      }\n" +
+        "    },\n" +
+        "\n" +
+        "    \"dependencies\": {\n" +
+        "      \"storage\": {\n" +
+        "        \"oneOf\": [\n" +
+        "          {\n" +
+        "            \"properties\": {\n" +
+        "              \"storage\": {\n" +
+        "                \"enum\": [\"HTTPS\"]\n" +
+        "              }\n" +
+        "            }\n" +
+        "          },\n" +
+        "          {\n" +
+        "            \"properties\": {\n" +
+        "              \"storage\": {\n" +
+        "                \"enum\": [\"GCS\"]\n" +
+        "              },\n" +
+        "              \"service_account_json\": {\n" +
+        "                \"type\": \"string\",\n" +
+        "                \"description\": \"In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described here: https://cloud.google.com/iam/docs/service-accounts Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary.\"\n"
+        +
+        "              },\n" +
+        "              \"reader_impl\": {\n" +
+        "                \"type\": \"string\",\n" +
+        "                \"enum\": [\"smart_open\", \"gcsfs\"],\n" +
+        "                \"default\": \"gcsfs\",\n" +
+        "                \"description\": \"This connector provides multiple methods to retrieve data from GCS using either smart-open python libraries or GCSFS\"\n"
+        +
+        "              }\n" +
+        "            }\n" +
+        "          },\n" +
+        "\n" +
+        "          {\n" +
+        "            \"properties\": {\n" +
+        "              \"storage\": {\n" +
+        "                \"enum\": [\"S3\"]\n" +
+        "              },\n" +
+        "              \"aws_access_key_id\": {\n" +
+        "                \"type\": \"string\",\n" +
+        "                \"description\": \"In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.\"\n"
+        +
+        "              },\n" +
+        "              \"aws_secret_access_key\": {\n" +
+        "                \"type\": \"string\",\n" +
+        "                \"description\": \"In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.\"\n"
+        +
+        "              },\n" +
+        "              \"reader_impl\": {\n" +
+        "                \"type\": \"string\",\n" +
+        "                \"enum\": [\"smart_open\", \"s3fs\"],\n" +
+        "                \"default\": \"s3fs\",\n" +
+        "                \"description\": \"This connector provides multiple methods to retrieve data from AWS S3 using either smart-open python libraries or S3FS\"\n"
+        +
+        "              }\n" +
+        "            }\n" +
+        "          },\n" +
+        "\n" +
+        "          {\n" +
+        "            \"properties\": {\n" +
+        "              \"storage\": {\n" +
+        "                \"enum\": [\"SSH\"]\n" +
+        "              },\n" +
+        "              \"user\": {\n" +
+        "                \"type\": \"string\"\n" +
+        "              },\n" +
+        "              \"password\": {\n" +
+        "                \"type\": \"string\"\n" +
+        "              },\n" +
+        "              \"host\": {\n" +
+        "                \"type\": \"string\"\n" +
+        "              }\n" +
+        "            },\n" +
+        "            \"required\": [\"user\", \"host\"]\n" +
+        "          },\n" +
+        "\n" +
+        "          {\n" +
+        "            \"properties\": {\n" +
+        "              \"storage\": {\n" +
+        "                \"enum\": [\"SFTP\"]\n" +
+        "              },\n" +
+        "              \"user\": {\n" +
+        "                \"type\": \"string\"\n" +
+        "              },\n" +
+        "              \"password\": {\n" +
+        "                \"type\": \"string\"\n" +
+        "              },\n" +
+        "              \"host\": {\n" +
+        "                \"type\": \"string\"\n" +
+        "              }\n" +
+        "            },\n" +
+        "            \"required\": [\"user\", \"host\"]\n" +
+        "          },\n" +
+        "          \n" +
+        "          {\n" +
+        "            \"properties\": {\n" +
+        "              \"storage\": {\n" +
+        "                \"enum\": [\"WebHDFS\"]\n" +
+        "              },\n" +
+        "              \"host\": {\n" +
+        "                \"type\": \"string\"\n" +
+        "              },\n" +
+        "              \"port\": {\n" +
+        "                \"type\": \"number\"\n" +
+        "              }\n" +
+        "            },\n" +
+        "            \"required\": [\"host\", \"port\"]\n" +
+        "          }\n" +
+        "        ]\n" +
+        "      }\n" +
+        "    }\n" +
+        "  }\n" +
+        "}\n";
+
+    String obj = "{\n" +
+        "        \"url\" : \"https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv\",\n" +
+        "        \"format\" : \"csv\",\n" +
+        "        \"storage\" : \"HTTPS\",\n" +
+        "        \"reader_options\" : \"{}\"\n" +
+        "     }";
+  }
+
 }

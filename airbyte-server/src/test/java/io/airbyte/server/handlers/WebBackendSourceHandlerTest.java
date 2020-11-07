@@ -121,6 +121,7 @@ public class WebBackendSourceHandlerTest {
     sourceCreate.setName(sourceRead.getName());
     sourceCreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
     sourceCreate.setWorkspaceId(sourceRead.getWorkspaceId());
+    sourceCreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
 
     SourceRead newSource = SourceHelpers
         .getSourceRead(SourceHelpers.generateSource(UUID.randomUUID()), SourceDefinitionHelpers.generateSource());
@@ -140,6 +141,7 @@ public class WebBackendSourceHandlerTest {
     sourceRecreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
     sourceRecreate.setWorkspaceId(sourceRead.getWorkspaceId());
     sourceRecreate.setSourceId(sourceRead.getSourceId());
+    sourceRecreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
 
     SourceIdRequestBody oldSourceIdBody = new SourceIdRequestBody();
     oldSourceIdBody.setSourceId(sourceRead.getSourceId());
@@ -157,9 +159,10 @@ public class WebBackendSourceHandlerTest {
     sourceCreate.setName(sourceRead.getName());
     sourceCreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
     sourceCreate.setWorkspaceId(sourceRead.getWorkspaceId());
+    sourceCreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
 
     SourceRead newSource = SourceHelpers
-        .getSourceRead(SourceHelpers.generateSource(UUID.randomUUID()), SourceDefinitionHelpers.generateSource());
+        .getSourceRead(SourceHelpers.generateSource(sourceRead.getSourceDefinitionId()), SourceDefinitionHelpers.generateSource());
 
     when(sourceHandler.createSource(sourceCreate)).thenReturn(newSource);
 
@@ -176,6 +179,7 @@ public class WebBackendSourceHandlerTest {
     sourceRecreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
     sourceRecreate.setWorkspaceId(sourceRead.getWorkspaceId());
     sourceRecreate.setSourceId(sourceRead.getSourceId());
+    sourceRecreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
 
     Assertions.assertThrows(KnownException.class,
         () -> wbSourceHandler.webBackendRecreateSourceAndCheck(sourceRecreate));
