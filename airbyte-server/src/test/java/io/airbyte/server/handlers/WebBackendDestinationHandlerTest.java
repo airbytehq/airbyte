@@ -127,6 +127,7 @@ public class WebBackendDestinationHandlerTest {
     destinationCreate.setName(destinationRead.getName());
     destinationCreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationCreate.setWorkspaceId(destinationRead.getWorkspaceId());
+    destinationCreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
 
     DestinationRead newDestination = DestinationHelpers
         .getDestinationRead(DestinationHelpers.generateDestination(UUID.randomUUID()), DestinationDefinitionHelpers
@@ -147,6 +148,7 @@ public class WebBackendDestinationHandlerTest {
     destinationRecreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationRecreate.setWorkspaceId(destinationRead.getWorkspaceId());
     destinationRecreate.setDestinationId(destinationRead.getDestinationId());
+    destinationRecreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
 
     DestinationIdRequestBody oldDestinationIdBody = new DestinationIdRequestBody();
     oldDestinationIdBody.setDestinationId(destinationRead.getDestinationId());
@@ -164,6 +166,7 @@ public class WebBackendDestinationHandlerTest {
     destinationCreate.setName(destinationRead.getName());
     destinationCreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationCreate.setWorkspaceId(destinationRead.getWorkspaceId());
+    destinationCreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
 
     DestinationRead newDestination = DestinationHelpers.getDestinationRead(
         DestinationHelpers.generateDestination(UUID.randomUUID()), DestinationDefinitionHelpers.generateDestination());
@@ -183,6 +186,7 @@ public class WebBackendDestinationHandlerTest {
     destinationRecreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationRecreate.setWorkspaceId(destinationRead.getWorkspaceId());
     destinationRecreate.setDestinationId(destinationRead.getDestinationId());
+    destinationRecreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
 
     Assertions.assertThrows(KnownException.class,
         () -> wbDestinationHandler.webBackendRecreateDestinationAndCheck(destinationRecreate));
