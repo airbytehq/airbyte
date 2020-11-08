@@ -22,6 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import unittest
 
-def test_example_method():
-    assert True
+from impala.error import HiveServer2Error
+from source_hive.source import connect_to_hive
+
+
+class TestSourceHive(unittest.TestCase):
+    def test_example_method(self):
+        json_config = {
+            "host": "host",
+            "port": 0,
+            "database": "database",
+            "username": "username",
+            "password": "password",
+            "authMechanism": "PLAIN"
+        }
+        self.assertRaises(HiveServer2Error, connect_to_hive, json_config)

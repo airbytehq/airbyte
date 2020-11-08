@@ -27,21 +27,22 @@ from typing import Generator
 
 from impala.dbapi import connect
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, Status, AirbyteStream, Type, \
-    AirbyteRecordMessage
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, \
+    AirbyteStream, Status, Type
 from base_python import AirbyteLogger, ConfigContainer, Source
 
 
 def connect_to_hive(json_config):
-    conn = connect(host=json_config["host"],
-                   port=json_config["port"],
-                   database=json_config["database"],
-                   user=json_config["username"],
-                   password=json_config["password"],
-                   auth_mechanism=json_config["authMechanism"],
-                   use_http_transport=True,
-                   http_path="cliservice"
-                   )
+    conn = connect(
+        host=json_config["host"],
+        port=json_config["port"],
+        database=json_config["database"],
+        user=json_config["username"],
+        password=json_config["password"],
+        auth_mechanism=json_config["authMechanism"],
+        use_http_transport=True,
+        http_path="cliservice",
+    )
     cur = conn.cursor()
     return conn, cur
 
@@ -93,7 +94,7 @@ class SourceHive(Source):
                 }
                 streams.append(AirbyteStream(name=table_name, json_schema=json_schema))
         except Exception as err:
-            reason = f"Hive source: Failed to discover schemas"
+            reason = "Hive source: Failed to discover schemas"
             logger.error(reason)
             raise err
         cur.close()
@@ -126,12 +127,11 @@ class SourceHive(Source):
                     data = {name: value_tuple[num] for num, name in enumerate(tables[table_name])}
                     yield AirbyteMessage(
                         type=Type.RECORD,
-                        record=AirbyteRecordMessage(stream=table_name,
-                                                    data=data,
+                        record=AirbyteRecordMessage(stream=table_name, data=data,
                                                     emitted_at=int(datetime.now().timestamp()) * 1000),
                     )
         except Exception as err:
-            reason = f"Hive source: Failed to read data"
+            reason = "Hive source: Failed to read data"
             logger.error(reason)
             raise err
         cur.close()
