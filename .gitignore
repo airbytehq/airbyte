@@ -15,5 +15,9 @@ __pycache__
 .venv
 .mypy_cache
 
+# build output file
 */out
 */*/out
+
+# dbt
+profiles.yml

@@ -20,7 +20,7 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## 10/30/2020
 
-**New sources:** [Salesforce](sources/salesforce.md), [Google Analytics](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/googleanalytics/README.md), [Hubspot](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/hubspot/README.md), [GitHub](sources/github.md), [Google Sheets](sources/google-sheets.md), [Rest APIs](https://github.com/airbytehq/airbyte/tree/6e55d301c117e9f8685b498fd0d4ce8ea9096b5f/docs/integrations/sources/rest-api/README.md), and [MySQL](sources/mysql.md)
+**New sources:** [Salesforce](sources/salesforce.md), [Google Analytics](sources/googleanalytics.md), [Hubspot](sources/hubspot.md), [GitHub](sources/github.md), [Google Sheets](sources/google-sheets.md), [Rest APIs](sources/rest-api.md), and [MySQL](sources/mysql.md)
 
 ## 10/21/2020
 
