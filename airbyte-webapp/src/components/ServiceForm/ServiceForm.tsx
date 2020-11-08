@@ -2,7 +2,6 @@ import React from "react";
 import { Formik, Form } from "formik";
 import styled from "styled-components";
 import { JSONSchema7 } from "json-schema";
-import merge from "lodash.merge";
 
 import { IDataItem } from "../DropDown/components/ListItem";
 import FormContent from "./components/FormContent";
@@ -80,9 +79,8 @@ const ServiceForm: React.FC<IProps> = ({
       validateOnChange={true}
       validateOnMount={true}
       validationSchema={validationSchema}
-      onSubmit={async (values, { setSubmitting }) => {
-        await onSubmit(merge(validationSchema.cast(), values));
-        setSubmitting(false);
+      onSubmit={async values => {
+        return onSubmit(validationSchema.cast(values, { stripUnknown: true }));
       }}
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, values, resetForm }) => (

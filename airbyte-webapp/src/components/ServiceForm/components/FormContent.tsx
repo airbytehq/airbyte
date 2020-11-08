@@ -113,7 +113,7 @@ const FormContent: React.FC<IProps> = ({
         return (
           <LabeledInput
             {...fieldProps.field}
-            error={!!fieldProps.meta.error}
+            // error={!!fieldProps.meta.error && fieldProps.meta.touched}
             label={<FormattedMessage id="form.name" />}
             placeholder={formatMessage({
               id: `form.${formType}Name.placeholder`
@@ -129,7 +129,7 @@ const FormContent: React.FC<IProps> = ({
           <>
             <SmallLabeledDropDown
               {...fieldProps.field}
-              error={!!fieldProps.meta.error}
+              // error={!!fieldProps.meta.error && fieldProps.meta.touched}
               disabled={isEditMode && !allowChangeConnector}
               label={formatMessage({
                 id: `form.${formType}Type`

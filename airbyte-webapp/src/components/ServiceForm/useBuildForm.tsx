@@ -19,30 +19,6 @@ export type FormInitialValues = {
   connectionConfiguration?: any;
 };
 
-export const useConstructValidationSchema = (
-  uiWidgetsInfo: WidgetConfigMap,
-  jsonSchema?: JSONSchema7
-) => {
-  return useMemo(() => {
-    let validationShape: yup.ObjectSchema<any> = yup.object().shape({
-      name: yup.string().required("form.empty.error"),
-      serviceType: yup.string().required("form.empty.error")
-    });
-
-    // We have additional fields. Lets build schema for them
-    if (jsonSchema?.properties) {
-      validationShape = validationShape.shape({
-        connectionConfiguration: buildYupFormForJsonSchema(
-          jsonSchema,
-          uiWidgetsInfo
-        )
-      });
-    }
-
-    return validationShape;
-  }, [uiWidgetsInfo, jsonSchema]);
-};
-
 export function useBuildForm(
   formType: "connection" | "source" | "destination",
   isLoading?: boolean,
@@ -110,27 +86,50 @@ export function useBuildForm(
   };
 }
 
+export const useConstructValidationSchema = (
+  uiWidgetsInfo: WidgetConfigMap,
+  jsonSchema?: JSONSchema7
+) => {
+  return useMemo(() => {
+    let validationShape: yup.ObjectSchema<any> = yup.object().shape({
+      name: yup.string().required("form.empty.error"),
+      serviceType: yup.string().required("form.empty.error")
+    });
+
+    // We have additional fields. Lets build schema for them
+    if (jsonSchema?.properties) {
+      validationShape = validationShape.shape({
+        connectionConfiguration: buildYupFormForJsonSchema(
+          jsonSchema,
+          uiWidgetsInfo
+        )
+      });
+    }
+
+    return validationShape;
+  }, [uiWidgetsInfo, jsonSchema]);
+};
+
 export const useBuildUiWidgets = (
   formFields: FormBlock[],
   formValues: FormInitialValues
 ) => {
-  const initialUiWidgetsState = useMemo(
-    () => buildPathInitialState(formFields, formValues, {}),
-    [formFields, formValues]
-  );
-
-  const [uiWidgetsInfo, setUiWidgetsInfo] = useState(initialUiWidgetsState);
-
-  const setUiWidgetsInfoSubState = useCallback(
-    (widgetId: string, updatedValues: WidgetConfig) =>
-      setUiWidgetsInfo({ ...uiWidgetsInfo, [widgetId]: updatedValues }),
-    [uiWidgetsInfo, setUiWidgetsInfo]
-  );
+  const [overriddenWidgetState, setUiWidgetsInfo] = useState({});
 
   // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
   const mergedState = useMemo(
-    () => merge(initialUiWidgetsState, uiWidgetsInfo),
-    [initialUiWidgetsState, uiWidgetsInfo]
+    () =>
+      merge(
+        buildPathInitialState(formFields, formValues),
+        overriddenWidgetState
+      ),
+    [formFields, formValues, overriddenWidgetState]
+  );
+
+  const setUiWidgetsInfoSubState = useCallback(
+    (widgetId: string, updatedValues: WidgetConfig) =>
+      setUiWidgetsInfo({ ...mergedState, [widgetId]: updatedValues }),
+    [mergedState, setUiWidgetsInfo]
   );
 
   return {

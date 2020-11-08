@@ -15,6 +15,7 @@ export const buildPathInitialState = (
           widgetStateBuilder
         );
       case "formItem":
+        widgetStateBuilder[formItem.fieldName] = {};
         return widgetStateBuilder;
       case "formCondition":
         const defaultCondition = Object.entries(formItem.conditions).find(

@@ -1,5 +1,4 @@
-import { JSONSchema7Definition } from "json-schema";
-import pick from "lodash.pick";
+import { JSONSchema7, JSONSchema7Definition } from "json-schema";
 
 import { FormBlock } from "../form/types";
 
@@ -64,13 +63,7 @@ export const jsonSchemaToUiWidget = (
     );
 
     return {
-      ...pick(jsonSchema, [
-        "default",
-        "examples",
-        "description",
-        "title",
-        "enum"
-      ]),
+      ...pickDefaultFields(jsonSchema),
       _type: "formGroup",
       fieldName: path || key,
       fieldKey: key,
@@ -80,13 +73,7 @@ export const jsonSchemaToUiWidget = (
   }
 
   return {
-    ...pick(jsonSchema, [
-      "default",
-      "examples",
-      "description",
-      "title",
-      "enum"
-    ]),
+    ...pickDefaultFields(jsonSchema),
     _type: "formItem",
     fieldName: path || key,
     fieldKey: key,
@@ -96,3 +83,11 @@ export const jsonSchemaToUiWidget = (
       "null"
   };
 };
+
+const pickDefaultFields = (schema: JSONSchema7): Partial<JSONSchema7> => ({
+  default: schema.default,
+  examples: schema.examples,
+  description: schema.description,
+  title: schema.title,
+  enum: schema.enum
+});

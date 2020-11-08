@@ -15,7 +15,7 @@ type IProps = {
 const PropertyField: React.FC<IProps> = ({ property }) => {
   const formatMessage = useIntl().formatMessage;
   const { fieldName, fieldKey } = property;
-  const [field, { error }, form] = useField(fieldName);
+  const [field, , form] = useField(fieldName);
 
   const defaultLabel = formatMessage({
     id: `form.${fieldKey}`,
@@ -27,7 +27,23 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
   }`;
 
   // TODO: think what to do with other cases
-  const placeholder = property.examples + "";
+  let placeholder: string | undefined;
+
+  switch (typeof property.examples) {
+    case "object":
+      if (Array.isArray(property.examples)) {
+        placeholder = property.examples[0] + "";
+      }
+      break;
+    case "number":
+      placeholder = `${property.examples}`;
+      break;
+    case "string":
+      placeholder = property.examples;
+      break;
+  }
+
+  // const displayError = !!error && touched;
 
   if (property.type === "boolean") {
     return (
@@ -43,7 +59,7 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
     return (
       <LabeledDropDown
         {...field}
-        error={!!error}
+        // error={displayError}
         label={label}
         message={
           property.description ? (
@@ -66,7 +82,7 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
     return (
       <LabeledInput
         {...field}
-        error={!!error}
+        // error={displayError}
         autoComplete="off"
         label={label}
         message={
@@ -76,7 +92,7 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
         }
         placeholder={placeholder}
         type={property.type === "integer" ? "number" : "text"}
-        value={field.value || property.default}
+        value={field.value || property.default || ""}
       />
     );
   }
