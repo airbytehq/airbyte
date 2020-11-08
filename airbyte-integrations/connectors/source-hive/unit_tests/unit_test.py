@@ -29,13 +29,13 @@ from source_hive.source import connect_to_hive
 
 
 class TestSourceHive(unittest.TestCase):
-    def test_example_method(self):
+    def test_to_throw_exception_when_pass_wrong_connection_information(self):
         json_config = {
             "host": "host",
             "port": 0,
             "database": "database",
             "username": "username",
             "password": "password",
-            "authMechanism": "PLAIN"
+            "authMechanism": "PLAIN",
         }
         self.assertRaises(HiveServer2Error, connect_to_hive, json_config)

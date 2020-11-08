@@ -24,9 +24,7 @@
         "minimum": 0,
         "maximum": 65536,
         "default": 10001,
-        "examples": [
-          "10001"
-        ]
+        "examples": ["10001"]
       },
       "database": {
         "description": "Name of the database.",

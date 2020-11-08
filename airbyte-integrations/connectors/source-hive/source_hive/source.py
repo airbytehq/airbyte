@@ -25,11 +25,9 @@ SOFTWARE.
 from datetime import datetime
 from typing import Generator
 
-from impala.dbapi import connect
-
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, \
-    AirbyteStream, Status, Type
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, AirbyteStream, Status, Type
 from base_python import AirbyteLogger, ConfigContainer, Source
+from impala.dbapi import connect
 
 
 def connect_to_hive(json_config):
@@ -102,7 +100,7 @@ class SourceHive(Source):
         return AirbyteCatalog(streams=streams)
 
     def read(
-            self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None
+        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None
     ) -> Generator[AirbyteMessage, None, None]:
         logger.info(f"Hive source: Reading catalog file({catalog_path}) from discover phase ...")
         catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
@@ -127,8 +125,7 @@ class SourceHive(Source):
                     data = {name: value_tuple[num] for num, name in enumerate(tables[table_name])}
                     yield AirbyteMessage(
                         type=Type.RECORD,
-                        record=AirbyteRecordMessage(stream=table_name, data=data,
-                                                    emitted_at=int(datetime.now().timestamp()) * 1000),
+                        record=AirbyteRecordMessage(stream=table_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
                     )
         except Exception as err:
             reason = "Hive source: Failed to read data"
