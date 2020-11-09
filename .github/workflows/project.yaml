@@ -17,4 +17,4 @@ jobs:
         if: github.event.action == 'opened'
         with:
           project: "https://github.com/airbytehq/airbyte/projects/1"
-          column_name: "backlog"
+          column_name: "Backlog"
