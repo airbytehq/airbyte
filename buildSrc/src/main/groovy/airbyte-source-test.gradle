@@ -1,15 +1,14 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-import static AirbyteDockerTask.getTaggedImage;
 
 class AirbyteSourceTestPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.task('standardSourceTestPython') {
             doFirst {
                 project.exec {
-                    def imageName = getTaggedImage(project.projectDir, 'Dockerfile')
-                    def pythonContainerName = getTaggedImage(project.projectDir, 'Dockerfile.test')
+                    def imageName = DockerHelpers.getTaggedImage(project.projectDir, 'Dockerfile')
+                    def pythonContainerName = DockerHelpers.getTaggedImage(project.projectDir, 'Dockerfile.test')
                     logger.info('standard test inputs')
                     logger.info("imageName: ${imageName}")
                     logger.info("pythonContainerName: ${pythonContainerName}")

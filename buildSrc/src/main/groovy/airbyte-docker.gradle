@@ -38,7 +38,7 @@ abstract class AirbyteDockerTask extends DefaultTask {
 
     def buildDockerfile(String scriptPath, String fileName) {
         if (project.file(fileName).exists()) {
-            def tag = getTaggedImage(projectDir, dockerfileName)
+            def tag = DockerHelpers.getTaggedImage(projectDir, dockerfileName)
 
             project.exec {
                 commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath
@@ -51,26 +51,6 @@ abstract class AirbyteDockerTask extends DefaultTask {
         def scriptPath = Paths.get(rootDir.absolutePath, 'tools/bin/build_image.sh').toString()
         buildDockerfile(scriptPath, dockerfileName)
         buildDockerfile(scriptPath, testDockerfileName)
-    }
-
-    static String extractLabelValue(String dockerFile, String labelName) {
-        def file = dockerFile instanceof File ? dockerFile : new File(dockerFile)
-        return file.readLines()
-                .grep({ it.startsWith('LABEL') && it.contains(labelName) })
-                .get(0)
-                .split('=')[1]
-    }
-
-    static String extractImageName(String dockerFile) {
-        return extractLabelValue(dockerFile, "io.airbyte.name")
-    }
-
-    static String extractImageVersion(String dockerFile) {
-        return extractLabelValue(dockerFile, "io.airbyte.version")
-    }
-
-    static String getTaggedImage(projectDir, dockerfileName) {
-        return "${extractImageName(Paths.get(projectDir.absolutePath, dockerfileName).toString())}:dev"
     }
 }
 
@@ -117,7 +97,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
     static boolean isUpToDate(Logger logger, File idFileOutput, Project project, String dockerFile, Path dockerPath) {
         if (idFileOutput.exists()) {
-            def taggedImage = AirbyteDockerTask.getTaggedImage(project.projectDir, dockerFile)
+            def taggedImage = DockerHelpers.getTaggedImage(project.projectDir, dockerFile)
             logger.debug "taggedImage " + taggedImage
 
             def current = getImageHash(project, taggedImage)
