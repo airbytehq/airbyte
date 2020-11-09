@@ -4,10 +4,6 @@ If you'd like to build new connectors and make them part of the pool of pre-buil
 
 If you'd like to build new connectors, or update existing ones, for your own usage, without contributing to the Airbyte codebase, read along.
 
-## The Airbyte specification
-
-Before you can start building your own connector, you need to understand [Airbyte's data protocol specification](../contributing-to-airbyte/architecture/airbyte-specification.md).
-
 ## Developing your own connectors
 
 It's easy to code your own integrations on Airbyte. Here are some links to instruct on how to code new sources and destinations.
@@ -20,7 +16,7 @@ While the guides above are specific to the languages used most frequently to wri
 
 There are only 3 easy steps to do that:
 
-1.Publish your custom connector onto Dockerhub first \(or any image hub that Airbyte can access\).
+1.Publish your custom connector onto Dockerhub first \(or any image repository that Airbyte can access\).
 
 2.In the UI, go to the Admin section, and click on `[+ New connector]` on the top right
 

@@ -1,6 +1,6 @@
 # Building new connectors
 
-A connector once complete takes the form of a Docker image which follow the Airbyte specification \(add link\).
+A connector once completed takes the form of a Docker image which follow the [Airbyte specification](../architecture/airbyte-specification.md).
 
 We support 2 types of connectors: 
 
@@ -8,6 +8,10 @@ We support 2 types of connectors:
 * Destinations
 
 To build a new connector, we provide templates so you don't need to start everything from scratch. 
+
+## The Airbyte specification
+
+Before you can start building your own connector, you need to understand [Airbyte's data protocol specification](../architecture/airbyte-specification.md).
 
 ## Creating a new Integration
 
