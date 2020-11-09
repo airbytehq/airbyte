@@ -1,14 +1,13 @@
 plugins {
     id 'java-library'
+    id 'airbyte-docker'
 }
-
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
 
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')
-}
 
-buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'
+    implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
+}
