@@ -27,7 +27,7 @@
     * [Local CSV](integrations/destinations/local-csv.md)
     * [Postgres](integrations/destinations/postgres.md)
     * [Snowflake](integrations/destinations/snowflake.md)
-  * [Missing an Integration?](integrations/adding-your-own-connectors.md)
+  * [Missing an Integration?](integrations/missing-an-integration.md)
   * [Integrations Changelog](integrations/integrations-changelog.md)
 * [Architecture](architecture/README.md)
   * [High-level View](architecture/high-level-view.md)
