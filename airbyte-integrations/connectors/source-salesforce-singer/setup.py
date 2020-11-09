@@ -25,7 +25,7 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="source_salesforce_singer",
+    name="source-salesforce-singer",
     description="Source implementation for Salesforce.",
     author="Airbyte",
     author_email="contact@airbyte.io",
