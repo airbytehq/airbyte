@@ -3,19 +3,6 @@ import org.gradle.api.Project
 
 import java.nio.file.Paths
 
-/*
-TODO:
-standardSourceTestPython {
-    ext {
-        imageName = "${extractImageName(project.file('Dockerfile'))}:dev"
-        pythonContainerName = "${extractImageName(project.file('Dockerfile.test'))}:dev"
-    }
-}
-
-todo: this needs to depend on building the test image
-
- */
-
 class AirbyteSourceTestPlugin implements Plugin<Project> {
     static String extractLabelValue(String dockerFile, String labelName) {
         def file = dockerFile instanceof File ? dockerFile : new File(dockerFile)
