@@ -82,9 +82,11 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         dockerfile.eachLine { line ->
             if (line.startsWith("FROM ")) {
                 def image = line.split()[1]
+                assert !image.isEmpty()
                 result.add(image)
             } else if(line.startsWith("COPY --from=")) {
                 def image = line.substring("COPY --from=".length()).split()[0]
+                assert !image.isEmpty()
                 result.add(image)
             }
         }
