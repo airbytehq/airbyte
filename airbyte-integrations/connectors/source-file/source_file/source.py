@@ -114,7 +114,8 @@ class SourceFile(Source):
         config = config_container.rendered_config
         storage = SourceFile.get_storage_scheme(logger, config["storage"], config["url"])
         url = SourceFile.get_simple_url(config["url"])
-        logger.info(f"Discovering schema of {storage}{url}...")
+        name = SourceFile.get_stream_name(config)
+        logger.info(f"Discovering schema of {name} at {storage}{url}...")
         streams = []
         try:
             # TODO handle discovery of directories of multiple files instead
@@ -129,9 +130,9 @@ class SourceFile(Source):
                 "type": "object",
                 "properties": {field: {"type": fields[field]} for field in fields},
             }
-            streams.append(AirbyteStream(name=url, json_schema=json_schema))
+            streams.append(AirbyteStream(name=name, json_schema=json_schema))
         except Exception as err:
-            reason = f"Failed to discover schemas of {storage}{url}: {repr(err)}\n{traceback.format_exc()}"
+            reason = f"Failed to discover schemas of {name} at {storage}{url}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
             raise err
         return AirbyteCatalog(streams=streams)
@@ -148,22 +149,37 @@ class SourceFile(Source):
         config = config_container.rendered_config
         storage = SourceFile.get_storage_scheme(logger, config["storage"], config["url"])
         url = SourceFile.get_simple_url(config["url"])
-        logger.info(f"Reading ({storage}{url}, {catalog_path}, {state_path})...")
+        name = SourceFile.get_stream_name(config)
+        logger.info(f"Reading {name} ({storage}{url}, {catalog_path}, {state_path})...")
         catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
         selection = SourceFile.parse_catalog(catalog)
         try:
             df_list = SourceFile.load_dataframes(config, logger)
             for df in df_list:
-                columns = selection.intersection(set(df.columns))
+                if len(selection) > 0:
+                    columns = selection.intersection(set(df.columns))
+                else:
+                    columns = df.columns
                 for data in df[columns].to_dict(orient="records"):
                     yield AirbyteMessage(
                         type=Type.RECORD,
-                        record=AirbyteRecordMessage(stream=url, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+                        record=AirbyteRecordMessage(stream=name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
                     )
         except Exception as err:
-            reason = f"Failed to read data of {storage}{url}: {repr(err)}\n{traceback.format_exc()}"
+            reason = f"Failed to read data of {name} at {storage}{url}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
             raise err
+
+    @staticmethod
+    def get_stream_name(config) -> str:
+        if "filename" in config:
+            name = config["filename"]
+        else:
+            reader_format = "csv"
+            if "format" in config:
+                reader_format = config["format"]
+            name = f"file_{config['storage']}.{reader_format}"
+        return name
 
     @staticmethod
     def load_dataframes(config, logger, skip_data=False) -> List:

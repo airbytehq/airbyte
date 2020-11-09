@@ -53,7 +53,7 @@ const useSourceDefinitionSpecificationLoad = (sourceDefinitionId: string) => {
   return { sourceDefinitionSpecification, isLoading };
 };
 
-const CreateSourcePage: React.FC<IProps> = ({
+const SourceStep: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
   destinationDefinition,
@@ -127,4 +127,4 @@ const CreateSourcePage: React.FC<IProps> = ({
   );
 };
 
-export default CreateSourcePage;
+export default SourceStep;

@@ -14,6 +14,7 @@ import { IDataItem } from "../DropDown/components/ListItem";
 type IProps = {
   className?: string;
   schema: INode[];
+  allSchemaChecked: string[];
   errorMessage?: React.ReactNode;
   onSubmit: (values: { frequency: string }, checkedState: string[]) => void;
   onDropDownSelect?: (item: IDataItem) => void;
@@ -46,7 +47,8 @@ const FrequencyForm: React.FC<IProps> = ({
   errorMessage,
   schema,
   initialCheckedSchema,
-  onDropDownSelect
+  onDropDownSelect,
+  allSchemaChecked
 }) => {
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
@@ -91,6 +93,7 @@ const FrequencyForm: React.FC<IProps> = ({
           </Label>
           <TreeViewContainer>
             <TreeView
+              checkedAll={allSchemaChecked}
               nodes={schema}
               onCheck={onCheckAction}
               checked={checkedState}

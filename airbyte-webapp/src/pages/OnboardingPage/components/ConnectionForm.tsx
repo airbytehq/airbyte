@@ -26,9 +26,11 @@ const ConnectionStep: React.FC<IProps> = ({
     sourceId
   });
 
-  const { formSyncSchema, initialChecked } = constructInitialSchemaState(
-    schema
-  );
+  const {
+    formSyncSchema,
+    initialChecked,
+    allSchemaChecked
+  } = constructInitialSchemaState(schema);
 
   const onSubmitForm = async (
     values: { frequency: string },
@@ -40,6 +42,7 @@ const ConnectionStep: React.FC<IProps> = ({
 
   return (
     <FrequencyForm
+      allSchemaChecked={allSchemaChecked}
       onDropDownSelect={onSelectFrequency}
       onSubmit={onSubmitForm}
       errorMessage={errorMessage}

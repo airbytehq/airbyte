@@ -1,6 +1,8 @@
-import { Field, FieldProps } from "formik";
-import { FormattedMessage, useIntl } from "react-intl";
 import React from "react";
+import { JSONSchema7 } from "json-schema";
+
+import { Field, FieldProps, useField } from "formik";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import LabeledInput from "../../LabeledInput";
@@ -8,21 +10,27 @@ import LabeledDropDown from "../../LabeledDropDown";
 import { IDataItem } from "../../DropDown/components/ListItem";
 import Instruction from "./Instruction";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
-import { specification } from "../../../core/resources/SourceDefinitionSpecification";
 import Spinner from "../../Spinner";
 import PropertyField from "./PropertyField";
+import {
+  FormBaseItem,
+  FormBlock,
+  WidgetConfigMap
+} from "../../../core/form/types";
 
 type IProps = {
-  isEditMode?: boolean;
-  isLoadSchema?: boolean;
-  allowChangeConnector?: boolean;
+  formFields: FormBlock[];
   dropDownData: Array<IDataItem>;
-  setFieldValue: (item: string, value: string) => void;
-  onDropDownSelect?: (id: string) => void;
+  setFieldValue: (name: string, value: string) => void;
+  setUiWidgetsInfo: (path: string, value: object) => void;
+  isLoadingSchema?: boolean;
+  isEditMode?: boolean;
+  allowChangeConnector?: boolean;
+  onChangeServiceType?: (id: string) => void;
   formType: "source" | "destination" | "connection";
   values: { name: string; serviceType: string; frequency?: string };
-  specifications?: specification;
-  properties?: Array<string>;
+  specifications?: JSONSchema7;
+  widgetsInfo: WidgetConfigMap;
   documentationUrl?: string;
 };
 
@@ -39,19 +47,8 @@ const LoaderContainer = styled.div`
   padding: 22px 0 23px;
 `;
 
-const FormContent: React.FC<IProps> = ({
-  dropDownData,
-  formType,
-  setFieldValue,
-  values,
-  isEditMode,
-  onDropDownSelect,
-  specifications,
-  properties,
-  documentationUrl,
-  allowChangeConnector,
-  isLoadSchema
-}) => {
+const FrequencyInput: React.FC = () => {
+  const [field, , { setValue }] = useField("frequency");
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
     () =>
@@ -73,30 +70,66 @@ const FormContent: React.FC<IProps> = ({
   );
 
   return (
-    <>
-      <FormItem>
-        <Field name="name">
-          {({ field }: FieldProps<string>) => (
-            <LabeledInput
-              {...field}
-              label={<FormattedMessage id="form.name" />}
-              placeholder={formatMessage({
-                id: `form.${formType}Name.placeholder`
-              })}
-              type="text"
-              message={formatMessage({
-                id: `form.${formType}Name.message`
-              })}
-            />
-          )}
-        </Field>
-      </FormItem>
+    <SmallLabeledDropDown
+      {...field}
+      labelAdditionLength={300}
+      label={formatMessage({
+        id: "form.frequency"
+      })}
+      message={formatMessage({
+        id: "form.frequency.message"
+      })}
+      placeholder={formatMessage({
+        id: "form.frequency.placeholder"
+      })}
+      data={dropdownData}
+      onSelect={item => setValue(item.value)}
+    />
+  );
+};
 
-      <FormItem>
-        <Field name="serviceType">
-          {({ field }: FieldProps<string>) => (
+const FormContent: React.FC<IProps> = ({
+  dropDownData,
+  formType,
+  setFieldValue,
+  values,
+  widgetsInfo,
+  setUiWidgetsInfo,
+  isLoadingSchema,
+  isEditMode,
+  onChangeServiceType,
+  documentationUrl,
+  allowChangeConnector,
+  formFields
+}) => {
+  const formatMessage = useIntl().formatMessage;
+
+  const renderItem = (
+    formItem: FormBaseItem,
+    fieldProps: FieldProps<string>
+  ) => {
+    switch (formItem.fieldKey) {
+      case "name":
+        return (
+          <LabeledInput
+            {...fieldProps.field}
+            // error={!!fieldProps.meta.error && fieldProps.meta.touched}
+            label={<FormattedMessage id="form.name" />}
+            placeholder={formatMessage({
+              id: `form.${formType}Name.placeholder`
+            })}
+            type="text"
+            message={formatMessage({
+              id: `form.${formType}Name.message`
+            })}
+          />
+        );
+      case "serviceType":
+        return (
+          <>
             <SmallLabeledDropDown
-              {...field}
+              {...fieldProps.field}
+              // error={!!fieldProps.meta.error && fieldProps.meta.touched}
               disabled={isEditMode && !allowChangeConnector}
               label={formatMessage({
                 id: `form.${formType}Type`
@@ -111,63 +144,74 @@ const FormContent: React.FC<IProps> = ({
               data={dropDownData}
               onSelect={item => {
                 setFieldValue("serviceType", item.value);
-                if (onDropDownSelect) {
-                  onDropDownSelect(item.value);
+                if (onChangeServiceType) {
+                  onChangeServiceType(item.value);
                 }
               }}
             />
-          )}
-        </Field>
-        {values.serviceType && formType !== "connection" && (
-          <Instruction
-            serviceId={values.serviceType}
-            dropDownData={dropDownData}
-            documentationUrl={documentationUrl}
-          />
-        )}
-      </FormItem>
+            {values.serviceType && formItem.meta?.includeInstruction && (
+              <Instruction
+                serviceId={values.serviceType}
+                dropDownData={dropDownData}
+                documentationUrl={documentationUrl}
+              />
+            )}
+          </>
+        );
+      case "frequency":
+        return <FrequencyInput />;
+      default:
+        return <PropertyField property={formItem} />;
+    }
+  };
 
-      {isLoadSchema ? (
+  const renderFormMeta = (formMetaFields: FormBlock[]): React.ReactNode => {
+    return formMetaFields.map(formField => {
+      if (formField._type === "formGroup") {
+        return renderFormMeta(formField.properties);
+      } else if (formField._type === "formCondition") {
+        const currentlySelectedCondition =
+          widgetsInfo[formField.fieldName]?.selectedItem;
+        return (
+          <>
+            <FormItem key={`form-field-${formField.fieldKey}`}>
+              <LabeledDropDown
+                data={Object.keys(formField.conditions).map(dataItem => ({
+                  text: dataItem,
+                  value: dataItem
+                }))}
+                onSelect={selectedItem =>
+                  setUiWidgetsInfo(formField.fieldName, {
+                    selectedItem: selectedItem.value
+                  })
+                }
+                value={currentlySelectedCondition}
+              />
+            </FormItem>
+            {renderFormMeta([formField.conditions[currentlySelectedCondition]])}
+          </>
+        );
+      } else {
+        return (
+          <FormItem key={`form-field-${formField.fieldKey}`}>
+            <Field name={formField.fieldKey}>
+              {(fieldProps: FieldProps<string>) =>
+                renderItem(formField, fieldProps)
+              }
+            </Field>
+          </FormItem>
+        );
+      }
+    });
+  };
+
+  return (
+    <>
+      {renderFormMeta(formFields)}
+      {isLoadingSchema && (
         <LoaderContainer>
           <Spinner />
         </LoaderContainer>
-      ) : (
-        properties?.map(item => {
-          const condition = specifications?.properties[item];
-          return (
-            <FormItem key={`form-field-${item}`}>
-              <PropertyField
-                condition={condition}
-                property={item}
-                setFieldValue={setFieldValue}
-              />
-            </FormItem>
-          );
-        })
-      )}
-
-      {formType === "connection" && (
-        <FormItem>
-          <Field name="frequency">
-            {({ field }: FieldProps<string>) => (
-              <SmallLabeledDropDown
-                {...field}
-                labelAdditionLength={300}
-                label={formatMessage({
-                  id: "form.frequency"
-                })}
-                message={formatMessage({
-                  id: "form.frequency.message"
-                })}
-                placeholder={formatMessage({
-                  id: "form.frequency.placeholder"
-                })}
-                data={dropdownData}
-                onSelect={item => setFieldValue("frequency", item.value)}
-              />
-            )}
-          </Field>
-        </FormItem>
       )}
     </>
   );

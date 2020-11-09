@@ -2,10 +2,6 @@
 
 set -e
 
-# dbt looks specifically for files named profiles.yml and dbt_project.yml
-DBT_PROFILE=profiles.yml
-DBT_MODEL=dbt_project.yml
-
 function echo2() {
   echo >&2 "$@"
 }
@@ -14,6 +10,8 @@ function error() {
   echo2 "$@"
   exit 1
 }
+
+PROJECT_DIR=$(pwd)
 
 ## todo: make it easy to select source or destination and validate based on selection by adding an integration type env variable.
 function main() {
@@ -43,15 +41,19 @@ function main() {
 
   case "$CMD" in
   run)
-    transform-config --config "$CONFIG_FILE" --integration-type "$INTEGRATION_TYPE" --out "$DBT_PROFILE"
-    # todo (cgardens) - @ChristopheDuong adjust these args if necessary.
-    transform-catalog --catalog "$CATALOG_FILE" --integration-type "$INTEGRATION_TYPE" --out "$DBT_MODEL"
-
-    # todo (cgardens) - @ChristopheDuong this is my best guess at how we are supposed to invoke dbt. adjust when they are inevitably not quite right.
-    dbt run --profiles-dir $(pwd) --project-dir $(pwd) --full-refresh --fail-fast
+    cp -r /airbyte/normalization_code/dbt-template/* $PROJECT_DIR
+    transform-config --config "$CONFIG_FILE" --integration-type "$INTEGRATION_TYPE" --out $PROJECT_DIR
+    transform-catalog --profile-config-dir $PROJECT_DIR --catalog "$CATALOG_FILE" --out $PROJECT_DIR/models/generated/ --json-column data
+    dbt deps --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
+    dbt run --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
     ;;
   dry-run)
-    error "Not Implemented"
+    cp -r /airbyte/normalization_code/dbt-template/* $PROJECT_DIR
+    transform-config --config "$CONFIG_FILE" --integration-type "$INTEGRATION_TYPE" --out $PROJECT_DIR
+    dbt debug --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
+    transform-catalog --profile-config-dir $PROJECT_DIR --catalog "$CATALOG_FILE" --out $PROJECT_DIR/models/generated/ --json-column data
+    dbt deps --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
+    dbt compile --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
     ;;
   *)
     error "Unknown command: $CMD"
