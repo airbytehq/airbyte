@@ -31,10 +31,7 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 exceptionFormat "full"
             }
 
-            if(project.hasProperty("airbyteDocker")) {
-                dependsOn project.airbyteDocker
-            }
-
+            dependsOn project.airbyteDocker
             mustRunAfter project.test
         }
 
