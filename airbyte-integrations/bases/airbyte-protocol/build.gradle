@@ -10,7 +10,7 @@ airbytePython {
 task generateProtocolClassFilesWithoutLicense(type: Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/generate-protocol-files.sh'
-    dependsOn ':airbyte-integrations:bases:code-generator:airbyteDocker'
+    dependsOn ':tools:code-generator:airbyteDocker'
 }
 
 // todo: figure out dependencies

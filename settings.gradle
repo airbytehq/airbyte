@@ -33,6 +33,7 @@ include ':airbyte-webapp'
 include ':airbyte-workers'
 include ':airbyte-tests'
 include ':airbyte-test-utils'
+include ':tools:code-generator'
 
 // include all integration subprojects
 def integrationsPath = rootDir.toPath().resolve('airbyte-integrations')
