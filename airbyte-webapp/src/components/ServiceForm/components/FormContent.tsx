@@ -1,5 +1,4 @@
-import React from "react";
-import { JSONSchema7 } from "json-schema";
+import React, { useEffect } from "react";
 
 import { Field, FieldProps, useField } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -17,22 +16,25 @@ import {
   FormBlock,
   WidgetConfigMap
 } from "../../../core/form/types";
+import { FormInitialValues } from "../useBuildForm";
+import { FormikProps } from "formik/dist/types";
 
 type IProps = {
+  schema: any;
   formFields: FormBlock[];
   dropDownData: Array<IDataItem>;
-  setFieldValue: (name: string, value: string) => void;
-  setUiWidgetsInfo: (path: string, value: object) => void;
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
   allowChangeConnector?: boolean;
-  onChangeServiceType?: (id: string) => void;
   formType: "source" | "destination" | "connection";
-  values: { name: string; serviceType: string; frequency?: string };
-  specifications?: JSONSchema7;
   widgetsInfo: WidgetConfigMap;
+  setUiWidgetsInfo: (path: string, value: object) => void;
   documentationUrl?: string;
-};
+  onChangeServiceType?: (id: string) => void;
+} & Pick<
+  FormikProps<FormInitialValues>,
+  "values" | "setFieldValue" | "validateForm"
+>;
 
 const FormItem = styled.div`
   margin-bottom: 27px;
@@ -89,6 +91,7 @@ const FrequencyInput: React.FC = () => {
 };
 
 const FormContent: React.FC<IProps> = ({
+  schema,
   dropDownData,
   formType,
   setFieldValue,
@@ -98,11 +101,17 @@ const FormContent: React.FC<IProps> = ({
   isLoadingSchema,
   isEditMode,
   onChangeServiceType,
+  validateForm,
   documentationUrl,
   allowChangeConnector,
   formFields
 }) => {
   const formatMessage = useIntl().formatMessage;
+
+  // As our validation schema can be changed on the fly and formik doesn't
+  useEffect(() => {
+    validateForm();
+  }, [validateForm, schema]);
 
   const renderItem = (
     formItem: FormBaseItem,
