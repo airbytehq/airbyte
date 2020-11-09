@@ -120,12 +120,12 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
             def current = getImageHash(project, taggedImage)
             logger.debug "current " + current
-            def stored = ((String)project.rootProject.imageToVersion.get(taggedImage)).trim()
+            def stored = (String)project.rootProject.imageToVersion.get(taggedImage)
             logger.debug "stored " + stored
 
             def notUpToDate = new ArrayList<String>(getBaseTaggedImages(dockerPath.toFile())).any {baseImage ->
                 logger.debug "checking base image " + baseImage
-                def storedBase = ((String)project.rootProject.imageToVersion.get(baseImage)).trim()
+                def storedBase = (String)project.rootProject.imageToVersion.get(baseImage)
                 def currentBase = getImageHash(project, baseImage)
 
                 logger.debug "storedBase " + storedBase
@@ -194,7 +194,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
                 "$stdout".eachLine { line ->
                     def splits = line.split()
-                    imageToVersion.put(splits[0], splits[1])
+                    imageToVersion.put(splits[0], splits[1].trim())
                 }
 
                 return imageToVersion
