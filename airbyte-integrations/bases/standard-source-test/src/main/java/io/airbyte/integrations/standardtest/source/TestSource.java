@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.standardtest.source;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
