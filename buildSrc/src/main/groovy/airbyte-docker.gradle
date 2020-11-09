@@ -92,11 +92,11 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         return result
     }
 
-    static def getBaseImageHashes(Map imageToVersion, File dockerfile) {
+    static def getBaseImageHashes(Map imageToHash, File dockerfile) {
         def result = [] as Set<String>
 
         getBaseTaggedImages(dockerfile).forEach { taggedImage ->
-            result.add((String)imageToVersion.get(taggedImage))
+            result.add((String)imageToHash.get(taggedImage))
         }
 
         return result
@@ -120,12 +120,12 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
             def current = getImageHash(project, taggedImage)
             logger.debug "current " + current
-            def stored = (String)project.rootProject.imageToVersion.get(taggedImage)
+            def stored = (String)project.rootProject.imageToHash.get(taggedImage)
             logger.debug "stored " + stored
 
             def notUpToDate = new ArrayList<String>(getBaseTaggedImages(dockerPath.toFile())).any {baseImage ->
                 logger.debug "checking base image " + baseImage
-                def storedBase = (String)project.rootProject.imageToVersion.get(baseImage)
+                def storedBase = (String)project.rootProject.imageToHash.get(baseImage)
                 def currentBase = getImageHash(project, baseImage)
 
                 logger.debug "storedBase " + storedBase
@@ -167,7 +167,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 projectDir = project.projectDir
                 projectFiles = filteredProjectFiles
                 idFileOutput = project.file(Paths.get(project.rootProject.rootDir.absolutePath, '.dockerversions', hash).toString())
-                baseImageHashes = getBaseImageHashes(project.rootProject.imageToVersion, dockerPath.toFile())
+                baseImageHashes = getBaseImageHashes(project.rootProject.imageTimageToHasherPath.toFile())
                 dependsOn project.assemble
 
                 outputs.upToDateWhen {
@@ -183,9 +183,9 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         // set (and cache) global image to version map
-        project.rootProject.ext.imageToVersion = {
-            if(!project.rootProject.hasProperty("imageToVersion")) {
-                def imageToVersion = [:]
+        project.rootProject.ext.imageToHash = {
+            if(!project.rootProject.hasProperty("imageToHash")) {
+                def imageToHash = [:]
                 def stdout = new ByteArrayOutputStream()
                 project.exec {
                     commandLine "docker", "images", "--no-trunc", "-f", "dangling=false", "--format", "{{.Repository}}:{{.Tag}} {{.ID}}"
@@ -194,12 +194,12 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
                 "$stdout".eachLine { line ->
                     def splits = line.split()
-                    imageToVersion.put(splits[0], splits[1].trim())
+                    imageToHash.put(splits[0], splits[1].trim())
                 }
 
-                return imageToVersion
+                return imageToHash
             } else {
-                return project.rootProject.imageToVersion
+                return project.rootProject.imageToHash
             }
         }()
 
