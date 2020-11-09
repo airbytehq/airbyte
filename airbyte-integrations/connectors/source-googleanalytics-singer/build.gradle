@@ -1,20 +1,13 @@
-project.ext.pyModule = 'source_googleanalytics_singer'
-apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/test-image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/standard-source-test-python.gradle')
-
-standardSourceTestPython {
-    ext {
-        imageName = "${extractImageName(project.file('Dockerfile'))}:dev"
-        pythonContainerName = "${extractImageName(project.file('Dockerfile.test'))}:dev"
-    }
+plugins {
+    id 'airbyte-python'
+    id 'airbyte-docker'
+    id 'airbyte-source-test'
 }
 
-standardSourceTestPython.dependsOn(buildTestImage)
-build.dependsOn ':airbyte-integrations:bases:base-singer:build'
-buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
-build.dependsOn ':airbyte-integrations:bases:base-python-test:build'
-buildTestImage.dependsOn ':airbyte-integrations:bases:base-python-test:buildImage'
-integrationTest.dependsOn(buildImage)
+airbytePython {
+    moduleDirectory 'source_googleanalytics_signger'
+}
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
+}

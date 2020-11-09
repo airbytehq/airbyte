@@ -1,11 +1,13 @@
 plugins {
-    id 'java'
+    id 'airbyte-python'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+    // todo: needs standard source test
 }
 
-project.ext.pyModule = 'source_stripe_singer'
-apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+airbytePython {
+    moduleDirectory 'source_stripe_singer'
+}
 
 dependencies {
     integrationTestImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
@@ -16,8 +18,6 @@ dependencies {
     integrationTestImplementation project(':airbyte-workers')
     integrationTestImplementation project(':airbyte-config:models')
     integrationTestImplementation project(':airbyte-protocol:models')
-}
 
-build.dependsOn ':airbyte-integrations:bases:base-singer:build'
-buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
-integrationTest.dependsOn(buildImage)
+    implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
+}

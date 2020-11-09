@@ -22,23 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
-    name='source_salesforce_singer',
-    description='Source implementation for Salesforce.',
-    author='Airbyte',
-    author_email='contact@airbyte.io',
-
+    name="source-salesforce-singer",
+    description="Source implementation for Salesforce.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
     packages=find_packages(),
-    package_data={
-        '': ['*.json']
-    },
-
+    package_data={"": ["*.json"]},
     install_requires=[
-        'tap-salesforce==1.4.34',
-        'requests',
-        'airbyte-protocol',
-        'base-singer',
-    ]
+        "tap-salesforce==1.4.34",
+        "requests",
+        "airbyte-protocol",
+        "base-singer",
+    ],
 )
