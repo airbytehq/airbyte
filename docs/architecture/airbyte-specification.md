@@ -1,4 +1,4 @@
-# The Airbyte Specification
+# Airbyte Specification
 
 ## Key Takeaways
 

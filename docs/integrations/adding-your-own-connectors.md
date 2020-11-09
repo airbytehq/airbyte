@@ -1,4 +1,4 @@
-# Custom Connectors
+# Missing an Integration?
 
 If you'd like to build new connectors and make them part of the pool of pre-built connectors on Airbyte, first a big thank you, and we invite you to check our [contributing guide](../contributing-to-airbyte/).
 
