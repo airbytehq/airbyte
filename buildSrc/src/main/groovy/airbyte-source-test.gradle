@@ -64,5 +64,6 @@ class AirbyteSourceTestPlugin implements Plugin<Project> {
         }
         project.standardSourceTestPython.dependsOn(':airbyte-integrations:bases:standard-source-test:airbyteDocker')
         project.standardSourceTestPython.dependsOn(project.build)
+        project.standardSourceTestPython.dependsOn(project.airbyteDockerTest)
     }
 }

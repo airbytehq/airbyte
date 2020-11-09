@@ -37,7 +37,7 @@ abstract class AirbyteDockerTask extends DefaultTask {
     abstract File idFileOutput
 
     def buildDockerfile(String scriptPath, String fileName) {
-        if(project.file(fileName).exists()) {
+        if (project.file(fileName).exists()) {
             def tag = getTaggedImage(projectDir, dockerfileName)
 
             project.exec {
@@ -84,7 +84,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 def image = line.split()[1]
                 assert !image.isEmpty()
                 result.add(image)
-            } else if(line.startsWith("COPY --from=")) {
+            } else if (line.startsWith("COPY --from=")) {
                 def image = line.substring("COPY --from=".length()).split()[0]
                 assert !image.isEmpty()
                 result.add(image)
@@ -98,7 +98,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         def result = [] as Set<String>
 
         getBaseTaggedImages(dockerfile).forEach { taggedImage ->
-            result.add((String)imageToHash.get(taggedImage))
+            result.add((String) imageToHash.get(taggedImage))
         }
 
         return result
@@ -112,27 +112,27 @@ class AirbyteDockerPlugin implements Plugin<Project> {
             standardOutput = stdout;
         }
 
-       return "$stdout".toString().trim()
+        return "$stdout".toString().trim()
     }
 
     static boolean isUpToDate(Logger logger, File idFileOutput, Project project, String dockerFile, Path dockerPath) {
-        if(idFileOutput.exists()) {
+        if (idFileOutput.exists()) {
             def taggedImage = AirbyteDockerTask.getTaggedImage(project.projectDir, dockerFile)
             logger.debug "taggedImage " + taggedImage
 
             def current = getImageHash(project, taggedImage)
             logger.debug "current " + current
-            def stored = (String)project.rootProject.imageToHash.get(taggedImage)
+            def stored = (String) project.rootProject.imageToHash.get(taggedImage)
             logger.debug "stored " + stored
 
-            def notUpToDate = new ArrayList<String>(getBaseTaggedImages(dockerPath.toFile())).any {baseImage ->
+            def notUpToDate = new ArrayList<String>(getBaseTaggedImages(dockerPath.toFile())).any { baseImage ->
                 logger.debug "checking base image " + baseImage
-                def storedBase = (String)project.rootProject.imageToHash.get(baseImage)
+                def storedBase = (String) project.rootProject.imageToHash.get(baseImage)
                 def currentBase = getImageHash(project, baseImage)
 
                 logger.debug "storedBase " + storedBase
                 logger.debug "currentBase " + currentBase
-                if(!currentBase.equals(storedBase)) {
+                if (!currentBase.equals(storedBase)) {
                     logger.debug "did not match"
                     return true
                 } else {
@@ -141,7 +141,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 }
             }
 
-            if(notUpToDate) {
+            if (notUpToDate) {
                 return false;
             }
 
@@ -186,7 +186,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
     void apply(Project project) {
         // set (and cache) global image to version map
         project.rootProject.ext.imageToHash = {
-            if(!project.rootProject.hasProperty("imageToHash")) {
+            if (!project.rootProject.hasProperty("imageToHash")) {
                 def imageToHash = [:]
                 def stdout = new ByteArrayOutputStream()
                 project.exec {
@@ -209,6 +209,5 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         createTask(project, 'airbyteDockerTest', 'Dockerfile.test')
 
         project.build.dependsOn project.airbyteDocker
-        project.integrationTest.dependsOn project.airbyteDockerTest
     }
 }
