@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import { FormattedMessage } from "react-intl";
 import CheckboxTree from "react-checkbox-tree";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight, faCheck } from "@fortawesome/free-solid-svg-icons";
+
+import Button from "../Button";
 
 import "react-checkbox-tree/lib/react-checkbox-tree.css";
 
@@ -17,6 +20,7 @@ type IProps = {
   nodes: Array<INode>;
   checked?: Array<string>;
   onCheck: (data: string[]) => void;
+  checkedAll: string[];
 };
 
 const ArrowContainer = styled.div`
@@ -73,7 +77,18 @@ const Container = styled.div`
   }
 `;
 
-const TreeView: React.FC<IProps> = ({ nodes, checked, onCheck }) => {
+const SelectButton = styled(Button)`
+  margin: 10px 17px 3px;
+  padding: 3px;
+  min-width: 90px;
+`;
+
+const TreeView: React.FC<IProps> = ({
+  nodes,
+  checked,
+  onCheck,
+  checkedAll
+}) => {
   const [expanded, setExpanded] = useState<Array<string>>([]);
   // TODO hack for v0.2.0: don't allow checking any of the children aka fields in a stream. This should be removed once it's possible to select
   // these again.
@@ -83,8 +98,24 @@ const TreeView: React.FC<IProps> = ({ nodes, checked, onCheck }) => {
       n.children.forEach(child => (child.showCheckbox = false));
     }
   });
+
+  const onCheckAll = () => {
+    if (checked?.length) {
+      onCheck([]);
+    } else {
+      onCheck(checkedAll);
+    }
+  };
+
   return (
     <Container>
+      <SelectButton onClick={onCheckAll}>
+        {checked?.length ? (
+          <FormattedMessage id="sources.schemaUnselectAll" />
+        ) : (
+          <FormattedMessage id="sources.schemaSelectAll" />
+        )}
+      </SelectButton>
       <CheckboxTree
         nodes={nodes}
         checked={checked}

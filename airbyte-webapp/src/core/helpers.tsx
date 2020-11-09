@@ -8,6 +8,13 @@ export const constructInitialSchemaState = (syncSchema: SyncSchema) => {
     )
   );
 
+  const allSchemaChecked: Array<string> = [];
+  syncSchema.streams.map(item =>
+    item.fields.forEach(field =>
+      allSchemaChecked.push(`${item.name}_${field.name}`)
+    )
+  );
+
   const formSyncSchema = syncSchema.streams.map((item: any) => ({
     value: item.name,
     label: item.name,
@@ -19,7 +26,8 @@ export const constructInitialSchemaState = (syncSchema: SyncSchema) => {
 
   return {
     formSyncSchema,
-    initialChecked
+    initialChecked,
+    allSchemaChecked
   };
 };
 

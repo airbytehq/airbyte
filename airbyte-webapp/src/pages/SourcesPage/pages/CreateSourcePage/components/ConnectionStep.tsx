@@ -34,7 +34,7 @@ const FetchMessage = styled.div`
   white-space: pre-line;
 `;
 
-const CreateSourcePage: React.FC<IProps> = ({
+const ConnectionStep: React.FC<IProps> = ({
   onSubmit,
   destinationDefinition,
   sourceDefinitionId,
@@ -85,4 +85,4 @@ const CreateSourcePage: React.FC<IProps> = ({
   );
 };
 
-export default CreateSourcePage;
+export default ConnectionStep;

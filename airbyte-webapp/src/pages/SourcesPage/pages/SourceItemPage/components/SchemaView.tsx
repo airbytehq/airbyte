@@ -34,7 +34,7 @@ const SaveButton = styled(Button)`
 
 const SchemaView: React.FC<IProps> = ({ connection, afterSave }) => {
   const { updateConnection } = useConnection();
-  const { formSyncSchema, initialChecked } = useMemo(
+  const { formSyncSchema, initialChecked, allSchemaChecked } = useMemo(
     () => constructInitialSchemaState(connection.syncSchema),
     [connection.syncSchema]
   );
@@ -85,6 +85,7 @@ const SchemaView: React.FC<IProps> = ({ connection, afterSave }) => {
             nodes={formSyncSchema}
             checked={checkedState}
             onCheck={onCheckAction}
+            checkedAll={allSchemaChecked}
           />
         )}
       </ContentCard>

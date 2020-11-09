@@ -87,6 +87,7 @@
   "onboarding.setConnection": "Set up the connection",
   "onboarding.instructionsLink": "See instructions how to connect {name}",
   "onboarding.fetchingSchema": "We are fetching the schema of your data source.\nThis should take less than a minute...",
+  "onboarding.tutorial": "Check how you can sync PostgreSQL databases in minutes",
 
   "sources.newSource": "+ New source",
   "sources.newSourceTitle": "New Source",
@@ -100,6 +101,8 @@
   "sources.launch": "Launch",
   "sources.status": "Status",
   "sources.schema": "Schema",
+  "sources.schemaSelectAll": "select all",
+  "sources.schemaUnselectAll": "unselect all",
   "sources.settings": "Settings",
   "sources.syncHistory": "Sync history",
   "sources.syncNow": "Sync now",

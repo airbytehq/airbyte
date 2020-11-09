@@ -97,10 +97,9 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
           errorMessage={errorMessage}
           formValues={{
-            ...sourceData.source?.connectionConfiguration,
-            name: sourceData.source?.name,
-            serviceType: sourceData.source?.sourceDefinitionId || "",
-            frequency: schedule?.value || ""
+            ...sourceData.source,
+            serviceType: sourceData.source?.sourceDefinitionId,
+            frequency: schedule?.value
           }}
           specifications={
             sourceDefinitionSpecification?.connectionSpecification

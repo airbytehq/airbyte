@@ -17,7 +17,7 @@ type IProps = {
   onSelectFrequency: (item: IDataItem) => void;
 };
 
-const ConnectionStep: React.FC<IProps> = ({
+const ConnectionForm: React.FC<IProps> = ({
   onSubmit,
   sourceId,
   onSelectFrequency
@@ -26,9 +26,11 @@ const ConnectionStep: React.FC<IProps> = ({
     sourceId
   });
 
-  const { formSyncSchema, initialChecked } = constructInitialSchemaState(
-    schema
-  );
+  const {
+    formSyncSchema,
+    initialChecked,
+    allSchemaChecked
+  } = constructInitialSchemaState(schema);
 
   const onSubmitForm = async (
     values: { frequency: string },
@@ -40,6 +42,7 @@ const ConnectionStep: React.FC<IProps> = ({
 
   return (
     <FrequencyForm
+      allSchemaChecked={allSchemaChecked}
       onSubmit={onSubmitForm}
       schema={formSyncSchema}
       initialCheckedSchema={initialChecked}
@@ -48,4 +51,4 @@ const ConnectionStep: React.FC<IProps> = ({
   );
 };
 
-export default ConnectionStep;
+export default ConnectionForm;

@@ -1,122 +1,101 @@
-import React, { useCallback } from "react";
-import { Field, FieldProps } from "formik";
-import { FormattedHTMLMessage, FormattedMessage, useIntl } from "react-intl";
+import React from "react";
+import { useField } from "formik";
+import { useIntl } from "react-intl";
 
 import LabeledInput from "../../LabeledInput";
 import LabeledDropDown from "../../LabeledDropDown";
-import { propertiesType } from "../../../core/resources/SourceDefinitionSpecification";
 import LabeledToggle from "../../LabeledToggle";
+import TextWithHTML from "../../TextWithHTML";
+import { FormBaseItem } from "../../../core/form/types";
 
 type IProps = {
-  condition: propertiesType;
-  property: string;
-  setFieldValue: (field: string, value: string) => void;
+  property: FormBaseItem;
 };
 
-const PropertyField: React.FC<IProps> = ({
-  property,
-  condition,
-  setFieldValue
-}) => {
+const PropertyField: React.FC<IProps> = ({ property }) => {
   const formatMessage = useIntl().formatMessage;
+  const { fieldName, fieldKey } = property;
+  const [field, , form] = useField(fieldName);
 
-  const onSetValue = useCallback(
-    selectedItem => setFieldValue(property, selectedItem.value),
-    [property, setFieldValue]
-  );
+  const defaultLabel = formatMessage({
+    id: `form.${fieldKey}`,
+    defaultMessage: fieldKey
+  });
 
-  if (condition.type === "boolean") {
-    return (
-      <Field name={property}>
-        {({ field }: FieldProps<string>) => (
-          <LabeledToggle
-            {...field}
-            label={
-              condition.title || (
-                <FormattedMessage
-                  id={`form.${property}`}
-                  defaultMessage={property}
-                />
-              )
-            }
-            message={
-              <FormattedHTMLMessage
-                id="1"
-                defaultMessage={condition.description}
-              />
-            }
-            placeholder={condition.examples?.[0]}
-          />
-        )}
-      </Field>
-    );
+  const label = `${property.title || defaultLabel}${
+    property.isRequired ? " *" : ""
+  }`;
+
+  // TODO: think what to do with other cases
+  let placeholder: string | undefined;
+
+  switch (typeof property.examples) {
+    case "object":
+      if (Array.isArray(property.examples)) {
+        placeholder = property.examples[0] + "";
+      }
+      break;
+    case "number":
+      placeholder = `${property.examples}`;
+      break;
+    case "string":
+      placeholder = property.examples;
+      break;
   }
 
-  if (condition.enum) {
+  // const displayError = !!error && touched;
+
+  if (property.type === "boolean") {
     return (
-      <Field name={property}>
-        {({ field }: FieldProps<string>) => (
-          <LabeledDropDown
-            {...field}
-            label={
-              condition.title || (
-                <FormattedMessage
-                  id={`form.${property}`}
-                  defaultMessage={property}
-                />
-              )
-            }
-            message={
-              condition.description ? (
-                <FormattedHTMLMessage
-                  id="1"
-                  defaultMessage={condition.description}
-                />
-              ) : null
-            }
-            placeholder={condition.examples?.[0]}
-            filterPlaceholder={formatMessage({
-              id: "form.searchName"
-            })}
-            data={condition.enum.map((dataItem: string) => ({
-              text: dataItem,
-              value: dataItem
-            }))}
-            onSelect={onSetValue}
-          />
-        )}
-      </Field>
+      <LabeledToggle
+        {...field}
+        label={property.title || defaultLabel}
+        message={<TextWithHTML text={property.description} />}
+        placeholder={placeholder}
+        value={field.value || property.default}
+      />
+    );
+  } else if (property.enum) {
+    return (
+      <LabeledDropDown
+        {...field}
+        // error={displayError}
+        label={label}
+        message={
+          property.description ? (
+            <TextWithHTML text={property.description} />
+          ) : null
+        }
+        placeholder={placeholder}
+        filterPlaceholder={formatMessage({
+          id: "form.searchName"
+        })}
+        data={property.enum.map(dataItem => ({
+          text: dataItem?.toString() ?? "",
+          value: dataItem?.toString() ?? ""
+        }))}
+        onSelect={selectedItem => form.setValue(selectedItem.value)}
+        value={field.value || property.default}
+      />
+    );
+  } else {
+    return (
+      <LabeledInput
+        {...field}
+        // error={displayError}
+        autoComplete="off"
+        label={label}
+        message={
+          property.description ? (
+            <TextWithHTML text={property.description} />
+          ) : null
+        }
+        placeholder={placeholder}
+        type={property.type === "integer" ? "number" : "text"}
+        value={field.value || property.default || ""}
+      />
     );
   }
-
-  return (
-    <Field name={property}>
-      {({ field }: FieldProps<string>) => (
-        <LabeledInput
-          {...field}
-          autoComplete="off"
-          label={
-            condition.title || (
-              <FormattedMessage
-                id={`form.${property}`}
-                defaultMessage={property}
-              />
-            )
-          }
-          message={
-            condition.description ? (
-              <FormattedHTMLMessage
-                id="1"
-                defaultMessage={condition.description}
-              />
-            ) : null
-          }
-          placeholder={condition.examples?.[0]}
-          type={condition.type === "integer" ? "number" : "text"}
-        />
-      )}
-    </Field>
-  );
 };
 
 export default PropertyField;

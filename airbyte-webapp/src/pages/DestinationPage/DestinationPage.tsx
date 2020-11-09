@@ -77,8 +77,7 @@ const DestinationPage: React.FC = () => {
               }
             ]}
             formValues={{
-              ...currentDestination.connectionConfiguration,
-              name: currentDestination.name,
+              ...currentDestination,
               serviceType: destination.destinationDefinitionId
             }}
             specifications={destinationSpecification.connectionSpecification}
