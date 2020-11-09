@@ -7,8 +7,8 @@ class AirbyteSourceTestPlugin implements Plugin<Project> {
         project.task('standardSourceTestPython') {
             doFirst {
                 project.exec {
-                    def imageName = DockerHelpers.getTaggedImage(project.projectDir, 'Dockerfile')
-                    def pythonContainerName = DockerHelpers.getTaggedImage(project.projectDir, 'Dockerfile.test')
+                    def imageName = DockerHelpers.getDevTaggedImage(project.projectDir, 'Dockerfile')
+                    def pythonContainerName = DockerHelpers.getDevTaggedImage(project.projectDir, 'Dockerfile.test')
                     logger.info('standard test inputs')
                     logger.info("imageName: ${imageName}")
                     logger.info("pythonContainerName: ${pythonContainerName}")
