@@ -13,13 +13,6 @@ import Toggle from "../../../../../components/Toggle";
 import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
 import { Connection } from "../../../../../core/resources/Connection";
 
-type IProps = {
-  sourceData: Connection;
-  onEnabledChange: () => void;
-  destinationDefinition: DestinationDefinition;
-  frequencyText?: string;
-};
-
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
   padding: 23px 20px 20px 23px;
@@ -51,6 +44,13 @@ const ToggleLabel = styled.label`
   text-align: left;
   cursor: pointer;
 `;
+
+type IProps = {
+  sourceData: Connection;
+  onEnabledChange: () => void;
+  destinationDefinition: DestinationDefinition;
+  frequencyText?: string;
+};
 
 const StatusMainInfo: React.FC<IProps> = ({
   sourceData,

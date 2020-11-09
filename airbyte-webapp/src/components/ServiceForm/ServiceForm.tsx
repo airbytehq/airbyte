@@ -1,21 +1,22 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Formik, Form } from "formik";
 import styled from "styled-components";
+import { JSONSchema7 } from "json-schema";
 
 import { IDataItem } from "../DropDown/components/ListItem";
 import FormContent from "./components/FormContent";
 import BottomBlock from "./components/BottomBlock";
 import EditControls from "./components/EditControls";
-import ConstructValidationSchema from "./components/ConstructValidationSchema";
-import { specification } from "../../core/resources/SourceDefinitionSpecification";
+import {
+  useBuildForm,
+  FormInitialValues,
+  useBuildUiWidgets,
+  useConstructValidationSchema
+} from "./useBuildForm";
 
-type formInitialValues = {
-  [key: string]: any;
-} & {
-  name: string;
-  serviceType: string;
-  frequency?: string;
-};
+const FormContainer = styled(Form)`
+  padding: 22px 27px 23px 24px;
+`;
 
 type IProps = {
   isLoading?: boolean;
@@ -27,82 +28,59 @@ type IProps = {
     name: string;
     serviceType: string;
     frequency?: string;
-    connectionConfiguration: any;
+    connectionConfiguration?: any;
   }) => void;
   formType: "source" | "destination" | "connection";
-  formValues?: formInitialValues;
+  formValues?: Partial<FormInitialValues>;
   hasSuccess?: boolean;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  specifications?: specification;
+  specifications?: JSONSchema7;
   documentationUrl?: string;
 };
 
-const FormContainer = styled(Form)`
-  padding: 22px 27px 23px 24px;
-`;
-
 const ServiceForm: React.FC<IProps> = ({
-  onSubmit,
   formType,
   dropDownData,
+  specifications,
   formValues,
+  onSubmit,
   onDropDownSelect,
-  hasSuccess,
   successMessage,
   errorMessage,
-  specifications,
   documentationUrl,
-  isLoading,
   allowChangeConnector,
+  hasSuccess,
+
+  isLoading,
   isEditMode
 }) => {
-  const properties = Object.keys(specifications?.properties || {});
-
-  const validationSchema = useMemo(
-    () => ConstructValidationSchema(specifications, properties),
-    [specifications, properties]
+  const { formFields, initialValues } = useBuildForm(
+    formType,
+    isLoading,
+    formValues,
+    specifications
   );
-  const additionalFields = properties
-    ? Object.fromEntries([
-        ...properties.map(item => {
-          const condition = specifications?.properties[item];
-          const value = formValues
-            ? formValues[item]
-            : condition.type === "boolean"
-            ? false
-            : "";
-          return [item, value];
-        })
-      ])
-    : null;
+
+  const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgets(
+    formFields,
+    initialValues
+  );
+
+  const validationSchema = useConstructValidationSchema(
+    uiWidgetsInfo,
+    specifications
+  );
 
   return (
     <Formik
-      initialValues={{
-        name: "",
-        serviceType: "",
-        frequency: "",
-        ...additionalFields,
-        ...formValues
-      }}
+      initialValues={initialValues}
       validateOnBlur={true}
       validateOnChange={true}
       validateOnMount={true}
       validationSchema={validationSchema}
-      onSubmit={async (values, { setSubmitting }) => {
-        await onSubmit({
-          name: values.name,
-          serviceType: values.serviceType,
-          frequency: values.frequency,
-          connectionConfiguration: Object.fromEntries([
-            ...properties.map(item => [
-              item,
-              values[item] || additionalFields[item]
-            ])
-          ])
-        });
-        setSubmitting(false);
+      onSubmit={async values => {
+        return onSubmit(validationSchema.cast(values, { stripUnknown: true }));
       }}
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, values, resetForm }) => (
@@ -111,14 +89,16 @@ const ServiceForm: React.FC<IProps> = ({
             allowChangeConnector={allowChangeConnector}
             dropDownData={dropDownData}
             formType={formType}
-            setFieldValue={setFieldValue}
+            formFields={formFields}
+            specifications={specifications}
+            widgetsInfo={uiWidgetsInfo}
             values={values}
             isEditMode={isEditMode}
-            onDropDownSelect={onDropDownSelect}
-            specifications={specifications}
-            properties={properties}
+            isLoadingSchema={isLoading}
+            onChangeServiceType={onDropDownSelect}
+            setUiWidgetsInfo={setUiWidgetsInfo}
+            setFieldValue={setFieldValue}
             documentationUrl={documentationUrl}
-            isLoadSchema={isLoading}
           />
 
           {isEditMode ? (
