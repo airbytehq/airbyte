@@ -28,10 +28,7 @@ abstract class AirbyteDockerTask extends DefaultTask {
     abstract File projectDir
 
     @Input
-    String dockerfileName = 'Dockerfile'
-
-    @Input
-    String testDockerfileName = 'Dockerfile.test'
+    String dockerfileName
 
     @OutputFile
     abstract File idFileOutput
@@ -50,7 +47,6 @@ abstract class AirbyteDockerTask extends DefaultTask {
     def airbyteDocker() {
         def scriptPath = Paths.get(rootDir.absolutePath, 'tools/bin/build_image.sh').toString()
         buildDockerfile(scriptPath, dockerfileName)
-        buildDockerfile(scriptPath, testDockerfileName)
     }
 }
 
@@ -125,9 +121,9 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 return false;
             }
 
-            logger.debug "stored " + stored.trim()
+            logger.debug "stored " + stored
 
-            def upToDate = current.equals(stored.trim())
+            def upToDate = current.equals(stored)
 
             logger.debug "uptodate " + upToDate.toString()
 
@@ -145,6 +141,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
             project.task(taskName, type: AirbyteDockerTask) {
                 def dockerPath = Paths.get(project.projectDir.absolutePath, dockerFile)
                 def hash = MessageDigest.getInstance("MD5").digest(dockerPath.getBytes()).encodeHex().toString()
+                dockerfileName = dockerFile
                 rootDir = project.rootProject.rootDir
                 projectDir = project.projectDir
                 projectFiles = filteredProjectFiles
