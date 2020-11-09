@@ -84,6 +84,11 @@ public class PostgresIntegrationTest extends TestDestination {
   }
 
   @Override
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName) throws Exception {
+    return retrieveRecords(env, streamName);
+  }
+
+  @Override
   protected void setup(TestDestinationEnv testEnv) {
     db = new PostgreSQLContainer<>("postgres:13-alpine");
     db.start();
