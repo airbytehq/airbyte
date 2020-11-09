@@ -113,9 +113,9 @@ class AirbyteDockerPlugin implements Plugin<Project> {
        return "$stdout".toString().trim()
     }
 
-    static boolean isUpToDate(Logger logger, File idFileOutput, Project project, Path dockerPath) {
+    static boolean isUpToDate(Logger logger, File idFileOutput, Project project, String dockerFile, Path dockerPath) {
         if(idFileOutput.exists()) {
-            def taggedImage = AirbyteDockerTask.getTaggedImage(project.projectDir, 'Dockerfile')
+            def taggedImage = AirbyteDockerTask.getTaggedImage(project.projectDir, dockerFile)
             logger.debug "taggedImage " + taggedImage
 
             def current = getImageHash(project, taggedImage)
@@ -171,7 +171,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 dependsOn project.assemble
 
                 outputs.upToDateWhen {
-                    return isUpToDate(logger, idFileOutput, project, dockerPath)
+                    return isUpToDate(logger, idFileOutput, project, dockerFile, dockerPath)
                 }
             }
         } else {
