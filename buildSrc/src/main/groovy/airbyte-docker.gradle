@@ -167,7 +167,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 projectDir = project.projectDir
                 projectFiles = filteredProjectFiles
                 idFileOutput = project.file(Paths.get(project.rootProject.rootDir.absolutePath, '.dockerversions', hash).toString())
-                baseImageHashes = getBaseImageHashes(project.rootProject.imageToHash.toFile())
+                baseImageHashes = getBaseImageHashes(project.rootProject.imageToHash, dockerPath.toFile())
                 dependsOn project.assemble
 
                 outputs.upToDateWhen {
