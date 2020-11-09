@@ -208,11 +208,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         createTask(project, 'airbyteDockerBuildMain', 'Dockerfile')
         createTask(project, 'airbyteDockerBuildTest', 'Dockerfile.test')
 
-        project.task('airbyteDocker') {
-            dependsOn project.airbyteDockerBuildMain
-            dependsOn project.airbyteDockerBuildTest
-        }
-
-        project.build.dependsOn project.airbyteDocker
+        project.build.dependsOn project.airbyteDockerBuildMain
+        project.integrationTest.dependsOn project.airbyteDockerBuildTest
     }
 }
