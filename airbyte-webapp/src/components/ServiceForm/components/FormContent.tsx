@@ -108,7 +108,7 @@ const FormContent: React.FC<IProps> = ({
 }) => {
   const formatMessage = useIntl().formatMessage;
 
-  // As our validation schema can be changed on the fly and formik doesn't
+  // Formik doesn't validate values again, when validationSchema was changed on the fly.
   useEffect(() => {
     validateForm();
   }, [validateForm, schema]);
