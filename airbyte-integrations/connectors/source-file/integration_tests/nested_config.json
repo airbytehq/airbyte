@@ -1,0 +1,6 @@
+{
+  "filename": "integrationTestFile",
+  "format": "json",
+  "storage": "HTTPS",
+  "url": "https://think.cs.vt.edu/corgis/datasets/json/airlines/airlines.json"
+}

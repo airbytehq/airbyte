@@ -12,6 +12,7 @@
         "type": "string",
         "enum": [
           "csv",
+          "flat_json",
           "json",
           "html",
           "excel",

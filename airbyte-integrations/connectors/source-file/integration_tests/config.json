@@ -1,4 +1,5 @@
 {
+  "filename": "integrationTestFile",
   "format": "csv",
   "reader_options": "{\"sep\": \",\", \"nrows\": 20}",
   "storage": "HTTPS",
