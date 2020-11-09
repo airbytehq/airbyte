@@ -1,6 +1,6 @@
 # Building new connectors
 
-A connector once completed takes the form of a Docker image which follow the [Airbyte specification](../../architecture/airbyte-specification.md).
+A connector takes the form of a Docker image which follows the [Airbyte specification](../../architecture/airbyte-specification.md).
 
 We support 2 types of connectors: 
 
@@ -52,11 +52,10 @@ Once you've finished iterating on the changes to a connector as specified in its
    ```
 
 4. Submit a PR containing the changes you made.
-5. One of Airbyte maintainer will review the change and publish the new version of the connector do Docker hub:
+5. One of Airbyte maintainers will review the change and publish the new version of the connector do Docker hub:
 
    ```text
    ./tools/integrations/manage.sh publish airbyte-integrations/connectors/<connector-name>
    ```
 
 6. The new version of the connector is now available for everyone who uses it. Thank you!
-
