@@ -1,18 +1,18 @@
 plugins {
     id 'java'
+    id 'airbyte-python'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+    // todo: implement source test
 }
 
-project.ext.pyModule = 'source_exchangeratesapi_singer'
-apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+airbytePython {
+    moduleDirectory 'source_exchangeratesapi_singer'
+}
 
 dependencies {
     integrationTestImplementation project(':airbyte-workers')
     integrationTestImplementation project(':airbyte-config:models')
     integrationTestImplementation project(':airbyte-protocol:models')
+    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
-
-integrationTest.dependsOn(buildImage)
-build.dependsOn ':airbyte-integrations:bases:base-singer:build'
-buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'

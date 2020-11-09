@@ -1,9 +1,13 @@
 plugins {
     id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+    id 'airbyte-source-test'
 }
 
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+application {
+    mainClass = 'io.airbyte.integrations.source.jdbc.JdbcSource'
+}
 
 dependencies {
     implementation project(':airbyte-db')
@@ -15,12 +19,6 @@ dependencies {
 
     integrationTestImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestImplementation "org.testcontainers:postgresql:1.15.0-rc2"
-}
 
-application {
-    mainClass = 'io.airbyte.integrations.source.jdbc.JdbcSource'
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
-
-buildImage.dependsOn(assemble)
-buildImage.dependsOn(':airbyte-integrations:bases:base-java:buildImage')
-integrationTest.dependsOn(buildImage)
