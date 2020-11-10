@@ -1,7 +1,7 @@
 {
   "sourceDefinitionId": "b03a9f3e-22a5-11eb-adc1-0242ac120002",
-  "name": "My shiny source",
-  "dockerRepository": "eugenekulak/airbyte_source_mailchamp",
-  "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-google-sheets"
+  "name": "Mailchimp",
+  "dockerRepository": "ldv7/airbyte",
+  "dockerImageTag": "latest",
+  "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/"
 }

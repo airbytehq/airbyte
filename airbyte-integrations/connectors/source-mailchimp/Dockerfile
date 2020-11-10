@@ -13,4 +13,4 @@ COPY setup.py ./
 RUN pip install ".[main]"
 
 LABEL io.airbyte.version=0.1.1
-LABEL io.airbyte.name=eugenekulak/airbyte_source_mailchamp
+LABEL io.airbyte.name=ldv7/airbyte

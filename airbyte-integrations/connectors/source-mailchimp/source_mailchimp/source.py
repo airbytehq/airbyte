@@ -60,18 +60,14 @@ class SourceMailchimp(Source):
     def read(self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         client = self._client(config_container)
 
-        # TODO: use catalog, somehow???
-        # catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path)['catalog'])
 
-        logger.info("Starting syncing lists")
-        # TODO: get stream from catalog
-        for record in self._read_record(client=client, stream="Lists"):
-            yield AirbyteMessage(type=Type.RECORD, record=record)
+        logger.info("Starting syncing mailchimp")
+        for stream in catalog.streams:
+            for record in self._read_record(client=client, stream=stream.name):
+                yield AirbyteMessage(type=Type.RECORD, record=record)
 
-        for record in self._read_compaign(client=client, stream="Campaigns"):
-            yield AirbyteMessage(type=Type.RECORD, record=record)
-
-        logger.info("Finished syncing lists")
+        logger.info("Finished syncing mailchimp")
 
     def _client(self, config_container: ConfigContainer):
         config = config_container.rendered_config
@@ -80,11 +76,11 @@ class SourceMailchimp(Source):
         return client
 
     def _read_record(self, client: Client, stream: str):
-        for record in client.lists():
-            now = int(datetime.now().timestamp()) * 1000
-            yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)
+        issues_map = {
+            'Lists': client.lists(),
+            'Campaigns': client.campaigns(),
+        }
 
-    def _read_compaign(self, client: Client, stream: str):
-        for record in client.campaigns():
+        for record in issues_map[stream]:
             now = int(datetime.now().timestamp()) * 1000
             yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)

@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from source_mailchimp.client import Client
 import pytest
+from source_mailchimp.client import Client
 
 
 def test_client_wrong_credentials():
     with pytest.raises(ValueError, match="The API key that you have entered is not valid"):
-        Client(username='unknown_user', apikey='wrong_key')
+        Client(username="unknown_user", apikey="wrong_key")

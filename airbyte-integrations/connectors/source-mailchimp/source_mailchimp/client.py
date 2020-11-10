@@ -1,14 +1,18 @@
 """
 MIT License
+
 Copyright (c) 2020 Airbyte
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import requests
 from airbyte_protocol import AirbyteStream
 from mailchimp3 import MailChimp
 from mailchimp3.mailchimpclient import MailChimpError
-import requests
 
 from .models import HealthCheckError
 
@@ -58,24 +62,20 @@ class Client:
         self._client.lists.all(count=1)
 
         # TODO
-        json_schema = requests.get(
-            "https://us2.api.mailchimp.com/schema/3.0/Definitions/Lists/Response.json"
-        ).json()
+        json_schema = requests.get("https://us2.api.mailchimp.com/schema/3.0/Definitions/Lists/Response.json").json()
 
-        return AirbyteStream(name='Lists', json_schema=json_schema)
+        return AirbyteStream(name="Lists", json_schema=json_schema)
 
     def campaigns_stream(self):
         self._client.campaigns.all(count=1)
 
         # TODO
-        json_schema = requests.get(
-            "https://us2.api.mailchimp.com/schema/3.0/Definitions/Campaigns/Response.json"
-        ).json()
+        json_schema = requests.get("https://us2.api.mailchimp.com/schema/3.0/Definitions/Campaigns/Response.json").json()
 
-        return AirbyteStream(name='Campaigns', json_schema=json_schema)
+        return AirbyteStream(name="Campaigns", json_schema=json_schema)
 
     def lists(self):
-        return self._client.lists.all()['lists']
+        return self._client.lists.all()["lists"]
 
     def campaigns(self):
-        return self._client.campaigns.all()['campaigns']
+        return self._client.campaigns.all()["campaigns"]
