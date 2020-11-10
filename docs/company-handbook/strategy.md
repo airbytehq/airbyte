@@ -8,7 +8,7 @@ On top of that, we will build data quality monitoring, privacy compliance \(GDPR
 
 Eventually, you should be able to build your own Fivetran platform internally, while having complete control over your data and costs \(not indexed on MTUs\). If any integration that you need is missing, we will make it super easy for you to build it and to use our orchestration and scheduling features for it.
 
-We will stay at parity with the incumbent’s features \(Fivetran, StitchData\) at first - see our [high-level roadmap]() -, as our differentiation is on:
+We will stay at parity with the incumbent’s features \(Fivetran, StitchData\) at first - see our [high-level roadmap](../roadmap.md) -, as our differentiation is on:
 
 * open source, enabling you to add your own integration very easily
 * data privacy and control
