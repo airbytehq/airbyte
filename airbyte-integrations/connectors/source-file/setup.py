@@ -34,6 +34,7 @@ setup(
         "airbyte-protocol",
         "base-python",
         "gcsfs",
+        "genson",
         "google-cloud-storage",
         "pandas>=0.24.1",
         "paramiko",

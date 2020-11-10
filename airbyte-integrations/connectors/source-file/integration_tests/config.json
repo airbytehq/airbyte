@@ -1,7 +1,10 @@
 {
+  "filename": "integrationTestFile",
   "format": "csv",
   "reader_options": "{\"sep\": \",\", \"nrows\": 20}",
-  "storage": "HTTPS",
   "url": "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv",
-  "reader_impl": "gcsfs"
+  "provider": {
+    "storage": "HTTPS",
+    "reader_impl": "gcsfs"
+  }
 }
