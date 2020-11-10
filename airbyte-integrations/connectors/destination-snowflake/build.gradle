@@ -17,7 +17,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-queue')
 
-    integrationTestImplementation project(':airbyte-integrations:bases:destination-test-lib')
+    integrationTestImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestImplementation 'org.apache.commons:commons-lang3:3.11'
     integrationTestImplementation project(':airbyte-integrations:connectors:destination-snowflake')
 
