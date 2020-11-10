@@ -66,11 +66,6 @@ public class SnowflakeIntegrationTest extends TestDestination {
     return invalidConfig;
   }
 
-  @Test
-  public void testIt() {
-    assertTrue(true);
-  }
-
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     return SnowflakeDatabase.executeSync(
