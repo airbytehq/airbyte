@@ -39,6 +39,10 @@ MKTO_SECRETS_DIR=airbyte-integrations/connectors/source-marketo-singer/secrets
 mkdir $MKTO_SECRETS_DIR
 echo "$SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG" > "${MKTO_SECRETS_DIR}/config.json"
 
+
+mkdir airbyte-integrations/connectors/source-shopify-singer/secrets
+echo "$SHOPIFY_INTEGRATION_TEST_CREDS" > airbyte-integrations/connectors/source-shopify-singer/secrets/config.json
+
 SOURCEFILE_DIR=airbyte-integrations/connectors/source-file/secrets
 mkdir $SOURCEFILE_DIR
 echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > "${SOURCEFILE_DIR}/gcs.json"
