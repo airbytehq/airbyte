@@ -2,15 +2,15 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)
 
-![](docs/.gitbook/assets/airbyte_horizontal_dark%20%281%29%20%281%29%20%281%29.svg)
+![](docs/.gitbook/assets/airbyte_horizontal_dark%20%281%29%20%281%29.svg)
 
 **Data integration made simple, secure and extensible.**
 
 The new open-source standard to sync data from applications, APIs & databases to warehouses.
 
-[![](docs/.gitbook/assets/deploy-locally%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29.svg)](docs/deploying-airbyte/on-your-workstation.md) [![](docs/.gitbook/assets/deploy-on-aws%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
+[![](docs/.gitbook/assets/deploy-locally%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29.svg)](docs/deploying-airbyte/on-your-workstation.md) [![](docs/.gitbook/assets/deploy-on-aws%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
 
-![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines%20%281%29%20%281%29%20%281%29.png)
+![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines%20%281%29%20%281%29.png)
 
 Airbyte is on a mission to make data integration pipelines a commodity.
 
@@ -64,18 +64,7 @@ For general help using Airbyte, please refer to the official Airbyte documentati
 
 ## Roadmap
 
-Check out our [roadmap](https://github.com/airbytehq/airbyte/projects/1) to get informed of the latest features released and the upcoming ones. You may also give us insights and vote for a specific feature. For our high-level roadmap and strategy, you can check [our handbook](docs/company-handbook/roadmap.md).
-
-Here are some of the features we are planning on releasing:
-
-* Incremental syncs \([\#247](https://github.com/airbytehq/airbyte/issues/247)\)
-* Kubernetes support \([\#835](https://github.com/airbytehq/airbyte/issues/835)\)
-* Airflow support \([\#836](https://github.com/airbytehq/airbyte/issues/836)\)
-* Credential and secrets vaulting \([\#837](https://github.com/airbytehq/airbyte/issues/837)\)
-* OAuth support for connector configuration \([\#768](https://github.com/airbytehq/airbyte/issues/768)\)
-* Webhook connector
-* Upgrade strategy
-* [DBT](https://www.getdbt.com/) Integration
+Check out our [roadmap](docs/roadmap.md) to get informed on what we are currently working on, and what we have in mind for the next weeks, months and years. 
 
 ## License
 
