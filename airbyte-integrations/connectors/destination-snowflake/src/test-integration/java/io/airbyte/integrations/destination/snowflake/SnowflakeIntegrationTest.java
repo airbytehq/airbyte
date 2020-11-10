@@ -24,8 +24,6 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
@@ -35,7 +33,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.Test;
 
 public class SnowflakeIntegrationTest extends TestDestination {
 
@@ -64,11 +61,6 @@ public class SnowflakeIntegrationTest extends TestDestination {
     final JsonNode invalidConfig = Jsons.clone(config);
     ((ObjectNode) invalidConfig).put("password", "wrong password");
     return invalidConfig;
-  }
-
-  @Test
-  public void testIt() {
-    assertTrue(true);
   }
 
   @Override
