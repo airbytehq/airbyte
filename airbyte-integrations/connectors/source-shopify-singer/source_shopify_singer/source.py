@@ -40,16 +40,14 @@ class SourceShopifySinger(SingerSource):
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
             config = config_container.rendered_config
-            print("THIS:" + str(config))
-            api_version = "2020-10"
-            session = shopify.Session(f"{config['shop']}.myshopify.com", api_version, config["api_key"])
+            session = shopify.Session(f"{config['shop']}.myshopify.com", "2020-10", config["api_key"])
             shopify.ShopifyResource.activate_session(session)
             # try to read the name of the shop, which should be available with any level of permissions
             shopify.GraphQL().execute("{ shop { name id } }")
             shopify.ShopifyResource.clear_session()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            logger.error("Exception connecting to Shopify: " + str(e))
+            logger.error(f"Exception connecting to Shopify: ${e}")
             return AirbyteConnectionStatus(
                 status=Status.FAILED, message="Unable to connect to the Shopify API with the provided credentials."
             )
