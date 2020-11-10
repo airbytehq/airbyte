@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
@@ -13,6 +13,11 @@ import SourceResource from "../../../../core/resources/Source";
 import { Routes } from "../../../routes";
 import Breadcrumbs from "../../../../components/Breadcrumbs";
 import SourceConnectionTable from "./components/SourceConnectionTable";
+import {
+  ItemTabs,
+  StepsTypes,
+  TableItemTitle
+} from "../../../../components/SourceAndDestinationsBlocks";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -20,6 +25,9 @@ const Content = styled(ContentCard)`
 
 const SourceItemPage: React.FC = () => {
   const { query, history, push } = useRouter();
+
+  const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
+  const onSelectStep = (id: string) => setCurrentStep(id);
 
   const source = useResource(SourceResource.detailShape(), {
     // @ts-ignore
@@ -47,7 +55,14 @@ const SourceItemPage: React.FC = () => {
 
   return (
     <>
-      <PageTitle title={<Breadcrumbs data={breadcrumbsData} />} withLine />
+      <PageTitle
+        title={<Breadcrumbs data={breadcrumbsData} />}
+        middleComponent={
+          <ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />
+        }
+        withLine
+      />
+      <TableItemTitle type="destination" />
       {connectionsWithSource.length ? (
         <SourceConnectionTable connections={connectionsWithSource} />
       ) : (

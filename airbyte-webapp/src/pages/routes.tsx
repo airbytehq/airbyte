@@ -33,10 +33,14 @@ export enum Routes {
 }
 
 const getPageName = (pathname: string) => {
-  const itemPageRegex = new RegExp(`${Routes.Source}/.*`);
+  const itemSourcePageRegex = new RegExp(`${Routes.Source}/.*`);
+  const itemDestinationPageRegex = new RegExp(`${Routes.Destination}/.*`);
+  const itemSourceToDestinationPageRegex = new RegExp(
+    `(${Routes.Source}|${Routes.Destination})${Routes.Connection}/.*`
+  );
 
   if (pathname === Routes.Destination) {
-    return "Destination Page";
+    return "Destinations Page";
   }
   if (pathname === Routes.Root) {
     return "Sources Page";
@@ -44,7 +48,13 @@ const getPageName = (pathname: string) => {
   if (pathname === `${Routes.Source}${Routes.SourceNew}`) {
     return "Create Source Page";
   }
-  if (pathname.match(itemPageRegex)) {
+  if (pathname.match(itemSourceToDestinationPageRegex)) {
+    return "Source to Destination Page";
+  }
+  if (pathname.match(itemDestinationPageRegex)) {
+    return "Destination Item Page";
+  }
+  if (pathname.match(itemSourcePageRegex)) {
     return "Source Item Page";
   }
   if (pathname === Routes.Admin) {
