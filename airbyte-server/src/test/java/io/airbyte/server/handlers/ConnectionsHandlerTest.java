@@ -26,7 +26,9 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -85,11 +87,9 @@ class ConnectionsHandlerTest {
   void testCreateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
 
-    when(configRepository.getStandardSync(standardSync.getConnectionId()))
-        .thenReturn(standardSync);
+    when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
 
-    when(configRepository.getStandardSyncSchedule(standardSyncSchedule.getConnectionId()))
-        .thenReturn(standardSyncSchedule);
+    when(configRepository.getStandardSyncSchedule(standardSyncSchedule.getConnectionId())).thenReturn(standardSyncSchedule);
 
     final ConnectionCreate connectionCreate = new ConnectionCreate()
         .sourceId(standardSync.getSourceId())
@@ -102,16 +102,14 @@ class ConnectionsHandlerTest {
 
     final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
 
-    final ConnectionRead expectedConnectionRead =
-        ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId());
+    final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(
+        standardSync.getConnectionId(),
+        standardSync.getSourceId(),
+        standardSync.getDestinationId());
 
     assertEquals(expectedConnectionRead, actualConnectionRead);
 
     verify(configRepository).writeStandardSync(standardSync);
-
     verify(configRepository).writeStandardSchedule(standardSyncSchedule);
   }
 
@@ -152,14 +150,13 @@ class ConnectionsHandlerTest {
 
     final ConnectionRead actualConnectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-    final ConnectionRead expectedConnectionRead =
-        ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId())
-            .schedule(null)
-            .syncSchema(newApiSchema)
-            .status(ConnectionStatus.INACTIVE);
+    final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(
+        standardSync.getConnectionId(),
+        standardSync.getSourceId(),
+        standardSync.getDestinationId())
+        .schedule(null)
+        .syncSchema(newApiSchema)
+        .status(ConnectionStatus.INACTIVE);
 
     assertEquals(expectedConnectionRead, actualConnectionRead);
 
@@ -175,8 +172,7 @@ class ConnectionsHandlerTest {
     when(configRepository.getStandardSyncSchedule(standardSync.getConnectionId()))
         .thenReturn(standardSyncSchedule);
 
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
-    connectionIdRequestBody.setConnectionId(standardSync.getConnectionId());
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(standardSync.getConnectionId());
     final ConnectionRead actualConnectionRead = connectionsHandler.getConnection(connectionIdRequestBody);
 
     assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSync), actualConnectionRead);
@@ -199,6 +195,31 @@ class ConnectionsHandlerTest {
     assertEquals(
         ConnectionHelpers.generateExpectedConnectionRead(standardSync),
         actualConnectionReadList.getConnections().get(0));
+  }
+
+  @Test
+  void testDeleteConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(standardSync.getConnectionId());
+
+    final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(
+        standardSync.getConnectionId(),
+        standardSync.getSourceId(),
+        standardSync.getDestinationId());
+
+    final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
+        .connectionId(connectionRead.getConnectionId())
+        .status(ConnectionStatus.DEPRECATED)
+        .syncSchema(connectionRead.getSyncSchema())
+        .schedule(connectionRead.getSchedule());
+
+    final ConnectionsHandler spiedConnectionsHandler = spy(connectionsHandler);
+    doReturn(connectionRead).when(spiedConnectionsHandler).getConnection(connectionIdRequestBody);
+    doReturn(null).when(spiedConnectionsHandler).updateConnection(expectedConnectionUpdate);
+
+    spiedConnectionsHandler.deleteConnection(connectionIdRequestBody);
+
+    verify(spiedConnectionsHandler).getConnection(connectionIdRequestBody);
+    verify(spiedConnectionsHandler).updateConnection(expectedConnectionUpdate);
   }
 
   @Test
