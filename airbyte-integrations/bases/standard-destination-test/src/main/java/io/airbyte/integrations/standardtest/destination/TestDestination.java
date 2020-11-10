@@ -378,9 +378,10 @@ public abstract class TestDestination {
 
   /**
    * Prune fields that are added internally by airbyte and are not part of the original data. Used so
-   * that we can compare data that is persisted by an Airbyte worker to the original data.
+   * that we can compare data that is persisted by an Airbyte worker to the original data. This method
+   * mutates the provided json in place.
    *
-   * @param json - json that will be pruned.
+   * @param json - json that will be pruned. will be mutated in place!
    */
   private void pruneMutate(JsonNode json) {
     final Set<String> keys = Jsons.object(json, new TypeReference<Map<String, Object>>() {}).keySet();
