@@ -102,17 +102,27 @@ public class SnowflakeDatabase {
    */
   public static <T> T executeSync(Supplier<Connection> connectionFactory, String query, boolean multipleStatements, Function<ResultSet, T> transform)
       throws SQLException, InterruptedException {
-    try (Connection conn = connectionFactory.get()) {
-      Statement statement = conn.createStatement();
-      SnowflakeStatement snowflakeStatement = statement.unwrap(SnowflakeStatement.class);
+    final ResultSet results = execute(connectionFactory, query, multipleStatements);
+    return transform.apply(waitForQuery(results));
+  }
+
+  private static ResultSet execute(Supplier<Connection> connectionFactory, String query, boolean multipleStatements)
+      throws SQLException, InterruptedException {
+    try (final Connection conn = connectionFactory.get()) {
+      final Statement statement = conn.createStatement();
+      final SnowflakeStatement snowflakeStatement = statement.unwrap(SnowflakeStatement.class);
 
       if (multipleStatements) {
         snowflakeStatement.setParameter("MULTI_STATEMENT_COUNT", 0);
       }
 
-      ResultSet resultSet = snowflakeStatement.executeAsyncQuery(query);
-      return transform.apply(waitForQuery(resultSet));
+      return snowflakeStatement.executeAsyncQuery(query);
     }
+  }
+
+  public static void executeVoid(Supplier<Connection> connectionFactory, String query, boolean multipleStatements)
+      throws SQLException, InterruptedException {
+    execute(connectionFactory, query, multipleStatements);
   }
 
   /**
@@ -122,7 +132,7 @@ public class SnowflakeDatabase {
   public static Supplier<Connection> getConnectionFactory(JsonNode config) {
     final String connectUrl = String.format("jdbc:snowflake://%s", config.get("host").asText());
 
-    Properties properties = new Properties();
+    final Properties properties = new Properties();
 
     properties.put("user", config.get("username").asText());
     properties.put("password", config.get("password").asText());
