@@ -21,17 +21,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from datetime import datetime
 from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteRecordMessage, Status, AirbyteMessage, Type
-from base_python import AirbyteLogger, Source, ConfigContainer
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, Status, Type
+from base_python import AirbyteLogger, ConfigContainer, Source
+
 from .client import Client
 
 
 class SourceMailchimp(Source):
     """
-        Mailchimp API Reference: https://mailchimp.com/developer/api/
+    Mailchimp API Reference: https://mailchimp.com/developer/api/
     """
 
     def __init__(self):
@@ -41,10 +43,7 @@ class SourceMailchimp(Source):
         client = self._client(config_container)
         alive, error = client.health_check()
         if not alive:
-            return AirbyteConnectionStatus(
-                status=Status.FAILED,
-                message=f"{error.title}: {error.detail}"
-            )
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{error.title}: {error.detail}")
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
@@ -52,15 +51,14 @@ class SourceMailchimp(Source):
         client = self._client(config_container)
         # TODO: add more streams
         # TODO: add support for nested streams???
-        return AirbyteCatalog(streams=[
-            client.lists_stream(),
-            client.campaigns_stream()
-        ])
+        return AirbyteCatalog(streams=[client.lists_stream(), client.campaigns_stream()])
 
-    def read(self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
+    def read(
+        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None
+    ) -> Generator[AirbyteMessage, None, None]:
         client = self._client(config_container)
 
-        catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path)['catalog'])
+        catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
 
         logger.info("Starting syncing mailchimp")
         for stream in catalog.streams:
@@ -77,8 +75,8 @@ class SourceMailchimp(Source):
 
     def _read_record(self, client: Client, stream: str):
         issues_map = {
-            'Lists': client.lists(),
-            'Campaigns': client.campaigns(),
+            "Lists": client.lists(),
+            "Campaigns": client.campaigns(),
         }
 
         for record in issues_map[stream]:
