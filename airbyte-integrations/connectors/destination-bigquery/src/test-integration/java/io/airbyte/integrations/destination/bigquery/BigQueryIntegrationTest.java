@@ -99,7 +99,7 @@ public class BigQueryIntegrationTest extends TestDestination {
     return retrieveRecordsFromTable(env, NamingHelper.getRawTableName(streamName));
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName){
+  private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws InterruptedException {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
