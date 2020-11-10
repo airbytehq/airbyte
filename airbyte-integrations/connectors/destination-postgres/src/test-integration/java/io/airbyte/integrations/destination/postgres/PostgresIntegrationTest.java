@@ -29,7 +29,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
-import io.airbyte.protocol.models.AirbyteMessage;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
