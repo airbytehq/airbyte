@@ -94,7 +94,7 @@ class SourceFile(Source):
         :return:
         """
         config = config_container.rendered_config
-        storage = SourceFile.get_storage_scheme(logger, config["storage"], config["url"])
+        storage = SourceFile.get_storage_scheme(logger, config["provider"]["storage"], config["url"])
         url = SourceFile.get_simple_url(config["url"])
         logger.info(f"Checking access to {storage}{url}...")
         try:
@@ -113,7 +113,7 @@ class SourceFile(Source):
         :return:
         """
         config = config_container.rendered_config
-        storage = SourceFile.get_storage_scheme(logger, config["storage"], config["url"])
+        storage = SourceFile.get_storage_scheme(logger, config["provider"]["storage"], config["url"])
         url = SourceFile.get_simple_url(config["url"])
         name = SourceFile.get_stream_name(config)
         logger.info(f"Discovering schema of {name} at {storage}{url}...")
@@ -156,7 +156,7 @@ class SourceFile(Source):
         :return:
         """
         config = config_container.rendered_config
-        storage = SourceFile.get_storage_scheme(logger, config["storage"], config["url"])
+        storage = SourceFile.get_storage_scheme(logger, config["provider"]["storage"], config["url"])
         url = SourceFile.get_simple_url(config["url"])
         name = SourceFile.get_stream_name(config)
         logger.info(f"Reading {name} ({storage}{url}, {catalog_path}, {state_path})...")
@@ -178,7 +178,6 @@ class SourceFile(Source):
                     else:
                         columns = df.columns
                     for data in df[columns].to_dict(orient="records"):
-                        data = {k: str(v) for k, v in data.items() if isinstance(v, dict)}
                         yield AirbyteMessage(
                             type=Type.RECORD,
                             record=AirbyteRecordMessage(stream=name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
@@ -196,26 +195,26 @@ class SourceFile(Source):
             reader_format = "csv"
             if "format" in config:
                 reader_format = config["format"]
-            name = f"file_{config['storage']}.{reader_format}"
+            name = f"file_{config['provider']['storage']}.{reader_format}"
         return name
 
     @staticmethod
     def open_file_url(config, logger):
-        storage = SourceFile.get_storage_scheme(logger, config["storage"], config["url"])
+        storage = SourceFile.get_storage_scheme(logger, config["provider"]["storage"], config["url"])
         url = SourceFile.get_simple_url(config["url"])
 
         gcs_file = None
-        use_gcs_service_account = "service_account_json" in config and storage == "gs://"
-        use_aws_account = "aws_access_key_id" in config and "aws_secret_access_key" in config and storage == "s3://"
+        use_gcs_service_account = "service_account_json" in config["provider"] and storage == "gs://"
+        use_aws_account = "aws_access_key_id" in config["provider"] and "aws_secret_access_key" in config["provider"] and storage == "s3://"
         # default reader impl
         reader_impl = ""
-        if "reader_impl" in config:
-            reader_impl = config["reader_impl"]
+        if "reader_impl" in config["provider"]:
+            reader_impl = config["provider"]["reader_impl"]
 
         if reader_impl == "gcsfs":
             if use_gcs_service_account:
                 try:
-                    token_dict = json.loads(config["service_account_json"])
+                    token_dict = json.loads(config["provider"]["service_account_json"])
                     fs = gcsfs.GCSFileSystem(token=token_dict)
                     gcs_file = fs.open(f"gs://{url}")
                     result = gcs_file
@@ -227,11 +226,11 @@ class SourceFile(Source):
         elif reader_impl == "s3fs":
             if use_aws_account:
                 aws_access_key_id = None
-                if "aws_access_key_id" in config:
-                    aws_access_key_id = config["aws_access_key_id"]
+                if "aws_access_key_id" in config["provider"]:
+                    aws_access_key_id = config["provider"]["aws_access_key_id"]
                 aws_secret_access_key = None
-                if "aws_secret_access_key" in config:
-                    aws_secret_access_key = config["aws_secret_access_key"]
+                if "aws_secret_access_key" in config["provider"]:
+                    aws_secret_access_key = config["provider"]["aws_secret_access_key"]
                 s3 = S3FileSystem(anon=False, key=aws_access_key_id, secret=aws_secret_access_key)
                 result = s3.open(f"s3://{url}", mode="r")
             else:
@@ -239,7 +238,7 @@ class SourceFile(Source):
         else:  # using smart_open
             if use_gcs_service_account:
                 try:
-                    credentials = json.dumps(json.loads(config["service_account_json"]))
+                    credentials = json.dumps(json.loads(config["provider"]["service_account_json"]))
                     tmp_service_account = tempfile.NamedTemporaryFile(delete=False)
                     with open(tmp_service_account, "w") as f:
                         f.write(credentials)
@@ -252,21 +251,21 @@ class SourceFile(Source):
                     raise err
             elif use_aws_account:
                 aws_access_key_id = ""
-                if "aws_access_key_id" in config:
-                    aws_access_key_id = config["aws_access_key_id"]
+                if "aws_access_key_id" in config["provider"]:
+                    aws_access_key_id = config["provider"]["aws_access_key_id"]
                 aws_secret_access_key = ""
-                if "aws_secret_access_key" in config:
-                    aws_secret_access_key = config["aws_secret_access_key"]
+                if "aws_secret_access_key" in config["provider"]:
+                    aws_secret_access_key = config["provider"]["aws_secret_access_key"]
                 result = open(f"s3://{aws_access_key_id}:{aws_secret_access_key}@{url}")
             elif storage == "webhdfs://":
-                host = config["host"]
-                port = config["port"]
+                host = config["provider"]["host"]
+                port = config["provider"]["port"]
                 result = open(f"webhdfs://{host}:{port}/{url}")
             elif storage == "ssh://" or storage == "scp://" or storage == "sftp://":
-                user = config["user"]
-                host = config["host"]
-                if "password" in config:
-                    password = config["password"]
+                user = config["provider"]["user"]
+                host = config["provider"]["host"]
+                if "password" in config["provider"]:
+                    password = config["provider"]["password"]
                     # Explicitly turn off ssh keys stored in ~/.ssh
                     transport_params = {"connect_kwargs": {"look_for_keys": False}}
                     result = open(f"{storage}{user}:{password}@{host}/{url}", transport_params=transport_params)
