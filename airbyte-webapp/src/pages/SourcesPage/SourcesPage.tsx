@@ -7,9 +7,7 @@ import LoadingPage from "../../components/LoadingPage";
 import AllSourcesPage from "./pages/AllSourcesPage";
 import CreateSourcePage from "./pages/CreateSourcePage";
 import SourceItemPage from "./pages/SourceItemPage";
-
-// TODO: fix
-import OldSourceItemPage from "./pages/OldSourceItemPage";
+import ConnectionPage from "../ConnectionPage";
 
 const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
 
@@ -22,7 +20,7 @@ const SourcesPage: React.FC = () => {
         </Route>
         <Route path={`${Routes.Source}${Routes.Connection}/:id`}>
           <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
-            <OldSourceItemPage />
+            <ConnectionPage />
           </ErrorBoundary>
         </Route>
         <Route path={`${Routes.Source}/:id`}>

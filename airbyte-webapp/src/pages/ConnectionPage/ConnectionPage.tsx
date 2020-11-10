@@ -2,26 +2,24 @@ import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import PageTitle from "../../../../components/PageTitle";
-import Breadcrumbs from "../../../../components/Breadcrumbs";
-import useRouter from "../../../../components/hooks/useRouterHook";
-import { Routes } from "../../../routes";
-import StepsMenu from "../../../../components/StepsMenu";
+import PageTitle from "../../components/PageTitle";
+import useRouter from "../../components/hooks/useRouterHook";
+import StepsMenu from "../../components/StepsMenu";
 import StatusView from "./components/StatusView";
 import SettingsView from "./components/SettingsView";
 import SchemaView from "./components/SchemaView";
-import ConnectionResource from "../../../../core/resources/Connection";
-import LoadingPage from "../../../../components/LoadingPage";
-import MainPageWithScroll from "../../../../components/MainPageWithScroll";
-import DestinationResource from "../../../../core/resources/Destination";
-import config from "../../../../config";
-import DestinationDefinitionResource from "../../../../core/resources/DestinationDefinition";
-import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
-import FrequencyConfig from "../../../../data/FrequencyConfig.json";
-import useConnection from "../../../../components/hooks/services/useConnectionHook";
+import ConnectionResource from "../../core/resources/Connection";
+import LoadingPage from "../../components/LoadingPage";
+import MainPageWithScroll from "../../components/MainPageWithScroll";
+import DestinationResource from "../../core/resources/Destination";
+import config from "../../config";
+import DestinationDefinitionResource from "../../core/resources/DestinationDefinition";
+import { AnalyticsService } from "../../core/analytics/AnalyticsService";
+import FrequencyConfig from "../..//data/FrequencyConfig.json";
+import useConnection from "../../components/hooks/services/useConnectionHook";
 
-const SourceItemPage: React.FC = () => {
-  const { query, push, history } = useRouter();
+const ConnectionPage: React.FC = () => {
+  const { query } = useRouter();
 
   const { updateConnection } = useConnection();
 
@@ -58,17 +56,6 @@ const SourceItemPage: React.FC = () => {
   ];
   const [currentStep, setCurrentStep] = useState("status");
   const onSelectStep = (id: string) => setCurrentStep(id);
-
-  const onClickBack = () =>
-    history.length > 2 ? history.goBack() : push(Routes.Source);
-
-  const breadcrumbsData = [
-    {
-      name: <FormattedMessage id="sidebar.sources" />,
-      onClick: onClickBack
-    },
-    { name: connection.source?.name }
-  ];
 
   const onChangeStatus = async () => {
     await updateConnection({
@@ -141,7 +128,7 @@ const SourceItemPage: React.FC = () => {
       title={
         <PageTitle
           withLine
-          title={<Breadcrumbs data={breadcrumbsData} />}
+          title={<FormattedMessage id="connection.fromTo" />}
           middleComponent={
             <StepsMenu
               lightMode
@@ -158,4 +145,4 @@ const SourceItemPage: React.FC = () => {
   );
 };
 
-export default SourceItemPage;
+export default ConnectionPage;

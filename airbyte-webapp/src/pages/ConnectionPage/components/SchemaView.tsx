@@ -2,16 +2,16 @@ import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "../../../../../components/ContentCard";
-import Button from "../../../../../components/Button";
-import TreeView from "../../../../../components/TreeView";
-import { Connection } from "../../../../../core/resources/Connection";
+import ContentCard from "../../../components/ContentCard";
+import Button from "../../../components/Button";
+import TreeView from "../../../components/TreeView";
+import { Connection } from "../../../core/resources/Connection";
 import {
   constructInitialSchemaState,
   constructNewSchema
-} from "../../../../../core/helpers";
-import EmptyResource from "../../../../../components/EmptyResourceBlock";
-import useConnection from "../../../../../components/hooks/services/useConnectionHook";
+} from "../../../core/helpers";
+import EmptyResource from "../../../components/EmptyResourceBlock";
+import useConnection from "../../../components/hooks/services/useConnectionHook";
 
 type IProps = {
   connection: Connection;

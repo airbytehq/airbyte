@@ -100,7 +100,6 @@
   "sources.syncHistory": "Sync history",
   "sources.syncNow": "Sync now",
   "sources.source": "Source",
-  "sources.disabled": "Disabled",
   "sources.noSync": "No sync yet",
   "sources.emptySchema": "Schema is empty",
   "sources.noSources": "Source list is empty",
@@ -127,6 +126,8 @@
   "destinations.noSources": "No sources yet",
   "destinations.addSourceReplicateData": "Add sources where to replicate data from.",
 
+  "connection.fromTo": "From {Source name} To {Destination name}",
+
   "tables": "",
   "tables.name": "Name",
   "tables.connector": "Connector",
@@ -141,6 +142,7 @@
   "tables.destinationConnectionToName": "Source name",
   "tables.frequency": "Frequency",
   "tables.enabled": "Enabled",
+  "tables.disabled": "Disabled",
   "tables.sourceConnectWithNum": "{num} destinations",
   "tables.destinationConnectWithNum": "{num} sources",
   "tables.progress": "In progress",

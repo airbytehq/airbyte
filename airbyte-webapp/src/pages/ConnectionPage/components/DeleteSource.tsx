@@ -3,13 +3,13 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useFetcher } from "rest-hooks";
 
-import ContentCard from "../../../../../components/ContentCard";
-import Button from "../../../../../components/Button";
+import ContentCard from "../../../components/ContentCard";
+import Button from "../../../components/Button";
 import DeleteModal from "./DeleteModal";
-import SourceResource from "../../../../../core/resources/Source";
-import useRouter from "../../../../../components/hooks/useRouterHook";
-import { Routes } from "../../../../routes";
-import ConnectionResource from "../../../../../core/resources/Connection";
+import SourceResource from "../../../core/resources/Source";
+import useRouter from "../../../components/hooks/useRouterHook";
+import { Routes } from "../../routes";
+import ConnectionResource from "../../../core/resources/Connection";
 
 type IProps = {
   sourceId?: string;

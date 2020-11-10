@@ -103,6 +103,7 @@ import { Routes } from "../routes";
 import LoadingPage from "../../components/LoadingPage";
 import AllDestinationsPage from "./pages/AllDestinationsPage";
 import DestinationItemPage from "./pages/DestinationItemPage";
+import ConnectionPage from "../ConnectionPage";
 
 const FallbackRootRedirector = () => <Redirect to={Routes.Destination} />;
 
@@ -112,6 +113,11 @@ const DestinationsPage: React.FC = () => {
       <Switch>
         <Route path={Routes.Destination} exact>
           <AllDestinationsPage />
+        </Route>
+        <Route path={`${Routes.Destination}${Routes.Connection}/:id`}>
+          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
+            <ConnectionPage />
+          </ErrorBoundary>
         </Route>
         <Route path={`${Routes.Destination}/:id`}>
           <ErrorBoundary fallbackComponent={FallbackRootRedirector}>

@@ -3,14 +3,14 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
-import ContentCard from "../../../../../components/ContentCard";
+import ContentCard from "../../../components/ContentCard";
 import DeleteSource from "./DeleteSource";
-import ServiceForm from "../../../../../components/ServiceForm";
-import { Connection } from "../../../../../core/resources/Connection";
-import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
-import SourceDefinitionSpecificationResource from "../../../../../core/resources/SourceDefinitionSpecification";
-import useSource from "../../../../../components/hooks/services/useSourceHook";
-import useConnection from "../../../../../components/hooks/services/useConnectionHook";
+import ServiceForm from "../../../components/ServiceForm";
+import { Connection } from "../../../core/resources/Connection";
+import FrequencyConfig from "../../../data/FrequencyConfig.json";
+import SourceDefinitionSpecificationResource from "../../../core/resources/SourceDefinitionSpecification";
+import useSource from "../../../components/hooks/services/useSourceHook";
+import useConnection from "../../../components/hooks/services/useConnectionHook";
 
 type IProps = {
   sourceData: Connection;

@@ -1,8 +1,8 @@
 import React, { useCallback } from "react";
 
 import { ConnectionTable } from "../../../../../components/EntityTable";
-// import { Routes } from "../../../../routes";
-// import useRouter from "../../../../../components/hooks/useRouterHook";
+import { Routes } from "../../../../routes";
+import useRouter from "../../../../../components/hooks/useRouterHook";
 import { Connection } from "../../../../../core/resources/Connection";
 import useSyncActions from "../../../../../components/EntityTable/hooks";
 import { getConnectionTableData } from "../../../../../components/EntityTable/utils";
@@ -12,7 +12,7 @@ type IProps = {
 };
 
 const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
-  // const { push } = useRouter();
+  const { push } = useRouter();
 
   const { changeStatus, syncManualConnection } = useSyncActions();
 
@@ -43,10 +43,8 @@ const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
     [connections, syncManualConnection]
   );
 
-  // TODO: fix click row
-  // const clickRow = (source: any) =>
-  //   push(`${Routes.Destination}${Routes.Connection}/${source.connectionId}`);
-  const clickRow = () => null;
+  const clickRow = (source: any) =>
+    push(`${Routes.Destination}${Routes.Connection}/${source.connectionId}`);
 
   return (
     <ConnectionTable

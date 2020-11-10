@@ -2,16 +2,12 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "../../../../../components/ContentCard";
-import ImageBlock from "../../../../../components/ImageBlock";
-import {
-  Header,
-  Row,
-  Cell
-} from "../../../../../components/SimpleTableComponents";
-import Toggle from "../../../../../components/Toggle";
-import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
-import { Connection } from "../../../../../core/resources/Connection";
+import ContentCard from "../../../components/ContentCard";
+import ImageBlock from "../../../components/ImageBlock";
+import { Header, Row, Cell } from "../../../components/SimpleTableComponents";
+import Toggle from "../../../components/Toggle";
+import { DestinationDefinition } from "../../../core/resources/DestinationDefinition";
+import { Connection } from "../../../core/resources/Connection";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
@@ -68,7 +64,7 @@ const StatusMainInfo: React.FC<IProps> = ({
           <FormattedMessage id="sidebar.destination" />
         </Cell>
         <Cell>
-          <FormattedMessage id="sources.frequency" />
+          <FormattedMessage id="tables.frequency" />
         </Cell>
         <Cell flex={1.1}></Cell>
       </Header>
@@ -87,8 +83,8 @@ const StatusMainInfo: React.FC<IProps> = ({
             <FormattedMessage
               id={
                 sourceData.status === "active"
-                  ? "sources.enabled"
-                  : "sources.disabled"
+                  ? "tables.enabled"
+                  : "tables.disabled"
               }
             />
           </ToggleLabel>
