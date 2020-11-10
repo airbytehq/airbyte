@@ -99,7 +99,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
 
     baseConfig = getStaticConfig();
-    SnowflakeDatabase.executeVoid(SnowflakeDatabase.getConnectionFactory(baseConfig), createSchemaQuery, false);
+    SnowflakeDatabase.executeSync(SnowflakeDatabase.getConnectionFactory(baseConfig), createSchemaQuery, false);
 
     final JsonNode configForSchema = Jsons.clone(baseConfig);
     ((ObjectNode) configForSchema).put("schema", schemaName);
@@ -108,8 +108,8 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
-     final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
-     SnowflakeDatabase.executeVoid(SnowflakeDatabase.getConnectionFactory(baseConfig), createSchemaQuery, false);
+    final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
+    SnowflakeDatabase.executeSync(SnowflakeDatabase.getConnectionFactory(baseConfig), createSchemaQuery, false);
   }
 
 }

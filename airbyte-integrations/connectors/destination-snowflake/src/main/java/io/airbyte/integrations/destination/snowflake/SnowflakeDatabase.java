@@ -89,6 +89,11 @@ public class SnowflakeDatabase {
     executeSync(connectionFactory, query, false, rs -> null);
   }
 
+  public static void executeSync(Supplier<Connection> connectionFactory, String query, boolean multipleStatements)
+      throws SQLException, InterruptedException {
+    executeSync(connectionFactory, query, multipleStatements, rs -> null);
+  }
+
   /**
    * @param connectionFactory - a supplier for a Snowflake connection
    * @param query - Snowflake query
@@ -102,13 +107,7 @@ public class SnowflakeDatabase {
    */
   public static <T> T executeSync(Supplier<Connection> connectionFactory, String query, boolean multipleStatements, Function<ResultSet, T> transform)
       throws SQLException, InterruptedException {
-    final ResultSet results = execute(connectionFactory, query, multipleStatements);
-    return transform.apply(waitForQuery(results));
-  }
-
-  private static ResultSet execute(Supplier<Connection> connectionFactory, String query, boolean multipleStatements)
-      throws SQLException, InterruptedException {
-    try (final Connection conn = connectionFactory.get()) {
+    try (Connection conn = connectionFactory.get()) {
       final Statement statement = conn.createStatement();
       final SnowflakeStatement snowflakeStatement = statement.unwrap(SnowflakeStatement.class);
 
@@ -116,13 +115,9 @@ public class SnowflakeDatabase {
         snowflakeStatement.setParameter("MULTI_STATEMENT_COUNT", 0);
       }
 
-      return snowflakeStatement.executeAsyncQuery(query);
+      ResultSet resultSet = snowflakeStatement.executeAsyncQuery(query);
+      return transform.apply(waitForQuery(resultSet));
     }
-  }
-
-  public static void executeVoid(Supplier<Connection> connectionFactory, String query, boolean multipleStatements)
-      throws SQLException, InterruptedException {
-    execute(connectionFactory, query, multipleStatements);
   }
 
   /**
