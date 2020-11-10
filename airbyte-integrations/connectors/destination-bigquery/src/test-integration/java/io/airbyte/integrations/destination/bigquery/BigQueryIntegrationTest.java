@@ -31,11 +31,15 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
@@ -43,6 +47,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -96,7 +101,11 @@ public class BigQueryIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(env, NamingHelper.getRawTableName(streamName));
+    return retrieveRecordsFromTable(env, NamingHelper.getRawTableName(streamName))
+        .stream()
+        .map(node -> node.get("data").asText())
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
   }
 
   private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws InterruptedException {
@@ -106,10 +115,19 @@ public class BigQueryIntegrationTest extends TestDestination {
                 String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();
 
+    TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
+    FieldList fields = queryResults.getSchema().getFields();
+
     return StreamSupport
-        .stream(executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
-        .map(v -> v.get(COLUMN_DATA).getStringValue())
-        .map(Jsons::deserialize)
+        .stream(queryResults.iterateAll().spliterator(), false)
+        .map(row -> {
+          Map<String, Object> jsonMap = Maps.newHashMap();
+          for (Field field : fields) {
+            jsonMap.put(field.getName(), row.get(field.getName()).getValue());
+          }
+          return jsonMap;
+        })
+        .map(Jsons::jsonNode)
         .collect(Collectors.toList());
   }
 

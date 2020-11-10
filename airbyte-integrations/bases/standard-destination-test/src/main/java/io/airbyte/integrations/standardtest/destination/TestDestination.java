@@ -346,11 +346,10 @@ public abstract class TestDestination {
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)
         .map(AirbyteRecordMessage::getData)
-        .map(Jsons::clone)
-        .map(this::prune)
+        .map(this::safePrune)
         .collect(Collectors.toList());
 
-    final List<JsonNode> actualPruned = actual.stream().map(this::prune).collect(Collectors.toList());
+    final List<JsonNode> actualPruned = actual.stream().map(this::safePrune).collect(Collectors.toList());
     assertSameData(expectedPruned, actualPruned);
   }
 
@@ -371,7 +370,7 @@ public abstract class TestDestination {
    * @param json - json that will be pruned.
    * @return pruned json node.
    */
-  private JsonNode prune(JsonNode json) {
+  private JsonNode safePrune(JsonNode json) {
     final JsonNode clone = Jsons.clone(json);
     pruneMutate(clone);
     return clone;
