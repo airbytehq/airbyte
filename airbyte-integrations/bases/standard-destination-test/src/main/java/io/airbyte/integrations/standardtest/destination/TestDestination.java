@@ -27,10 +27,12 @@ package io.airbyte.integrations.standardtest.destination;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -59,6 +61,8 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -70,8 +74,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class TestDestination {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestDestination.class);
 
   private TestDestinationEnv testEnv;
 
@@ -166,6 +174,7 @@ public abstract class TestDestination {
     final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
     localRoot = Files.createTempDirectory(testDir, "output");
+    LOGGER.info("jobRoot: {}", jobRoot);
     testEnv = new TestDestinationEnv(localRoot);
 
     setup(testEnv);
@@ -244,8 +253,9 @@ public abstract class TestDestination {
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalization(String messagesFilename, String catalogFilename) throws Exception {
-    if (!implementsBasicNormalization())
+    if (!implementsBasicNormalization()) {
       return;
+    }
 
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
@@ -253,7 +263,7 @@ public abstract class TestDestination {
     runSync(getConfigWithBasicNormalization(), messages, catalog);
 
     assertSameMessages(messages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
-    assertEquivalentMessages(messages, retrieveNormalizedRecords(testEnv, catalog.getStreams().get(0).getName()));
+    assertSameMessagesPruneAirbyteInternalFields(messages, retrieveNormalizedRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
   /**
@@ -303,8 +313,10 @@ public abstract class TestDestination {
     target.notifyEndOfStream();
     target.close();
 
-    if (!implementsBasicNormalization())
+    // skip if basic normalization is not configured to run (either not set or false).
+    if (!config.hasNonNull(WorkerConstants.BASIC_NORMALIZATION_KEY) || !config.get(WorkerConstants.BASIC_NORMALIZATION_KEY).asBoolean()) {
       return;
+    }
 
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
         getImageName(),
@@ -325,22 +337,72 @@ public abstract class TestDestination {
         .map(AirbyteRecordMessage::getData)
         .collect(Collectors.toList());
 
-    // we want to ignore order in this comparison.
-    assertEquals(expectedJson.size(), actual.size());
-    assertTrue(expectedJson.containsAll(actual));
-    assertTrue(actual.containsAll(expectedJson));
+    assertSameData(expectedJson, actual);
   }
 
-  private void assertEquivalentMessages(List<AirbyteMessage> expected, List<JsonNode> actual) {
-    final List<JsonNode> expectedJson = expected.stream()
+  private void assertSameMessagesPruneAirbyteInternalFields(List<AirbyteMessage> expected, List<JsonNode> actual) {
+    final List<JsonNode> expectedPruned = expected.stream()
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)
         .map(AirbyteRecordMessage::getData)
+        .map(Jsons::clone)
+        .map(this::prune)
         .collect(Collectors.toList());
 
+    final List<JsonNode> actualPruned = actual.stream().map(this::prune).collect(Collectors.toList());
+    assertSameData(expectedPruned, actualPruned);
+  }
+
+  private void assertSameData(List<JsonNode> expected, List<JsonNode> actual) {
+    LOGGER.info("expected: {}", expected);
+    LOGGER.info("actual: {}", actual);
+
     // we want to ignore order in this comparison.
-    assertEquals(expectedJson.size(), actual.size());
-    // todo Message can be slightly different with additional columns?
+    assertEquals(expected.size(), actual.size());
+    assertTrue(expected.containsAll(actual));
+    assertTrue(actual.containsAll(expected));
+  }
+
+  /**
+   * Same as {@link #pruneMutate(JsonNode)}, except does a defensive copy and returns a new json node
+   * object instead of mutating in place.
+   *
+   * @param json - json that will be pruned.
+   * @return pruned json node.
+   */
+  private JsonNode prune(JsonNode json) {
+    final JsonNode clone = Jsons.clone(json);
+    pruneMutate(clone);
+    return clone;
+  }
+
+  /**
+   * Prune fields that are added internally by airbyte and are not part of the original data. Used so
+   * that we can compare data that is persisted by an Airbyte worker to the original data. This method
+   * mutates the provided json in place.
+   *
+   * @param json - json that will be pruned. will be mutated in place!
+   */
+  private void pruneMutate(JsonNode json) {
+    final Set<String> keys = Jsons.object(json, new TypeReference<Map<String, Object>>() {}).keySet();
+    for (final String key : keys) {
+      final JsonNode node = json.get(key);
+      // recursively prune all airbyte internal fields.
+      if (node.isObject() || node.isArray()) {
+        pruneMutate(node);
+      }
+
+      // prune the following
+      // - airbyte internal fields
+      // - fields that match what airbyte generates as hash ids
+      // - null values -- normalization will often return `<key>: null` but in the original data that key
+      // likely did not exist in the original message. the most consistent thing to do is always remove
+      // the null fields (this choice does decrease our ability to check that normalization creates
+      // columns even if all the values in that column are null)
+      if (Sets.newHashSet("emitted_at", "ab_id", "normalized_at").contains(key) || key.matches("^_.*_hashid$") || json.get(key).isNull()) {
+        ((ObjectNode) json).remove(key);
+      }
+    }
   }
 
   private JsonNode getConfigWithBasicNormalization() throws Exception {
