@@ -59,6 +59,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
@@ -71,8 +72,10 @@ class PostgresDestinationTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   private static final Instant NOW = Instant.now();
-  private static final String USERS_STREAM_NAME = "users_raw";
-  private static final String TASKS_STREAM_NAME = "tasks_raw";
+  private static final String USERS_STREAM_NAME = "users";
+  private static final String USERS_WRITTEN_TABLE_NAME = USERS_STREAM_NAME + "_raw";
+  private static final String TASKS_STREAM_NAME = "tasks";
+  private static final String TASKS_WRITEN_TABLE_NAME = TASKS_STREAM_NAME + "_raw";
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
@@ -164,11 +167,11 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    Set<JsonNode> usersActual = recordRetriever(USERS_STREAM_NAME);
+    Set<JsonNode> usersActual = recordRetriever(USERS_WRITTEN_TABLE_NAME);
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(TASKS_STREAM_NAME);
+    Set<JsonNode> tasksActual = recordRetriever(TASKS_WRITEN_TABLE_NAME);
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
@@ -188,7 +191,7 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_USERS2);
     consumer.close();
 
-    final List<String> tableNames = CATALOG.getStreams().stream().map(AirbyteStream::getName).collect(toList());
+    final List<String> tableNames = CATALOG.getStreams().stream().map(s -> s.getName() + "_raw").collect(toList());
     assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(AirbyteStream::getName).collect(Collectors.toList()));
     // assert that no tables were created.
     assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tableNames.stream().anyMatch(tableName::startsWith)));
@@ -202,8 +205,8 @@ class PostgresDestinationTest {
   }
 
   private void assertTmpTablesNotPresent(List<String> tableNames) throws SQLException {
-    Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
-    assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
+    Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_\\d+").collect(Collectors.toSet());
+    assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::matches)));
   }
 
   private Set<JsonNode> recordRetriever(String streamName) throws Exception {

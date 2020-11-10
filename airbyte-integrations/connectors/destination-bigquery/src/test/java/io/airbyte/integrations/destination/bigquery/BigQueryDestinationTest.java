@@ -78,8 +78,10 @@ class BigQueryDestinationTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
 
   private static final Instant NOW = Instant.now();
-  private static final String USERS_STREAM_NAME = "users_raw";
-  private static final String TASKS_STREAM_NAME = "tasks_raw";
+  private static final String USERS_STREAM_NAME = "users";
+  private static final String USERS_WRITTEN_TABLE_NAME = USERS_STREAM_NAME + "_raw";
+  private static final String TASKS_STREAM_NAME = "tasks";
+  private static final String TASKS_WRITTEN_TABLE_NAME = TASKS_STREAM_NAME + "_raw";
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
@@ -217,12 +219,12 @@ class BigQueryDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final List<JsonNode> usersActual = retrieveRecords(USERS_STREAM_NAME);
+    final List<JsonNode> usersActual = retrieveRecords(USERS_WRITTEN_TABLE_NAME);
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson.size(), usersActual.size());
     assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
 
-    final List<JsonNode> tasksActual = retrieveRecords(TASKS_STREAM_NAME);
+    final List<JsonNode> tasksActual = retrieveRecords(TASKS_WRITTEN_TABLE_NAME);
     final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));

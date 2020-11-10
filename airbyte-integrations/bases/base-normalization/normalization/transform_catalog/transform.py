@@ -364,7 +364,7 @@ def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict,
         # stream it actually ended up writing.
         table = f"{MACRO_START} source('{schema}','{name}_raw') {MACRO_END}"
         result.update(process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table))
-        source_tables.add(name)
+        source_tables.add(name + "_raw")
     return result, source_tables
 
 
