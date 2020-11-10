@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.TestDestination;
+import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
