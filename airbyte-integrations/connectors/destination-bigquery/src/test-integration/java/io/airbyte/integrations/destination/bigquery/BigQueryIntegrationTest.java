@@ -37,6 +37,7 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
@@ -86,7 +87,9 @@ public class BigQueryIntegrationTest extends TestDestination {
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     final QueryJobConfiguration queryConfig =
-        QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), streamName.toLowerCase()))
+        QueryJobConfiguration
+            .newBuilder(
+                String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), NamingHelper.getRawTableName(streamName.toLowerCase())))
             .setUseLegacySql(false).build();
 
     return StreamSupport
@@ -100,7 +103,8 @@ public class BigQueryIntegrationTest extends TestDestination {
   protected void setup(TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/config/credentials.json. Override by setting setting path with the CREDENTIALS_PATH constant.");
+          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+              + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
     final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));

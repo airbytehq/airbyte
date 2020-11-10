@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -75,7 +76,7 @@ public class PostgresIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl()).query(
         ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
+            .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", NamingHelper.getRawTableName(streamName)))
             .stream()
             .map(r -> r.formatJSON(JSON_FORMAT))
             .map(Jsons::deserialize)
@@ -85,23 +86,23 @@ public class PostgresIntegrationTest extends TestDestination {
 
   // todo (cgardens) - Example of what this should look like for postgres once normalization is added.
   // Keep in mind `retrieveRecords` will also need to be updated once we have `_raw`
-  // @Override
-  // protected boolean implementsBasicNormalization() {
-  // return true;
-  // }
-  //
-  // @Override
-  // protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName)
-  // throws Exception {
-  // return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
-  // db.getJdbcUrl()).query(
-  // ctx -> ctx
-  // .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
-  // .stream()
-  // .map(r -> r.formatJSON(JSON_FORMAT))
-  // .map(Jsons::deserialize)
-  // .collect(Collectors.toList()));
-  // }
+  @Override
+  protected boolean implementsBasicNormalization() {
+    return true;
+  }
+
+  @Override
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName)
+      throws Exception {
+    return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
+        db.getJdbcUrl()).query(
+            ctx -> ctx
+                .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
+                .stream()
+                .map(r -> r.formatJSON(JSON_FORMAT))
+                .map(Jsons::deserialize)
+                .collect(Collectors.toList()));
+  }
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
