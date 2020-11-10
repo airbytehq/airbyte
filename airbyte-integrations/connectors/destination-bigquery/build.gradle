@@ -1,9 +1,12 @@
 plugins {
     id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
 }
 
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+application {
+    mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
+}
 
 dependencies {
     implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
@@ -14,14 +17,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-queue')
 
-    integrationTestImplementation project(':airbyte-integrations:bases:destination-test-lib')
+    integrationTestImplementation project(':airbyte-integrations:bases:standard-destination-test')
 
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
-
-application {
-    mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
-}
-
-buildImage.dependsOn(assemble)
-buildImage.dependsOn(':airbyte-integrations:bases:base-java:buildImage')
-integrationTest.dependsOn(buildImage)

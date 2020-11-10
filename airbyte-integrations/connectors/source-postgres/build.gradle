@@ -1,9 +1,13 @@
 plugins {
     id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+    // todo: needs standard source test
 }
 
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
+application {
+    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSource'
+}
 
 dependencies {
     implementation "org.postgresql:postgresql:42.2.18"
@@ -21,12 +25,6 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
 
     integrationTestImplementation project(':airbyte-integrations:bases:standard-source-test')
-}
 
-application {
-    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSource'
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
-
-buildImage.dependsOn(assemble)
-buildImage.dependsOn(':airbyte-integrations:bases:base-java:buildImage')
-integrationTest.dependsOn(buildImage)
