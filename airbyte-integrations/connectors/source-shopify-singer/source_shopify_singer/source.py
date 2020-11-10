@@ -36,6 +36,7 @@ class SourceShopifySinger(SingerSource):
 
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
+            # todo: use a sync or some other verification
             self.discover(logger, config_container)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
@@ -49,4 +50,4 @@ class SourceShopifySinger(SingerSource):
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
         state_path = f"--state {state_path}" if state_path else ""
-        return f"{TAP_CMD} -c {config_path} -p {catalog_path} {state_path}"
+        return f"{TAP_CMD} -c {config_path} --catalog {catalog_path} {state_path}"
