@@ -1,6 +1,6 @@
 {
   "filename": "integrationTestFile",
   "format": "json",
-  "provider": {"storage": "HTTPS" },
+  "provider": { "storage": "HTTPS" },
   "url": "https://think.cs.vt.edu/corgis/datasets/json/airlines/airlines.json"
 }

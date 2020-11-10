@@ -55,7 +55,7 @@
           },
           {
             "title": "Google Cloud Storage",
-            "required": ["storage","reader_impl"],
+            "required": ["storage", "reader_impl"],
             "properties": {
               "storage": {
                 "type": "string",
@@ -76,7 +76,7 @@
           },
           {
             "title": "Amazon Web Services",
-            "required": ["storage","reader_impl"],
+            "required": ["storage", "reader_impl"],
             "properties": {
               "storage": {
                 "type": "string",
@@ -101,7 +101,7 @@
           },
           {
             "title": "Secure Shell",
-            "required": ["storage","user", "host"],
+            "required": ["storage", "user", "host"],
             "properties": {
               "storage": {
                 "type": "string",
@@ -121,7 +121,7 @@
           },
           {
             "title": "Secure File Transfer Protocol",
-            "required": ["storage","user", "host"],
+            "required": ["storage", "user", "host"],
             "properties": {
               "storage": {
                 "type": "string",
@@ -141,7 +141,7 @@
           },
           {
             "title": "WebHDFS",
-            "required": ["storage","host", "port"],
+            "required": ["storage", "host", "port"],
             "properties": {
               "storage": {
                 "type": "string",
