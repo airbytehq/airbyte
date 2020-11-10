@@ -25,7 +25,6 @@ SOFTWARE.
 import sys
 
 from base_python.entrypoint import launch
-
 from source_mailchimp import SourceMailchimp
 
 if __name__ == "__main__":
