@@ -14,7 +14,7 @@ LABEL io.airbyte.name=airbyte/source-shopify-singer-standard-test
 WORKDIR /airbyte/integration_code
 COPY $MODULE_NAME $MODULE_NAME
 COPY $CODE_PATH $CODE_PATH
-COPY secrets/* $CODE_PATH/
+COPY secrets/config.json $CODE_PATH/config.json
 COPY $MODULE_NAME/*.json $CODE_PATH/
 COPY setup.py ./
 
