@@ -38,7 +38,7 @@ setup(
         # Dependencies required by the main package but not integration tests should go in main. Deps required by
         # integration tests but not the main package go in integration_tests. Deps required by both should go in
         # install_requires.
-        "main": [],
+        "main": ["impyla==0.16.3", " pure-sasl==0.6.2"],
         "tests": ["airbyte_python_test", "pytest"],
     },
 )
