@@ -5,9 +5,13 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "File Source Spec",
     "type": "object",
-    "required": ["url", "storage"],
-    "additionalProperties": true,
+    "additionalProperties": false,
+    "required": ["filename", "format", "url", "provider"],
     "properties": {
+      "filename": {
+        "type": "string",
+        "description": "Name of the final table where to replicate this file (should include only letters, numbers dash and underscores)"
+      },
       "format": {
         "type": "string",
         "enum": [
@@ -21,47 +25,41 @@
           "pickle"
         ],
         "default": "csv",
-        "description": "File Format of the file to be replicated. Common formats are (csv, json or excel) but more advanced formats can be specified (html, parquet, orc, feather, pickle)",
-        "examples": ["csv"]
+        "description": "File Format of the file to be replicated."
       },
       "reader_options": {
         "type": "string",
         "description": "Parsers for File Formats are currently using the `read_*` methods from the Pandas Library. Each of these readers provides additional options that can be specified as part of this JSON string. As an example, it is possible to change the read_csv behavior to a TSV (tab separated instead of comma) when redefining the delimiter character. See documentation of each `read_*` primitive from here: https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html",
         "examples": ["{}", "{'sep': ' '}"]
       },
-
-      "storage": {
-        "type": "string",
-        "enum": ["HTTPS", "GCS", "S3", "SSH", "SFTP", "WebHDFS", "local"],
-        "description": "Storage Provider or Location of the file(s) to be replicated. (Note that local storage of directory where csv files will be read must start with the local mount \"/local\" at the moment until we implement more advanced mounting options)",
-        "default": "HTTPS"
-      },
-
       "url": {
         "type": "string",
         "description": "URL path to access the file to be replicated"
       },
-
-      "filename": {
-        "type": "string",
-        "description": "Name of the file (should include only letters, numbers dash and underscores)"
-      }
-    },
-
-    "dependencies": {
-      "storage": {
+      "provider": {
+        "type": "object",
+        "description": "Storage Provider or Location of the file(s) to be replicated.",
+        "default": "Public Web",
         "oneOf": [
           {
+            "title": "Public Web",
+            "required": ["storage"],
             "properties": {
               "storage": {
-                "enum": ["HTTPS"]
+                "type": "string",
+                "enum": ["HTTPS"],
+                "default": "HTTPS"
               }
             }
           },
           {
+            "title": "Google Cloud Storage",
+            "required": ["storage", "reader_impl"],
             "properties": {
               "storage": {
-                "enum": ["GCS"]
+                "type": "string",
+                "enum": ["GCS"],
+                "default": "GCS"
               },
               "service_account_json": {
                 "type": "string",
@@ -75,11 +73,14 @@
               }
             }
           },
-
           {
+            "title": "Amazon Web Services",
+            "required": ["storage", "reader_impl"],
             "properties": {
               "storage": {
-                "enum": ["S3"]
+                "type": "string",
+                "enum": ["S3"],
+                "default": "S3"
               },
               "aws_access_key_id": {
                 "type": "string",
@@ -97,11 +98,14 @@
               }
             }
           },
-
           {
+            "title": "Secure Shell",
+            "required": ["storage", "user", "host"],
             "properties": {
               "storage": {
-                "enum": ["SSH"]
+                "type": "string",
+                "enum": ["SSH"],
+                "default": "SSH"
               },
               "user": {
                 "type": "string"
@@ -112,14 +116,16 @@
               "host": {
                 "type": "string"
               }
-            },
-            "required": ["user", "host"]
+            }
           },
-
           {
+            "title": "Secure File Transfer Protocol",
+            "required": ["storage", "user", "host"],
             "properties": {
               "storage": {
-                "enum": ["SFTP"]
+                "type": "string",
+                "enum": ["SFTP"],
+                "default": "SFTP"
               },
               "user": {
                 "type": "string"
@@ -130,14 +136,16 @@
               "host": {
                 "type": "string"
               }
-            },
-            "required": ["user", "host"]
+            }
           },
-
           {
+            "title": "WebHDFS",
+            "required": ["storage", "host", "port"],
             "properties": {
               "storage": {
-                "enum": ["WebHDFS"]
+                "type": "string",
+                "enum": ["WebHDFS"],
+                "default": "WebHDFS"
               },
               "host": {
                 "type": "string"
@@ -145,8 +153,19 @@
               "port": {
                 "type": "number"
               }
-            },
-            "required": ["host", "port"]
+            }
+          },
+          {
+            "title": "Local Filesystem",
+            "description": "(Note that local storage of directory where csv files will be read must start with the local mount \"/local\" at the moment until we implement more advanced mounting options)",
+            "required": ["storage"],
+            "properties": {
+              "storage": {
+                "type": "string",
+                "enum": ["local"],
+                "default": "local"
+              }
+            }
           }
         ]
       }
