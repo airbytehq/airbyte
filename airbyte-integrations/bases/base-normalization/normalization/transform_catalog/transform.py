@@ -29,9 +29,6 @@ from typing import List, Optional, Set, Tuple, Union
 
 import yaml
 
-MACRO_START = "{{"
-MACRO_END = "}}"
-
 
 class TransformCatalog:
     """
@@ -162,29 +159,36 @@ def find_combining_schema(properties: dict) -> set:
     return set(properties).intersection({"anyOf", "oneOf", "allOf"})
 
 
+def jinja_call(command: str) -> str:
+    return "{{ " + command + "  }}"
+
+
 def json_extract_base_property(path: List[str], json_col: str, name: str, definition: dict) -> Optional[str]:
     current = path + [name]
     if "type" not in definition:
         return None
     elif is_string(definition["type"]):
-        return (
-            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as {MACRO_START} dbt_utils.type_string()"
-            + f" {MACRO_END}) as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
+        return "cast({} as {}) as {}".format(
+            jinja_call(f"json_extract('{json_col}', {current})"),
+            jinja_call("dbt_utils.type_string()"),
+            jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
         )
     elif is_integer(definition["type"]):
-        return (
-            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as {MACRO_START} dbt_utils.type_int()"
-            + f" {MACRO_END}) as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
+        return "cast({} as {}) as {}".format(
+            jinja_call(f"json_extract_scalar('{json_col}', {current})"),
+            jinja_call("dbt_utils.type_int()"),
+            jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
         )
     elif is_number(definition["type"]):
-        return (
-            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as {MACRO_START} dbt_utils.type_numeric()"
-            + f" {MACRO_END}) as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
+        return "cast({} as {}) as {}".format(
+            jinja_call(f"json_extract_scalar('{json_col}', {current})"),
+            jinja_call("dbt_utils.type_float()"),
+            jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
         )
     elif is_boolean(definition["type"]):
-        return (
-            f"cast({MACRO_START} json_extract_scalar('{json_col}', {current}) {MACRO_END} as boolean"
-            + f") as {MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}"
+        return "cast({} as boolean) as {}".format(
+            jinja_call(f"json_extract_scalar('{json_col}', {current})"),
+            jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
         )
     else:
         return None
@@ -196,15 +200,20 @@ def json_extract_nested_property(path: List[str], json_col: str, name: str, defi
         return None, None
     elif is_array(definition["type"]):
         return (
-            f"{MACRO_START} json_extract_array('{json_col}', {current}) {MACRO_END} as "
-            + f"{MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}",
-            f"cross join {MACRO_START} unnest('{name}') {MACRO_END} as "
-            + f"{MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}",
+            "{} as {}".format(
+                jinja_call(f"json_extract_array('{json_col}', {current})"),
+                jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
+            ),
+            "cross join {} as {}".format(
+                jinja_call(f"unnest('{name}')"), jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')")
+            ),
         )
     elif is_object(definition["type"]):
         return (
-            f"{MACRO_START} json_extract('{json_col}', {current}) {MACRO_END} as "
-            + f"{MACRO_START} adapter.quote_as_configured('{name}', 'identifier') {MACRO_END}",
+            "{} as {}".format(
+                jinja_call(f"json_extract('{json_col}', {current})"),
+                jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
+            ),
             "",
         )
     else:
@@ -290,17 +299,25 @@ def process_node(
     node_properties = extract_node_properties(path=path, json_col=json_col, properties=properties)
     node_columns = ",\n    ".join([sql for sql in node_properties.values()])
     hash_node_columns = ",\n        ".join([f"adapter.quote_as_configured('{column}', 'identifier')" for column in node_properties.keys()])
-    hash_node_columns = f"{MACRO_START} dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ]) {MACRO_END}"
+    hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
+    hash_id = jinja_call(f"adapter.quote_as_configured('_{name}_hashid', 'identifier')")
+    foreign_hash_id = jinja_call(f"adapter.quote_as_configured('_{name}_foreign_hashid', 'identifier')")
+    emitted_col = "{},\n    {} as {}".format(
+        jinja_call("adapter.quote_as_configured('emitted_at', 'identifier')"),
+        jinja_call("dbt_utils.current_timestamp_in_utc()"),
+        jinja_call("adapter.quote_as_configured('normalized_at', 'identifier')"),
+    )
     node_sql = f"""{prefix}
 {name}_node as (
   select {inject_cols}
+    {emitted_col},
     {node_columns}
   from {from_table}
 ),
 {name}_with_id as (
   select
     *,
-    {hash_node_columns} as {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END}
+    {hash_node_columns} as {hash_id}
   from {name}_node
 )"""
     # SQL Query for current node's basic properties
@@ -310,17 +327,19 @@ def process_node(
     if children_columns:
         for col in children_columns.keys():
             child_col, join_child_table = json_extract_nested_property(path=path, json_col=json_col, name=col, definition=properties[col])
+            column_name = jinja_call(f"adapter.quote_as_configured('{col}', 'identifier')")
             child_sql = f"""{prefix}
 {name}_node as (
   select
+    {emitted_col},
     {child_col},
     {node_columns}
   from {from_table}
 ),
 {name}_with_id as (
   select
-    {hash_node_columns} as {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END},
-    {MACRO_START} adapter.quote_as_configured('{col}', 'identifier') {MACRO_END}
+    {hash_node_columns} as {hash_id},
+    {column_name}
   from {name}_node
   {join_child_table}
 )"""
@@ -332,7 +351,7 @@ def process_node(
                     properties=children_columns[col],
                     from_table=f"{name}_with_id",
                     previous=child_sql,
-                    inject_cols=f"\n    {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END} as _{name}_foreign_hashid,",
+                    inject_cols=f"\n    {hash_id} as {foreign_hash_id},",
                 )
                 result.update(children)
             else:
@@ -340,7 +359,7 @@ def process_node(
                 result[f"{name}_{col}"] = child_sql + select_table(
                     f"{name}_with_id",
                     columns=f"""
-  {MACRO_START} adapter.quote_as_configured('_{name}_hashid', 'identifier') {MACRO_END} as _{name}_foreign_hashid,
+  {hash_id} as {foreign_hash_id},
   {col}
 """,
                 )
@@ -359,12 +378,12 @@ def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict,
             properties = obj["json_schema"]["properties"]
         else:
             properties = {}
-        # TODO Any destination which can run in conjunction with normalization outputs tables whose names have the _raw suffix. However, it would be better
-        # to have either normalization rename those tables before it runs, or the destination connector output a mapping from its input catalog to the
-        # stream it actually ended up writing.
-        table = f"{MACRO_START} source('{schema}','{name}_raw') {MACRO_END}"
+        # TODO Replace {name}_raw by an argument like we do for the json_blob column
+        # This would enable destination to freely choose where to store intermediate data before notifying
+        # normalization step
+        table = jinja_call(f"source('{schema}','{name}_raw')")
         result.update(process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table))
-        source_tables.add(name + "_raw")
+        source_tables.add(f"{name}_raw")
     return result, source_tables
 
 
