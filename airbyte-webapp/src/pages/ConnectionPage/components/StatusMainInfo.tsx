@@ -6,7 +6,6 @@ import ContentCard from "../../../components/ContentCard";
 import ImageBlock from "../../../components/ImageBlock";
 import { Header, Row, Cell } from "../../../components/SimpleTableComponents";
 import Toggle from "../../../components/Toggle";
-import { DestinationDefinition } from "../../../core/resources/DestinationDefinition";
 import { Connection } from "../../../core/resources/Connection";
 
 const MainInfo = styled(ContentCard)`
@@ -42,16 +41,14 @@ const ToggleLabel = styled.label`
 `;
 
 type IProps = {
-  sourceData: Connection;
+  connection: Connection;
   onEnabledChange: () => void;
-  destinationDefinition: DestinationDefinition;
   frequencyText?: string;
 };
 
 const StatusMainInfo: React.FC<IProps> = ({
-  sourceData,
+  connection,
   onEnabledChange,
-  destinationDefinition,
   frequencyText
 }) => {
   return (
@@ -71,18 +68,18 @@ const StatusMainInfo: React.FC<IProps> = ({
       <Row>
         <SourceCell flex={2}>
           <Img />
-          {sourceData.source?.sourceName}
+          {connection.source?.sourceName}
         </SourceCell>
         <SourceCell flex={2}>
           <Img />
-          {destinationDefinition.name}
+          {connection.destination?.name}
         </SourceCell>
         <Cell>{frequencyText}</Cell>
         <EnabledCell flex={1.1}>
           <ToggleLabel htmlFor="toggle-enabled-source">
             <FormattedMessage
               id={
-                sourceData.status === "active"
+                connection.status === "active"
                   ? "tables.enabled"
                   : "tables.disabled"
               }
@@ -90,7 +87,7 @@ const StatusMainInfo: React.FC<IProps> = ({
           </ToggleLabel>
           <Toggle
             onChange={onEnabledChange}
-            checked={sourceData.status === "active"}
+            checked={connection.status === "active"}
             id="toggle-enabled-source"
           />
         </EnabledCell>

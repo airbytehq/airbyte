@@ -11,12 +11,12 @@ import SchemaView from "./components/SchemaView";
 import ConnectionResource from "../../core/resources/Connection";
 import LoadingPage from "../../components/LoadingPage";
 import MainPageWithScroll from "../../components/MainPageWithScroll";
-import DestinationResource from "../../core/resources/Destination";
 import config from "../../config";
-import DestinationDefinitionResource from "../../core/resources/DestinationDefinition";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import FrequencyConfig from "../..//data/FrequencyConfig.json";
 import useConnection from "../../components/hooks/services/useConnectionHook";
+import Link from "../../components/Link";
+import { Routes } from "../routes";
 
 const ConnectionPage: React.FC = () => {
   const { query } = useRouter();
@@ -26,14 +26,6 @@ const ConnectionPage: React.FC = () => {
   const connection = useResource(ConnectionResource.detailShape(), {
     // @ts-ignore
     connectionId: query.id
-  });
-
-  const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: config.ui.workspaceId
-  });
-  const currentDestination = destinations[0]; // Now we have only one destination. If we support multiple destinations we will fix this line
-  const destination = useResource(DestinationDefinitionResource.detailShape(), {
-    destinationDefinitionId: currentDestination.destinationDefinitionId
   });
 
   const frequency = FrequencyConfig.find(
@@ -73,8 +65,9 @@ const ConnectionPage: React.FC = () => {
           : "Reenable connection",
       connector_source: connection.source?.sourceName,
       connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: destination.name,
-      connector_destination_definition_id: destination.destinationDefinitionId,
+      connector_destination: connection.destination?.name,
+      connector_destination_definition_id:
+        connection.destination?.destinationDefinitionId,
       frequency: frequency?.text
     });
   };
@@ -85,8 +78,9 @@ const ConnectionPage: React.FC = () => {
       action: "Edit schema",
       connector_source: connection.source?.sourceName,
       connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: destination.name,
-      connector_destination_definition_id: destination.destinationDefinitionId,
+      connector_destination: connection.destination?.name,
+      connector_destination_definition_id:
+        connection.destination?.destinationDefinitionId,
       frequency: frequency?.text
     });
   };
@@ -97,8 +91,9 @@ const ConnectionPage: React.FC = () => {
       action: "Delete source",
       connector_source: connection.source?.sourceName,
       connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: destination.name,
-      connector_destination_definition_id: destination.destinationDefinitionId,
+      connector_destination: connection.destination?.name,
+      connector_destination_definition_id:
+        connection.destination?.destinationDefinitionId,
       frequency: frequency?.text
     });
   };
@@ -107,9 +102,8 @@ const ConnectionPage: React.FC = () => {
     if (currentStep === "status") {
       return (
         <StatusView
-          sourceData={connection}
+          connection={connection}
           onEnabledChange={onChangeStatus}
-          destinationDefinition={destination}
           frequencyText={frequency?.text}
         />
       );
@@ -128,7 +122,29 @@ const ConnectionPage: React.FC = () => {
       title={
         <PageTitle
           withLine
-          title={<FormattedMessage id="connection.fromTo" />}
+          title={
+            <FormattedMessage
+              id="connection.fromTo"
+              values={{
+                source: (
+                  <Link
+                    clear
+                    to={`${Routes.Source}/${connection.source?.sourceId}`}
+                  >
+                    {connection.source?.name}
+                  </Link>
+                ),
+                destination: (
+                  <Link
+                    clear
+                    to={`${Routes.Destination}/${connection.destination?.destinationId}`}
+                  >
+                    {connection.destination?.name}
+                  </Link>
+                )
+              }}
+            />
+          }
           middleComponent={
             <StepsMenu
               lightMode

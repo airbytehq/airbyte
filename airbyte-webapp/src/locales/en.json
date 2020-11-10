@@ -122,7 +122,7 @@
   "destinations.noSources": "No sources yet",
   "destinations.addSourceReplicateData": "Add sources where to replicate data from.",
 
-  "connection.fromTo": "From {Source name} To {Destination name}",
+  "connection.fromTo": "From {source} To {destination}",
 
   "tables": "",
   "tables.name": "Name",
