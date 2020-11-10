@@ -174,7 +174,7 @@ public abstract class TestDestination {
    * Verify that when the integrations returns a valid spec.
    */
   @Test
-  void testGetSpec() throws Exception {
+  public void testGetSpec() {
     final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
     assertTrue(output.getOutput().isPresent());
   }
@@ -184,24 +184,22 @@ public abstract class TestDestination {
    * Assume that the {@link TestDestination#getConfig()} is valid.
    */
   @Test
-  void testCheckConnection() throws Exception {
+  public void testCheckConnection() throws Exception {
     final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getConfig());
     assertTrue(output.getOutput().isPresent());
     assertEquals(Status.SUCCEEDED, output.getOutput().get().getStatus());
   }
 
-  // todo (cgardens) - fix issue where CsvDestination cannot be induced to fail this pass this test
-  // (cannot find credentials that are actually invalid).
   /**
    * Verify that when given invalid credentials, that check connection returns a failed response.
    * Assume that the {@link TestDestination#getFailCheckConfig()} is invalid.
    */
-  // @Test
-  // void testCheckConnectionInvalidCredentials() throws Exception {
-  // final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getFailCheckConfig());
-  // assertTrue(output.getOutput().isPresent());
-  // assertEquals(Status.FAILED, output.getOutput().get().getStatus());
-  // }
+  @Test
+  public void testCheckConnectionInvalidCredentials() throws Exception {
+    final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getFailCheckConfig());
+    assertTrue(output.getOutput().isPresent());
+    assertEquals(Status.FAILED, output.getOutput().get().getStatus());
+  }
 
   private static class DataArgumentsProvider implements ArgumentsProvider {
 
@@ -222,7 +220,7 @@ public abstract class TestDestination {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  void testSync(String messagesFilename, String catalogFilename) throws Exception {
+  public void testSync(String messagesFilename, String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(renameAllStreams(MoreResources.readResource(catalogFilename)), AirbyteCatalog.class);
     final List<AirbyteMessage> messages = renameAllStreams(MoreResources.readResource(messagesFilename)).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
@@ -235,7 +233,7 @@ public abstract class TestDestination {
    * Verify that the integration overwrites the first sync with the second sync.
    */
   @Test
-  void testSecondSync() throws Exception {
+  public void testSecondSync() throws Exception {
     final AirbyteCatalog catalog =
         Jsons.deserialize(renameAllStreams(MoreResources.readResource("exchange_rate_catalog.json")), AirbyteCatalog.class);
     final List<AirbyteMessage> firstSyncMessages = renameAllStreams(MoreResources.readResource("exchange_rate_messages.txt")).lines()
@@ -259,7 +257,7 @@ public abstract class TestDestination {
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
-  private OutputAndStatus<StandardCheckConnectionOutput> runCheck(JsonNode config) throws Exception {
+  private OutputAndStatus<StandardCheckConnectionOutput> runCheck(JsonNode config) {
     return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
