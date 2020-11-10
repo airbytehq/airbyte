@@ -33,16 +33,21 @@ import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
+import com.google.cloud.bigquery.FieldValue;
+import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
+
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,10 +56,18 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.google.cloud.bigquery.LegacySQLTypeName.BOOLEAN;
+import static com.google.cloud.bigquery.LegacySQLTypeName.BYTES;
+import static com.google.cloud.bigquery.LegacySQLTypeName.INTEGER;
+import static com.google.cloud.bigquery.LegacySQLTypeName.NUMERIC;
+import static com.google.cloud.bigquery.StandardSQLTypeName.*;
+import static com.google.cloud.bigquery.StandardSQLTypeName.INT64;
 
 public class BigQueryIntegrationTest extends TestDestination {
 
@@ -121,14 +134,28 @@ public class BigQueryIntegrationTest extends TestDestination {
     return StreamSupport
         .stream(queryResults.iterateAll().spliterator(), false)
         .map(row -> {
-          Map jsonMap = Maps.newHashMap();
+          Map<String, Object> jsonMap = Maps.newHashMap();
           for (Field field : fields) {
-            jsonMap.put(field.getName(), row.get(field.getName()).getValue());
+            Object value = getTypedFieldValue(row, field);
+            jsonMap.put(field.getName(), value);
           }
           return jsonMap;
         })
         .map(Jsons::jsonNode)
         .collect(Collectors.toList());
+  }
+
+  private Object getTypedFieldValue(FieldValueList row, Field field) {
+    FieldValue fieldValue = row.get(field.getName());
+    if (fieldValue.getValue() != null) {
+      return switch (field.getType().getStandardType()) {
+        case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
+        case INT64 -> fieldValue.getLongValue();
+        default -> fieldValue.getValue();
+      };
+    } else {
+      return null;
+    }
   }
 
   @Override
