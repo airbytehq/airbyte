@@ -56,7 +56,7 @@ This choice is made possible through the optional `reader_impl` parameter.
 
 ### Limitations
 
-- Note that for local filesystem, the file probably have to be stored somewhere in the `/tmp/airbyte_local` folder with the same limitations as the [CSV Destination](../destinations/local-csv). This may not be ideal as a Source and not well tested yet.
+- Note that for local filesystem, the file probably have to be stored somewhere in the `/tmp/airbyte_local` folder with the same limitations as the [CSV Destination](../destinations/local-csv.md). This may not be ideal as a Source and not well tested yet.
 - The JSON implementation needs to be tweaked in order to produce more complex catalog and is still in an experimental state: Simple JSON schemas should work at this point but may not be well handled when there are multiple layers of nesting.
 
 ## Getting started
