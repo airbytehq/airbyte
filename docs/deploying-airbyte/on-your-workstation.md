@@ -1,4 +1,4 @@
-# On your workstation
+# On Your Workstation
 
 {% hint style="info" %}
 These instructions have been tested on MacOS
