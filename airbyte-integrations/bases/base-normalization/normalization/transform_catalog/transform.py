@@ -182,7 +182,7 @@ def json_extract_base_property(path: List[str], json_col: str, name: str, defini
     elif is_number(definition["type"]):
         return "cast({} as {}) as {}".format(
             jinja_call(f"json_extract_scalar('{json_col}', {current})"),
-            jinja_call("dbt_utils.type_numeric()"),
+            jinja_call("dbt_utils.type_float()"),
             jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
         )
     elif is_boolean(definition["type"]):
