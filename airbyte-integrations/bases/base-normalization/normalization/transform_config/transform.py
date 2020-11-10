@@ -24,6 +24,7 @@ SOFTWARE.
 
 import argparse
 import json
+import os
 import pkgutil
 from enum import Enum
 
@@ -40,8 +41,8 @@ class TransformConfig:
     def run(self, args):
         inputs = self.parse(args)
         original_config = self.read_json_config(inputs["config"])
-        transformed_config = self.transform(inputs["integration_type"], original_config)
-
+        integration_type = inputs["integration_type"]
+        transformed_config = self.transform(integration_type, original_config)
         self.write_yaml_config(inputs["output_path"], transformed_config)
 
     def parse(self, args):
@@ -118,8 +119,8 @@ class TransformConfig:
 
         # https://docs.getdbt.com/reference/warehouse-profiles/snowflake-profile
         dbt_config["type"] = "snowflake"
-        # account is the first term subdomain of the host.
-        dbt_config["account"] = config["host"].split(".")[0]
+        # here account is everything before ".snowflakecomputing.com" as it can include account, region & cloud environment information)
+        dbt_config["account"] = config["host"].replace(".snowflakecomputing.com", "")
         dbt_config["user"] = config["username"]
         dbt_config["password"] = config["password"]
         dbt_config["role"] = config["role"]
@@ -138,7 +139,9 @@ class TransformConfig:
         return json.loads(contents)
 
     def write_yaml_config(self, output_path: str, config: dict):
-        with open(output_path, "w") as fh:
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+        with open(os.path.join(output_path, "profiles.yml"), "w") as fh:
             fh.write(yaml.dump(config))
 
 

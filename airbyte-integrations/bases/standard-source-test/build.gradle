@@ -1,8 +1,11 @@
 plugins {
     id 'application'
+    id 'airbyte-docker'
 }
 
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+application {
+    mainClass = 'io.airbyte.integrations.base.TestPythonSourceMain'
+}
 
 dependencies {
     implementation project(':airbyte-config:models')
@@ -17,7 +20,5 @@ dependencies {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.base.TestPythonSourceMain'
+    mainClass = 'io.airbyte.integrations.standardtest.source.TestPythonSourceMain'
 }
-
-buildImage.dependsOn(assemble)

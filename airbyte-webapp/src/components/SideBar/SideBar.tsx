@@ -16,7 +16,7 @@ const Bar = styled.nav`
   min-width: 65px;
   height: 100%;
   background: ${({ theme }) => theme.darkPrimaryColor};
-  padding: 9px 3px 23px 4px;
+  padding: 23px 3px 23px 4px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -25,7 +25,7 @@ const Bar = styled.nav`
 
 const Menu = styled.ul`
   padding: 0;
-  margin: 10px 0 0;
+  margin: 20px 0 0;
   width: 100%;
 `;
 
@@ -91,7 +91,7 @@ const SideBar: React.FC = () => {
     <Bar>
       <div>
         <Link to={Routes.Root}>
-          <img src="/simpleLogo.svg" alt="logo" height={50} width={50} />
+          <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <Menu>
           <li>

@@ -17,7 +17,6 @@ const Content = styled.label<{ additionLength?: number | string }>`
   line-height: 17px;
   color: ${({ theme }) => theme.textColor};
   padding-bottom: 5px;
-  width: 100%;
   width: calc(
     100% +
       ${({ additionLength }) =>
@@ -30,7 +29,7 @@ const Content = styled.label<{ additionLength?: number | string }>`
   }
 `;
 
-const MessageText = styled.span<{ error?: boolean; success?: boolean }>`
+const MessageText = styled.span<Pick<IProps, "error" | "success">>`
   white-space: break-spaces;
   color: ${props =>
     props.error

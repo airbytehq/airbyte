@@ -1,2 +1,0 @@
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-

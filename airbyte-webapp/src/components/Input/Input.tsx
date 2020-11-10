@@ -1,13 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 
-type IProps = {
-  error?: boolean;
-  light?: boolean;
-} & React.InputHTMLAttributes<HTMLInputElement>;
-
-type IStyleProps = IProps & { theme: any };
-
 const getBackgroundColor = (props: IStyleProps) => {
   if (props.error) {
     return props.theme.greyColor10;
@@ -18,7 +11,14 @@ const getBackgroundColor = (props: IStyleProps) => {
   return props.theme.greyColor0;
 };
 
-const Input = styled.input<IProps>`
+export type InputProps = {
+  error?: boolean;
+  light?: boolean;
+} & React.InputHTMLAttributes<HTMLInputElement>;
+
+type IStyleProps = InputProps & { theme: any };
+
+const Input = styled.input<InputProps>`
   outline: none;
   width: 100%;
   padding: 7px 8px;

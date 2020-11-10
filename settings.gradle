@@ -12,6 +12,7 @@ gradleEnterprise {
 }
 
 import groovy.io.FileType
+import java.nio.file.Files
 
 rootProject.name = 'airbyte'
 
@@ -32,12 +33,19 @@ include ':airbyte-webapp'
 include ':airbyte-workers'
 include ':airbyte-tests'
 include ':airbyte-test-utils'
+include ':tools:code-generator'
 
 // include all integration subprojects
 def integrationsPath = rootDir.toPath().resolve('airbyte-integrations')
-integrationsPath.eachFileRecurse(FileType.FILES) { path ->
-    def relativePath = integrationsPath.relativize(path)
-    if (path.endsWith('build.gradle') && !path.contains("build") && relativePath.getNameCount() > 1) {
-        include ":airbyte-integrations:${relativePath.parent.join(':')}"
+def symlinkPrefixes = [] as Set<String>
+integrationsPath.eachFileRecurse(FileType.ANY) { path ->
+    if (Files.isSymbolicLink(path)) {
+        symlinkPrefixes.add(path.toString())
+    } else if(!(symlinkPrefixes.any {prefix -> path.toString().startsWith(prefix)})) {
+        def relativePath = integrationsPath.relativize(path)
+
+        if (path.endsWith('build.gradle') && !path.contains("build") && relativePath.getNameCount() > 1) {
+            include ":airbyte-integrations:${relativePath.parent.join(':')}"
+        }
     }
 }

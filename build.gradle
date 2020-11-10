@@ -2,7 +2,6 @@ plugins {
     id 'base'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.7.0'
-    id 'ru.vyarus.use-python' version '2.2.0' apply false
 }
 
 repositories {
@@ -49,6 +48,8 @@ def createSpotlessTarget = { pattern ->
         '.mypy_cache',
         '.venv',
         '*.egg-info',
+        'build',
+        'dbt-project-template'
     ]
     return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect {"**/${it}"})
 }

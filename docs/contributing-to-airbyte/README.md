@@ -28,14 +28,9 @@ Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/
 
 It's easy to add your own integrations to Airbyte! **Since Airbyte connectors are encapsulated within Docker containers, you can use any language you like.** Here are some links on how to add sources and destinations. We haven't built the documentation for all languages yet, so don't hesitate to reach out to us if you'd like help developing integrations in other languages.
 
-#### **Contributing sources:**
+#### **Contributing sources & destinations:**
 
-* [In Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/source-python/README.md)
-* [Based on Singer Taps in Python](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/source-singer/README.md)
-
-#### **Contributing destinations:**
-
-* [In Java](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/java-destination/README.md)
+You can build a Source and a Destination in any language. Since we frequently build integrations in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly. See [Building new connectors](building-new-connector/) to get started.
 
 ### **Documentation**
 

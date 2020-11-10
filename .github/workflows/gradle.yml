@@ -62,6 +62,10 @@ jobs:
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
+      - name: Check documentation
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./tools/site/link_checker.sh check_docs
+
       - name: Run Integration Tests (PR)
         if: success() && github.ref != 'refs/heads/master'
         run: ./tools/bin/integration_test_pr.sh

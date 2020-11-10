@@ -1,24 +1,14 @@
 plugins {
-    id 'java'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+    id 'airbyte-python'
+    id 'airbyte-source-test'
 }
 
-project.ext.pyModule = 'source_github_singer'
-apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/test-image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/standard-source-test-python.gradle')
-
-standardSourceTestPython {
-    ext {
-        imageName = "${extractImageName(project.file('Dockerfile'))}:dev"
-        pythonContainerName = "${extractImageName(project.file('Dockerfile.test'))}:dev"
-    }
+airbytePython {
+    moduleDirectory 'source_github_singer'
 }
 
-standardSourceTestPython.dependsOn(buildTestImage)
-build.dependsOn ':airbyte-integrations:bases:base-singer:build'
-build.dependsOn ':airbyte-integrations:bases:base-python-test:build'
-buildImage.dependsOn ':airbyte-integrations:bases:base-singer:buildImage'
-buildTestImage.dependsOn ':airbyte-integrations:bases:base-python-test:buildImage'
-integrationTest.dependsOn(buildImage)
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
+}

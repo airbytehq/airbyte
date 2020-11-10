@@ -11,15 +11,15 @@ const Content = styled.div`
 `;
 
 const Img = styled.img`
-  width: 112px;
-  height: 112px;
+  width: 90px;
+  height: 94px;
   margin-bottom: 20px;
 `;
 
 const BaseClearView: React.FC = props => {
   return (
     <Content>
-      <Img src={"/logo.png"} width={112} height={112} alt={"logo"} />
+      <Img src={"/logo.png"} alt={"logo"} />
       {props.children}
     </Content>
   );

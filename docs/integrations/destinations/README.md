@@ -1,5 +1,5 @@
 # Destinations
 
-* [Contributing Destinations \(Java\)](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/java-destination/README.md)
-* Please reach out to us for help to develop destinations in other languages.
+* [Contributing Destinations](../../contributing-to-airbyte/#new-integrations)
+* Please reach out to us for help develop destinations in other languages.
 

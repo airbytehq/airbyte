@@ -1,3 +1,4 @@
+// TODO: replace to separate page
 // import React, { useState } from "react";
 // import { FormattedMessage } from "react-intl";
 // import styled from "styled-components";
@@ -77,8 +78,7 @@
 //               }
 //             ]}
 //             formValues={{
-//               ...currentDestination.connectionConfiguration,
-//               name: currentDestination.name,
+//               ...currentDestination,
 //               serviceType: destination.destinationDefinitionId
 //             }}
 //             specifications={destinationSpecification.connectionSpecification}

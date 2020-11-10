@@ -1,22 +1,18 @@
 plugins {
     id 'application'
-}
-
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
-
-dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-integrations:bases:base-java')
-
-    integrationTestImplementation project(':airbyte-integrations:bases:destination-test-lib')
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
 }
 
 application {
     mainClass = 'io.airbyte.integrations.destination.{{snakeCase name}}.{{properCase name}}Destination'
 }
 
-buildImage.dependsOn(assemble)
-buildImage.dependsOn(':airbyte-integrations:bases:base-java:buildImage')
-integrationTest.dependsOn(buildImage)
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+    integrationTestImplementation project(':airbyte-integrations:bases:standard-destination-test')
+}

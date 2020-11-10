@@ -2,9 +2,9 @@
 .idea
 *.iml
 build
-!tools/build
 .DS_Store
 data
+.dockerversions
 
 secrets
 
@@ -15,3 +15,5 @@ __pycache__
 .venv
 .mypy_cache
 
+# dbt
+profiles.yml
