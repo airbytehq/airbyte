@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
+import shopify
 from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_python import AirbyteLogger, ConfigContainer
 from base_singer import SingerSource
@@ -34,13 +34,22 @@ class SourceShopifySinger(SingerSource):
     def __init__(self):
         super().__init__()
 
+    def transform_config(self, raw_config):
+        return {"start_date": raw_config["start_date"], "api_key": raw_config["api_password"], "shop": raw_config["shop"]}
+
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
-            # todo: use a sync or some other verification
-            self.discover(logger, config_container)
+            config = config_container.rendered_config
+            print("THIS:" + str(config))
+            api_version = "2020-10"
+            session = shopify.Session(f"{config['shop']}.myshopify.com", api_version, config["api_key"])
+            shopify.ShopifyResource.activate_session(session)
+            # try to read the name of the shop, which should be available with any level of permissions
+            shopify.GraphQL().execute("{ shop { name id } }")
+            shopify.ShopifyResource.clear_session()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            logger.error("Exception connecting to Shopify", str(e))
+            logger.error("Exception connecting to Shopify: " + str(e))
             return AirbyteConnectionStatus(
                 status=Status.FAILED, message="Unable to connect to the Shopify API with the provided credentials."
             )
