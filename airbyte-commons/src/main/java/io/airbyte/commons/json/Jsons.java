@@ -30,7 +30,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class Jsons {
 
@@ -112,6 +115,14 @@ public class Jsons {
 
   public static byte[] toBytes(JsonNode jsonNode) {
     return serialize(jsonNode).getBytes(Charsets.UTF_8);
+  }
+
+  public static Set<String> keys(JsonNode jsonNode) {
+    if (jsonNode.isObject()) {
+      return Jsons.object(jsonNode, new TypeReference<Map<String, Object>>() {}).keySet();
+    } else {
+      return new HashSet<>();
+    }
   }
 
 }
