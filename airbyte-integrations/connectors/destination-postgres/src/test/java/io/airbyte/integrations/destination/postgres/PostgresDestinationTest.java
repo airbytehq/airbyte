@@ -41,6 +41,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -72,9 +73,7 @@ class PostgresDestinationTest {
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users";
-  private static final String USERS_WRITTEN_TABLE_NAME = USERS_STREAM_NAME + "_raw";
   private static final String TASKS_STREAM_NAME = "tasks";
-  private static final String TASKS_WRITEN_TABLE_NAME = TASKS_STREAM_NAME + "_raw";
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
@@ -166,11 +165,11 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    Set<JsonNode> usersActual = recordRetriever(USERS_WRITTEN_TABLE_NAME);
+    Set<JsonNode> usersActual = recordRetriever(NamingHelper.getRawTableName(USERS_STREAM_NAME));
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(TASKS_WRITEN_TABLE_NAME);
+    Set<JsonNode> tasksActual = recordRetriever(NamingHelper.getRawTableName(TASKS_STREAM_NAME));
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
@@ -190,7 +189,7 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_USERS2);
     consumer.close();
 
-    final List<String> tableNames = CATALOG.getStreams().stream().map(s -> s.getName() + "_raw").collect(toList());
+    final List<String> tableNames = CATALOG.getStreams().stream().map(s -> NamingHelper.getRawTableName(s.getName())).collect(toList());
     assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(AirbyteStream::getName).collect(Collectors.toList()));
     // assert that no tables were created.
     assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tableNames.stream().anyMatch(tableName::startsWith)));
