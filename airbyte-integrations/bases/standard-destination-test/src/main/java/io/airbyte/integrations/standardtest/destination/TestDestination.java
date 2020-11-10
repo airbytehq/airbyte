@@ -22,12 +22,14 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.standardtest.destination;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -47,6 +49,10 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.normalization.NormalizationRunner;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -55,9 +61,9 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
@@ -68,17 +74,18 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class TestDestination {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestDestination.class);
 
   private TestDestinationEnv testEnv;
 
   private Path jobRoot;
   protected Path localRoot;
   private ProcessBuilderFactory pbf;
-
-  private static final Set<String> ALL_RAW_STREAM_NAMES = Sets.newHashSet(
-      "exchange_rate");
 
   /**
    * Name of the docker image that the tests will run against.
@@ -110,10 +117,36 @@ public abstract class TestDestination {
    * there. Note: this returns a set and does not test any order guarantees.
    *
    * @param testEnv - information about the test environment.
+   * @param streamName - name of the stream for which we are retrieving records.
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
   protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception;
+
+  /**
+   * Override to return true to if the destination implements basic normalization and it should be
+   * tested here.
+   *
+   * @return - a boolean.
+   */
+  protected boolean implementsBasicNormalization() {
+    return false;
+  }
+
+  /**
+   * Same idea as {@link #retrieveRecords(TestDestinationEnv, String)}. Except this method should pull
+   * records from the table that contains the normalized records and convert them back into the data
+   * as it would appear in an {@link AirbyteRecordMessage}. Only need to override this method if
+   * {@link #implementsBasicNormalization} returns true.
+   *
+   * @param testEnv - information about the test environment.
+   * @param streamName - name of the stream for which we are retrieving records.
+   * @return All of the records in the destination at the time this method is invoked.
+   * @throws Exception - can throw any exception, test framework will handle.
+   */
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
+    throw new IllegalStateException("Not implemented");
+  }
 
   /**
    * Function that performs any setup of external resources required for the test. e.g. instantiate a
@@ -134,23 +167,6 @@ public abstract class TestDestination {
    */
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
-  /**
-   * Function that is applied to stream names in destination tests before emitting records/schemas.
-   * This is useful if there's a non-trivial amount of setup involved for the integration or it isn't
-   * easy to namespace.
-   *
-   * @return - function to transform resource (usually the identity function)
-   */
-  protected Function<String, String> streamRenamer() {
-    return Function.identity();
-  }
-
-  protected Set<String> getAllStreamNames() {
-    return ALL_RAW_STREAM_NAMES.stream()
-        .map(x -> streamRenamer().apply(x))
-        .collect(Collectors.toSet());
-  }
-
   @BeforeEach
   void setUpInternal() throws Exception {
     Path testDir = Path.of("/tmp/airbyte_tests/");
@@ -158,6 +174,7 @@ public abstract class TestDestination {
     final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
     localRoot = Files.createTempDirectory(testDir, "output");
+    LOGGER.info("jobRoot: {}", jobRoot);
     testEnv = new TestDestinationEnv(localRoot);
 
     setup(testEnv);
@@ -174,7 +191,7 @@ public abstract class TestDestination {
    * Verify that when the integrations returns a valid spec.
    */
   @Test
-  void testGetSpec() throws Exception {
+  public void testGetSpec() {
     final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
     assertTrue(output.getOutput().isPresent());
   }
@@ -184,24 +201,22 @@ public abstract class TestDestination {
    * Assume that the {@link TestDestination#getConfig()} is valid.
    */
   @Test
-  void testCheckConnection() throws Exception {
+  public void testCheckConnection() throws Exception {
     final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getConfig());
     assertTrue(output.getOutput().isPresent());
     assertEquals(Status.SUCCEEDED, output.getOutput().get().getStatus());
   }
 
-  // todo (cgardens) - fix issue where CsvDestination cannot be induced to fail this pass this test
-  // (cannot find credentials that are actually invalid).
   /**
    * Verify that when given invalid credentials, that check connection returns a failed response.
    * Assume that the {@link TestDestination#getFailCheckConfig()} is invalid.
    */
-  // @Test
-  // void testCheckConnectionInvalidCredentials() throws Exception {
-  // final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getFailCheckConfig());
-  // assertTrue(output.getOutput().isPresent());
-  // assertEquals(Status.FAILED, output.getOutput().get().getStatus());
-  // }
+  @Test
+  public void testCheckConnectionInvalidCredentials() throws Exception {
+    final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getFailCheckConfig());
+    assertTrue(output.getOutput().isPresent());
+    assertEquals(Status.FAILED, output.getOutput().get().getStatus());
+  }
 
   private static class DataArgumentsProvider implements ArgumentsProvider {
 
@@ -222,27 +237,47 @@ public abstract class TestDestination {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  void testSync(String messagesFilename, String catalogFilename) throws Exception {
-    final AirbyteCatalog catalog = Jsons.deserialize(renameAllStreams(MoreResources.readResource(catalogFilename)), AirbyteCatalog.class);
-    final List<AirbyteMessage> messages = renameAllStreams(MoreResources.readResource(messagesFilename)).lines()
+  public void testSync(String messagesFilename, String catalogFilename) throws Exception {
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    runSync(messages, catalog);
+    runSync(getConfig(), messages, catalog);
 
     assertSameMessages(messages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
+  }
+
+  /**
+   * Verify that the integration successfully writes records successfully both raw and normalized.
+   * Tests a wide variety of messages an schemas (aspirationally, anyway).
+   */
+  @ParameterizedTest
+  @ArgumentsSource(DataArgumentsProvider.class)
+  public void testSyncWithNormalization(String messagesFilename, String catalogFilename) throws Exception {
+    if (!implementsBasicNormalization()) {
+      return;
+    }
+
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    runSync(getConfigWithBasicNormalization(), messages, catalog);
+
+    assertSameMessages(messages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
+    assertSameMessagesPruneAirbyteInternalFields(messages, retrieveNormalizedRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
   /**
    * Verify that the integration overwrites the first sync with the second sync.
    */
   @Test
-  void testSecondSync() throws Exception {
+  public void testSecondSync() throws Exception {
     final AirbyteCatalog catalog =
-        Jsons.deserialize(renameAllStreams(MoreResources.readResource("exchange_rate_catalog.json")), AirbyteCatalog.class);
-    final List<AirbyteMessage> firstSyncMessages = renameAllStreams(MoreResources.readResource("exchange_rate_messages.txt")).lines()
+        Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), AirbyteCatalog.class);
+    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    runSync(firstSyncMessages, catalog);
+    runSync(getConfig(), firstSyncMessages, catalog);
 
-    List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
+    final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
         .withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getName())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
@@ -250,7 +285,7 @@ public abstract class TestDestination {
                 .put("HKD", 10)
                 .put("NZD", 700)
                 .build()))));
-    runSync(secondSyncMessages, catalog);
+    runSync(getConfig(), secondSyncMessages, catalog);
     assertSameMessages(secondSyncMessages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
@@ -259,18 +294,17 @@ public abstract class TestDestination {
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
-  private OutputAndStatus<StandardCheckConnectionOutput> runCheck(JsonNode config) throws Exception {
+  private OutputAndStatus<StandardCheckConnectionOutput> runCheck(JsonNode config) {
     return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
-  // todo (cgardens) - still uses the old schema.
-  private void runSync(List<AirbyteMessage> messages, AirbyteCatalog catalog) throws Exception {
+  private void runSync(JsonNode config, List<AirbyteMessage> messages, AirbyteCatalog catalog) throws Exception {
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
         .withConnectionId(UUID.randomUUID())
         .withSyncMode(SyncMode.FULL_REFRESH)
         .withCatalog(catalog)
-        .withDestinationConnectionConfiguration(getConfig());
+        .withDestinationConnectionConfiguration(config);
 
     final AirbyteDestination target = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(getImageName(), pbf));
 
@@ -278,6 +312,22 @@ public abstract class TestDestination {
     messages.forEach(message -> Exceptions.toRuntime(() -> target.accept(message)));
     target.notifyEndOfStream();
     target.close();
+
+    // skip if basic normalization is not configured to run (either not set or false).
+    if (!config.hasNonNull(WorkerConstants.BASIC_NORMALIZATION_KEY) || !config.get(WorkerConstants.BASIC_NORMALIZATION_KEY).asBoolean()) {
+      return;
+    }
+
+    final NormalizationRunner runner = NormalizationRunnerFactory.create(
+        getImageName(),
+        pbf, targetConfig.getDestinationConnectionConfiguration());
+    runner.start();
+    final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
+    if (!runner.normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(),
+        targetConfig.getCatalog())) {
+      throw new WorkerException("Normalization Failed.");
+    }
+    runner.close();
   }
 
   private void assertSameMessages(List<AirbyteMessage> expected, List<JsonNode> actual) {
@@ -287,21 +337,78 @@ public abstract class TestDestination {
         .map(AirbyteRecordMessage::getData)
         .collect(Collectors.toList());
 
-    // we want to ignore order in this comparison.
-    assertEquals(expectedJson.size(), actual.size());
-    assertTrue(expectedJson.containsAll(actual));
-    assertTrue(actual.containsAll(expectedJson));
+    assertSameData(expectedJson, actual);
   }
 
-  private String renameAllStreams(String input) {
-    String output = input;
+  private void assertSameMessagesPruneAirbyteInternalFields(List<AirbyteMessage> expected, List<JsonNode> actual) {
+    final List<JsonNode> expectedPruned = expected.stream()
+        .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
+        .map(AirbyteMessage::getRecord)
+        .map(AirbyteRecordMessage::getData)
+        .map(Jsons::clone)
+        .map(this::prune)
+        .collect(Collectors.toList());
 
-    for (String streamName : ALL_RAW_STREAM_NAMES) {
-      final String newStreamName = streamRenamer().apply(streamName);
-      output = output.replace(streamName, newStreamName);
+    final List<JsonNode> actualPruned = actual.stream().map(this::prune).collect(Collectors.toList());
+    assertSameData(expectedPruned, actualPruned);
+  }
+
+  private void assertSameData(List<JsonNode> expected, List<JsonNode> actual) {
+    LOGGER.info("expected: {}", expected);
+    LOGGER.info("actual: {}", actual);
+
+    // we want to ignore order in this comparison.
+    assertEquals(expected.size(), actual.size());
+    assertTrue(expected.containsAll(actual));
+    assertTrue(actual.containsAll(expected));
+  }
+
+  /**
+   * Same as {@link #pruneMutate(JsonNode)}, except does a defensive copy and returns a new json node
+   * object instead of mutating in place.
+   *
+   * @param json - json that will be pruned.
+   * @return pruned json node.
+   */
+  private JsonNode prune(JsonNode json) {
+    final JsonNode clone = Jsons.clone(json);
+    pruneMutate(clone);
+    return clone;
+  }
+
+  /**
+   * Prune fields that are added internally by airbyte and are not part of the original data. Used so
+   * that we can compare data that is persisted by an Airbyte worker to the original data. This method
+   * mutates the provided json in place.
+   *
+   * @param json - json that will be pruned. will be mutated in place!
+   */
+  private void pruneMutate(JsonNode json) {
+    final Set<String> keys = Jsons.object(json, new TypeReference<Map<String, Object>>() {}).keySet();
+    for (final String key : keys) {
+      final JsonNode node = json.get(key);
+      // recursively prune all airbyte internal fields.
+      if (node.isObject() || node.isArray()) {
+        pruneMutate(node);
+      }
+
+      // prune the following
+      // - airbyte internal fields
+      // - fields that match what airbyte generates as hash ids
+      // - null values -- normalization will often return `<key>: null` but in the original data that key
+      // likely did not exist in the original message. the most consistent thing to do is always remove
+      // the null fields (this choice does decrease our ability to check that normalization creates
+      // columns even if all the values in that column are null)
+      if (Sets.newHashSet("emitted_at", "ab_id", "normalized_at").contains(key) || key.matches("^_.*_hashid$") || json.get(key).isNull()) {
+        ((ObjectNode) json).remove(key);
+      }
     }
+  }
 
-    return output;
+  private JsonNode getConfigWithBasicNormalization() throws Exception {
+    final JsonNode config = getConfig();
+    ((ObjectNode) config).put(WorkerConstants.BASIC_NORMALIZATION_KEY, true);
+    return config;
   }
 
   public static class TestDestinationEnv {

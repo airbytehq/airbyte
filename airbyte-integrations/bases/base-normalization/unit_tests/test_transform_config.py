@@ -24,13 +24,13 @@ SOFTWARE.
 
 import json
 import os
-import unittest
 
 from normalization import TransformConfig
+from normalization.transform_catalog.transform import extract_schema
 from normalization.transform_config.transform import DestinationType
 
 
-class TestTransformConfig(unittest.TestCase):
+class TestTransformConfig:
     def test_transform_bigquery(self):
         input = {"project_id": "my_project_id", "dataset_id": "my_dataset_id", "credentials_json": '{ "type": "service_account" }'}
 
@@ -48,12 +48,11 @@ class TestTransformConfig(unittest.TestCase):
         with open("/tmp/bq_keyfile.json", "r") as file:
             actual_keyfile = json.loads(file.read())
         expected_keyfile = {"type": "service_account"}
-
-        self.assertEqual(expected_output, actual_output)
-        self.assertEqual(expected_keyfile, actual_keyfile)
-
         if os.path.exists("/tmp/bq_keyfile.json"):
             os.remove("/tmp/bq_keyfile.json")
+        assert expected_output == actual_output
+        assert expected_keyfile == actual_keyfile
+        assert extract_schema(actual_output) == "my_dataset_id"
 
     def test_transform_postgres(self):
         input = {
@@ -77,7 +76,8 @@ class TestTransformConfig(unittest.TestCase):
             "user": "a user",
         }
 
-        self.assertEqual(expected, actual)
+        assert expected == actual
+        assert extract_schema(actual) == "public"
 
     def test_transform_snowflake(self):
         input = {
@@ -105,7 +105,8 @@ class TestTransformConfig(unittest.TestCase):
             "warehouse": "AIRBYTE_WAREHOUSE",
         }
 
-        self.assertEqual(expected, actual)
+        assert expected == actual
+        assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):
@@ -131,7 +132,8 @@ class TestTransformConfig(unittest.TestCase):
         }
         actual = TransformConfig().transform(DestinationType.postgres, input)
 
-        self.assertEqual(expected, actual)
+        assert expected == actual
+        assert extract_schema(actual["normalize"]["outputs"]["prod"]) == "public"
 
     def get_base_config(self):
         return {
@@ -146,11 +148,6 @@ class TestTransformConfig(unittest.TestCase):
 
     def test_parse(self):
         t = TransformConfig()
-        self.assertEqual(
-            {"integration_type": DestinationType.postgres, "config": "config.json", "output_path": "out.yml"},
-            t.parse(["--integration-type", "postgres", "--config", "config.json", "--out", "out.yml"]),
+        assert {"integration_type": DestinationType.postgres, "config": "config.json", "output_path": "out.yml"} == t.parse(
+            ["--integration-type", "postgres", "--config", "config.json", "--out", "out.yml"]
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

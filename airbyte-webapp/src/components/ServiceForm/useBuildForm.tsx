@@ -101,7 +101,9 @@ export const useConstructValidationSchema = (
       validationShape = validationShape.shape({
         connectionConfiguration: buildYupFormForJsonSchema(
           jsonSchema,
-          uiWidgetsInfo
+          uiWidgetsInfo,
+          undefined,
+          "connectionConfiguration"
         )
       });
     }

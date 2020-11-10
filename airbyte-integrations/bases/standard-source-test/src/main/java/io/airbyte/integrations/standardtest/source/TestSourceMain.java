@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.standardtest.source;
 
-import io.airbyte.integrations.base.ExecutableTestSource.TestConfig;
+import io.airbyte.integrations.standardtest.source.ExecutableTestSource.TestConfig;
 import java.nio.file.Path;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
