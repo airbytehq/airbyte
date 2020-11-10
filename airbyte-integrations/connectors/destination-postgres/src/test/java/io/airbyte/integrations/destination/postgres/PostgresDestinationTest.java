@@ -59,7 +59,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
