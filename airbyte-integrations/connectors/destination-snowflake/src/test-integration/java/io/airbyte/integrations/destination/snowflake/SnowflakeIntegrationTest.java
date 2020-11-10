@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     return SnowflakeDatabase.executeSync(
         SnowflakeDatabase.getConnectionFactory(getConfig()),
-        String.format("SELECT * FROM \"%s\" ORDER BY \"emitted_at\" ASC;", streamName),
+        String.format("SELECT * FROM \"%s\" ORDER BY \"emitted_at\" ASC;", NamingHelper.getRawTableName(streamName)),
         false,
         rs -> {
           try {

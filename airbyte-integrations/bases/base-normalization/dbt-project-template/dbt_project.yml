@@ -35,6 +35,4 @@ quoting:
 # are materialized, and more!
 models:
   airbyte:
-    # Schema (dataset) defined in profiles.yml is concatenated with schema below for dbt's final output
-    +schema: NORMALIZED
     +materialized: table
