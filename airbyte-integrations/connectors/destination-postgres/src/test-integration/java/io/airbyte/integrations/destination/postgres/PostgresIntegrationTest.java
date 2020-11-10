@@ -84,8 +84,6 @@ public class PostgresIntegrationTest extends TestDestination {
             .collect(Collectors.toList()));
   }
 
-  // todo (cgardens) - Example of what this should look like for postgres once normalization is added.
-  // Keep in mind `retrieveRecords` will also need to be updated once we have `_raw`
   @Override
   protected boolean implementsBasicNormalization() {
     return true;
