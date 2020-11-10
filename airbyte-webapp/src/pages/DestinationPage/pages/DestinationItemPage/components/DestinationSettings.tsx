@@ -8,6 +8,7 @@ import ServiceForm from "../../../../../components/ServiceForm";
 import { Destination } from "../../../../../core/resources/Destination";
 import DestinationDefinitionSpecificationResource from "../../../../../core/resources/DestinationDefinitionSpecification";
 import useDestination from "../../../../../components/hooks/services/useDestinationHook";
+import DeleteBlock from "../../../../../components/DeleteBlock";
 
 const Content = styled.div`
   width: 100%;
@@ -75,6 +76,8 @@ const DestinationsSettings: React.FC<IProps> = ({ currentDestination }) => {
           errorMessage={errorMessage}
         />
       </ContentCard>
+      {/*TODO: fix delete function*/}
+      <DeleteBlock type="destination" onDelete={() => null} />
     </Content>
   );
 };

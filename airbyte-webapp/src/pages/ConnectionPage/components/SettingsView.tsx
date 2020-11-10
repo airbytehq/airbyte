@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import ContentCard from "../../../components/ContentCard";
-import DeleteSource from "./DeleteSource";
+// import DeleteSource from "./DeleteSource";
 import ServiceForm from "../../../components/ServiceForm";
 import { Connection } from "../../../core/resources/Connection";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
@@ -22,7 +22,7 @@ const Content = styled.div`
   margin: 18px auto;
 `;
 
-const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
+const SettingsView: React.FC<IProps> = ({ sourceData }) => {
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -106,11 +106,11 @@ const SettingsView: React.FC<IProps> = ({ sourceData, afterDelete }) => {
           }
         />
       </ContentCard>
-      <DeleteSource
-        afterDelete={afterDelete}
-        sourceId={sourceData.source?.sourceId}
-        connectionId={sourceData.connectionId}
-      />
+      {/*<DeleteSource*/}
+      {/*  afterDelete={afterDelete}*/}
+      {/*  sourceId={sourceData.source?.sourceId}*/}
+      {/*  connectionId={sourceData.connectionId}*/}
+      {/*/>*/}
     </Content>
   );
 };
