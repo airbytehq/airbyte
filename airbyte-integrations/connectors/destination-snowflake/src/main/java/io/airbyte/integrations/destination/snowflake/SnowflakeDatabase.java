@@ -25,7 +25,6 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -37,6 +36,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -164,7 +164,7 @@ public class SnowflakeDatabase {
     final int columnCount = resultSet.getMetaData().getColumnCount();
 
     while (resultSet.next()) {
-      final ObjectNode json = (ObjectNode) Jsons.jsonNode(new HashMap<>());
+      final Map<String, Object> json = new HashMap<>();
 
       for (int i = 1; i < columnCount; i++) {
         final String columnName = resultSet.getMetaData().getColumnName(i);
@@ -197,7 +197,7 @@ public class SnowflakeDatabase {
           }
         }
       }
-      jsons.add(json);
+      jsons.add(Jsons.jsonNode(json));
     }
 
     return jsons;
