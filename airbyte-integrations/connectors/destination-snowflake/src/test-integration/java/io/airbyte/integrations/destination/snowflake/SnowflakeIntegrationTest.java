@@ -31,8 +31,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 
 public class SnowflakeIntegrationTest extends TestDestination {
@@ -66,20 +67,31 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
+    return retrieveRecordsFromTable(env, NamingHelper.getRawTableName(streamName))
+        .stream()
+        .map(j -> Jsons.deserialize(j.get(COLUMN_NAME).asText()))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  protected boolean implementsBasicNormalization() {
+    return true;
+  }
+
+  @Override
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
+    return retrieveRecordsFromTable(testEnv, streamName);
+  }
+
+  private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws SQLException, InterruptedException {
     return SnowflakeDatabase.executeSync(
         SnowflakeDatabase.getConnectionFactory(getConfig()),
-        String.format("SELECT * FROM \"%s\" ORDER BY \"emitted_at\" ASC;", NamingHelper.getRawTableName(streamName)),
+        String.format("SELECT * FROM \"%s\" ORDER BY \"emitted_at\" ASC;", tableName),
         false,
         rs -> {
           try {
-            List<JsonNode> nodes = new ArrayList<>();
-
-            while (rs.next()) {
-              nodes.add(Jsons.deserialize(rs.getString(COLUMN_NAME)));
-            }
-
-            return nodes;
-          } catch (Exception e) {
+            return SnowflakeDatabase.resultSetToJson(rs);
+          } catch (SQLException e) {
             throw new RuntimeException(e);
           }
         });
@@ -88,7 +100,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    final String schemaName = "integration_test_" + RandomStringUtils.randomAlphanumeric(5);
+    final String schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5));
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
 
     baseConfig = getStaticConfig();

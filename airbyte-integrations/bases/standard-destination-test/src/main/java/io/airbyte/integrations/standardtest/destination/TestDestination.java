@@ -27,7 +27,6 @@ package io.airbyte.integrations.standardtest.destination;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -61,8 +60,6 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -300,6 +297,7 @@ public abstract class TestDestination {
   }
 
   private void runSync(JsonNode config, List<AirbyteMessage> messages, AirbyteCatalog catalog) throws Exception {
+
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
         .withConnectionId(UUID.randomUUID())
         .withSyncMode(SyncMode.FULL_REFRESH)
@@ -345,11 +343,10 @@ public abstract class TestDestination {
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)
         .map(AirbyteRecordMessage::getData)
-        .map(Jsons::clone)
-        .map(this::prune)
+        .map(this::safePrune)
         .collect(Collectors.toList());
 
-    final List<JsonNode> actualPruned = actual.stream().map(this::prune).collect(Collectors.toList());
+    final List<JsonNode> actualPruned = actual.stream().map(this::safePrune).collect(Collectors.toList());
     assertSameData(expectedPruned, actualPruned);
   }
 
@@ -370,7 +367,7 @@ public abstract class TestDestination {
    * @param json - json that will be pruned.
    * @return pruned json node.
    */
-  private JsonNode prune(JsonNode json) {
+  private JsonNode safePrune(JsonNode json) {
     final JsonNode clone = Jsons.clone(json);
     pruneMutate(clone);
     return clone;
@@ -384,8 +381,7 @@ public abstract class TestDestination {
    * @param json - json that will be pruned. will be mutated in place!
    */
   private void pruneMutate(JsonNode json) {
-    final Set<String> keys = Jsons.object(json, new TypeReference<Map<String, Object>>() {}).keySet();
-    for (final String key : keys) {
+    for (final String key : Jsons.keys(json)) {
       final JsonNode node = json.get(key);
       // recursively prune all airbyte internal fields.
       if (node.isObject() || node.isArray()) {
