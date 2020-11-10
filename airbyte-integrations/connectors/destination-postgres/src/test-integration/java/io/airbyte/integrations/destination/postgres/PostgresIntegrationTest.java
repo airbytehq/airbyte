@@ -97,7 +97,7 @@ public class PostgresIntegrationTest extends TestDestination {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
             ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s_normalized ORDER BY emitted_at ASC;", streamName))
+                .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
                 .stream()
                 .map(r -> r.formatJSON(JSON_FORMAT))
                 .map(Jsons::deserialize)
