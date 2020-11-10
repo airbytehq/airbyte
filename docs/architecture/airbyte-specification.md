@@ -2,7 +2,7 @@
 
 ## Key Takeaways
 
-* The specification is Docker-based; this allows a developer to write an integration in any language they want. All they have to do is put that code in a Docker container that adheres to the interface and protocol described below.
+* The specification is Docker-based; this allows a developer to write a connector in any language they want. All they have to do is put that code in a Docker container that adheres to the interface and protocol described below.
   * We currently provide templates to make this even easier for those who prefer to work in python or java. These templates allow the developer skip any Docker setup so that they can just implement code against well-defined interfaces in their language of choice.
 * The specification is designed to work as a CLI. The Airbyte app is built on top of this CLI.
 * The specification defines a standard interface for implementing data integrations: Sources and Destinations.
@@ -12,10 +12,10 @@
 #### Contents:
 
 1. [General information about the specification](airbyte-specification.md#general)
-2. [Integration primitives](airbyte-specification.md#primitives)
-3. [Details of the protocol to pass information between integrations](airbyte-specification.md#the-airbyte-protocol)
+2. [Connector primitives](airbyte-specification.md#primitives)
+3. [Details of the protocol to pass information between connectors](airbyte-specification.md#the-airbyte-protocol)
 
-This document is focused on the interfaces and primitives around integrations. You can better understand how that fits into the bigger picture by checking out the [Airbyte Architecture]().
+This document is focused on the interfaces and primitives around connectors. You can better understand how that fits into the bigger picture by checking out the [Airbyte Architecture](airbyte-specification.md).
 
 ## General
 
@@ -25,11 +25,11 @@ This document is focused on the interfaces and primitives around integrations. Y
 ### Definitions
 
 * **Airbyte Worker** - This is a core piece of the Airbyte stack that is responsible for 1\) initializing a Source and a Destinations and 2\) passing data from Source to Destination.
-  * Someone implementing an integration need not ever touch this code, but in this article we mention it to contextualize how data is flowing through Airbyte.
-* **Integration** - An integration is code that allows Airbyte to interact with a specific underlying data source \(e.g. Postgres\). In Airbyte, an integration is either a Source or a Destination.
-* **Source** - An integration that _pulls_ data from an underlying data source. \(e.g. A Postgres Source reads data from a Postgres database. A Stripe Source reads data from the Stripe API\)
-* **Destination** - An integration that _pushes_ data to an underlying data source. \(e.g. A Postgres Destination writes data to a Postgres database\)
-* **AirbyteSpecification** - the specification that describes how to implement integrations using a standard interface.
+  * Someone implementing a connector need not ever touch this code, but in this article we mention it to contextualize how data is flowing through Airbyte.
+* **Connector** - A connector is code that allows Airbyte to interact with a specific underlying data source \(e.g. Postgres\). In Airbyte, an integration is either a Source or a Destination.
+* **Source** - A connector that _pulls_ data from an underlying data source. \(e.g. A Postgres Source reads data from a Postgres database. A Stripe Source reads data from the Stripe API\)
+* **Destination** - A connector that _pushes_ data to an underlying data source. \(e.g. A Postgres Destination writes data to a Postgres database\)
+* **AirbyteSpecification** - the specification that describes how to implement connectors using a standard interface.
 * **AirbyteProtocol** - the protocol used for inter-process communication.
 * **Integration Commands** - the commands that an integration container implements \(e.g. `spec`, `check`, `discover`, `read`/`write`\). We describe these commands in more detail below.
 * **Sync** - the act of moving data from a Source to a Destination.
@@ -70,7 +70,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
   1. `spec` - a [ConnectorSpecification](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml#L133-L149) wrapped in an `AirbyteMessage` of type `spec`.
 * The objective of the spec command is to pull information about how to use a source. The `ConnectorSpecification` contains this information.
 * The `connectionSpecification` of the `ConnectorSpecification` must be valid JsonSchema. It describes what inputs are needed in order for the source to interact with the underlying data source.
-  * e.g. If using a Postgres source, the `ConnectorSpecification` would specify that a `hostname`, `port`, and `password` are required in order for the integration to function.
+  * e.g. If using a Postgres source, the `ConnectorSpecification` would specify that a `hostname`, `port`, and `password` are required in order for the connector to function.
   * The UI reads the JsonSchema in this field in order to render the input fields for a user to fill in.
   * This JsonSchema is also used to validate that the provided inputs are valid. e.g. If `port` is one of the fields and the JsonSchema in the `connectorSpecification` specifies that this filed should be a number, if a user inputs "airbyte", they will receive an error. Airbyte adheres to JsonSchema validation rules.
 
@@ -171,7 +171,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
   1. `message stream` - A stream of `AirbyteRecordMessage`s and `AirbyteStateMessage`s piped to stdout.
 * This command reads data from the underlying data source and converts it into `AirbyteRecordMessage`.
 * Outputting `AirbyteStateMessages` is optional. It can be used to track how much of the data source has been synced.
-* The integration ideally will only pull the data described in the `catalog` argument. It is permissible for the integration, however, to ignore the `catalog` and pull data from any stream it can find. If it follows this second behavior, the extra data will be pruned in the worker. We prefer the former behavior because it reduces the amount of data that is transferred and allows control over not sending sensitive data. There are some sources for which this is simply not possible.
+* The connector ideally will only pull the data described in the `catalog` argument. It is permissible for the connector, however, to ignore the `catalog` and pull data from any stream it can find. If it follows this second behavior, the extra data will be pruned in the worker. We prefer the former behavior because it reduces the amount of data that is transferred and allows control over not sending sensitive data. There are some sources for which this is simply not possible.
 
 ### Destination
 
@@ -212,11 +212,11 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 
 ## The Airbyte Protocol
 
-* All messages passed to and from integrations must be wrapped in an `AirbyteMesage` envelope and serialized as JSON. The JsonSchema specification for these messages can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml).
+* All messages passed to and from connectors must be wrapped in an `AirbyteMesage` envelope and serialized as JSON. The JsonSchema specification for these messages can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml).
 * Even if a record is wrapped in an `AirbyteMessage` it will only be processed if it appropriate for the given command. e.g. If a source `read` action includes AirbyteMessages in its stream of type Catalog for instance, these messages will be ignored as the `read` interface only expects `AirbyteRecordMessage`s and `AirbyteStateMessage`s. The appropriate `AirbyteMessage` types have been described in each command above.
-* **ALL** actions are allowed to return `AirbyteLogMessage`s on stdout. For brevity, we have not mentioned these log messages in the description of each action, but they are always allowed. An `AirbyteLogMessage` wraps any useful logging that the integration wants to provide. These logs will written to Airbyte's log files and output to the console.
+* **ALL** actions are allowed to return `AirbyteLogMessage`s on stdout. For brevity, we have not mentioned these log messages in the description of each action, but they are always allowed. An `AirbyteLogMessage` wraps any useful logging that the connector wants to provide. These logs will written to Airbyte's log files and output to the console.
 * I/O:
-  * Integrations receive arguments on the command line via JSON files. `e.g. --catalog catalog.json`
+  * Connectors receive arguments on the command line via JSON files. `e.g. --catalog catalog.json`
   * They read `AirbyteMessage`s from stdin. The destination `write` action is the only command that consumes `AirbyteMessage`s.
   * They emit `AirbyteMessage`s on stdout. All commands that output messages use this approach \(even `write` emits `AirbyteLogMessage`s\). e.g. `discover` outputs the `catalog` wrapped in an AirbyteMessage on stdout.
 * Messages not wrapped in the `AirbyteMessage` will be ignored.

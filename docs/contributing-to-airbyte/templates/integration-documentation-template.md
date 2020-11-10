@@ -1,22 +1,22 @@
 ---
 description: >-
   This is the template that should be used when adding documentation for a new
-  integration.
+  connector.
 ---
 
-# Integration Doc Template
+# Connector Doc Template
 
 ## Sync overview
 
 ### Output schema
 
-Is the output schema fixed \(e.g: for an API like Stripe\)? If so, point to the integration’s schema \(e.g: link to Stripe’s documentation\) or describe the schema here directly \(e.g: include a diagram or paragraphs describing the schema\).
+Is the output schema fixed \(e.g: for an API like Stripe\)? If so, point to the connector's schema \(e.g: link to Stripe’s documentation\) or describe the schema here directly \(e.g: include a diagram or paragraphs describing the schema\).
 
-Describe how the integration's schema is mapped to Airbyte concepts. An example description might be: “MagicDB tables become Airbyte Streams and MagicDB columns become Airbyte Fields. In addition, an extracted\_at column is appended to each row being read.”
+Describe how the connector's schema is mapped to Airbyte concepts. An example description might be: “MagicDB tables become Airbyte Streams and MagicDB columns become Airbyte Fields. In addition, an extracted\_at column is appended to each row being read.”
 
 ### Data type mapping
 
-This section should contain a table mapping each of the integration's data types to Airbyte types. At the moment, Airbyte uses the same types used by [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html). `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number` are the most commonly used data types.
+This section should contain a table mapping each of the connector's data types to Airbyte types. At the moment, Airbyte uses the same types used by [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html). `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number` are the most commonly used data types.
 
 | Integration Type | Airbyte Type | Notes |
 | :--- | :--- | :--- |
@@ -44,8 +44,8 @@ Could this connector hurt the user's database/API/etc... or put too much strain 
 
 ### Requirements
 
-* What versions of this integration does this implementation support? \(e.g: `postgres v3.14 and above`\) 
-* What configurations, if any, are required on the integration? \(e.g: `buffer_size > 1024`\)
+* What versions of this connector does this implementation support? \(e.g: `postgres v3.14 and above`\) 
+* What configurations, if any, are required on the connector? \(e.g: `buffer_size > 1024`\)
 * Network accessibility requirements
 * Credentials/authentication requirements? \(e.g: A  DB user with read permissions on certain tables\) 
 

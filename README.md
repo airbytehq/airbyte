@@ -15,8 +15,8 @@ The new open-source standard to sync data from applications, APIs & databases to
 Airbyte is on a mission to make data integration pipelines a commodity.
 
 * **Maintenance-free connectors you can use in minutes**. Just authenticate your sources and warehouse, and get connectors that adapt to schema and API changes for you.
-* **Building new integrations made trivial.** We make it very easy to add new integrations that you need, using the language of your choice, by offering scheduling and orchestration. 
-* Designed to **cover the long tail of integrations and needs**. Benefit from the community's battle-tested connectors and adapt them to your specific needs.
+* **Building new connectors made trivial.** We make it very easy to add new connectors that you need, using the language of your choice, by offering scheduling and orchestration. 
+* Designed to **cover the long tail of connectors and needs**. Benefit from the community's battle-tested connectors and adapt them to your specific needs.
 * **Your data stays in your cloud**. Have full control over your data, and the costs of your data transfers. 
 * **No more security compliance process** to go through as Airbyte is self-hosted. 
 * **No more pricing indexed on volume**, as cloud-based solutions offer. 
@@ -35,7 +35,7 @@ Here is a [step-by-step guide](docs/getting-started-tutorial.md) showing you how
 
 ## Features
 
-* **Built for extensibility**: Adapt an existing integration to your needs or build a new one with ease.
+* **Built for extensibility**: Adapt an existing connector to your needs or build a new one with ease.
 * **Optional normalized schemas**: Entirely customizable, start with raw data or from some suggestion of normalized data.
 * **Full-grade scheduler**: Automate your replications with the frequency you need.
 * **Real-time monitoring**: We log all errors in full detail to help you understand.
@@ -51,7 +51,7 @@ We love contributions to Airbyte, big or small.
 
 See our [Contributing guide](docs/contributing-to-airbyte/) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
 
-**Note that you are able to create integrations using the language you want, as Airbyte connections run as Docker containers.**
+**Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
 
 ## Community support
 

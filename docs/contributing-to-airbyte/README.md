@@ -24,13 +24,13 @@ Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/
 
 ## Areas for contributing
 
-### **New integrations**
+### **New connectors**
 
-It's easy to add your own integrations to Airbyte! **Since Airbyte connectors are encapsulated within Docker containers, you can use any language you like.** Here are some links on how to add sources and destinations. We haven't built the documentation for all languages yet, so don't hesitate to reach out to us if you'd like help developing integrations in other languages.
+It's easy to add your own connector to Airbyte! **Since Airbyte connectors are encapsulated within Docker containers, you can use any language you like.** Here are some links on how to add sources and destinations. We haven't built the documentation for all languages yet, so don't hesitate to reach out to us if you'd like help developing connectors in other languages.
 
 #### **Contributing sources & destinations:**
 
-You can build a Source and a Destination in any language. Since we frequently build integrations in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly. See [Building new connectors](building-new-connector/) to get started.
+You can build a Source and a Destination in any language. Since we frequently build connectors in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly. See [Building new connectors](building-new-connector/) to get started.
 
 ### **Documentation**
 
@@ -56,7 +56,7 @@ Feel free to submit a pull request in this repo, if you have something to add ev
 
 ## Ways you can contribute
 
-### **Adding to the codebase for an integration or issue**
+### **Adding to the codebase for a connector or issue**
 
 First, a big thank you! A few things to keep in mind when contributing code:
 
@@ -66,9 +66,9 @@ First, a big thank you! A few things to keep in mind when contributing code:
 
 Here are some details about [our review process](./#review-process).
 
-### **Upvoting issues, feature and integration requests**
+### **Upvoting issues, feature and connector requests**
 
-You are welcome to add your own reactions to the existing issues. We will take them in consideration in our prioritization efforts, especially for integrations.
+You are welcome to add your own reactions to the existing issues. We will take them in consideration in our prioritization efforts, especially for connectors.
 
 ❤️ means that this task is CRITICAL to you.  
 👍 means it is important to you.
@@ -83,9 +83,9 @@ To see what has already been proposed by the community, you can look [here](http
 
 Watch out for duplicates! If you are creating a new issue, please check [existing open](https://github.com/airbytehq/airbyte/issues), or [recently closed](https://github.com/airbytehq/airbyte/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20). Having a single voted for issue is far easier for us to prioritize
 
-### **Requesting new integrations**
+### **Requesting new connectors**
 
-This is very similar to requesting new features. The template will change a bit and all integration requests will be tagged with the “**community\_new**” and “**area/integration**” labels.
+This is very similar to requesting new features. The template will change a bit and all connector requests will be tagged with the “**community\_new**” and “**area/integration**” labels.
 
 To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/area%2Fintegration). Again, watch out for duplicates!
 
@@ -101,7 +101,7 @@ Please do not create a public GitHub issue. If you've found a security issue, pl
 
 ## **Review process**
 
-**‌‌**If you are considering adding to the codebase or contributing a new integration: a big thank you! We sincerely appreciate your help.
+**‌‌**If you are considering adding to the codebase or contributing a new connector: a big thank you! We sincerely appreciate your help.
 
 As soon as you are done with your development, just put up a PR. You're also always welcome to reach out during or before development. When we review we look at:
 
