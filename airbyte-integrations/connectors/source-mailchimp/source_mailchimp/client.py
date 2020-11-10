@@ -33,12 +33,12 @@ from .models import HealthCheckError
 class Client:
     def __init__(self, username: str, apikey: str):
         self._client = MailChimp(mc_api=apikey, mc_user=username)
+        self._entities = ['Lists', 'Campaigns']
 
         """ TODO:
         Authorized Apps
         Automations
         Campaign Folders
-        Campaigns
         Chimp Chatter Activity
         Connected Sites
         Conversations
@@ -58,21 +58,13 @@ class Client:
         except MailChimpError as err:
             return False, HealthCheckError.parse_obj(err.args[0])
 
-    def lists_stream(self):
-        self._client.lists.all(count=1)
-
-        # TODO
-        json_schema = requests.get("https://us2.api.mailchimp.com/schema/3.0/Definitions/Lists/Response.json").json()
-
-        return AirbyteStream(name="Lists", json_schema=json_schema)
-
-    def campaigns_stream(self):
-        self._client.campaigns.all(count=1)
-
-        # TODO
-        json_schema = requests.get("https://us2.api.mailchimp.com/schema/3.0/Definitions/Campaigns/Response.json").json()
-
-        return AirbyteStream(name="Campaigns", json_schema=json_schema)
+    def get_streams(self):
+        streams = []
+        for entity in self._entities:
+            json_schema = requests.get(
+                f"https://api.mailchimp.com/schema/3.0/Definitions/{entity}/Response.json").json()
+            streams.append(AirbyteStream(name="Lists", json_schema=json_schema))
+        return streams
 
     def lists(self):
         return self._client.lists.all()["lists"]

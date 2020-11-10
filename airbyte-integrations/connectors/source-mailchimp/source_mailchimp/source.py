@@ -49,9 +49,8 @@ class SourceMailchimp(Source):
 
     def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
         client = self._client(config_container)
-        # TODO: add more streams
-        # TODO: add support for nested streams???
-        return AirbyteCatalog(streams=[client.lists_stream(), client.campaigns_stream()])
+
+        return AirbyteCatalog(streams=client.get_streams())
 
     def read(
         self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None
@@ -74,11 +73,11 @@ class SourceMailchimp(Source):
         return client
 
     def _read_record(self, client: Client, stream: str):
-        issues_map = {
+        entity_map = {
             "Lists": client.lists(),
             "Campaigns": client.campaigns(),
         }
 
-        for record in issues_map[stream]:
+        for record in entity_map[stream]:
             now = int(datetime.now().timestamp()) * 1000
             yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)

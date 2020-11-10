@@ -160,10 +160,7 @@
           "visibility": {
             "type": "string",
             "title": "Visibility",
-            "enum": [
-              "pub",
-              "prv"
-            ],
+            "enum": ["pub", "prv"],
             "description": "Whether this list is [public or private](https://mailchimp.com/help/about-list-publicity/)."
           },
           "double_optin": {
@@ -380,12 +377,7 @@
             "type": "string",
             "title": "Content Type",
             "description": "How the campaign's content is put together.",
-            "enum": [
-              "template",
-              "html",
-              "url",
-              "multichannel"
-            ]
+            "enum": ["template", "html", "url", "multichannel"]
           },
           "needs_block_refresh": {
             "type": "boolean",
@@ -557,12 +549,7 @@
                 "type": "string",
                 "title": "Winning Criteria",
                 "description": "The combination that performs the best. This may be determined automatically by click rate, open rate, or total revenue -- or you may choose manually based on the reporting data you find the most valuable. For Multivariate Campaigns testing send_time, winner_criteria is ignored. For Multivariate Campaigns with 'manual' as the winner_criteria, the winner must be chosen in the Mailchimp web application.",
-                "enum": [
-                  "opens",
-                  "clicks",
-                  "manual",
-                  "total_revenue"
-                ]
+                "enum": ["opens", "clicks", "manual", "total_revenue"]
               },
               "wait_time": {
                 "type": "integer",
@@ -750,11 +737,7 @@
                 "type": "string",
                 "title": "Frequency",
                 "description": "The frequency of the RSS Campaign.",
-                "enum": [
-                  "daily",
-                  "weekly",
-                  "monthly"
-                ]
+                "enum": ["daily", "weekly", "monthly"]
               },
               "schedule": {
                 "type": "object",
@@ -857,30 +840,19 @@
                 "type": "string",
                 "title": "Split Test",
                 "description": "The type of AB split to run.",
-                "enum": [
-                  "subject",
-                  "from_name",
-                  "schedule"
-                ]
+                "enum": ["subject", "from_name", "schedule"]
               },
               "pick_winner": {
                 "type": "string",
                 "title": "Pick Winner",
                 "description": "How we should evaluate a winner. Based on 'opens', 'clicks', or 'manual'.",
-                "enum": [
-                  "opens",
-                  "clicks",
-                  "manual"
-                ]
+                "enum": ["opens", "clicks", "manual"]
               },
               "wait_units": {
                 "type": "string",
                 "title": "Wait Time",
                 "description": "How unit of time for measuring the winner ('hours' or 'days'). This cannot be changed after a campaign is sent.",
-                "enum": [
-                  "hours",
-                  "days"
-                ]
+                "enum": ["hours", "days"]
               },
               "wait_time": {
                 "type": "integer",
