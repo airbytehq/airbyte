@@ -121,7 +121,7 @@ public class BigQueryIntegrationTest extends TestDestination {
     return StreamSupport
         .stream(queryResults.iterateAll().spliterator(), false)
         .map(row -> {
-          Map<String, Object> jsonMap = Maps.newHashMap();
+          Map jsonMap = Maps.newHashMap();
           for (Field field : fields) {
             jsonMap.put(field.getName(), row.get(field.getName()).getValue());
           }
