@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
@@ -13,11 +13,13 @@ import SourceResource from "../../../../core/resources/Source";
 import { Routes } from "../../../routes";
 import Breadcrumbs from "../../../../components/Breadcrumbs";
 import SourceConnectionTable from "./components/SourceConnectionTable";
+import SourceSettings from "./components/SourceSettings";
 import {
   ItemTabs,
   StepsTypes,
   TableItemTitle
 } from "../../../../components/SourceAndDestinationsBlocks";
+import LoadingPage from "../../../../components/LoadingPage";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -53,6 +55,30 @@ const SourceItemPage: React.FC = () => {
     connectionItem => connectionItem.sourceId === source.sourceId
   );
 
+  const renderContent = () => {
+    if (currentStep === StepsTypes.SETTINGS) {
+      return <SourceSettings currentSource={source} />;
+    }
+
+    return (
+      <>
+        <TableItemTitle type="destination" />
+        {connectionsWithSource.length ? (
+          <SourceConnectionTable connections={connectionsWithSource} />
+        ) : (
+          <Content>
+            <EmptyResource
+              text={<FormattedMessage id="sources.noDestinations" />}
+              description={
+                <FormattedMessage id="sources.addDestinationReplicateData" />
+              }
+            />
+          </Content>
+        )}
+      </>
+    );
+  };
+
   return (
     <>
       <PageTitle
@@ -62,19 +88,7 @@ const SourceItemPage: React.FC = () => {
         }
         withLine
       />
-      <TableItemTitle type="destination" />
-      {connectionsWithSource.length ? (
-        <SourceConnectionTable connections={connectionsWithSource} />
-      ) : (
-        <Content>
-          <EmptyResource
-            text={<FormattedMessage id="sources.noDestinations" />}
-            description={
-              <FormattedMessage id="sources.addDestinationReplicateData" />
-            }
-          />
-        </Content>
-      )}
+      <Suspense fallback={<LoadingPage />}>{renderContent()}</Suspense>
     </>
   );
 };

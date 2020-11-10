@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
@@ -18,6 +18,8 @@ import {
   StepsTypes,
   TableItemTitle
 } from "../../../../components/SourceAndDestinationsBlocks";
+import DestinationSettings from "./components/DestinationSettings";
+import LoadingPage from "../../../../components/LoadingPage";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -53,6 +55,32 @@ const DestinationItemPage: React.FC = () => {
     connectionItem => connectionItem.destinationId === destination.destinationId
   );
 
+  const renderContent = () => {
+    if (currentStep === StepsTypes.SETTINGS) {
+      return <DestinationSettings currentDestination={destination} />;
+    }
+
+    return (
+      <>
+        <TableItemTitle type="source" />
+        {connectionsWithDestination.length ? (
+          <DestinationConnectionTable
+            connections={connectionsWithDestination}
+          />
+        ) : (
+          <Content>
+            <EmptyResource
+              text={<FormattedMessage id="destinations.noSources" />}
+              description={
+                <FormattedMessage id="destinations.addSourceReplicateData" />
+              }
+            />
+          </Content>
+        )}
+      </>
+    );
+  };
+
   return (
     <>
       <PageTitle
@@ -62,19 +90,7 @@ const DestinationItemPage: React.FC = () => {
           <ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />
         }
       />
-      <TableItemTitle type="source" />
-      {connectionsWithDestination.length ? (
-        <DestinationConnectionTable connections={connectionsWithDestination} />
-      ) : (
-        <Content>
-          <EmptyResource
-            text={<FormattedMessage id="destinations.noSources" />}
-            description={
-              <FormattedMessage id="destinations.addSourceReplicateData" />
-            }
-          />
-        </Content>
-      )}
+      <Suspense fallback={<LoadingPage />}>{renderContent()}</Suspense>
     </>
   );
 };

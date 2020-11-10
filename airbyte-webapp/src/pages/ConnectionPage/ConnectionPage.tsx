@@ -48,11 +48,11 @@ const ConnectionPage: React.FC = () => {
     {
       id: "schema",
       name: <FormattedMessage id={"sources.schema"} />
-    },
-    {
-      id: "settings",
-      name: <FormattedMessage id={"sources.settings"} />
     }
+    // {
+    //   id: "settings",
+    //   name: <FormattedMessage id={"sources.settings"} />
+    // }
   ];
   const [currentStep, setCurrentStep] = useState("status");
   const onSelectStep = (id: string) => setCurrentStep(id);

@@ -50,10 +50,12 @@ export const getEntityTableData = (
 export const getConnectionTableData = (
   connections: Connection[],
   type: "source" | "destination"
-) =>
-  connections.map(item => ({
+) => {
+  const connectType = type === "source" ? "destination" : "source";
+
+  return connections.map(item => ({
     connectionId: item.connectionId,
-    entityName: item[type]?.name || "",
+    entityName: item[connectType]?.name || "",
     // @ts-ignore
     connectorName: item[type]?.[`${type}Name`] || "",
     lastSync: item.lastSync,
@@ -61,3 +63,4 @@ export const getConnectionTableData = (
     schedule: item.schedule,
     isSyncing: item.isSyncing
   }));
+};
