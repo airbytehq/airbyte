@@ -1,7 +1,7 @@
 FROM airbyte/base-python-test:dev
 
 # Bash is installed for convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y gcc bash && rm -rf /var/lib/apt/lists/*
 
 ENV MODULE_NAME="source_shopify_singer"
 ENV CODE_PATH="integration_tests"
