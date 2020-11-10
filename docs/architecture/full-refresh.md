@@ -1,6 +1,6 @@
 # Full Refresh
 
-This readme describes Airbyte conventions around the "full refresh" concept. Out in the world, there are many ways to define this term. We want the behavior of Airbyte integrations to be predictable, so we are adopting a preferred definition. This readme also describes what behavior to fall back on if the preferred convention cannot be used.
+This readme describes Airbyte conventions around the "full refresh" concept. Out in the world, there are many ways to define this term. We want the behavior of Airbyte connectors to be predictable, so we are adopting a preferred definition. This readme also describes what behavior to fall back on if the preferred convention cannot be used.
 
 On the nth sync of a full refresh connection:
 
@@ -73,5 +73,5 @@ Not all data warehouses will necessarily be able to adhere to either of these co
 
 ## In the future
 
-We will consider making other flavors of full refresh configurable as first-class citizens in Airbyte. e.g. On new data, copy old data to a new table with a timestamp, and then replace the original table with the new data. As always, we will focus on adding these options in such a way that the behavior of each integration is both well documented and predictable.
+We will consider making other flavors of full refresh configurable as first-class citizens in Airbyte. e.g. On new data, copy old data to a new table with a timestamp, and then replace the original table with the new data. As always, we will focus on adding these options in such a way that the behavior of each connector is both well documented and predictable.
 
