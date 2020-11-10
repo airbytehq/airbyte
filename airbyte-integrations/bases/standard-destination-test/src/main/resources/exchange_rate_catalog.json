@@ -12,6 +12,9 @@
           },
           "NZD": {
             "type": "number"
+          },
+          "USD": {
+            "type": "number"
           }
         }
       }
