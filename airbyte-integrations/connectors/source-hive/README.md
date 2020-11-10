@@ -36,7 +36,7 @@ and place them into `secrets/config.json`.
 python main_dev.py spec
 python main_dev.py check --config secrets/config.json
 python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/sample_catalog.json
+python main_dev.py read --config secrets/config.json --catalog sample_files/catalog.json
 ```
 
 ### Unit Tests

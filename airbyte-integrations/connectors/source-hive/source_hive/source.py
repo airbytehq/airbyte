@@ -60,9 +60,10 @@ class SourceHive(Source):
 
         except Exception as e:
             logger.error("Hive Source: Connect failed! The reason is " + str(e))
-            return AirbyteConnectionStatus(status=Status.FAILED)
-        cur.close()
-        conn.close()
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
+        finally:
+            cur.close()
+            conn.close()
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
@@ -95,8 +96,9 @@ class SourceHive(Source):
             reason = "Hive source: Failed to discover schemas"
             logger.error(reason)
             raise err
-        cur.close()
-        conn.close()
+        finally:
+            cur.close()
+            conn.close()
         return AirbyteCatalog(streams=streams)
 
     def read(
@@ -131,5 +133,6 @@ class SourceHive(Source):
             reason = "Hive source: Failed to read data"
             logger.error(reason)
             raise err
-        cur.close()
-        conn.close()
+        finally:
+            cur.close()
+            conn.close()
