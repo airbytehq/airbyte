@@ -79,25 +79,24 @@ const ServiceForm: React.FC<IProps> = ({
       validateOnChange={true}
       validateOnMount={true}
       validationSchema={validationSchema}
-      onSubmit={async values => {
-        return onSubmit(validationSchema.cast(values, { stripUnknown: true }));
-      }}
+      onSubmit={async values =>
+        onSubmit(validationSchema.cast(values, { stripUnknown: true }))
+      }
     >
-      {({ isSubmitting, setFieldValue, isValid, dirty, values, resetForm }) => (
+      {({ isSubmitting, isValid, dirty, resetForm, ...formProps }) => (
         <FormContainer>
           <FormContent
+            {...formProps}
             allowChangeConnector={allowChangeConnector}
+            schema={validationSchema}
             dropDownData={dropDownData}
             formType={formType}
             formFields={formFields}
-            specifications={specifications}
             widgetsInfo={uiWidgetsInfo}
-            values={values}
             isEditMode={isEditMode}
             isLoadingSchema={isLoading}
             onChangeServiceType={onDropDownSelect}
             setUiWidgetsInfo={setUiWidgetsInfo}
-            setFieldValue={setFieldValue}
             documentationUrl={documentationUrl}
           />
 
