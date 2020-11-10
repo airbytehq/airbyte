@@ -30,7 +30,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
-
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;

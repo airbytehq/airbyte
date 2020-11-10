@@ -34,9 +34,6 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 import org.apache.commons.lang3.RandomStringUtils;
 
 public class SnowflakeIntegrationTest extends TestDestination {
