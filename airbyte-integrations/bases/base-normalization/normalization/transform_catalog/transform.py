@@ -378,9 +378,12 @@ def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict,
             properties = obj["json_schema"]["properties"]
         else:
             properties = {}
-        table = jinja_call(f"source('{schema}','{name}')")
+        # TODO Replace {name}_raw by an argument like we do for the json_blob column
+        # This would enable destination to freely choose where to store intermediate data before notifying
+        # normalization step
+        table = jinja_call(f"source('{schema}','{name}_raw')")
         result.update(process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table))
-        source_tables.add(name)
+        source_tables.add(f"{name}_raw")
     return result, source_tables
 
 

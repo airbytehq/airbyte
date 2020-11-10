@@ -41,6 +41,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -164,11 +165,11 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    Set<JsonNode> usersActual = recordRetriever(USERS_STREAM_NAME);
+    Set<JsonNode> usersActual = recordRetriever(NamingHelper.getRawTableName(USERS_STREAM_NAME));
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(TASKS_STREAM_NAME);
+    Set<JsonNode> tasksActual = recordRetriever(NamingHelper.getRawTableName(TASKS_STREAM_NAME));
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
@@ -188,7 +189,7 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_USERS2);
     consumer.close();
 
-    final List<String> tableNames = CATALOG.getStreams().stream().map(AirbyteStream::getName).collect(toList());
+    final List<String> tableNames = CATALOG.getStreams().stream().map(s -> NamingHelper.getRawTableName(s.getName())).collect(toList());
     assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(AirbyteStream::getName).collect(Collectors.toList()));
     // assert that no tables were created.
     assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tableNames.stream().anyMatch(tableName::startsWith)));
@@ -202,8 +203,8 @@ class PostgresDestinationTest {
   }
 
   private void assertTmpTablesNotPresent(List<String> tableNames) throws SQLException {
-    Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
-    assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
+    Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_\\d+").collect(Collectors.toSet());
+    assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::matches)));
   }
 
   private Set<JsonNode> recordRetriever(String streamName) throws Exception {
