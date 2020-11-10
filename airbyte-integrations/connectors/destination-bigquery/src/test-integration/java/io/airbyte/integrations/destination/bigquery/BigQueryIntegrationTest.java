@@ -140,6 +140,7 @@ public class BigQueryIntegrationTest extends TestDestination {
       return switch (field.getType().getStandardType()) {
         case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
         case INT64 -> fieldValue.getLongValue();
+        case STRING -> fieldValue.getStringValue();
         default -> fieldValue.getValue();
       };
     } else {
