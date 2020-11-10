@@ -1,5 +1,5 @@
 {
-  "sourceDefinitionId": "d78dda21b4ec4f51a9f220718b94b844",
+  "sourceDefinitionId": "af2299cc-9a86-420c-bbcb-2ae0e97e3a85",
   "name": "Apache Hive",
   "dockerRepository": "airbyte/source-hive",
   "dockerImageTag": "0.1.0",
