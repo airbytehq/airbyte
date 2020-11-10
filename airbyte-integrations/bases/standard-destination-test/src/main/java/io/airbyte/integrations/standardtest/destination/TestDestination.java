@@ -384,8 +384,7 @@ public abstract class TestDestination {
    * @param json - json that will be pruned. will be mutated in place!
    */
   private void pruneMutate(JsonNode json) {
-    final Set<String> keys = Jsons.object(json, new TypeReference<Map<String, Object>>() {}).keySet();
-    for (final String key : keys) {
+    for (final String key : Jsons.keys(json)) {
       final JsonNode node = json.get(key);
       // recursively prune all airbyte internal fields.
       if (node.isObject() || node.isArray()) {
