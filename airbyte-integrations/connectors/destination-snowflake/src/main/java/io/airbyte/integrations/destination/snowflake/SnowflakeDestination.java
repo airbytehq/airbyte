@@ -30,6 +30,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -106,7 +107,7 @@ public class SnowflakeDestination implements Destination {
     // create temporary tables if they do not exist
     // we don't use temporary/transient since we want to control the lifecycle
     for (final AirbyteStream stream : catalog.getStreams()) {
-      final String tableName = stream.getName();
+      final String tableName = NamingHelper.getRawTableName(stream.getName());
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
 
       final String query = String.format(
