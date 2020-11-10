@@ -31,8 +31,12 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import org.apache.commons.lang3.RandomStringUtils;
 
 public class SnowflakeIntegrationTest extends TestDestination {
@@ -65,10 +69,24 @@ public class SnowflakeIntegrationTest extends TestDestination {
   }
 
   @Override
+  protected boolean implementsBasicNormalization() {
+    return true;
+  }
+
+  @Override
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
+    return retrieveRecordsFromTable(testEnv, streamName);
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
+    return retrieveRecordsFromTable(env, NamingHelper.getRawTableName(streamName));
+  }
+
+  private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws SQLException, InterruptedException {
     return SnowflakeDatabase.executeSync(
         SnowflakeDatabase.getConnectionFactory(getConfig()),
-        String.format("SELECT * FROM \"%s\" ORDER BY \"emitted_at\" ASC;", NamingHelper.getRawTableName(streamName)),
+        String.format("SELECT * FROM \"%s\" ORDER BY \"emitted_at\" ASC;", NamingHelper.getRawTableName(tableName)),
         false,
         rs -> {
           try {

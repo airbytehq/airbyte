@@ -85,10 +85,25 @@ public class BigQueryIntegrationTest extends TestDestination {
   }
 
   @Override
+  protected boolean implementsBasicNormalization() {
+    return true;
+  }
+
+  @Override
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
+    return retrieveRecordsFromTable(testEnv, streamName);
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
+    return retrieveRecordsFromTable(env, NamingHelper.getRawTableName(streamName));
+  }
+
+  private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName){
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
-            .newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), NamingHelper.getRawTableName(streamName.toLowerCase())))
+            .newBuilder(
+                String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();
 
     return StreamSupport
@@ -102,7 +117,8 @@ public class BigQueryIntegrationTest extends TestDestination {
   protected void setup(TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
+          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+              + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
     final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
