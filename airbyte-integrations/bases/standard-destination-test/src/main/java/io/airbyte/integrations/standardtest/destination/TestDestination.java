@@ -253,8 +253,9 @@ public abstract class TestDestination {
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalization(String messagesFilename, String catalogFilename) throws Exception {
-    if (!implementsBasicNormalization())
+    if (!implementsBasicNormalization()) {
       return;
+    }
 
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
@@ -262,7 +263,7 @@ public abstract class TestDestination {
     runSync(getConfigWithBasicNormalization(), messages, catalog);
 
     assertSameMessages(messages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
-    assertEquivalentMessages(messages, retrieveNormalizedRecords(testEnv, catalog.getStreams().get(0).getName()));
+    assertSameMessagesPruneAirbyteInternalFields(messages, retrieveNormalizedRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
   /**
@@ -312,8 +313,10 @@ public abstract class TestDestination {
     target.notifyEndOfStream();
     target.close();
 
-    if (config.get(WorkerConstants.BASIC_NORMALIZATION_KEY).isNull() || !config.get(WorkerConstants.BASIC_NORMALIZATION_KEY).asBoolean())
+    // skip if basic normalization is not configured to run (either not set or false).
+    if (!config.hasNonNull(WorkerConstants.BASIC_NORMALIZATION_KEY) || !config.get(WorkerConstants.BASIC_NORMALIZATION_KEY).asBoolean()) {
       return;
+    }
 
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
         getImageName(),
@@ -334,16 +337,10 @@ public abstract class TestDestination {
         .map(AirbyteRecordMessage::getData)
         .collect(Collectors.toList());
 
-    LOGGER.info("expected: {}", expectedJson);
-    LOGGER.info("actual: {}", actual);
-
-    // we want to ignore order in this comparison.
-    assertEquals(expectedJson.size(), actual.size());
-    assertTrue(expectedJson.containsAll(actual));
-    assertTrue(actual.containsAll(expectedJson));
+    assertSameData(expectedJson, actual);
   }
 
-  private void assertEquivalentMessages(List<AirbyteMessage> expected, List<JsonNode> actual) {
+  private void assertSameMessagesPruneAirbyteInternalFields(List<AirbyteMessage> expected, List<JsonNode> actual) {
     final List<JsonNode> expectedPruned = expected.stream()
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)
@@ -353,13 +350,17 @@ public abstract class TestDestination {
         .collect(Collectors.toList());
 
     final List<JsonNode> actualPruned = actual.stream().map(this::prune).collect(Collectors.toList());
+    assertSameData(expectedPruned, actualPruned);
+  }
 
-    LOGGER.info("expectedPruned: {}", expectedPruned);
-    LOGGER.info("actualPruned: {}", actualPruned);
+  private void assertSameData(List<JsonNode> expected, List<JsonNode> actual) {
+    LOGGER.info("expected: {}", expected);
+    LOGGER.info("actual: {}", actual);
+
     // we want to ignore order in this comparison.
-    assertEquals(expectedPruned.size(), actualPruned.size());
-    assertTrue(expectedPruned.containsAll(actualPruned));
-    assertTrue(actualPruned.containsAll(expectedPruned));
+    assertEquals(expected.size(), actual.size());
+    assertTrue(expected.containsAll(actual));
+    assertTrue(actual.containsAll(expected));
   }
 
   /**
@@ -385,10 +386,18 @@ public abstract class TestDestination {
     final Set<String> keys = Jsons.object(json, new TypeReference<Map<String, Object>>() {}).keySet();
     for (final String key : keys) {
       final JsonNode node = json.get(key);
+      // recursively prune all airbyte internal fields.
       if (node.isObject() || node.isArray()) {
         pruneMutate(node);
       }
 
+      // prune the following
+      // - airbyte internal fields
+      // - fields that match what airbyte generates as hash ids
+      // - null values -- normalization will often return `<key>: null` but in the original data that key
+      // likely did not exist in the original message. the most consistent thing to do is always remove
+      // the null fields (this choice does decrease our ability to check that normalization creates
+      // columns even if all the values in that column are null)
       if (Sets.newHashSet("emitted_at", "ab_id", "normalized_at").contains(key) || key.matches("^_.*_hashid$") || json.get(key).isNull()) {
         ((ObjectNode) json).remove(key);
       }
