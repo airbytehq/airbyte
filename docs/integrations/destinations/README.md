@@ -1,5 +1,6 @@
-# Destinations
+---
+description: 'Data warehouses, data lakes, databases...'
+---
 
-* [Contributing Destinations](../../contributing-to-airbyte/#new-integrations)
-* Please reach out to us for help develop destinations in other languages.
+# Destinations
 
