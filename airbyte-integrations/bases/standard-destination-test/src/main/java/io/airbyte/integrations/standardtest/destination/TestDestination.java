@@ -287,6 +287,7 @@ public abstract class TestDestination {
   }
 
   private void runSync(JsonNode config, List<AirbyteMessage> messages, AirbyteCatalog catalog) throws Exception {
+
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
         .withConnectionId(UUID.randomUUID())
         .withSyncMode(SyncMode.FULL_REFRESH)
