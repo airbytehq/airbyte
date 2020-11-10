@@ -89,6 +89,11 @@ public class SnowflakeDatabase {
     executeSync(connectionFactory, query, false, rs -> null);
   }
 
+  public static void executeSync(Supplier<Connection> connectionFactory, String query, boolean multipleStatements)
+      throws SQLException, InterruptedException {
+    executeSync(connectionFactory, query, multipleStatements, rs -> null);
+  }
+
   /**
    * @param connectionFactory - a supplier for a Snowflake connection
    * @param query - Snowflake query
@@ -103,8 +108,8 @@ public class SnowflakeDatabase {
   public static <T> T executeSync(Supplier<Connection> connectionFactory, String query, boolean multipleStatements, Function<ResultSet, T> transform)
       throws SQLException, InterruptedException {
     try (Connection conn = connectionFactory.get()) {
-      Statement statement = conn.createStatement();
-      SnowflakeStatement snowflakeStatement = statement.unwrap(SnowflakeStatement.class);
+      final Statement statement = conn.createStatement();
+      final SnowflakeStatement snowflakeStatement = statement.unwrap(SnowflakeStatement.class);
 
       if (multipleStatements) {
         snowflakeStatement.setParameter("MULTI_STATEMENT_COUNT", 0);
@@ -122,7 +127,7 @@ public class SnowflakeDatabase {
   public static Supplier<Connection> getConnectionFactory(JsonNode config) {
     final String connectUrl = String.format("jdbc:snowflake://%s", config.get("host").asText());
 
-    Properties properties = new Properties();
+    final Properties properties = new Properties();
 
     properties.put("user", config.get("username").asText());
     properties.put("password", config.get("password").asText());
