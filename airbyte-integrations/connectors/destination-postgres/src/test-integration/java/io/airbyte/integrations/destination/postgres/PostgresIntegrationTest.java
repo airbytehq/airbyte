@@ -28,14 +28,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.testcontainers.containers.PostgreSQLContainer;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class PostgresIntegrationTest extends TestDestination {
 
@@ -75,7 +74,14 @@ public class PostgresIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(env, NamingHelper.getRawTableName(streamName));
+    return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl()).query(
+        ctx -> ctx
+            .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
+            .stream()
+            .map(r -> r.formatJSON(JSON_FORMAT))
+            .map(Jsons::deserialize)
+            .map(r -> Jsons.deserialize(r.get(COLUMN_NAME).asText()))
+            .collect(Collectors.toList()));
   }
 
   @Override
@@ -84,18 +90,15 @@ public class PostgresIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
-    return retrieveRecordsFromTable(testEnv, streamName);
-  }
-
-  private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv testEnv, String tableName) throws SQLException {
-    return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl()).query(
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName)
+      throws Exception {
+    return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
+        db.getJdbcUrl()).query(
         ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", tableName))
+            .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
             .stream()
             .map(r -> r.formatJSON(JSON_FORMAT))
             .map(Jsons::deserialize)
-            .map(r -> Jsons.deserialize(r.get(COLUMN_NAME).asText()))
             .collect(Collectors.toList()));
   }
 
