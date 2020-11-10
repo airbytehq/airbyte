@@ -9,21 +9,21 @@ import config from "../../../../config";
 import ContentCard from "../../../../components/ContentCard";
 import EmptyResource from "../../../../components/EmptyResourceBlock";
 import ConnectionResource from "../../../../core/resources/Connection";
-import SourceResource from "../../../../core/resources/Source";
 import { Routes } from "../../../routes";
 import Breadcrumbs from "../../../../components/Breadcrumbs";
-import SourceConnectionTable from "./components/SourceConnectionTable";
+import DestinationConnectionTable from "./components/DestinationConnectionTable";
+import DestinationResource from "../../../../core/resources/Destination";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
 `;
 
-const SourceItemPage: React.FC = () => {
+const DestinationItemPage: React.FC = () => {
   const { query, history, push } = useRouter();
 
-  const source = useResource(SourceResource.detailShape(), {
+  const destination = useResource(DestinationResource.detailShape(), {
     // @ts-ignore
-    sourceId: query.id
+    destinationId: query.id
   });
 
   const { connections } = useResource(ConnectionResource.listShape(), {
@@ -31,31 +31,31 @@ const SourceItemPage: React.FC = () => {
   });
 
   const onClickBack = () =>
-    history.length > 2 ? history.goBack() : push(Routes.Source);
+    history.length > 2 ? history.goBack() : push(Routes.Destination);
 
   const breadcrumbsData = [
     {
-      name: <FormattedMessage id="sidebar.sources" />,
+      name: <FormattedMessage id="admin.destinations" />,
       onClick: onClickBack
     },
-    { name: source.name }
+    { name: destination.name }
   ];
 
-  const connectionsWithSource = connections.filter(
-    connectionItem => connectionItem.sourceId === source.sourceId
+  const connectionsWithDestination = connections.filter(
+    connectionItem => connectionItem.destinationId === destination.destinationId
   );
 
   return (
     <>
       <PageTitle title={<Breadcrumbs data={breadcrumbsData} />} withLine />
-      {connectionsWithSource.length ? (
-        <SourceConnectionTable connections={connectionsWithSource} />
+      {connectionsWithDestination.length ? (
+        <DestinationConnectionTable connections={connectionsWithDestination} />
       ) : (
         <Content>
           <EmptyResource
-            text={<FormattedMessage id="sources.noDestinations" />}
+            text={<FormattedMessage id="destinations.noSources" />}
             description={
-              <FormattedMessage id="sources.addDestinationReplicateData" />
+              <FormattedMessage id="destinations.addSourceReplicateData" />
             }
           />
         </Content>
@@ -64,4 +64,4 @@ const SourceItemPage: React.FC = () => {
   );
 };
 
-export default SourceItemPage;
+export default DestinationItemPage;

@@ -46,7 +46,7 @@ const Tr = styled.tr<{
 `;
 
 const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
-  padding: 19px 13px;
+  padding: 16px 13px;
   font-size: 14px;
   line-height: 17px;
   font-weight: normal;

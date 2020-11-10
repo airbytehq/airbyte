@@ -16,7 +16,7 @@ import JobsList from "./JobsList";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import config from "../../../../../config";
 import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
-import EmptyResource from "../../../components/EmptyResource";
+import EmptyResource from "../../../../../components/EmptyResourceBlock";
 
 type IProps = {
   sourceData: Connection;

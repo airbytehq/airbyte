@@ -26,6 +26,7 @@ export enum Routes {
 
   Destination = "/destination",
   Source = "/source",
+  Connection = "/connection",
   SourceNew = "/new-source",
   Admin = "/admin",
   Root = "/"
@@ -66,7 +67,7 @@ const MainViewRoutes = () => {
     <MainView>
       <Suspense fallback={<LoadingPage />}>
         <Switch>
-          <Route exact path={Routes.Destination}>
+          <Route path={Routes.Destination}>
             <DestinationPage />
           </Route>
           <Route path={Routes.Source}>

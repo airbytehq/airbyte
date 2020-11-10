@@ -4,6 +4,7 @@ import BaseResource from "./BaseResource";
 export interface Source {
   sourceId: string;
   name: string;
+  sourceName: string;
   workspaceId: string;
   sourceDefinitionId: string;
   connectionConfiguration: any; // TODO: fix type
@@ -12,6 +13,7 @@ export interface Source {
 export default class SourceResource extends BaseResource implements Source {
   readonly sourceId: string = "";
   readonly name: string = "";
+  readonly sourceName: string = "";
   readonly sourceDefinitionId: string = "";
   readonly workspaceId: string = "";
   readonly connectionConfiguration: any = [];

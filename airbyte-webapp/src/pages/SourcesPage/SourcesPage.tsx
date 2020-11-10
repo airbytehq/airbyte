@@ -8,6 +8,9 @@ import AllSourcesPage from "./pages/AllSourcesPage";
 import CreateSourcePage from "./pages/CreateSourcePage";
 import SourceItemPage from "./pages/SourceItemPage";
 
+// TODO: fix
+import OldSourceItemPage from "./pages/OldSourceItemPage";
+
 const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
 
 const SourcesPage: React.FC = () => {
@@ -16,6 +19,11 @@ const SourcesPage: React.FC = () => {
       <Switch>
         <Route path={`${Routes.Source}${Routes.SourceNew}`}>
           <CreateSourcePage />
+        </Route>
+        <Route path={`${Routes.Source}${Routes.Connection}/:id`}>
+          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
+            <OldSourceItemPage />
+          </ErrorBoundary>
         </Route>
         <Route path={`${Routes.Source}/:id`}>
           <ErrorBoundary fallbackComponent={FallbackRootRedirector}>

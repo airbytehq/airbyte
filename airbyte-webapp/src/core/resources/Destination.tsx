@@ -4,6 +4,7 @@ import BaseResource from "./BaseResource";
 export interface Destination {
   destinationId: string;
   name: string;
+  destinationName: string;
   workspaceId: string;
   destinationDefinitionId: string;
   connectionConfiguration: any; // TODO: fix type
@@ -13,6 +14,7 @@ export default class DestinationResource extends BaseResource
   implements Destination {
   readonly destinationId: string = "";
   readonly name: string = "";
+  readonly destinationName: string = "";
   readonly workspaceId: string = "";
   readonly destinationDefinitionId: string = "";
   readonly connectionConfiguration: any = [];

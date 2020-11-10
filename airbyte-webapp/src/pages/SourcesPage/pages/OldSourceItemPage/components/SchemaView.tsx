@@ -10,7 +10,7 @@ import {
   constructInitialSchemaState,
   constructNewSchema
 } from "../../../../../core/helpers";
-import EmptyResource from "../../../components/EmptyResource";
+import EmptyResource from "../../../../../components/EmptyResourceBlock";
 import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 
 type IProps = {
