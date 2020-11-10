@@ -1,7 +1,13 @@
-project.ext.pyModule = 'base_python'
-apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
+plugins {
+    id 'airbyte-docker'
+    id 'airbyte-python'
+}
 
-build.dependsOn ':airbyte-integrations:bases:airbyte-protocol:build'
-buildImage.dependsOn ':airbyte-integrations:bases:base:buildImage'
-buildImage.dependsOn ':airbyte-integrations:bases:airbyte-protocol:buildImage'
+airbytePython {
+    moduleDirectory 'base_python'
+}
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:airbyte-protocol').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
+}

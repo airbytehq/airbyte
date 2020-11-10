@@ -1,26 +1,13 @@
-project.ext.pyModule = 'source_file'
-apply from: rootProject.file('tools/gradle/commons/integrations/python.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/test-image.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/integration-test.gradle')
-apply from: rootProject.file('tools/gradle/commons/integrations/standard-source-test-python.gradle')
-
-
-standardSourceTestPython {
-    ext {
-        imageName = "${extractImageName(project.file('Dockerfile'))}:dev"
-        pythonContainerName = "${extractImageName(project.file('Dockerfile.test'))}:dev"
-    }
+plugins {
+    id 'airbyte-python'
+    id 'airbyte-docker'
+    id 'airbyte-source-test'
 }
 
-task unitTest(type: PythonTask){
-    command = "setup.py test"
+airbytePython {
+    moduleDirectory 'source_file'
 }
 
-build.dependsOn(unitTest)
-build.dependsOn ':airbyte-integrations:bases:base-python-test:build'
-buildImage.dependsOn ':airbyte-integrations:bases:base-python:buildImage'
-integrationTest.dependsOn(buildImage)
-
-buildTestImage.dependsOn ':airbyte-integrations:bases:base-python-test:buildImage'
-standardSourceTestPython.dependsOn(buildTestImage)
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
+}

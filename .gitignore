@@ -2,9 +2,9 @@
 .idea
 *.iml
 build
-!tools/build
 .DS_Store
 data
+.dockerversions
 
 secrets
 

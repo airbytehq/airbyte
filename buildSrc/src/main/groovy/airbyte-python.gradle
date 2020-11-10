@@ -1,0 +1,98 @@
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.tasks.CacheableTask
+import ru.vyarus.gradle.plugin.python.task.PythonTask;
+
+class AirbytePythonConfiguration {
+    String moduleDirectory
+}
+
+class AirbytePythonPlugin implements Plugin<Project> {
+
+    void apply(Project project) {
+        def extension = project.extensions.create('airbytePython', AirbytePythonConfiguration)
+
+        project.plugins.apply 'ru.vyarus.use-python'
+
+        project.python {
+            envPath = '.venv'
+            minPythonVersion = '3.7'
+            scope = 'VIRTUALENV'
+            installVirtualenv = true
+            pip 'flake8:3.8.4'
+            pip 'black:20.8b1'
+            pip 'mypy:0.790'
+            pip 'isort:5.6.4'
+            pip 'pytest:6.1.2'
+        }
+
+        project.task('blackFormat', type: PythonTask) {
+            module = "black"
+            // the line length should match .isort.cfg
+            command = ". --line-length 140"
+        }
+
+        project.task('isortFormat', type: PythonTask) {
+            module = "isort"
+            command = ". --settings-file ${project.rootProject.file('tools/python/.isort.cfg').absolutePath}"
+        }
+
+        project.task('flakeCheck', type: PythonTask, dependsOn: project.blackFormat) {
+            module = "flake8"
+            command = ". --config ${project.rootProject.file('tools/python/.flake8').absolutePath}"
+        }
+
+        project.task('installReqs', type: PythonTask) {
+            module = "pip"
+            command = "install -r requirements.txt"
+            inputs.file('requirements.txt')
+            outputs.file('build/installedreqs.txt')
+            outputs.cacheIf { true }
+        }
+
+        project.task('installTestReqs', type: PythonTask, dependsOn: project.installReqs) {
+            module = "pip"
+            command = "install .[tests]"
+            inputs.file('setup.py')
+            outputs.file('build/installedtestreqs.txt')
+            outputs.cacheIf { true }
+        }
+
+        if(project.file('unit_tests').exists()) {
+            project.task('unitTest', type: PythonTask, dependsOn: project.installTestReqs) {
+                module = "pytest"
+                command = "unit_tests"
+            }
+        } else {
+            project.task('unitTest') {
+                logger.info "Skipping Python unit tests because unit_tests directory doesn't exist."
+            }
+        }
+
+        if (extension.moduleDirectory) {
+            project.task('mypyCheck', type: PythonTask) {
+                module = "mypy"
+                command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('tools/python/.mypy.ini').absolutePath}"
+            }
+
+            project.check.dependsOn mypyCheck
+        }
+
+        project.task('airbytePythonApply', type: DefaultTask) {
+            dependsOn project.installReqs
+            dependsOn project.blackFormat
+            dependsOn project.isortFormat
+            dependsOn project.flakeCheck
+        }
+
+
+        project.task('airbytePythonTest', type: DefaultTask) {
+            dependsOn project.installTestReqs
+            dependsOn project.unitTest
+        }
+
+        project.assemble.dependsOn project.airbytePythonApply
+        project.assemble.dependsOn project.airbytePythonTest
+        project.test.dependsOn project.airbytePythonTest
+    }
+}

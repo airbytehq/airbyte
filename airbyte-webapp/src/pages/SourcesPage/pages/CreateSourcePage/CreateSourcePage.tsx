@@ -52,6 +52,8 @@ const CreateSourcePage: React.FC = () => {
   const { createSource } = useSource();
   const { createConnection } = useConnection();
 
+  const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_SOURCE);
+
   const sourcesDropDownData = useMemo(
     () =>
       sourceDefinitions.map(item => ({
@@ -62,17 +64,6 @@ const CreateSourcePage: React.FC = () => {
     [sourceDefinitions]
   );
 
-  const steps = [
-    {
-      id: StepsTypes.CREATE_SOURCE,
-      name: <FormattedMessage id={"sources.selectSource"} />
-    },
-    {
-      id: StepsTypes.SET_UP_CONNECTION,
-      name: <FormattedMessage id={"onboarding.setUpConnection"} />
-    }
-  ];
-  const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_SOURCE);
   const [currentsource, setCurrentsource] = useState<Source | undefined>(
     undefined
   );
@@ -143,6 +134,17 @@ const CreateSourcePage: React.FC = () => {
       />
     );
   };
+
+  const steps = [
+    {
+      id: StepsTypes.CREATE_SOURCE,
+      name: <FormattedMessage id={"sources.selectSource"} />
+    },
+    {
+      id: StepsTypes.SET_UP_CONNECTION,
+      name: <FormattedMessage id={"onboarding.setUpConnection"} />
+    }
+  ];
 
   return (
     <>

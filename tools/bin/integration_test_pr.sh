@@ -6,7 +6,7 @@ set -e
 
 assert_root
 
-./gradlew --no-daemon --scan -x generateProtocolClassFiles \
+./gradlew --no-daemon --scan \
   :airbyte-integrations:connectors:destination-bigquery:integrationTest \
   :airbyte-integrations:connectors:destination-postgres:integrationTest \
   :airbyte-integrations:connectors:destination-csv:integrationTest \

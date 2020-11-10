@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlay } from "@fortawesome/free-solid-svg-icons";
 
 import { H2 } from "../../components/Titles";
 import StepsMenu from "../../components/StepsMenu";
@@ -20,6 +22,7 @@ import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import useSource from "../../components/hooks/services/useSourceHook";
 import useDestination from "../../components/hooks/services/useDestinationHook";
 import useConnection from "../../components/hooks/services/useConnectionHook";
+import Link from "../../components/Link";
 
 const Content = styled.div`
   width: 100%;
@@ -51,6 +54,17 @@ const Subtitle = styled.div`
 
 const StepsCover = styled.div`
   margin: 33px 0 28px;
+`;
+
+const TutorialLink = styled(Link)`
+  margin-top: 32px;
+  font-size: 14px;
+  text-align: center;
+  display: block;
+`;
+
+const PlayIcon = styled(FontAwesomeIcon)`
+  margin-right: 6px;
 `;
 
 const OnboardingPage: React.FC = () => {
@@ -223,15 +237,19 @@ const OnboardingPage: React.FC = () => {
     <Content>
       <Img src="/welcome.svg" height={132} />
       <MainTitle center>
-        <FormattedMessage id={"onboarding.title"} />
+        <FormattedMessage id="onboarding.title" />
       </MainTitle>
       <Subtitle>
-        <FormattedMessage id={"onboarding.subtitle"} />
+        <FormattedMessage id="onboarding.subtitle" />
       </Subtitle>
       <StepsCover>
         <StepsMenu data={steps} activeStep={currentStep} />
       </StepsCover>
       {renderStep()}
+      <TutorialLink as="a" clear target="_blank" href={config.ui.tutorialLink}>
+        <PlayIcon icon={faPlay} />
+        <FormattedMessage id="onboarding.tutorial" />
+      </TutorialLink>
     </Content>
   );
 };

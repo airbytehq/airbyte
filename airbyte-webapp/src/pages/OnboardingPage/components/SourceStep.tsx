@@ -110,15 +110,7 @@ const SourceStep: React.FC<IProps> = ({
         specifications={sourceDefinitionSpecification?.connectionSpecification}
         documentationUrl={sourceDefinitionSpecification?.documentationUrl}
         isLoading={isLoading}
-        formValues={
-          source
-            ? {
-                ...source.connectionConfiguration,
-                name: source.name,
-                serviceType: source.sourceDefinitionId
-              }
-            : null
-        }
+        formValues={source}
       />
     </ContentCard>
   );

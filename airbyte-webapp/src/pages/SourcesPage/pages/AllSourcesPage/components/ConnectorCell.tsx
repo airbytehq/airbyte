@@ -18,7 +18,7 @@ const Image = styled(ImageBlock)`
   margin-right: 6px;
 `;
 
-const StatusCell: React.FC<IProps> = ({ value, enabled }) => {
+const ConnectorCell: React.FC<IProps> = ({ value, enabled }) => {
   return (
     <Content enabled={enabled}>
       <Image />
@@ -27,4 +27,4 @@ const StatusCell: React.FC<IProps> = ({ value, enabled }) => {
   );
 };
 
-export default StatusCell;
+export default ConnectorCell;
