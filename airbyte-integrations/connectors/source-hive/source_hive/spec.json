@@ -41,7 +41,8 @@
       "authMechanism": {
         "description": "Specify the auth mechanism for Hive",
         "type": "string",
-        "default": "NOSASL"
+        "default": "PLAIN",
+        "enum": ["NOSASL", "PLAIN", "GSSAPI", "LDAP"]
       }
     }
   }

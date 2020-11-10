@@ -25,7 +25,7 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="source_hive",
+    name="source-hive",
     description="Source implementation for Hive.",
     author="Airbyte",
     author_email="contact@airbyte.io",
