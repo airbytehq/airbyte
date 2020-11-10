@@ -78,15 +78,11 @@ const SourceStep: React.FC<IProps> = ({
 
     setSourceId(sourceId);
   };
-  const onSubmitForm = async (values: {
-    name: string;
-    serviceType: string;
-  }) => {
-    await onSubmit({
+  const onSubmitForm = async (values: { name: string; serviceType: string }) =>
+    onSubmit({
       ...values,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId
     });
-  };
 
   const errorMessage =
     errorStatus === 0 ? null : errorStatus === 400 ? (

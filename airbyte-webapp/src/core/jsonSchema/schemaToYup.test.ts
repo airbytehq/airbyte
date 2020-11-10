@@ -93,3 +93,48 @@ test("should build schema for conditional case", () => {
 
   expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));
 });
+
+test("should build schema for conditional case with inner schema and selected uiwidget", () => {
+  const yupSchema = buildYupFormForJsonSchema(
+    {
+      type: "object",
+      properties: {
+        credentials: {
+          type: "object",
+          oneOf: [
+            {
+              title: "api key",
+              required: ["api_key"],
+              properties: {
+                api_key: {
+                  type: "string"
+                }
+              }
+            },
+            {
+              title: "oauth",
+              required: ["redirect_uri"],
+              properties: {
+                redirect_uri: {
+                  type: "string",
+                  examples: ["https://api.hubspot.com/"]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    { "key.credentials": { selectedItem: "oauth" } },
+    undefined,
+    "key"
+  );
+
+  const expectedSchema = yup.object().shape({
+    credentials: yup.object().shape({
+      redirect_uri: yup.string().required("form.empty.error")
+    })
+  });
+
+  expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));
+});

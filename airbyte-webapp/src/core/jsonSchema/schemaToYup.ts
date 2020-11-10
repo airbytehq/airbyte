@@ -15,13 +15,15 @@ import { WidgetConfigMap } from "../form/types";
  * @param uiConfig uiConfig of widget currently selected in form
  * @param parentSchema used in recursive schema building as required fields can be described in parentSchema
  * @param propertyKey used in recursive schema building for building path for uiConfig
+ * @param propertyPath constracts path of property
  */
 
 export const buildYupFormForJsonSchema = (
   jsonSchema: JSONSchema7,
   uiConfig?: WidgetConfigMap,
   parentSchema?: JSONSchema7,
-  propertyKey?: string
+  propertyKey?: string,
+  propertyPath: string | undefined = propertyKey
 ): yup.Schema<any> => {
   let schema:
     | yup.NumberSchema
@@ -29,11 +31,11 @@ export const buildYupFormForJsonSchema = (
     | yup.ObjectSchema
     | null = null;
 
-  if (jsonSchema.oneOf && uiConfig && propertyKey) {
+  if (jsonSchema.oneOf && uiConfig && propertyPath) {
     const selectedSchema =
       jsonSchema.oneOf.find(condition => {
         if (typeof condition !== "boolean") {
-          return uiConfig[propertyKey]?.selectedItem === condition.title;
+          return uiConfig[propertyPath]?.selectedItem === condition.title;
         }
         return false;
       }) ?? jsonSchema.oneOf[0];
@@ -42,7 +44,8 @@ export const buildYupFormForJsonSchema = (
         { type: jsonSchema.type, ...selectedSchema },
         uiConfig,
         jsonSchema,
-        propertyKey
+        propertyKey,
+        propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
       );
     }
   }
@@ -76,7 +79,10 @@ export const buildYupFormForJsonSchema = (
                     condition,
                     uiConfig,
                     jsonSchema,
-                    propertyKey
+                    propertyKey,
+                    propertyPath
+                      ? `${propertyPath}.${propertyKey}`
+                      : propertyKey
                   )
                 : yup.mixed()
             ])
