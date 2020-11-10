@@ -27,7 +27,6 @@ package io.airbyte.integrations.standardtest.destination;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -61,8 +60,6 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -384,8 +381,7 @@ public abstract class TestDestination {
    * @param json - json that will be pruned. will be mutated in place!
    */
   private void pruneMutate(JsonNode json) {
-    final Set<String> keys = Jsons.object(json, new TypeReference<Map<String, Object>>() {}).keySet();
-    for (final String key : keys) {
+    for (final String key : Jsons.keys(json)) {
       final JsonNode node = json.get(key);
       // recursively prune all airbyte internal fields.
       if (node.isObject() || node.isArray()) {
