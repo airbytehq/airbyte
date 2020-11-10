@@ -83,10 +83,25 @@ public class PostgresIntegrationTest extends TestDestination {
             .collect(Collectors.toList()));
   }
 
-  @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecords(env, streamName);
-  }
+  // todo (cgardens) - Example of what this should look like for postgres once normalization is added.
+  // Keep in mind `retrieveRecords` will also need to be updated once we have `_raw`
+  // @Override
+  // protected boolean implementsBasicNormalization() {
+  // return true;
+  // }
+  //
+  // @Override
+  // protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName)
+  // throws Exception {
+  // return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
+  // db.getJdbcUrl()).query(
+  // ctx -> ctx
+  // .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
+  // .stream()
+  // .map(r -> r.formatJSON(JSON_FORMAT))
+  // .map(Jsons::deserialize)
+  // .collect(Collectors.toList()));
+  // }
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {

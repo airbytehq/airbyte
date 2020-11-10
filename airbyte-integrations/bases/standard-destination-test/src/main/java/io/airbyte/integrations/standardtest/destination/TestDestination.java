@@ -31,7 +31,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -57,7 +56,6 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -77,9 +75,6 @@ public abstract class TestDestination {
   private Path jobRoot;
   protected Path localRoot;
   private ProcessBuilderFactory pbf;
-
-  private static final Set<String> ALL_RAW_STREAM_NAMES = Sets.newHashSet(
-      "exchange_rate");
 
   /**
    * Name of the docker image that the tests will run against.
@@ -111,16 +106,34 @@ public abstract class TestDestination {
    * there. Note: this returns a set and does not test any order guarantees.
    *
    * @param testEnv - information about the test environment.
+   * @param streamName - name of the stream for which we are retrieving records.
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
   protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception;
 
+  /**
+   * Override to return true to if the destination implements basic normalization and it should be
+   * tested here.
+   *
+   * @return - a boolean.
+   */
   protected boolean implementsBasicNormalization() {
     return false;
   }
 
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName)  throws Exception {
+  /**
+   * Same idea as {@link #retrieveRecords(TestDestinationEnv, String)}. Except this method should pull
+   * records from the table that contains the normalized records and convert them back into the data
+   * as it would appear in an {@link AirbyteRecordMessage}. Only need to override this method if
+   * {@link #implementsBasicNormalization} returns true.
+   *
+   * @param testEnv - information about the test environment.
+   * @param streamName - name of the stream for which we are retrieving records.
+   * @return All of the records in the destination at the time this method is invoked.
+   * @throws Exception - can throw any exception, test framework will handle.
+   */
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
     throw new IllegalStateException("Not implemented");
   }
 
@@ -222,19 +235,21 @@ public abstract class TestDestination {
   }
 
   /**
-   * Verify that the integration successfully writes records. Tests a wide variety of messages and
-   * schemas (aspirationally, anyway).
+   * Verify that the integration successfully writes records successfully both raw and normalized.
+   * Tests a wide variety of messages an schemas (aspirationally, anyway).
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalization(String messagesFilename, String catalogFilename) throws Exception {
-    if(!implementsBasicNormalization()) return;
+    if (!implementsBasicNormalization())
+      return;
 
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(getConfigWithBasicNormalization(), messages, catalog);
 
+    assertSameMessages(messages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
     assertSameMessages(messages, retrieveNormalizedRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
@@ -271,7 +286,6 @@ public abstract class TestDestination {
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
-  // todo (cgardens) - still uses the old schema.
   private void runSync(JsonNode config, List<AirbyteMessage> messages, AirbyteCatalog catalog) throws Exception {
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
         .withConnectionId(UUID.randomUUID())
@@ -302,9 +316,10 @@ public abstract class TestDestination {
 
   private JsonNode getConfigWithBasicNormalization() throws Exception {
     final JsonNode config = getConfig();
-    ((ObjectNode)config).put(WorkerConstants.BASIC_NORMALIZATION_KEY, true);
+    ((ObjectNode) config).put(WorkerConstants.BASIC_NORMALIZATION_KEY, true);
     return config;
   }
+
   public static class TestDestinationEnv {
 
     private final Path localRoot;
