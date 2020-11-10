@@ -359,7 +359,10 @@ def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict,
             properties = obj["json_schema"]["properties"]
         else:
             properties = {}
-        table = f"{MACRO_START} source('{schema}','{name}') {MACRO_END}"
+        # TODO Any destination which can run in conjunction with normalization outputs tables whose names have the _raw suffix. However, it would be better
+        # to have either normalization rename those tables before it runs, or the destination connector output a mapping from its input catalog to the
+        # stream it actually ended up writing.
+        table = f"{MACRO_START} source('{schema}','{name}_raw') {MACRO_END}"
         result.update(process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table))
         source_tables.add(name)
     return result, source_tables

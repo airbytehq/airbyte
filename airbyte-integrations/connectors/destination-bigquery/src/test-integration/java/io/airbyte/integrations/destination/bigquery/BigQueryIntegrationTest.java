@@ -86,7 +86,7 @@ public class BigQueryIntegrationTest extends TestDestination {
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     final QueryJobConfiguration queryConfig =
-        QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), streamName.toLowerCase()))
+        QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), streamName.toLowerCase() + "_raw"))
             .setUseLegacySql(false).build();
 
     return StreamSupport

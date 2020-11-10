@@ -131,7 +131,7 @@ public class PostgresDestination implements Destination {
 
     // create tmp tables if not exist
     for (final AirbyteStream stream : catalog.getStreams()) {
-      final String tableName = stream.getName();
+      final String tableName = stream.getName() + "_raw";
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
       database.query(ctx -> ctx.execute(String.format(
           "CREATE TABLE \"%s\" ( \n"

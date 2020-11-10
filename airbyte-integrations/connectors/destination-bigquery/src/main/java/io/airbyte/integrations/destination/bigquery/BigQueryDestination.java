@@ -191,7 +191,7 @@ public class BigQueryDestination implements Destination {
 
     // create tmp tables if not exist
     for (final AirbyteStream stream : catalog.getStreams()) {
-      final String tableName = stream.getName();
+      final String tableName = stream.getName() + "_raw";
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
 
       createTable(bigquery, datasetId, tmpTableName);

@@ -78,8 +78,8 @@ class BigQueryDestinationTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
 
   private static final Instant NOW = Instant.now();
-  private static final String USERS_STREAM_NAME = "users";
-  private static final String TASKS_STREAM_NAME = "tasks";
+  private static final String USERS_STREAM_NAME = "users_raw";
+  private static final String TASKS_STREAM_NAME = "tasks_raw";
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))

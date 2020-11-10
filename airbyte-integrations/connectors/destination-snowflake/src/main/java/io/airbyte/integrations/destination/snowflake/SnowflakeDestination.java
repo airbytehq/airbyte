@@ -106,7 +106,7 @@ public class SnowflakeDestination implements Destination {
     // create temporary tables if they do not exist
     // we don't use temporary/transient since we want to control the lifecycle
     for (final AirbyteStream stream : catalog.getStreams()) {
-      final String tableName = stream.getName();
+      final String tableName = stream.getName() + "_raw";
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
 
       final String query = String.format(

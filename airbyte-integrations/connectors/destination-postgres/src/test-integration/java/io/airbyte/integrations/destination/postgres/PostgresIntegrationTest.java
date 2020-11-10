@@ -75,7 +75,7 @@ public class PostgresIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl()).query(
         ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
+            .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName + "_raw"))
             .stream()
             .map(r -> r.formatJSON(JSON_FORMAT))
             .map(Jsons::deserialize)

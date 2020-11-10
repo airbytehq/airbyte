@@ -78,7 +78,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     return SnowflakeDatabase.executeSync(
         SnowflakeDatabase.getConnectionFactory(getConfig()),
-        String.format("SELECT * FROM \"%s\" ORDER BY \"emitted_at\" ASC;", streamName),
+        String.format("SELECT * FROM \"%s\" ORDER BY \"emitted_at\" ASC;", streamName + "_raw"),
         false,
         rs -> {
           try {
@@ -105,7 +105,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
     for (String stream : getAllStreamNames()) {
       SnowflakeDatabase.executeSync(
           SnowflakeDatabase.getConnectionFactory(getStaticConfig()),
-          String.format("DROP TABLE IF EXISTS \"%s\";", stream));
+          String.format("DROP TABLE IF EXISTS \"%s\";", stream + "_raw"));
     }
   }
 
