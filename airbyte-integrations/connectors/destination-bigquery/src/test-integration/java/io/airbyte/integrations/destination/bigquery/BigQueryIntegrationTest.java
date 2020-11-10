@@ -24,10 +24,6 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static com.google.cloud.bigquery.LegacySQLTypeName.NUMERIC;
-import static com.google.cloud.bigquery.StandardSQLTypeName.*;
-import static com.google.cloud.bigquery.StandardSQLTypeName.INT64;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -49,6 +45,11 @@ import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,10 +58,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BigQueryIntegrationTest extends TestDestination {
 
