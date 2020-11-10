@@ -34,19 +34,16 @@ import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 
 public class SnowflakeIntegrationTest extends TestDestination {
 
   private static final String COLUMN_NAME = "data";
-  private static final String STREAM_SUFFIX = "_" + RandomStringUtils.randomAlphanumeric(5);
-
-  @Override
-  protected Function<String, String> streamRenamer() {
-    return x -> x + STREAM_SUFFIX;
-  }
+  // config from which to create / delete schemas.
+  private JsonNode baseConfig;
+  // config which refers to the schema that the test is being run in.
+  private JsonNode config;
 
   @Override
   protected String getImageName() {
@@ -55,7 +52,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   @Override
   protected JsonNode getConfig() {
-    return getStaticConfig();
+    return config;
   }
 
   private static JsonNode getStaticConfig() {
@@ -64,9 +61,9 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    ObjectNode node = (ObjectNode) getConfig();
-    node.put("password", "wrong password");
-    return node;
+    final JsonNode invalidConfig = Jsons.clone(config);
+    ((ObjectNode) invalidConfig).put("password", "wrong password");
+    return invalidConfig;
   }
 
   @Test
@@ -95,18 +92,24 @@ public class SnowflakeIntegrationTest extends TestDestination {
         });
   }
 
+  // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    // no-op
+    final String schemaName = "integration_test_" + RandomStringUtils.randomAlphanumeric(5);
+    final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
+
+    baseConfig = getStaticConfig();
+    SnowflakeDatabase.executeSync(SnowflakeDatabase.getConnectionFactory(baseConfig), createSchemaQuery, false);
+
+    final JsonNode configForSchema = Jsons.clone(baseConfig);
+    ((ObjectNode) configForSchema).put("schema", schemaName);
+    config = configForSchema;
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
-    for (String stream : getAllStreamNames()) {
-      SnowflakeDatabase.executeSync(
-          SnowflakeDatabase.getConnectionFactory(getStaticConfig()),
-          String.format("DROP TABLE IF EXISTS \"%s\";", stream));
-    }
+    final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
+    SnowflakeDatabase.executeSync(SnowflakeDatabase.getConnectionFactory(baseConfig), createSchemaQuery, false);
   }
 
 }
