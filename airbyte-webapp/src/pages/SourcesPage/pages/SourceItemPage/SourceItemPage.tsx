@@ -57,7 +57,12 @@ const SourceItemPage: React.FC = () => {
 
   const renderContent = () => {
     if (currentStep === StepsTypes.SETTINGS) {
-      return <SourceSettings currentSource={source} />;
+      return (
+        <SourceSettings
+          currentSource={source}
+          connectionsWithSource={connectionsWithSource}
+        />
+      );
     }
 
     return (

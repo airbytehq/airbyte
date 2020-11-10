@@ -41,8 +41,7 @@ const DeleteModal: React.FC<IProps> = ({ onClose, onSubmit, type }) => {
           <ButtonWithMargin onClick={onClose} type="button" secondary>
             <FormattedMessage id="form.cancel" />
           </ButtonWithMargin>
-          {/*TODO: remove disabled prop after fix delete actions*/}
-          <Button type="button" danger onClick={onSubmit} disabled>
+          <Button type="button" danger onClick={onSubmit}>
             <FormattedMessage id="form.delete" />
           </Button>
         </ButtonContent>

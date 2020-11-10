@@ -13,6 +13,9 @@ import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService
 import config from "../../../../../config";
 import { Routes } from "../../../../routes";
 import useRouter from "../../../../../components/hooks/useRouterHook";
+import ConnectionResource, {
+  Connection
+} from "../../../../../core/resources/Connection";
 
 const Content = styled.div`
   max-width: 639px;
@@ -21,9 +24,13 @@ const Content = styled.div`
 
 type IProps = {
   currentSource: Source;
+  connectionsWithSource: Connection[];
 };
 
-const SourceSettings: React.FC<IProps> = ({ currentSource }) => {
+const SourceSettings: React.FC<IProps> = ({
+  currentSource,
+  connectionsWithSource
+}) => {
   const { push } = useRouter();
 
   const [saved, setSaved] = useState(false);
@@ -32,6 +39,9 @@ const SourceSettings: React.FC<IProps> = ({ currentSource }) => {
   const { updateSource } = useSource();
 
   const sourceDelete = useFetcher(SourceResource.deleteShape());
+  const updateConnectionsStore = useFetcher(
+    ConnectionResource.updateStoreAfterDeleteShape()
+  );
 
   const sourceDefinitionSpecification = useResource(
     SourceDefinitionSpecificationResource.detailShape(),
@@ -59,6 +69,7 @@ const SourceSettings: React.FC<IProps> = ({ currentSource }) => {
     }
   };
 
+  // TODO: remove Delete to useSource hooks
   const onDelete = async () => {
     await sourceDelete({
       sourceId: currentSource.sourceId
@@ -70,6 +81,11 @@ const SourceSettings: React.FC<IProps> = ({ currentSource }) => {
       connector_source: currentSource.sourceName,
       connector_source_id: currentSource.sourceDefinitionId
     });
+
+    // To delete connections with current source from local store
+    connectionsWithSource.map(item =>
+      updateConnectionsStore({ connectionId: item.connectionId })
+    );
 
     push(Routes.Root);
   };
