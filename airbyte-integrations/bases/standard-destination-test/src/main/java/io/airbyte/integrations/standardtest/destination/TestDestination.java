@@ -48,6 +48,9 @@ import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.normalization.NormalizationRunner;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -250,7 +253,7 @@ public abstract class TestDestination {
     runSync(getConfigWithBasicNormalization(), messages, catalog);
 
     assertSameMessages(messages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
-    assertSameMessages(messages, retrieveNormalizedRecords(testEnv, catalog.getStreams().get(0).getName()));
+    assertEquivalentMessages(messages, retrieveNormalizedRecords(testEnv, catalog.getStreams().get(0).getName()));
   }
 
   /**
@@ -299,6 +302,20 @@ public abstract class TestDestination {
     messages.forEach(message -> Exceptions.toRuntime(() -> target.accept(message)));
     target.notifyEndOfStream();
     target.close();
+
+    if (!implementsBasicNormalization())
+      return;
+
+    final NormalizationRunner runner = NormalizationRunnerFactory.create(
+        getImageName(),
+        pbf, targetConfig.getDestinationConnectionConfiguration());
+    runner.start();
+    final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
+    if (!runner.normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(),
+        targetConfig.getCatalog())) {
+      throw new WorkerException("Normalization Failed.");
+    }
+    runner.close();
   }
 
   private void assertSameMessages(List<AirbyteMessage> expected, List<JsonNode> actual) {
@@ -312,6 +329,18 @@ public abstract class TestDestination {
     assertEquals(expectedJson.size(), actual.size());
     assertTrue(expectedJson.containsAll(actual));
     assertTrue(actual.containsAll(expectedJson));
+  }
+
+  private void assertEquivalentMessages(List<AirbyteMessage> expected, List<JsonNode> actual) {
+    final List<JsonNode> expectedJson = expected.stream()
+        .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
+        .map(AirbyteMessage::getRecord)
+        .map(AirbyteRecordMessage::getData)
+        .collect(Collectors.toList());
+
+    // we want to ignore order in this comparison.
+    assertEquals(expectedJson.size(), actual.size());
+    // todo Message can be slightly different with additional columns?
   }
 
   private JsonNode getConfigWithBasicNormalization() throws Exception {

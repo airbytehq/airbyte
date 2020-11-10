@@ -81,8 +81,8 @@ python3 main_dev_transform_catalog.py \
             if not os.path.exists(output):
                 os.makedirs(output)
             for file, sql in result.items():
-                print(f"  Generating {file.lower()}.sql in {output}")
-                with open(os.path.join(output, f"{file}.sql").lower(), "w") as f:
+                print(f"  Generating {file.lower()}_normalized.sql in {output}")
+                with open(os.path.join(output, f"{file}_normalized.sql").lower(), "w") as f:
                     f.write(sql)
 
     @staticmethod
@@ -302,11 +302,10 @@ def process_node(
     hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
     hash_id = jinja_call(f"adapter.quote_as_configured('_{name}_hashid', 'identifier')")
     foreign_hash_id = jinja_call(f"adapter.quote_as_configured('_{name}_foreign_hashid', 'identifier')")
-    emitted_col = "{} as {},\n    {} as {}".format(
+    emitted_col = "{},\n    {} as {}".format(
         jinja_call("adapter.quote_as_configured('emitted_at', 'identifier')"),
-        jinja_call("adapter.quote_as_configured('_emitted_at', 'identifier')"),
         jinja_call("dbt_utils.current_timestamp_in_utc()"),
-        jinja_call("adapter.quote_as_configured('_loaded_at', 'identifier')"),
+        jinja_call("adapter.quote_as_configured('normalized_at', 'identifier')"),
     )
     node_sql = f"""{prefix}
 {name}_node as (

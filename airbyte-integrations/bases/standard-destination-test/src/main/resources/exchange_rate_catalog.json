@@ -5,13 +5,13 @@
       "json_schema": {
         "properties": {
           "date": {
-            "dataType": "string"
+            "type": "string"
           },
           "HKD": {
-            "dataType": "number"
+            "type": "number"
           },
           "NZD": {
-            "dataType": "number"
+            "type": "number"
           }
         }
       }
