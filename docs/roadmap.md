@@ -49,7 +49,7 @@ Those enterprise features comprise:
 * User and role access management
 * SSO
 * Privacy compliance \(GDPR, CCPA, etc\)
-* Customer data consolution with identity resolution
+* Customer data consolidation with identity resolution
 
 ### **4. Expand on all data engineering features**
 
