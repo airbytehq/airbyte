@@ -35,7 +35,12 @@ class SourceShopifySinger(SingerSource):
         super().__init__()
 
     def transform_config(self, raw_config):
-        return {"start_date": raw_config["start_date"], "api_key": raw_config["api_password"], "shop": raw_config["shop"]}
+        return {
+            "start_date": raw_config["start_date"],
+            "api_key": raw_config["api_password"],
+            "shop": raw_config["shop"],
+            "date_window_size": 7,
+        }
 
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
