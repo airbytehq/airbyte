@@ -98,7 +98,7 @@ CREATE TABLE "limited_editions" (
 );
 ```
 
-If the nested items in the array are not objects e.g.:
+If the nested items in the array are not objects then they are expanded into a string field of comma separated values e.g.:
 ```json
 {
   "make": "alfa romeo",
