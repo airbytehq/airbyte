@@ -221,7 +221,7 @@ def json_extract_nested_property(path: List[str], json_col: str, name: str, defi
 
 
 def select_table(table: str, columns="*"):
-    return f"\nselect {columns} from {table}"
+    return f'\nselect {columns} from "{table}"'
 
 
 def extract_node_properties(path: List[str], json_col: str, properties: dict) -> dict:
@@ -308,17 +308,17 @@ def process_node(
         jinja_call("adapter.quote_as_configured('normalized_at', 'identifier')"),
     )
     node_sql = f"""{prefix}
-{name}_node as (
+"{name}_node" as (
   select {inject_cols}
     {emitted_col},
     {node_columns}
   from {from_table}
 ),
-{name}_with_id as (
+"{name}_with_id" as (
   select
     *,
     {hash_node_columns} as {hash_id}
-  from {name}_node
+  from "{name}_node"
 )"""
     # SQL Query for current node's basic properties
     result[name] = node_sql + select_table(f"{name}_with_id")
@@ -329,18 +329,18 @@ def process_node(
             child_col, join_child_table = json_extract_nested_property(path=path, json_col=json_col, name=col, definition=properties[col])
             column_name = jinja_call(f"adapter.quote_as_configured('{col}', 'identifier')")
             child_sql = f"""{prefix}
-{name}_node as (
+"{name}_node" as (
   select
     {emitted_col},
     {child_col},
     {node_columns}
   from {from_table}
 ),
-{name}_with_id as (
+"{name}_with_id" as (
   select
     {hash_node_columns} as {hash_id},
     {column_name}
-  from {name}_node
+  from "{name}_node"
   {join_child_table}
 )"""
             if children_columns[col]:
@@ -373,7 +373,7 @@ def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict,
         if "name" in obj:
             name = obj["name"]
         else:
-            name = "undefined"
+            name = "undefined"  # todo: should this raise an exception?
         if "json_schema" in obj and "properties" in obj["json_schema"]:
             properties = obj["json_schema"]["properties"]
         else:
