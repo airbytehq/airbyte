@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.postgres;
 
 import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.table;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -215,7 +216,7 @@ public class PostgresDestination implements Destination {
                                                                                             int batchSize,
                                                                                             CloseableQueue<byte[]> writeBuffer,
                                                                                             String tmpTableName) {
-      InsertValuesStep3<Record, String, JSONB, OffsetDateTime> step = ctx.insertInto(table(tmpTableName), field("ab_id", String.class),
+      InsertValuesStep3<Record, String, JSONB, OffsetDateTime> step = ctx.insertInto(table(name(tmpTableName)), field("ab_id", String.class),
           field(COLUMN_NAME, JSONB.class), field("emitted_at", OffsetDateTime.class));
 
       for (int i = 0; i < batchSize; i++) {
@@ -287,7 +288,7 @@ public class PostgresDestination implements Destination {
     private static void cleanupTmpTables(Database database, Map<String, WriteConfig> writeConfigs) {
       for (WriteConfig writeConfig : writeConfigs.values()) {
         try {
-          database.query(ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS %s;", writeConfig.getTmpTableName())));
+          database.query(ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS \"%s\";", writeConfig.getTmpTableName())));
         } catch (SQLException e) {
           throw new RuntimeException(e);
         }
