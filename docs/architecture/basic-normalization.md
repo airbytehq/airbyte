@@ -3,6 +3,7 @@
 ## Overview
 
 Basic Normalization uses a fixed set of rules to map a json object from a source to the types and format that are native to the destination. For example if a source emits data that looks like this:
+
 ```json
 {
   "make": "alfa romeo",
@@ -10,6 +11,7 @@ Basic Normalization uses a fixed set of rules to map a json object from a source
   "horsepower": "247"
 }
 ```
+
 Then basic normalization would create the following table:
 
 ```sql
@@ -28,15 +30,16 @@ CREATE TABLE "cars" (
 
 You'll notice that we add some metadata to keep track of important information about each record.
 
-The [normalization rules](#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out DBT.
+The [normalization rules](basic-normalization.md#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out DBT.
 
 Airbyte places the json blob version of your data in a table called `<stream name>_raw`. If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`. Under the hood, Airbyte is using DBT, which means that the data only ingresses into the data store one time. The normalization happens as a query within the datastore. This implementation avoids extra network time and costs.
 
 ## Destinations that Support Basic Normalization
-- [BigQuery](../integrations/destinations/bigquery.md)
-- [Postgres](../integrations/destinations/postgres.md)
-- [Snowflake](../integrations/destinations/snowflake.md)
-- (_coming soon_) Redshift
+
+* [BigQuery](../integrations/destinations/bigquery.md)
+* [Postgres](../integrations/destinations/postgres.md)
+* [Snowflake](../integrations/destinations/snowflake.md)
+* \(_coming soon_\) Redshift
 
 Basic Normalization can be used in each of these destinations by configuring the "basic normalization" field to true when configuring the destination in the UI.
 
@@ -55,8 +58,8 @@ Airbyte uses the types described in the catalog to determine the correct type fo
 | `string` | string |  |
 | `bit` | boolean |  |
 | `boolean` | boolean |  |
-| `array` | new table | see [nesting](#Nesting) |
-| `object` | new table | see [nesting](#Nesting) |
+| `array` | new table | see [nesting](basic-normalization.md#Nesting) |
+| `object` | new table | see [nesting](basic-normalization.md#Nesting) |
 
 ### Nesting
 
@@ -65,6 +68,7 @@ Basic Normalization attempts to expand any nested arrays or objects it receives 
 #### Arrays
 
 Basic Normalization expands arrays into separate tables. For example if the source provides the following data:
+
 ```json
 {
   "make": "alfa romeo",
@@ -77,6 +81,7 @@ Basic Normalization expands arrays into separate tables. For example if the sour
 ```
 
 The resulting normalized schema would be:
+
 ```sql
 CREATE TABLE "cars" (
     "_cars_hashid" VARCHAR,
@@ -99,6 +104,7 @@ CREATE TABLE "limited_editions" (
 ```
 
 If the nested items in the array are not objects then they are expanded into a string field of comma separated values e.g.:
+
 ```json
 {
   "make": "alfa romeo",
@@ -108,6 +114,7 @@ If the nested items in the array are not objects then they are expanded into a s
 ```
 
 The resulting normalized schema would be:
+
 ```sql
 CREATE TABLE "cars" (
     "_cars_hashid" VARCHAR,
@@ -131,6 +138,7 @@ CREATE TABLE "limited_editions" (
 #### Objects
 
 In the case of a nested object e.g.:
+
 ```json
 {
   "make": "alfa romeo",
@@ -140,6 +148,7 @@ In the case of a nested object e.g.:
 ```
 
 The normalized schema would be:
+
 ```sql
 CREATE TABLE "cars" (
     "_cars_hashid" VARCHAR,
