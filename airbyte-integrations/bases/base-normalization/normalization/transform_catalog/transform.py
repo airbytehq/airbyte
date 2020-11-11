@@ -164,7 +164,7 @@ def jinja_call(command: str) -> str:
 
 
 def json_extract_base_property(path: List[str], json_col: str, name: str, definition: dict) -> Optional[str]:
-    current = path + [name]
+    current = path + [f'"{name}"']
     if "type" not in definition:
         return None
     elif is_string(definition["type"]):
@@ -195,7 +195,7 @@ def json_extract_base_property(path: List[str], json_col: str, name: str, defini
 
 
 def json_extract_nested_property(path: List[str], json_col: str, name: str, definition: dict) -> Union[Tuple[None, None], Tuple[str, str]]:
-    current = path + [name]
+    current = path + [f'"{name}"']
     if definition is None or "type" not in definition:
         return None, None
     elif is_array(definition["type"]):
