@@ -31,7 +31,7 @@
       }
     },
     {
-      "name": "stream*with*asterisk",
+      "name": "stream᐀with᐀unicodepdchar",
       "json_schema": {
         "properties": {
           "data": {
@@ -63,7 +63,7 @@
           "field_with_underscore": {
             "type": "string"
           },
-          "field*with*asterisk": {
+          "field᐀with᐀unicodepdchar": {
             "type": "string"
           },
           "FIELD_WITH_ALL_CAPS": {
