@@ -190,6 +190,11 @@ task composeBuild {
 }
 build.dependsOn(composeBuild)
 
+task('format') {
+    dependsOn spotlessApply
+    dependsOn subprojects.collect { it.getTasksByName('blackFormat', true) }
+}
+
 // produce reproducible archives
 // (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
 tasks.withType(AbstractArchiveTask) {
