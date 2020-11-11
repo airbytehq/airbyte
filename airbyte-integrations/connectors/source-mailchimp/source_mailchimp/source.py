@@ -74,10 +74,10 @@ class SourceMailchimp(Source):
 
     def _read_record(self, client: Client, stream: str):
         entity_map = {
-            "Lists": client.lists(),
-            "Campaigns": client.campaigns(),
+            "Lists": client.lists,
+            "Campaigns": client.campaigns,
         }
 
-        for record in entity_map[stream]:
+        for record in entity_map[stream]():
             now = int(datetime.now().timestamp()) * 1000
             yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)

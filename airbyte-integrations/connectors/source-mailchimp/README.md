@@ -41,7 +41,7 @@ pytest unit_tests
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev check --config /sample_files/test_config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev discover --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev read --config /sample_files/test_config.json --catalog /sample_files/test_catalog.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev read --config /sample_files/test_config.json --catalog /sample_files/catalog.json
 ```
 
 ### Integration Tests 

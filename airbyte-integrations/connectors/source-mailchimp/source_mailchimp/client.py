@@ -31,6 +31,9 @@ from .models import HealthCheckError
 
 
 class Client:
+    API_MAILCHIMP_URL = "https://api.mailchimp.com/schema/3.0/Definitions/{}/Response.json"
+    PAGINATION = 100
+
     def __init__(self, username: str, apikey: str):
         self._client = MailChimp(mc_api=apikey, mc_user=username)
         self._entities = ["Lists", "Campaigns"]
@@ -60,12 +63,24 @@ class Client:
     def get_streams(self):
         streams = []
         for entity in self._entities:
-            json_schema = requests.get(f"https://api.mailchimp.com/schema/3.0/Definitions/{entity}/Response.json").json()
+            json_schema = requests.get(self.API_MAILCHIMP_URL.format(entity)).json()
             streams.append(AirbyteStream(name=entity, json_schema=json_schema))
         return streams
 
     def lists(self):
-        return self._client.lists.all(get_all=True)["lists"]
+        limit = self._client.lists.all(count=1)["total_items"]
+
+        offset = 0
+        while offset < limit:
+            for mc_list in self._client.lists.all(count=self.PAGINATION, offset=offset)["lists"]:
+                yield mc_list
+            offset += self.PAGINATION
 
     def campaigns(self):
-        return self._client.campaigns.all(get_all=True)["campaigns"]
+        limit = self._client.campaigns.all(count=1)["total_items"]
+
+        offset = 0
+        while offset < limit:
+            for mc_campaigns in self._client.campaigns.all(count=self.PAGINATION, offset=offset)["campaigns"]:
+                yield mc_campaigns
+            offset += self.PAGINATION
