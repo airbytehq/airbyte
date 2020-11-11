@@ -300,8 +300,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public DebugRead getDebuggingInfo() {
-    return execute(debugInfoHandler::getInfo);
+  public void deleteConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+    execute(() -> {
+      connectionsHandler.deleteConnection(connectionIdRequestBody);
+      return null;
+    });
+
   }
 
   @Override
@@ -319,6 +323,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public JobInfoRead getJobInfo(@Valid JobIdRequestBody jobIdRequestBody) {
     return execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
+  }
+
+  // DEBUG INFO
+
+  @Override
+  public DebugRead getDebuggingInfo() {
+    return execute(debugInfoHandler::getInfo);
   }
 
   // WEB BACKEND

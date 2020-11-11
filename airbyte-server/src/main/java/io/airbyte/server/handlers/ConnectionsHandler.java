@@ -163,6 +163,21 @@ public class ConnectionsHandler {
     return buildConnectionRead(connectionIdRequestBody.getConnectionId());
   }
 
+  public void deleteConnection(ConnectionIdRequestBody connectionIdRequestBody) throws ConfigNotFoundException, IOException, JsonValidationException {
+    final ConnectionRead connectionRead = getConnection(connectionIdRequestBody);
+    deleteConnection(connectionRead);
+  }
+
+  public void deleteConnection(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
+    final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+        .connectionId(connectionRead.getConnectionId())
+        .syncSchema(connectionRead.getSyncSchema())
+        .schedule(connectionRead.getSchedule())
+        .status(ConnectionStatus.DEPRECATED);
+
+    updateConnection(connectionUpdate);
+  }
+
   private boolean isStandardSyncInWorkspace(final UUID workspaceId,
                                             final StandardSync standardSync)
       throws ConfigNotFoundException, IOException, JsonValidationException {
