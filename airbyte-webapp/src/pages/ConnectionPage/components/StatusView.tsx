@@ -19,7 +19,6 @@ import EmptyResource from "../../../components/EmptyResourceBlock";
 
 type IProps = {
   connection: Connection;
-  onEnabledChange: () => void;
   frequencyText?: string;
 };
 
@@ -49,11 +48,7 @@ const SyncButton = styled(Button)`
   margin: -5px 0;
 `;
 
-const StatusView: React.FC<IProps> = ({
-  connection,
-  onEnabledChange,
-  frequencyText
-}) => {
+const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const { jobs } = useResource(JobResource.listShape(), {
     configId: connection.connectionId,
     configType: "sync"
@@ -83,11 +78,7 @@ const StatusView: React.FC<IProps> = ({
 
   return (
     <Content>
-      <StatusMainInfo
-        connection={connection}
-        onEnabledChange={onEnabledChange}
-        frequencyText={frequencyText}
-      />
+      <StatusMainInfo connection={connection} frequencyText={frequencyText} />
       <StyledContentCard
         title={
           <Title>

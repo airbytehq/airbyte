@@ -7,6 +7,9 @@ import ImageBlock from "../../../components/ImageBlock";
 import { Header, Row, Cell } from "../../../components/SimpleTableComponents";
 import Toggle from "../../../components/Toggle";
 import { Connection } from "../../../core/resources/Connection";
+import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
+import config from "../../../config";
+import useConnection from "../../../components/hooks/services/useConnectionHook";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
@@ -42,15 +45,35 @@ const ToggleLabel = styled.label`
 
 type IProps = {
   connection: Connection;
-  onEnabledChange: () => void;
   frequencyText?: string;
 };
 
-const StatusMainInfo: React.FC<IProps> = ({
-  connection,
-  onEnabledChange,
-  frequencyText
-}) => {
+const StatusMainInfo: React.FC<IProps> = ({ connection, frequencyText }) => {
+  const { updateConnection } = useConnection();
+
+  const onChangeStatus = async () => {
+    await updateConnection({
+      connectionId: connection.connectionId,
+      syncSchema: connection.syncSchema,
+      schedule: connection.schedule,
+      status: connection.status === "active" ? "inactive" : "active"
+    });
+
+    AnalyticsService.track("Source - Action", {
+      user_id: config.ui.workspaceId,
+      action:
+        connection.status === "active"
+          ? "Disable connection"
+          : "Reenable connection",
+      connector_source: connection.source?.sourceName,
+      connector_source_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.name,
+      connector_destination_definition_id:
+        connection.destination?.destinationDefinitionId,
+      frequency: frequencyText
+    });
+  };
+
   return (
     <MainInfo>
       <Header>
@@ -86,7 +109,7 @@ const StatusMainInfo: React.FC<IProps> = ({
             />
           </ToggleLabel>
           <Toggle
-            onChange={onEnabledChange}
+            onChange={onChangeStatus}
             checked={connection.status === "active"}
             id="toggle-enabled-source"
           />

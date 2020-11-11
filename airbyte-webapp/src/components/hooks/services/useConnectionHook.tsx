@@ -122,7 +122,7 @@ const useConnection = () => {
       timeUnit: string;
     } | null;
   }) => {
-    await updateConnectionResource(
+    return await updateConnectionResource(
       {},
       {
         connectionId,
@@ -134,12 +134,12 @@ const useConnection = () => {
   };
 
   const updateStateConnection = async ({
-    sourceData,
+    connection,
     sourceName,
     connectionConfiguration,
     schedule
   }: {
-    sourceData: Connection;
+    connection: Connection;
     sourceName: string;
     connectionConfiguration: any;
     schedule: {
@@ -150,10 +150,10 @@ const useConnection = () => {
     await updateStateConnectionResource(
       {},
       {
-        ...sourceData,
+        ...connection,
         schedule,
         source: {
-          ...sourceData.source,
+          ...connection.source,
           name: sourceName,
           connectionConfiguration: connectionConfiguration
         }

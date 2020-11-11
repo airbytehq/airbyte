@@ -123,6 +123,7 @@
   "destinations.addSourceReplicateData": "Add sources where to replicate data from.",
 
   "connection.fromTo": "From {source} To {destination}",
+  "connection.connectionSettings": "Connection settings",
 
   "tables": "",
   "tables.name": "Name",
