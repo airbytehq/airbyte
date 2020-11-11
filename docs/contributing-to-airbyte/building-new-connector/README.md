@@ -2,7 +2,7 @@
 
 A connector takes the form of a Docker image which follows the [Airbyte specification](../../architecture/airbyte-specification.md).
 
-We support 2 types of connectors: Sources and Destinations.   
+We support 2 types of connectors: Sources and Destinations.  
 To build a new connector, we provide templates so you don't need to start everything from scratch.
 
 ## The Airbyte specification
@@ -55,3 +55,4 @@ Once you've finished iterating on the changes to a connector as specified in its
    ```
 
 6. The new version of the connector is now available for everyone who uses it. Thank you!
+
