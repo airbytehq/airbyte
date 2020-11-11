@@ -10,8 +10,12 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## Currently under construction
 
-**New sources:** MSSQL, GCS CSV, S3 CSV, SFTP CSV, Hive  
-**New destinations:** Redshift
+**New sources:** MSSQL, Hive, Shopify, Intercom  
+**New destinations:** Redshift, S3
+
+## 11/10/2020
+
+**New sources:** [Files \(CSV, JSON, HTML...\)](sources/file.md)
 
 ## 11/04/2020
 
