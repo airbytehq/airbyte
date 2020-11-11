@@ -24,7 +24,7 @@
 
 package io.airbyte.integrations.destination.csv;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -34,6 +34,7 @@ import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.commons.csv.CSVFormat;
@@ -73,11 +74,12 @@ public class CsvDestinationIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
-    final List<Path> list = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
-    // todo (cgardens) - this should not be here. add a retrieve tables abstract method to verify this.
-    assertEquals(1, list.size());
+    final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
+    final Optional<Path> streamOutput = allOutputs.stream().filter(path -> path.getFileName().toString().contains(streamName)).findFirst();
 
-    final FileReader in = new FileReader(list.get(0).toFile());
+    assertTrue(streamOutput.isPresent(), "could not find output file for stream: " + streamName);
+
+    final FileReader in = new FileReader(streamOutput.get().toFile());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
         .withHeader(COLUMN_NAME)
         .withFirstRecordAsHeader()

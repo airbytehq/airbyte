@@ -1,0 +1,76 @@
+{
+  "streams": [
+    {
+      "name": "stream with spaces",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "streamWithCamelCase",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_underscores",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream*with*asterisk",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "STREAM_WITH_ALL_CAPS",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_edge_case_field_names",
+      "json_schema": {
+        "properties": {
+          "field with spaces": {
+            "type": "string"
+          },
+          "fieldWithCamelCase": {
+            "type": "string"
+          },
+          "field_with_underscore": {
+            "type": "string"
+          },
+          "field*with*asterisk": {
+            "type": "string"
+          },
+          "FIELD_WITH_ALL_CAPS": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}
