@@ -268,9 +268,9 @@ public class PostgresDestination implements Destination {
         database.transaction(ctx -> {
           final StringBuilder query = new StringBuilder();
           for (final WriteConfig writeConfig : writeConfigs.values()) {
-            query.append(String.format("DROP TABLE IF EXISTS %s;\n", writeConfig.getTableName()));
+            query.append(String.format("DROP TABLE IF EXISTS \"%s\";\n", writeConfig.getTableName()));
 
-            query.append(String.format("ALTER TABLE %s RENAME TO %s;\n", writeConfig.getTmpTableName(), writeConfig.getTableName()));
+            query.append(String.format("ALTER TABLE \"%s\" RENAME TO \"%s\";\n", writeConfig.getTmpTableName(), writeConfig.getTableName()));
           }
           return ctx.execute(query.toString());
         });
