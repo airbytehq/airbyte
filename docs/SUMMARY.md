@@ -35,6 +35,7 @@
   * [Airbyte Specification](architecture/airbyte-specification.md)
   * [Technical Stack](architecture/tech-stack.md)
   * [Full Refresh](architecture/full-refresh.md)
+  * [Basic Normalization](architecture/basic-normalization.md)
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
   * [Code of Conduct](contributing-to-airbyte/code-of-conduct.md)
   * [Developing Locally](contributing-to-airbyte/developing-locally.md)
