@@ -46,7 +46,6 @@ class Client:
         Facebook Ads
         Files
         Landing Pages
-        Lists
         Ping
         Reports
         """
@@ -66,7 +65,7 @@ class Client:
         return streams
 
     def lists(self):
-        return self._client.lists.all()["lists"]
+        return self._client.lists.all(get_all=True)["lists"]
 
     def campaigns(self):
-        return self._client.campaigns.all()["campaigns"]
+        return self._client.campaigns.all(get_all=True)["campaigns"]
