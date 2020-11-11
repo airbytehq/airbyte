@@ -334,14 +334,14 @@ public abstract class TestDestination {
   }
 
   private List<AirbyteRecordMessage> retrieveNormalizedRecordsForCatalog(AirbyteCatalog catalog) throws Exception {
-    return _retrieveRecordsForCatalog(streamName -> retrieveNormalizedRecords(testEnv, streamName), catalog);
+    return retrieveRecordsForCatalog(streamName -> retrieveNormalizedRecords(testEnv, streamName), catalog);
   }
 
   private List<AirbyteRecordMessage> retrieveRecordsForCatalog(AirbyteCatalog catalog) throws Exception {
-    return _retrieveRecordsForCatalog(streamName -> retrieveRecords(testEnv, streamName), catalog);
+    return retrieveRecordsForCatalog(streamName -> retrieveRecords(testEnv, streamName), catalog);
   }
 
-  private List<AirbyteRecordMessage> _retrieveRecordsForCatalog(CheckedFunction<String, List<JsonNode>, Exception> retriever, AirbyteCatalog catalog)
+  private List<AirbyteRecordMessage> retrieveRecordsForCatalog(CheckedFunction<String, List<JsonNode>, Exception> retriever, AirbyteCatalog catalog)
       throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
     final List<String> streamNames = catalog.getStreams()
