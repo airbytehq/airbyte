@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -45,6 +46,7 @@ import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.OutputAndStatus;
@@ -59,6 +61,7 @@ import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -172,6 +175,7 @@ public abstract class TestDestination {
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
     localRoot = Files.createTempDirectory(testDir, "output");
     LOGGER.info("jobRoot: {}", jobRoot);
+    LOGGER.info("localRoot: {}", localRoot);
     testEnv = new TestDestinationEnv(localRoot);
 
     setup(testEnv);
@@ -220,7 +224,8 @@ public abstract class TestDestination {
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
       return Stream.of(
-          Arguments.of("exchange_rate_messages.txt", "exchange_rate_catalog.json")
+          Arguments.of("exchange_rate_messages.txt", "exchange_rate_catalog.json"),
+          Arguments.of("edge_case_messages.txt", "edge_case_catalog.json")
       // todo - need to use the new protocol to capture this.
       // Arguments.of("stripe_messages.txt", "stripe_schema.json")
       );
@@ -240,7 +245,7 @@ public abstract class TestDestination {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(getConfig(), messages, catalog);
 
-    assertSameMessages(messages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
+    assertSameMessages(messages, retrieveRecordsForCatalog(catalog));
   }
 
   /**
@@ -259,8 +264,8 @@ public abstract class TestDestination {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(getConfigWithBasicNormalization(), messages, catalog);
 
-    assertSameMessages(messages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
-    assertSameMessagesPruneAirbyteInternalFields(messages, retrieveNormalizedRecords(testEnv, catalog.getStreams().get(0).getName()));
+    assertSameMessages(messages, retrieveRecordsForCatalog(catalog));
+    assertSameMessages(messages, retrieveNormalizedRecordsForCatalog(catalog), true);
   }
 
   /**
@@ -283,7 +288,7 @@ public abstract class TestDestination {
                 .put("NZD", 700)
                 .build()))));
     runSync(getConfig(), secondSyncMessages, catalog);
-    assertSameMessages(secondSyncMessages, retrieveRecords(testEnv, catalog.getStreams().get(0).getName()));
+    assertSameMessages(secondSyncMessages, retrieveRecordsForCatalog(catalog));
   }
 
   private OutputAndStatus<StandardGetSpecOutput> runSpec() {
@@ -328,29 +333,52 @@ public abstract class TestDestination {
     runner.close();
   }
 
-  private void assertSameMessages(List<AirbyteMessage> expected, List<JsonNode> actual) {
-    final List<JsonNode> expectedJson = expected.stream()
-        .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
-        .map(AirbyteMessage::getRecord)
-        .map(AirbyteRecordMessage::getData)
-        .collect(Collectors.toList());
-
-    assertSameData(expectedJson, actual);
+  private List<AirbyteRecordMessage> retrieveNormalizedRecordsForCatalog(AirbyteCatalog catalog) throws Exception {
+    return retrieveRecordsForCatalog(streamName -> retrieveNormalizedRecords(testEnv, streamName), catalog);
   }
 
-  private void assertSameMessagesPruneAirbyteInternalFields(List<AirbyteMessage> expected, List<JsonNode> actual) {
-    final List<JsonNode> expectedPruned = expected.stream()
-        .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
-        .map(AirbyteMessage::getRecord)
-        .map(AirbyteRecordMessage::getData)
-        .map(this::safePrune)
-        .collect(Collectors.toList());
-
-    final List<JsonNode> actualPruned = actual.stream().map(this::safePrune).collect(Collectors.toList());
-    assertSameData(expectedPruned, actualPruned);
+  private List<AirbyteRecordMessage> retrieveRecordsForCatalog(AirbyteCatalog catalog) throws Exception {
+    return retrieveRecordsForCatalog(streamName -> retrieveRecords(testEnv, streamName), catalog);
   }
 
-  private void assertSameData(List<JsonNode> expected, List<JsonNode> actual) {
+  private List<AirbyteRecordMessage> retrieveRecordsForCatalog(CheckedFunction<String, List<JsonNode>, Exception> retriever, AirbyteCatalog catalog)
+      throws Exception {
+    final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
+    final List<String> streamNames = catalog.getStreams()
+        .stream()
+        .map(AirbyteStream::getName)
+        .collect(Collectors.toList());
+
+    for (final String streamName : streamNames) {
+      actualMessages.addAll(retriever.apply(streamName)
+          .stream()
+          .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data))
+          .collect(Collectors.toList()));
+    }
+
+    return actualMessages;
+  }
+
+  private void assertSameMessages(List<AirbyteMessage> expected, List<AirbyteRecordMessage> actual) {
+    assertSameMessages(expected, actual, false);
+  }
+
+  // ignores emitted at.
+  private void assertSameMessages(List<AirbyteMessage> expected, List<AirbyteRecordMessage> actual, boolean pruneAirbyteInternalFields) {
+    final List<AirbyteRecordMessage> expectedProcessed = expected.stream()
+        .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
+        .map(AirbyteMessage::getRecord)
+        .peek(recordMessage -> recordMessage.setEmittedAt(null))
+        .map(recordMessage -> pruneAirbyteInternalFields ? this.safePrune(recordMessage) : recordMessage)
+        .collect(Collectors.toList());
+
+    final List<AirbyteRecordMessage> actualProcessed = actual.stream()
+        .map(recordMessage -> pruneAirbyteInternalFields ? this.safePrune(recordMessage) : recordMessage)
+        .collect(Collectors.toList());
+    assertSameData(expectedProcessed, actualProcessed);
+  }
+
+  private void assertSameData(List<AirbyteRecordMessage> expected, List<AirbyteRecordMessage> actual) {
     LOGGER.info("expected: {}", expected);
     LOGGER.info("actual: {}", actual);
 
@@ -364,12 +392,12 @@ public abstract class TestDestination {
    * Same as {@link #pruneMutate(JsonNode)}, except does a defensive copy and returns a new json node
    * object instead of mutating in place.
    *
-   * @param json - json that will be pruned.
+   * @param record - record that will be pruned.
    * @return pruned json node.
    */
-  private JsonNode safePrune(JsonNode json) {
-    final JsonNode clone = Jsons.clone(json);
-    pruneMutate(clone);
+  private AirbyteRecordMessage safePrune(AirbyteRecordMessage record) {
+    final AirbyteRecordMessage clone = Jsons.clone(record);
+    pruneMutate(clone.getData());
     return clone;
   }
 
