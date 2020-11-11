@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.standardtest.source;
 
 import static java.util.stream.Collectors.toList;
 
