@@ -1,4 +1,4 @@
-# Shopify API
+# Shopify
 
 ## Sync overview
 
@@ -45,6 +45,6 @@ Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-ap
 1. Enable private development if it isn't enabled.
 1. Create a private application.
 1. Select the resources you want to allow access to. Airbyte only needs read-level access. 
-    * Note: The UI will show all possible data sources and will show errors when syncing if it doesn't have permissions to access a resource. 
+   * Note: The UI will show all possible data sources and will show errors when syncing if it doesn't have permissions to access a resource. 
 1. The password under the `Admin API` section is what you'll use as the `api_password` for the integration.
 1. You're ready to set up Shopify in Airbyte!
