@@ -52,7 +52,7 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
         label={property.title || defaultLabel}
         message={<TextWithHTML text={property.description} />}
         placeholder={placeholder}
-        value={field.value || property.default}
+        value={field.value ?? property.default}
       />
     );
   } else if (property.enum) {
