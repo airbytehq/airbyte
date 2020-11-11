@@ -27,8 +27,6 @@ package io.airbyte.server.handlers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionStatus;
-import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
@@ -157,13 +155,7 @@ public class SourceHandler {
         continue;
       }
 
-      final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
-          .connectionId(connectionRead.getConnectionId())
-          .syncSchema(connectionRead.getSyncSchema())
-          .schedule(connectionRead.getSchedule())
-          .status(ConnectionStatus.DEPRECATED);
-
-      connectionsHandler.updateConnection(connectionUpdate);
+      connectionsHandler.deleteConnection(connectionRead);
     }
 
     // persist
