@@ -6,7 +6,7 @@ description: 'Here''s what''s coming in the next few days, weeks, months, and ye
 
 ## Coming within a few days
 
-Check out our [GitHub project](https://github.com/airbytehq/airbyte/projects/1) to see the features we're currently working on or about to. You may also give us insights, by adding your own issues and voting for specific features / integrations. 
+Check out our [GitHub project](https://github.com/airbytehq/airbyte/projects/1) to see the features we're currently working on or about to. You may also give us insights, by adding your own issues and voting for specific features / integrations.
 
 ## Coming within a few weeks
 

@@ -32,11 +32,7 @@ The connector is restricted by normal Salesforce rate limiting. For large transf
 
 ### Setup guide
 
-We recommend the following [walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) **while keeping in mind the edits we suggest below** for setting up a Salesforce app that can pull data from Salesforce and locating the credentials you need to provide to Airbyte.
-
-Suggested edits: 
-1. If your salesforce URL does not take the form `X.salesforce.com`, use your actual Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
-1. When running a `curl` command, always run it with the `-L` option to follow any redirects. 
+We recommend the following [walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) for setting up a Salesforce app that can pull data from Salesforce and locating the credentials you need to provide to Airbyte.
 
 #### is\_sandbox
 
