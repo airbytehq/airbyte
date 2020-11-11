@@ -23,6 +23,7 @@
     * [Postgres](integrations/sources/postgres.md)
     * [Rest API](integrations/sources/rest-api.md)
     * [Salesforce](integrations/sources/salesforce.md)
+    * [Shopify](integrations/sources/shopify.md)
     * [Stripe](integrations/sources/stripe.md)
   * [Destinations](integrations/destinations/README.md)
     * [BigQuery](integrations/destinations/bigquery.md)
