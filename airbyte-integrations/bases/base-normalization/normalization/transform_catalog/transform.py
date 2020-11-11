@@ -81,8 +81,8 @@ python3 main_dev_transform_catalog.py \
             if not os.path.exists(output):
                 os.makedirs(output)
             for file, sql in result.items():
-                print(f"  Generating {file.lower()}.sql in {output}")
-                with open(os.path.join(output, f"{file}.sql").lower(), "w") as f:
+                print(f"  Generating {file}.sql in {output}")
+                with open(os.path.join(output, f"{file}.sql"), "w") as f:
                     f.write(sql)
 
     @staticmethod
