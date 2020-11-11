@@ -13,8 +13,8 @@ If you're interested in our progress on the Airbyte platform, please read below!
 Here is what we have in mind:
 
 * Support **multiple destinations** 
-* **New destination:** our own Redshift warehouse connector 
-* **New sources:** 10 additional sources connectors, including MSSQL, GCS CSV, S3 CSV, SFTP CSV
+* **New destination:** our own **Redshift** warehouse connector 
+* **New sources:** 10 additional sources connectors, including Files \(CSV, HTML, JSON...\), Shopify, MSSQL, Mailchimp, Intercom
 * As a bonus if we can, update the onboarding experience with pre-filled demo data for the users who just want to see how Airbyte works with the least effort.
 
 ## 0.4.0 - delivered on 11/04/2020
