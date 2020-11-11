@@ -54,7 +54,7 @@ class TestSourceFile(object):
         os.remove(tmp_file.name)
         print(f"\nLocal File {tmp_file.name} is now deleted")
 
-    # @pytest.fixture(scope="class")
+    @pytest.fixture(scope="class")
     def create_gcs_private_data(self, download_gcs_public_data):
         storage_client = storage.Client.from_service_account_json(self.service_account_file)
         bucket_name = create_unique_gcs_bucket(storage_client, self.cloud_bucket_name)
@@ -66,7 +66,7 @@ class TestSourceFile(object):
         bucket.delete(force=True)
         print(f"\nGCS Bucket {bucket_name} is now deleted")
 
-    # @pytest.fixture(scope="class")
+    @pytest.fixture(scope="class")
     def create_aws_private_data(self, download_gcs_public_data):
         with open(self.aws_credentials) as json_file:
             aws_config = json.load(json_file)
@@ -112,27 +112,27 @@ class TestSourceFile(object):
         config["reader_impl"] = reader_impl
         run_load_dataframes(config)
 
-    # @pytest.mark.parametrize("reader_impl", ["gcsfs", "smart_open"])
-    # def test_remote_gcs_load(self, create_gcs_private_data, reader_impl):
-    #     config = get_config()
-    #     config["storage"] = "GCS"
-    #     config["url"] = create_gcs_private_data
-    #     config["reader_impl"] = reader_impl
-    #     with open(self.service_account_file) as json_file:
-    #         config["service_account_json"] = json.dumps(json.load(json_file))
-    #     run_load_dataframes(config)
+    @pytest.mark.parametrize("reader_impl", ["gcsfs", "smart_open"])
+    def test_remote_gcs_load(self, create_gcs_private_data, reader_impl):
+        config = get_config()
+        config["storage"] = "GCS"
+        config["url"] = create_gcs_private_data
+        config["reader_impl"] = reader_impl
+        with open(self.service_account_file) as json_file:
+            config["service_account_json"] = json.dumps(json.load(json_file))
+        run_load_dataframes(config)
 
-    # @pytest.mark.parametrize("reader_impl", ["s3fs", "smart_open"])
-    # def test_remote_aws_load(self, create_aws_private_data, reader_impl):
-    #     config = get_config()
-    #     config["storage"] = "S3"
-    #     config["url"] = create_aws_private_data
-    #     config["reader_impl"] = reader_impl
-    #     with open(self.aws_credentials) as json_file:
-    #         aws_config = json.load(json_file)
-    #     config["aws_access_key_id"] = aws_config["aws_access_key_id"]
-    #     config["aws_secret_access_key"] = aws_config["aws_secret_access_key"]
-    #     run_load_dataframes(config)
+    @pytest.mark.parametrize("reader_impl", ["s3fs", "smart_open"])
+    def test_remote_aws_load(self, create_aws_private_data, reader_impl):
+        config = get_config()
+        config["storage"] = "S3"
+        config["url"] = create_aws_private_data
+        config["reader_impl"] = reader_impl
+        with open(self.aws_credentials) as json_file:
+            aws_config = json.load(json_file)
+        config["aws_access_key_id"] = aws_config["aws_access_key_id"]
+        config["aws_secret_access_key"] = aws_config["aws_secret_access_key"]
+        run_load_dataframes(config)
 
 
 def run_load_dataframes(config):

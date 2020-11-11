@@ -2,3 +2,5 @@
 -e ../../bases/base-python
 -e ../../bases/base-python-test
 -e .
+pytest
+boto3

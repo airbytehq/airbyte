@@ -24,15 +24,15 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/
 
 You should see an onboarding page. Enter your email if you want updates about Airbyte and continue.
 
-![](.gitbook/assets/airbyte_get-started%20%281%29%20%281%29%20%281%29.png)
+![](.gitbook/assets/airbyte_get-started%20%281%29%20%281%29%20%281%29%20%282%29.png)
 
 ## 2. Set up your first connection
 
 Now you will see a wizard that allows you choose the data you want to send through Airbyte.
 
-![](.gitbook/assets/02_set-up-sources%20%281%29%20%281%29%20%281%29%20%281%29.png)
+![](.gitbook/assets/02_set-up-sources%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29.png)
 
-As of our alpha launch, we have one database source \(Postgres\) and two API sources \(an exchange rate API and the Stripe API\). We're currently building an integration framework that makes it easy to create sources and destinations, so you should expect many more soon. Please reach out to us if you need a specific integration or would like to help build one.
+As of our alpha launch, we have one database source \(Postgres\) and two API sources \(an exchange rate API and the Stripe API\). We're currently building an integration framework that makes it easy to create sources and destinations, so you should expect many more soon. Please reach out to us if you need a specific connector or would like to help build one.
 
 For now, we will start out with a Postgres source and destination.
 
@@ -76,7 +76,7 @@ DB Name: postgres
 
 After adding the destination, you can choose what tables and columns you want to sync.
 
-![](.gitbook/assets/03_set-up-connection%20%281%29%20%281%29%20%281%29%20%281%29.png)
+![](.gitbook/assets/03_set-up-connection%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29.png)
 
 For this demo, we recommend leaving the defaults and selecting "Every 5 Minutes" as the frequency. Click `Set Up Connection` to finish setting up the sync.
 
@@ -84,9 +84,9 @@ For this demo, we recommend leaving the defaults and selecting "Every 5 Minutes"
 
 You should now see a list of sources with the source you just added. Click on it to find more information about your connection. This is the page where you can update any settings about this source and how it syncs. There should be a `Completed` job under the history section. If you click on that run, it will show logs from that run.
 
-![](.gitbook/assets/04_source-details%20%281%29%20%281%29%20%281%29%20%281%29.png)
+![](.gitbook/assets/04_source-details%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29.png)
 
-One of biggest problems we've seen in tools like Fivetran is the lack of visibility when debugging. In Airbyte, allowing full log access and the ability to debug and fix integration problems is one of our highest priorities. We'll be working hard to make these logs accessible and understandable.
+One of biggest problems we've seen in tools like Fivetran is the lack of visibility when debugging. In Airbyte, allowing full log access and the ability to debug and fix connector problems is one of our highest priorities. We'll be working hard to make these logs accessible and understandable.
 
 ## 4. Check if the syncing actually worked
 
@@ -100,7 +100,7 @@ You should see the rows from the source database inside the destination database
 
 And there you have it. You've taken data from one database and replicated it to another. All of the actual configuration for this replication only took place in the UI.
 
-That's it! This is just the beginning of Airbyte. If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request an integration you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
+That's it! This is just the beginning of Airbyte. If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request a connector you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
 
 Thank you and we hope you enjoy using Airbyte.
 

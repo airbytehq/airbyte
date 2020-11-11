@@ -121,12 +121,13 @@ class TransformConfig:
         dbt_config["type"] = "snowflake"
         # here account is everything before ".snowflakecomputing.com" as it can include account, region & cloud environment information)
         dbt_config["account"] = config["host"].replace(".snowflakecomputing.com", "")
-        dbt_config["user"] = config["username"]
+        # snowflake coerces most of these values to uppercase, but if dbt has them as a different casing it has trouble finding the resources it needs. thus we coerce them to upper.
+        dbt_config["user"] = config["username"].upper()
         dbt_config["password"] = config["password"]
-        dbt_config["role"] = config["role"]
-        dbt_config["database"] = config["database"]
-        dbt_config["warehouse"] = config["warehouse"]
-        dbt_config["schema"] = config["schema"]
+        dbt_config["role"] = config["role"].upper()
+        dbt_config["database"] = config["database"].upper()
+        dbt_config["warehouse"] = config["warehouse"].upper()
+        dbt_config["schema"] = config["schema"].upper()
         dbt_config["threads"] = 32
         dbt_config["client_session_keep_alive"] = False
         dbt_config["query_tag"] = "normalization"
