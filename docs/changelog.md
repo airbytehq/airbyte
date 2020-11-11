@@ -6,8 +6,6 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte core. For our connector changelog, please visit our [Connector Changelog](integrations/integrations-changelog.md) page.
 
-For a non-exhaustive list of the features we will support in the next few months, please visit our [roadmap overview](../#roadmap).
-
 If you're interested in our progress on the Airbyte platform, please read below!
 
 ## 0.5.0 - expected around 11/11/2020

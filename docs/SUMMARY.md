@@ -3,6 +3,7 @@
 * [Overview](../README.md)
 * [Getting Started](getting-started-tutorial.md)
 * [Changelog](changelog.md)
+* [Roadmap](roadmap.md)
 * [Deploying Airbyte](deploying-airbyte/README.md)
   * [On Your Workstation](deploying-airbyte/on-your-workstation.md)
   * [On AWS \(EC2\)](deploying-airbyte/on-aws-ec2.md)
@@ -51,6 +52,5 @@
   * [Team](company-handbook/team.md)
   * [Strategy](company-handbook/strategy.md)
   * [Business Model](company-handbook/business-model.md)
-  * [Roadmap](company-handbook/roadmap.md)
 * [License](license.md)
 
