@@ -7,6 +7,7 @@ File are often exchanged or published in various remote locations. This source a
 ### Output schema
 
 At this time, this source produces only a single stream for the target file as it replicates only one file at a time for the moment. We'll be considering to improve this behavior by globing folders or use patterns to capture more files in the next iterations as well as more file formats and storage providers.
+Note that you should provide the `dataset_name` which dictates how the table will be identified in the destination (since `URL` can be made of complex characters)
 
 ### Features
 
@@ -50,7 +51,9 @@ In order to read large files from a remote location, we are leveraging the capab
 
 ### Limitations
 
-* Note that for local filesystem, the file probably have to be stored somewhere in the `/tmp/airbyte_local` folder with the same limitations as the [CSV Destination](../destinations/local-csv.md). This may not be ideal as a Source and not well tested yet.
+* Note that for local filesystem, the file probably have to be stored somewhere in the `/tmp/airbyte_local` folder with the same limitations as the [CSV Destination](../destinations/local-csv.md) so the `URL` should also starts with `/local/`. 
+This may not be ideal as a Source but will probably evolve later.
+
 * The JSON implementation needs to be tweaked in order to produce more complex catalog and is still in an experimental state: Simple JSON schemas should work at this point but may not be well handled when there are multiple layers of nesting.
 
 ## Getting started
