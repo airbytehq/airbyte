@@ -83,3 +83,16 @@ In case you select `JSON` format, then options from the [read\_json](https://pan
 
 For example, you can use the `{"orient" : "records"}` to change how orientation of data is loaded \(if data is `[{column -> value}, … , {column -> value}]`\)
 
+### Examples
+
+Here are a list of examples of possible file inputs:
+
+  dataset_name      | Storage | URL                                                                           | reader_options                  | reader_impl         | service_account                                      | Description
+| :-----------------| :------ | :-----------------------------------------------------------------------------| :-------------------------------| :-------------------| :----------------------------------------------------| :----------- |
+| epidemiology      | HTTPS   | https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv   |                                 | smart_open or GCSFS |                                                      | [COVID-19 Public dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-datasets/covid19-public-data-program?filter=solution-type:dataset&id=7d6cc408-53c8-4485-a187-b8cb9a5c0b56) on BigQuery |
+| landsat_index     | GCS     | gs://gcp-public-data-landsat/index.csv.gz                                     | {"compression": "gzip"}         | S3FS      |                                                                |Additional reader options to specify a compression option to `read_csv` | 
+| landsat_index     | GCS     | gs://gcp-public-data-landsat/index.csv.gz                                     |                                 | smart_open|                                                                | Using smart_open, we don't need to specify the compression | 
+| financial_results | GCS     | gs://airbyte-vault/financial.csv                                              |                                 | smart_open| {"type": "service_account", "private_key_id": "XXXXXXXX", ...} | data from a private bucket, a service account is necessary | 
+| GDELT             | S3      | s3://gdelt-open-data/events/20190914.export.csv                               | {"sep": "\t", "header": null}   |           |                                                                | Here is TSV data separated by tabs without header row from [AWS Open Data](https://registry.opendata.aws/gdelt/) |
+| server_logs       | local   | /local/logs.log                                                               | {"sep": ";"}                    |           |                                                                | After making sure a local text file exists at `/tmp/airbyte_local/logs.log` with logs from some server that are delimited by ';' delimiters | 
+
