@@ -44,14 +44,18 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
-    return Jsons.jsonNode(ImmutableMap.builder()
+    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
         .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            config.get("database").asText()))
-        .build());
+            config.get("database").asText()));
+
+    if (config.has("password")) {
+      configBuilder.put("password", config.get("password").asText());
+    }
+
+    return Jsons.jsonNode(configBuilder.build());
   }
 
   public static void main(String[] args) throws Exception {

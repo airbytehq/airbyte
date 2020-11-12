@@ -43,15 +43,19 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode mySqlConfig) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", mySqlConfig.get("username").asText())
-        .put("password", mySqlConfig.get("password").asText())
+  public JsonNode toJdbcConfig(JsonNode config) {
+    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+        .put("username", config.get("username").asText())
         .put("jdbc_url", String.format("jdbc:mysql://%s:%s/%s",
-            mySqlConfig.get("host").asText(),
-            mySqlConfig.get("port").asText(),
-            mySqlConfig.get("database").asText()))
-        .build());
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()));
+
+    if (config.has("password")) {
+      configBuilder.put("password", config.get("password").asText());
+    }
+
+    return Jsons.jsonNode(configBuilder.build());
   }
 
   public static void main(String[] args) throws Exception {
