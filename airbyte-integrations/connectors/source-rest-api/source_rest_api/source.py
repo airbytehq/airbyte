@@ -45,7 +45,7 @@ class SourceRestApi(Source):
             return AirbyteConnectionStatus(status=Status.FAILED, message=r.text)
 
     def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
-        json_schema = {"$schema": "http://json-schema.org/draft-07/schema#", "additionalProperties": True, "type": "object"}
+        json_schema = {"$schema": "http://json-schema.org/draft-07/schema#", "additionalProperties": True, "type": "object", "properties": {}}
 
         # json body will be returned as the "data" stream". we can't know its schema ahead of time, so we assume it's object (i.e. valid json).
         return AirbyteCatalog(streams=[AirbyteStream(name=SourceRestApi.STREAM_NAME, json_schema=json_schema)])
