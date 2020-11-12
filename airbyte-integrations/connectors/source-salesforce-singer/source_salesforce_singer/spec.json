@@ -34,7 +34,7 @@
         "examples": ["2017-01-25T00:00:00Z"]
       },
       "is_sandbox": {
-        "description": "Whether or not the the app is in a Salesforce sandbox. If you do not know what this, assume it is false. We provide more info on this field in the <a href\"https://docs.airbyte.io/integrations/destinations/salesforce#is_sandbox\">docs</a>.",
+        "description": "Whether or not the the app is in a Salesforce sandbox. If you do not know what this, assume it is false. We provide more info on this field in the <a href=\"https://docs.airbyte.io/integrations/destinations/salesforce#is_sandbox\">docs</a>.",
         "type": "boolean",
         "default": false
       },
