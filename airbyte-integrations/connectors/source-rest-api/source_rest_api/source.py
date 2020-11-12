@@ -64,7 +64,7 @@ class SourceRestApi(Source):
 
     def _make_request(self, config):
         parsed_config = self._parse_config(config)
-        http_method = parsed_config.get("http_method")
+        http_method = parsed_config.get("http_method").lower()
         url = parsed_config.get("url")
         headers = parsed_config.get("headers", {})
         body = parsed_config.get("body", {})
