@@ -54,7 +54,7 @@ The video below illustrates how to enable the APIs:
 
 #### Create a Service Account and Service Account Key
 
-Follow the [Google documentation for creating a service account](https://support.google.com/googleapi/answer/6158849?hl=en&ref_topic=7013279) with permissions as Project Viewer, **following the section titled Service Accounts, NOT OAuth 2.0**. The video below also illustrates how you can create a Service Account and Key:
+Follow the [Google documentation for creating a service account](https://support.google.com/googleapi/answer/6158849?hl=en&ref_topic=7013279) with permissions as Project Viewer, **following the section titled Service Accounts, NOT OAuth 2.0**. In the "Grant this service account access to project" section of the wizard, grant the service account the role of Project > Viewer. The video below also illustrates how you can create a Service Account and Key:
 
 {% embed url="https://youtu.be/-RZiNY2RHDM" caption="" %}
 
