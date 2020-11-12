@@ -33,6 +33,15 @@ class SourceFacebookMarketingApiSinger(SingerSource):
     def __init__(self):
         super().__init__()
 
+    def transform_config(self, raw_config):
+        return {
+            "start_date": raw_config["start_date"],
+            "account_id": raw_config["account_id"],
+            "access_token": raw_config["access_token"],
+            # tap-singer expects a string not a boolean
+            "include_deleted": str(raw_config.get("include_deleted", False)),
+        }
+
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
             self.discover(logger, config_container)
