@@ -8,6 +8,10 @@ function docker_tag_exists() {
     curl --silent -f -lSL "$URL" > /dev/null
 }
 
+echo "Checking core images exist..."
+docker-compose pull || exit 1
+
+echo "Checking integration images exist..."
 CONFIG_FILES=$(find airbyte-config/init | grep json | grep -v STANDARD_WORKSPACE | grep -v build)
 [ -z "$CONFIG_FILES" ] && echo "ERROR: Could not find any config files." && exit 1
 
@@ -23,3 +27,5 @@ while IFS= read -r file; do
         printf "\tERROR: not found!\n" && exit 1
     fi
 done <<< "$CONFIG_FILES"
+
+echo "Success! All images exist!"
