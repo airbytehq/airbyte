@@ -8,6 +8,13 @@ services:
       context: airbyte-db
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  init:
+    image: airbyte/init:dev
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-config/init
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
   seed:
     image: airbyte/seed:dev
     build:
