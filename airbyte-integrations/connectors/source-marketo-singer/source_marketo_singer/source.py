@@ -33,6 +33,15 @@ class SourceMarketoSinger(SingerSource):
     def __init__(self):
         super().__init__()
 
+    def transform_config(self, raw_config):
+        return {
+            "endpoint": raw_config["endpoint_url"],
+            "identity": raw_config["identity_url"],
+            "client_id": raw_config["client_id"],
+            "client_secret": raw_config["client_secret"],
+            "start_date": raw_config["start_date"],
+        }
+
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
             self.discover(logger, config_container)

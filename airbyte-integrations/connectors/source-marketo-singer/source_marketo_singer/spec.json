@@ -5,8 +5,8 @@
     "title": "Source Marketo Singer Spec",
     "type": "object",
     "required": [
-      "endpoint",
-      "identity",
+      "endpoint_url",
+      "identity_url",
       "client_id",
       "client_secret",
       "start_date"

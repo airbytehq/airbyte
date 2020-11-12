@@ -35,6 +35,7 @@ setup(
         "tap-salesforce==1.4.34",
         "requests",
         "airbyte-protocol",
+        "base-python",
         "base-singer",
     ],
 )

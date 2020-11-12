@@ -17,12 +17,12 @@
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of the JSON service account key. Check out the <a href\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key."
+        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key."
       },
       "basic_normalization": {
         "type": "boolean",
         "default": false,
-        "description": "Whether or not to normalize the data in the destination. See <a href\"https://docs.airbyte.io/integrations/high-level-overview/basic-normalization.md\">basic normalization</a> for more details.",
+        "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization.md\">basic normalization</a> for more details.",
         "examples": [true, false]
       }
     }

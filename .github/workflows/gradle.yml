@@ -57,12 +57,16 @@ jobs:
           SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG: ${{ secrets.SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG }}
           SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
 
       - name: Build
         run: ./gradlew --no-daemon build --scan
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
+
+      - name: Check images exist
+        run: ./tools/bin/check_images_exist.sh
 
       - name: Check documentation
         if: success() && github.ref == 'refs/heads/master'
