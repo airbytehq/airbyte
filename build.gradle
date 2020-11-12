@@ -91,7 +91,17 @@ allprojects {
     apply plugin: 'base'
 
     afterEvaluate { project ->
-        composeBuild.dependsOn(project.tasks.assemble)
+        def composeDeps = [
+                "airbyte-config:init",
+                "airbyte-db",
+                "airbyte-scheduler",
+                "airbyte-server",
+                "airbyte-webapp",
+        ].toSet().asImmutable()
+
+        if (project.name in composeDeps) {
+            composeBuild.dependsOn(project.tasks.assemble)
+        }
     }
 }
 
