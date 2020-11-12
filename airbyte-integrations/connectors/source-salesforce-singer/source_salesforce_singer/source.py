@@ -85,5 +85,10 @@ class SourceSalesforceSinger(SingerSource):
     def transform_config(self, raw_config):
         # the select_fields_by_default is opinionated about schema changes. we want to reserve the right for the Airbyte system to handle these changes, instead of the singer source.
         rendered_config = dict(raw_config)
+
+        # todo (cgardens) - this is supposed to be handled in the ui and the api but neither of them are able to handle it right now. issue: https://github.com/airbytehq/airbyte/issues/892
+        if "is_sandbox" not in raw_config:
+            rendered_config["is_sandbox"] = False
+
         rendered_config["select_fields_by_default"] = True
         return rendered_config

@@ -10,7 +10,6 @@
       "client_secret",
       "refresh_token",
       "start_date",
-      "is_sandbox",
       "api_type"
     ],
     "additionalProperties": false,

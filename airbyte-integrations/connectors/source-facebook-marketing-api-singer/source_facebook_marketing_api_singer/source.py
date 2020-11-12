@@ -34,12 +34,13 @@ class SourceFacebookMarketingApiSinger(SingerSource):
         super().__init__()
 
     def transform_config(self, raw_config):
+        # todo (cgardens) - this is supposed to be handled in the ui and the api but neither of them are able to handle it right now. issue: https://github.com/airbytehq/airbyte/issues/892
         return {
             "start_date": raw_config["start_date"],
             "account_id": raw_config["account_id"],
             "access_token": raw_config["access_token"],
             # tap-singer expects a string not a boolean
-            "include_deleted": str(raw_config.get("include_deleted", False)),
+            "include_deleted": str(raw_config.get("include_deleted", True)),
         }
 
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
