@@ -8,6 +8,10 @@ import useRouter from "../useRouterHook";
 import ConnectionResource, {
   Connection
 } from "../../../core/resources/Connection";
+import { useEffect, useState } from "react";
+import SourceDefinitionSpecificationResource, {
+  SourceDefinitionSpecification
+} from "../../../core/resources/SourceDefinitionSpecification";
 
 type ValuesProps = {
   name: string;
@@ -17,6 +21,35 @@ type ValuesProps = {
 };
 
 type ConnectorProps = { name: string; sourceDefinitionId: string };
+
+export const useSourceDefinitionSpecificationLoad = (
+  sourceDefinitionId: string
+) => {
+  const [
+    sourceDefinitionSpecification,
+    setSourceDefinitionSpecification
+  ] = useState<null | SourceDefinitionSpecification>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchSourceDefinitionSpecification = useFetcher(
+    SourceDefinitionSpecificationResource.detailShape(),
+    true
+  );
+
+  useEffect(() => {
+    (async () => {
+      if (sourceDefinitionId) {
+        setIsLoading(true);
+        setSourceDefinitionSpecification(
+          await fetchSourceDefinitionSpecification({ sourceDefinitionId })
+        );
+        setIsLoading(false);
+      }
+    })();
+  }, [fetchSourceDefinitionSpecification, sourceDefinitionId]);
+
+  return { sourceDefinitionSpecification, isLoading };
+};
 
 const useSource = () => {
   const { push } = useRouter();

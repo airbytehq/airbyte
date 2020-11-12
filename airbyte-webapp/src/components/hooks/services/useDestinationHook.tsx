@@ -10,6 +10,10 @@ import ConnectionResource, {
 } from "../../../core/resources/Connection";
 import { Routes } from "../../../pages/routes";
 import useRouter from "../useRouterHook";
+import { useEffect, useState } from "react";
+import DestinationDefinitionSpecificationResource, {
+  DestinationDefinitionSpecification
+} from "../../../core/resources/DestinationDefinitionSpecification";
 
 type ValuesProps = {
   name: string;
@@ -18,6 +22,37 @@ type ValuesProps = {
 };
 
 type ConnectorProps = { name: string; destinationDefinitionId: string };
+
+export const useDestinationDefinitionSpecificationLoad = (
+  destinationDefinitionId: string
+) => {
+  const [
+    destinationDefinitionSpecification,
+    setDestinationSpecification
+  ] = useState<null | DestinationDefinitionSpecification>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchDestinationDefinitionSpecification = useFetcher(
+    DestinationDefinitionSpecificationResource.detailShape(),
+    true
+  );
+
+  useEffect(() => {
+    (async () => {
+      if (destinationDefinitionId) {
+        setIsLoading(true);
+        setDestinationSpecification(
+          await fetchDestinationDefinitionSpecification({
+            destinationDefinitionId
+          })
+        );
+        setIsLoading(false);
+      }
+    })();
+  }, [fetchDestinationDefinitionSpecification, destinationDefinitionId]);
+
+  return { destinationDefinitionSpecification, isLoading };
+};
 
 const useDestination = () => {
   const { push } = useRouter();

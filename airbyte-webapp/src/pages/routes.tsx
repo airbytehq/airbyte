@@ -28,6 +28,7 @@ export enum Routes {
   Source = "/source",
   Connection = "/connection",
   SourceNew = "/new-source",
+  DestinationNew = "/new-destination",
   Admin = "/admin",
   Root = "/"
 }
@@ -47,6 +48,9 @@ const getPageName = (pathname: string) => {
   }
   if (pathname === `${Routes.Source}${Routes.SourceNew}`) {
     return "Create Source Page";
+  }
+  if (pathname === `${Routes.Destination}${Routes.DestinationNew}`) {
+    return "Create Destination Page";
   }
   if (pathname.match(itemSourceToDestinationPageRegex)) {
     return "Source to Destination Page";

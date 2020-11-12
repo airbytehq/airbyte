@@ -121,6 +121,8 @@
   "destinations.noDestinations": "Destination list is empty",
   "destinations.noSources": "No sources yet",
   "destinations.addSourceReplicateData": "Add sources where to replicate data from.",
+  "destinations.newDestinationTitle": "New destination",
+  "destinations.destinationSetUp": "Set up the destination",
 
   "connection.fromTo": "From {source} To {destination}",
   "connection.connectionSettings": "Connection settings",
@@ -132,6 +134,8 @@
   "tables.destinationConnectWith": "Source",
   "tables.sources": "Sources",
   "tables.destinations": "Destinations",
+  "tables.sourceAddNew": "+ add a new source",
+  "tables.destinationAddNew": "+ add a new destination",
   "tables.sourceAdd": "add source",
   "tables.destinationAdd": "add destination",
   "tables.lastSync": "Last Sync",

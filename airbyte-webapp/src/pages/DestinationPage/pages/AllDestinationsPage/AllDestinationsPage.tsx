@@ -4,9 +4,9 @@ import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import Button from "../../../../components/Button";
-// import { Routes } from "../../../routes";
+import { Routes } from "../../../routes";
 import PageTitle from "../../../../components/PageTitle";
-// import useRouter from "../../../../components/hooks/useRouterHook";
+import useRouter from "../../../../components/hooks/useRouterHook";
 import DestinationsTable from "./components/DestinationsTable";
 import config from "../../../../config";
 import ContentCard from "../../../../components/ContentCard";
@@ -18,16 +18,15 @@ const Content = styled(ContentCard)`
 `;
 
 const AllDestinationsPage: React.FC = () => {
-  // const { push } = useRouter();
+  const { push } = useRouter();
 
   const { destinations } = useResource(DestinationResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
 
-  // TODO: add create destination action
-  // const onCreateDestination = () => push(`${Routes.Source}${Routes.SourceNew}`);
+  const onCreateDestination = () =>
+    push(`${Routes.Destination}${Routes.DestinationNew}`);
 
-  const onCreateDestination = () => null;
   return (
     <>
       <PageTitle

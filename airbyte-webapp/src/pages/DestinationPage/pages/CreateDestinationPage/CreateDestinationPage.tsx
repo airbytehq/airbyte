@@ -4,56 +4,59 @@ import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import PageTitle from "../../../../components/PageTitle";
-import SourceForm from "./components/SourceForm";
+import DestinationForm from "./components/DestinationForm";
 import { Routes } from "../../../routes";
 import useRouter from "../../../../components/hooks/useRouterHook";
 import config from "../../../../config";
-import SourceDefinitionResource from "../../../../core/resources/SourceDefinition";
-import useSource from "../../../../components/hooks/services/useSourceHook";
+import DestinationDefinitionResource from "../../../../core/resources/DestinationDefinition";
+import useDestination from "../../../../components/hooks/services/useDestinationHook";
 
 const Content = styled.div`
   max-width: 638px;
   margin: 13px auto;
 `;
 
-const CreateSourcePage: React.FC = () => {
+const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
 
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
+  const { destinationDefinitions } = useResource(
+    DestinationDefinitionResource.listShape(),
     {
       workspaceId: config.ui.workspaceId
     }
   );
-  const { createSource } = useSource();
+  const { createDestination } = useDestination();
 
-  const sourcesDropDownData = useMemo(
+  const destinationsDropDownData = useMemo(
     () =>
-      sourceDefinitions.map(item => ({
+      destinationDefinitions.map(item => ({
         text: item.name,
-        value: item.sourceDefinitionId,
+        value: item.destinationDefinitionId,
         img: "/default-logo-catalog.svg"
       })),
-    [sourceDefinitions]
+    [destinationDefinitions]
   );
 
-  const onSubmitSourceStep = async (values: {
+  const onSubmitDestinationForm = async (values: {
     name: string;
     serviceType: string;
     connectionConfiguration?: any;
   }) => {
-    const connector = sourceDefinitions.find(
-      item => item.sourceDefinitionId === values.serviceType
+    const connector = destinationDefinitions.find(
+      item => item.destinationDefinitionId === values.serviceType
     );
     setErrorStatusRequest(0);
     try {
-      const result = await createSource({ values, sourceConnector: connector });
+      const result = await createDestination({
+        values,
+        destinationConnector: connector
+      });
       setSuccessRequest(true);
       setTimeout(() => {
         setSuccessRequest(false);
-        push(`${Routes.Source}/${result.sourceId}`);
+        push(`${Routes.Destination}/${result.destinationId}`);
       }, 2000);
     } catch (e) {
       setErrorStatusRequest(e.status);
@@ -64,12 +67,12 @@ const CreateSourcePage: React.FC = () => {
     <>
       <PageTitle
         withLine
-        title={<FormattedMessage id="sources.newSourceTitle" />}
+        title={<FormattedMessage id="destinations.newDestinationTitle" />}
       />
       <Content>
-        <SourceForm
-          onSubmit={onSubmitSourceStep}
-          dropDownData={sourcesDropDownData}
+        <DestinationForm
+          onSubmit={onSubmitDestinationForm}
+          dropDownData={destinationsDropDownData}
           hasSuccess={successRequest}
           errorStatus={errorStatusRequest}
         />
@@ -78,4 +81,4 @@ const CreateSourcePage: React.FC = () => {
   );
 };
 
-export default CreateSourcePage;
+export default CreateDestinationPage;

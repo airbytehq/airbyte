@@ -6,6 +6,7 @@ import { Routes } from "../routes";
 import LoadingPage from "../../components/LoadingPage";
 import AllDestinationsPage from "./pages/AllDestinationsPage";
 import DestinationItemPage from "./pages/DestinationItemPage";
+import CreateDestinationPage from "./pages/CreateDestinationPage";
 import ConnectionPage from "../ConnectionPage";
 
 const FallbackRootRedirector = () => <Redirect to={Routes.Destination} />;
@@ -14,6 +15,9 @@ const DestinationsPage: React.FC = () => {
   return (
     <Suspense fallback={<LoadingPage />}>
       <Switch>
+        <Route path={`${Routes.Destination}${Routes.DestinationNew}`}>
+          <CreateDestinationPage />
+        </Route>
         <Route path={Routes.Destination} exact>
           <AllDestinationsPage />
         </Route>

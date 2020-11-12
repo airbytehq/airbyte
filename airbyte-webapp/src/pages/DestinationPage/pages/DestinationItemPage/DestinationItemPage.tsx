@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
@@ -20,16 +20,21 @@ import {
 } from "../../../../components/SourceAndDestinationsBlocks";
 import DestinationSettings from "./components/DestinationSettings";
 import LoadingPage from "../../../../components/LoadingPage";
+import SourceResource from "../../../../core/resources/Source";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
 `;
 
 const DestinationItemPage: React.FC = () => {
-  const { query, history, push } = useRouter();
+  const { query, push } = useRouter();
 
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
   const onSelectStep = (id: string) => setCurrentStep(id);
+
+  const { sources } = useResource(SourceResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
 
   const destination = useResource(DestinationResource.detailShape(), {
     // @ts-ignore
@@ -40,8 +45,7 @@ const DestinationItemPage: React.FC = () => {
     workspaceId: config.ui.workspaceId
   });
 
-  const onClickBack = () =>
-    history.length > 2 ? history.goBack() : push(Routes.Destination);
+  const onClickBack = () => push(Routes.Destination);
 
   const breadcrumbsData = [
     {
@@ -55,6 +59,19 @@ const DestinationItemPage: React.FC = () => {
     connectionItem => connectionItem.destinationId === destination.destinationId
   );
 
+  const sourcesDropDownData = useMemo(
+    () =>
+      sources.map(item => ({
+        text: item.name,
+        value: item.sourceId,
+        img: "/default-logo-catalog.svg"
+      })),
+    [sources]
+  );
+
+  // TODO: fix on select
+  const onSelect = () => null;
+
   const renderContent = () => {
     if (currentStep === StepsTypes.SETTINGS) {
       return (
@@ -67,7 +84,11 @@ const DestinationItemPage: React.FC = () => {
 
     return (
       <>
-        <TableItemTitle type="source" />
+        <TableItemTitle
+          type="source"
+          dropDownData={sourcesDropDownData}
+          onSelect={onSelect}
+        />
         {connectionsWithDestination.length ? (
           <DestinationConnectionTable
             connections={connectionsWithDestination}
