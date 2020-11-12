@@ -1,8 +1,4 @@
-{"type": "RECORD", "record": {"stream": "stream with spaces", "emitted_at": 1602637589, "data": { "data" : "one" }}}
 {"type": "RECORD", "record": {"stream": "streamWithCamelCase", "emitted_at": 1602637589, "data": { "data" : "one" }}}
 {"type": "RECORD", "record": {"stream": "stream_with_underscores", "emitted_at": 1602637589, "data": { "data" : "one" }}}
-{"type": "RECORD", "record": {"stream": "stream*with*asterisk", "emitted_at": 1602637589, "data": { "data" : "one" }}}
-{"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589, "data": { "field with spaces" : "one" }}}
 {"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589, "data": { "fieldWithCamelCase" : "one" }}}
 {"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589, "data": { "field_with_underscore" : "one" }}}
-{"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589, "data": { "field*with*asterisk" : "one" }}}
