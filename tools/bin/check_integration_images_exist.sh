@@ -23,4 +23,3 @@ while IFS= read -r file; do
         printf "\tERROR: not found!\n" && exit 1
     fi
 done <<< "$CONFIG_FILES"
-
