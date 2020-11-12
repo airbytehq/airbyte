@@ -39,3 +39,14 @@ def test_discover_cmd():
 def test_read_cmd():
     cmd = CONNECTOR.read_cmd(LOGGER, FAKE_CONFIG_PATH, FAKE_CATALOG_PATH)
     assert f"tap-facebook -c {FAKE_CONFIG_PATH} -p {FAKE_CATALOG_PATH}" == cmd.strip()
+
+
+def test_transform_config_adds_include_deleted_sandbox_if_empty():
+    input = {
+        "start_date": "start_date",
+        "account_id": "account_id",
+        "access_token": "access_token",
+    }
+    expected = dict(input)
+    expected["include_deleted"] = "True"
+    assert expected == CONNECTOR.transform_config(input)
