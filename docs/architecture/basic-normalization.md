@@ -4,7 +4,7 @@
 
 Basic Normalization uses a fixed set of rules to map a json object from a source to the types and format that are native to the destination. For example if a source emits data that looks like this:
 
-```json
+```javascript
 {
   "make": "alfa romeo",
   "model": "4C coupe",
@@ -69,7 +69,7 @@ Basic Normalization attempts to expand any nested arrays or objects it receives 
 
 Basic Normalization expands arrays into separate tables. For example if the source provides the following data:
 
-```json
+```javascript
 {
   "make": "alfa romeo",
   "model": "4C coupe",
@@ -105,7 +105,7 @@ CREATE TABLE "limited_editions" (
 
 If the nested items in the array are not objects then they are expanded into a string field of comma separated values e.g.:
 
-```json
+```javascript
 {
   "make": "alfa romeo",
   "model": "4C coupe",
@@ -139,7 +139,7 @@ CREATE TABLE "limited_editions" (
 
 In the case of a nested object e.g.:
 
-```json
+```javascript
 {
   "make": "alfa romeo",
   "model": "4C coupe",
@@ -169,3 +169,4 @@ CREATE TABLE "powertrain_specs" (
     "transmission" VARCHAR
 );
 ```
+
