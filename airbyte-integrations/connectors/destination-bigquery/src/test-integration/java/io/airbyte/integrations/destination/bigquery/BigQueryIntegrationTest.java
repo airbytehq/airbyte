@@ -114,7 +114,7 @@ public class BigQueryIntegrationTest extends TestDestination {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
-                String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
+                String.format("SELECT * FROM `%s`.`%s`;", dataset.getDatasetId().getDataset(), tableName))
             .setUseLegacySql(false).build();
 
     TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
