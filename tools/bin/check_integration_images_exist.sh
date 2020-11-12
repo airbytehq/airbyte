@@ -12,8 +12,8 @@ CONFIG_FILES=$(find airbyte-config/init | grep json | grep -v STANDARD_WORKSPACE
 [ -z "$CONFIG_FILES" ] && echo "ERROR: Could not find any config files." && exit 1
 
 while IFS= read -r file; do
-    REPO=$(cat "$file" | jq -r .dockerRepository)
-    TAG=$(cat "$file" | jq -r .dockerImageTag)
+    REPO=$(jq -r .dockerRepository < "$file")
+    TAG=$(jq -r .dockerImageTag < "$file")
     echo "Checking $file..."
     printf "\tREPO: %s\n" "$REPO"
     printf "\tTAG: %s\n" "$TAG"
