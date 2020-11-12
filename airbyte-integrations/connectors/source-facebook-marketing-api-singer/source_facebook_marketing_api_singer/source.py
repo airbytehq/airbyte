@@ -60,3 +60,10 @@ class SourceFacebookMarketingApiSinger(SingerSource):
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
         state_path = f"--state {state_path}" if state_path else ""
         return f"{TAP_CMD} -c {config_path} -p {catalog_path} {state_path}"
+
+    def transform_config(self, raw_config):
+        # todo (cgardens) - this is supposed to be handled in the ui and the api but neither of them are able to handle it right now. issue: https://github.com/airbytehq/airbyte/issues/892
+        if "include_deleted" not in raw_config:
+            raw_config["include_deleted"] = True
+
+        return raw_config

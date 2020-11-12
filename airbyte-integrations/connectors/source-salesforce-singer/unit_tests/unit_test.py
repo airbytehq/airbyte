@@ -22,20 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from source_salesforce_singer import SourceSalesforceSinger
 
-setup(
-    name="source-salesforce-singer",
-    description="Source implementation for Salesforce.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    install_requires=[
-        "tap-salesforce==1.4.34",
-        "requests",
-        "airbyte-protocol",
-        "base-python",
-        "base-singer",
-    ],
-)
+CONNECTOR = SourceSalesforceSinger()
+
+def test_transform_config_adds_is_sandbox_if_empty():
+    assert { "is_sandbox": False, "select_fields_by_default": True } == CONNECTOR.transform_config({})
