@@ -1,16 +1,6 @@
 {
   "streams": [
     {
-      "name": "stream with spaces",
-      "json_schema": {
-        "properties": {
-          "data": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    {
       "name": "streamWithCamelCase",
       "json_schema": {
         "properties": {
@@ -22,16 +12,6 @@
     },
     {
       "name": "stream_with_underscores",
-      "json_schema": {
-        "properties": {
-          "data": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    {
-      "name": "stream᐀with᐀unicodepdchar",
       "json_schema": {
         "properties": {
           "data": {
