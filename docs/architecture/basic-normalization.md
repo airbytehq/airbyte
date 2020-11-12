@@ -29,6 +29,7 @@ CREATE TABLE "cars" (
 ```
 
 You'll notice that we add some metadata to keep track of important information about each record.
+One of these is a column computed from the hash of up to the first 50 columns in case the source doesn't provide any primary keys to use as an ID for joining tables back together.
 
 The [normalization rules](basic-normalization.md#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out DBT.
 
