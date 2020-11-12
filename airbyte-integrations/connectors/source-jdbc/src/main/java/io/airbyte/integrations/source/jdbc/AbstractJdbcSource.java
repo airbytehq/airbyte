@@ -176,9 +176,10 @@ public abstract class AbstractJdbcSource implements Source {
 
   private Database createDatabase(JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
+
     return Databases.createDatabase(
         jdbcConfig.get("username").asText(),
-        jdbcConfig.get("password").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
         dialect);
