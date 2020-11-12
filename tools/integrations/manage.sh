@@ -18,7 +18,7 @@ cmd_build() {
 
   echo "Building $path"
   ./gradlew "$(_get_rule_base "$path"):clean"
-  ./gradlew "$(_get_rule_base "$path"):standardSourceTestPython"
+  ./gradlew "$(_get_rule_base "$path"):integrationTest"
 }
 
 cmd_publish() {
@@ -38,9 +38,9 @@ cmd_publish() {
   docker tag "$image_name:dev" "$versioned_image"
   docker tag "$image_name:dev" "$latest_image"
 
-#  if _check_tag_exists $versioned_image; then
-#    error "You're trying to push a version that was already released ($versioned_image). Make sure you bump it up."
-#  fi
+  if _check_tag_exists $versioned_image; then
+    error "You're trying to push a version that was already released ($versioned_image). Make sure you bump it up."
+  fi
 
   echo "Publishing new version ($versioned_image)"
   docker push $versioned_image
