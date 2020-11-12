@@ -6,9 +6,9 @@
     "title": "File Source Spec",
     "type": "object",
     "additionalProperties": false,
-    "required": ["filename", "format", "url", "provider"],
+    "required": ["dataset_name", "format", "url", "provider"],
     "properties": {
-      "filename": {
+      "dataset_name": {
         "type": "string",
         "description": "Name of the final table where to replicate this file (should include only letters, numbers dash and underscores)"
       },

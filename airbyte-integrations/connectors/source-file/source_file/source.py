@@ -193,8 +193,8 @@ class SourceFile(Source):
 
     @staticmethod
     def get_stream_name(config) -> str:
-        if "filename" in config:
-            name = config["filename"]
+        if "dataset_name" in config:
+            name = config["dataset_name"]
         else:
             reader_format = "csv"
             if "format" in config:
