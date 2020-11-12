@@ -8,7 +8,7 @@ test("should build schema for simple case", () => {
   const schema: JSONSchema7 = {
     type: "object",
     title: "Postgres Source Spec",
-    required: ["host", "port", "user", "dbname"],
+    required: ["host", "port", "user", "dbname", "is_field_no_default"],
     properties: {
       host: { type: "string", description: "Hostname of the database." },
       port: {
@@ -20,6 +20,13 @@ test("should build schema for simple case", () => {
       user: {
         type: "string",
         description: "Username to use to access the database."
+      },
+      is_sandbox: {
+        type: "boolean",
+        default: false
+      },
+      is_field_no_default: {
+        type: "boolean"
       },
       dbname: { type: "string", description: "Name of the database." },
       password: {
@@ -39,6 +46,8 @@ test("should build schema for simple case", () => {
       .max(65536)
       .required("form.empty.error"),
     user: yup.string().required("form.empty.error"),
+    is_sandbox: yup.boolean().default(false),
+    is_field_no_default: yup.boolean().required("form.empty.error"),
     dbname: yup.string().required("form.empty.error"),
     password: yup.string()
   });
