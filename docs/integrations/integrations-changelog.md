@@ -19,7 +19,7 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## 11/09/2020
 
-**New sources:** [Files \(CSV, JSON, HTML...\)](sources/file.md)
+**New sources:** [Files \(CSV, JSON, HTML...\)]()
 
 ## 11/04/2020
 
