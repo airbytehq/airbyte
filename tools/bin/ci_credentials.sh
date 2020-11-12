@@ -14,7 +14,7 @@ jq --arg v "$GH_INTEGRATION_TEST_CREDS" '.access_token = $v' airbyte-integration
 
 mkdir airbyte-integrations/connectors/source-googleanalytics-singer/secrets/
 echo "$GOOGLE_ANALYTICS_TEST_CREDS" > airbyte-integrations/connectors/source-googleanalytics-singer/secrets/config.json
-echo "GOOGLE_ANALYTICS_TEST_TRACKING_ID" > airbyte-integrations/connectors/source-googleanalytics-singer/secrets/tracker.txt
+echo "$GOOGLE_ANALYTICS_TEST_TRACKING_ID" > airbyte-integrations/connectors/source-googleanalytics-singer/secrets/tracker.txt
 
 mkdir airbyte-integrations/connectors/source-salesforce-singer/secrets/
 echo "$SALESFORCE_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source-salesforce-singer/secrets/config.json
