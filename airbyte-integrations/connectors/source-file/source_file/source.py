@@ -30,14 +30,12 @@ from datetime import datetime
 from typing import Generator, List
 from urllib.parse import urlparse
 
-import boto3
 import gcsfs
 import pandas as pd
-from botocore import UNSIGNED
-from botocore.config import Config
-
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, AirbyteStream, Status, Type
 from base_python import Source
+from botocore import UNSIGNED
+from botocore.config import Config
 from genson import SchemaBuilder
 from google.cloud.storage import Client
 from s3fs import S3FileSystem
@@ -294,7 +292,9 @@ class SourceFile(Source):
                 result = open(f"s3://{aws_access_key_id}:{aws_secret_access_key}@{url}")
             else:
                 config = Config(signature_version=UNSIGNED)
-                params = {'resource_kwargs': {'config': config},}
+                params = {
+                    "resource_kwargs": {"config": config},
+                }
                 result = open(f"{storage}{url}", transport_params=params)
         return result
 
