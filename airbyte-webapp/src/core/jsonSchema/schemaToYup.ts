@@ -29,6 +29,7 @@ export const buildYupFormForJsonSchema = (
     | yup.NumberSchema
     | yup.StringSchema
     | yup.ObjectSchema
+    | yup.BooleanSchema
     | null = null;
 
   if (jsonSchema.oneOf && uiConfig && propertyPath) {
@@ -53,6 +54,9 @@ export const buildYupFormForJsonSchema = (
   switch (jsonSchema.type) {
     case "string":
       schema = yup.string();
+      break;
+    case "boolean":
+      schema = yup.boolean();
       break;
     case "integer":
       schema = yup.number();
@@ -90,12 +94,15 @@ export const buildYupFormForJsonSchema = (
         );
   }
 
-  if (schema && jsonSchema.default) {
+  const hasDefault =
+    jsonSchema.default !== undefined && jsonSchema.default !== null;
+
+  if (schema && hasDefault) {
     schema = schema.default(jsonSchema.default);
   }
 
   const isRequired =
-    !jsonSchema?.default &&
+    !hasDefault &&
     parentSchema &&
     Array.isArray(parentSchema?.required) &&
     parentSchema.required.find(item => item === propertyKey);
