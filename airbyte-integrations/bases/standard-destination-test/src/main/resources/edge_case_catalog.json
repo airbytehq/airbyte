@@ -54,16 +54,10 @@
       "name": "stream_with_edge_case_field_names",
       "json_schema": {
         "properties": {
-          "field with spaces": {
-            "type": "string"
-          },
           "fieldWithCamelCase": {
             "type": "string"
           },
           "field_with_underscore": {
-            "type": "string"
-          },
-          "field᐀with᐀unicodepdchar": {
             "type": "string"
           },
           "FIELD_WITH_ALL_CAPS": {
