@@ -42,4 +42,11 @@ def test_read_cmd():
 
 
 def test_transform_config_adds_include_deleted_sandbox_if_empty():
-    assert { "include_deleted": True } == CONNECTOR.transform_config({})
+    input = {
+        "start_date": "start_date",
+        "account_id": "account_id",
+        "access_token": "access_token",
+    }
+    expected = dict(input)
+    expected["include_deleted"] = "True"
+    assert expected == CONNECTOR.transform_config(input)
