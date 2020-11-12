@@ -26,5 +26,6 @@ from source_salesforce_singer import SourceSalesforceSinger
 
 CONNECTOR = SourceSalesforceSinger()
 
+
 def test_transform_config_adds_is_sandbox_if_empty():
-    assert { "is_sandbox": False, "select_fields_by_default": True } == CONNECTOR.transform_config({})
+    assert {"is_sandbox": False, "select_fields_by_default": True} == CONNECTOR.transform_config({})
