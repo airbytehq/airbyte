@@ -23,9 +23,9 @@ If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 ### Locally running the connector
 ```
 python main_dev.py spec
-python main_dev.py check --config sample_files/test_config.json
-python main_dev.py discover --config sample_files/test_config.json
-python main_dev.py read --config sample_files/test_config.json --catalog sample_files/test_catalog.json
+python main_dev.py check --config secrets/config.json
+python main_dev.py discover --config secrets/config.json
+python main_dev.py read --config secrets/config.json --catalog sample_files/catalog.json
 ```
 
 ### Unit Tests
@@ -39,9 +39,9 @@ pytest unit_tests
 # in airbyte root directory
 ./gradlew :airbyte-integrations:connectors:source-mailchimp:buildImage
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev spec
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev check --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev discover --config /sample_files/test_config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev read --config /sample_files/test_config.json --catalog /sample_files/catalog.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev read --config /secrets/config.json --catalog /sample_files/catalog.json
 ```
 
 ### Integration Tests 
