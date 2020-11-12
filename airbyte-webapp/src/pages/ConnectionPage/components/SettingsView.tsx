@@ -26,7 +26,7 @@ const Content = styled.div`
 const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { updateConnection } = useConnection();
+  const { updateConnection, deleteConnection } = useConnection();
 
   const schedule = FrequencyConfig.find(
     item => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
@@ -64,6 +64,10 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
     [connection.syncSchema]
   );
 
+  const onDelete = () => {
+    deleteConnection({ connectionId: connection.connectionId });
+  };
+
   return (
     <Content>
       <ContentCard
@@ -81,7 +85,7 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
         />
       </ContentCard>
       {/* TODO: fix on delete*/}
-      <DeleteBlock type="connection" onDelete={() => null} />
+      <DeleteBlock type="connection" onDelete={onDelete} />
     </Content>
   );
 };

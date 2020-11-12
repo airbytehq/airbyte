@@ -9,6 +9,7 @@ import { Destination } from "../../../../../core/resources/Destination";
 import DestinationDefinitionSpecificationResource from "../../../../../core/resources/DestinationDefinitionSpecification";
 import useDestination from "../../../../../components/hooks/services/useDestinationHook";
 import DeleteBlock from "../../../../../components/DeleteBlock";
+import { Connection } from "../../../../../core/resources/Connection";
 
 const Content = styled.div`
   width: 100%;
@@ -18,9 +19,13 @@ const Content = styled.div`
 
 type IProps = {
   currentDestination: Destination;
+  connectionsWithDestination: Connection[];
 };
 
-const DestinationsSettings: React.FC<IProps> = ({ currentDestination }) => {
+const DestinationsSettings: React.FC<IProps> = ({
+  currentDestination,
+  connectionsWithDestination
+}) => {
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -31,7 +36,7 @@ const DestinationsSettings: React.FC<IProps> = ({ currentDestination }) => {
     }
   );
 
-  const { updateDestination } = useDestination();
+  const { updateDestination, deleteDestination } = useDestination();
 
   const onSubmitForm = async (values: {
     name: string;
@@ -49,6 +54,13 @@ const DestinationsSettings: React.FC<IProps> = ({ currentDestination }) => {
     } else {
       setSaved(true);
     }
+  };
+
+  const onDelete = async () => {
+    await deleteDestination({
+      connectionsWithDestination,
+      destination: currentDestination
+    });
   };
 
   return (
@@ -76,8 +88,7 @@ const DestinationsSettings: React.FC<IProps> = ({ currentDestination }) => {
           errorMessage={errorMessage}
         />
       </ContentCard>
-      {/*TODO: fix delete function*/}
-      <DeleteBlock type="destination" onDelete={() => null} />
+      <DeleteBlock type="destination" onDelete={onDelete} />
     </Content>
   );
 };

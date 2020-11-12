@@ -136,17 +136,6 @@ export default class ConnectionResource extends BaseResource
     };
   }
 
-  static deleteShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.deleteShape(),
-      getFetchKey: (params: { connectionId: string }) =>
-        "POST /web_backend/delete" + JSON.stringify(params),
-      fetch: async (
-        params: Readonly<Record<string, string | number>>
-      ): Promise<any> => params
-    };
-  }
-
   static updateStoreAfterDeleteShape<T extends typeof Resource>(this: T) {
     return {
       ...super.deleteShape(),

@@ -1,8 +1,13 @@
 import { useFetcher } from "rest-hooks";
 
 import config from "../../../config";
-import SourceResource from "../../../core/resources/Source";
+import SourceResource, { Source } from "../../../core/resources/Source";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
+import { Routes } from "../../../pages/routes";
+import useRouter from "../useRouterHook";
+import ConnectionResource, {
+  Connection
+} from "../../../core/resources/Connection";
 
 type ValuesProps = {
   name: string;
@@ -14,11 +19,19 @@ type ValuesProps = {
 type ConnectorProps = { name: string; sourceDefinitionId: string };
 
 const useSource = () => {
+  const { push } = useRouter();
+
   const createSourcesImplementation = useFetcher(SourceResource.createShape());
 
   const updatesource = useFetcher(SourceResource.updateShape());
 
   const recreatesource = useFetcher(SourceResource.recreateShape());
+
+  const sourceDelete = useFetcher(SourceResource.deleteShape());
+
+  const updateConnectionsStore = useFetcher(
+    ConnectionResource.updateStoreAfterDeleteShape()
+  );
 
   const createSource = async ({
     values,
@@ -123,7 +136,33 @@ const useSource = () => {
     );
   };
 
-  return { createSource, updateSource, recreateSource };
+  const deleteSource = async ({
+    source,
+    connectionsWithSource
+  }: {
+    source: Source;
+    connectionsWithSource: Connection[];
+  }) => {
+    await sourceDelete({
+      sourceId: source.sourceId
+    });
+
+    AnalyticsService.track("Source - Action", {
+      user_id: config.ui.workspaceId,
+      action: "Delete source",
+      connector_source: source.sourceName,
+      connector_source_id: source.sourceDefinitionId
+    });
+
+    // To delete connections with current source from local store
+    connectionsWithSource.map(item =>
+      updateConnectionsStore({ connectionId: item.connectionId })
+    );
+
+    push(Routes.Root);
+  };
+
+  return { createSource, updateSource, recreateSource, deleteSource };
 };
 
 export default useSource;

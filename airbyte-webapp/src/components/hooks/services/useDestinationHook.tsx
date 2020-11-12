@@ -1,8 +1,15 @@
 import { useFetcher } from "rest-hooks";
 
 import config from "../../../config";
-import DestinationResource from "../../../core/resources/Destination";
+import DestinationResource, {
+  Destination
+} from "../../../core/resources/Destination";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
+import ConnectionResource, {
+  Connection
+} from "../../../core/resources/Connection";
+import { Routes } from "../../../pages/routes";
+import useRouter from "../useRouterHook";
 
 type ValuesProps = {
   name: string;
@@ -13,6 +20,8 @@ type ValuesProps = {
 type ConnectorProps = { name: string; destinationDefinitionId: string };
 
 const useDestination = () => {
+  const { push } = useRouter();
+
   const createDestinationsImplementation = useFetcher(
     DestinationResource.createShape()
   );
@@ -20,6 +29,12 @@ const useDestination = () => {
   const updatedestination = useFetcher(DestinationResource.updateShape());
 
   const recreatedestination = useFetcher(DestinationResource.recreateShape());
+
+  const destinationDelete = useFetcher(DestinationResource.deleteShape());
+
+  const updateConnectionsStore = useFetcher(
+    ConnectionResource.updateStoreAfterDeleteShape()
+  );
 
   const createDestination = async ({
     values,
@@ -135,7 +150,31 @@ const useDestination = () => {
     );
   };
 
-  return { createDestination, updateDestination, recreateDestination };
+  const deleteDestination = async ({
+    destination,
+    connectionsWithDestination
+  }: {
+    destination: Destination;
+    connectionsWithDestination: Connection[];
+  }) => {
+    await destinationDelete({
+      destinationId: destination.destinationId
+    });
+
+    // To delete connections with current source from local store
+    connectionsWithDestination.map(item =>
+      updateConnectionsStore({ connectionId: item.connectionId })
+    );
+
+    push(Routes.Destination);
+  };
+
+  return {
+    createDestination,
+    updateDestination,
+    recreateDestination,
+    deleteDestination
+  };
 };
 
 export default useDestination;

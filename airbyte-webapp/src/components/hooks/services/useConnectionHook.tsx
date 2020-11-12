@@ -10,6 +10,8 @@ import { SyncSchema } from "../../../core/resources/Schema";
 import { SourceDefinition } from "../../../core/resources/SourceDefinition";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
 import { Source } from "../../../core/resources/Source";
+import { Routes } from "../../../pages/routes";
+import useRouter from "../useRouterHook";
 
 type ValuesProps = {
   frequency: string;
@@ -26,6 +28,8 @@ type CreateConnectionProps = {
 };
 
 const useConnection = () => {
+  const { push, history } = useRouter();
+
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
   const workspace = useResource(WorkspaceResource.detailShape(), {
@@ -35,6 +39,8 @@ const useConnection = () => {
   const updateStateConnectionResource = useFetcher(
     ConnectionResource.updateStateShape()
   );
+  const deleteConnectionResource = useFetcher(ConnectionResource.deleteShape());
+
   const createConnection = async ({
     values,
     source,
@@ -161,10 +167,21 @@ const useConnection = () => {
     );
   };
 
+  const deleteConnection = async ({
+    connectionId
+  }: {
+    connectionId: string;
+  }) => {
+    await deleteConnectionResource({ connectionId });
+
+    history.length > 2 ? history.goBack() : push(Routes.Source);
+  };
+
   return {
     createConnection,
     updateConnection,
-    updateStateConnection
+    updateStateConnection,
+    deleteConnection
   };
 };
 

@@ -57,7 +57,12 @@ const DestinationItemPage: React.FC = () => {
 
   const renderContent = () => {
     if (currentStep === StepsTypes.SETTINGS) {
-      return <DestinationSettings currentDestination={destination} />;
+      return (
+        <DestinationSettings
+          currentDestination={destination}
+          connectionsWithDestination={connectionsWithDestination}
+        />
+      );
     }
 
     return (
