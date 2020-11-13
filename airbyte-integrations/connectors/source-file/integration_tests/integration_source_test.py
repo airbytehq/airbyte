@@ -44,7 +44,7 @@ class TestSourceFile(object):
     @pytest.fixture(scope="class")
     def download_gcs_public_data(self):
         print("\nDownload public dataset from gcs to local /tmp")
-        config = get_config()
+        config = get_config(0)
         config["provider"]["storage"] = "HTTPS"
         config["url"] = "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"
         df = run_load_dataframes(config)
@@ -121,7 +121,7 @@ class TestSourceFile(object):
 
     @pytest.mark.parametrize("reader_impl", ["gcsfs", "smart_open"])
     def test_private_gcs_load(self, create_gcs_private_data, reader_impl):
-        config = get_config()
+        config = get_config(0)
         config["provider"]["storage"] = "GCS"
         config["url"] = create_gcs_private_data
         config["provider"]["reader_impl"] = reader_impl
@@ -131,7 +131,7 @@ class TestSourceFile(object):
 
     @pytest.mark.parametrize("reader_impl", ["s3fs", "smart_open"])
     def test_private_aws_load(self, create_aws_private_data, reader_impl):
-        config = get_config()
+        config = get_config(0)
         config["provider"]["storage"] = "S3"
         config["url"] = create_aws_private_data
         config["provider"]["reader_impl"] = reader_impl
@@ -141,21 +141,38 @@ class TestSourceFile(object):
         config["provider"]["aws_secret_access_key"] = aws_config["aws_secret_access_key"]
         run_load_dataframes(config)
 
+    @pytest.mark.parametrize(
+        "storage_provider, url, user, password, host, columns_nb, rows_nb, config_index",
+        [
+            ("SFTP", "/pub/example/readme.txt", "demo", "password", "test.rebex.net", 1, 6, 3),
+            ("SSH", "readme.txt", "demo", "password", "test.rebex.net", 1, 6, 3),
+        ],
+    )
+    def test_private_provider(self, storage_provider, url, user, password, host, columns_nb, rows_nb, config_index):
+        config = get_config(config_index)
+        config["provider"]["storage"] = storage_provider
+        config["url"] = url
+        config["provider"]["user"] = user
+        config["provider"]["password"] = password
+        config["provider"]["host"] = host
+        run_load_dataframes(config, columns_nb, rows_nb)
 
-def run_load_dataframes(config, expected_columns=10):
+
+def run_load_dataframes(config, expected_columns=10, expected_rows=42):
     df_list = SourceFile.load_dataframes(config=config, logger=AirbyteLogger(), skip_data=False)
     assert len(df_list) == 1  # Properly load 1 DataFrame
     df = df_list[0]
     assert len(df.columns) == expected_columns  # DataFrame should have 10 columns
-    assert len(df.index) == 42  # DataFrame should have 42 rows of data
+    assert len(df.index) == expected_rows  # DataFrame should have 42 rows of data
     return df
 
 
-def get_config(index=0):
+def get_config(index: int) -> dict:
     configs = [
         {"format": "csv", "reader_options": '{"sep": ",", "nrows": 42}', "provider": {}},
         {"format": "csv", "reader_options": '{"sep": ",", "nrows": 42, "compression": "gzip"}', "provider": {}},
         {"format": "csv", "reader_options": '{"sep": "\\t", "nrows": 42, "header": null}', "provider": {}},
+        {"format": "csv", "reader_options": '{"sep": "\\r\\n", "names": ["text"], "header": null, "engine": "python"}', "provider": {}},
     ]
     return configs[index]
 

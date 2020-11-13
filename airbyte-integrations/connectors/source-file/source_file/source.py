@@ -205,9 +205,9 @@ class SourceFile(Source):
         storage = SourceFile.get_storage_scheme(logger, config["provider"]["storage"], config["url"])
         url = SourceFile.get_simple_url(config["url"])
 
-        gcs_file = None
+        file_to_close = None
         if storage == "gs://":
-            result, gcs_file = SourceFile.open_gcs_url(config, logger, storage, url)
+            result, file_to_close = SourceFile.open_gcs_url(config, logger, storage, url)
         elif storage == "s3://":
             result = SourceFile.open_aws_url(config, logger, storage, url)
         elif storage == "webhdfs://":
@@ -224,15 +224,16 @@ class SourceFile(Source):
                 result = open(f"{storage}{user}:{password}@{host}/{url}", transport_params=transport_params)
             else:
                 result = open(f"{storage}{user}@{host}/{url}")
+            file_to_close = result
         else:
             result = open(f"{storage}{url}")
-        return result, gcs_file
+        return result, file_to_close
 
     @staticmethod
     def open_gcs_url(config, logger, storage, url):
         reader_impl = SourceFile.extract_reader_impl(config)
         use_gcs_service_account = "service_account_json" in config["provider"] and storage == "gs://"
-        gcs_file = None
+        file_to_close = None
         if reader_impl == "gcsfs":
             if use_gcs_service_account:
                 try:
@@ -243,8 +244,8 @@ class SourceFile(Source):
             else:
                 token_dict = "anon"
             fs = gcsfs.GCSFileSystem(token=token_dict)
-            gcs_file = fs.open(f"gs://{url}")
-            result = gcs_file
+            file_to_close = fs.open(f"gs://{url}")
+            result = file_to_close
         else:
             if use_gcs_service_account:
                 try:
@@ -262,7 +263,7 @@ class SourceFile(Source):
             else:
                 client = Client.create_anonymous_client()
                 result = open(f"{storage}{url}", transport_params=dict(client=client))
-        return result, gcs_file
+        return result, file_to_close
 
     @staticmethod
     def open_aws_url(config, _, storage, url):
@@ -308,7 +309,7 @@ class SourceFile(Source):
 
     @staticmethod
     def load_nested_json_schema(config, logger) -> dict:
-        url, gcs_file = SourceFile.open_file_url(config, logger)
+        url, file_to_close = SourceFile.open_file_url(config, logger)
         try:
             # Use Genson Library to take JSON objects and generate schemas that describe them,
             builder = SchemaBuilder()
@@ -317,20 +318,20 @@ class SourceFile(Source):
             if "items" in result and "properties" in result["items"]:
                 result = result["items"]["properties"]
         finally:
-            if gcs_file:
-                gcs_file.close()
+            if file_to_close:
+                file_to_close.close()
         return result
 
     @staticmethod
     def load_nested_json(config, logger) -> list:
-        url, gcs_file = SourceFile.open_file_url(config, logger)
+        url, file_to_close = SourceFile.open_file_url(config, logger)
         try:
             result = json.load(url)
             if isinstance(result, dict):
                 result = [result]
         finally:
-            if gcs_file:
-                gcs_file.close()
+            if file_to_close:
+                file_to_close.close()
         return result
 
     @staticmethod
@@ -355,12 +356,12 @@ class SourceFile(Source):
         if skip_data and reader_format == "csv":
             reader_options["nrows"] = 0
             reader_options["index_col"] = 0
-        url, gcs_file = SourceFile.open_file_url(config, logger)
+        url, file_to_close = SourceFile.open_file_url(config, logger)
         try:
             result = SourceFile.parse_file(logger, reader_format, url, reader_options)
         finally:
-            if gcs_file:
-                gcs_file.close()
+            if file_to_close:
+                file_to_close.close()
         return result
 
     @staticmethod
