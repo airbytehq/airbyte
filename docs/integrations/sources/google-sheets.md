@@ -10,6 +10,8 @@ Each sheet in the selected spreadsheet will be output as a separate stream. Each
 
 Airbyte only supports replicating Grid sheets. See the [Google Sheets API docs](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) for more info on all available sheet types.
 
+**Note: Sheet names and column headers must contain only alphanumeric characters or `_`, as specified in the [Airbyte Protocol](../../architecture/airbyte-specification.md)**. If your sheet or column header is named e.g: "the data", you'll need to change it to "the_data" for it to be synced by Airbyte. This restriction does not apply to non-header cell values: those can contain any unicode characters.
+
 ### Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
