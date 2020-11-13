@@ -1,0 +1,90 @@
+{
+  "streams": [
+    {
+      "name": "Lists",
+      "json_schema": {
+        "type": "object",
+        "title": "Subscriber List",
+        "description": "Information about a specific list.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "List ID",
+            "description": "A string that uniquely identifies this list.",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "title": "List Name",
+            "description": "The name of the list."
+          },
+          "contact_count": {
+            "type": "integer",
+            "title": "List Contact",
+            "description": "[Contact information displayed in campaign footers](https://mailchimp.com/help/about-campaign-footers/) to comply with international spam laws."
+          },
+          "_metadata": {
+            "type": "object",
+            "title": "Statistics",
+            "description": "Stats for the list. Many of these are cached for at least five minutes.",
+            "readOnly": true,
+            "properties": {
+              "self": {
+                "type": "string",
+                "format": "date-time",
+                "title": "Campaign Last Sent",
+                "description": "The date and time the last campaign was sent to this list in ISO 8601 format. This is updated when a campaign is sent to 10 or more recipients.",
+                "readOnly": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Campaigns",
+      "json_schema": {
+        "type": "object",
+        "title": "Campaign",
+        "description": "A summary of an individual campaign's settings and content.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Campaign ID",
+            "description": "A string that uniquely identifies this campaign.",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "title": "Archive URL",
+            "description": "The link to the campaign's archive version in ISO 8601 format.",
+            "readOnly": true
+          },
+          "create_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Create Time",
+            "description": "The date and time the campaign was created in ISO 8601 format.",
+            "readOnly": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Send Time",
+            "description": "The date and time a campaign was sent.",
+            "readOnly": true
+          },
+          "is_abtest": {
+            "type": "boolean",
+            "title": "Needs Block Refresh",
+            "description": "Determines if the campaign needs its blocks refreshed by opening the web-based campaign editor. Deprecated and will always return false.",
+            "readOnly": true
+          }
+        }
+      }
+    }
+  ]
+}
