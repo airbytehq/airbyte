@@ -33,6 +33,7 @@ class SourceGithubSinger(SingerSource):
 
     def check(self, logger, config_container) -> AirbyteConnectionStatus:
         try:
+
             json_config = config_container.rendered_config
             r = requests.get("https://api.github.com/repos/airbytehq/airbyte/commits", auth=(json_config["access_token"], ""))
             if r.status_code == 200:
@@ -40,6 +41,7 @@ class SourceGithubSinger(SingerSource):
             else:
                 return AirbyteConnectionStatus(status=Status.FAILED, message=r.text)
         except Exception as e:
+            logger.error(e)
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
 
     def discover_cmd(self, logger, config_path) -> str:
