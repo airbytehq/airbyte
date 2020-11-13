@@ -2,7 +2,7 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)
 
-![](docs/.gitbook/assets/airbyte_horizontal_dark%20%281%29%20%281%29%20%282%29%20%281%29.svg)
+![](docs/.gitbook/assets/airbyte_horizontal_color_white-background.svg)
 
 **Data integration made simple, secure and extensible.**
 
