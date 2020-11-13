@@ -44,8 +44,8 @@ class TestSourceFile(object):
     @pytest.fixture(scope="class")
     def download_gcs_public_data(self):
         print("\nDownload public dataset from gcs to local /tmp")
-        config = get_config()
-        config["storage"] = "HTTPS"
+        config = get_config(0)
+        config["provider"]["storage"] = "HTTPS"
         config["url"] = "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"
         df = run_load_dataframes(config)
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
@@ -94,58 +94,87 @@ class TestSourceFile(object):
         print(f"\nS3 Bucket {bucket_name} is now deleted")
 
     @pytest.mark.parametrize(
-        "reader_impl, storage, url",
+        "reader_impl, storage_provider, url, columns_nb, config_index",
         [
-            ("gcfs", "HTTPS", "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"),
-            ("smart_open", "HTTPS", "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"),
-            ("smart_open", "local", "injected by tests"),
+            # epidemiology csv
+            ("gcsfs", "HTTPS", "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", 10, 0),
+            ("smart_open", "HTTPS", "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", 10, 0),
+            ("smart_open", "local", "injected by tests", 10, 0),
+            # landsat compressed csv
+            ("gcsfs", "GCS", "gs://gcp-public-data-landsat/index.csv.gz", 18, 1),
+            ("smart_open", "GCS", "gs://gcp-public-data-landsat/index.csv.gz", 18, 0),
+            # GDELT csv
+            ("s3fs", "S3", "s3://gdelt-open-data/events/20190914.export.csv", 58, 2),
+            ("smart_open", "S3", "s3://gdelt-open-data/events/20190914.export.csv", 58, 2),
         ],
     )
-    def test_local_data(self, download_gcs_public_data, reader_impl, storage, url):
-        config = get_config()
-        config["storage"] = storage
-        if storage != "local":
+    def test_public_and_local_data(self, download_gcs_public_data, reader_impl, storage_provider, url, columns_nb, config_index):
+        config = get_config(config_index)
+        config["provider"]["storage"] = storage_provider
+        if storage_provider != "local":
             config["url"] = url
         else:
             # inject temp file path that was downloaded by the test as URL
             config["url"] = download_gcs_public_data
-        config["reader_impl"] = reader_impl
-        run_load_dataframes(config)
+        config["provider"]["reader_impl"] = reader_impl
+        run_load_dataframes(config, expected_columns=columns_nb)
 
     @pytest.mark.parametrize("reader_impl", ["gcsfs", "smart_open"])
-    def test_remote_gcs_load(self, create_gcs_private_data, reader_impl):
-        config = get_config()
-        config["storage"] = "GCS"
+    def test_private_gcs_load(self, create_gcs_private_data, reader_impl):
+        config = get_config(0)
+        config["provider"]["storage"] = "GCS"
         config["url"] = create_gcs_private_data
-        config["reader_impl"] = reader_impl
+        config["provider"]["reader_impl"] = reader_impl
         with open(self.service_account_file) as json_file:
-            config["service_account_json"] = json.dumps(json.load(json_file))
+            config["provider"]["service_account_json"] = json.dumps(json.load(json_file))
         run_load_dataframes(config)
 
     @pytest.mark.parametrize("reader_impl", ["s3fs", "smart_open"])
-    def test_remote_aws_load(self, create_aws_private_data, reader_impl):
-        config = get_config()
-        config["storage"] = "S3"
+    def test_private_aws_load(self, create_aws_private_data, reader_impl):
+        config = get_config(0)
+        config["provider"]["storage"] = "S3"
         config["url"] = create_aws_private_data
-        config["reader_impl"] = reader_impl
+        config["provider"]["reader_impl"] = reader_impl
         with open(self.aws_credentials) as json_file:
             aws_config = json.load(json_file)
-        config["aws_access_key_id"] = aws_config["aws_access_key_id"]
-        config["aws_secret_access_key"] = aws_config["aws_secret_access_key"]
+        config["provider"]["aws_access_key_id"] = aws_config["aws_access_key_id"]
+        config["provider"]["aws_secret_access_key"] = aws_config["aws_secret_access_key"]
         run_load_dataframes(config)
 
+    @pytest.mark.parametrize(
+        "storage_provider, url, user, password, host, columns_nb, rows_nb, config_index",
+        [
+            ("SFTP", "/pub/example/readme.txt", "demo", "password", "test.rebex.net", 1, 6, 3),
+            ("SSH", "readme.txt", "demo", "password", "test.rebex.net", 1, 6, 3),
+        ],
+    )
+    def test_private_provider(self, storage_provider, url, user, password, host, columns_nb, rows_nb, config_index):
+        config = get_config(config_index)
+        config["provider"]["storage"] = storage_provider
+        config["url"] = url
+        config["provider"]["user"] = user
+        config["provider"]["password"] = password
+        config["provider"]["host"] = host
+        run_load_dataframes(config, columns_nb, rows_nb)
 
-def run_load_dataframes(config):
+
+def run_load_dataframes(config, expected_columns=10, expected_rows=42):
     df_list = SourceFile.load_dataframes(config=config, logger=AirbyteLogger(), skip_data=False)
     assert len(df_list) == 1  # Properly load 1 DataFrame
     df = df_list[0]
-    assert len(df.columns) == 10  # DataFrame should have 10 columns
-    assert len(df.index) == 42  # DataFrame should have 42 rows of data
+    assert len(df.columns) == expected_columns  # DataFrame should have 10 columns
+    assert len(df.index) == expected_rows  # DataFrame should have 42 rows of data
     return df
 
 
-def get_config():
-    return {"format": "csv", "reader_options": '{"sep": ",", "nrows": 42}'}
+def get_config(index: int) -> dict:
+    configs = [
+        {"format": "csv", "reader_options": '{"sep": ",", "nrows": 42}', "provider": {}},
+        {"format": "csv", "reader_options": '{"sep": ",", "nrows": 42, "compression": "gzip"}', "provider": {}},
+        {"format": "csv", "reader_options": '{"sep": "\\t", "nrows": 42, "header": null}', "provider": {}},
+        {"format": "csv", "reader_options": '{"sep": "\\r\\n", "names": ["text"], "header": null, "engine": "python"}', "provider": {}},
+    ]
+    return configs[index]
 
 
 def create_unique_gcs_bucket(storage_client, name: str) -> str:
