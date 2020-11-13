@@ -4,8 +4,7 @@
 
 ![](docs/.gitbook/assets/airbyte_horizontal_color_white-background.svg)
 
-**Data integration made simple, secure and extensible.**
-
+**Data integration made simple, secure and extensible.**  
 The new open-source standard to sync data from applications, APIs & databases to warehouses.
 
 [![](docs/.gitbook/assets/deploy-locally%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%282%29%20%281%29.svg)](docs/deploying-airbyte/on-your-workstation.md) [![](docs/.gitbook/assets/deploy-on-aws%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%282%29%20%281%29.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%282%29%20%281%29.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
