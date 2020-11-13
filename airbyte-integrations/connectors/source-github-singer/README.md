@@ -22,7 +22,7 @@ If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
 #### Create credentials
 In order to test the Github source, you will need an access key from github. You can generate one by logging into github and then creating a personal access token [here](https://github.com/settings/tokens).
-Then create a file `secrets/config.json` conforming to the `source_github_singer/spec.json` file.
+Then create a file `secrets/config.json` conforming to the `source_github_singer/spec.json` file. For an example config, see `config.sample.json`. 
 
 **If you are an Airbyte core member**, copy the credentials in RPass under the secret name `source-github-singer-integration-test-config`
 and place them into `secrets/config.json`.
@@ -33,12 +33,6 @@ python main_dev.py spec
 python main_dev.py check --config secrets/config.json
 python main_dev.py discover --config secrets/config.json
 python main_dev.py read --config secrets/config.json --catalog resourcesstandardtest/catalog.json
-```
-
-### Unit Tests
-To run unit tests locally, from the connector root run:
-```
-pytest unit_tests
 ```
 
 ### Locally running the connector docker image
@@ -53,8 +47,6 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-github-singer/s
 
 ### Integration Tests
 1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-github-singer:standardSourceTestPython` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in the `integration_tests` directory and run them with `pytest integration_tests`.
-   Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
