@@ -46,7 +46,7 @@ pytest unit_tests
 
 ```
 # in airbyte root directory
-./gradlew :airbyte-integrations:connectors:source-facebook-marketing-api-singer:buildImage
+./gradlew :airbyte-integrations:connectors:source-facebook-marketing-api-singer:airbyteDocker
 docker run --rm airbyte/source-facebook-marketing-api-singer:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-facebook-marketing-api-singer/secrets:/secrets airbyte/source-facebook-marketing-api-singer:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-facebook-marketing-api-singer/secrets:/secrets airbyte/source-facebook-marketing-api-singer:dev discover --config /secrets/config.json
