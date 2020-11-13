@@ -48,7 +48,7 @@ pytest unit_tests
 ### Locally running the connector docker image
 ```
 # in airbyte root directory
-./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}:buildImage
+./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}:airbyteDocker
 docker run --rm airbyte/source-{{dashCase name}}:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/secrets:/secrets airbyte/source-{{dashCase name}}:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/secrets:/secrets airbyte/source-{{dashCase name}}:dev discover --config /secrets/config.json
