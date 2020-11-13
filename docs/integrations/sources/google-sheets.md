@@ -2,20 +2,15 @@
 
 ## Sync overview
 
-The Google Sheets Source is configured to pull data from a single Google Sheets spreadsheet. To replicate multiple spreadsheets, you can create
-multiple instances of the Google Sheets Source in your Airbyte instance.
+The Google Sheets Source is configured to pull data from a single Google Sheets spreadsheet. To replicate multiple spreadsheets, you can create multiple instances of the Google Sheets Source in your Airbyte instance.
 
 ### Output schema
 
 Each sheet in the selected spreadsheet will be output as a separate stream. Each selected column in the sheet is output as a string field.
 
-Airbyte only supports replicating Grid sheets. See the [Google Sheets API docs](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType)
-for more info on all available sheet types.
+Airbyte only supports replicating Grid sheets. See the [Google Sheets API docs](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) for more info on all available sheet types.
 
-**Note: Sheet names and column headers must contain only alphanumeric characters or `_`, as specified in the [Airbyte Protocol](../../architecture/airbyte-specification.md)**.
-If your sheet or column header is named e.g: "the data", you'll need to change it to "the_data" for it to be synced by Airbyte. This restriction does
-not apply to non-header cell values: those can contain any unicode characters. This limitation is temporary and future versions of Airbyte will
-support more permissive naming patterns.
+**Note: Sheet names and column headers must contain only alphanumeric characters or `_`, as specified in the [Airbyte Protocol](../../architecture/airbyte-specification.md)**. If your sheet or column header is named e.g: "the data", you'll need to change it to "the_data" for it to be synced by Airbyte. This restriction does not apply to non-header cell values: those can contain any unicode characters.
 
 ### Data type mapping
 
@@ -87,4 +82,3 @@ The Airbyte UI will ask for two things:
 
 1. The spreadsheet ID
 2. The content of the credentials JSON you created in the "Create a Service Account and Service Account Key" step above. This should be as simple as opening the file and copy-pasting all its contents into this field in the Airbyte UI. 
-
