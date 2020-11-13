@@ -299,7 +299,10 @@ def process_node(
     node_properties = extract_node_properties(path=path, json_col=json_col, properties=properties)
     node_columns = ",\n    ".join([sql for sql in node_properties.values()])
     hash_node_columns = ",\n        ".join([f"adapter.quote_as_configured('{column}', 'identifier')" for column in node_properties.keys()])
-    hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
+    # Disable dbt_utils.surrogate_key for own version to fix a bug with Postgres (#913).
+    # hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
+    # We should re-enable it when our PR to dbt_utils is merged
+    hash_node_columns = jinja_call(f"surrogate_key([\n        {hash_node_columns}\n    ])")
     hash_id = jinja_call(f"adapter.quote_as_configured('_{name}_hashid', 'identifier')")
     foreign_hash_id = jinja_call(f"adapter.quote_as_configured('_{name}_foreign_hashid', 'identifier')")
     emitted_col = "{},\n    {} as {}".format(
