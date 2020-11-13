@@ -46,7 +46,7 @@ pytest unit_tests
 ### Locally running the connector docker image
 ```
 # in airbyte root directory
-./gradlew :airbyte-integrations:connectors:source-shopify-singer:buildImage
+./gradlew :airbyte-integrations:connectors:source-shopify-singer:airbyteDocker
 docker run --rm airbyte/source-shopify-singer:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-shopify-singer/secrets:/secrets airbyte/source-shopify-singer:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-shopify-singer/secrets:/secrets airbyte/source-shopify-singer:dev discover --config /secrets/config.json
