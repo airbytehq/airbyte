@@ -25,10 +25,14 @@
 package io.airbyte.integrations.source.mssql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -40,6 +44,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
@@ -152,19 +157,17 @@ class MssqlSourceTest {
     assertEquals(MESSAGES, actualMessages);
   }
 
-  // todo (cgardens) - bring back this test.
-  // @SuppressWarnings("ResultOfMethodCallIgnored")
-  // @Test
-  // void testReadFailure() throws Exception {
-  // final AirbyteStream spiedAbStream = spy(CATALOG.getStreams().get(0));
-  // final AirbyteCatalog catalog = new
-  // AirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-  // doThrow(new RuntimeException()).when(spiedAbStream).getName();
-  //
-  // final Stream<AirbyteMessage> stream = new MssqlSource().read(config, catalog, null);
-  //
-  // assertThrows(RuntimeException.class, () -> stream.collect(Collectors.toList()));
-  // }
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  @Test
+  void testReadFailure() {
+    final AirbyteStream spiedAbStream = spy(CATALOG.getStreams().get(0));
+    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
+    doThrow(new IllegalStateException()).when(spiedAbStream).getName();
+
+    final MssqlSource source = new MssqlSource();
+
+    assertThrows(IllegalStateException.class, () -> source.read(config, catalog, null));
+  }
 
   private JsonNode getConfig(MSSQLServerContainer<?> db) {
     return Jsons.jsonNode(ImmutableMap.builder()
