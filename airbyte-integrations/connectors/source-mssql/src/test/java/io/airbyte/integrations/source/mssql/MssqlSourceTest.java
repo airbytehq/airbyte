@@ -25,14 +25,10 @@
 package io.airbyte.integrations.source.mssql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -44,7 +40,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
@@ -52,7 +47,6 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -63,8 +57,6 @@ import org.testcontainers.containers.MSSQLServerContainer;
 
 class MssqlSourceTest {
 
-  private static final String TEST_USER = "test";
-  private static final String TEST_PASSWORD = "test";
   private static final String STREAM_NAME = "id_and_name";
   private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
       STREAM_NAME,
@@ -85,8 +77,8 @@ class MssqlSourceTest {
 
   @BeforeAll
   static void init() {
-//    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-//    db.start();
+    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+    db.start();
   }
 
   @BeforeEach
@@ -96,7 +88,6 @@ class MssqlSourceTest {
 
     final Database database = getDatabase(configWithoutDbName);
     database.query(ctx -> {
-//      ctx.fetch(String.format("SELECT * FROM INFORMATION_SCHEMA.TABLES;"));
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -105,13 +96,13 @@ class MssqlSourceTest {
     });
 
     config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode)config).put("database", dbName);
+    ((ObjectNode) config).put("database", dbName);
   }
 
   @AfterAll
   static void cleanUp() {
-//    db.stop();
-//    db.close();
+    db.stop();
+    db.close();
   }
 
   @Test
@@ -135,7 +126,7 @@ class MssqlSourceTest {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = new MssqlSource().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Cannot create PoolableConnectionFactory (Access denied for user 'test'@'172.17.0.1' (using password: YES))");
+        .withMessage("Can't connect with provided configuration.");
     assertEquals(expected, actual);
   }
 
@@ -158,33 +149,27 @@ class MssqlSourceTest {
     assertEquals(MESSAGES, actualMessages);
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
-  @Test
-  void testReadFailure() throws Exception {
-    final AirbyteStream spiedAbStream = spy(CATALOG.getStreams().get(0));
-    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-    doThrow(new RuntimeException()).when(spiedAbStream).getName();
-
-    final Stream<AirbyteMessage> stream = new MssqlSource().read(config, catalog, null);
-
-    assertThrows(RuntimeException.class, () -> stream.collect(Collectors.toList()));
-  }
+  // todo (cgardens) - bring back this test.
+  // @SuppressWarnings("ResultOfMethodCallIgnored")
+  // @Test
+  // void testReadFailure() throws Exception {
+  // final AirbyteStream spiedAbStream = spy(CATALOG.getStreams().get(0));
+  // final AirbyteCatalog catalog = new
+  // AirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
+  // doThrow(new RuntimeException()).when(spiedAbStream).getName();
+  //
+  // final Stream<AirbyteMessage> stream = new MssqlSource().read(config, catalog, null);
+  //
+  // assertThrows(RuntimeException.class, () -> stream.collect(Collectors.toList()));
+  // }
 
   private JsonNode getConfig(MSSQLServerContainer<?> db) {
-//    return Jsons.jsonNode(ImmutableMap.builder()
-//        .put("host", db.getHost())
-//        .put("port", db.getFirstMappedPort())
-//        .put("username", db.getUsername())
-//        .put("password", db.getPassword())
-//        .build()
-//    );
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "localhost")
-        .put("port", 32831)
-        .put("username", "SA")
-        .put("password", "A_Str0ng_Required_Password")
-        .build()
-    );
+        .put("host", db.getHost())
+        .put("port", db.getFirstMappedPort())
+        .put("username", db.getUsername())
+        .put("password", db.getPassword())
+        .build());
   }
 
   private static Database getDatabase(JsonNode config) {
@@ -195,8 +180,7 @@ class MssqlSourceTest {
             config.get("host").asText(),
             config.get("port").asInt()),
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        null
-    );
+        null);
   }
 
 }
