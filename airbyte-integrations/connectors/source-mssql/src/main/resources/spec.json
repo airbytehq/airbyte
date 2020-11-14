@@ -20,7 +20,8 @@
       },
       "database": {
         "description": "Name of the database.",
-        "type": "string"
+        "type": "string",
+        "examples": ["master"]
       },
       "username": {
         "description": "Username to use to access the database.",
