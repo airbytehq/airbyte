@@ -83,7 +83,7 @@ public class MssqlIntegrationTest extends TestSource {
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-mysql:dev";
+    return "airbyte/source-mssql:dev";
   }
 
   @Override

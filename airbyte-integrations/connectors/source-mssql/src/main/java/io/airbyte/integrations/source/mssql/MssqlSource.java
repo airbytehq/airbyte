@@ -52,14 +52,14 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode mySqlConfig) {
+  public JsonNode toJdbcConfig(JsonNode mssqlConfig) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", mySqlConfig.get("username").asText())
-        .put("password", mySqlConfig.get("password").asText())
+        .put("username", mssqlConfig.get("username").asText())
+        .put("password", mssqlConfig.get("password").asText())
         .put("jdbc_url", String.format("jdbc:sqlserver://%s:%s;databaseName=%s",
-            mySqlConfig.get("host").asText(),
-            mySqlConfig.get("port").asText(),
-            mySqlConfig.get("database").asText()))
+            mssqlConfig.get("host").asText(),
+            mssqlConfig.get("port").asText(),
+            mssqlConfig.get("database").asText()))
         .build());
   }
 
