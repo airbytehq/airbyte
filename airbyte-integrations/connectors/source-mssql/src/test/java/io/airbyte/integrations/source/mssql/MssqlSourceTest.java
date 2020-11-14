@@ -81,6 +81,9 @@ class MssqlSourceTest {
     db.start();
   }
 
+  // how to interact with the mssql test container manaully.
+  // 1. exec into mssql container (not the test container container)
+  // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
   @BeforeEach
   void setup() throws SQLException {
     final JsonNode configWithoutDbName = getConfig(db);
@@ -173,6 +176,8 @@ class MssqlSourceTest {
   }
 
   private static Database getDatabase(JsonNode config) {
+    // todo (cgardens) - rework this abstraction so that we do not have to pass a null into the
+    // constructor. at least explicitly handle it, even if the impl doesn't change.
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),

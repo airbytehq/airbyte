@@ -45,6 +45,8 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
 
+  // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
+  // constructor.
   public MssqlSource() {
     super("com.microsoft.sqlserver.jdbc.SQLServerDriver", null);
   }
