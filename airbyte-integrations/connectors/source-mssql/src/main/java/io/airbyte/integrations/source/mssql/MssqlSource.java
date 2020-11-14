@@ -39,16 +39,15 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
 
   public MssqlSource() {
-    super("com.microsoft.sqlserver.jdbc.SQLServerDrive", SQLDialect);
+    super("com.microsoft.sqlserver.jdbc.SQLServerDriver", null);
   }
 
   @Override
   public JsonNode toJdbcConfig(JsonNode mySqlConfig) {
-    SQLDialect.family()
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("username", mySqlConfig.get("username").asText())
         .put("password", mySqlConfig.get("password").asText())
-        .put("jdbc_url", String.format("jdbc:mysql://%s:%s/%s",
+        .put("jdbc_url", String.format("jdbc:sqlserver://%s:%s;databaseName=%s",
             mySqlConfig.get("host").asText(),
             mySqlConfig.get("port").asText(),
             mySqlConfig.get("database").asText()))

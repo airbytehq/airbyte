@@ -36,7 +36,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.DatabaseHelper;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -54,7 +55,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,46 +85,33 @@ class MssqlSourceTest {
 
   @BeforeAll
   static void init() {
-    // test containers withInitScript only accepts scripts that are mounted as resources.
-    MoreResources.writeResource("init.sql",
-        "CREATE USER '" + TEST_USER + "'@'%' IDENTIFIED BY '" + TEST_PASSWORD + "';\n"
-            + "GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").withInitScript("init.sql").withUsername("root").withPassword("");
-    db.start();
+//    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+//    db.start();
   }
 
   @BeforeEach
   void setup() throws SQLException {
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", "db_" + RandomStringUtils.randomAlphabetic(10))
-        .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD)
-        .build());
+    final JsonNode configWithoutDbName = getConfig(db);
+    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
-    final BasicDataSource connectionPool = DatabaseHelper.getConnectionPool(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asText()),
-        "com.mysql.cj.jdbc.Driver");
-
-    DatabaseHelper.query(connectionPool, ctx -> {
-      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
-      ctx.fetch("USE " + config.get("database").asText());
+    final Database database = getDatabase(configWithoutDbName);
+    database.query(ctx -> {
+//      ctx.fetch(String.format("SELECT * FROM INFORMATION_SCHEMA.TABLES;"));
+      ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
+      ctx.fetch(String.format("USE %s;", dbName));
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-
       return null;
-    }, SQLDialect.MYSQL);
+    });
+
+    config = Jsons.clone(configWithoutDbName);
+    ((ObjectNode)config).put("database", dbName);
   }
 
   @AfterAll
   static void cleanUp() {
-    db.stop();
-    db.close();
+//    db.stop();
+//    db.close();
   }
 
   @Test
@@ -181,6 +168,35 @@ class MssqlSourceTest {
     final Stream<AirbyteMessage> stream = new MssqlSource().read(config, catalog, null);
 
     assertThrows(RuntimeException.class, () -> stream.collect(Collectors.toList()));
+  }
+
+  private JsonNode getConfig(MSSQLServerContainer<?> db) {
+//    return Jsons.jsonNode(ImmutableMap.builder()
+//        .put("host", db.getHost())
+//        .put("port", db.getFirstMappedPort())
+//        .put("username", db.getUsername())
+//        .put("password", db.getPassword())
+//        .build()
+//    );
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", "localhost")
+        .put("port", 32831)
+        .put("username", "SA")
+        .put("password", "A_Str0ng_Required_Password")
+        .build()
+    );
+  }
+
+  private static Database getDatabase(JsonNode config) {
+    return Databases.createDatabase(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        String.format("jdbc:sqlserver://%s:%s",
+            config.get("host").asText(),
+            config.get("port").asInt()),
+        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+        null
+    );
   }
 
 }
