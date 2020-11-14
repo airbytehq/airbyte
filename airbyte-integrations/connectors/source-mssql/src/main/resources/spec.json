@@ -16,8 +16,7 @@
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
-        "default": 3306,
-        "examples": ["3306"]
+        "examples": ["1433"]
       },
       "database": {
         "description": "Name of the database.",
