@@ -25,14 +25,11 @@
 package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
-
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -98,12 +95,12 @@ public class PostgresIntegrationTest extends TestDestination {
   private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
-        ctx -> ctx
-            .fetch(String.format("SELECT * FROM \"%s\" ORDER BY emitted_at ASC;", tableName))
-            .stream()
-            .map(r -> r.formatJSON(JSON_FORMAT))
-            .map(Jsons::deserialize)
-            .collect(Collectors.toList()));
+            ctx -> ctx
+                .fetch(String.format("SELECT * FROM \"%s\" ORDER BY emitted_at ASC;", tableName))
+                .stream()
+                .map(r -> r.formatJSON(JSON_FORMAT))
+                .map(Jsons::deserialize)
+                .collect(Collectors.toList()));
   }
 
   @Override
