@@ -77,7 +77,7 @@ public class PostgresIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     return retrieveRecordsFromTable(NamingHelper.getRawTableName(streamName))
         .stream()
-        .map(r -> r.get(RAW_DATA_COLUMN))
+        .map(r -> Jsons.deserialize(r.get(RAW_DATA_COLUMN).asText()))
         .collect(Collectors.toList());
   }
 
