@@ -50,6 +50,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.time.Instants;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
@@ -269,7 +270,7 @@ public class BigQueryDestination implements Destination {
         final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
             COLUMN_AB_ID, UUID.randomUUID().toString(),
             COLUMN_DATA, Jsons.serialize(message.getRecord().getData()),
-            COLUMN_EMITTED_AT, message.getRecord().getEmittedAt()));
+            COLUMN_EMITTED_AT, Instants.toSeconds(message.getRecord().getEmittedAt())));
         try {
           writeConfigs.get(message.getRecord().getStream()).getWriter()
               .write(ByteBuffer.wrap((Jsons.serialize(data) + "\n").getBytes(Charsets.UTF_8)));

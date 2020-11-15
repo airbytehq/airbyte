@@ -25,11 +25,15 @@
 package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
+
+import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
@@ -40,7 +44,7 @@ public class PostgresIntegrationTest extends TestDestination {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
-  private static final String COLUMN_NAME = "data";
+  private static final String RAW_DATA_COLUMN = "data";
   private PostgreSQLContainer<?> db;
 
   @Override
@@ -74,14 +78,10 @@ public class PostgresIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl()).query(
-        ctx -> ctx
-            .fetch(String.format("SELECT * FROM \"%s\" ORDER BY emitted_at ASC;", NamingHelper.getRawTableName(streamName)))
-            .stream()
-            .map(r -> r.formatJSON(JSON_FORMAT))
-            .map(Jsons::deserialize)
-            .map(r -> Jsons.deserialize(r.get(COLUMN_NAME).asText()))
-            .collect(Collectors.toList()));
+    return retrieveRecordsFromTable(NamingHelper.getRawTableName(streamName))
+        .stream()
+        .map(r -> r.get(RAW_DATA_COLUMN))
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -92,14 +92,18 @@ public class PostgresIntegrationTest extends TestDestination {
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName)
       throws Exception {
+    return retrieveRecordsFromTable(streamName);
+  }
+
+  private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM \"%s\" ORDER BY emitted_at ASC;", streamName))
-                .stream()
-                .map(r -> r.formatJSON(JSON_FORMAT))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList()));
+        ctx -> ctx
+            .fetch(String.format("SELECT * FROM \"%s\" ORDER BY emitted_at ASC;", tableName))
+            .stream()
+            .map(r -> r.formatJSON(JSON_FORMAT))
+            .map(Jsons::deserialize)
+            .collect(Collectors.toList()));
   }
 
   @Override
