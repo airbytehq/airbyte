@@ -102,8 +102,7 @@ public class CatalogHelpers {
             .stream()
             .collect(Collectors.toMap(
                 Field::getName,
-                field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString()),
-                (a, b) -> a)))
+                field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString()))))
         .build());
   }
 
