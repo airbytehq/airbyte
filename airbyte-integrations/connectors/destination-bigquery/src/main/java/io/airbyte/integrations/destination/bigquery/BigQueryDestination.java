@@ -26,7 +26,6 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.Timestamp;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -52,7 +51,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.time.Instants;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
@@ -67,15 +65,11 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.time.Duration;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -275,7 +269,8 @@ public class BigQueryDestination implements Destination {
                   Jsons.serialize(catalog), Jsons.serialize(message)));
         }
 
-        // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then use BQ helpers to string-format correctly.
+        // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
+        // use BQ helpers to string-format correctly.
         long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(message.getRecord().getEmittedAt(), TimeUnit.MILLISECONDS);
         String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
 
