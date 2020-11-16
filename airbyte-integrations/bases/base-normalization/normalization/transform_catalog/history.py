@@ -21,26 +21,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from pkg_resources import resource_string
 
-from setuptools import find_packages, setup
 
-setup(
-    name="normalization",
-    description="Normalizes data in the destination.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=find_packages(),
-    install_requires=["airbyte-protocol", "dbt>=0.18.1", "pyyaml"],
-    package_data={"": ["*.yml", "*.sql"]},
-    setup_requires=["pytest-runner"],
-    entry_points={
-        "console_scripts": [
-            "transform-config=normalization.transform_config.transform:main",
-            "transform-catalog=normalization.transform_catalog.transform:main",
-        ],
-    },
-    extras_require={
-        "tests": ["airbyte-protocol", "pytest"],
-    },
-)
+class HistoryLoader:
+    catalog: dict = {}
+
+    def __init__(self, catalog: dict):
+        self.catalog = catalog
+
+    def generate_dbt_model(self, schema: str, json_col: str, normal_table_suffix: str, history_table_suffix: str):
+        result = {}
+        source_tables = set()
+        for obj in self.catalog["streams"]:
+            if "name" in obj:
+                name = obj["name"]
+            else:
+                name = "undefined"
+            template = resource_string("normalization.resources", "history_template.sql")
+            tmp = template.decode("UTF-8")
+            tmp = tmp.replace("{schema}", schema)
+            tmp = tmp.replace("{name}", f"{name}{history_table_suffix}")
+            tmp = tmp.replace("{alternative}", f"{name}{normal_table_suffix}")
+            result[name] = tmp
+            source_tables.add(f"{name}{history_table_suffix}")
+        return result, source_tables

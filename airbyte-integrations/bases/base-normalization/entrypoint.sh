@@ -43,17 +43,11 @@ function main() {
   run)
     cp -r /airbyte/normalization_code/dbt-template/* $PROJECT_DIR
     transform-config --config "$CONFIG_FILE" --integration-type "$INTEGRATION_TYPE" --out $PROJECT_DIR
-    transform-catalog --profile-config-dir $PROJECT_DIR --catalog "$CATALOG_FILE" --out $PROJECT_DIR/models/generated/ --json-column data
+    transform-catalog --profile-config-dir $PROJECT_DIR --catalog "$CATALOG_FILE" --out $PROJECT_DIR/models/ --json-column data --table-suffix _raw
     dbt deps --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
     dbt run --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
     ;;
   dry-run)
-    cp -r /airbyte/normalization_code/dbt-template/* $PROJECT_DIR
-    transform-config --config "$CONFIG_FILE" --integration-type "$INTEGRATION_TYPE" --out $PROJECT_DIR
-    dbt debug --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
-    transform-catalog --profile-config-dir $PROJECT_DIR --catalog "$CATALOG_FILE" --out $PROJECT_DIR/models/generated/ --json-column data
-    dbt deps --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
-    dbt compile --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
     ;;
   *)
     error "Unknown command: $CMD"

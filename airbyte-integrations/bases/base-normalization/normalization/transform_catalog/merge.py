@@ -22,25 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from normalization.transform_catalog.helper import jinja_call
 
-setup(
-    name="normalization",
-    description="Normalizes data in the destination.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=find_packages(),
-    install_requires=["airbyte-protocol", "dbt>=0.18.1", "pyyaml"],
-    package_data={"": ["*.yml", "*.sql"]},
-    setup_requires=["pytest-runner"],
-    entry_points={
-        "console_scripts": [
-            "transform-config=normalization.transform_config.transform:main",
-            "transform-catalog=normalization.transform_catalog.transform:main",
-        ],
-    },
-    extras_require={
-        "tests": ["airbyte-protocol", "pytest"],
-    },
+
+class SchemaMerger:
+    catalog: dict = {}
+
+    def __init__(self, catalog: dict):
+        self.catalog = catalog
+
+    def generate_dbt_model(self, schema: str, json_col: str, normal_table_suffix: str, history_table_suffix: str) -> dict:
+        result = {}
+        for obj in self.catalog["streams"]:
+            if "name" in obj:
+                name = obj["name"]
+            else:
+                name = "undefined"
+            # Incremental because same schema
+            result[
+                name
+            ] = f"""{jinja_call(f"config(materialized='incremental')")}
+with  {jinja_call(f"adapter.quote_as_configured('unioned', 'identifier')")} as (
+{jinja_call(f"dbt_utils.union_relations([ref('{name}_history_in'), ref('{name}_normal')], exclude=['_dbt_source_relation'])")}
 )
+select distinct
+    {jinja_call(f"dbt_utils.star(ref('{name}_history_in'), except=['_dbt_source_relation'])")}
+from {jinja_call(f"adapter.quote_as_configured('unioned', 'identifier')")}
+"""
+        return result

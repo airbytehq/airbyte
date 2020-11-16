@@ -38,6 +38,9 @@ quoting:
 # are materialized, and more!
 models:
   +materialized: table
+  airbyte_utils:
+    temporary:
+      +schema: TMP
 
 vars:
   dbt_utils_dispatch_list: ['airbyte_utils']
