@@ -33,13 +33,18 @@ class Source{{properCase name}}SingerStandardTest(StandardSourceTestIface):
     def __init__(self):
         pass
 
+    # fixme - return a ConnectorSpecification. the default implementation should suffice as long as the spec.json is in source_{{snakeCase name}}.
     def get_spec(self) -> ConnectorSpecification:
         raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
         return ConnectorSpecification.parse_obj(json.loads(raw_spec))
 
+    # fixme - return a config object for the connector. if it contains secrets, then place that object in a file called config.json in the secrets directory. if this is the case, then the default implementation below does not need to be changed.
+    # e.g. return an object that like this {"username": "airbyte", "password": "my_password" } that matches the schema described in the spec.json.
     def get_config(self) -> object:
-        return {"fakekey": "fakevalue"}
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json")
 
+    # fixme - return an AirbyteCatalog that can be used for running a read operation given the config that was provided in the previous method. if this catalog exists in integration_tests/catalog.json, then the default implementation below need not be changed.
+    # e.g. return an object that like this {"username": "airbyte", "password": "my_password" } that matches the schema described in the spec.json.
     def get_catalog(self) -> AirbyteCatalog:
         raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
         return AirbyteCatalog.parse_obj(json.loads(raw_catalog))

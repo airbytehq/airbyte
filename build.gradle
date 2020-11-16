@@ -77,7 +77,7 @@ spotless {
     python {
         target createSpotlessTarget('**/*.py')
 
-        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|# generated)'
+        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|# generated)'
     }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
@@ -91,7 +91,17 @@ allprojects {
     apply plugin: 'base'
 
     afterEvaluate { project ->
-        composeBuild.dependsOn(project.tasks.assemble)
+        def composeDeps = [
+                "airbyte-config:init",
+                "airbyte-db",
+                "airbyte-scheduler",
+                "airbyte-server",
+                "airbyte-webapp",
+        ].toSet().asImmutable()
+
+        if (project.name in composeDeps) {
+            composeBuild.dependsOn(project.tasks.assemble)
+        }
     }
 }
 
@@ -189,6 +199,11 @@ task composeBuild {
     }
 }
 build.dependsOn(composeBuild)
+
+task('format') {
+    dependsOn spotlessApply
+    dependsOn subprojects.collect { it.getTasksByName('blackFormat', true) }
+}
 
 // produce reproducible archives
 // (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)

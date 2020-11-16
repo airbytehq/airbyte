@@ -4,9 +4,7 @@ description: Be sure to not miss out on new features and improvements!
 
 # Changelog
 
-If you're interested in our changelog on which new connectors are available out of the box on Airbyte, please check our [integrations changelog](integrations/integrations-changelog.md).
-
-For a non-exhaustive list of the features we will support in the next few months, please visit our [roadmap overview](../#roadmap).
+This is the changelog for Airbyte core. For our connector changelog, please visit our [Connector Changelog](integrations/integrations-changelog.md) page.
 
 If you're interested in our progress on the Airbyte platform, please read below!
 
@@ -14,16 +12,16 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 Here is what we have in mind:
 
-* Support multiple destinations 
-* **New destination:** our own Redshift warehouse integration 
-* **New sources:** 10 additional sources connectors, including MSSQL, GCS CSV, S3 CSV, SFTP CSV
+* Support **multiple destinations** 
+* **New destination:** our own **Redshift** warehouse connector 
+* **New sources:** 10 additional sources connectors, including Files \(CSV, HTML, JSON...\), Shopify, MSSQL, Mailchimp, Intercom
 * As a bonus if we can, update the onboarding experience with pre-filled demo data for the users who just want to see how Airbyte works with the least effort.
 
 ## 0.4.0 - delivered on 11/04/2020
 
 Here is what we are working on right now:
 
-* **New destination**: our own **Snowflake** warehouse integration
+* **New destination**: our own **Snowflake** warehouse connector
 * **New sources:** Facebook Ads, Google Ads.
 
 ## 0.3.0 - delivered on 10/30/2020
@@ -36,8 +34,8 @@ Here is what we are working on right now:
 
 * **a new Admin section** to enable users to add their own connectors, in addition to upgrading the ones they currently use 
 * improve the developer experience \(DX\) for **contributing new connectors** with additional documentation and a connector protocol 
-* our own **BigQuery** warehouse integration 
-* our own **Postgres** warehouse integration 
+* our own **BigQuery** warehouse connector 
+* our own **Postgres** warehouse connector 
 * simplify the process of supporting new Singer taps, ideally make it a 1-day process
 
 ## 0.1.0 - delivered on 09/23/2020

@@ -53,10 +53,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
-import org.jooq.Named;
 import org.jooq.SQLDialect;
 import org.jooq.Schema;
 import org.jooq.Table;
@@ -81,7 +81,7 @@ public abstract class AbstractJdbcSource implements Source {
 
   @Override
   public ConnectorSpecification spec() throws IOException {
-    // return a jsonschema representation of the spec for the integration.
+    // return a JsonSchema representation of the spec for the integration.
     final String resourceString = MoreResources.readResource("spec.json");
     return Jsons.deserialize(resourceString, ConnectorSpecification.class);
   }
@@ -92,7 +92,7 @@ public abstract class AbstractJdbcSource implements Source {
       // attempt to get current schema. this is a cheap query to sanity check that we can connect to the
       // database. `currentSchema()` is a jooq method that will run the appropriate query based on which
       // database it is connected to.
-      database.query(ctx -> ctx.select(currentSchema()).fetch());
+      database.query(this::getCurrentDatabaseName);
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
@@ -103,23 +103,36 @@ public abstract class AbstractJdbcSource implements Source {
     }
   }
 
+  protected String getCurrentDatabaseName(DSLContext ctx) {
+    return ctx.select(currentSchema()).fetch().get(0).getValue(0, String.class);
+  }
+
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
     try (final Database database = createDatabase(config)) {
       return new AirbyteCatalog()
-          .withStreams(discoverInternal(database).stream()
-              .map(t -> {
-                final List<Field> fields = Arrays.stream(t.fields())
-                    .map(f -> Field.of(f.getName(), jooqDataTypeToJsonSchemaType(f.getDataType())))
-                    .collect(Collectors.toList());
-                return CatalogHelpers.createAirbyteStream(t.getName(), fields);
-              }).collect(Collectors.toList()));
+          .withStreams(getTables(database)
+              .stream()
+              .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields()))
+              .collect(Collectors.toList()));
     }
+  }
+
+  protected List<TableInfo> getTables(final Database database) throws Exception {
+    return discoverInternal(database).stream()
+        .map(t -> {
+          final List<Field> fields = Arrays.stream(t.fields())
+              .map(f -> Field.of(f.getName(), jooqDataTypeToJsonSchemaType(f.getDataType())))
+              .collect(Collectors.toList());
+
+          return new TableInfo(t.getName(), fields);
+        })
+        .collect(Collectors.toList());
   }
 
   private List<Table<?>> discoverInternal(final Database database) throws Exception {
     return database.query(context -> {
-      final String databaseName = context.select(currentSchema()).fetch().get(0).getValue(0, String.class);
+      final String databaseName = getCurrentDatabaseName(context);
       final List<Schema> schemas = context.meta().getSchemas(databaseName);
       if (schemas.size() > 1) {
         throw new IllegalStateException("found multiple databases with the same name.");
@@ -135,8 +148,8 @@ public abstract class AbstractJdbcSource implements Source {
 
     final Database database = createDatabase(config);
 
-    final Map<String, Table<?>> tableNameToTable = discoverInternal(database).stream()
-        .collect(Collectors.toMap(Named::getName, Function.identity()));
+    final Map<String, TableInfo> tableNameToTable = getTables(database).stream()
+        .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
 
     Stream<AirbyteMessage> resultStream = Stream.empty();
 
@@ -147,8 +160,9 @@ public abstract class AbstractJdbcSource implements Source {
 
       final Set<String> selectedFields = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
 
-      final Table<?> table = tableNameToTable.get(airbyteStream.getName());
-      final List<org.jooq.Field<?>> selectedDatabaseFields = Arrays.stream(table.fields())
+      final TableInfo table = tableNameToTable.get(airbyteStream.getName());
+      final List<Field> selectedDatabaseFields = table.getFields()
+          .stream()
           .filter(field -> selectedFields.contains(field.getName()))
           .collect(Collectors.toList());
 
@@ -156,11 +170,9 @@ public abstract class AbstractJdbcSource implements Source {
         continue;
       }
 
+      final String fieldNames = selectedDatabaseFields.stream().map(Field::getName).collect(Collectors.joining(", "));
       final Stream<AirbyteMessage> stream = database.query(
-          ctx -> ctx
-              .select(selectedDatabaseFields)
-              .from(table)
-              .fetchStream()
+          ctx -> ctx.fetchStream(String.format("SELECT %s FROM %s", fieldNames, table.getName()))
               .map(r -> new AirbyteMessage()
                   .withType(Type.RECORD)
                   .withRecord(new AirbyteRecordMessage()
@@ -176,12 +188,33 @@ public abstract class AbstractJdbcSource implements Source {
 
   private Database createDatabase(JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
+
     return Databases.createDatabase(
         jdbcConfig.get("username").asText(),
-        jdbcConfig.get("password").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
         dialect);
+  }
+
+  protected static class TableInfo {
+
+    private final String name;
+    private final List<Field> fields;
+
+    public TableInfo(String name, List<Field> fields) {
+      this.name = name;
+      this.fields = fields;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public List<Field> getFields() {
+      return fields;
+    }
+
   }
 
   /**

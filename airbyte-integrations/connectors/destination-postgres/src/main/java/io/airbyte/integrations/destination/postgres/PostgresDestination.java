@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.postgres;
 
 import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.table;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -39,6 +40,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -131,7 +133,7 @@ public class PostgresDestination implements Destination {
 
     // create tmp tables if not exist
     for (final AirbyteStream stream : catalog.getStreams()) {
-      final String tableName = stream.getName();
+      final String tableName = NamingHelper.getRawTableName(stream.getName());
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
       database.query(ctx -> ctx.execute(String.format(
           "CREATE TABLE \"%s\" ( \n"
@@ -214,7 +216,7 @@ public class PostgresDestination implements Destination {
                                                                                             int batchSize,
                                                                                             CloseableQueue<byte[]> writeBuffer,
                                                                                             String tmpTableName) {
-      InsertValuesStep3<Record, String, JSONB, OffsetDateTime> step = ctx.insertInto(table(tmpTableName), field("ab_id", String.class),
+      InsertValuesStep3<Record, String, JSONB, OffsetDateTime> step = ctx.insertInto(table(name(tmpTableName)), field("ab_id", String.class),
           field(COLUMN_NAME, JSONB.class), field("emitted_at", OffsetDateTime.class));
 
       for (int i = 0; i < batchSize; i++) {
@@ -267,9 +269,9 @@ public class PostgresDestination implements Destination {
         database.transaction(ctx -> {
           final StringBuilder query = new StringBuilder();
           for (final WriteConfig writeConfig : writeConfigs.values()) {
-            query.append(String.format("DROP TABLE IF EXISTS %s;\n", writeConfig.getTableName()));
+            query.append(String.format("DROP TABLE IF EXISTS \"%s\";\n", writeConfig.getTableName()));
 
-            query.append(String.format("ALTER TABLE %s RENAME TO %s;\n", writeConfig.getTmpTableName(), writeConfig.getTableName()));
+            query.append(String.format("ALTER TABLE \"%s\" RENAME TO \"%s\";\n", writeConfig.getTmpTableName(), writeConfig.getTableName()));
           }
           return ctx.execute(query.toString());
         });
@@ -286,7 +288,7 @@ public class PostgresDestination implements Destination {
     private static void cleanupTmpTables(Database database, Map<String, WriteConfig> writeConfigs) {
       for (WriteConfig writeConfig : writeConfigs.values()) {
         try {
-          database.query(ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS %s;", writeConfig.getTmpTableName())));
+          database.query(ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS \"%s\";", writeConfig.getTmpTableName())));
         } catch (SQLException e) {
           throw new RuntimeException(e);
         }

@@ -84,7 +84,7 @@ begin;
 USE DATABASE identifier($airbyte_database);
 
 -- create schema for Airbyte data
-CREATE SCHEMA identifier($airbyte_schema);
+CREATE SCHEMA IF NOT EXISTS identifier($airbyte_schema);
 
 commit;
 ```

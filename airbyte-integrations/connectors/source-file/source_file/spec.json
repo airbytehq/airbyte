@@ -5,9 +5,13 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "File Source Spec",
     "type": "object",
-    "required": ["url", "storage"],
-    "additionalProperties": true,
+    "additionalProperties": false,
+    "required": ["dataset_name", "format", "url", "provider"],
     "properties": {
+      "dataset_name": {
+        "type": "string",
+        "description": "Name of the final table where to replicate this file (should include only letters, numbers dash and underscores)"
+      },
       "format": {
         "type": "string",
         "enum": [
@@ -21,51 +25,45 @@
           "pickle"
         ],
         "default": "csv",
-        "description": "File Format of the file to be replicated. Common formats are (csv, json or excel) but more advanced formats can be specified (html, parquet, orc, feather, pickle)",
-        "examples": ["csv"]
+        "description": "File Format of the file to be replicated (Warning: some format may be experimental, please refer to docs)."
       },
       "reader_options": {
         "type": "string",
-        "description": "Parsers for File Formats are currently using the `read_*` methods from the Pandas Library. Each of these readers provides additional options that can be specified as part of this JSON string. As an example, it is possible to change the read_csv behavior to a TSV (tab separated instead of comma) when redefining the delimiter character. See documentation of each `read_*` primitive from here: https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html",
+        "description": "This should be a valid JSON string used by each reader/parser to provide additional options and tune its behavior",
         "examples": ["{}", "{'sep': ' '}"]
       },
-
-      "storage": {
-        "type": "string",
-        "enum": ["HTTPS", "GCS", "S3", "SSH", "SFTP", "WebHDFS", "local"],
-        "description": "Storage Provider or Location of the file(s) to be replicated. (Note that local storage of directory where csv files will be read must start with the local mount \"/local\" at the moment until we implement more advanced mounting options)",
-        "default": "HTTPS"
-      },
-
       "url": {
         "type": "string",
         "description": "URL path to access the file to be replicated"
       },
-
-      "filename": {
-        "type": "string",
-        "description": "Name of the file (should include only letters, numbers dash and underscores)"
-      }
-    },
-
-    "dependencies": {
-      "storage": {
+      "provider": {
+        "type": "object",
+        "description": "Storage Provider or Location of the file(s) to be replicated.",
+        "default": "Public Web",
         "oneOf": [
           {
+            "title": "HTTPS: Public Web",
+            "required": ["storage"],
             "properties": {
               "storage": {
-                "enum": ["HTTPS"]
+                "type": "string",
+                "enum": ["HTTPS"],
+                "default": "HTTPS"
               }
             }
           },
           {
+            "title": "GCS: Google Cloud Storage",
+            "required": ["storage", "reader_impl"],
             "properties": {
               "storage": {
-                "enum": ["GCS"]
+                "type": "string",
+                "enum": ["GCS"],
+                "default": "GCS"
               },
               "service_account_json": {
                 "type": "string",
-                "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described here: https://cloud.google.com/iam/docs/service-accounts Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
+                "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\" target=\"_blank\">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
               },
               "reader_impl": {
                 "type": "string",
@@ -75,11 +73,14 @@
               }
             }
           },
-
           {
+            "title": "S3: Amazon Web Services",
+            "required": ["storage", "reader_impl"],
             "properties": {
               "storage": {
-                "enum": ["S3"]
+                "type": "string",
+                "enum": ["S3"],
+                "default": "S3"
               },
               "aws_access_key_id": {
                 "type": "string",
@@ -97,11 +98,14 @@
               }
             }
           },
-
           {
+            "title": "SSH: Secure Shell",
+            "required": ["storage", "user", "host"],
             "properties": {
               "storage": {
-                "enum": ["SSH"]
+                "type": "string",
+                "enum": ["SSH"],
+                "default": "SSH"
               },
               "user": {
                 "type": "string"
@@ -112,14 +116,16 @@
               "host": {
                 "type": "string"
               }
-            },
-            "required": ["user", "host"]
+            }
           },
-
           {
+            "title": "SFTP: Secure File Transfer Protocol",
+            "required": ["storage", "user", "host"],
             "properties": {
               "storage": {
-                "enum": ["SFTP"]
+                "type": "string",
+                "enum": ["SFTP"],
+                "default": "SFTP"
               },
               "user": {
                 "type": "string"
@@ -130,14 +136,17 @@
               "host": {
                 "type": "string"
               }
-            },
-            "required": ["user", "host"]
+            }
           },
-
           {
+            "title": "WebHDFS: HDFS REST API (Untested)",
+            "required": ["storage", "host", "port"],
             "properties": {
               "storage": {
-                "enum": ["WebHDFS"]
+                "type": "string",
+                "description": "WARNING: smart_open library provides the ability to stream files over this protocol but we haven't been able to test this as part of Airbyte yet, please use with caution. We would love to hear feedbacks from you if you are able or fail to use this!",
+                "enum": ["WebHDFS"],
+                "default": "WebHDFS"
               },
               "host": {
                 "type": "string"
@@ -145,8 +154,19 @@
               "port": {
                 "type": "number"
               }
-            },
-            "required": ["host", "port"]
+            }
+          },
+          {
+            "title": "Local Filesystem (limited)",
+            "required": ["storage"],
+            "properties": {
+              "storage": {
+                "type": "string",
+                "description": "WARNING: Note that local storage URL available for read must start with the local mount \"/local/\" at the moment until we implement more advanced docker mounting options...",
+                "enum": ["local"],
+                "default": "local"
+              }
+            }
           }
         ]
       }

@@ -8,9 +8,7 @@ description: >-
 
 ## Overview
 
-The Airbyte BigQuery destination allows you to sync data to BigQuery.
-
-This BigQuery destination is based on the [PipelineWise BigQuery Target](https://github.com/transferwise/pipelinewise-target-bigquery).
+The Airbyte BigQuery destination allows you to sync data to BigQuery. BigQuery is a serverless, highly scalable, and cost-effective data warehouse offered by Google Cloud Provider.
 
 ### Sync overview
 

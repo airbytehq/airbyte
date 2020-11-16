@@ -14,7 +14,7 @@ jq --arg v "$GH_INTEGRATION_TEST_CREDS" '.access_token = $v' airbyte-integration
 
 mkdir airbyte-integrations/connectors/source-googleanalytics-singer/secrets/
 echo "$GOOGLE_ANALYTICS_TEST_CREDS" > airbyte-integrations/connectors/source-googleanalytics-singer/secrets/config.json
-echo "GOOGLE_ANALYTICS_TEST_TRACKING_ID" > airbyte-integrations/connectors/source-googleanalytics-singer/secrets/tracker.txt
+echo "$GOOGLE_ANALYTICS_TEST_TRACKING_ID" > airbyte-integrations/connectors/source-googleanalytics-singer/secrets/tracker.txt
 
 mkdir airbyte-integrations/connectors/source-salesforce-singer/secrets/
 echo "$SALESFORCE_INTEGRATION_TESTS_CREDS" > airbyte-integrations/connectors/source-salesforce-singer/secrets/config.json
@@ -38,3 +38,16 @@ echo "$FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS" > "${FB_SECRETS_DIR}/confi
 MKTO_SECRETS_DIR=airbyte-integrations/connectors/source-marketo-singer/secrets
 mkdir $MKTO_SECRETS_DIR
 echo "$SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG" > "${MKTO_SECRETS_DIR}/config.json"
+
+
+mkdir airbyte-integrations/connectors/source-shopify-singer/secrets
+echo "$SHOPIFY_INTEGRATION_TEST_CREDS" > airbyte-integrations/connectors/source-shopify-singer/secrets/config.json
+
+SOURCEFILE_DIR=airbyte-integrations/connectors/source-file/secrets
+mkdir $SOURCEFILE_DIR
+echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > "${SOURCEFILE_DIR}/gcs.json"
+echo "$AWS_S3_INTEGRATION_TEST_CREDS" > "${SOURCEFILE_DIR}/aws.json"
+
+MAILCHIMP_SECRETS_DIR=airbyte-integrations/connectors/source-mailchimp/secrets
+mkdir $MAILCHIMP_SECRETS_DIR
+echo "$MAILCHIMP_TEST_CREDS" > "${MAILCHIMP_SECRETS_DIR}/config.json"

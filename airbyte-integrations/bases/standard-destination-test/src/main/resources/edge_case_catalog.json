@@ -1,0 +1,50 @@
+{
+  "streams": [
+    {
+      "name": "streamWithCamelCase",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_underscores",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "STREAM_WITH_ALL_CAPS",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_edge_case_field_names",
+      "json_schema": {
+        "properties": {
+          "fieldWithCamelCase": {
+            "type": "string"
+          },
+          "field_with_underscore": {
+            "type": "string"
+          },
+          "FIELD_WITH_ALL_CAPS": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}

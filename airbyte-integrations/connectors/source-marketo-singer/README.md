@@ -46,7 +46,7 @@ pytest unit_tests
 ### Locally running the connector docker image
 ```
 # in airbyte root directory
-./gradlew :airbyte-integrations:connectors:source-marketo-singer:buildImage
+./gradlew :airbyte-integrations:connectors:source-marketo-singer:airbyteDocker
 docker run --rm airbyte/source-marketo-singer:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-marketo-singer/secrets:/secrets airbyte/source-marketo-singer:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-marketo-singer/secrets:/secrets airbyte/source-marketo-singer:dev discover --config /secrets/config.json

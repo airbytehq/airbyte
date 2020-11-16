@@ -37,7 +37,7 @@ pytest unit_tests
 ### Locally running the connector docker image
 ```
 # in airbyte root directory
-./gradlew :airbyte-integrations:connectors:source-rest-api:buildImage
+./gradlew :airbyte-integrations:connectors:source-rest-api:airbyteDocker
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api:/sample_files airbyte/source-rest-api:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api:/sample_files airbyte/source-rest-api:dev check --config /sample_files/sample_files/config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-rest-api:/sample_files airbyte/source-rest-api:dev discover --config /sample_files/sample_files/config.json

@@ -31,17 +31,25 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.FieldList;
+import com.google.cloud.bigquery.FieldValue;
+import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.TestDestination;
+import io.airbyte.integrations.base.NamingHelper;
+import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -84,23 +92,68 @@ public class BigQueryIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    final QueryJobConfiguration queryConfig =
-        QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), streamName.toLowerCase()))
-            .setUseLegacySql(false).build();
+  protected boolean implementsBasicNormalization() {
+    return true;
+  }
 
-    return StreamSupport
-        .stream(executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
-        .map(v -> v.get(COLUMN_DATA).getStringValue())
+  @Override
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
+    return retrieveRecordsFromTable(testEnv, streamName);
+  }
+
+  @Override
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
+    return retrieveRecordsFromTable(env, NamingHelper.getRawTableName(streamName))
+        .stream()
+        .map(node -> node.get("data").asText())
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
+  }
+
+  private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws InterruptedException {
+    final QueryJobConfiguration queryConfig =
+        QueryJobConfiguration
+            .newBuilder(
+                String.format("SELECT * FROM `%s`.`%s`;", dataset.getDatasetId().getDataset(), tableName))
+            .setUseLegacySql(false).build();
+
+    TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
+    FieldList fields = queryResults.getSchema().getFields();
+
+    return StreamSupport
+        .stream(queryResults.iterateAll().spliterator(), false)
+        .map(row -> {
+          Map<String, Object> jsonMap = Maps.newHashMap();
+          for (Field field : fields) {
+            Object value = getTypedFieldValue(row, field);
+            jsonMap.put(field.getName(), value);
+          }
+          return jsonMap;
+        })
+        .map(Jsons::jsonNode)
+        .collect(Collectors.toList());
+  }
+
+  private Object getTypedFieldValue(FieldValueList row, Field field) {
+    FieldValue fieldValue = row.get(field.getName());
+    if (fieldValue.getValue() != null) {
+      return switch (field.getType().getStandardType()) {
+        case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
+        case INT64 -> fieldValue.getLongValue();
+        case STRING -> fieldValue.getStringValue();
+        default -> fieldValue.getValue();
+      };
+    } else {
+      return null;
+    }
   }
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/config/credentials.json. Override by setting setting path with the CREDENTIALS_PATH constant.");
+          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+              + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
     final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));

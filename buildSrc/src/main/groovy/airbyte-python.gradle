@@ -1,6 +1,5 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.tasks.CacheableTask
 import ru.vyarus.gradle.plugin.python.task.PythonTask;
 
 class AirbytePythonConfiguration {
@@ -30,6 +29,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             module = "black"
             // the line length should match .isort.cfg
             command = ". --line-length 140"
+            dependsOn project.rootProject.spotlessPythonApply
         }
 
         project.task('isortFormat', type: PythonTask) {
@@ -45,17 +45,11 @@ class AirbytePythonPlugin implements Plugin<Project> {
         project.task('installReqs', type: PythonTask) {
             module = "pip"
             command = "install -r requirements.txt"
-            inputs.file('requirements.txt')
-            outputs.file('build/installedreqs.txt')
-            outputs.cacheIf { true }
         }
 
         project.task('installTestReqs', type: PythonTask, dependsOn: project.installReqs) {
             module = "pip"
             command = "install .[tests]"
-            inputs.file('setup.py')
-            outputs.file('build/installedtestreqs.txt')
-            outputs.cacheIf { true }
         }
 
         if(project.file('unit_tests').exists()) {

@@ -681,6 +681,25 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/connections/delete:
+    post:
+      tags:
+        - connection
+      summary: Delete a connection
+      operationId: deleteConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/connections/sync:
     post:
       tags:

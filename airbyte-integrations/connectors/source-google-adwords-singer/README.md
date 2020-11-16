@@ -38,7 +38,7 @@ pytest unit_tests
 ### Locally running the connector docker image
 ```
 # in airbyte root directory
-./gradlew :airbyte-integrations:connectors:source-google-adwords-singer:buildImage
+./gradlew :airbyte-integrations:connectors:source-google-adwords-singer:airbyteDocker
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-google-adwords-singer:/data airbyte/source-google-adwords-singer:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-google-adwords-singer:/data airbyte/source-google-adwords-singer:dev check --config /data/secrets/config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-google-adwords-singer:/data airbyte/source-google-adwords-singer:dev discover --config /data/secrets/config.json
