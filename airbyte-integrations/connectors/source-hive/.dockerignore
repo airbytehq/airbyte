@@ -1,7 +1,3 @@
 *
 !Dockerfile
-!Dockerfile.test
-!source_hive
-!setup.py
-!integration_tests
-!secrets
+!build

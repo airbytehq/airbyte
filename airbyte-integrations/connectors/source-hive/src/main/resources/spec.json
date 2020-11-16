@@ -9,40 +9,35 @@
       "port",
       "database",
       "username",
-      "password",
-      "authMechanism"
+      "password"
     ],
     "additionalProperties": false,
     "properties": {
       "host": {
-        "description": "Hostname of the hive database.",
+        "description": "Hostname of the database.",
         "type": "string"
       },
       "port": {
-        "description": "Port of the hive database.",
+        "description": "Port of the database.",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
-        "default": 10001,
-        "examples": ["10001"]
+        "default": 10000,
+        "examples": [
+          "10000"
+        ]
       },
       "database": {
         "description": "Name of the database.",
         "type": "string"
       },
       "username": {
-        "description": "Username to use to access the hive database.",
+        "description": "Username to use to access the database.",
         "type": "string"
       },
       "password": {
-        "description": "Password associated with the hive username.",
+        "description": "Password associated with the username.",
         "type": "string"
-      },
-      "authMechanism": {
-        "description": "Specify the auth mechanism for Hive",
-        "type": "string",
-        "default": "PLAIN",
-        "enum": ["NOSASL", "PLAIN", "GSSAPI", "LDAP"]
       }
     }
   }

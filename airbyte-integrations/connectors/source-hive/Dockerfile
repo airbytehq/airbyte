@@ -1,16 +1,12 @@
-FROM airbyte/integration-base-python:dev
+FROM airbyte/integration-base-java:dev
 
-# Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+WORKDIR /airbyte
 
-ENV CODE_PATH="source_hive"
-ENV AIRBYTE_IMPL_MODULE="source_hive"
-ENV AIRBYTE_IMPL_PATH="SourceHive"
+ENV APPLICATION source-hive
 
-WORKDIR /airbyte/integration_code
-COPY $CODE_PATH ./$CODE_PATH
-COPY setup.py ./
-RUN pip install ".[main]"
+COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+
+RUN tar xf ${APPLICATION}.tar --strip-components=1
 
 LABEL io.airbyte.version=0.1.0
 LABEL io.airbyte.name=airbyte/source-hive
