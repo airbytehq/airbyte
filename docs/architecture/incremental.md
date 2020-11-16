@@ -9,7 +9,9 @@
 
 Currently this section contains two fields: `json_schema` and `metadata`.
 * `json_schema` describes the structure of the data in a source.
-* `metadata` describes other information about the data in the source. For example what features are supported for the stream.
+* `metadata` describes other information about the data in the source. For example what features are supported for the stream. Currently the `metadata` object contains two fields.
+    * `supported_sync_modes` which describes which sync modes are supported for a stream.
+    * `default_comparable` which describes what field should be used to determine if a record should be included in a sync. If this is set, the end user does not need to specify their own comparable. If it is not set, then the end user does need to specify it. If it is set and the user sets their own, the user's value overrides the default value.
 
 ## Configuration
 * This section currently has two fields: `sync_mode` and `comparable`.
