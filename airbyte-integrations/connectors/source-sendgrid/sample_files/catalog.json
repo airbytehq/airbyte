@@ -1,9 +1,9 @@
 {
   "streams": [
     {
-      "name": "Lists",
+      "name": "sg_lists",
       "json_schema": {
-        "type": "object"
+        "type": "object",
         "properties": {
           "id": {
             "type": "string"
@@ -15,7 +15,7 @@
             "type": "integer"
           },
           "_metadata": {
-            "type": "object"
+            "type": "object",
             "properties": {
               "self": {
                 "type": "string"
@@ -26,7 +26,7 @@
       }
     },
     {
-      "name": "Campaigns",
+      "name": "sg_campaigns",
       "json_schema": {
         "type": "object",
         "properties": {
