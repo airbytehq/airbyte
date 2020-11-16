@@ -15,3 +15,7 @@ Currently this section contains two fields: `json_schema` and `metadata`.
 * This section currently has two fields: `sync_mode` and `comparable`.
 * `sync_mode` which describes how the data will be synced (e.g. `full_refresh` or `incremental`).
 * `comparable` which is the path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
+
+
+## Source
+A source advertises that it can do an incremental sync for a given stream, by specifying `incremental` as one of the sync modes. It can specify a `default_comparable` so that the user does not need to determine which field is used to determine which records are new or modified. If it does not specify this field, then the user _must_ set `comparable` field themselves if they want to use `incremental` syncing.
