@@ -20,6 +20,7 @@
     * [Hubspot](integrations/sources/hubspot.md)
     * [Marketo](integrations/sources/marketo.md)
     * [MySQL](integrations/sources/mysql.md)
+    * [MSSQL](integrations/sources/mssql.md)
     * [Microsoft SQL Server (MSSQL)](integrations/sources/mssql.md)
     * [Postgres](integrations/sources/postgres.md)
     * [Rest API](integrations/sources/rest-api.md)
