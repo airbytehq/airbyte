@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import PageTitle from "../../../../components/PageTitle";
@@ -10,11 +9,7 @@ import useRouter from "../../../../components/hooks/useRouterHook";
 import config from "../../../../config";
 import SourceDefinitionResource from "../../../../core/resources/SourceDefinition";
 import useSource from "../../../../components/hooks/services/useSourceHook";
-
-const Content = styled.div`
-  max-width: 638px;
-  margin: 13px auto;
-`;
+import { FormPageContent } from "../../../../components/SourceAndDestinationsBlocks";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
@@ -66,14 +61,14 @@ const CreateSourcePage: React.FC = () => {
         withLine
         title={<FormattedMessage id="sources.newSourceTitle" />}
       />
-      <Content>
+      <FormPageContent>
         <SourceForm
           onSubmit={onSubmitSourceStep}
           dropDownData={sourcesDropDownData}
           hasSuccess={successRequest}
           errorStatus={errorStatusRequest}
         />
-      </Content>
+      </FormPageContent>
     </>
   );
 };

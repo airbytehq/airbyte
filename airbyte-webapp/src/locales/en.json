@@ -126,8 +126,17 @@
 
   "connection.fromTo": "From {source} To {destination}",
   "connection.connectionSettings": "Connection settings",
+  "connection.testsPassed": "All connection tests passed",
+  "connection.testsFailed": "The connection tests failed.",
+  "connection.destinationCheckSettings": "Check destination settings",
+  "connection.sourceCheckSettings": "Check source settings",
+  "connection.destinationTestAgain": "Test again destination connection",
+  "connection.sourceTestAgain": "Test again source connection",
 
-  "tables": "",
+  "tables.sourceIsValidating": "Validating the source",
+  "tables.sourceIsValidatingBefore": "before you add a new destination",
+  "tables.destinationIsValidating": "Validating the destination",
+  "tables.destinationIsValidatingBefore": "before you add a new source",
   "tables.name": "Name",
   "tables.connector": "Connector",
   "tables.sourceConnectWith": "Destination",

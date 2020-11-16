@@ -21,10 +21,13 @@ const DestinationsPage: React.FC = () => {
         <Route path={Routes.Destination} exact>
           <AllDestinationsPage />
         </Route>
-        <Route path={`${Routes.Destination}${Routes.Connection}/:id`}>
-          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
-            <ConnectionPage />
-          </ErrorBoundary>
+        <Route
+          path={[
+            `${Routes.Destination}${Routes.ConnectionNew}`,
+            `${Routes.Destination}${Routes.Connection}/:id`
+          ]}
+        >
+          <ConnectionPage />
         </Route>
         <Route path={`${Routes.Destination}/:id`}>
           <ErrorBoundary fallbackComponent={FallbackRootRedirector}>

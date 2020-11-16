@@ -2,16 +2,16 @@ import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "../../../components/ContentCard";
-import { Connection } from "../../../core/resources/Connection";
-import FrequencyConfig from "../../../data/FrequencyConfig.json";
-import useConnection from "../../../components/hooks/services/useConnectionHook";
-import DeleteBlock from "../../../components/DeleteBlock";
-import FrequencyForm from "../../../components/FrequencyForm";
+import ContentCard from "../../../../../components/ContentCard";
+import { Connection } from "../../../../../core/resources/Connection";
+import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
+import useConnection from "../../../../../components/hooks/services/useConnectionHook";
+import DeleteBlock from "../../../../../components/DeleteBlock";
+import FrequencyForm from "../../../../../components/FrequencyForm";
 import {
   constructInitialSchemaState,
   constructNewSchema
-} from "../../../core/helpers";
+} from "../../../../../core/helpers";
 
 type IProps = {
   connection: Connection;

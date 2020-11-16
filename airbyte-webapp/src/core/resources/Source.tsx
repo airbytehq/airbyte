@@ -63,6 +63,24 @@ export default class SourceResource extends BaseResource implements Source {
     };
   }
 
+  static checkConnectionShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      getFetchKey: (params: { connectionId: string }) =>
+        "POST /v1/sources/check_connection" + JSON.stringify(params),
+      fetch: async (params: { sourceId: string }): Promise<any> => {
+        const checkConnectionResult = await this.fetch(
+          "post",
+          `${this.url(params)}/check_connection`,
+          params
+        );
+
+        return checkConnectionResult;
+      },
+      schema: { status: "", message: "" }
+    };
+  }
+
   static createShape<T extends typeof Resource>(this: T) {
     return {
       ...super.createShape(),

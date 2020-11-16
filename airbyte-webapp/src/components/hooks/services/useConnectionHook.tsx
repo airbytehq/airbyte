@@ -23,7 +23,9 @@ type CreateConnectionProps = {
   values: ValuesProps;
   source?: Source;
   destinationId: string;
-  sourceDefinition?: SourceDefinition;
+  sourceDefinition?:
+    | SourceDefinition
+    | { name: string; sourceDefinitionId: string };
   destinationDefinition?: { name: string; destinationDefinitionId: string };
 };
 

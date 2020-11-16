@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import PageTitle from "../../../../components/PageTitle";
@@ -10,11 +9,7 @@ import useRouter from "../../../../components/hooks/useRouterHook";
 import config from "../../../../config";
 import DestinationDefinitionResource from "../../../../core/resources/DestinationDefinition";
 import useDestination from "../../../../components/hooks/services/useDestinationHook";
-
-const Content = styled.div`
-  max-width: 638px;
-  margin: 13px auto;
-`;
+import { FormPageContent } from "../../../../components/SourceAndDestinationsBlocks";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
@@ -69,14 +64,14 @@ const CreateDestinationPage: React.FC = () => {
         withLine
         title={<FormattedMessage id="destinations.newDestinationTitle" />}
       />
-      <Content>
+      <FormPageContent>
         <DestinationForm
           onSubmit={onSubmitDestinationForm}
           dropDownData={destinationsDropDownData}
           hasSuccess={successRequest}
           errorStatus={errorStatusRequest}
         />
-      </Content>
+      </FormPageContent>
     </>
   );
 };

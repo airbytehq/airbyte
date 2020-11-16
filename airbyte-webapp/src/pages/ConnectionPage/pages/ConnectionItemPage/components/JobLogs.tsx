@@ -3,7 +3,7 @@ import { useResource, useSubscription } from "rest-hooks";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import JobResource from "../../../core/resources/Job";
+import JobResource from "../../../../../core/resources/Job";
 
 type IProps = {
   id: number;

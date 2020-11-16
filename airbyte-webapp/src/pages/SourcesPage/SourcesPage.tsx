@@ -18,10 +18,13 @@ const SourcesPage: React.FC = () => {
         <Route path={`${Routes.Source}${Routes.SourceNew}`}>
           <CreateSourcePage />
         </Route>
-        <Route path={`${Routes.Source}${Routes.Connection}/:id`}>
-          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
-            <ConnectionPage />
-          </ErrorBoundary>
+        <Route
+          path={[
+            `${Routes.Source}${Routes.ConnectionNew}`,
+            `${Routes.Source}${Routes.Connection}/:id`
+          ]}
+        >
+          <ConnectionPage />
         </Route>
         <Route path={`${Routes.Source}/:id`}>
           <ErrorBoundary fallbackComponent={FallbackRootRedirector}>

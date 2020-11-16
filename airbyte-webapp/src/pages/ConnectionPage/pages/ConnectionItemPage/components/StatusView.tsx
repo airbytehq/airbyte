@@ -5,17 +5,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { useFetcher, useSubscription, useResource } from "rest-hooks";
 
-import ContentCard from "../../../components/ContentCard";
-import Button from "../../../components/Button";
+import ContentCard from "../../../../../components/ContentCard";
+import Button from "../../../../../components/Button";
 import StatusMainInfo from "./StatusMainInfo";
 import ConnectionResource, {
   Connection
-} from "../../../core/resources/Connection";
-import JobResource from "../../../core/resources/Job";
+} from "../../../../../core/resources/Connection";
+import JobResource from "../../../../../core/resources/Job";
 import JobsList from "./JobsList";
-import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
-import config from "../../../config";
-import EmptyResource from "../../../components/EmptyResourceBlock";
+import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
+import config from "../../../../../config";
+import EmptyResource from "../../../../../components/EmptyResourceBlock";
 
 type IProps = {
   connection: Connection;

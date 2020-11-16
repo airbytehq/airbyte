@@ -10,7 +10,7 @@ import ConnectionResource, {
 } from "../../../core/resources/Connection";
 import { Routes } from "../../../pages/routes";
 import useRouter from "../useRouterHook";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import DestinationDefinitionSpecificationResource, {
   DestinationDefinitionSpecification
 } from "../../../core/resources/DestinationDefinitionSpecification";
@@ -54,6 +54,29 @@ export const useDestinationDefinitionSpecificationLoad = (
   return { destinationDefinitionSpecification, isLoading };
 };
 
+export const useDestinationDetails = (destinationId?: string) => {
+  const [destination, setDestination] = useState<null | Destination>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchDestination = useFetcher(DestinationResource.detailShape(), true);
+
+  useEffect(() => {
+    (async () => {
+      if (destinationId) {
+        setIsLoading(true);
+        setDestination(
+          await fetchDestination({
+            destinationId
+          })
+        );
+        setIsLoading(false);
+      }
+    })();
+  }, [destinationId, fetchDestination]);
+
+  return { destination, isLoading };
+};
+
 const useDestination = () => {
   const { push } = useRouter();
 
@@ -66,6 +89,10 @@ const useDestination = () => {
   const recreatedestination = useFetcher(DestinationResource.recreateShape());
 
   const destinationDelete = useFetcher(DestinationResource.deleteShape());
+
+  const destinationConnection = useFetcher(
+    DestinationResource.checkConnectionShape()
+  );
 
   const updateConnectionsStore = useFetcher(
     ConnectionResource.updateStoreAfterDeleteShape()
@@ -185,6 +212,15 @@ const useDestination = () => {
     );
   };
 
+  const checkDestinationConnection = useCallback(
+    async ({ destinationId }: { destinationId: string }) => {
+      return await destinationConnection({
+        destinationId: destinationId
+      });
+    },
+    [destinationConnection]
+  );
+
   const deleteDestination = async ({
     destination,
     connectionsWithDestination
@@ -208,7 +244,8 @@ const useDestination = () => {
     createDestination,
     updateDestination,
     recreateDestination,
-    deleteDestination
+    deleteDestination,
+    checkDestinationConnection
   };
 };
 

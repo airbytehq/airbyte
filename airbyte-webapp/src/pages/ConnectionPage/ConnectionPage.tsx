@@ -1,116 +1,48 @@
-import React, { Suspense, useState } from "react";
-import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
+import React, { Suspense } from "react";
+import { Redirect, Route, Switch } from "react-router-dom";
+import { NetworkErrorBoundary as ErrorBoundary } from "rest-hooks";
 
-import PageTitle from "../../components/PageTitle";
-import useRouter from "../../components/hooks/useRouterHook";
-import StepsMenu from "../../components/StepsMenu";
-import StatusView from "./components/StatusView";
-import SettingsView from "./components/SettingsView";
-import ConnectionResource from "../../core/resources/Connection";
-import LoadingPage from "../../components/LoadingPage";
-import MainPageWithScroll from "../../components/MainPageWithScroll";
-import config from "../../config";
-import { AnalyticsService } from "../../core/analytics/AnalyticsService";
-import FrequencyConfig from "../..//data/FrequencyConfig.json";
-import Link from "../../components/Link";
 import { Routes } from "../routes";
+import LoadingPage from "../../components/LoadingPage";
+import ConnectionItemPage from "./pages/ConnectionItemPage";
+import CreationFormPage from "./pages/CreationFormPage";
+import useRouter from "../../components/hooks/useRouterHook";
+
+const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
 
 const ConnectionPage: React.FC = () => {
-  const { query } = useRouter();
-
-  const connection = useResource(ConnectionResource.detailShape(), {
-    // @ts-ignore
-    connectionId: query.id
-  });
-
-  const frequency = FrequencyConfig.find(
-    item => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
-  );
-
-  const steps = [
-    {
-      id: "status",
-      name: <FormattedMessage id={"sources.status"} />
-    },
-    {
-      id: "settings",
-      name: <FormattedMessage id={"sources.settings"} />
-    }
-  ];
-  const [currentStep, setCurrentStep] = useState("status");
-  const onSelectStep = (id: string) => setCurrentStep(id);
-
-  const onAfterSaveSchema = () => {
-    AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
-      action: "Edit schema",
-      connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.destinationName,
-      connector_destination_definition_id:
-        connection.destination?.destinationDefinitionId,
-      frequency: frequency?.text
-    });
-  };
-
-  const renderStep = () => {
-    if (currentStep === "status") {
-      return (
-        <StatusView connection={connection} frequencyText={frequency?.text} />
-      );
-    }
-
-    return (
-      <SettingsView
-        connection={connection}
-        onAfterSaveSchema={onAfterSaveSchema}
-      />
-    );
-  };
-
-  const linkToSource = () => (
-    <Link clear to={`${Routes.Source}/${connection.source?.sourceId}`}>
-      {connection.source?.name}
-    </Link>
-  );
-
-  const linkToDestination = () => (
-    <Link
-      clear
-      to={`${Routes.Destination}/${connection.destination?.destinationId}`}
-    >
-      {connection.destination?.name}
-    </Link>
-  );
+  const { location } = useRouter();
 
   return (
-    <MainPageWithScroll
-      title={
-        <PageTitle
-          withLine
-          title={
-            <FormattedMessage
-              id="connection.fromTo"
-              values={{
-                source: linkToSource(),
-                destination: linkToDestination()
-              }}
-            />
-          }
-          middleComponent={
-            <StepsMenu
-              lightMode
-              data={steps}
-              onSelect={onSelectStep}
-              activeStep={currentStep}
-            />
-          }
-        />
-      }
-    >
-      <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
-    </MainPageWithScroll>
+    <Suspense fallback={<LoadingPage />}>
+      <Switch>
+        <Route
+          path={[
+            `${Routes.Source}${Routes.ConnectionNew}`,
+            `${Routes.Destination}${Routes.ConnectionNew}`
+          ]}
+        >
+          <CreationFormPage
+            type={
+              location.pathname === `${Routes.Source}${Routes.ConnectionNew}`
+                ? "destination"
+                : "source"
+            }
+          />
+        </Route>
+        <Route
+          path={[
+            `${Routes.Source}${Routes.Connection}/:id`,
+            `${Routes.Destination}${Routes.Connection}/:id`
+          ]}
+        >
+          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
+            <ConnectionItemPage />
+          </ErrorBoundary>
+        </Route>
+        <Redirect to={Routes.Root} />
+      </Switch>
+    </Suspense>
   );
 };
 

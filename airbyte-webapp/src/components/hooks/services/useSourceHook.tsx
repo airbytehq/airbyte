@@ -8,7 +8,7 @@ import useRouter from "../useRouterHook";
 import ConnectionResource, {
   Connection
 } from "../../../core/resources/Connection";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import SourceDefinitionSpecificationResource, {
   SourceDefinitionSpecification
 } from "../../../core/resources/SourceDefinitionSpecification";
@@ -51,6 +51,29 @@ export const useSourceDefinitionSpecificationLoad = (
   return { sourceDefinitionSpecification, isLoading };
 };
 
+export const useSourceDetails = (sourceId?: string) => {
+  const [source, setSource] = useState<null | Source>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchSource = useFetcher(SourceResource.detailShape(), true);
+
+  useEffect(() => {
+    (async () => {
+      if (sourceId) {
+        setIsLoading(true);
+        setSource(
+          await fetchSource({
+            sourceId
+          })
+        );
+        setIsLoading(false);
+      }
+    })();
+  }, [sourceId, fetchSource]);
+
+  return { source, isLoading };
+};
+
 const useSource = () => {
   const { push } = useRouter();
 
@@ -61,6 +84,8 @@ const useSource = () => {
   const recreatesource = useFetcher(SourceResource.recreateShape());
 
   const sourceDelete = useFetcher(SourceResource.deleteShape());
+
+  const sourceConnection = useFetcher(SourceResource.checkConnectionShape());
 
   const updateConnectionsStore = useFetcher(
     ConnectionResource.updateStoreAfterDeleteShape()
@@ -137,6 +162,15 @@ const useSource = () => {
     );
   };
 
+  const checkSourceConnection = useCallback(
+    async ({ sourceId }: { sourceId: string }) => {
+      return await sourceConnection({
+        sourceId: sourceId
+      });
+    },
+    [sourceConnection]
+  );
+
   const recreateSource = async ({
     values,
     sourceId
@@ -195,7 +229,13 @@ const useSource = () => {
     push(Routes.Root);
   };
 
-  return { createSource, updateSource, recreateSource, deleteSource };
+  return {
+    createSource,
+    updateSource,
+    recreateSource,
+    deleteSource,
+    checkSourceConnection
+  };
 };
 
 export default useSource;

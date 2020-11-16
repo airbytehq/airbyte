@@ -69,8 +69,19 @@ const SourceItemPage: React.FC = () => {
     [destinations]
   );
 
-  // TODO: fix on select
-  const onSelect = () => null;
+  const onSelect = (data: { value: string }) => {
+    if (data.value === "create-new-item") {
+      push({
+        pathname: `${Routes.Source}${Routes.ConnectionNew}`,
+        state: { sourceId: source.sourceId }
+      });
+    } else {
+      push({
+        pathname: `${Routes.Source}${Routes.ConnectionNew}`,
+        state: { destinationId: data.value, sourceId: source.sourceId }
+      });
+    }
+  };
 
   const renderContent = () => {
     if (currentStep === StepsTypes.SETTINGS) {
