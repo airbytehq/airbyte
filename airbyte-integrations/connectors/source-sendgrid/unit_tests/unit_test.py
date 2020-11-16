@@ -22,6 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from source_sendgrid.client import Client
+
 
 def test_client_wrong_credentials():
-    assert True
+    client = Client("fake_apikey")
+    status, error = client.health_check()
+    assert not status

@@ -22,12 +22,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from pydantic import BaseModel, Extra, Field
+from collections import namedtuple
 
-
-class HealthCheckError(BaseModel):
-    type: str
-    title: str
-    status: int
-    detail: str
-    instance: str
+Schema = namedtuple("Schema", ("name", "json_schema"))
+SENDGRID_SCHEMAS = [
+    Schema(
+        "sg_campaigns",
+        {
+            "type": "object",
+            "title": "Campaigns",
+            "properties": {
+                "id": {"type": "string"},
+                "name": {"type": "string"},
+                "create_at": {"type": "string"},
+                "status": {"type": "string"},
+                "updated_at": {"type": "string"},
+                "is_abtest": {"type": "boolean"},
+            },
+        },
+    ),
+    Schema(
+        "sg_lists",
+        {
+            "type": "object",
+            "title": "Lists",
+            "properties": {
+                "id": {"type": "string"},
+                "name": {"type": "string"},
+                "contact_count": {"type": "integer"},
+                "_metadata": {"type": "object", "title": "Statistics", "properties": {"self": {"type": "string"}}},
+            },
+        },
+    ),
+]
