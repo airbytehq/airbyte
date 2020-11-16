@@ -1,7 +1,7 @@
 # Name your package! Package names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
-name: 'airbyte'
+name: 'airbyte_utils'
 version: '1.0'
 config-version: 2
 
@@ -19,7 +19,10 @@ test-paths: ["tests"]
 data-paths: ["data"]
 macro-paths: ["macros"]
 
-target-path: "build"  # directory which will store compiled SQL files
+target-path: "../build"  # directory which will store compiled SQL files
+log-path: "../logs"  # directory which will store DBT logs
+modules-path: "../dbt_modules"  # directory which will store external DBT dependencies
+
 clean-targets:         # directories to be removed by `dbt clean`
     - "build"
     - "dbt_modules"
@@ -34,5 +37,7 @@ quoting:
 # Using these configurations, you can enable or disable models, change how they
 # are materialized, and more!
 models:
-  airbyte:
-    +materialized: table
+  +materialized: table
+
+vars:
+  dbt_utils_dispatch_list: ['airbyte_utils']

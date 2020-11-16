@@ -6,28 +6,9 @@
 #}
 
 {% macro concat(fields) -%}
-  {{ adapter.dispatch('concat')(fields) }}
+  {{ adapter.dispatch('concat', packages = ['airbyte_utils', 'dbt_utils'])(fields) }}
 {%- endmacro %}
-
-{% macro default__concat(fields) -%}
-    concat({{ fields|join(', ') }})
-{%- endmacro %}
-
-{% macro alternative_concat(fields) %}
-    {{ fields|join(' || ') }}
-{% endmacro %}
-
 
 {% macro postgres__concat(fields) %}
-    {{ dbt_utils.alternative_concat(fields) }}
-{% endmacro %}
-
-
-{% macro redshift__concat(fields) %}
-    {{ dbt_utils.alternative_concat(fields) }}
-{% endmacro %}
-
-
-{% macro snowflake__concat(fields) %}
     {{ dbt_utils.alternative_concat(fields) }}
 {% endmacro %}
