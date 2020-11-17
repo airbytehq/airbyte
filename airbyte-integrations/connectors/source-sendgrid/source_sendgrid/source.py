@@ -75,8 +75,8 @@ class SourceSendgrid(Source):
 
     def _read_record(self, client: Client, stream: str):
         entity_map = {
-            "sg_lists": client.lists,
-            "sg_campaigns": client.campaigns,
+            "lists": client.lists,
+            "campaigns": client.campaigns,
         }
 
         try:

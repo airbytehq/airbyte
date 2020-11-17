@@ -31,7 +31,7 @@ from sendgrid import SendGridAPIClient
 
 
 class Client:
-    ENTITIES = ["sg_campaigns", "sg_lists"]
+    ENTITIES = ["campaigns", "lists"]
 
     def __init__(self, apikey: str):
         self._client = SendGridAPIClient(api_key=apikey)
