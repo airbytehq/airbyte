@@ -12,12 +12,18 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "::set-output name=dir::$(pip cache dir)"
+
       - name: Cache
         uses: actions/cache@v2
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
+            ${{ steps.pip-cache.outputs.dir }}
             ~/.npm
             **/node_modules
             **/.venv
