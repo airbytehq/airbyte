@@ -136,7 +136,8 @@ definitions:
           default_cursor_field:
             description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
             type: array
-            items: string
+            items:
+              type: string
       configuration:
         description: Contains information about how the data should be synced. this section is configured by the end-user and is never touched by the source.
         required:
@@ -149,7 +150,8 @@ definitions:
           cursor_field:
             description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
             type: array
-            items: string
+            items:
+              type: string
   SyncMode:
     type: string
     enum: [full_refresh, incremental]
