@@ -16,11 +16,12 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/.gradle
+            ~/.gradle/caches
+            ~/.gradle/wrapper
             ~/.npm
             **/node_modules
             **/.venv
-          key: gradle-${{ hashFiles('**/*.gradle') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
 
       - uses: actions/setup-java@v1
         with:
