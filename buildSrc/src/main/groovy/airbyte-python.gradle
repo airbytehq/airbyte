@@ -18,6 +18,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             minPythonVersion = '3.7'
             scope = 'VIRTUALENV'
             installVirtualenv = true
+            showInstalledVersions = false
             pip 'flake8:3.8.4'
             pip 'black:20.8b1'
             pip 'mypy:0.790'

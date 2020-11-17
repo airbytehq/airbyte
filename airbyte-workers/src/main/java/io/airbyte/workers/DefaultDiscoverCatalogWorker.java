@@ -25,6 +25,7 @@
 package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Multimap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -33,11 +34,13 @@ import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -87,7 +90,21 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       int exitCode = process.exitValue();
       if (exitCode == 0) {
         if (catalog.isEmpty()) {
-          LOGGER.error("integration failed to output a catalog struct.");
+          LOGGER.error("Integration failed to output a catalog struct.");
+          return new OutputAndStatus<>(JobStatus.FAILED);
+        }
+
+        List<String> invalidStreamNames = CatalogHelpers.getInvalidStreamNames(catalog.get());
+
+        if (!invalidStreamNames.isEmpty()) {
+          invalidStreamNames.forEach(streamName -> LOGGER.error("Cannot sync invalid stream name: " + streamName));
+          return new OutputAndStatus<>(JobStatus.FAILED);
+        }
+
+        Multimap<String, String> streamNameToInvalidFieldNames = CatalogHelpers.getInvalidFieldNames(catalog.get());
+        if (!streamNameToInvalidFieldNames.isEmpty()) {
+          streamNameToInvalidFieldNames
+              .forEach((streamName, fieldNames) -> LOGGER.error("Cannot sync invalid field names for stream " + streamName + ": " + fieldNames));
           return new OutputAndStatus<>(JobStatus.FAILED);
         }
 
