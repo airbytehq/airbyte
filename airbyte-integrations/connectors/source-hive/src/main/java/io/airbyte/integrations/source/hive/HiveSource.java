@@ -39,7 +39,7 @@ public class HiveSource extends AbstractJdbcSource implements Source {
   private static final Logger LOGGER = LoggerFactory.getLogger(HiveSource.class);
 
   public HiveSource() {
-    super("org.apache.hive.jdbc.HiveDriver", SQLDialect.Hive);
+    super("org.apache.hive.jdbc.HiveDriver", SQLDialect.DEFAULT);
   }
 
   @Override
