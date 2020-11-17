@@ -141,7 +141,7 @@ definitions:
       streams:
         type: array
         items:
-          "$ref": "#/definitions/AirbyteStream"
+          "$ref": "#/definitions/ConfiguredAirbyteStream"
   ConfiguredAirbyteStream:
     type: object
     additionalProperties: false
