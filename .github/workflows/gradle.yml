@@ -30,8 +30,8 @@ jobs:
             ~/.npm
             /var/lib/docker
           key: repo-cache-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
-          restore-keys:
-            - repo-cache-${{ runner.os }}-
+          restore-keys: |
+            repo-cache-${{ runner.os }}-
 
       - name: Build Caching
         uses: actions/cache@v2
