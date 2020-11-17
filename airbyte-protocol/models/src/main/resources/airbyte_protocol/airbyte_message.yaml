@@ -113,42 +113,40 @@ definitions:
     additionalProperties: false
     required:
       - name
-      - json_schema
+      - info
     properties:
       name:
         type: string
         description: Stream's name.
-      discovered:
+      info:
         description: Contains information about the data in the source. This field is set by the source and should be read-only thereafter.
         type: object
+        required:
+          - json_schema
+          - supported_sync_modes
         properties:
           json_schema:
             description: Stream schema using Json Schema specs.
             type: object
             existingJavaType: com.fasterxml.jackson.databind.JsonNode
-          metadata:
-            description: Additional information about the data in the source, including information about what Airbyte features it supports.
-            type: object
-            properties:
-              supported_sync_modes:
-                type: array
-                items:
-                  "$ref": "#/definitions/SyncMode"
-                # backwards compatibility: if not present, assume full_refresh only.
-                default:
-                  [full_refresh]
-              default_comparable:
-                description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
-                type: array
-                items: string
+          supported_sync_modes:
+            type: array
+            items:
+              "$ref": "#/definitions/SyncMode"
+          default_cursor_field:
+            description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
+            type: array
+            items: string
       configuration:
         description: Contains information about how the data should be synced. this section is configured by the end-user and is never touched by the source.
+        required:
+          - sync_mode
         properties:
           # backwards compatibility: if not present, assume full_refresh.
           sync_mode:
             "$ref": "#/definitions/SyncMode"
             default: full_refresh
-          comparable:
+          cursor_field:
             description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
             type: array
             items: string
