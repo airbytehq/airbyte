@@ -12,10 +12,15 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
+      - name: Get docker info
+        id: docker-info
+        run: |
+          echo "::set-output name=dir::$(docker info)"
+
       - name: Get pip cache dir
         id: pip-cache
         run: |
-          echo "::set-output name=dir::$(pip cache dir)"
+          echo "::set-output name=dir::$(python -m pip cache dir)"
 
       - name: Cache
         uses: actions/cache@v2
@@ -28,7 +33,7 @@ jobs:
             **/node_modules
             **/.venv
           key: ${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
-
+      # todo: make a separate cache step for .npm and the pip cache that uses restore key prefixes
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
