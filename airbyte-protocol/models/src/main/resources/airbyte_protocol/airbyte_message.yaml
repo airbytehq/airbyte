@@ -122,6 +122,20 @@ definitions:
         description: Stream schema using Json Schema specs.
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      supported_sync_modes:
+        type: array
+        items:
+          "$ref": "#/definitions/SyncMode"
+      default_cursor_field:
+        description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
+        type: array
+        items:
+          type: string
+  SyncMode:
+    type: string
+    enum:
+      - full_refresh
+      - incremental
   ConnectorSpecification:
     description: Specification of a connector (source/destination)
     type: object
