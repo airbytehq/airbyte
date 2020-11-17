@@ -2,14 +2,14 @@
   "documentationUrl": "https://docsurl.com",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Mailchimp Spec",
+    "title": "Sendgrid Spec",
     "type": "object",
     "required": ["apikey"],
     "additionalProperties": false,
     "properties": {
       "apikey": {
         "type": "string",
-        "description": "API Key, use <a href\"https://us2.admin.mailchimp.com/account/api/\">admin</a> to generate this key."
+        "description": "API Key, use <a href\"https://app.sendgrid.com/settings/api_keys/\">admin</a> to generate this key."
       }
     }
   }

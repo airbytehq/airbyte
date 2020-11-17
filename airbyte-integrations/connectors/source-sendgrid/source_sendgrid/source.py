@@ -27,13 +27,14 @@ from typing import Generator
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, Status, Type
 from base_python import AirbyteLogger, ConfigContainer, Source
+from python_http_client import ForbiddenError
 
 from .client import Client
 
 
 class SourceSendgrid(Source):
     """
-    Mailchimp API Reference: https://mailchimp.com/developer/api/
+    Sendgrid API Reference: https://sendgrid.com/docs/API_Reference/index.html
     """
 
     def __init__(self):
@@ -43,7 +44,7 @@ class SourceSendgrid(Source):
         client = self._client(config_container)
         alive, error = client.health_check()
         if not alive:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{error.title}: {error.detail}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{error}")
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
@@ -59,12 +60,12 @@ class SourceSendgrid(Source):
 
         catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
 
-        logger.info("Starting syncing mailchimp")
+        logger.info("Starting syncing sendgrid")
         for stream in catalog.streams:
             for record in self._read_record(client=client, stream=stream.name):
                 yield AirbyteMessage(type=Type.RECORD, record=record)
 
-        logger.info("Finished syncing mailchimp")
+        logger.info("Finished syncing sendgrid")
 
     def _client(self, config_container: ConfigContainer):
         config = config_container.rendered_config
@@ -78,6 +79,9 @@ class SourceSendgrid(Source):
             "sg_campaigns": client.campaigns,
         }
 
-        for record in entity_map[stream]():
-            now = int(datetime.now().timestamp()) * 1000
-            yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)
+        try:
+            for record in entity_map[stream]():
+                now = int(datetime.now().timestamp()) * 1000
+                yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)
+        except ForbiddenError:
+            return []

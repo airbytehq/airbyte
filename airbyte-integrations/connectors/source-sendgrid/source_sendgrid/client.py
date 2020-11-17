@@ -40,7 +40,7 @@ class Client:
             self._client.client.scopes.get()
             return True, None
         except (UnauthorizedError, ForbiddenError) as err:
-            return False, err
+            return False, err.args[0]
 
     def get_streams(self):
         streams = []
@@ -49,15 +49,7 @@ class Client:
         return streams
 
     def lists(self):
-        try:
-            sg_lists = json.loads(self._client.client.marketing.lists.get().body)["result"]
-        except ForbiddenError:
-            sg_lists = []
-        return sg_lists
+        return json.loads(self._client.client.marketing.lists.get().body)["result"]
 
     def campaigns(self):
-        try:
-            sg_campaigns = json.loads(self._client.client.marketing.campaigns.get().body)["result"]
-        except ForbiddenError:
-            sg_campaigns = []
-        return sg_campaigns
+        return json.loads(self._client.client.marketing.campaigns.get().body)["result"]
