@@ -12,21 +12,15 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      - name: Cache java deps
+      - name: Cache
         uses: actions/cache@v2
         with:
-          path: ~/.gradle
-          key: gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: |
-            gradle-
-
-      - name: Cache node deps
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            node-
+          path: |
+            ~/.gradle
+            ~/.npm
+            **/node_modules
+            **/.venv
+          key: gradle-${{ hashFiles('**/*.gradle') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
 
       - uses: actions/setup-java@v1
         with:
