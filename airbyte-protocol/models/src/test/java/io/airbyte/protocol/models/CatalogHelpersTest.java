@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
 import java.net.URL;
@@ -103,14 +104,9 @@ class CatalogHelpersTest {
     assertIterableEquals(Collections.singleton(invalidStreamName), invalidStreamNames);
   }
 
-  private String getResource(String resourceName) throws IOException {
-    URL resourceUrl = getClass().getClassLoader().getResource(resourceName);
-    return Files.readString(Path.of(resourceUrl.getPath()));
-  }
-
   @Test
   void testGetFieldNames() throws IOException {
-    JsonNode node = Jsons.deserialize(getResource("fixtures/valid_schema.json"));
+    JsonNode node = Jsons.deserialize(MoreResources.readResource("valid_schema.json"));
     Set<String> actualFieldNames = CatalogHelpers.getAllFieldNames(node);
     Set<String> expectedFieldNames = ImmutableSet.of("type", "properties", "format", "date", "CAD", "HKD", "ISK", "PHP", "DKK", "HUF", "CZK");
 
@@ -122,13 +118,13 @@ class CatalogHelpersTest {
     final String validStreamName = "Valid_Stream";
     final AirbyteStream validStream = new AirbyteStream();
     validStream.setName(validStreamName);
-    JsonNode validSchema = Jsons.deserialize(getResource("fixtures/valid_schema.json"));
+    JsonNode validSchema = Jsons.deserialize(MoreResources.readResource("valid_schema.json"));
     validStream.setJsonSchema(validSchema);
 
     final String invalidStreamName = "invalid stream";
     AirbyteStream invalidStream = new AirbyteStream();
     invalidStream.setName(invalidStreamName);
-    JsonNode invalidSchema = Jsons.deserialize(getResource("fixtures/invalid_schema.json"));
+    JsonNode invalidSchema = Jsons.deserialize(MoreResources.readResource("invalid_schema.json"));
     invalidStream.setJsonSchema(invalidSchema);
 
     AirbyteCatalog catalog = new AirbyteCatalog();
