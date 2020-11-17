@@ -1,40 +1,48 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_message.yaml
-title: AirbyteMessage
-description: Airbyte message
+title: AirbyteProtocol
 type: object
-additionalProperties: false
-required:
-  - type
+description: AirbyteProtocol structs
 properties:
-  type:
-    description: "Message type"
-    type: string
-    enum:
-      - RECORD
-      - STATE
-      - LOG
-      - SPEC
-      - CONNECTION_STATUS
-      - CATALOG
-  log:
-    description: "log message: any kind of logging you want the platform to know about."
-    "$ref": "#/definitions/AirbyteLogMessage"
-  spec:
-    "$ref": "#/definitions/ConnectorSpecification"
-  connectionStatus:
-    "$ref": "#/definitions/AirbyteConnectionStatus"
-  catalog:
-    description: "log message: any kind of logging you want the platform to know about."
-    "$ref": "#/definitions/AirbyteCatalog"
-  record:
-    description: "record message: the record"
-    "$ref": "#/definitions/AirbyteRecordMessage"
-  state:
-    description: "schema message: the state. Must be the last message produced. The platform uses this information"
-    "$ref": "#/definitions/AirbyteStateMessage"
+  airbyte_message:
+    "$ref": "#/definitions/AirbyteMessage"
+  configured_airbyte_catalog:
+    "$ref": "#/definitions/ConfiguredAirbyteCatalog"
 definitions:
+  AirbyteMessage:
+    type: object
+    additionalProperties: false
+    required:
+      - type
+    properties:
+      type:
+        description: "Message type"
+        type: string
+        enum:
+          - RECORD
+          - STATE
+          - LOG
+          - SPEC
+          - CONNECTION_STATUS
+          - CATALOG
+      log:
+        description: "log message: any kind of logging you want the platform to know about."
+        "$ref": "#/definitions/AirbyteLogMessage"
+      spec:
+        "$ref": "#/definitions/ConnectorSpecification"
+      # todo (cgardens) - prefer snake case for field names.
+      connectionStatus:
+        "$ref": "#/definitions/AirbyteConnectionStatus"
+      catalog:
+        description: "log message: any kind of logging you want the platform to know about."
+        "$ref": "#/definitions/AirbyteCatalog"
+      record:
+        description: "record message: the record"
+        "$ref": "#/definitions/AirbyteRecordMessage"
+      state:
+        description: "schema message: the state. Must be the last message produced. The platform uses this information"
+        "$ref": "#/definitions/AirbyteStateMessage"
   AirbyteRecordMessage:
     type: object
     additionalProperties: false
@@ -176,12 +184,15 @@ definitions:
       - connectionSpecification
     additionalProperties: false
     properties:
+      # todo (cgardens) - prefer snake case for field names.
       documentationUrl:
         type: string
         format: uri
+      # todo (cgardens) - prefer snake case for field names.
       changelogUrl:
         type: string
         format: uri
+      # todo (cgardens) - prefer snake case for field names.
       connectionSpecification:
         description: ConnectorDefinition specific blob. Must be a valid JSON string.
         type: object

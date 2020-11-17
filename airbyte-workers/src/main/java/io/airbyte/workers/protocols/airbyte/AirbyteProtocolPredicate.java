@@ -36,7 +36,7 @@ public class AirbyteProtocolPredicate implements Predicate<JsonNode> {
 
   public AirbyteProtocolPredicate() {
     jsonSchemaValidator = new JsonSchemaValidator();
-    schema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.MESSAGE.getFile());
+    schema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.PROTOCOL.getFile());
   }
 
   @Override
