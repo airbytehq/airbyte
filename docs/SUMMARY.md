@@ -18,6 +18,7 @@
     * [Google Analytics](integrations/sources/googleanalytics.md)
     * [Google Sheets](integrations/sources/google-sheets.md)
     * [Hubspot](integrations/sources/hubspot.md)
+    * [MailChimp](integrations/sources/mailchimp.md)
     * [Marketo](integrations/sources/marketo.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Microsoft SQL Server (MSSQL)](integrations/sources/mssql.md)
