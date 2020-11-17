@@ -84,4 +84,4 @@ class SourceSendgrid(Source):
                 now = int(datetime.now().timestamp()) * 1000
                 yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)
         except ForbiddenError:
-            return []
+            return

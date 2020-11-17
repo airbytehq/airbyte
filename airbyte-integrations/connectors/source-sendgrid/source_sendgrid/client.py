@@ -23,15 +23,16 @@ SOFTWARE.
 """
 
 import json
+import pkgutil
 
 from airbyte_protocol import AirbyteStream
 from python_http_client import ForbiddenError, UnauthorizedError
 from sendgrid import SendGridAPIClient
 
-from .schemas import SENDGRID_SCHEMAS
-
 
 class Client:
+    ENTITIES = ["sg_campaigns", "sg_lists"]
+
     def __init__(self, apikey: str):
         self._client = SendGridAPIClient(api_key=apikey)
 
@@ -44,8 +45,9 @@ class Client:
 
     def get_streams(self):
         streams = []
-        for schema in SENDGRID_SCHEMAS:
-            streams.append(AirbyteStream(name=schema.name, json_schema=schema.json_schema))
+        for schema in self.ENTITIES:
+            raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{schema}.json"))
+            streams.append(AirbyteStream(name=schema, json_schema=raw_schema))
         return streams
 
     def lists(self):

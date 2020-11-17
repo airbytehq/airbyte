@@ -33,10 +33,9 @@ setup(
     install_requires=[
         "airbyte-protocol",
         "base-python",
-        "pydantic==1.6.1",
         "sendgrid==6.4.7",
     ],
-    package_data={"": ["*.json"]},
+    package_data={"": ["*.json", "schemas/*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={
