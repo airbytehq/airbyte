@@ -30,10 +30,15 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import me.andrz.jackson.JsonContext;
 import me.andrz.jackson.JsonReferenceException;
 import me.andrz.jackson.JsonReferenceProcessor;
 
@@ -72,13 +77,38 @@ public class JsonSchemaValidator {
         objectJson.toPrettyString()));
   }
 
+  private static JsonReferenceProcessor getProcessor() {
+    // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
+    // this.
+    final JsonReferenceProcessor jsonReferenceProcessor = new JsonReferenceProcessor();
+    jsonReferenceProcessor.setMaxDepth(-1); // no max.
+
+    return jsonReferenceProcessor;
+  }
+
+  /**
+   * Get JsonNode for an object defined as the main object in a JsonSchema file. Able to create the JsonNode even if the the JsonSchema refers to objects in other files.
+   * @param schemaFile - the schema file
+   * @return schema object processed from across all dependency files.
+   */
   public static JsonNode getSchema(final File schemaFile) {
     try {
-      // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
-      // this.
-      final JsonReferenceProcessor jsonReferenceProcessor = new JsonReferenceProcessor();
-      jsonReferenceProcessor.setMaxDepth(-1); // no max.
-      return jsonReferenceProcessor.process(schemaFile);
+      return getProcessor().process(schemaFile);
+    } catch (IOException | JsonReferenceException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Get JsonNode for an object defined in the "definitions" section of a JsonSchema file. Able to create the JsonNode even if the the JsonSchema refers to objects in other files.
+   * @param schemaFile - the schema file
+   * @param definitionStructName - get the schema from a struct defined in the "definitions" section of a JsonSchema file (instead of the main object in that file).
+   * @return schema object processed from across all dependency files.
+   */
+  public static JsonNode getSchema(final File schemaFile, String definitionStructName) {
+    try {
+      final JsonContext jsonContext = new JsonContext(schemaFile);
+      return getProcessor().process(jsonContext, jsonContext.getDocument().get("definitions").get(definitionStructName));
     } catch (IOException | JsonReferenceException e) {
       throw new RuntimeException(e);
     }
