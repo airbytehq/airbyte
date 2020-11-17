@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
@@ -49,7 +50,7 @@ class DefaultNormalizationRunnerTest {
   private ProcessBuilderFactory pbf;
   private Process process;
   private JsonNode config;
-  private AirbyteCatalog catalog;
+  private ConfiguredAirbyteCatalog catalog;
 
   @BeforeEach
   void setup() throws IOException, WorkerException {
@@ -59,7 +60,7 @@ class DefaultNormalizationRunnerTest {
     process = mock(Process.class);
 
     config = mock(JsonNode.class);
-    catalog = mock(AirbyteCatalog.class);
+    catalog = mock(ConfiguredAirbyteCatalog.class);
 
     when(pbf.create(jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, "run",
         "--integration-type", "bigquery",

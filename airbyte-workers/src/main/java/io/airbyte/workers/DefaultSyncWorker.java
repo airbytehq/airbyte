@@ -84,7 +84,6 @@ public class DefaultSyncWorker implements SyncWorker {
     final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
 
     try (destination; source) {
-
       destination.start(targetConfig, jobRoot);
       source.start(tapConfig, jobRoot);
 
