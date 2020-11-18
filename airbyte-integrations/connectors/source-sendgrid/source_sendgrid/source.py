@@ -62,6 +62,8 @@ class SourceSendgrid(Source):
 
         logger.info("Starting syncing sendgrid")
         for stream in catalog.streams:
+            if stream.name not in client.ENTITY_MAP.keys():
+                logger.warn(f"Stream '{stream}' not found in the recognized entities")
             for record in self._read_record(client=client, stream=stream.name):
                 yield AirbyteMessage(type=Type.RECORD, record=record)
 
@@ -74,13 +76,8 @@ class SourceSendgrid(Source):
         return client
 
     def _read_record(self, client: Client, stream: str):
-        entity_map = {
-            "lists": client.lists,
-            "campaigns": client.campaigns,
-        }
-
         try:
-            for record in entity_map[stream]():
+            for record in client.ENTITY_MAP[stream]():
                 now = int(datetime.now().timestamp()) * 1000
                 yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)
         except ForbiddenError:

@@ -9,7 +9,7 @@
     "properties": {
       "apikey": {
         "type": "string",
-        "description": "API Key, use <a href\"https://app.sendgrid.com/settings/api_keys/\">admin</a> to generate this key."
+        "description": "API Key, use <a href=\"https://app.sendgrid.com/settings/api_keys/\">admin</a> to generate this key."
       }
     }
   }

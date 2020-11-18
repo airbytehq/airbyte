@@ -31,10 +31,14 @@ from sendgrid import SendGridAPIClient
 
 
 class Client:
-    ENTITIES = ["campaigns", "lists"]
-
     def __init__(self, apikey: str):
         self._client = SendGridAPIClient(api_key=apikey)
+        self.ENTITY_MAP = {
+            "campaigns": self.campaigns,
+            "lists": self.lists,
+            "contacts": self.contacts,
+            "stats_automations": self.stats_automations,
+        }
 
     def health_check(self):
         try:
@@ -45,7 +49,7 @@ class Client:
 
     def get_streams(self):
         streams = []
-        for schema in self.ENTITIES:
+        for schema, method in self.ENTITY_MAP.items():
             raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{schema}.json"))
             streams.append(AirbyteStream(name=schema, json_schema=raw_schema))
         return streams
@@ -55,3 +59,10 @@ class Client:
 
     def campaigns(self):
         return json.loads(self._client.client.marketing.campaigns.get().body)["result"]
+
+    def contacts(self):
+        return json.loads(self._client.client.marketing.contacts.get().body)["result"]
+
+    def stats_automations(self):
+        stats_data = json.loads(self._client.client.marketing.stats.automations.get().body)["results"]
+        return stats_data if stats_data else []
