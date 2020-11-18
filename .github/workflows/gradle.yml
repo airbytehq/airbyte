@@ -12,6 +12,9 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
+      - name: Check images exist
+        run: ./tools/bin/check_images_exist.sh
+
       - name: Cache java deps
         uses: actions/cache@v2
         with:
@@ -64,9 +67,6 @@ jobs:
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
-
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh
 
       - name: Check documentation
         if: success() && github.ref == 'refs/heads/master'

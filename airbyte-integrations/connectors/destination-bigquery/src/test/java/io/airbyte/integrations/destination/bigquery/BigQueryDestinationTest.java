@@ -45,14 +45,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.NamingHelper;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
@@ -100,11 +100,11 @@ class BigQueryDestinationTest {
   private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME, io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
+  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+      CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
           io.airbyte.protocol.models.Field
               .of("id", JsonSchemaPrimitive.STRING)),
-      CatalogHelpers.createAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
+      CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
   private JsonNode config;
 
@@ -228,7 +228,7 @@ class BigQueryDestinationTest {
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
 
-    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(AirbyteStream::getName).collect(Collectors.toList()));
+    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getName).collect(Collectors.toList()));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -244,8 +244,8 @@ class BigQueryDestinationTest {
     consumer.accept(MESSAGE_USERS2);
     consumer.close();
 
-    final List<String> tableNames = CATALOG.getStreams().stream().map(AirbyteStream::getName).collect(toList());
-    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(AirbyteStream::getName).collect(Collectors.toList()));
+    final List<String> tableNames = CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getName).collect(toList());
+    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getName).collect(Collectors.toList()));
     // assert that no tables were created.
     assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tableNames.stream().anyMatch(tableName::startsWith)));
   }

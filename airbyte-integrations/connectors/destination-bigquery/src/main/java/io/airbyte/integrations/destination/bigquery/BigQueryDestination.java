@@ -56,11 +56,11 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.NamingHelper;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -186,13 +186,13 @@ public class BigQueryDestination implements Destination {
    * @return consumer that writes singer messages to the database.
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) {
+  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     final BigQuery bigquery = getBigQuery(config);
     Map<String, WriteConfig> writeConfigs = new HashMap<>();
     final String datasetId = config.get(CONFIG_DATASET_ID).asText();
 
     // create tmp tables if not exist
-    for (final AirbyteStream stream : catalog.getStreams()) {
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String tableName = NamingHelper.getRawTableName(stream.getName());
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
 
@@ -251,9 +251,9 @@ public class BigQueryDestination implements Destination {
 
     private final BigQuery bigquery;
     private final Map<String, WriteConfig> writeConfigs;
-    private final AirbyteCatalog catalog;
+    private final ConfiguredAirbyteCatalog catalog;
 
-    public RecordConsumer(BigQuery bigquery, Map<String, WriteConfig> writeConfigs, AirbyteCatalog catalog) {
+    public RecordConsumer(BigQuery bigquery, Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
       this.bigquery = bigquery;
       this.writeConfigs = writeConfigs;
       this.catalog = catalog;
