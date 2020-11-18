@@ -27,7 +27,8 @@ else
     -f "$DOCKERFILE" . \
     -t "$TAG" \
     --iidfile "$ID_FILE" \
-    --cache-from localhost:5000/"$TAG"
+    --cache-from localhost:5000/"$TAG" \
+    --build-arg BUILDKIT_INLINE_CACHE=1
   docker tag "$TAG" localhost:5000/"$TAG"
   docker push localhost:5000/"$TAG"
 fi
