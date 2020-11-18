@@ -29,7 +29,8 @@
       },
       "password": {
         "description": "Password associated with the username.",
-        "type": "string"
+        "type": "string",
+        "airbyte_sensitive": true
       }
     }
   }

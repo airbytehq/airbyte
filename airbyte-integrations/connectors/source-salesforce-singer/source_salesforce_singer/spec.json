@@ -20,11 +20,13 @@
       },
       "client_secret": {
         "description": "The Consumer Secret that can be found when viewing your app in Salesforce",
-        "type": "string"
+        "type": "string",
+        "airbyte_sensitive": true
       },
       "refresh_token": {
         "description": "Salesforce Refresh Token used for Airbyte to access your Salesforce account. If you don't know what this is, follow this <a href=\"https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b\">guide</a> to retrieve it.",
-        "type": "string"
+        "type": "string",
+        "airbyte_sensitive": true
       },
       "start_date": {
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",

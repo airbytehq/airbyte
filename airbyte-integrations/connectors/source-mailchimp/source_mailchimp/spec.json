@@ -13,7 +13,8 @@
       },
       "apikey": {
         "type": "string",
-        "description": "API Key, use <a href\"https://us2.admin.mailchimp.com/account/api/\">admin</a> to generate this key."
+        "description": "API Key, use <a href\"https://us2.admin.mailchimp.com/account/api/\">admin</a> to generate this key.",
+        "airbyte_sensitive": true
       }
     }
   }
