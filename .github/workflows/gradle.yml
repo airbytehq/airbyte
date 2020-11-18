@@ -12,16 +12,6 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      - name: Get docker info
-        id: docker-info
-        run: |
-          echo "::set-output name=dir::$(docker info)"
-
-      - name: Get pip cache dir
-        id: pip-cache
-        run: |
-          echo "::set-output name=dir::$(python -m pip cache dir)"
-
       - name: Docker Caching
         uses: actions/cache@v2
         with:
@@ -35,7 +25,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ${{ steps.pip-cache.outputs.dir }}
+            ~/.cache/pip
           key: pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             pip-${{ runner.os }}-
