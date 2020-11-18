@@ -16,7 +16,7 @@ jobs:
         run: ls -alh ~/
 
       - name: List3
-        run: ls -alh /var/lib/docker
+        run: ls -alh ~/.docker
 
       - name: Docker Caching
         uses: actions/cache@v2
