@@ -162,7 +162,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
         }
       ```
 
-**Note:** Airbyte only supports stream and field names which are alphanumeric or contain underscores, as identified by the regex `[a-zA-Z0-9_]*"`. Syncs may fail if they attempt to sync streams or fields whose names contain disallowed characters.
+**Note:** Airbyte only supports stream and field names that contain only Unicode alphabet characters, numbers, or underscores. The discovery process will fail if any stream names or field names are invalid. Syncs will filter out any stream that has an invalid name or any invalid fields.
 
 #### Read
 

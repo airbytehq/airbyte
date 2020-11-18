@@ -137,7 +137,7 @@ public class WorkerRunFactory {
         jobRoot,
         syncInput,
         new JobOutputSyncWorker(
-            new DefaultSyncWorker<>(
+            new DefaultSyncWorker(
                 new DefaultAirbyteSource(sourceLauncher),
                 new DefaultAirbyteDestination(destinationLauncher),
                 new AirbyteMessageTracker(),
