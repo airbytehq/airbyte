@@ -12,6 +12,15 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
+      - name: List
+        run: ls -alh ~/
+
+      - name: List2
+        run: ls -alh ~/.cache/pip
+
+      - name: List3
+        run: ls -alh /var/lib/docker
+
       - name: Docker Caching
         uses: actions/cache@v2
         with:
