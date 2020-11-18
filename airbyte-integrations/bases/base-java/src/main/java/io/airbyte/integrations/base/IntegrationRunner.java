@@ -30,9 +30,9 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
@@ -99,7 +99,7 @@ public class IntegrationRunner {
       // envelope) while the other commands return what goes inside it.
       case READ -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        final AirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), AirbyteCatalog.class);
+        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         // todo (cgardens) - should we should only send the contents of the state field to the integration,
         // not the whole struct. this runner obfuscates everything but the contents.
         final Optional<State> stateOptional = parsed.getStatePath().map(path -> parseConfig(path, State.class));
@@ -110,7 +110,7 @@ public class IntegrationRunner {
       // destination only
       case WRITE -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        final AirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), AirbyteCatalog.class);
+        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, catalog);
         consumeWriteStream(consumer);
       }

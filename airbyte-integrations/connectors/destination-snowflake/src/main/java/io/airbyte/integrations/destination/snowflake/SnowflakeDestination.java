@@ -31,11 +31,11 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.NamingHelper;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.queue.BigQueue;
 import java.io.IOException;
@@ -99,14 +99,14 @@ public class SnowflakeDestination implements Destination {
    * @throws Exception - anything could happen!
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws Exception {
+  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     // connect to snowflake
     final Supplier<Connection> connectionFactory = SnowflakeDatabase.getConnectionFactory(config);
     Map<String, SnowflakeWriteContext> writeBuffers = new HashMap<>();
 
     // create temporary tables if they do not exist
     // we don't use temporary/transient since we want to control the lifecycle
-    for (final AirbyteStream stream : catalog.getStreams()) {
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String tableName = NamingHelper.getRawTableName(stream.getName());
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
 

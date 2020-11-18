@@ -41,12 +41,12 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.NamingHelper;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.queue.BigQueue;
 import java.io.IOException;
@@ -126,13 +126,13 @@ public class PostgresDestination implements Destination {
    * @throws Exception - anything could happen!
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws Exception {
+  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     // connect to db.
     final Database database = getDatabase(config);
     Map<String, WriteConfig> writeBuffers = new HashMap<>();
 
     // create tmp tables if not exist
-    for (final AirbyteStream stream : catalog.getStreams()) {
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String tableName = NamingHelper.getRawTableName(stream.getName());
       final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
       database.query(ctx -> ctx.execute(String.format(
@@ -164,9 +164,9 @@ public class PostgresDestination implements Destination {
     private final ScheduledExecutorService writerPool;
     private final Database database;
     private final Map<String, WriteConfig> writeConfigs;
-    private final AirbyteCatalog catalog;
+    private final ConfiguredAirbyteCatalog catalog;
 
-    public RecordConsumer(Database database, Map<String, WriteConfig> writeConfigs, AirbyteCatalog catalog) {
+    public RecordConsumer(Database database, Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
       this.database = database;
       this.writeConfigs = writeConfigs;
       this.catalog = catalog;

@@ -119,7 +119,7 @@ class WorkerRunFactoryTest {
     StandardSyncInput expectedInput = new StandardSyncInput()
         .withSourceConnection(job.getConfig().getSync().getSourceConnection())
         .withDestinationConnection(job.getConfig().getSync().getDestinationConnection())
-        .withCatalog(AirbyteProtocolConverters.toCatalog(job.getConfig().getSync().getStandardSync().getSchema()))
+        .withCatalog(AirbyteProtocolConverters.toConfiguredCatalog(job.getConfig().getSync().getStandardSync().getSchema()))
         .withConnectionId(job.getConfig().getSync().getStandardSync().getConnectionId())
         .withSyncMode(job.getConfig().getSync().getStandardSync().getSyncMode())
         .withState(job.getConfig().getSync().getState());
