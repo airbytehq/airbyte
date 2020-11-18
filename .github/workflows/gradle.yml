@@ -22,16 +22,32 @@ jobs:
         run: |
           echo "::set-output name=dir::$(python -m pip cache dir)"
 
-      - name: Repository Caching
+      - name: Docker Caching
+        uses: actions/cache@v2
+        with:
+          path: |
+            /var/lib/docker
+          key: docker-${{ runner.os }}-${{ hashFiles('**') }}
+          restore-keys: |
+            repo-cache-${{ runner.os }}-
+
+      - name: Pip Caching
         uses: actions/cache@v2
         with:
           path: |
             ${{ steps.pip-cache.outputs.dir }}
-            ~/.npm
-            /var/lib/docker
-          key: repo-cache-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+          key: pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            repo-cache-${{ runner.os }}-
+            pip-${{ runner.os }}-
+
+      - name: Npm Caching
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
 
       - name: Build Caching
         uses: actions/cache@v2
