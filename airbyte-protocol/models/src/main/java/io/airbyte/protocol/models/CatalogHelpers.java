@@ -68,6 +68,13 @@ public class CatalogHelpers {
     return new ConfiguredAirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
+  /**
+   * Convert a Catalog into a ConfiguredCatalog. This applies minimum default to the Catalog to make
+   * it a valid ConfiguredCatalog.
+   *
+   * @param catalog - Catalog to be converted.
+   * @return - ConfiguredCatalog based of off the input catalog.
+   */
   public static ConfiguredAirbyteCatalog toDefaultConfiguredCatalog(AirbyteCatalog catalog) {
     return new ConfiguredAirbyteCatalog()
         .withStreams(catalog.getStreams()
