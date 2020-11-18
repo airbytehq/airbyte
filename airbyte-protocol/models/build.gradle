@@ -5,7 +5,8 @@ plugins {
 }
 
 dependencies {
-    implementation group: 'javax.validation', name: 'validation-api', version: '1.1.0.Final'
+    implementation 'javax.validation:validation-api:1.1.0.Final'
+    implementation 'org.apache.commons:commons-lang3:3.11'
 }
 
 jsonSchema2Pojo {
