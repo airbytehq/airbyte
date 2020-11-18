@@ -21,13 +21,13 @@ if [[ -z "$CI" ]]; then
     -t "$TAG" \
     --iidfile "$ID_FILE"
 else
-  # run using buildx on CI so we can cache layers to a file location
-  docker buildx build \
+  docker pull localhost:5000/"$TAG" || true
+  docker build \
     -f "$DOCKERFILE" . \
     -t "$TAG" \
     --iidfile "$ID_FILE" \
-    --cache-to "type=local,dest=/tmp/.airbyte-docker-cache" \
-    --cache-from "type=local,src=/tmp/.airbyte-docker-cache"
+    --cache-from localhost:5000/"$TAG"
+  docker push localhost:5000/"$TAG"
 fi
 
 

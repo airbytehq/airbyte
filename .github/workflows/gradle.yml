@@ -16,10 +16,11 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            /tmp/.airbyte-docker-cache
-          key: docker-${{ runner.os }}-${{ github.sha }}
+            /tmp/docker-registry
+          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-${{ github.sha }}
           restore-keys: |
-            repo-cache-${{ runner.os }}-
+            docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-
+            docker-${{ runner.os }}-
 
       - name: Pip Caching
         uses: actions/cache@v2
@@ -61,9 +62,8 @@ jobs:
         with:
           python-version: '3.7'
 
-      - uses: docker/setup-buildx-action@v1
-        with:
-          driver: 'docker'
+      - name:
+        run: docker run -d -p 5000:5000 --restart=always --name registry -v /tmp/docker-registry:/var/lib/registry registry:2 && npx wait-on tcp:5000
 
       - name: Build
         run: ./gradlew --no-daemon :airbyte-integrations:connectors:destination-bigquery:build --scan
