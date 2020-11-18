@@ -63,7 +63,7 @@ jobs:
 
       - uses: docker/setup-buildx-action@v1
         with:
-          driver-opts: 'docker'
+          driver: 'docker'
 
       - name: Build
         run: ./gradlew --no-daemon :airbyte-integrations:connectors:destination-bigquery:build --scan
