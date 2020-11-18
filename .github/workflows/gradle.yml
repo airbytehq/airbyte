@@ -17,7 +17,7 @@ jobs:
         with:
           path: |
             /var/lib/docker
-          key: docker-${{ runner.os }}-${{ GITHUB_SHA }}
+          key: docker-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             repo-cache-${{ runner.os }}-
 
