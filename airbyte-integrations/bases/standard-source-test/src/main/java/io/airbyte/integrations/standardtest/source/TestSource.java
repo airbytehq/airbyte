@@ -43,6 +43,8 @@ import io.airbyte.config.StandardTapConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
@@ -207,7 +209,7 @@ public abstract class TestSource {
    */
   @Test
   public void testRead() throws Exception {
-    final List<AirbyteMessage> allMessages = runRead(getCatalog());
+    final List<AirbyteMessage> allMessages = runRead(CatalogHelpers.toDefaultConfiguredCatalog(getCatalog()));
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
     // the worker validates the message formats, so we just validate the message content
     // We don't need to validate message format as long as we use the worker, which we will not want to
@@ -228,10 +230,12 @@ public abstract class TestSource {
    */
   @Test
   public void testSecondRead() throws Exception {
-    final List<AirbyteMessage> recordMessagesFirstRun =
-        runRead(getCatalog()).stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
-    final List<AirbyteMessage> recordMessagesSecondRun =
-        runRead(getCatalog()).stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
+    final List<AirbyteMessage> recordMessagesFirstRun = runRead(CatalogHelpers.toDefaultConfiguredCatalog(getCatalog()))
+        .stream().filter(m -> m.getType() == Type.RECORD)
+        .collect(Collectors.toList());
+    final List<AirbyteMessage> recordMessagesSecondRun = runRead(CatalogHelpers.toDefaultConfiguredCatalog(getCatalog()))
+        .stream().filter(m -> m.getType() == Type.RECORD)
+        .collect(Collectors.toList());
     // the worker validates the messages, so we just validate the message, so we do not need to validate
     // again (as long as we use the worker, which we will not want to do long term).
     assertFalse(recordMessagesFirstRun.isEmpty());
@@ -255,7 +259,7 @@ public abstract class TestSource {
   }
 
   // todo (cgardens) - assume no state since we are all full refresh right now.
-  private List<AirbyteMessage> runRead(AirbyteCatalog catalog) throws Exception {
+  private List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog catalog) throws Exception {
     final StandardTapConfig tapConfig = new StandardTapConfig()
         .withConnectionId(UUID.randomUUID())
         .withSourceConnectionConfiguration(getConfig())

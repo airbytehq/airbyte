@@ -107,7 +107,7 @@ public class CatalogHelpers {
    * @return field names
    */
   @SuppressWarnings("unchecked")
-  public static Set<String> getTopLevelFieldNames(final AirbyteStream stream) {
+  public static Set<String> getTopLevelFieldNames(final ConfiguredAirbyteStream stream) {
     // it is json, so the key has to be a string.
     final Map<String, Object> object = Jsons.object(stream.getJsonSchema().get("properties"), Map.class);
     return object.keySet();
