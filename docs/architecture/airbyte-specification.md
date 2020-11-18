@@ -162,7 +162,10 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
         }
       ```
 
-      **Read**
+**Note:** Airbyte only supports stream and field names which are alphanumeric or contain underscores, as identified by the regex `[a-zA-Z0-9_]*"`. Syncs may fail if they attempt to sync streams or fields whose names contain disallowed characters.
+
+#### Read
+
 * Input:
   1. `config` - A configuration JSON object that has been validated using the `ConnectorSpecification`.
   2. `catalog` - An `AirbyteCatalog`. This `catalog` should be a subset of the `catalog` returned by the `discover` command. It is what will be used in the `read` command to select what data to transfer.

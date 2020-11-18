@@ -38,6 +38,7 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobInfo.CreateDisposition;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDataWriteChannel;
@@ -68,6 +69,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -266,10 +268,16 @@ public class BigQueryDestination implements Destination {
               String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                   Jsons.serialize(catalog), Jsons.serialize(message)));
         }
+
+        // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
+        // use BQ helpers to string-format correctly.
+        long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(message.getRecord().getEmittedAt(), TimeUnit.MILLISECONDS);
+        String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
+
         final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
             COLUMN_AB_ID, UUID.randomUUID().toString(),
             COLUMN_DATA, Jsons.serialize(message.getRecord().getData()),
-            COLUMN_EMITTED_AT, message.getRecord().getEmittedAt()));
+            COLUMN_EMITTED_AT, formattedEmittedAt));
         try {
           writeConfigs.get(message.getRecord().getStream()).getWriter()
               .write(ByteBuffer.wrap((Jsons.serialize(data) + "\n").getBytes(Charsets.UTF_8)));

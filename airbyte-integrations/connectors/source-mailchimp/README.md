@@ -37,7 +37,7 @@ pytest unit_tests
 ### Locally running the connector docker image
 ```
 # in airbyte root directory
-./gradlew :airbyte-integrations:connectors:source-mailchimp:buildImage
+./gradlew :airbyte-integrations:connectors:source-mailchimp:airbyteDocker
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev discover --config /secrets/config.json
