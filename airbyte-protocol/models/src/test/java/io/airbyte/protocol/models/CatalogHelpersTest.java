@@ -105,7 +105,7 @@ class CatalogHelpersTest {
   void testGetFieldNames() throws IOException {
     JsonNode node = Jsons.deserialize(MoreResources.readResource("valid_schema.json"));
     Set<String> actualFieldNames = CatalogHelpers.getAllFieldNames(node);
-    Set<String> expectedFieldNames = ImmutableSet.of("type", "properties", "format", "date", "CAD", "HKD", "ISK", "PHP", "DKK", "HUF", "CZK");
+    Set<String> expectedFieldNames = ImmutableSet.of("type", "properties", "format", "date", "CAD", "HKD", "ISK", "PHP", "DKK", "HUF", "文");
 
     assertEquals(expectedFieldNames, actualFieldNames);
   }

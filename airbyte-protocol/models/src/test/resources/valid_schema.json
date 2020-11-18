@@ -8,6 +8,6 @@
     "PHP": { "type": ["null", "number"] },
     "DKK": { "type": ["null", "number"] },
     "HUF": { "type": ["null", "number"] },
-    "CZK": { "type": ["null", "number"] }
+    "文": { "type": ["null", "number"] }
   }
 }
