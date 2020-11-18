@@ -12,17 +12,11 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      - name: List
-        run: ls -alh ~/
-
-      - name: List3
-        run: ls -alh ~/.docker
-
       - name: Docker Caching
         uses: actions/cache@v2
         with:
           path: |
-            /var/lib/docker
+            /tmp/.airbyte-docker-cache
           key: docker-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             repo-cache-${{ runner.os }}-
@@ -35,9 +29,6 @@ jobs:
           key: pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             pip-${{ runner.os }}-
-
-      - name: List2
-        run: ls -alh ~/.cache/pip
 
       - name: Npm Caching
         uses: actions/cache@v2

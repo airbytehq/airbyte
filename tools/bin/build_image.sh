@@ -14,4 +14,9 @@ assert_root
 
 cd "$PROJECT_DIR"
 
-DOCKER_BUILDKIT=1 docker build -f "$DOCKERFILE" . -t "$TAG" --iidfile "$ID_FILE"
+DOCKER_BUILDKIT=1 docker build \
+  -f "$DOCKERFILE" . \
+  -t "$TAG" \
+  --iidfile "$ID_FILE" \
+  --cache-to "type=local,dest=/tmp/.airbyte-docker-cache" \
+  --cache-from "type=local,src=/tmp/.airbyte-docker-cache"
