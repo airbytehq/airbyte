@@ -21,6 +21,7 @@ if [[ -z "$CI" ]]; then
     -t "$TAG" \
     --iidfile "$ID_FILE"
 else
+  # run build with local docker registery for CI
   docker pull localhost:5000/"$TAG" || true
   docker build \
     -f "$DOCKERFILE" . \
@@ -30,6 +31,3 @@ else
   docker tag "$TAG" localhost:5000/"$TAG"
   docker push localhost:5000/"$TAG"
 fi
-
-
-
