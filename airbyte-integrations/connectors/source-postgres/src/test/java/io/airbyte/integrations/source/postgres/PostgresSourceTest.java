@@ -44,8 +44,9 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
@@ -69,6 +70,7 @@ class PostgresSourceTest {
       STREAM_NAME,
       Field.of("id", JsonSchemaPrimitive.NUMBER),
       Field.of("name", JsonSchemaPrimitive.STRING));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "goku")))),
@@ -178,7 +180,7 @@ class PostgresSourceTest {
 
   @Test
   void testReadSuccess() throws Exception {
-    final Set<AirbyteMessage> actualMessages = new PostgresSource().read(config, CATALOG, null).collect(Collectors.toSet());
+    final Set<AirbyteMessage> actualMessages = new PostgresSource().read(config, CONFIGURED_CATALOG, null).collect(Collectors.toSet());
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -204,7 +206,7 @@ class PostgresSourceTest {
         });
       }
 
-      Set<AirbyteMessage> actualMessages = new PostgresSource().read(config, CATALOG, null).collect(Collectors.toSet());
+      Set<AirbyteMessage> actualMessages = new PostgresSource().read(config, CONFIGURED_CATALOG, null).collect(Collectors.toSet());
 
       for (AirbyteMessage actualMessage : actualMessages) {
         if (actualMessage.getRecord() != null) {
@@ -219,8 +221,8 @@ class PostgresSourceTest {
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   void testReadFailure() throws Exception {
-    final AirbyteStream spiedAbStream = spy(CATALOG.getStreams().get(0));
-    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
+    final ConfiguredAirbyteStream spiedAbStream = spy(CONFIGURED_CATALOG.getStreams().get(0));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
     doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getName();
 
     final Stream<AirbyteMessage> stream = new PostgresSource().read(config, catalog, null);

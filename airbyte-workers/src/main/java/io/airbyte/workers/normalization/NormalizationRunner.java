@@ -25,7 +25,7 @@
 package io.airbyte.workers.normalization;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,14 +54,14 @@ public interface NormalizationRunner extends AutoCloseable {
    * @throws Exception - any exception thrown from normalization will be handled gracefully by the
    *         caller.
    */
-  boolean normalize(Path jobRoot, JsonNode config, AirbyteCatalog catalog) throws Exception;
+  boolean normalize(Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception;
 
   class NoOpNormalizationRunner implements NormalizationRunner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NoOpNormalizationRunner.class);
 
     @Override
-    public boolean normalize(Path jobRoot, JsonNode config, AirbyteCatalog catalog) {
+    public boolean normalize(Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) {
       LOGGER.info("Running no op logger");
       return true;
     }
