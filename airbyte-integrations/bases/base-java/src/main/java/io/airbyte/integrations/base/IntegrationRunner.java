@@ -33,6 +33,7 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
@@ -110,7 +111,7 @@ public class IntegrationRunner {
       // destination only
       case WRITE -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        final AirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), AirbyteCatalog.class);
+        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, catalog);
         consumeWriteStream(consumer);
       }

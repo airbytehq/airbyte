@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import io.airbyte.commons.json.Jsons;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,6 +66,22 @@ public class CatalogHelpers {
 
   public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, List<Field> fields) {
     return new ConfiguredAirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields));
+  }
+
+  public static ConfiguredAirbyteCatalog toDefaultConfiguredCatalog(AirbyteCatalog catalog) {
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(catalog.getStreams()
+            .stream()
+            .map(CatalogHelpers::toDefaultConfiguredStream)
+            .collect(Collectors.toList()));
+  }
+
+  public static ConfiguredAirbyteStream toDefaultConfiguredStream(AirbyteStream stream) {
+    return new ConfiguredAirbyteStream()
+        .withName(stream.getName())
+        .withJsonSchema(stream.getJsonSchema())
+        .withSyncMode(SyncMode.FULL_REFRESH)
+        .withCursorField(new ArrayList<>());
   }
 
   public static JsonNode fieldsToJsonSchema(Field... fields) {

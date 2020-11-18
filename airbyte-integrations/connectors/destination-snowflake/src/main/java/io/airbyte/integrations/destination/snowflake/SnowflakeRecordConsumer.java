@@ -30,9 +30,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -61,9 +61,11 @@ public class SnowflakeRecordConsumer extends FailureTrackingConsumer<AirbyteMess
   private final ScheduledExecutorService writerPool;
   private final Supplier<Connection> connectionFactory;
   private final Map<String, SnowflakeWriteContext> writeContexts;
-  private final AirbyteCatalog catalog;
+  private final ConfiguredAirbyteCatalog catalog;
 
-  public SnowflakeRecordConsumer(Supplier<Connection> connectionFactory, Map<String, SnowflakeWriteContext> writeContexts, AirbyteCatalog catalog) {
+  public SnowflakeRecordConsumer(Supplier<Connection> connectionFactory,
+                                 Map<String, SnowflakeWriteContext> writeContexts,
+                                 ConfiguredAirbyteCatalog catalog) {
     this.connectionFactory = connectionFactory;
     this.writeContexts = writeContexts;
     this.catalog = catalog;

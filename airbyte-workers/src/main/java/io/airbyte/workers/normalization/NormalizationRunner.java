@@ -25,7 +25,6 @@
 package io.airbyte.workers.normalization;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import org.slf4j.Logger;

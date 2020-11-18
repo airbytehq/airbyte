@@ -30,13 +30,9 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import me.andrz.jackson.JsonContext;
 import me.andrz.jackson.JsonReferenceException;
@@ -87,7 +83,9 @@ public class JsonSchemaValidator {
   }
 
   /**
-   * Get JsonNode for an object defined as the main object in a JsonSchema file. Able to create the JsonNode even if the the JsonSchema refers to objects in other files.
+   * Get JsonNode for an object defined as the main object in a JsonSchema file. Able to create the
+   * JsonNode even if the the JsonSchema refers to objects in other files.
+   *
    * @param schemaFile - the schema file
    * @return schema object processed from across all dependency files.
    */
@@ -100,9 +98,12 @@ public class JsonSchemaValidator {
   }
 
   /**
-   * Get JsonNode for an object defined in the "definitions" section of a JsonSchema file. Able to create the JsonNode even if the the JsonSchema refers to objects in other files.
+   * Get JsonNode for an object defined in the "definitions" section of a JsonSchema file. Able to
+   * create the JsonNode even if the the JsonSchema refers to objects in other files.
+   *
    * @param schemaFile - the schema file
-   * @param definitionStructName - get the schema from a struct defined in the "definitions" section of a JsonSchema file (instead of the main object in that file).
+   * @param definitionStructName - get the schema from a struct defined in the "definitions" section
+   *        of a JsonSchema file (instead of the main object in that file).
    * @return schema object processed from across all dependency files.
    */
   public static JsonNode getSchema(final File schemaFile, String definitionStructName) {
