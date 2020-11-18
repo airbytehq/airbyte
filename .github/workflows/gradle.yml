@@ -61,8 +61,10 @@ jobs:
         with:
           python-version: '3.7'
 
+      - uses: docker/setup-buildx-action@v1
+
       - name: Build
-        run: ./gradlew --no-daemon build --scan
+        run: ./gradlew --no-daemon :airbyte-integrations:connectors:destination-bigquery:build --scan
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"

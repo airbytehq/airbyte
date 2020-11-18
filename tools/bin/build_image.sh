@@ -14,9 +14,21 @@ assert_root
 
 cd "$PROJECT_DIR"
 
-DOCKER_BUILDKIT=1 docker build \
-  -f "$DOCKERFILE" . \
-  -t "$TAG" \
-  --iidfile "$ID_FILE" \
-  --cache-to "type=local,dest=/tmp/.airbyte-docker-cache" \
-  --cache-from "type=local,src=/tmp/.airbyte-docker-cache"
+if [[ -z "$CI" ]]; then
+  # run standard build locally (not on CI)
+  DOCKER_BUILDKIT=1 docker build \
+    -f "$DOCKERFILE" . \
+    -t "$TAG" \
+    --iidfile "$ID_FILE"
+else
+  # run using buildx on CI so we can cache layers to a file location
+  docker buildx \
+    -f "$DOCKERFILE" . \
+    -t "$TAG" \
+    --iidfile "$ID_FILE" \
+    --cache-to "type=local,dest=/tmp/.airbyte-docker-cache" \
+    --cache-from "type=local,src=/tmp/.airbyte-docker-cache"
+fi
+
+
+
