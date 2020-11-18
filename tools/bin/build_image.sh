@@ -22,7 +22,7 @@ if [[ -z "$CI" ]]; then
     --iidfile "$ID_FILE"
 else
   # run using buildx on CI so we can cache layers to a file location
-  docker buildx \
+  docker buildx build \
     -f "$DOCKERFILE" . \
     -t "$TAG" \
     --iidfile "$ID_FILE" \
