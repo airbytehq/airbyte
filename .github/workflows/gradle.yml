@@ -62,7 +62,7 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name:
+      - name: Start local Docker registry
         run: docker run -d -p 5000:5000 --restart=always --name registry -v /tmp/docker-registry:/var/lib/registry registry:2 && npx wait-on tcp:5000
 
       - name: Build

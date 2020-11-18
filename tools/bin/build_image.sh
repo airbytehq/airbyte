@@ -27,7 +27,7 @@ else
     -t "$TAG" \
     --iidfile "$ID_FILE" \
     --cache-from localhost:5000/"$TAG"
-  docker push localhost:5000/"$TAG"
+  docker push localhost:5000/"$TAG" || true
 fi
 
 
