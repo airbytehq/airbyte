@@ -15,9 +15,6 @@ jobs:
       - name: List
         run: ls -alh ~/
 
-      - name: List2
-        run: ls -alh ~/.cache/pip
-
       - name: List3
         run: ls -alh /var/lib/docker
 
@@ -38,6 +35,9 @@ jobs:
           key: pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             pip-${{ runner.os }}-
+
+      - name: List2
+        run: ls -alh ~/.cache/pip
 
       - name: Npm Caching
         uses: actions/cache@v2
