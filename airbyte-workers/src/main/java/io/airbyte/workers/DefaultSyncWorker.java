@@ -31,10 +31,10 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.protocols.Destination;
 import io.airbyte.workers.protocols.MessageTracker;
@@ -138,12 +138,12 @@ public class DefaultSyncWorker implements SyncWorker {
     cancelled.set(true);
   }
 
-  private void removeInvalidStreams(AirbyteCatalog catalog) {
+  private void removeInvalidStreams(ConfiguredAirbyteCatalog catalog) {
     final Set<String> invalidStreams = Sets.union(
         new HashSet<>(CatalogHelpers.getInvalidStreamNames(catalog)),
         CatalogHelpers.getInvalidFieldNames(catalog).keySet());
 
-    final List<AirbyteStream> streams = catalog.getStreams().stream()
+    final List<ConfiguredAirbyteStream> streams = catalog.getStreams().stream()
         .filter(stream -> !invalidStreams.contains(stream.getName()))
         .collect(Collectors.toList());
 
