@@ -70,6 +70,7 @@ class CatalogHelpersTest {
     assertTrue(CatalogHelpers.isValidIdentifier("123identifier_name"));
     assertTrue(CatalogHelpers.isValidIdentifier("i0d0e0n0t0i0f0i0e0r0n0a0m0e"));
     assertTrue(CatalogHelpers.isValidIdentifier("identifiêr"));
+    assertTrue(CatalogHelpers.isValidIdentifier("a_unicode_name_文"));
     assertTrue(CatalogHelpers.isValidIdentifier("identifier__name__"));
   }
 
