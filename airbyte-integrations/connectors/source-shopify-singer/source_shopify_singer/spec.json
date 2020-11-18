@@ -14,7 +14,7 @@
       "api_password": {
         "type": "string",
         "description": "The API password for a private application in Shopify shop.",
-        "airbyte_sensitive": true
+        "airbyte_secret": true
       },
       "shop": {
         "type": "string",

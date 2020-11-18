@@ -10,7 +10,7 @@
       "access_token": {
         "type": "string",
         "description": "Log into Github and then generate a <a href=\"https://github.com/settings/tokens\"> personal access token</a>.",
-        "airbyte_sensitive": true
+        "airbyte_secret": true
       },
       "repository": {
         "type": "string",

@@ -89,7 +89,7 @@
               "aws_secret_access_key": {
                 "type": "string",
                 "description": "In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
-                "airbyte_sensitive": true
+                "airbyte_secret": true
               },
               "reader_impl": {
                 "type": "string",
@@ -113,7 +113,7 @@
               },
               "password": {
                 "type": "string",
-                "airbyte_sensitive": true
+                "airbyte_secret": true
               },
               "host": {
                 "type": "string"
@@ -134,7 +134,7 @@
               },
               "password": {
                 "type": "string",
-                "airbyte_sensitive": true
+                "airbyte_secret": true
               },
               "host": {
                 "type": "string"

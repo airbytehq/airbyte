@@ -49,7 +49,7 @@
       "password": {
         "description": "Password associated with the username.",
         "type": "string",
-        "airbyte_sensitive": true
+        "airbyte_secret": true
       },
       "basic_normalization": {
         "type": "boolean",
