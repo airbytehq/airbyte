@@ -104,10 +104,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
         Multimap<String, String> streamNameToInvalidFieldNames = CatalogHelpers.getInvalidFieldNames(catalog.get());
         if (!streamNameToInvalidFieldNames.isEmpty()) {
           streamNameToInvalidFieldNames
-              .forEach((streamName, fieldNames) -> {
-                LOGGER.error("Cannot sync invalid field names for stream " + streamName + ": " + fieldNames);
-                LOGGER.error("Catalog: " + Jsons.serialize(catalog.get()));
-              });
+              .forEach((streamName, fieldNames) -> LOGGER.error("Cannot sync invalid field names for stream " + streamName + ": " + fieldNames));
           return new OutputAndStatus<>(JobStatus.FAILED);
         }
 
