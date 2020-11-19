@@ -52,7 +52,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -177,11 +176,11 @@ class MySqlSourceTest {
   void testReadFailure() throws Exception {
     final ConfiguredAirbyteStream spiedAbStream = spy(CONFIGURED_CATALOG.getStreams().get(0));
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getName();
+    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getStream();
 
-    final Stream<AirbyteMessage> stream = new MySqlSource().read(config, catalog, null);
+    final MySqlSource source = new MySqlSource();
 
-    assertThrows(RuntimeException.class, () -> stream.collect(Collectors.toList()));
+    assertThrows(RuntimeException.class, () -> source.read(config, catalog, null));
   }
 
 }

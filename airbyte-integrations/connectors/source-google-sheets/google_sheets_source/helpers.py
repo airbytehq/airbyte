@@ -26,7 +26,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List
 
-from airbyte_protocol import AirbyteCatalog, AirbyteRecordMessage, AirbyteStream
+from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog
 from apiclient import discovery
 from google.oauth2 import service_account
 
@@ -109,9 +109,10 @@ class Helpers(object):
         return Helpers.get_formatted_row_values(first_row_data)
 
     @staticmethod
-    def parse_sheet_and_column_names_from_catalog(catalog: AirbyteCatalog) -> Dict[str, FrozenSet[str]]:
+    def parse_sheet_and_column_names_from_catalog(catalog: ConfiguredAirbyteCatalog) -> Dict[str, FrozenSet[str]]:
         sheet_to_column_name = {}
-        for stream in catalog.streams:
+        for configured_stream in catalog.streams:
+            stream = configured_stream.stream
             sheet_name = stream.name
             sheet_to_column_name[sheet_name] = frozenset(stream.json_schema["properties"].keys())
 

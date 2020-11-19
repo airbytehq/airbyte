@@ -104,8 +104,7 @@ class AirbyteStream(BaseModel):
 
 
 class ConfiguredAirbyteStream(BaseModel):
-    name: str = Field(..., description="Stream's name.")
-    json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
+    stream: AirbyteStream
     sync_mode: Optional[SyncMode] = "full_refresh"
     cursor_field: Optional[List[str]] = Field(
         None,

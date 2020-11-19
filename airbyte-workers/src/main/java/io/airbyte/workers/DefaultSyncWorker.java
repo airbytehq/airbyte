@@ -144,7 +144,7 @@ public class DefaultSyncWorker implements SyncWorker {
         CatalogHelpers.getInvalidFieldNames(catalog).keySet());
 
     final List<ConfiguredAirbyteStream> streams = catalog.getStreams().stream()
-        .filter(stream -> !invalidStreams.contains(stream.getName()))
+        .filter(stream -> !invalidStreams.contains(stream.getStream().getName()))
         .collect(Collectors.toList());
 
     catalog.setStreams(streams);
