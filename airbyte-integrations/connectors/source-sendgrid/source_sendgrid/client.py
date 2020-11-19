@@ -65,4 +65,4 @@ class Client:
 
     def stats_automations(self):
         stats_data = json.loads(self._client.client.marketing.stats.automations.get().body)["results"]
-        return stats_data if stats_data else []
+        return stats_data or []
