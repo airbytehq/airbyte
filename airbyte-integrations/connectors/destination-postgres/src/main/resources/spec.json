@@ -25,7 +25,8 @@
       },
       "password": {
         "description": "Password associated with the username.",
-        "type": "string"
+        "type": "string",
+        "airbyte_secret": true
       },
       "database": {
         "description": "Name of the database.",
