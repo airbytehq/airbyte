@@ -47,11 +47,13 @@ public class JsonSecretsProcessor {
    * future.
    *
    * @param schema Schema containing secret annotations
-   * @param obj Object containing potentially secret fields
+   * @param obj    Object containing potentially secret fields
    * @return
    */
   public JsonNode maskSecrets(JsonNode obj, JsonNode schema) {
-    assertValidSchema(schema);
+    if (!canBeProcessed(schema)) {
+      return obj;
+    }
     Preconditions.checkArgument(schema.isObject());
 
     ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
@@ -73,13 +75,15 @@ public class JsonSecretsProcessor {
    * support the keywords anyOf, allOf, oneOf, not, and dependencies. This will be fixed in the
    * future.
    *
-   * @param src The object potentially containing secrets
-   * @param dst The object to absorb secrets into
+   * @param src    The object potentially containing secrets
+   * @param dst    The object to absorb secrets into
    * @param schema
    * @return
    */
   public JsonNode copySecrets(JsonNode src, JsonNode dst, JsonNode schema) {
-    assertValidSchema(schema);
+    if (!canBeProcessed(schema)) {
+      return dst;
+    }
     Preconditions.checkArgument(dst.isObject());
     Preconditions.checkArgument(src.isObject());
 
@@ -102,10 +106,10 @@ public class JsonSecretsProcessor {
     return obj.isObject() && obj.has(AIRBYTE_SECRET_FIELD) && obj.get(AIRBYTE_SECRET_FIELD).asBoolean();
   }
 
-  private static void assertValidSchema(JsonNode node) {
-    Preconditions.checkArgument(node.isObject());
-    Preconditions.checkArgument(node.has(PROPERTIES_FIELD), "Schema object must have a properties field");
-    Preconditions.checkArgument(node.get(PROPERTIES_FIELD).isObject(), "Properties field must be a JSON object");
+  private static boolean canBeProcessed(JsonNode schema) {
+    Preconditions.checkArgument(schema.isObject());
+    Preconditions.checkArgument(schema.has(PROPERTIES_FIELD), "Schema object must have a properties field");
+    Preconditions.checkArgument(schema.get(PROPERTIES_FIELD).isObject(), "Properties field must be a JSON object");
   }
 
 }
