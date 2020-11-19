@@ -12,14 +12,14 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      - name: Docker Caching
-        uses: actions/cache@v2
-        with:
-          path: |
-            /tmp/airbyte-docker
-          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-${{ github.sha }}
-          restore-keys: |
-            docker-${{ runner.os }}-
+#      - name: Docker Caching
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            /tmp/airbyte-docker
+#          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-${{ github.sha }}
+#          restore-keys: |
+#            docker-${{ runner.os }}-
 
       - name: Pip Caching
         uses: actions/cache@v2
@@ -61,8 +61,8 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Load cached images
-        run: find . -iname '/tmp/airbyte-docker/*.tar' -exec docker load -i "/tmp/airbyte-docker/{}.tar" \; || true
+#      - name: Load cached images
+#        run: find . -iname '/tmp/airbyte-docker/*.tar' -exec docker load -i "/tmp/airbyte-docker/{}.tar" \; || true
 
       - name: Build
         run: ./gradlew --no-daemon build --scan
@@ -129,8 +129,8 @@ jobs:
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Save cached images
-        run: (mkdir -p /tmp/airbyte-docker && docker images -a -q "airbyte\/*" | head -n 30 | xargs -n 1 -P 2 -I {} docker save -o /tmp/airbyte-docker/{}.tar {}) || true
+#      - name: Save cached images
+#        run: (mkdir -p /tmp/airbyte-docker && docker images -a -q "airbyte\/*" | head -n 30 | xargs -n 1 -P 2 -I {} docker save -o /tmp/airbyte-docker/{}.tar {}) || true
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
