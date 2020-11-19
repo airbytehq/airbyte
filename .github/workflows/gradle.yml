@@ -21,28 +21,28 @@ jobs:
         with:
           path: |
             /tmp/docker-registry
-          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-${{ github.sha }}
+          key: ${{ secrets.CACHE_VERSION }}-docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-${{ github.sha }}
           restore-keys: |
-            docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-
-            docker-${{ runner.os }}-
+            ${{ secrets.CACHE_VERSION }}-docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-
+            ${{ secrets.CACHE_VERSION }}-docker-${{ runner.os }}-
 
       - name: Pip Caching
         uses: actions/cache@v2
         with:
           path: |
             ~/.cache/pip
-          key: pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            pip-${{ runner.os }}-
+            ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-
 
       - name: Npm Caching
         uses: actions/cache@v2
         with:
           path: |
             ~/.npm
-          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            npm-${{ runner.os }}-
+            ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
 
       # this intentionally does not use restore-keys so we don't mess with gradle caching
       - name: Gradle and Python Caching
@@ -52,7 +52,7 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
             **/.venv
-          key: ${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
 
       - uses: actions/setup-java@v1
         with:
