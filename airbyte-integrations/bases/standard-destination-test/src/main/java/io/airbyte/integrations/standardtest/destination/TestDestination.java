@@ -47,6 +47,8 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.OutputAndStatus;
@@ -241,9 +243,10 @@ public abstract class TestDestination {
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSync(String messagesFilename, String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    runSync(getConfig(), messages, catalog);
+    runSync(getConfig(), messages, configuredCatalog);
 
     assertSameMessages(messages, retrieveRecordsForCatalog(catalog));
   }
@@ -260,9 +263,10 @@ public abstract class TestDestination {
     }
 
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    runSync(getConfigWithBasicNormalization(), messages, catalog);
+    runSync(getConfigWithBasicNormalization(), messages, configuredCatalog);
 
     assertSameMessages(messages, retrieveRecordsForCatalog(catalog));
     assertSameMessages(messages, retrieveNormalizedRecordsForCatalog(catalog), true);
@@ -275,9 +279,10 @@ public abstract class TestDestination {
   public void testSecondSync() throws Exception {
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    runSync(getConfig(), firstSyncMessages, catalog);
+    runSync(getConfig(), firstSyncMessages, configuredCatalog);
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
         .withRecord(new AirbyteRecordMessage()
@@ -287,7 +292,7 @@ public abstract class TestDestination {
                 .put("HKD", 10)
                 .put("NZD", 700)
                 .build()))));
-    runSync(getConfig(), secondSyncMessages, catalog);
+    runSync(getConfig(), secondSyncMessages, configuredCatalog);
     assertSameMessages(secondSyncMessages, retrieveRecordsForCatalog(catalog));
   }
 
@@ -301,7 +306,7 @@ public abstract class TestDestination {
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
-  private void runSync(JsonNode config, List<AirbyteMessage> messages, AirbyteCatalog catalog) throws Exception {
+  private void runSync(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog) throws Exception {
 
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
         .withConnectionId(UUID.randomUUID())

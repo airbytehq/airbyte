@@ -18,6 +18,7 @@
     * [Google Analytics](integrations/sources/googleanalytics.md)
     * [Google Sheets](integrations/sources/google-sheets.md)
     * [Hubspot](integrations/sources/hubspot.md)
+    * [MailChimp](integrations/sources/mailchimp.md)
     * [Marketo](integrations/sources/marketo.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Microsoft SQL Server (MSSQL)](integrations/sources/mssql.md)
@@ -55,5 +56,7 @@
   * [Team](company-handbook/team.md)
   * [Strategy](company-handbook/strategy.md)
   * [Business Model](company-handbook/business-model.md)
+* [Career & Open Positions](career-and-open-positions/README.md)
+  * [Founding Developer Evangelist](career-and-open-positions/founding-developer-evangelist.md)
 * [License](license.md)
 

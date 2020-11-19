@@ -24,37 +24,46 @@
 
 package io.airbyte.workers;
 
+import com.google.common.collect.Sets;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.protocols.Destination;
 import io.airbyte.workers.protocols.MessageTracker;
 import io.airbyte.workers.protocols.Source;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultSyncWorker<T> implements SyncWorker {
+public class DefaultSyncWorker implements SyncWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSyncWorker.class);
 
-  private final Source<T> source;
-  private final Destination<T> destination;
-  private final MessageTracker<T> messageTracker;
+  private final Source<AirbyteMessage> source;
+  private final Destination<AirbyteMessage> destination;
+  private final MessageTracker<AirbyteMessage> messageTracker;
   private final NormalizationRunner normalizationRunner;
 
   private final AtomicBoolean cancelled;
 
-  public DefaultSyncWorker(final Source<T> source,
-                           final Destination<T> destination,
-                           final MessageTracker<T> messageTracker,
+  public DefaultSyncWorker(final Source<AirbyteMessage> source,
+                           final Destination<AirbyteMessage> destination,
+                           final MessageTracker<AirbyteMessage> messageTracker,
                            final NormalizationRunner normalizationRunner) {
     this.source = source;
     this.destination = destination;
@@ -68,20 +77,27 @@ public class DefaultSyncWorker<T> implements SyncWorker {
   public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path jobRoot) {
     long startTime = System.currentTimeMillis();
 
+    // clean catalog object
+    removeInvalidStreams(syncInput.getCatalog());
+
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
     final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
 
     try (destination; source) {
-
       destination.start(targetConfig, jobRoot);
       source.start(tapConfig, jobRoot);
 
       while (!cancelled.get() && !source.isFinished()) {
-        final Optional<T> maybeMessage = source.attemptRead();
+        final Optional<AirbyteMessage> maybeMessage = source.attemptRead();
         if (maybeMessage.isPresent()) {
-          final T message = maybeMessage.get();
-          messageTracker.accept(message);
-          destination.accept(message);
+          final AirbyteMessage message = maybeMessage.get();
+
+          if (message.getType().equals(AirbyteMessage.Type.RECORD) && !CatalogHelpers.isValidIdentifier(message.getRecord().getStream())) {
+            LOGGER.error("Filtered out record for invalid stream: " + message.getRecord().getStream());
+          } else {
+            messageTracker.accept(message);
+            destination.accept(message);
+          }
         }
       }
 
@@ -120,6 +136,18 @@ public class DefaultSyncWorker<T> implements SyncWorker {
   @Override
   public void cancel() {
     cancelled.set(true);
+  }
+
+  private void removeInvalidStreams(ConfiguredAirbyteCatalog catalog) {
+    final Set<String> invalidStreams = Sets.union(
+        new HashSet<>(CatalogHelpers.getInvalidStreamNames(catalog)),
+        CatalogHelpers.getInvalidFieldNames(catalog).keySet());
+
+    final List<ConfiguredAirbyteStream> streams = catalog.getStreams().stream()
+        .filter(stream -> !invalidStreams.contains(stream.getName()))
+        .collect(Collectors.toList());
+
+    catalog.setStreams(streams);
   }
 
 }
