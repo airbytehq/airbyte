@@ -2,10 +2,11 @@
 
 ## **About Airbyte**
 
-[Airbyte](http://airbyte.io) is the upcoming open-source standard for EL\(T\). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe only an open-source approach can solve the problem of data integration, as it enables us to cover the long tail of integrations while enabling teams to adapt prebuilt connectors to their needs.   
+[Airbyte](http://airbyte.io) is the upcoming open-source standard for EL\(T\). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe only an open-source approach can solve the problem of data integration, as it enables us to cover the long tail of integrations while enabling teams to adapt prebuilt connectors to their needs. 
 
+Airbyte is remote friendly, with most of the team still based in the Silicon Valley. We’re fully open as a company. Our [company handbook](../company-handbook/), [culture & values](../company-handbook/culture-and-values.md), [strategy](../company-handbook/strategy.md) and [roadmap](../roadmap.md) are open to all.
 
-Airbyte is remote friendly, with most of the team still based in the Silicon Valley. We’re fully open as a company. Our [company handbook](https://docs.airbyte.io/company-handbook), [culture & values](https://docs.airbyte.io/company-handbook/culture-and-values), [strategy](https://docs.airbyte.io/company-handbook/strategy) and [roadmap](https://docs.airbyte.io/roadmap) are open to all. 
+We're backed by some of the world's [top investors](./#our-investors) and believe in product-led growth
 
 ## **Description**
 
@@ -32,7 +33,7 @@ As the first member of our developer evangelism team, you will work closely with
 * Self-directed and work with minimal supervision.
 * Outstanding written and verbal communications skills with the ability to explain and translate complex technology concepts into simple and intuitive communications.
 * Ability to travel up to 40% of the time, once borders are re-opened 
-* You share [our values]()
+* You share [our values](../company-handbook/culture-and-values.md)
 
 ## **Location**
 

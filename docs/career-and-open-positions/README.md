@@ -4,9 +4,9 @@
 
 [Airbyte](http://airbyte.io) is the upcoming open-source standard for EL\(T\). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe only an open-source approach can solve the problem of data integration, as it enables us to cover the long tail of integrations while enabling teams to adapt prebuilt connectors to their needs. 
 
-Airbyte is remote friendly, with most of the team still based in the Silicon Valley. We’re fully open as a company. Our [company handbook](https://docs.airbyte.io/company-handbook), [culture & values](https://docs.airbyte.io/company-handbook/culture-and-values), [strategy](https://docs.airbyte.io/company-handbook/strategy) and [roadmap](https://docs.airbyte.io/roadmap) are open to all.
+Airbyte is remote friendly, with most of the team still based in the Silicon Valley. We’re fully open as a company. Our [company handbook](../company-handbook/), [culture & values](../company-handbook/culture-and-values.md), [strategy](../company-handbook/strategy.md) and [roadmap](../roadmap.md) are open to all.
 
-We're backed by some of the world's [top investors]() and believe in product-led growth, where we build something awesome and let our product bring the users, rather than an outbound sales engine with cold calls.
+We're backed by some of the world's [top investors](./#our-investors) and believe in product-led growth, where we build something awesome and let our product bring the users, rather than an outbound sales engine with cold calls.
 
 ## **Our Culture**
 
@@ -14,18 +14,18 @@ We believe that a company culture needs to be opinionated to be effective and at
 
 Here are the values we deeply believe in:
 
-* [Transparency and Candor](https://docs.airbyte.io/company-handbook/culture-and-values#transparency-and-candor)
+* [Transparency and Candor](../company-handbook/culture-and-values.md#transparency-and-candor)
   * For any collaboration to be fruitful, we need full transparency.
   * Any opinion or concern needs to be shared.
   * Bad news must travel faster than good news.
-* [Humility and Maximizing Growth](https://docs.airbyte.io/company-handbook/culture-and-values#humility-and-maximizing-growth)
+* [Humility and Maximizing Growth](../company-handbook/culture-and-values.md#humility-and-maximizing-growth)
   * We are a team in search of truth, not in search of winning points.
   * We prioritize progress over perfection. We are thankful towards errors of action, provided we learn and get better.
   * We should never pull rank.
-* [Being Intentional & Owning the Outcome](https://docs.airbyte.io/company-handbook/culture-and-values#being-intentional-and-owning-the-outcome)
+* [Being Intentional & Owning the Outcome](../company-handbook/culture-and-values.md#being-intentional-and-owning-the-outcome)
   * We don’t take things for granted.
   * Having a task means you are responsible for anticipating and solving problems.
-* [Trust & Caring](https://docs.airbyte.io/company-handbook/culture-and-values#trust-and-caring)
+* [Trust & Caring](../company-handbook/culture-and-values.md#trust-and-caring)
   * Constructive feedback should be on a one-on-one basis.
   * Assume positive intent.
   * Address behavior, not people.
@@ -35,11 +35,11 @@ Here are the values we deeply believe in:
 
 We have raised a pre-seed round and a seed one for a total of $1.8M. Our investors include YCombinator, 8VC, Auren Hoffman \(founder of LiveRamp\), Travis May \(CEO of DataVant\), Alain Rossmann \(entrepreneur with several exits &gt;$1B\), and other leaders in the data industry. 
 
-We have a lot of capital, but [we're a lean, strong team](https://docs.airbyte.io/company-handbook/team) - so you've got the opportunity to have a huge impact.
+We have a lot of capital, but [we're a lean, strong team](../company-handbook/team.md) - so you've got the opportunity to have a huge impact.
 
 ## **Our Recruiting Process**
 
-We will schedule 2 to 3 short calls with our [founders and team](https://docs.airbyte.io/company-handbook/team). These will focus on two key areas:
+We will schedule 2 to 3 short calls with our founders and team. These will focus on two key areas:
 
 * Ensuring you will be a great cultural fit
 * Aptitude for the role
