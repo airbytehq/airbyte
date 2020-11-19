@@ -16,7 +16,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            /tmp/docker-registry
+            /tmp/docker.tar
           key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-${{ github.sha }}
           restore-keys: |
             docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-
@@ -62,8 +62,8 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Start local Docker registry
-        run: docker run -d -p 5000:5000 --restart=always --name registry -v /tmp/docker-registry:/var/lib/registry registry:2 && npx wait-on tcp:5000
+      - name: Load cached images
+        run: docker load -i /tmp/docker.tar || true
 
       - name: Build
         run: ./gradlew --no-daemon build --scan
@@ -129,6 +129,9 @@ jobs:
           docker-compose -f docker-compose.build.yaml push
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Save cached images
+        run: docker save -o /tmp/docker.tar $(docker images -a -q)
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
