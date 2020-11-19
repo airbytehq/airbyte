@@ -44,6 +44,7 @@ import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -53,6 +54,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -175,6 +177,43 @@ class PostgresDestinationTest {
 
     assertTmpTablesNotPresent(
         CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getStream).map(AirbyteStream::getName).collect(Collectors.toList()));
+  }
+
+  @Test
+  void testWriteIncremental() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = Jsons.clone(CATALOG);
+    catalog.getStreams().forEach(stream -> stream.withSyncMode(SyncMode.INCREMENTAL));
+
+    final DestinationConsumer<AirbyteMessage> consumer = new PostgresDestination().write(config, catalog);
+
+    consumer.accept(MESSAGE_USERS1);
+    consumer.accept(MESSAGE_TASKS1);
+    consumer.accept(MESSAGE_USERS2);
+    consumer.accept(MESSAGE_TASKS2);
+    consumer.accept(MESSAGE_STATE);
+    consumer.close();
+
+    final DestinationConsumer<AirbyteMessage> consumer2 = new PostgresDestination().write(config, catalog);
+
+    final AirbyteMessage messageUser3 = new AirbyteMessage().withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+            .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "michael").put("id", "87").build()))
+            .withEmittedAt(NOW.toEpochMilli()));
+    consumer2.accept(messageUser3);
+    consumer2.close();
+
+    Set<JsonNode> usersActual = recordRetriever(NamingHelper.getRawTableName(USERS_STREAM_NAME));
+    final Set<JsonNode> expectedUsersJson = Sets.newHashSet(
+        MESSAGE_USERS1.getRecord().getData(),
+        MESSAGE_USERS2.getRecord().getData(),
+        messageUser3.getRecord().getData());
+    assertEquals(expectedUsersJson, usersActual);
+
+    Set<JsonNode> tasksActual = recordRetriever(NamingHelper.getRawTableName(TASKS_STREAM_NAME));
+    final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
+    assertEquals(expectedTasksJson, tasksActual);
+
+    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getName).collect(Collectors.toList()));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
