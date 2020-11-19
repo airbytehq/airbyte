@@ -45,11 +45,17 @@ class AirbytePythonPlugin implements Plugin<Project> {
         project.task('installReqs', type: PythonTask) {
             module = "pip"
             command = "install -r requirements.txt"
+            inputs.file('requirements.txt')
+            outputs.file('build/installedreqs.txt')
+            outputs.cacheIf { true }
         }
 
         project.task('installTestReqs', type: PythonTask, dependsOn: project.installReqs) {
             module = "pip"
             command = "install .[tests]"
+            inputs.file('setup.py')
+            outputs.file('build/installedtestreqs.txt')
+            outputs.cacheIf { true }
         }
 
         if(project.file('unit_tests').exists()) {
