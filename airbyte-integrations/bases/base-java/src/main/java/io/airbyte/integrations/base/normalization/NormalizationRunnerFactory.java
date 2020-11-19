@@ -41,18 +41,16 @@ public class NormalizationRunnerFactory {
           .put("io.airbyte.integrations.destination.snowflake.SnowflakeDestination", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .build();
 
-  public static NormalizationRunner create(String imageName, JsonNode config) {
+  public static NormalizationRunner create(String className, JsonNode config) {
     if (!shouldNormalize(config)) {
       return new NoOpNormalizationRunner();
     }
 
-    final String imageNameWithoutTag = imageName.split(":")[0];
-
-    if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
-      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag));
+    if (NORMALIZATION_MAPPING.containsKey(className)) {
+      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(className));
     } else {
       throw new IllegalStateException(
-          String.format("Requested normalization for %s, but it is not included in the normalization mapping.", imageName));
+          String.format("Requested normalization for %s, but it is not included in the normalization mapping.", className));
     }
   }
 
