@@ -130,7 +130,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Save cached images
-        run: mkdir -p /tmp/airbyte-docker && docker images -a -q "airbyte\/*" | xargs -n 1 -P 4 -I {} docker save -o /tmp/airbyte-docker/{}.tar {}
+        run: mkdir -p /tmp/airbyte-docker && docker images -a -q "airbyte\/*" | head -n 20 | xargs -n 1 -P 4 -I {} docker save -o /tmp/airbyte-docker/{}.tar {}
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
