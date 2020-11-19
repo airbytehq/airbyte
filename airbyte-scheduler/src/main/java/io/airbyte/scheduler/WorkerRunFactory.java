@@ -137,7 +137,7 @@ public class WorkerRunFactory {
         jobRoot,
         syncInput,
         new JobOutputSyncWorker(
-            new DefaultSyncWorker<>(
+            new DefaultSyncWorker(
                 new DefaultAirbyteSource(sourceLauncher),
                 new DefaultAirbyteDestination(destinationLauncher),
                 new AirbyteMessageTracker(),
@@ -164,7 +164,7 @@ public class WorkerRunFactory {
         .withSourceConnection(config.getSourceConnection())
         .withDestinationConnection(config.getDestinationConnection())
         .withConnectionId(config.getStandardSync().getConnectionId())
-        .withCatalog(AirbyteProtocolConverters.toCatalog(config.getStandardSync().getSchema()))
+        .withCatalog(AirbyteProtocolConverters.toConfiguredCatalog(config.getStandardSync().getSchema()))
         .withSyncMode(config.getStandardSync().getSyncMode())
         .withState(config.getState());
   }

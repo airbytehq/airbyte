@@ -19,7 +19,7 @@ properties:
     "$ref": SyncMode.yaml
   catalog:
     type: object
-    existingJavaType: io.airbyte.protocol.models.AirbyteCatalog
+    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
   connectionId:
     type: string
     format: uuid

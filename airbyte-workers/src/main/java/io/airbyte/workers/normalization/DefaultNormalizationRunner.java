@@ -29,7 +29,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
@@ -43,7 +43,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
 
-  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.0";
+  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.1";
 
   private final DestinationType destinationType;
   private final ProcessBuilderFactory pbf;
@@ -62,7 +62,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   }
 
   @Override
-  public boolean normalize(Path jobRoot, JsonNode config, AirbyteCatalog catalog) throws Exception {
+  public boolean normalize(Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     IOs.writeFile(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, Jsons.serialize(config));
     IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
