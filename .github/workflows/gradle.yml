@@ -15,6 +15,7 @@ jobs:
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh
 
+      # docker should use restore-keys since these are just used for layer caching, not gradle task caching
       - name: Docker Caching
         uses: actions/cache@v2
         with:
@@ -43,6 +44,7 @@ jobs:
           restore-keys: |
             npm-${{ runner.os }}-
 
+      # this intentionally does not use restore-keys so we don't mess with gradle caching
       - name: Gradle and Python Caching
         uses: actions/cache@v2
         with:
@@ -77,6 +79,7 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
 
+      # this should happen as late as possible so we don't accidentally have tests in the wrong stage depending on creds
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh
         env:
