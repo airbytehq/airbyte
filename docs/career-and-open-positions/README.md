@@ -46,7 +46,7 @@ We will schedule 2 to 3 short calls with our founders and team. These will focus
 
 If you succeed with the above, we will set you up with 1 or 2 more in-depth hour-long interviews to test how you actually think and work on some potentially real tasks for the position. It will also be an opportunity for you to see how we work. The team will be here to support you, as we want you to succeed. 
 
-Once all of this done, we will get back to you very soon. We tend to be very fast!
+Once all of this done, we will discuss the process internally and get back to you very fast (velocity is everything here)!
 
 ## **Our Benefits**
 
@@ -54,4 +54,3 @@ Once all of this done, we will get back to you very soon. We tend to be very fas
 * Health insurance: we let you choose the insurance of your choice and cover $500 for you + $200 for any dependents. This will evolve with time, especially after our Series A.
 * We'll give you a corporate card for expenses. Our philosophy is Freedom & Responsibiility. We trust you, just do what's best for the company.
 * We're strong believers in growth, as individuals and as a team. So anything that can help you grow can be expensed. For instance, free books
-
