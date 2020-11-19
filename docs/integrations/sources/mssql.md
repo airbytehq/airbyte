@@ -1,4 +1,4 @@
-# Microsoft SQL Services \(MSSQL\)
+# Microsoft SQL Server \(MSSQL\)
 
 ## Overview
 
