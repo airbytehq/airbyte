@@ -23,7 +23,7 @@ if [[ -z "$CI" ]]; then
 else
   # run build with local docker registery for CI
   docker pull localhost:5000/"$TAG" || true
-  docker build \
+  DOCKER_BUILDKIT=1 docker build \
     -f "$DOCKERFILE" . \
     -t "$TAG" \
     --iidfile "$ID_FILE" \
