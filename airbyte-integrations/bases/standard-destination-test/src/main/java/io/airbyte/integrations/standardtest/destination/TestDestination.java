@@ -252,8 +252,8 @@ public abstract class TestDestination {
   }
 
   /**
-   * Verify that the integration successfully writes records. Tests a wide variety of messages and
-   * schemas (aspirationally, anyway).
+   * Verify that the integration successfully writes records incrementally. The second run should
+   * append records to the datastore instead of overwriting the previous run.
    */
   @Test
   public void testIncrementalSync() throws Exception {
