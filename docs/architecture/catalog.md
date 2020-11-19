@@ -8,7 +8,7 @@ This section will document the meaning of each field in an `AirbyteStream`
 * `json_schema` - This field contains a [JsonSchema](https://json-schema.org/understanding-json-schema) representation of the schema of the stream.
 * `supported_sync_modes` - The sync modes that the stream supports. By default, all sources support `FULL_REFRESH`. Even if this array is empty, it can be assumed that a source supports `FULL_REFRESH`. The allowed sync modes are `FULL_REFRESH` and `INCREMENTAL`.
 * `default_cursor_field` - If a source supports the `INCREMENTAL` sync mode, it may, optionally, set this field. It is an array of keys to a field in the schema. If it set, by default, this field will be used to determine if a record is new or updated since the last sync.
-    * e.g. if the structure of a stream is `{ value: 2, metadata { updated_at: 2020-11-01 } }` the `default_cursor_field` might be `["metdata", "updated_at]`.
+    * e.g. if the structure of a stream is `{ value: 2, metadata: { updated_at: 2020-11-01 } }` the `default_cursor_field` might be `["metdata", "updated_at"]`.
 
 ## ConfiguredAirbyteStream
 This section will document the meaning of each field in an `ConfiguredAirbyteStream`
