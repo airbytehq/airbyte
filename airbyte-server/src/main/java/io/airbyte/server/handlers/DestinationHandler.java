@@ -34,13 +34,16 @@ import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationUpdate;
+import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.commons.json.JsonSecretsProcessor;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -53,6 +56,7 @@ public class DestinationHandler {
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
+  private final JsonSecretsProcessor secretProcessor;
 
   public DestinationHandler(final ConfigRepository configRepository,
                             final JsonSchemaValidator integrationSchemaValidation,
@@ -64,6 +68,7 @@ public class DestinationHandler {
     this.schedulerHandler = schedulerHandler;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
+    this.secretProcessor = new JsonSecretsProcessor();
   }
 
   public DestinationHandler(final ConfigRepository configRepository,
@@ -76,9 +81,8 @@ public class DestinationHandler {
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
-    validateDestination(
-        destinationCreate.getDestinationDefinitionId(),
-        destinationCreate.getConnectionConfiguration());
+    DestinationDefinitionSpecificationRead spec = getSpec(destinationCreate.getDestinationDefinitionId());
+    validateDestination(spec, destinationCreate.getConnectionConfiguration());
 
     // persist
     final UUID destinationId = uuidGenerator.get();
@@ -91,7 +95,7 @@ public class DestinationHandler {
         false);
 
     // read configuration from db
-    return buildDestinationRead(destinationId);
+    return buildDestinationRead(destinationId, spec);
   }
 
   public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody)
@@ -127,10 +131,17 @@ public class DestinationHandler {
     final DestinationConnection currentDci =
         configRepository.getDestinationConnection(destinationUpdate.getDestinationId());
 
+    final DestinationDefinitionSpecificationRead spec = getSpec(currentDci.getDestinationDefinitionId());
+
+    // if secrets are not being updated, copy them from the existing configuration
+    if (destinationUpdate.getUpdateConfigurationSecrets() == null || !destinationUpdate.getUpdateConfigurationSecrets()) {
+      JsonNode updateConfigurationWithSecrets = secretProcessor
+          .copySecrets(currentDci.getConfiguration(), destinationUpdate.getConnectionConfiguration(), spec.getConnectionSpecification());
+      destinationUpdate.setConnectionConfiguration(updateConfigurationWithSecrets);
+    }
+
     // validate configuration
-    validateDestination(
-        currentDci.getDestinationDefinitionId(),
-        destinationUpdate.getConnectionConfiguration());
+    validateDestination(spec, destinationUpdate.getConnectionConfiguration());
 
     // persist
     persistDestinationConnection(
@@ -142,7 +153,7 @@ public class DestinationHandler {
         currentDci.getTombstone());
 
     // read configuration from db
-    return buildDestinationRead(destinationUpdate.getDestinationId());
+    return buildDestinationRead(destinationUpdate.getDestinationId(), spec);
   }
 
   public DestinationRead getDestination(DestinationIdRequestBody destinationIdRequestBody)
@@ -169,12 +180,14 @@ public class DestinationHandler {
     return new DestinationReadList().destinations(reads);
   }
 
-  private void validateDestination(final UUID destinationId,
-                                   final JsonNode implementationJson)
+  private void validateDestination(final DestinationDefinitionSpecificationRead spec,
+                                   final JsonNode configuration) throws JsonValidationException {
+    validator.ensure(spec.getConnectionSpecification(), configuration);
+  }
+
+  private DestinationDefinitionSpecificationRead getSpec(UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    DestinationDefinitionSpecificationRead dcs =
-        schedulerHandler.getDestinationSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationId));
-    validator.ensure(dcs.getConnectionSpecification(), implementationJson);
+    return schedulerHandler.getDestinationSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinitionId));
   }
 
   private void persistDestinationConnection(final String name,
@@ -195,10 +208,18 @@ public class DestinationHandler {
     configRepository.writeDestinationConnection(destinationConnection);
   }
 
-  private DestinationRead buildDestinationRead(final UUID destinationId)
+  private DestinationRead buildDestinationRead(final UUID destinationId) throws JsonValidationException, IOException, ConfigNotFoundException {
+    DestinationDefinitionSpecificationRead spec = getSpec(configRepository.getDestinationConnection(destinationId).getDestinationDefinitionId());
+    return buildDestinationRead(destinationId, spec);
+  }
+
+  private DestinationRead buildDestinationRead(final UUID destinationId, DestinationDefinitionSpecificationRead spec)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    // read configuration from db
+
+    // remove secrets from config before returning the read
     final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
+    dci.setConfiguration(secretProcessor.removeSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
+
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
     return buildDestinationRead(dci, standardDestinationDefinition);

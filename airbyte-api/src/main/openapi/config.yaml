@@ -1135,6 +1135,8 @@ components:
           $ref: "#/components/schemas/SourceId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
+        updateConfigurationSecrets:
+          type: boolean
         name:
           type: string
     SourceRead:
@@ -1302,6 +1304,8 @@ components:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:
           type: string
+        updateConfigurationSecrets:
+          type: boolean
     DestinationRead:
       type: object
       required:
