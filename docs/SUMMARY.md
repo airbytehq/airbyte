@@ -22,7 +22,7 @@
     * [Marketo](integrations/sources/marketo.md)
     * [MySQL](integrations/sources/mysql.md)
     * [MSSQL](integrations/sources/mssql.md)
-    * [Microsoft SQL Server (MSSQL)](integrations/sources/mssql.md)
+    * [Microsoft SQL Server \(MSSQL\)](integrations/sources/mssql-1.md)
     * [Postgres](integrations/sources/postgres.md)
     * [Rest API](integrations/sources/rest-api.md)
     * [Salesforce](integrations/sources/salesforce.md)
