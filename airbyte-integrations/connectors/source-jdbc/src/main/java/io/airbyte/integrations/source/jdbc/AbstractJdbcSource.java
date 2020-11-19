@@ -39,8 +39,9 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
@@ -143,7 +144,7 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Stream<AirbyteMessage> read(JsonNode config, AirbyteCatalog catalog, JsonNode state) throws Exception {
+  public Stream<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
     final Instant now = Instant.now();
 
     final Database database = createDatabase(config);
@@ -153,7 +154,7 @@ public abstract class AbstractJdbcSource implements Source {
 
     Stream<AirbyteMessage> resultStream = Stream.empty();
 
-    for (final AirbyteStream airbyteStream : catalog.getStreams()) {
+    for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       if (!tableNameToTable.containsKey(airbyteStream.getName())) {
         continue;
       }

@@ -68,8 +68,6 @@ public class BigQueryIntegrationTest extends TestDestination {
   private static final String CONFIG_PROJECT_ID = "project_id";
   private static final String CONFIG_CREDS = "credentials_json";
 
-  private static final String COLUMN_DATA = "data";
-
   private BigQuery bigquery;
   private Dataset dataset;
   private boolean tornDown;

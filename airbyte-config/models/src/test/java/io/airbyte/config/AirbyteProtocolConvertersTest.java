@@ -32,6 +32,8 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,12 @@ class AirbyteProtocolConvertersTest {
   private static final String COLUMN_AGE = "age";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
       .withStreams(Lists.newArrayList(new AirbyteStream()
+          .withName(STREAM)
+          .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(
+              Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
+              Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER)))));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = new ConfiguredAirbyteCatalog()
+      .withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
           .withName(STREAM)
           .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(
               Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
@@ -87,13 +95,13 @@ class AirbyteProtocolConvertersTest {
                       .withSelected(false)))));
 
   @Test
-  void testToCatalog() {
-    assertEquals(CATALOG, AirbyteProtocolConverters.toCatalog(SCHEMA));
+  void testToConfiguredCatalog() {
+    assertEquals(CONFIGURED_CATALOG, AirbyteProtocolConverters.toConfiguredCatalog(SCHEMA));
   }
 
   @Test
-  void testToCatalogWithUnselected() {
-    assertEquals(CATALOG, AirbyteProtocolConverters.toCatalog(SCHEMA_WITH_UNSELECTED));
+  void testToConfiguredCatalogWithUnselected() {
+    assertEquals(CONFIGURED_CATALOG, AirbyteProtocolConverters.toConfiguredCatalog(SCHEMA_WITH_UNSELECTED));
   }
 
   @Test

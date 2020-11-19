@@ -113,7 +113,7 @@ public class TestConfigHelpers {
     StandardSyncInput syncInput = new StandardSyncInput()
         .withDestinationConnection(destinationConnectionConfig)
         .withSyncMode(standardSync.getSyncMode())
-        .withCatalog(AirbyteProtocolConverters.toCatalog(standardSync.getSchema()))
+        .withCatalog(AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema()))
         .withConnectionId(standardSync.getConnectionId())
         .withSourceConnection(sourceConnectionConfig)
         .withState(state);
