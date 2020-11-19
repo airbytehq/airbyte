@@ -33,7 +33,7 @@ Here are the values we deeply believe in:
 
 ## **Our Investors**
 
-We have raised a pre-seed round and a seed one for a total of $1.8M. Our investors include YCombinator, 8VC, Auren Hoffman \(founder of LiveRamp\), Travis May \(CEO of DataVant\), Alain Rossmann \(entrepreneur with several exits &gt;$1B\), and other leaders in the data industry. 
+We have raised a pre-seed round and a seed one for a total of $1.8M. Our investors include YCombinator, 8VC, and a few leaders in the data industry. 
 
 We have a lot of capital, but [we're a lean, strong team](../company-handbook/team.md) - so you've got the opportunity to have a huge impact.
 
