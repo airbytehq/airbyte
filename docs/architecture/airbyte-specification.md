@@ -168,7 +168,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 
 * Input:
   1. `config` - A configuration JSON object that has been validated using the `ConnectorSpecification`.
-  2. `catalog` - An `AirbyteCatalog`. This `catalog` should be a subset of the `catalog` returned by the `discover` command. It is what will be used in the `read` command to select what data to transfer.
+  2. `catalog` - An `ConfiguredAirbyteCatalog`. This `catalog` should be constructed from the `catalog` returned by the `discover` command. This is done by copying the streams that you want to sync from the `AirbyteCatalog` into the `ConfiguredAirbyteCatalog`. To convert an `AirbyteStream` to a `ConfiguredAirbyteStream` copy the `json_schema` and `name` fields. struct It is what will be used in the `read` command to select what data to transfer.
   3. `state` - A JSON object. This object is only ever written or read by the source, so it is a JSON blob with whatever information is necessary to keep track of how much of the data source has already been read. Because Airbyte currently only supports [Full Refresh](full-refresh.md), this state object is purely cosmetic. It will become more important when Airbyte beings to support incremental syncs.
 * Output:
   1. `message stream` - A stream of `AirbyteRecordMessage`s and `AirbyteStateMessage`s piped to stdout.
