@@ -169,3 +169,4 @@ CREATE TABLE "powertrain_specs" (
     "transmission" VARCHAR
 );
 ```
+
