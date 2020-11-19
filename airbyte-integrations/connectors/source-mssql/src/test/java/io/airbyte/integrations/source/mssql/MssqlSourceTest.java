@@ -164,7 +164,7 @@ class MssqlSourceTest {
   void testReadFailure() {
     final ConfiguredAirbyteStream spiedAbStream = spy(CONFIGURED_CATALOG.getStreams().get(0));
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-    doThrow(new IllegalStateException()).when(spiedAbStream).getName();
+    doThrow(new IllegalStateException()).when(spiedAbStream).getStream();
 
     final MssqlSource source = new MssqlSource();
 

@@ -107,8 +107,8 @@ public class SnowflakeDestination implements Destination {
     // create temporary tables if they do not exist
     // we don't use temporary/transient since we want to control the lifecycle
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String tableName = NamingHelper.getRawTableName(stream.getName());
-      final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
+      final String tableName = NamingHelper.getRawTableName(stream.getStream().getName());
+      final String tmpTableName = stream.getStream().getName() + "_" + Instant.now().toEpochMilli();
 
       final String query = String.format(
           "CREATE TABLE IF NOT EXISTS \"%s\" ( \n"
@@ -121,8 +121,8 @@ public class SnowflakeDestination implements Destination {
       SnowflakeDatabase.executeSync(connectionFactory, query);
 
       final Path queueRoot = Files.createTempDirectory("queues");
-      final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(stream.getName()), stream.getName());
-      writeBuffers.put(stream.getName(), new SnowflakeWriteContext(tableName, tmpTableName, writeBuffer));
+      final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(stream.getStream().getName()), stream.getStream().getName());
+      writeBuffers.put(stream.getStream().getName(), new SnowflakeWriteContext(tableName, tmpTableName, writeBuffer));
     }
 
     // write to transient tables

@@ -454,7 +454,8 @@ class SourceFile(Source):
     @staticmethod
     def parse_catalog(catalog: AirbyteCatalog) -> set:
         columns = set()
-        for stream in catalog.streams:
+        for configured_stream in catalog.streams:
+            stream = configured_stream["stream"]
             for key in stream.json_schema["properties"].keys():
                 columns.add(key)
         return columns

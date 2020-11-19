@@ -134,6 +134,9 @@ definitions:
         type: array
         items:
           "$ref": "#/definitions/SyncMode"
+      source_defined_cursor:
+        description: If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used.
+        type: boolean
       default_cursor_field:
         description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
         type: array
@@ -154,16 +157,10 @@ definitions:
     type: object
     additionalProperties: false
     required:
-      - name
-      - json_schema
+      - stream
     properties:
-      name:
-        type: string
-        description: Stream's name.
-      json_schema:
-        description: Stream schema using Json Schema specs.
-        type: object
-        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      stream:
+        "$ref": "#/definitions/AirbyteStream"
       sync_mode:
         "$ref": "#/definitions/SyncMode"
         default: full_refresh

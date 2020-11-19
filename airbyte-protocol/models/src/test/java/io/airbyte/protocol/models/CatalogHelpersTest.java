@@ -56,7 +56,8 @@ class CatalogHelpersTest {
   @Test
   void testGetTopLevelFieldNames() {
     final String json = "{ \"type\": \"object\", \"properties\": { \"name\": { \"type\": \"string\" } } } ";
-    final Set<String> actualFieldNames = CatalogHelpers.getTopLevelFieldNames(new ConfiguredAirbyteStream().withJsonSchema(Jsons.deserialize(json)));
+    final Set<String> actualFieldNames =
+        CatalogHelpers.getTopLevelFieldNames(new ConfiguredAirbyteStream().withStream(new AirbyteStream().withJsonSchema(Jsons.deserialize(json))));
 
     assertEquals(Sets.newHashSet("name"), actualFieldNames);
   }

@@ -60,7 +60,8 @@ class SourceMailchimp(Source):
         catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
 
         logger.info("Starting syncing mailchimp")
-        for stream in catalog.streams:
+        for configured_stream in catalog.streams:
+            stream = configured_stream["stream"]
             for record in self._read_record(client=client, stream=stream.name):
                 yield AirbyteMessage(type=Type.RECORD, record=record)
 
