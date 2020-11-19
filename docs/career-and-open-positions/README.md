@@ -53,4 +53,4 @@ Once all of this done, we will discuss the process internally and get back to yo
 * Unlimited vacations
 * Health insurance: we let you choose the insurance of your choice and cover $500 for you + $200 for any dependents. This will evolve with time, especially after our Series A.
 * We'll give you a corporate card for expenses. Our philosophy is Freedom & Responsibiility. We trust you, just do what's best for the company.
-* We're strong believers in growth, as individuals and as a team. So anything that can help you grow can be expensed. For instance, free books
+* We're strong believers in growth, as individuals and as a team. So anything that can help you grow can be expensed - for instance, free books.
