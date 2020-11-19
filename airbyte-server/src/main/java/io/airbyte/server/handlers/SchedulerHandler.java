@@ -80,7 +80,7 @@ public class SchedulerHandler {
     final SourceConnection connectionImplementation =
         configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
 
-    final StandardSourceDefinition source = configRepository.getStandardSource(connectionImplementation.getSourceDefinitionId());
+    final StandardSourceDefinition source = configRepository.getStandardSourceDefinition(connectionImplementation.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final long jobId = schedulerPersistence.createSourceCheckConnectionJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
@@ -127,7 +127,7 @@ public class SchedulerHandler {
     final SourceConnection connectionImplementation =
         configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
 
-    StandardSourceDefinition source = configRepository.getStandardSource(connectionImplementation.getSourceDefinitionId());
+    StandardSourceDefinition source = configRepository.getStandardSourceDefinition(connectionImplementation.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final long jobId = schedulerPersistence.createDiscoverSchemaJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
@@ -152,8 +152,8 @@ public class SchedulerHandler {
 
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    UUID sourceId = sourceDefinitionIdRequestBody.getSourceDefinitionId();
-    StandardSourceDefinition source = configRepository.getStandardSource(sourceId);
+    UUID sourceDefinitionId = sourceDefinitionIdRequestBody.getSourceDefinitionId();
+    StandardSourceDefinition source = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final ConnectorSpecification spec = getConnectorSpecification(imageName);
 
@@ -166,7 +166,7 @@ public class SchedulerHandler {
     return new SourceDefinitionSpecificationRead()
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
-        .sourceDefinitionId(sourceId);
+        .sourceDefinitionId(sourceDefinitionId);
   }
 
   public ConnectorSpecification getConnectorSpecification(String imageName) throws IOException {
@@ -207,7 +207,7 @@ public class SchedulerHandler {
     final DestinationConnection destinationConnection =
         configRepository.getDestinationConnection(standardSync.getDestinationId());
 
-    StandardSourceDefinition source = configRepository.getStandardSource(sourceConnection.getSourceDefinitionId());
+    StandardSourceDefinition source = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     final String sourceImageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
 
     StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());

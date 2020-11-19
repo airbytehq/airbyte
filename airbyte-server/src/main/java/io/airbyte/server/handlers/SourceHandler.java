@@ -56,24 +56,25 @@ public class SourceHandler {
   private final ConnectionsHandler connectionsHandler;
   private final JsonSecretsProcessor secretsProcessor;
 
-  public SourceHandler(final ConfigRepository configRepository,
-                       final JsonSchemaValidator integrationSchemaValidation,
-                       final SchedulerHandler schedulerHandler,
-                       final ConnectionsHandler connectionsHandler,
-                       final Supplier<UUID> uuidGenerator) {
+  SourceHandler(final ConfigRepository configRepository,
+                final JsonSchemaValidator integrationSchemaValidation,
+                final SchedulerHandler schedulerHandler,
+                final ConnectionsHandler connectionsHandler,
+                final Supplier<UUID> uuidGenerator,
+                final JsonSecretsProcessor secretsProcessor) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
     this.schedulerHandler = schedulerHandler;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
-    this.secretsProcessor = new JsonSecretsProcessor();
+    this.secretsProcessor = secretsProcessor;
   }
 
   public SourceHandler(final ConfigRepository configRepository,
                        final JsonSchemaValidator integrationSchemaValidation,
                        final SchedulerHandler schedulerHandler,
                        final ConnectionsHandler connectionsHandler) {
-    this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID);
+    this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID, new JsonSecretsProcessor());
   }
 
   public SourceRead createSource(SourceCreate sourceCreate)
@@ -106,12 +107,10 @@ public class SourceHandler {
     SourceDefinitionSpecificationRead spec = schedulerHandler
         .getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(standardSource.getSourceDefinitionId()));
 
-    // if credentials are not being updated, copy them from the existing ones
-    if (sourceUpdate.getUpdateConfigurationSecrets() == null || !sourceUpdate.getUpdateConfigurationSecrets()) {
-      JsonNode updatedConfiguration = secretsProcessor
-          .copySecrets(persistedSource.getConfiguration(), sourceUpdate.getConnectionConfiguration(), spec.getConnectionSpecification());
-      sourceUpdate.setConnectionConfiguration(updatedConfiguration);
-    }
+    // Copy any necessary secrets from the current source to the incoming update source
+    JsonNode updatedConfiguration = secretsProcessor
+        .copySecrets(persistedSource.getConfiguration(), sourceUpdate.getConnectionConfiguration(), spec.getConnectionSpecification());
+    sourceUpdate.setConnectionConfiguration(updatedConfiguration);
 
     // TODO we pass the spec as input to avoid the overhead of having to run a getSpec job. Fix this
     // once getSpec is sped up.
@@ -182,16 +181,17 @@ public class SourceHandler {
   private SourceRead buildSourceRead(UUID sourceId) throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
     SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
-        new SourceDefinitionIdRequestBody().sourceDefinitionId(configRepository.getStandardSource(sourceId).getSourceDefinitionId());
-    return buildSourceRead(sourceId, schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody));
+        new SourceDefinitionIdRequestBody().sourceDefinitionId(configRepository.getSourceDefinitionFromSource(sourceId).getSourceDefinitionId());
+    SourceDefinitionSpecificationRead spec = schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody);
+    return buildSourceRead(sourceId, spec);
   }
 
   private SourceRead buildSourceRead(UUID sourceId, SourceDefinitionSpecificationRead spec)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
-    final StandardSourceDefinition standardSourceDefinition = configRepository.getStandardSource(sourceConnection.getSourceDefinitionId());
-    final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(spec.getConnectionSpecification(), sourceConnection.getConfiguration());
+    final StandardSourceDefinition standardSourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+    final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), spec.getConnectionSpecification());
     sourceConnection.setConfiguration(sanitizedConfig);
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }

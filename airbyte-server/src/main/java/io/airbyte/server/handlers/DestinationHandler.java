@@ -57,24 +57,25 @@ public class DestinationHandler {
   private final JsonSchemaValidator validator;
   private final JsonSecretsProcessor secretProcessor;
 
-  public DestinationHandler(final ConfigRepository configRepository,
-                            final JsonSchemaValidator integrationSchemaValidation,
-                            final SchedulerHandler schedulerHandler,
-                            final ConnectionsHandler connectionsHandler,
-                            final Supplier<UUID> uuidGenerator) {
+  DestinationHandler(final ConfigRepository configRepository,
+                     final JsonSchemaValidator integrationSchemaValidation,
+                     final SchedulerHandler schedulerHandler,
+                     final ConnectionsHandler connectionsHandler,
+                     final Supplier<UUID> uuidGenerator,
+                     final JsonSecretsProcessor secretsProcessor) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
     this.schedulerHandler = schedulerHandler;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
-    this.secretProcessor = new JsonSecretsProcessor();
+    this.secretProcessor = secretsProcessor;
   }
 
   public DestinationHandler(final ConfigRepository configRepository,
                             final JsonSchemaValidator integrationSchemaValidation,
                             final SchedulerHandler schedulerHandler,
                             final ConnectionsHandler connectionsHandler) {
-    this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID);
+    this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID, new JsonSecretsProcessor());
   }
 
   public DestinationRead createDestination(final DestinationCreate destinationCreate)

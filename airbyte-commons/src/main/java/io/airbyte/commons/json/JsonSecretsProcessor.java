@@ -29,8 +29,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-import javax.swing.text.MaskFormatter;
-
 public class JsonSecretsProcessor {
 
   public static String AIRBYTE_SECRET_FIELD = "airbyte_secret";
@@ -49,7 +47,7 @@ public class JsonSecretsProcessor {
    * future.
    *
    * @param schema Schema containing secret annotations
-   * @param obj    Object containing potentially secret fields
+   * @param obj Object containing potentially secret fields
    * @return
    */
   public JsonNode maskSecrets(JsonNode obj, JsonNode schema) {
@@ -75,8 +73,8 @@ public class JsonSecretsProcessor {
    * support the keywords anyOf, allOf, oneOf, not, and dependencies. This will be fixed in the
    * future.
    *
-   * @param src    The object potentially containing secrets
-   * @param dst    The object to absorb secrets into
+   * @param src The object potentially containing secrets
+   * @param dst The object to absorb secrets into
    * @param schema
    * @return
    */

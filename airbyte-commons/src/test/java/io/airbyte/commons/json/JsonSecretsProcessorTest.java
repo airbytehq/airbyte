@@ -33,8 +33,6 @@ import io.airbyte.commons.resources.MoreResources;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.text.MaskFormatter;
-
 public class JsonSecretsProcessorTest {
 
   JsonSecretsProcessor processor = new JsonSecretsProcessor();
