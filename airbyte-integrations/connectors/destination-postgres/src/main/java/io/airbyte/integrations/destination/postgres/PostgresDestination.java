@@ -280,16 +280,14 @@ public class PostgresDestination implements Destination {
 
             switch (writeConfig.getSyncMode()) {
               case FULL_REFRESH -> {
-                // delete table if already exist. rename tmp table to main table name.
-                query.append(String.format("DROP TABLE IF EXISTS \"%s\";\n", writeConfig.getTableName()));
-                query.append(String.format("ALTER TABLE \"%s\" RENAME TO \"%s\";\n", writeConfig.getTmpTableName(), writeConfig.getTableName()));
+                // truncate table if already exist.
+                query.append(String.format("TRUNCATE TABLE \"%s\";\n", writeConfig.getTableName()));
               }
-              case INCREMENTAL -> {
-                // create table if does not exit. delete tables if already exist. copy new tables into their place.
-                query.append(String.format("INSERT INTO %s SELECT * FROM %s;\n", writeConfig.getTableName(), writeConfig.getTmpTableName()));
-              }
+              case INCREMENTAL -> {}
               default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
             }
+            // always copy data from tmp table into "main" table.
+            query.append(String.format("INSERT INTO \"%s\" SELECT * FROM \"%s\";\n", writeConfig.getTableName(), writeConfig.getTmpTableName()));
           }
           return ctx.execute(query.toString());
         });
@@ -301,11 +299,6 @@ public class PostgresDestination implements Destination {
       }
       cleanupTmpTables(database, writeConfigs);
       database.close();
-    }
-
-    private boolean doestTableExistQuery(Database database, String tableName) throws SQLException {
-      return database
-          .query(ctx -> (long) ctx.fetch(String.format("SELECT FROM information_schema.tables WHERE table_name %s", tableName)).size() == 1);
     }
 
     private static void cleanupTmpTables(Database database, Map<String, WriteConfig> writeConfigs) {
