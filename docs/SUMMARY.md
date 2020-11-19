@@ -22,7 +22,7 @@
     * [Marketo](integrations/sources/marketo.md)
     * [MySQL](integrations/sources/mysql.md)
     * [MSSQL](integrations/sources/mssql.md)
-    * [Microsoft SQL Server (MSSQL)](integrations/sources/mssql.md)
+    * [Microsoft SQL Server \(MSSQL\)](integrations/sources/mssql-1.md)
     * [Postgres](integrations/sources/postgres.md)
     * [Rest API](integrations/sources/rest-api.md)
     * [Salesforce](integrations/sources/salesforce.md)
@@ -57,5 +57,7 @@
   * [Team](company-handbook/team.md)
   * [Strategy](company-handbook/strategy.md)
   * [Business Model](company-handbook/business-model.md)
+* [Career & Open Positions](career-and-open-positions/README.md)
+  * [Founding Developer Evangelist](career-and-open-positions/founding-developer-evangelist.md)
 * [License](license.md)
 
