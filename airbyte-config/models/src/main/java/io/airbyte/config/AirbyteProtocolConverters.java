@@ -28,7 +28,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -40,15 +41,15 @@ import java.util.stream.StreamSupport;
 // todo (cgardens) - hack, remove after we've gotten rid of Schema object.
 public class AirbyteProtocolConverters {
 
-  public static AirbyteCatalog toCatalog(Schema schema) {
-    List<AirbyteStream> airbyteStreams = schema.getStreams().stream()
-        .map(s -> new AirbyteStream()
+  public static ConfiguredAirbyteCatalog toConfiguredCatalog(Schema schema) {
+    List<ConfiguredAirbyteStream> airbyteStreams = schema.getStreams().stream()
+        .map(s -> new ConfiguredAirbyteStream()
             .withName(s.getName())
             .withJsonSchema(toJson(s.getFields())))
         // perform selection based on the output of toJson, which keeps properties if selected=true
         .filter(s -> !s.getJsonSchema().get("properties").isEmpty())
         .collect(Collectors.toList());
-    return new AirbyteCatalog().withStreams(airbyteStreams);
+    return new ConfiguredAirbyteCatalog().withStreams(airbyteStreams);
   }
 
   // todo (cgardens) - this will only work with table / column schemas. it's hack to get us through

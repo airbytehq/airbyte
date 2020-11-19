@@ -45,6 +45,8 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -63,6 +65,7 @@ class IntegrationRunnerTest {
 
   private static final String CONFIG_FILE_NAME = "config.json";
   private static final String CATALOG_FILE_NAME = "catalog.json";
+  private static final String CONFIGURED_CATALOG_FILE_NAME = "configured_catalog.json";
   private static final String STATE_FILE_NAME = "state.json";
 
   private static final String[] ARGS = new String[] {"args"};
@@ -74,6 +77,7 @@ class IntegrationRunnerTest {
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final State STATE = new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "05/08/1945")));
 
   private IntegrationCliParser cliParser;
@@ -82,6 +86,7 @@ class IntegrationRunnerTest {
   private Source source;
   private Path configPath;
   private Path catalogPath;
+  private Path configuredCatalogPath;
   private Path statePath;
 
   @SuppressWarnings("unchecked")
@@ -95,6 +100,7 @@ class IntegrationRunnerTest {
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
     catalogPath = IOs.writeFile(configDir, CATALOG_FILE_NAME, Jsons.serialize(CATALOG));
+    configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
     statePath = IOs.writeFile(configDir, STATE_FILE_NAME, Jsons.serialize(STATE));
   }
 
@@ -170,7 +176,7 @@ class IntegrationRunnerTest {
 
   @Test
   void testRead() throws Exception {
-    final IntegrationConfig intConfig = IntegrationConfig.read(configPath, catalogPath, statePath);
+    final IntegrationConfig intConfig = IntegrationConfig.read(configPath, configuredCatalogPath, statePath);
     final AirbyteMessage message1 = new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("names", "byron"))));
@@ -179,11 +185,11 @@ class IntegrationRunnerTest {
             .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(source.read(CONFIG, CATALOG, STATE.getState())).thenReturn(Stream.of(message1, message2));
+    when(source.read(CONFIG, CONFIGURED_CATALOG, STATE.getState())).thenReturn(Stream.of(message1, message2));
 
     new IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS);
 
-    verify(source).read(CONFIG, CATALOG, STATE.getState());
+    verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE.getState());
     verify(stdoutConsumer).accept(Jsons.serialize(message1));
     verify(stdoutConsumer).accept(Jsons.serialize(message2));
   }
@@ -191,15 +197,15 @@ class IntegrationRunnerTest {
   @SuppressWarnings("unchecked")
   @Test
   void testWrite() throws Exception {
-    final IntegrationConfig intConfig = IntegrationConfig.write(configPath, catalogPath);
+    final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
     final DestinationConsumer<AirbyteMessage> destinationConsumerMock = mock(DestinationConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.write(CONFIG, CATALOG)).thenReturn(destinationConsumerMock);
+    when(destination.write(CONFIG, CONFIGURED_CATALOG)).thenReturn(destinationConsumerMock);
 
     final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null));
     runner.run(ARGS);
 
-    verify(destination).write(CONFIG, CATALOG);
+    verify(destination).write(CONFIG, CONFIGURED_CATALOG);
   }
 
   @SuppressWarnings("unchecked")
