@@ -39,7 +39,6 @@ import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.DefaultSyncWorker;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -140,11 +139,7 @@ public class WorkerRunFactory {
             new DefaultSyncWorker(
                 new DefaultAirbyteSource(sourceLauncher),
                 new DefaultAirbyteDestination(destinationLauncher),
-                new AirbyteMessageTracker(),
-                NormalizationRunnerFactory.create(
-                    config.getDestinationDockerImage(),
-                    pbf,
-                    syncInput.getDestinationConnection().getConfiguration()))));
+                new AirbyteMessageTracker())));
   }
 
   private IntegrationLauncher createLauncher(final String image) {

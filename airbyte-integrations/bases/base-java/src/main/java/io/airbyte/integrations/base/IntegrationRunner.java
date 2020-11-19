@@ -33,7 +33,11 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.integrations.base.normalization.NormalizationRunner;
+import io.airbyte.integrations.base.normalization.NormalizationRunnerFactory;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
@@ -113,6 +117,10 @@ public class IntegrationRunner {
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, catalog);
         consumeWriteStream(consumer);
+
+        NormalizationRunner normalizer = NormalizationRunnerFactory.create(destination.getClass().getName(), config);
+        final Path normalizationRoot = Files.createDirectories(Paths.get("normalize"));
+        normalizer.normalize(normalizationRoot, config, catalog);
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
     }

@@ -35,11 +35,9 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.protocols.Destination;
 import io.airbyte.workers.protocols.MessageTracker;
 import io.airbyte.workers.protocols.Source;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
@@ -57,18 +55,15 @@ public class DefaultSyncWorker implements SyncWorker {
   private final Source<AirbyteMessage> source;
   private final Destination<AirbyteMessage> destination;
   private final MessageTracker<AirbyteMessage> messageTracker;
-  private final NormalizationRunner normalizationRunner;
 
   private final AtomicBoolean cancelled;
 
   public DefaultSyncWorker(final Source<AirbyteMessage> source,
                            final Destination<AirbyteMessage> destination,
-                           final MessageTracker<AirbyteMessage> messageTracker,
-                           final NormalizationRunner normalizationRunner) {
+                           final MessageTracker<AirbyteMessage> messageTracker) {
     this.source = source;
     this.destination = destination;
     this.messageTracker = messageTracker;
-    this.normalizationRunner = normalizationRunner;
 
     this.cancelled = new AtomicBoolean(false);
   }
@@ -102,15 +97,6 @@ public class DefaultSyncWorker implements SyncWorker {
       }
 
       destination.notifyEndOfStream();
-
-      try (normalizationRunner) {
-        LOGGER.info("Running normalization.");
-        normalizationRunner.start();
-        final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-        if (!normalizationRunner.normalize(normalizationRoot, syncInput.getDestinationConnection().getConfiguration(), syncInput.getCatalog())) {
-          throw new WorkerException("Normalization Failed.");
-        }
-      }
     } catch (Exception e) {
       LOGGER.error("Sync worker failed.", e);
 

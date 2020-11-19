@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.normalization;
+package io.airbyte.integrations.base.normalization;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;

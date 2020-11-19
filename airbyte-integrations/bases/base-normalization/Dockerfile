@@ -4,7 +4,7 @@ FROM airbyte/base-airbyte-protocol-python:dev
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte
-COPY entrypoint.sh .
+COPY normalize.sh .
 
 WORKDIR /airbyte/normalization_code
 COPY normalization ./normalization
@@ -14,7 +14,7 @@ COPY dbt-project-template/ ./dbt-template/
 
 WORKDIR /airbyte
 
-ENTRYPOINT ["/airbyte/entrypoint.sh"]
+ENTRYPOINT ["/airbyte/normalize.sh"]
 
 LABEL io.airbyte.version=0.1.1
 LABEL io.airbyte.name=airbyte/normalization

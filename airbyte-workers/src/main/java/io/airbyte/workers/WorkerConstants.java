@@ -34,6 +34,4 @@ public class WorkerConstants {
 
   public static final String LOG_FILENAME = "logs.log";
 
-  public static final String BASIC_NORMALIZATION_KEY = "basic_normalization";
-
 }

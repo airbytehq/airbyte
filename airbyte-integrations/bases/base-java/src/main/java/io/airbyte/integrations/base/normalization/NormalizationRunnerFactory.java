@@ -22,26 +22,26 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.normalization;
+package io.airbyte.integrations.base.normalization;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.normalization.NormalizationRunner.NoOpNormalizationRunner;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.integrations.base.normalization.NormalizationRunner.NoOpNormalizationRunner;
 import java.util.Map;
 import java.util.Optional;
 
 public class NormalizationRunnerFactory {
 
+  public static final String BASIC_NORMALIZATION_KEY = "basic_normalization";
+
   private static final Map<String, DefaultNormalizationRunner.DestinationType> NORMALIZATION_MAPPING =
       ImmutableMap.<String, DefaultNormalizationRunner.DestinationType>builder()
-          .put("airbyte/destination-bigquery", DefaultNormalizationRunner.DestinationType.BIGQUERY)
-          .put("airbyte/destination-postgres", DefaultNormalizationRunner.DestinationType.POSTGRES)
-          .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
+          .put("io.airbyte.integrations.destination.bigquery.BigQueryDestination", DefaultNormalizationRunner.DestinationType.BIGQUERY)
+          .put("io.airbyte.integrations.destination.postgres.PostgresDestination", DefaultNormalizationRunner.DestinationType.POSTGRES)
+          .put("io.airbyte.integrations.destination.snowflake.SnowflakeDestination", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .build();
 
-  public static NormalizationRunner create(String imageName, ProcessBuilderFactory pbf, JsonNode config) {
+  public static NormalizationRunner create(String imageName, JsonNode config) {
     if (!shouldNormalize(config)) {
       return new NoOpNormalizationRunner();
     }
@@ -49,7 +49,7 @@ public class NormalizationRunnerFactory {
     final String imageNameWithoutTag = imageName.split(":")[0];
 
     if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
-      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag), pbf);
+      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag));
     } else {
       throw new IllegalStateException(
           String.format("Requested normalization for %s, but it is not included in the normalization mapping.", imageName));
@@ -57,7 +57,7 @@ public class NormalizationRunnerFactory {
   }
 
   private static boolean shouldNormalize(JsonNode config) {
-    return Optional.ofNullable(config.get(WorkerConstants.BASIC_NORMALIZATION_KEY))
+    return Optional.ofNullable(config.get(BASIC_NORMALIZATION_KEY))
         .map(JsonNode::asBoolean)
         .orElse(false);
   }

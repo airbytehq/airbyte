@@ -43,6 +43,7 @@ import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.integrations.base.normalization.NormalizationRunnerFactory;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -52,10 +53,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.normalization.NormalizationRunner;
-import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -320,22 +317,6 @@ public abstract class TestDestination {
     messages.forEach(message -> Exceptions.toRuntime(() -> target.accept(message)));
     target.notifyEndOfStream();
     target.close();
-
-    // skip if basic normalization is not configured to run (either not set or false).
-    if (!config.hasNonNull(WorkerConstants.BASIC_NORMALIZATION_KEY) || !config.get(WorkerConstants.BASIC_NORMALIZATION_KEY).asBoolean()) {
-      return;
-    }
-
-    final NormalizationRunner runner = NormalizationRunnerFactory.create(
-        getImageName(),
-        pbf, targetConfig.getDestinationConnectionConfiguration());
-    runner.start();
-    final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-    if (!runner.normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(),
-        targetConfig.getCatalog())) {
-      throw new WorkerException("Normalization Failed.");
-    }
-    runner.close();
   }
 
   private List<AirbyteRecordMessage> retrieveNormalizedRecordsForCatalog(AirbyteCatalog catalog) throws Exception {
@@ -436,7 +417,7 @@ public abstract class TestDestination {
 
   private JsonNode getConfigWithBasicNormalization() throws Exception {
     final JsonNode config = getConfig();
-    ((ObjectNode) config).put(WorkerConstants.BASIC_NORMALIZATION_KEY, true);
+    ((ObjectNode) config).put(NormalizationRunnerFactory.BASIC_NORMALIZATION_KEY, true);
     return config;
   }
 

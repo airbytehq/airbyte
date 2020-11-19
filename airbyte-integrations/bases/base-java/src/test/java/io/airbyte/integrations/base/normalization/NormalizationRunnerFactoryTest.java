@@ -22,51 +22,47 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.normalization;
+package io.airbyte.integrations.base.normalization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
-import io.airbyte.workers.normalization.NormalizationRunner.NoOpNormalizationRunner;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.integrations.base.normalization.DefaultNormalizationRunner.DestinationType;
+import io.airbyte.integrations.base.normalization.NormalizationRunner.NoOpNormalizationRunner;
 import java.util.Collections;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 class NormalizationRunnerFactoryTest {
 
-  private static final JsonNode CONFIG_WITH_NORMALIZATION = Jsons.jsonNode(ImmutableMap.of("basic_normalization", true));
-  private ProcessBuilderFactory pbf;
+  private static final JsonNode CONFIG_WITH_NORMALIZATION = Jsons.jsonNode(
+      Map.of("basic_normalization", true));
 
   @BeforeEach
-  void setup() {
-    pbf = mock(ProcessBuilderFactory.class);
-  }
+  void setup() {}
 
   @Test
   void testMappings() {
     assertEquals(DestinationType.BIGQUERY,
         ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-bigquery:0.1.0", pbf, CONFIG_WITH_NORMALIZATION)).getDestinationType());
+            "io.airbyte.integrations.destination.bigquery.BigQueryDestination", CONFIG_WITH_NORMALIZATION)).getDestinationType());
     assertEquals(DestinationType.POSTGRES,
         ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-postgres:0.1.0", pbf, CONFIG_WITH_NORMALIZATION)).getDestinationType());
+            "io.airbyte.integrations.destination.postgres.PostgresDestination", CONFIG_WITH_NORMALIZATION)).getDestinationType());
     assertEquals(DestinationType.SNOWFLAKE,
         ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-snowflake:0.1.0", pbf, CONFIG_WITH_NORMALIZATION)).getDestinationType());
+            "io.airbyte.integrations.destination.snowflake.SnowflakeDestination", CONFIG_WITH_NORMALIZATION)).getDestinationType());
     assertThrows(IllegalStateException.class,
-        () -> NormalizationRunnerFactory.create("airbyte/destination-csv:0.1.0", pbf, CONFIG_WITH_NORMALIZATION));
+        () -> NormalizationRunnerFactory.create("io.airbyte.integrations.destination.csv.CsvDestination", CONFIG_WITH_NORMALIZATION));
   }
 
   @Test
   void testShouldNotNormalize() {
-    assertTrue(NormalizationRunnerFactory.create("airbyte/destination-bigquery:0.1.0", pbf,
+    assertTrue(NormalizationRunnerFactory.create("io.airbyte.integrations.destination.bigquery.BigQueryDestination",
         Jsons.jsonNode(Collections.emptyMap())) instanceof NoOpNormalizationRunner);
   }
 

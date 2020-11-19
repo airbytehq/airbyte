@@ -10,4 +10,5 @@ dependencies {
     implementation project(':airbyte-protocol:models')
 
     implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
 }

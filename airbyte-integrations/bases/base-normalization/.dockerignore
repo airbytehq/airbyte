@@ -1,6 +1,6 @@
 *
 !Dockerfile
-!entrypoint.sh
+!normalize.sh
 !setup.py
 !normalization
 !dbt-project-template

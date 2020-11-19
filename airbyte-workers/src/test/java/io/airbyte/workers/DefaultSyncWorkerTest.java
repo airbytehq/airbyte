@@ -38,7 +38,6 @@ import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
@@ -68,7 +67,6 @@ class DefaultSyncWorkerTest {
   private StandardSyncInput invalidSyncInput;
   private StandardTapConfig tapConfig;
   private StandardTargetConfig targetConfig;
-  private NormalizationRunner normalizationRunner;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -100,19 +98,16 @@ class DefaultSyncWorkerTest {
 
     tap = mock(AirbyteSource.class);
     target = mock(AirbyteDestination.class);
-    normalizationRunner = mock(NormalizationRunner.class);
 
     when(tap.isFinished()).thenReturn(false, false, false, false, true);
     when(tap.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.empty(), Optional.of(RECORD_MESSAGE2),
         Optional.of(INVALID_RECORD_MESSAGE));
-    when(normalizationRunner.normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog()))
-        .thenReturn(true);
   }
 
   @Test
   void test() throws Exception {
     final DefaultSyncWorker defaultSyncWorker =
-        new DefaultSyncWorker(tap, target, new AirbyteMessageTracker(), normalizationRunner);
+        new DefaultSyncWorker(tap, target, new AirbyteMessageTracker());
     final OutputAndStatus<StandardSyncOutput> run = defaultSyncWorker.run(invalidSyncInput, jobRoot);
 
     assertEquals(JobStatus.SUCCEEDED, run.getStatus());
@@ -121,10 +116,6 @@ class DefaultSyncWorkerTest {
     verify(target).start(targetConfig, jobRoot);
     verify(target).accept(RECORD_MESSAGE1);
     verify(target).accept(RECORD_MESSAGE2);
-    verify(target, never()).accept(INVALID_RECORD_MESSAGE);
-    verify(normalizationRunner).start();
-    verify(normalizationRunner).normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog());
-    verify(normalizationRunner).close();
     verify(tap).close();
     verify(target).close();
   }
