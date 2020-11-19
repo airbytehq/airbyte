@@ -17,11 +17,7 @@ class DockerHelpers {
         return extractLabelValue(dockerFile, "io.airbyte.version")
     }
 
-    static String getDockerfilePath(projectDir, String dockerfileName) {
-        return Paths.get(projectDir.absolutePath, dockerfileName)
-    }
-
     static String getDevTaggedImage(projectDir, dockerfileName) {
-        return "${extractImageName(getDockerfilePath(projectDir, dockerfileName).toString())}:dev"
+        return "${extractImageName(Paths.get(projectDir.absolutePath, dockerfileName).toString())}:dev"
     }
 }

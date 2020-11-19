@@ -36,10 +36,9 @@ abstract class AirbyteDockerTask extends DefaultTask {
     def buildDockerfile(String scriptPath, String fileName) {
         if (project.file(fileName).exists()) {
             def tag = DockerHelpers.getDevTaggedImage(projectDir, dockerfileName)
-            def imageName = DockerHelpers.extractImageName(DockerHelpers.getDockerfilePath(projectDir, dockerfileName).toString())
 
             project.exec {
-                commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath, imageName
+                commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath
             }
         }
     }
