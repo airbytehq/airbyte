@@ -34,7 +34,6 @@ import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationUpdate;
-import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.JsonSecretsProcessor;
 import io.airbyte.config.DestinationConnection;
@@ -133,12 +132,9 @@ public class DestinationHandler {
 
     final DestinationDefinitionSpecificationRead spec = getSpec(currentDci.getDestinationDefinitionId());
 
-    // if secrets are not being updated, copy them from the existing configuration
-    if (destinationUpdate.getUpdateConfigurationSecrets() == null || !destinationUpdate.getUpdateConfigurationSecrets()) {
-      JsonNode updateConfigurationWithSecrets = secretProcessor
-          .copySecrets(currentDci.getConfiguration(), destinationUpdate.getConnectionConfiguration(), spec.getConnectionSpecification());
-      destinationUpdate.setConnectionConfiguration(updateConfigurationWithSecrets);
-    }
+    JsonNode updateConfigurationWithSecrets = secretProcessor
+        .copySecrets(currentDci.getConfiguration(), destinationUpdate.getConnectionConfiguration(), spec.getConnectionSpecification());
+    destinationUpdate.setConnectionConfiguration(updateConfigurationWithSecrets);
 
     // validate configuration
     validateDestination(spec, destinationUpdate.getConnectionConfiguration());
@@ -181,7 +177,8 @@ public class DestinationHandler {
   }
 
   private void validateDestination(final DestinationDefinitionSpecificationRead spec,
-                                   final JsonNode configuration) throws JsonValidationException {
+                                   final JsonNode configuration)
+      throws JsonValidationException {
     validator.ensure(spec.getConnectionSpecification(), configuration);
   }
 
@@ -218,7 +215,7 @@ public class DestinationHandler {
 
     // remove secrets from config before returning the read
     final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
-    dci.setConfiguration(secretProcessor.removeSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
+    dci.setConfiguration(secretProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
 
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());

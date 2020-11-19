@@ -42,7 +42,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -114,7 +113,8 @@ public class SourceHandler {
       sourceUpdate.setConnectionConfiguration(updatedConfiguration);
     }
 
-    // TODO we pass the spec as input to avoid the overhead of having to run a getSpec job. Fix this once getSpec is sped up.
+    // TODO we pass the spec as input to avoid the overhead of having to run a getSpec job. Fix this
+    // once getSpec is sped up.
     validateSource(spec, sourceUpdate.getConnectionConfiguration());
 
     // persist
@@ -191,7 +191,7 @@ public class SourceHandler {
     // read configuration from db
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository.getStandardSource(sourceConnection.getSourceDefinitionId());
-    final JsonNode sanitizedConfig = secretsProcessor.removeSecrets(spec.getConnectionSpecification(), sourceConnection.getConfiguration());
+    final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(spec.getConnectionSpecification(), sourceConnection.getConfiguration());
     sourceConnection.setConfiguration(sanitizedConfig);
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }
@@ -233,4 +233,5 @@ public class SourceHandler {
         .connectionConfiguration(sourceConnection.getConfiguration())
         .name(sourceConnection.getName());
   }
+
 }

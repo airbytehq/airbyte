@@ -26,33 +26,41 @@ package io.airbyte.commons.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+
+import javax.swing.text.MaskFormatter;
 
 public class JsonSecretsProcessor {
 
   public static String AIRBYTE_SECRET_FIELD = "airbyte_secret";
+
+  @VisibleForTesting
+  static String SECRETS_MASK = "**********";
+
   private static String PROPERTIES_FIELD = "properties";
 
   /**
    * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
-   * input schema are removed.
+   * input schema are masked.
    * <p>
-   * TODO this method only removes secrets at the top level of the configuration object. It does not support the keywords anyOf, allOf, oneOf, not, and
-   * dependencies. This will be fixed in the future.
+   * TODO this method only masks secrets at the top level of the configuration object. It does not
+   * support the keywords anyOf, allOf, oneOf, not, and dependencies. This will be fixed in the
+   * future.
    *
    * @param schema Schema containing secret annotations
    * @param obj    Object containing potentially secret fields
    * @return
    */
-  public JsonNode removeSecrets(JsonNode obj, JsonNode schema) {
+  public JsonNode maskSecrets(JsonNode obj, JsonNode schema) {
     assertValidSchema(schema);
     Preconditions.checkArgument(schema.isObject());
 
     ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
     JsonNode copy = obj.deepCopy();
     for (String key : Jsons.keys(properties)) {
-      if (isSecret(properties.get(key))) {
-        ((ObjectNode) copy).remove(key);
+      if (isSecret(properties.get(key)) && copy.has(key)) {
+        ((ObjectNode) copy).put(key, SECRETS_MASK);
       }
     }
 
@@ -63,8 +71,9 @@ public class JsonSecretsProcessor {
    * Returns a copy of the destination object in which any secret fields (as denoted by the input
    * schema) found in the source object are added.
    * <p>
-   * TODO this method only absorbs secrets at the top level of the configuration object. It does not support the keywords anyOf, allOf, oneOf, not, and
-   * dependencies. This will be fixed in the future.
+   * TODO this method only absorbs secrets at the top level of the configuration object. It does not
+   * support the keywords anyOf, allOf, oneOf, not, and dependencies. This will be fixed in the
+   * future.
    *
    * @param src    The object potentially containing secrets
    * @param dst    The object to absorb secrets into
@@ -80,8 +89,11 @@ public class JsonSecretsProcessor {
 
     ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
     for (String key : Jsons.keys(properties)) {
+      // We only copy the original secret if the destination object isn't attempting to overwrite it
+      // i.e: if the value of the secret isn't set to the mask
       if (isSecret(properties.get(key)) && src.has(key)) {
-        dstCopy.set(key, src.get(key));
+        if (dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK))
+          dstCopy.set(key, src.get(key));
       }
     }
 
@@ -97,4 +109,5 @@ public class JsonSecretsProcessor {
     Preconditions.checkArgument(node.has(PROPERTIES_FIELD), "Schema object must have a properties field");
     Preconditions.checkArgument(node.get(PROPERTIES_FIELD).isObject(), "Properties field must be a JSON object");
   }
+
 }
