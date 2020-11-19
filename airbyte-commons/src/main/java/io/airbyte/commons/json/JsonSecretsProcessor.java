@@ -107,9 +107,7 @@ public class JsonSecretsProcessor {
   }
 
   private static boolean canBeProcessed(JsonNode schema) {
-    Preconditions.checkArgument(schema.isObject());
-    Preconditions.checkArgument(schema.has(PROPERTIES_FIELD), "Schema object must have a properties field");
-    Preconditions.checkArgument(schema.get(PROPERTIES_FIELD).isObject(), "Properties field must be a JSON object");
+    return schema.isObject() && schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject();
   }
 
 }
