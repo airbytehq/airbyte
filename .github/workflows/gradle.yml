@@ -16,10 +16,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            /tmp/docker.tar
+            /tmp/airbyte-docker
           key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-${{ github.sha }}
           restore-keys: |
-            docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-
             docker-${{ runner.os }}-
 
       - name: Pip Caching
@@ -63,7 +62,7 @@ jobs:
           python-version: '3.7'
 
       - name: Load cached images
-        run: docker load -i /tmp/docker.tar || true
+        run: find . -iname '/tmp/airbyte-docker/*.tar' -exec docker load -i "/tmp/airbyte-docker/{}.tar" \; || true
 
       - name: Build
         run: ./gradlew --no-daemon build --scan
@@ -131,7 +130,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Save cached images
-        run: docker save -o /tmp/docker.tar $(docker images -a -q)
+        run: mkdir -p /tmp/airbyte-docker && docker images -a -q "airbyte\/*" | xargs -n 1 -P 4 -I {} docker save -o /tmp/airbyte-docker/{}.tar {}
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
