@@ -154,16 +154,10 @@ definitions:
     type: object
     additionalProperties: false
     required:
-      - name
-      - json_schema
+      - stream
     properties:
-      name:
-        type: string
-        description: Stream's name.
-      json_schema:
-        description: Stream schema using Json Schema specs.
-        type: object
-        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      stream:
+        "$ref": "#/definitions/AirbyteStream"
       sync_mode:
         "$ref": "#/definitions/SyncMode"
         default: full_refresh
