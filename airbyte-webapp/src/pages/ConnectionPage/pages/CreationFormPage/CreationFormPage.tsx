@@ -8,6 +8,8 @@ import PageTitle from "../../../../components/PageTitle";
 import StepsMenu from "../../../../components/StepsMenu";
 import { FormPageContent } from "../../../../components/SourceAndDestinationsBlocks";
 import CreateEntityView from "./components/CreateEntityView";
+import SourceForm from "./components/SourceForm";
+import DestinationForm from "./components/DestinationForm";
 import ConnectionBlock from "../../../../components/ConnectionBlock";
 import { useSourceDetails } from "../../../../components/hooks/services/useSourceHook";
 import { useDestinationDetails } from "../../../../components/hooks/services/useDestinationHook";
@@ -92,19 +94,40 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
   const renderStep = () => {
     if (currentStep === StepsTypes.CREATE_ENTITY) {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
+        if (location.state?.sourceId) {
+          return (
+            <CreateEntityView
+              type="source"
+              afterSuccess={() =>
+                setCurrentEntityStep(EntityStepsTypes.DESTINATION)
+              }
+            />
+          );
+        }
+
         return (
-          <CreateEntityView
-            type="source"
-            afterSuccess={() =>
+          <SourceForm
+            afterSubmit={() =>
               setCurrentEntityStep(EntityStepsTypes.DESTINATION)
             }
           />
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
+        if (location.state?.destinationId) {
+          return (
+            <CreateEntityView
+              type="destination"
+              afterSuccess={() => {
+                setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+                setCurrentStep(StepsTypes.CREATE_CONNECTION);
+              }}
+            />
+          );
+        }
+
         return (
-          <CreateEntityView
-            type="destination"
-            afterSuccess={() => {
+          <DestinationForm
+            afterSubmit={() => {
               setCurrentEntityStep(EntityStepsTypes.CONNECTION);
               setCurrentStep(StepsTypes.CREATE_CONNECTION);
             }}
