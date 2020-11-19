@@ -16,5 +16,4 @@ assert_root
 cd "$PROJECT_DIR"
 
 docker pull "$IMAGE":dev || true
-docker pull "$IMAGE":latest || true
-DOCKER_BUILDKIT=1 docker build -f "$DOCKERFILE" . -t "$TAG" --iidfile "$ID_FILE"
+DOCKER_BUILDKIT=1 docker build -f "$DOCKERFILE" . -t "$TAG" --iidfile "$ID_FILE" --cache-from "$IMAGE":dev
