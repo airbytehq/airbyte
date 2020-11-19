@@ -20,5 +20,4 @@ dependencies {
     integrationTestImplementation "org.testcontainers:postgresql:1.15.0-rc2"
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
 }
