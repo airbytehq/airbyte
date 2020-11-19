@@ -64,6 +64,7 @@ class SourceSendgrid(Source):
         for stream in catalog.streams:
             if stream.name not in client.ENTITY_MAP.keys():
                 logger.warn(f"Stream '{stream}' not found in the recognized entities")
+                continue
             for record in self._read_record(client=client, stream=stream.name):
                 yield AirbyteMessage(type=Type.RECORD, record=record)
 
