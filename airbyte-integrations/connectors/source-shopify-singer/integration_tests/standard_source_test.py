@@ -41,7 +41,7 @@ class SourceShopifySingerStandardTest(StandardSourceTestIface):
         return json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json"))
 
     def get_catalog(self) -> AirbyteCatalog:
-        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
+        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "integration_test_catalog.json")
         return AirbyteCatalog.parse_obj(json.loads(raw_catalog))
 
     def setup(self) -> None:
