@@ -73,11 +73,11 @@ class CatalogHelpersTest {
     assertTrue(CatalogHelpers.isValidIdentifier("identifiêr"));
     assertTrue(CatalogHelpers.isValidIdentifier("a_unicode_name_文"));
     assertTrue(CatalogHelpers.isValidIdentifier("identifier__name__"));
+    assertTrue(CatalogHelpers.isValidIdentifier("identifier-name.weee"));
   }
 
   @Test
   void testInvalidIdentifiers() {
-    assertFalse(CatalogHelpers.isValidIdentifier("invalid-identifier"));
     assertFalse(CatalogHelpers.isValidIdentifier("\"identifier name"));
     assertFalse(CatalogHelpers.isValidIdentifier("$identifier"));
     assertFalse(CatalogHelpers.isValidIdentifier("identifier name"));

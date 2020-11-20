@@ -146,7 +146,9 @@ public class CatalogHelpers {
    * @return if the identifier matches the alphanumeric+underscore requirement for identifiers
    */
   public static boolean isValidIdentifier(String identifier) {
-    return StringUtils.isAlphanumeric(identifier.replace("_", ""));
+    // todo (cgardens) - remove $ once mailchimp is fixed.
+    final String s = identifier.replaceAll("[-_.$]", "");
+    return StringUtils.isAlphanumeric(s);
   }
 
   /**

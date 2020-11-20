@@ -25,7 +25,15 @@ SOFTWARE.
 from datetime import datetime
 from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, Status, Type
+from airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
 from base_python import AirbyteLogger, ConfigContainer, Source
 
 from .client import Client
@@ -57,11 +65,11 @@ class SourceMailchimp(Source):
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._client(config_container)
 
-        catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
 
         logger.info("Starting syncing mailchimp")
         for configured_stream in catalog.streams:
-            stream = configured_stream["stream"]
+            stream = configured_stream.stream
             for record in self._read_record(client=client, stream=stream.name):
                 yield AirbyteMessage(type=Type.RECORD, record=record)
 
