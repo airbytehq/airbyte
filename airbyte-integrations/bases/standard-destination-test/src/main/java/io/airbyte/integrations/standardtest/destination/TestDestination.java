@@ -136,6 +136,16 @@ public abstract class TestDestination {
   }
 
   /**
+   * Override to return true to if the destination implements incremental syncs and it should be
+   * tested here.
+   *
+   * @return - a boolean.
+   */
+  protected boolean implementsIncremental() {
+    return false;
+  }
+
+  /**
    * Same idea as {@link #retrieveRecords(TestDestinationEnv, String)}. Except this method should pull
    * records from the table that contains the normalized records and convert them back into the data
    * as it would appear in an {@link AirbyteRecordMessage}. Only need to override this method if
@@ -257,6 +267,10 @@ public abstract class TestDestination {
    */
   @Test
   public void testIncrementalSync() throws Exception {
+    if (!implementsIncremental()) {
+      return;
+    }
+
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
