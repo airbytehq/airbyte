@@ -57,7 +57,7 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
       final DestinationConnection destinationConnection =
           configRepository.getDestinationConnection(standardSync.getDestinationId());
 
-      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSource(sourceConnection.getSourceDefinitionId());
+      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
       final StandardDestinationDefinition destinationDefinition =
           configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
 
