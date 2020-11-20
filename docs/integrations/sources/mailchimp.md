@@ -41,6 +41,7 @@ At the time of this writing, [Mailchimp does not impose rate limits](https://mai
 ### Setup guide
 
 To start syncing Mailchimp data with Airbyte, you'll need two things: 
+
 1. Your Mailchimp username. Often this is just the email address or username you use to sign into Mailchimp. 
 2. A Mailchimp API Key. Follow the [Mailchimp documentation for generating an API key](https://mailchimp.com/help/about-api-keys/).
 
