@@ -7,7 +7,7 @@
     "ISK": { "type": ["null", "number"] },
     "PHP": { "type": ["null", "number"] },
     "DKK": { "type": ["null", "number"] },
-    "HUF": { "\"type": ["null", "number"] },
-    "CZK": { "type": ["null", "number"] }
+    "HUF": { "type": ["null", "number"] },
+    "\"CZK": { "type": ["null", "number"] }
   }
 }
