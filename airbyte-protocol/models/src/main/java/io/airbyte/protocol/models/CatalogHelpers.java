@@ -128,13 +128,16 @@ public class CatalogHelpers {
   protected static Set<String> getAllFieldNames(JsonNode node) {
     Set<String> allFieldNames = new HashSet<>();
 
-    Iterator<String> fieldNames = node.fieldNames();
-    while (fieldNames.hasNext()) {
-      String fieldName = fieldNames.next();
-      allFieldNames.add(fieldName);
-      JsonNode fieldValue = node.get(fieldName);
-      if (fieldValue.isObject()) {
-        allFieldNames.addAll(getAllFieldNames(fieldValue));
+    if (node.has("properties")) {
+      JsonNode properties = node.get("properties");
+      Iterator<String> fieldNames = properties.fieldNames();
+      while (fieldNames.hasNext()) {
+        String fieldName = fieldNames.next();
+        allFieldNames.add(fieldName);
+        JsonNode fieldValue = properties.get(fieldName);
+        if (fieldValue.isObject()) {
+          allFieldNames.addAll(getAllFieldNames(fieldValue));
+        }
       }
     }
 
