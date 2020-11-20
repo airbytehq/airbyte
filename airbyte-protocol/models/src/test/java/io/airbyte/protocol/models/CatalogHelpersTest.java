@@ -79,7 +79,6 @@ class CatalogHelpersTest {
   @Test
   void testInvalidIdentifiers() {
     assertFalse(CatalogHelpers.isValidIdentifier("\"identifier name"));
-    assertFalse(CatalogHelpers.isValidIdentifier("$identifier"));
     assertFalse(CatalogHelpers.isValidIdentifier("identifier name"));
     assertFalse(CatalogHelpers.isValidIdentifier("identifier%"));
     assertFalse(CatalogHelpers.isValidIdentifier("`identifier`"));
