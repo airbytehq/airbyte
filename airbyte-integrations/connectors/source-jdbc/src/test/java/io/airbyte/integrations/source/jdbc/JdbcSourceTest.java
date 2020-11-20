@@ -53,7 +53,6 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -211,14 +210,14 @@ class JdbcSourceTest {
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
-  void testReadFailure() throws Exception {
+  void testReadFailure() {
     final ConfiguredAirbyteStream spiedAbStream = spy(CONFIGURED_CATALOG.getStreams().get(0));
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getName();
+    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getStream();
 
-    final Stream<AirbyteMessage> stream = new JdbcSource().read(config, catalog, null);
+    final JdbcSource source = new JdbcSource();
 
-    assertThrows(RuntimeException.class, () -> stream.collect(Collectors.toList()));
+    assertThrows(RuntimeException.class, () -> source.read(config, catalog, null));
   }
 
 }

@@ -53,7 +53,6 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -223,11 +222,11 @@ class PostgresSourceTest {
   void testReadFailure() throws Exception {
     final ConfiguredAirbyteStream spiedAbStream = spy(CONFIGURED_CATALOG.getStreams().get(0));
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getName();
+    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getStream();
 
-    final Stream<AirbyteMessage> stream = new PostgresSource().read(config, catalog, null);
+    final PostgresSource source = new PostgresSource();
 
-    assertThrows(RuntimeException.class, () -> stream.collect(Collectors.toList()));
+    assertThrows(RuntimeException.class, () -> source.read(config, catalog, null));
   }
 
 }

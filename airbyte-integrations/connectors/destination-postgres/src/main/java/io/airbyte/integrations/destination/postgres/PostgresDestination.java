@@ -133,8 +133,8 @@ public class PostgresDestination implements Destination {
 
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String tableName = NamingHelper.getRawTableName(stream.getName());
-      final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
+      final String tableName = NamingHelper.getRawTableName(stream.getStream().getName());
+      final String tmpTableName = stream.getStream().getName() + "_" + Instant.now().toEpochMilli();
       database.query(ctx -> ctx.execute(String.format(
           "CREATE TABLE \"%s\" ( \n"
               + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
@@ -144,8 +144,8 @@ public class PostgresDestination implements Destination {
           tmpTableName, COLUMN_NAME)));
 
       final Path queueRoot = Files.createTempDirectory("queues");
-      final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(stream.getName()), stream.getName());
-      writeBuffers.put(stream.getName(), new WriteConfig(tableName, tmpTableName, writeBuffer));
+      final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(stream.getStream().getName()), stream.getStream().getName());
+      writeBuffers.put(stream.getStream().getName(), new WriteConfig(tableName, tmpTableName, writeBuffer));
     }
 
     // write to tmp tables
