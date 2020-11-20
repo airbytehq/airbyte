@@ -70,7 +70,7 @@ jobs:
         run: docker run -d -p 5000:5000 --restart=always --name registry -v /tmp/docker-registry:/var/lib/registry registry:2 && npx wait-on tcp:5000
 
       - name: Build
-        run: ./gradlew --no-daemon build --scan
+        run: ./gradlew clean --no-daemon build --scan
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
