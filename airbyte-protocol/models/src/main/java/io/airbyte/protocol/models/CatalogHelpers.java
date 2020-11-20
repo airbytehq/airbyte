@@ -128,7 +128,7 @@ public class CatalogHelpers {
   protected static Set<String> getAllFieldNames(JsonNode node) {
     Set<String> allFieldNames = new HashSet<>();
 
-    if(node.has("properties")) {
+    if (node.has("properties")) {
       JsonNode properties = node.get("properties");
       Iterator<String> fieldNames = properties.fieldNames();
       while (fieldNames.hasNext()) {

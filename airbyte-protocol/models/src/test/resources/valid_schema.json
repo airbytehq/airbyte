@@ -10,22 +10,13 @@
     "HUF": { "type": ["null", "number"] },
     "文": { "type": ["null", "number"] },
     "something": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "somekey": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "nestedkey": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           }
         }
