@@ -203,7 +203,7 @@ public class AcceptanceTests {
 
     final JsonNode expectedConfig = Jsons.jsonNode(sourceDbConfig);
     // expect replacement of secret with magic string.
-    ((ObjectNode)expectedConfig).put("password", "**********");
+    ((ObjectNode) expectedConfig).put("password", "**********");
     assertEquals(dbName, response.getName());
     assertEquals(defaultWorkspaceId, response.getWorkspaceId());
     assertEquals(postgresSourceDefinitionId, response.getSourceDefinitionId());
