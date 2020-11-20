@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.ApiClient;
@@ -200,10 +201,13 @@ public class AcceptanceTests {
         postgresSourceDefinitionId,
         sourceDbConfig);
 
+    final JsonNode expectedConfig = Jsons.jsonNode(sourceDbConfig);
+    // expect replacement of secret with magic string.
+    ((ObjectNode)expectedConfig).put("password", "**********");
     assertEquals(dbName, response.getName());
     assertEquals(defaultWorkspaceId, response.getWorkspaceId());
     assertEquals(postgresSourceDefinitionId, response.getSourceDefinitionId());
-    assertEquals(Jsons.jsonNode(sourceDbConfig), response.getConnectionConfiguration());
+    assertEquals(expectedConfig, response.getConnectionConfiguration());
   }
 
   @Test
