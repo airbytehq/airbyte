@@ -331,8 +331,7 @@ public abstract class TestDestination {
         pbf, targetConfig.getDestinationConnectionConfiguration());
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-    if (!runner.normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(),
-        targetConfig.getCatalog())) {
+    if (!runner.normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog())) {
       throw new WorkerException("Normalization Failed.");
     }
     runner.close();

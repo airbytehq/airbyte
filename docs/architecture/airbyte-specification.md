@@ -168,7 +168,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 
 * Input:
   1. `config` - A configuration JSON object that has been validated using the `ConnectorSpecification`.
-  2. `catalog` - An `AirbyteCatalog`. This `catalog` should be a subset of the `catalog` returned by the `discover` command. It is what will be used in the `read` command to select what data to transfer.
+  2. `catalog` - An `ConfiguredAirbyteCatalog`. This `catalog` should be constructed from the `catalog` returned by the `discover` command. To convert an `AirbyteStream` to a `ConfiguredAirbyteStream` copy the `AirbyteStream` into the stream field of the `ConfiguredAirbyteStream`. Any additional configurations can be specified in the `ConfiguredAirbyteStream`. More details on how this is configured in the [catalog documentation](catalog.md). This catalog will be used in the `read` command to both select what data is transferred and how it is replicated.
   3. `state` - A JSON object. This object is only ever written or read by the source, so it is a JSON blob with whatever information is necessary to keep track of how much of the data source has already been read. Because Airbyte currently only supports [Full Refresh](full-refresh.md), this state object is purely cosmetic. It will become more important when Airbyte beings to support incremental syncs.
 * Output:
   1. `message stream` - A stream of `AirbyteRecordMessage`s and `AirbyteStateMessage`s piped to stdout.
@@ -229,4 +229,3 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 ## Recognition
 
 We have been heavily inspired by Singer.io's [specification](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#singer-specification) and would like to acknowledge how some of their choices have helped us bootstrap.
-

@@ -2,7 +2,7 @@
   "streams": [
     {
       "name": "customers",
-      "schema": {
+      "json_schema": {
         "type": ["null", "object"],
         "properties": {
           "metadata": {

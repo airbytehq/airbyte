@@ -373,13 +373,18 @@ def process_node(
 def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict, Set[Union[str]]]:
     result = {}
     source_tables = set()
-    for obj in catalog["streams"]:
-        if "name" in obj:
-            name = obj["name"]
+    for configuredStream in catalog["streams"]:
+        if "stream" in configuredStream:
+            stream = configuredStream["stream"]
+        else:
+            stream = {}
+
+        if "name" in stream:
+            name = stream["name"]
         else:
             name = "undefined"  # todo: should this raise an exception?
-        if "json_schema" in obj and "properties" in obj["json_schema"]:
-            properties = obj["json_schema"]["properties"]
+        if "json_schema" in stream and "properties" in stream["json_schema"]:
+            properties = stream["json_schema"]["properties"]
         else:
             properties = {}
         # TODO Replace {name}_raw by an argument like we do for the json_blob column
