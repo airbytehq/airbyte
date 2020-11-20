@@ -77,6 +77,7 @@ class MssqlSourceTest {
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")))));
 
+  private JsonNode configWithoutDbName;
   private JsonNode config;
 
   private static MSSQLServerContainer<?> db;
@@ -93,14 +94,14 @@ class MssqlSourceTest {
   // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
   @BeforeEach
   void setup() throws SQLException {
-    final JsonNode configWithoutDbName = getConfig(db);
+    configWithoutDbName = getConfig(db);
     final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     final Database database = getDatabase(configWithoutDbName);
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
       return null;
     });
@@ -142,6 +143,23 @@ class MssqlSourceTest {
 
   @Test
   void testDiscover() throws Exception {
+    final AirbyteCatalog actual = new MssqlSource().discover(config);
+    assertEquals(CATALOG, actual);
+  }
+
+  // if a column in mssql is used as a primary key and in a separate index the discover query returns
+  // the column twice. we now de-duplicate it (pr: https://github.com/airbytehq/airbyte/pull/983).
+  // this tests that this de-duplication is successful.
+  @Test
+  void testDiscoverWithPk() throws Exception {
+    final Database database = getDatabase(configWithoutDbName);
+    database.query(ctx -> {
+      ctx.fetch(String.format("USE %s;", config.get("database")));
+      ctx.execute("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY CLUSTERED (id);");
+      ctx.execute("CREATE INDEX i1 ON id_and_name (id);");
+      return null;
+    });
+
     final AirbyteCatalog actual = new MssqlSource().discover(config);
     assertEquals(CATALOG, actual);
   }

@@ -96,7 +96,11 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
               final String dataType = r.get("data_type", String.class);
               final JsonSchemaPrimitive jsonType = getType(dataType);
               return Field.of(columnName, jsonType);
-            }).collect(Collectors.toList());
+            })
+            // this query can return duplicate columns if a column is used in multiple indexes or as a primary
+            // key.
+            .distinct()
+            .collect(Collectors.toList());
 
         return new TableInfo(tableName, fields);
       })
