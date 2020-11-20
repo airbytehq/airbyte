@@ -36,6 +36,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.workers.normalization.NormalizationRunner;
@@ -86,9 +87,10 @@ class DefaultSyncWorkerTest {
     invalidSyncInput.setState(validSyncInput.getState());
     invalidSyncInput.setSyncMode(validSyncInput.getSyncMode());
 
-    final ConfiguredAirbyteStream invalidStream = new ConfiguredAirbyteStream();
-    invalidStream.setName(INVALID_STREAM_NAME);
-    invalidStream.setJsonSchema(Jsons.deserialize("{}"));
+    final ConfiguredAirbyteStream invalidStream = new ConfiguredAirbyteStream()
+        .withStream(new AirbyteStream()
+            .withName(INVALID_STREAM_NAME)
+            .withJsonSchema(Jsons.deserialize("{}")));
     final List<ConfiguredAirbyteStream> streams = new ArrayList<>(validSyncInput.getCatalog().getStreams());
     streams.add(invalidStream);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog();

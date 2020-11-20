@@ -32,7 +32,16 @@ from urllib.parse import urlparse
 
 import gcsfs
 import pandas as pd
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, AirbyteStream, Status, Type
+from airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
 from base_python import Source
 from botocore import UNSIGNED
 from botocore.config import Config
@@ -162,7 +171,7 @@ class SourceFile(Source):
         url = SourceFile.get_simple_url(config["url"])
         name = SourceFile.get_stream_name(config)
         logger.info(f"Reading {name} ({storage}{url}, {catalog_path}, {state_path})...")
-        catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
         selection = SourceFile.parse_catalog(catalog)
         try:
             if "format" in config and config["format"] == "json":
@@ -452,9 +461,10 @@ class SourceFile(Source):
         return "string"
 
     @staticmethod
-    def parse_catalog(catalog: AirbyteCatalog) -> set:
+    def parse_catalog(catalog: ConfiguredAirbyteCatalog) -> set:
         columns = set()
-        for stream in catalog.streams:
+        for configured_stream in catalog.streams:
+            stream = configured_stream.stream
             for key in stream.json_schema["properties"].keys():
                 columns.add(key)
         return columns

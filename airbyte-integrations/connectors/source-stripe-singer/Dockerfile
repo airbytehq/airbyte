@@ -10,7 +10,7 @@ ENV CODE_PATH="source_stripe_singer"
 ENV AIRBYTE_IMPL_MODULE="source_stripe_singer"
 ENV AIRBYTE_IMPL_PATH="SourceStripeSinger"
 
-LABEL io.airbyte.version=0.1.6
+LABEL io.airbyte.version=0.1.7
 LABEL io.airbyte.name=airbyte/source-stripe-singer
 
 WORKDIR /airbyte/integration_code

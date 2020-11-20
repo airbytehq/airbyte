@@ -25,7 +25,7 @@ SOFTWARE.
 import json
 from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, Status, Type
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 from apiclient import errors
 from base_python import AirbyteLogger, Source
 
@@ -88,7 +88,7 @@ class GoogleSheetsSource(Source):
         config = config_container.rendered_config
         client = Helpers.get_authenticated_sheets_client(json.loads(config["credentials_json"]))
 
-        catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = config["spreadsheet_id"]

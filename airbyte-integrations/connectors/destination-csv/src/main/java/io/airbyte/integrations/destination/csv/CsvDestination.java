@@ -93,11 +93,11 @@ public class CsvDestination implements Destination {
     final long now = Instant.now().toEpochMilli();
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final Path tmpPath = destinationDir.resolve(stream.getName() + "_" + now + ".csv");
-      final Path finalPath = destinationDir.resolve(stream.getName() + ".csv");
+      final Path tmpPath = destinationDir.resolve(stream.getStream().getName() + "_" + now + ".csv");
+      final Path finalPath = destinationDir.resolve(stream.getStream().getName() + ".csv");
       final FileWriter fileWriter = new FileWriter(tmpPath.toFile());
       final CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA));
-      writeConfigs.put(stream.getName(), new WriteConfig(printer, tmpPath, finalPath));
+      writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
     }
 
     return new CsvConsumer(writeConfigs, catalog);
