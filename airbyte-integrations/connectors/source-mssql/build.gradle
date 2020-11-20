@@ -1,8 +1,7 @@
 plugins {
     id 'application'
     id 'airbyte-docker'
-    // todo (cgardens) - tmp to get build passing. failing due to issue in ci.
-    // id 'airbyte-integration-test-java'
+    id 'airbyte-integration-test-java'
 }
 
 application {
