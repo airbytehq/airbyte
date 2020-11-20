@@ -91,12 +91,6 @@ public class ConfigRepository {
     }
   }
 
-  public StandardSourceDefinition getStandardSource(final UUID sourceId)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceId.toString(), StandardSourceDefinition.class);
-  }
-
   public List<StandardSourceDefinition> listStandardSources()
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);

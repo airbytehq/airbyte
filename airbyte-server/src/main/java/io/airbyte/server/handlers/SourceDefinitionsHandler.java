@@ -72,7 +72,7 @@ public class SourceDefinitionsHandler {
 
   public SourceDefinitionRead getSourceDefinition(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    return buildSourceDefinitionRead(configRepository.getStandardSource(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
+    return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
   }
 
   public SourceDefinitionRead createSourceDefinition(SourceDefinitionCreate sourceDefinitionCreate) throws JsonValidationException, IOException {
@@ -93,7 +93,7 @@ public class SourceDefinitionsHandler {
 
   public SourceDefinitionRead updateSourceDefinition(SourceDefinitionUpdate sourceDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    StandardSourceDefinition currentSourceDefinition = configRepository.getStandardSource(sourceDefinitionUpdate.getSourceDefinitionId());
+    StandardSourceDefinition currentSourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
     imageValidator.assertValidIntegrationImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag());
 
     StandardSourceDefinition newSource = new StandardSourceDefinition()
