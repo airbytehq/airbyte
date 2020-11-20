@@ -59,6 +59,7 @@ public class MySqlIntegrationTest extends TestSource {
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
+        .put("schemaFocus", true)
         .build());
 
     final Database database = Databases.createDatabase(
@@ -103,7 +104,7 @@ public class MySqlIntegrationTest extends TestSource {
   @Override
   protected AirbyteCatalog getCatalog() {
     return CatalogHelpers.createAirbyteCatalog(
-        STREAM_NAME,
+        String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING));
   }
