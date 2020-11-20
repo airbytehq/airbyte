@@ -8,6 +8,22 @@
     "PHP": { "type": ["null", "number"] },
     "DKK": { "type": ["null", "number"] },
     "HUF": { "type": ["null", "number"] },
-    "文": { "type": ["null", "number"] }
+    "文": { "type": ["null", "number"] },
+    "something": {
+      "type": ["null", "object"],
+      "properties": {
+        "somekey": {
+          "type": ["null", "object"],
+          "properties": {
+            "nestedkey": {
+              "type": ["null", "number"]
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        ".+": {}
+      }
+    }
   }
 }
