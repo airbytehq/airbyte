@@ -103,7 +103,7 @@ class SchedulerHandlerTest {
     final SourceIdRequestBody request =
         new SourceIdRequestBody().sourceId(source.getSourceId());
 
-    when(configRepository.getStandardSource(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
@@ -122,7 +122,7 @@ class SchedulerHandlerTest {
   @Test
   void testGetSourceSpec() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
     SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody = new SourceDefinitionIdRequestBody().sourceDefinitionId(UUID.randomUUID());
-    when(configRepository.getStandardSource(sourceDefinitionIdRequestBody.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
             .withName("name")
             .withDockerRepository(SOURCE_DOCKER_REPO)
@@ -143,7 +143,7 @@ class SchedulerHandlerTest {
 
     schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody);
 
-    verify(configRepository).getStandardSource(sourceDefinitionIdRequestBody.getSourceDefinitionId());
+    verify(configRepository).getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     verify(schedulerPersistence).createGetSpecJob(SOURCE_DOCKER_IMAGE);
     verify(schedulerPersistence, atLeast(2)).getJob(JOB_ID);
   }
@@ -224,7 +224,7 @@ class SchedulerHandlerTest {
     final SourceIdRequestBody request =
         new SourceIdRequestBody().sourceId(source.getSourceId());
 
-    when(configRepository.getStandardSource(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
@@ -249,7 +249,7 @@ class SchedulerHandlerTest {
     DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID())
         .withDestinationId(standardSync.getDestinationId());
 
-    when(configRepository.getStandardSource(source.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)

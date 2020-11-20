@@ -35,6 +35,7 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.commons.json.JsonSecretsProcessor;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -53,32 +54,34 @@ public class SourceHandler {
   private final JsonSchemaValidator validator;
   private SchedulerHandler schedulerHandler;
   private final ConnectionsHandler connectionsHandler;
+  private final JsonSecretsProcessor secretsProcessor;
 
-  public SourceHandler(final ConfigRepository configRepository,
-                       final JsonSchemaValidator integrationSchemaValidation,
-                       final SchedulerHandler schedulerHandler,
-                       final ConnectionsHandler connectionsHandler,
-                       final Supplier<UUID> uuidGenerator) {
+  SourceHandler(final ConfigRepository configRepository,
+                final JsonSchemaValidator integrationSchemaValidation,
+                final SchedulerHandler schedulerHandler,
+                final ConnectionsHandler connectionsHandler,
+                final Supplier<UUID> uuidGenerator,
+                final JsonSecretsProcessor secretsProcessor) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
     this.schedulerHandler = schedulerHandler;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
+    this.secretsProcessor = secretsProcessor;
   }
 
   public SourceHandler(final ConfigRepository configRepository,
                        final JsonSchemaValidator integrationSchemaValidation,
                        final SchedulerHandler schedulerHandler,
                        final ConnectionsHandler connectionsHandler) {
-    this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID);
+    this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID, new JsonSecretsProcessor());
   }
 
   public SourceRead createSource(SourceCreate sourceCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
-    validateSource(
-        sourceCreate.getSourceDefinitionId(),
-        sourceCreate.getConnectionConfiguration());
+    SourceDefinitionSpecificationRead spec = getSpec(sourceCreate.getSourceDefinitionId());
+    validateSource(spec, sourceCreate.getConnectionConfiguration());
 
     // persist
     final UUID sourceId = uuidGenerator.get();
@@ -91,7 +94,7 @@ public class SourceHandler {
         sourceCreate.getConnectionConfiguration());
 
     // read configuration from db
-    return buildSourceRead(sourceId);
+    return buildSourceRead(sourceId, spec);
   }
 
   public SourceRead updateSource(SourceUpdate sourceUpdate)
@@ -100,10 +103,18 @@ public class SourceHandler {
     final SourceConnection persistedSource =
         configRepository.getSourceConnection(sourceUpdate.getSourceId());
 
-    // validate configuration
-    validateSource(
-        persistedSource.getSourceDefinitionId(),
-        sourceUpdate.getConnectionConfiguration());
+    StandardSourceDefinition standardSource = configRepository.getSourceDefinitionFromSource(sourceUpdate.getSourceId());
+    SourceDefinitionSpecificationRead spec = schedulerHandler
+        .getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(standardSource.getSourceDefinitionId()));
+
+    // Copy any necessary secrets from the current source to the incoming update source
+    JsonNode updatedConfiguration = secretsProcessor
+        .copySecrets(persistedSource.getConfiguration(), sourceUpdate.getConnectionConfiguration(), spec.getConnectionSpecification());
+    sourceUpdate.setConnectionConfiguration(updatedConfiguration);
+
+    // TODO we pass the spec as input to avoid the overhead of having to run a getSpec job. Fix this
+    // once getSpec is sped up.
+    validateSource(spec, sourceUpdate.getConnectionConfiguration());
 
     // persist
     persistSourceConnection(
@@ -115,7 +126,7 @@ public class SourceHandler {
         sourceUpdate.getConnectionConfiguration());
 
     // read configuration from db
-    return buildSourceRead(sourceUpdate.getSourceId());
+    return buildSourceRead(sourceUpdate.getSourceId(), spec);
   }
 
   public SourceRead getSource(SourceIdRequestBody sourceIdRequestBody)
@@ -144,8 +155,7 @@ public class SourceHandler {
   public void deleteSource(SourceIdRequestBody sourceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing source
-    final SourceRead source =
-        buildSourceRead(sourceIdRequestBody.getSourceId());
+    final SourceRead source = buildSourceRead(sourceIdRequestBody.getSourceId());
 
     // "delete" all connections associated with source as well.
     // Delete connections first in case it it fails in the middle, source will still be visible
@@ -168,22 +178,30 @@ public class SourceHandler {
         source.getConnectionConfiguration());
   }
 
-  private SourceRead buildSourceRead(UUID sourceId)
+  private SourceRead buildSourceRead(UUID sourceId) throws ConfigNotFoundException, IOException, JsonValidationException {
+    // read configuration from db
+    SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
+        new SourceDefinitionIdRequestBody().sourceDefinitionId(configRepository.getSourceDefinitionFromSource(sourceId).getSourceDefinitionId());
+    SourceDefinitionSpecificationRead spec = schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody);
+    return buildSourceRead(sourceId, spec);
+  }
+
+  private SourceRead buildSourceRead(UUID sourceId, SourceDefinitionSpecificationRead spec)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
-
-    final StandardSourceDefinition standardSourceDefinition = configRepository.getStandardSource(sourceConnection.getSourceDefinitionId());
-
+    final StandardSourceDefinition standardSourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+    final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), spec.getConnectionSpecification());
+    sourceConnection.setConfiguration(sanitizedConfig);
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }
 
-  private void validateSource(UUID sourceDefinitionId, JsonNode implementationJson)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    SourceDefinitionSpecificationRead sds =
-        schedulerHandler.getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId));
+  private void validateSource(SourceDefinitionSpecificationRead spec, JsonNode implementationJson) throws JsonValidationException {
+    validator.ensure(spec.getConnectionSpecification(), implementationJson);
+  }
 
-    validator.ensure(sds.getConnectionSpecification(), implementationJson);
+  private SourceDefinitionSpecificationRead getSpec(UUID sourceDefinitionId) throws JsonValidationException, IOException, ConfigNotFoundException {
+    return schedulerHandler.getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId));
   }
 
   private void persistSourceConnection(final String name,
