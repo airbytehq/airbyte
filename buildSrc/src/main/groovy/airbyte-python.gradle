@@ -87,6 +87,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
 
         project.task('airbytePythonTest', type: DefaultTask) {
+            dependsOn project.airbytePythonApply
             dependsOn project.installTestReqs
             dependsOn project.unitTest
         }
