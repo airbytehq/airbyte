@@ -105,7 +105,7 @@ jobs:
 
       - name: Run Integration Tests (Master)
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon integrationTest --rerun-tasks --scan
+        run: ./gradlew --no-daemon integrationTest --scan
 
       - name: Run Standard Source Tests (PR)
         if: success() && github.ref != 'refs/heads/master'
