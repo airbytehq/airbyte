@@ -15,8 +15,6 @@ First of all, make sure you have Docker and Docker Compose installed. Then run t
 ```text
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-git fetch --tags
-git checkout tags/v0.5.1-alpha
 docker-compose up
 ```
 
