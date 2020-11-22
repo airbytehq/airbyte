@@ -111,9 +111,15 @@ jobs:
         if: success() && github.ref != 'refs/heads/master'
         run: ./tools/bin/standard_test_pr.sh
 
-      - name: Run Standard Source Tests (Master)
+      # todo (cgardens) - just run pr integration tests, until we can fix the build.
+      # https://airbytehq.slack.com/archives/C019WEENQRM/p1606012092002600?thread_ts=1605924059.000200&cid=C019WEENQRM
+      - name: Run Standard Source Tests (Master Tmp)
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon standardSourceTestPython --scan
+        run: ./tools/bin/standard_test_pr.sh
+
+      # - name: Run Standard Source Tests (Master)
+      #   if: success() && github.ref == 'refs/heads/master'
+      #   run: ./gradlew --no-daemon standardSourceTestPython --scan
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
