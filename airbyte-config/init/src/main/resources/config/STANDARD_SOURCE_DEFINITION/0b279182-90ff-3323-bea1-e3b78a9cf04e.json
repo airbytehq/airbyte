@@ -1,0 +1,7 @@
+{
+  "name" : "File",
+  "dockerRepository" : "airbyte/source-file",
+  "dockerImageTag" : "0.1.5",
+  "documentationUrl" : "https://hub.docker.com/r/airbyte/source-file",
+  "sourceDefinitionId" : "0b279182-90ff-3323-bea1-e3b78a9cf04e"
+}

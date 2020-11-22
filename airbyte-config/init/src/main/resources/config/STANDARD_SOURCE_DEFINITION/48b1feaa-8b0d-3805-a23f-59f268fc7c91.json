@@ -1,0 +1,7 @@
+{
+  "name" : "Shopify",
+  "dockerRepository" : "airbyte/source-shopify-singer",
+  "dockerImageTag" : "0.1.4",
+  "documentationUrl" : "https://hub.docker.com/r/airbyte/source-shopify-singer",
+  "sourceDefinitionId" : "48b1feaa-8b0d-3805-a23f-59f268fc7c91"
+}

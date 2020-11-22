@@ -1,0 +1,7 @@
+{
+  "name" : "Stripe",
+  "dockerRepository" : "airbyte/source-stripe-singer",
+  "dockerImageTag" : "0.1.7",
+  "documentationUrl" : "https://hub.docker.com/r/airbyte/integration-singer-stripe-source",
+  "sourceDefinitionId" : "ce7566d1-d08c-3094-b74c-f283cf9c56a5"
+}

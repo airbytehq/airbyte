@@ -1,0 +1,7 @@
+{
+  "name" : "BigQuery",
+  "dockerRepository" : "airbyte/destination-bigquery",
+  "dockerImageTag" : "0.1.5",
+  "documentationUrl" : "https://hub.docker.com/r/airbyte/integration-singer-bigquery-destination",
+  "destinationDefinitionId" : "07d2ad15-2591-31ea-9ad5-ab0a7eb32f17"
+}

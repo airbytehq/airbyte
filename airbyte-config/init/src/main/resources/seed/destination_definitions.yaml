@@ -1,0 +1,16 @@
+- name: Local CSV
+  dockerRepository: airbyte/destination-csv
+  dockerImageTag: 0.1.3
+  documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-csv-destination
+- name: Postgres
+  dockerRepository: airbyte/destination-postgres
+  dockerImageTag: 0.1.4
+  documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-postgres-destination
+- name: BigQuery
+  dockerRepository: airbyte/destination-bigquery
+  dockerImageTag: 0.1.5
+  documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-bigquery-destination
+- name: Snowflake
+  dockerRepository: airbyte/destination-snowflake
+  dockerImageTag: 0.1.5
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake

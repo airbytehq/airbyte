@@ -1,0 +1,7 @@
+{
+  "name" : "Google Analytics",
+  "dockerRepository" : "airbyte/source-googleanalytics-singer",
+  "dockerImageTag" : "0.1.4",
+  "documentationUrl" : "https://hub.docker.com/r/airbyte/source-googleanalytics-singer",
+  "sourceDefinitionId" : "d86cf69a-8b82-347a-94ca-3f6a307cf9a6"
+}

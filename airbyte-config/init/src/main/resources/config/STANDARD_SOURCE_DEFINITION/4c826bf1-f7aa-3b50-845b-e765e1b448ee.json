@@ -1,0 +1,7 @@
+{
+  "name" : "Google Adwords",
+  "dockerRepository" : "airbyte/source-google-adwords-singer",
+  "dockerImageTag" : "0.1.3",
+  "documentationUrl" : "https://hub.docker.com/r/airbyte/source-google-adwords",
+  "sourceDefinitionId" : "4c826bf1-f7aa-3b50-845b-e765e1b448ee"
+}

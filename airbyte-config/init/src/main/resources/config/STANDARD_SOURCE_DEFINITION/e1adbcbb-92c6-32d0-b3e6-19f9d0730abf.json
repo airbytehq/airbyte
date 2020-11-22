@@ -1,0 +1,7 @@
+{
+  "name" : "Github",
+  "dockerRepository" : "airbyte/source-github-singer",
+  "dockerImageTag" : "0.1.3",
+  "documentationUrl" : "https://hub.docker.com/r/airbyte/source-github-singer",
+  "sourceDefinitionId" : "e1adbcbb-92c6-32d0-b3e6-19f9d0730abf"
+}

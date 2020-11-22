@@ -1,0 +1,7 @@
+{
+  "name" : "Snowflake",
+  "dockerRepository" : "airbyte/destination-snowflake",
+  "dockerImageTag" : "0.1.5",
+  "documentationUrl" : "https://docs.airbyte.io/integrations/destinations/snowflake",
+  "destinationDefinitionId" : "edf14390-75a8-3a44-bfb8-b630ddc9c8de"
+}
