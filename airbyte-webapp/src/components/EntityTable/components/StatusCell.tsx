@@ -1,17 +1,17 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-
-import Toggle from "../../../../../components/Toggle";
-import Button from "../../../../../components/Button";
 import styled from "styled-components";
+
+import Toggle from "../../Toggle";
+import Button from "../../Button";
 
 type IProps = {
   enabled?: boolean;
   isSyncing?: boolean;
   isManual?: boolean;
-  connectionId: string;
-  onChangeStatus: (connectionId: string) => void;
-  onSync: (connectionId: string) => void;
+  id: string;
+  onChangeStatus: (id: string) => void;
+  onSync: (id: string) => void;
 };
 
 const SmallButton = styled(Button)`
@@ -25,19 +25,19 @@ const ProgressMessage = styled.div`
 const StatusCell: React.FC<IProps> = ({
   enabled,
   isManual,
-  connectionId,
+  id,
   onChangeStatus,
   isSyncing,
   onSync
 }) => {
   const OnLaunch = (event: React.SyntheticEvent) => {
     event.stopPropagation();
-    onSync(connectionId);
+    onSync(id);
   };
 
   const OnToggleClick = (event: React.SyntheticEvent) => {
     event.stopPropagation();
-    onChangeStatus(connectionId);
+    onChangeStatus(id);
   };
 
   if (!isManual) {
@@ -47,14 +47,14 @@ const StatusCell: React.FC<IProps> = ({
   if (isSyncing) {
     return (
       <ProgressMessage>
-        <FormattedMessage id="sources.progress" />
+        <FormattedMessage id="tables.progress" />
       </ProgressMessage>
     );
   }
 
   return (
     <SmallButton onClick={OnLaunch}>
-      <FormattedMessage id="sources.launch" />
+      <FormattedMessage id="tables.launch" />
     </SmallButton>
   );
 };

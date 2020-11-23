@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import ImageBlock from "../../../../../components/ImageBlock";
+import ImageBlock from "../../ImageBlock";
 
 type IProps = {
   value: string;
@@ -21,7 +21,7 @@ const Image = styled(ImageBlock)`
 const ConnectorCell: React.FC<IProps> = ({ value, enabled }) => {
   return (
     <Content enabled={enabled}>
-      <Image />
+      <Image small />
       {value}
     </Content>
   );

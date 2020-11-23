@@ -1,160 +1,132 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import PageTitle from "../../../../components/PageTitle";
-import Breadcrumbs from "../../../../components/Breadcrumbs";
 import useRouter from "../../../../components/hooks/useRouterHook";
-import { Routes } from "../../../routes";
-import StepsMenu from "../../../../components/StepsMenu";
-import StatusView from "./components/StatusView";
-import SettingsView from "./components/SettingsView";
-import SchemaView from "./components/SchemaView";
-import ConnectionResource from "../../../../core/resources/Connection";
-import LoadingPage from "../../../../components/LoadingPage";
-import MainPageWithScroll from "../../../../components/MainPageWithScroll";
-import DestinationResource from "../../../../core/resources/Destination";
 import config from "../../../../config";
-import DestinationDefinitionResource from "../../../../core/resources/DestinationDefinition";
-import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
-import FrequencyConfig from "../../../../data/FrequencyConfig.json";
-import useConnection from "../../../../components/hooks/services/useConnectionHook";
+import ContentCard from "../../../../components/ContentCard";
+import EmptyResource from "../../../../components/EmptyResourceBlock";
+import ConnectionResource from "../../../../core/resources/Connection";
+import SourceResource from "../../../../core/resources/Source";
+import { Routes } from "../../../routes";
+import Breadcrumbs from "../../../../components/Breadcrumbs";
+import SourceConnectionTable from "./components/SourceConnectionTable";
+import SourceSettings from "./components/SourceSettings";
+import {
+  ItemTabs,
+  StepsTypes,
+  TableItemTitle
+} from "../../../../components/SourceAndDestinationsBlocks";
+import LoadingPage from "../../../../components/LoadingPage";
+import DestinationResource from "../../../../core/resources/Destination";
+
+const Content = styled(ContentCard)`
+  margin: 0 32px 0 27px;
+`;
 
 const SourceItemPage: React.FC = () => {
-  const { query, push, history } = useRouter();
+  const { query, push } = useRouter();
 
-  const { updateConnection } = useConnection();
-
-  const connection = useResource(ConnectionResource.detailShape(), {
-    // @ts-ignore
-    connectionId: query.id
-  });
+  const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
+  const onSelectStep = (id: string) => setCurrentStep(id);
 
   const { destinations } = useResource(DestinationResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
-  const currentDestination = destinations[0]; // Now we have only one destination. If we support multiple destinations we will fix this line
-  const destination = useResource(DestinationDefinitionResource.detailShape(), {
-    destinationDefinitionId: currentDestination.destinationDefinitionId
+
+  const source = useResource(SourceResource.detailShape(), {
+    // @ts-ignore
+    sourceId: query.id
   });
 
-  const frequency = FrequencyConfig.find(
-    item => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
-  );
+  const { connections } = useResource(ConnectionResource.listShape(), {
+    workspaceId: config.ui.workspaceId
+  });
 
-  const steps = [
-    {
-      id: "status",
-      name: <FormattedMessage id={"sources.status"} />
-    },
-    {
-      id: "schema",
-      name: <FormattedMessage id={"sources.schema"} />
-    },
-    {
-      id: "settings",
-      name: <FormattedMessage id={"sources.settings"} />
-    }
-  ];
-  const [currentStep, setCurrentStep] = useState("status");
-  const onSelectStep = (id: string) => setCurrentStep(id);
-
-  const onClickBack = () =>
-    history.length > 2 ? history.goBack() : push(Routes.Source);
+  const onClickBack = () => push(Routes.Source);
 
   const breadcrumbsData = [
     {
       name: <FormattedMessage id="sidebar.sources" />,
       onClick: onClickBack
     },
-    { name: connection.source?.name }
+    { name: source.name }
   ];
 
-  const onChangeStatus = async () => {
-    await updateConnection({
-      connectionId: connection.connectionId,
-      syncSchema: connection.syncSchema,
-      schedule: connection.schedule,
-      status: connection.status === "active" ? "inactive" : "active"
-    });
+  const connectionsWithSource = connections.filter(
+    connectionItem => connectionItem.sourceId === source.sourceId
+  );
 
-    AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
-      action:
-        connection.status === "active"
-          ? "Disable connection"
-          : "Reenable connection",
-      connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: destination.name,
-      connector_destination_definition_id: destination.destinationDefinitionId,
-      frequency: frequency?.text
-    });
+  const destinationsDropDownData = useMemo(
+    () =>
+      destinations.map(item => ({
+        text: item.name,
+        value: item.destinationId,
+        img: "/default-logo-catalog.svg"
+      })),
+    [destinations]
+  );
+
+  const onSelect = (data: { value: string }) => {
+    if (data.value === "create-new-item") {
+      push({
+        pathname: `${Routes.Source}${Routes.ConnectionNew}`,
+        state: { sourceId: source.sourceId }
+      });
+    } else {
+      push({
+        pathname: `${Routes.Source}${Routes.ConnectionNew}`,
+        state: { destinationId: data.value, sourceId: source.sourceId }
+      });
+    }
   };
 
-  const onAfterSaveSchema = () => {
-    AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
-      action: "Edit schema",
-      connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: destination.name,
-      connector_destination_definition_id: destination.destinationDefinitionId,
-      frequency: frequency?.text
-    });
-  };
-
-  const onAfterDelete = () => {
-    AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
-      action: "Delete source",
-      connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: destination.name,
-      connector_destination_definition_id: destination.destinationDefinitionId,
-      frequency: frequency?.text
-    });
-  };
-
-  const renderStep = () => {
-    if (currentStep === "status") {
+  const renderContent = () => {
+    if (currentStep === StepsTypes.SETTINGS) {
       return (
-        <StatusView
-          sourceData={connection}
-          onEnabledChange={onChangeStatus}
-          destinationDefinition={destination}
-          frequencyText={frequency?.text}
+        <SourceSettings
+          currentSource={source}
+          connectionsWithSource={connectionsWithSource}
         />
       );
     }
-    if (currentStep === "schema") {
-      return (
-        <SchemaView connection={connection} afterSave={onAfterSaveSchema} />
-      );
-    }
 
-    return <SettingsView sourceData={connection} afterDelete={onAfterDelete} />;
+    return (
+      <>
+        <TableItemTitle
+          type="destination"
+          dropDownData={destinationsDropDownData}
+          onSelect={onSelect}
+        />
+        {connectionsWithSource.length ? (
+          <SourceConnectionTable connections={connectionsWithSource} />
+        ) : (
+          <Content>
+            <EmptyResource
+              text={<FormattedMessage id="sources.noDestinations" />}
+              description={
+                <FormattedMessage id="sources.addDestinationReplicateData" />
+              }
+            />
+          </Content>
+        )}
+      </>
+    );
   };
 
   return (
-    <MainPageWithScroll
-      title={
-        <PageTitle
-          withLine
-          title={<Breadcrumbs data={breadcrumbsData} />}
-          middleComponent={
-            <StepsMenu
-              lightMode
-              data={steps}
-              onSelect={onSelectStep}
-              activeStep={currentStep}
-            />
-          }
-        />
-      }
-    >
-      <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
-    </MainPageWithScroll>
+    <>
+      <PageTitle
+        title={<Breadcrumbs data={breadcrumbsData} />}
+        middleComponent={
+          <ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />
+        }
+        withLine
+      />
+      <Suspense fallback={<LoadingPage />}>{renderContent()}</Suspense>
+    </>
   );
 };
 

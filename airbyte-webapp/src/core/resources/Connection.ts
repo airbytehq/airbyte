@@ -27,6 +27,14 @@ type SourceInformation = {
   connectionConfiguration: any;
 };
 
+type DestinationInformation = {
+  destinationDefinitionId: string;
+  destinationName: string;
+  destinationId: string;
+  name: string;
+  connectionConfiguration: any;
+};
+
 export interface Connection {
   connectionId: string;
   name: string;
@@ -37,6 +45,7 @@ export interface Connection {
   schedule: ScheduleProperties | null;
   syncSchema: SyncSchema;
   source?: SourceInformation;
+  destination?: DestinationInformation;
   lastSync?: number | null;
   isSyncing?: boolean;
 }
@@ -51,6 +60,7 @@ export default class ConnectionResource extends BaseResource
   readonly status: string = "";
   readonly schedule: ScheduleProperties | null = null;
   readonly source: SourceInformation | undefined = undefined;
+  readonly destination: DestinationInformation | undefined = undefined;
   readonly lastSync: number | undefined | null = null;
   readonly syncSchema: SyncSchema = { streams: [] };
   readonly isSyncing: boolean = false;
@@ -126,14 +136,14 @@ export default class ConnectionResource extends BaseResource
     };
   }
 
-  static deleteShape<T extends typeof Resource>(this: T) {
+  static updateStoreAfterDeleteShape<T extends typeof Resource>(this: T) {
     return {
       ...super.deleteShape(),
       getFetchKey: (params: { connectionId: string }) =>
-        "POST /web_backend/delete" + JSON.stringify(params),
-      fetch: async (
-        params: Readonly<Record<string, string | number>>
-      ): Promise<any> => params
+        "POST /app/delete" + JSON.stringify(params),
+      fetch: async (): Promise<any> => {
+        return null;
+      }
     };
   }
 

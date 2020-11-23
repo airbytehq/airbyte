@@ -1,17 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useFetcher } from "rest-hooks";
 
-import ConnectionBlock from "../../../../../components/ConnectionBlock";
 import ContentCard from "../../../../../components/ContentCard";
 import ServiceForm from "../../../../../components/ServiceForm";
-import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
-import SourceDefinitionSpecificationResource, {
-  SourceDefinitionSpecification
-} from "../../../../../core/resources/SourceDefinitionSpecification";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import config from "../../../../../config";
 import useRouter from "../../../../../components/hooks/useRouterHook";
+import { useSourceDefinitionSpecificationLoad } from "../../../../../components/hooks/services/useSourceHook";
 
 type IProps = {
   onSubmit: (values: {
@@ -20,43 +15,14 @@ type IProps = {
     sourceDefinitionId?: string;
     connectionConfiguration?: any;
   }) => void;
-  destinationDefinition: DestinationDefinition;
   dropDownData: Array<{ text: string; value: string; img?: string }>;
   hasSuccess?: boolean;
   errorStatus?: number;
 };
 
-const useSourceDefinitionSpecificationLoad = (sourceDefinitionId: string) => {
-  const [
-    sourceDefinitionSpecification,
-    setSourceDefinitionSpecification
-  ] = useState<null | SourceDefinitionSpecification>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchSourceDefinitionSpecification = useFetcher(
-    SourceDefinitionSpecificationResource.detailShape(),
-    true
-  );
-
-  useEffect(() => {
-    (async () => {
-      if (sourceDefinitionId) {
-        setIsLoading(true);
-        setSourceDefinitionSpecification(
-          await fetchSourceDefinitionSpecification({ sourceDefinitionId })
-        );
-        setIsLoading(false);
-      }
-    })();
-  }, [fetchSourceDefinitionSpecification, sourceDefinitionId]);
-
-  return { sourceDefinitionSpecification, isLoading };
-};
-
-const SourceStep: React.FC<IProps> = ({
+const SourceForm: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
-  destinationDefinition,
   errorStatus,
   hasSuccess
 }) => {
@@ -102,7 +68,6 @@ const SourceStep: React.FC<IProps> = ({
 
   return (
     <>
-      <ConnectionBlock itemTo={{ name: destinationDefinition.name }} />
       <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
         <ServiceForm
           onDropDownSelect={onDropDownSelect}
@@ -127,4 +92,4 @@ const SourceStep: React.FC<IProps> = ({
   );
 };
 
-export default SourceStep;
+export default SourceForm;

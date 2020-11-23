@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 type IProps = {
   text: React.ReactNode;
+  description?: React.ReactNode;
 };
 
 const Content = styled.div`
@@ -23,13 +24,22 @@ const ImgBlock = styled.div`
   padding: 20px 0;
 `;
 
-const EmptyResource: React.FC<IProps> = ({ text }) => (
+const Description = styled.div`
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 19px;
+  color: ${({ theme }) => theme.greyColor60};
+  margin-top: 5px;
+`;
+
+const EmptyResourceBlock: React.FC<IProps> = ({ text, description }) => (
   <Content>
     <ImgBlock>
       <img src="/cactus.png" height={40} alt={"cactus"} />
     </ImgBlock>
     {text}
+    <Description>{description}</Description>
   </Content>
 );
 
-export default EmptyResource;
+export default EmptyResourceBlock;
