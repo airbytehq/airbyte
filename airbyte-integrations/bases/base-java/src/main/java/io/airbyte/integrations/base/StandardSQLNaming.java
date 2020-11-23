@@ -56,7 +56,7 @@ public class StandardSQLNaming implements SQLNamingResolvable {
     return streamName;
   }
 
-  protected  String convertStreamName(String streamName) {
+  protected String convertStreamName(String streamName) {
     // FIXME replace invalid characters by '_'
     return streamName;
   }

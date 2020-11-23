@@ -31,6 +31,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.SQLNamingResolvable;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -50,11 +51,17 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeDestination extends ExtendedSQLNaming implements Destination {
+public class SnowflakeDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
 
   protected static final String COLUMN_NAME = "data";
+
+  private final SQLNamingResolvable namingResolver;
+
+  public SnowflakeDestination() {
+    namingResolver = new ExtendedSQLNaming();
+  }
 
   @Override
   public ConnectorSpecification spec() throws IOException {
@@ -71,6 +78,11 @@ public class SnowflakeDestination extends ExtendedSQLNaming implements Destinati
     } catch (Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
+  }
+
+  @Override
+  public SQLNamingResolvable getNamingResolver() {
+    return namingResolver;
   }
 
   /**
@@ -110,9 +122,9 @@ public class SnowflakeDestination extends ExtendedSQLNaming implements Destinati
     // we don't use temporary/transient since we want to control the lifecycle
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = getRawSchemaName(config, config.get("schema").asText(), streamName);
-      final String tableName = getRawTableName(config, streamName);
-      final String tmpTableName = getTmpTableName(config, streamName);
+      final String schemaName = getNamingResolver().getRawSchemaName(config, config.get("schema").asText(), streamName);
+      final String tableName = getNamingResolver().getRawTableName(config, streamName);
+      final String tmpTableName = getNamingResolver().getTmpTableName(config, streamName);
       if (!schemaSet.contains(schemaName)) {
         final String query = String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName);
 

@@ -30,9 +30,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.StandardSQLNaming;
+import io.airbyte.integrations.base.SQLNamingResolvable;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -54,7 +55,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CsvDestination extends StandardSQLNaming implements Destination {
+public class CsvDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
 
@@ -62,6 +63,12 @@ public class CsvDestination extends StandardSQLNaming implements Destination {
   static final String COLUMN_AB_ID = "ab_id"; // we output all data as a blob to a single column.
   static final String COLUMN_EMITTED_AT = "emitted_at"; // we output all data as a blob to a single column.
   static final String DESTINATION_PATH_FIELD = "destination_path";
+
+  private final SQLNamingResolvable namingResolver;
+
+  public CsvDestination() {
+    namingResolver = new ExtendedSQLNaming();
+  }
 
   @Override
   public ConnectorSpecification spec() throws IOException {
@@ -77,6 +84,11 @@ public class CsvDestination extends StandardSQLNaming implements Destination {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+  }
+
+  @Override
+  public SQLNamingResolvable getNamingResolver() {
+    return namingResolver;
   }
 
   /**
@@ -95,8 +107,8 @@ public class CsvDestination extends StandardSQLNaming implements Destination {
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String tableName = getRawTableName(config, streamName);
-      final String tmpTableName = getTmpTableName(config, streamName);
+      final String tableName = getNamingResolver().getRawTableName(config, streamName);
+      final String tmpTableName = getNamingResolver().getTmpTableName(config, streamName);
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
       final FileWriter fileWriter = new FileWriter(tmpPath.toFile());

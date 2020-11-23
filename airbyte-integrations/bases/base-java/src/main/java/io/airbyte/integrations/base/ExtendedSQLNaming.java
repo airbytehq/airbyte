@@ -25,7 +25,6 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.time.Instant;
 
 public class ExtendedSQLNaming extends StandardSQLNaming {
 
@@ -48,7 +47,7 @@ public class ExtendedSQLNaming extends StandardSQLNaming {
   }
 
   @Override
-  protected  String convertStreamName(String streamName) {
+  protected String convertStreamName(String streamName) {
     // FIXME replace invalid characters by '_'
     return streamName;
   }

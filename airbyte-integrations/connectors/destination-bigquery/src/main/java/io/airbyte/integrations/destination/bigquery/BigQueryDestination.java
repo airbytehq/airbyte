@@ -55,6 +55,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.SQLNamingResolvable;
 import io.airbyte.integrations.base.StandardSQLNaming;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -73,7 +74,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryDestination extends StandardSQLNaming implements Destination {
+public class BigQueryDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   static final String CONFIG_DATASET_ID = "dataset_id";
@@ -88,6 +89,12 @@ public class BigQueryDestination extends StandardSQLNaming implements Destinatio
       Field.of(COLUMN_AB_ID, StandardSQLTypeName.STRING),
       Field.of(COLUMN_DATA, StandardSQLTypeName.STRING),
       Field.of(COLUMN_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
+
+  private final SQLNamingResolvable namingResolver;
+
+  public BigQueryDestination() {
+    namingResolver = new StandardSQLNaming();
+  }
 
   @Override
   public ConnectorSpecification spec() throws IOException {
@@ -162,6 +169,11 @@ public class BigQueryDestination extends StandardSQLNaming implements Destinatio
     }
   }
 
+  @Override
+  public SQLNamingResolvable getNamingResolver() {
+    return namingResolver;
+  }
+
   /**
    * Strategy:
    * <p>
@@ -193,9 +205,9 @@ public class BigQueryDestination extends StandardSQLNaming implements Destinatio
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = getRawSchemaName(config, datasetId, streamName);
-      final String tableName = getRawTableName(config, streamName);
-      final String tmpTableName = getTmpTableName(config, streamName);
+      final String schemaName = getNamingResolver().getRawSchemaName(config, datasetId, streamName);
+      final String tableName = getNamingResolver().getRawTableName(config, streamName);
+      final String tmpTableName = getNamingResolver().getTmpTableName(config, streamName);
 
       createTable(bigquery, schemaName, tmpTableName);
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source

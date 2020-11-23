@@ -41,6 +41,7 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.SQLNamingResolvable;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -73,10 +74,16 @@ import org.jooq.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresDestination extends ExtendedSQLNaming implements Destination {
+public class PostgresDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
   static final String COLUMN_NAME = "data";
+
+  private final SQLNamingResolvable namingResolver;
+
+  public PostgresDestination() {
+    namingResolver = new ExtendedSQLNaming();
+  }
 
   @Override
   public ConnectorSpecification spec() throws IOException {
@@ -98,6 +105,11 @@ public class PostgresDestination extends ExtendedSQLNaming implements Destinatio
       // todo (cgardens) - better error messaging for common cases. e.g. wrong password.
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Can't connect with provided configuration.");
     }
+  }
+
+  @Override
+  public SQLNamingResolvable getNamingResolver() {
+    return namingResolver;
   }
 
   /**
@@ -136,9 +148,9 @@ public class PostgresDestination extends ExtendedSQLNaming implements Destinatio
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = getRawSchemaName(config, getConfigSchemaName(config), streamName);
-      final String tableName = getRawTableName(config, streamName);
-      final String tmpTableName = getTmpTableName(config, streamName);
+      final String schemaName = getNamingResolver().getRawSchemaName(config, getConfigSchemaName(config), streamName);
+      final String tableName = getNamingResolver().getRawTableName(config, streamName);
+      final String tmpTableName = getNamingResolver().getTmpTableName(config, streamName);
       if (!schemaSet.contains(schemaName)) {
         database.query(ctx -> ctx.execute(createSchemaQuery(schemaName)));
         schemaSet.add(schemaName);

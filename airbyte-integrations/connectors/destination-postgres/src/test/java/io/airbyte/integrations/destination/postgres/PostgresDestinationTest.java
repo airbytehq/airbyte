@@ -167,11 +167,11 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    Set<JsonNode> usersActual = recordRetriever(destination.getRawTableName(config, USERS_STREAM_NAME));
+    Set<JsonNode> usersActual = recordRetriever(destination.getNamingResolver().getRawTableName(config, USERS_STREAM_NAME));
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(destination.getRawTableName(config, TASKS_STREAM_NAME));
+    Set<JsonNode> tasksActual = recordRetriever(destination.getNamingResolver().getRawTableName(config, TASKS_STREAM_NAME));
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
@@ -203,14 +203,14 @@ class PostgresDestinationTest {
     consumer2.accept(messageUser3);
     consumer2.close();
 
-    Set<JsonNode> usersActual = recordRetriever(destination.getRawTableName(config, USERS_STREAM_NAME));
+    Set<JsonNode> usersActual = recordRetriever(destination.getNamingResolver().getRawTableName(config, USERS_STREAM_NAME));
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(
         MESSAGE_USERS1.getRecord().getData(),
         MESSAGE_USERS2.getRecord().getData(),
         messageUser3.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(destination.getRawTableName(config, TASKS_STREAM_NAME));
+    Set<JsonNode> tasksActual = recordRetriever(destination.getNamingResolver().getRawTableName(config, TASKS_STREAM_NAME));
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
@@ -228,7 +228,8 @@ class PostgresDestinationTest {
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
         .build());
-    final DestinationConsumer<AirbyteMessage> consumer = new PostgresDestination().write(newConfig, CATALOG);
+    final PostgresDestination destination = new PostgresDestination();
+    final DestinationConsumer<AirbyteMessage> consumer = destination.write(newConfig, CATALOG);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -237,18 +238,18 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    Set<JsonNode> usersActual = recordRetriever(NamingHelper.getRawTableName("new_schema." + USERS_STREAM_NAME));
+    Set<JsonNode> usersActual = recordRetriever(destination.getNamingResolver().getRawTableName(config, "new_schema." + USERS_STREAM_NAME));
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(NamingHelper.getRawTableName("new_schema." + TASKS_STREAM_NAME));
+    Set<JsonNode> tasksActual = recordRetriever(destination.getNamingResolver().getRawTableName(config, "new_schema." + TASKS_STREAM_NAME));
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
     assertTmpTablesNotPresent(
         CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getStream).map(AirbyteStream::getName).collect(Collectors.toList()));
 
-    assertThrows(RuntimeException.class, () -> recordRetriever(NamingHelper.getRawTableName(USERS_STREAM_NAME)));
+    assertThrows(RuntimeException.class, () -> recordRetriever(destination.getNamingResolver().getRawTableName(config, USERS_STREAM_NAME)));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -268,7 +269,7 @@ class PostgresDestinationTest {
     final List<String> tableNames = CATALOG.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
-        .map(s -> destination.getRawTableName(config, s.getName()))
+        .map(s -> destination.getNamingResolver().getRawTableName(config, s.getName()))
         .collect(Collectors.toList());
     assertTmpTablesNotPresent(CATALOG.getStreams()
         .stream()
