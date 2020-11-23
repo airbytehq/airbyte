@@ -49,6 +49,10 @@ const LoaderContainer = styled.div`
   padding: 22px 0 23px;
 `;
 
+const LoadingMessage = styled.div`
+  margin-top: 10px;
+`;
+
 const FrequencyInput: React.FC = () => {
   const [field, , { setValue }] = useField("frequency");
   const formatMessage = useIntl().formatMessage;
@@ -214,12 +218,22 @@ const FormContent: React.FC<IProps> = ({
     });
   };
 
+  const service =
+    dropDownData &&
+    dropDownData.find(item => item.value === values.serviceType);
+
   return (
     <>
       {renderFormMeta(formFields)}
       {isLoadingSchema && (
         <LoaderContainer>
           <Spinner />
+          <LoadingMessage>
+            <FormattedMessage
+              id="form.loadingConfiguration"
+              values={{ connector: service?.text }}
+            />
+          </LoadingMessage>
         </LoaderContainer>
       )}
     </>

@@ -64,6 +64,7 @@
   "form.changesSaved": "Your changes were saved!",
   "form.savedChange": "Change saved!",
   "form.imageCannotFound": "The docker image cannot be found. Please ensure that the input tag points to a valid Airbyte docker image",
+  "form.loadingConfiguration": "Loading required configuration parameters for {connector}",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
