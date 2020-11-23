@@ -158,15 +158,15 @@ public class PostgresDestination implements Destination {
   }
 
   static String createSchemaQuery(String schemaName) {
-    return String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";\n", schemaName);
+    return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
   }
 
   static String createRawTableQuery(String schemaName, String streamName) {
     return String.format(
-        "CREATE TABLE IF NOT EXISTS \"%s\".\"%s\" ( \n"
-            + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
-            + "\"%s\" JSONB,\n"
-            + "\"emitted_at\" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
+        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+            + "ab_id VARCHAR PRIMARY KEY,\n"
+            + "%s JSONB,\n"
+            + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
             + ");\n",
         schemaName, streamName, COLUMN_NAME);
   }
@@ -296,13 +296,13 @@ public class PostgresDestination implements Destination {
             switch (writeConfig.getSyncMode()) {
               case FULL_REFRESH -> {
                 // truncate table if already exist.
-                query.append(String.format("TRUNCATE TABLE \"%s\".\"%s\";\n", writeConfig.getSchemaName(), writeConfig.getTableName()));
+                query.append(String.format("TRUNCATE TABLE %s.%s;\n", writeConfig.getSchemaName(), writeConfig.getTableName()));
               }
               case INCREMENTAL -> {}
               default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
             }
             // always copy data from tmp table into "main" table.
-            query.append(String.format("INSERT INTO \"%s\".\"%s\" SELECT * FROM \"%s\".\"%s\";\n", writeConfig.getSchemaName(),
+            query.append(String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", writeConfig.getSchemaName(),
                 writeConfig.getTableName(), writeConfig.getSchemaName(), writeConfig.getTmpTableName()));
           }
           return ctx.execute(query.toString());
@@ -321,7 +321,7 @@ public class PostgresDestination implements Destination {
       for (WriteConfig writeConfig : writeConfigs.values()) {
         try {
           database.query(
-              ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS \"%s\".\"%s\";", writeConfig.getSchemaName(), writeConfig.getTmpTableName())));
+              ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS %s.%s;", writeConfig.getSchemaName(), writeConfig.getTmpTableName())));
         } catch (SQLException e) {
           throw new RuntimeException(e);
         }
