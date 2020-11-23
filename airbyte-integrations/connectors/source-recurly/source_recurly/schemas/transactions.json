@@ -1,0 +1,267 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "object": {
+      "type": "string"
+    },
+    "uuid": {
+      "type": "string"
+    },
+    "original_transaction_id": {
+      "type": "string"
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "parent_account_id": {
+          "type": "string"
+        },
+        "bill_to": {
+          "type": "string"
+        }
+      }
+    },
+    "invoice": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        }
+      }
+    },
+    "voided_by_invoice": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        }
+      }
+    },
+    "subscription_ids": {
+      "type": "array"
+    },
+    "type": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "integer"
+    },
+    "status": {
+      "type": "string"
+    },
+    "success": {
+      "type": "boolean"
+    },
+    "refunded": {
+      "type": "boolean"
+    },
+    "billing_address": {
+      "type": "object",
+      "properties": {
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "street1": {
+          "type": "string"
+        },
+        "street2": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "postal_code": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      }
+    },
+    "collection_method": {
+      "type": "string"
+    },
+    "payment_method": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "type": "string"
+        },
+        "card_type": {
+          "type": "string"
+        },
+        "first_six": {
+          "type": "string"
+        },
+        "last_four": {
+          "type": "string"
+        },
+        "last_two": {
+          "type": "string"
+        },
+        "exp_month": {
+          "type": "integer"
+        },
+        "exp_year": {
+          "type": "integer"
+        },
+        "gateway_token": {
+          "type": "string"
+        },
+        "gateway_code": {
+          "type": "string"
+        },
+        "billing_agreement_id": {
+          "type": "string"
+        },
+        "name_on_account": {
+          "type": "string"
+        },
+        "account_type": {
+          "type": "string"
+        },
+        "routing_number": {
+          "type": "string"
+        },
+        "routing_number_bank": {
+          "type": "string"
+        }
+      }
+    },
+    "ip_address_v4": {
+      "type": "string"
+    },
+    "ip_address_country": {
+      "type": "string"
+    },
+    "status_code": {
+      "type": "string"
+    },
+    "status_message": {
+      "type": "string"
+    },
+    "customer_message": {
+      "type": "string"
+    },
+    "customer_message_locale": {
+      "type": "string"
+    },
+    "payment_gateway": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "gateway_message": {
+      "type": "string"
+    },
+    "gateway_reference": {
+      "type": "string"
+    },
+    "gateway_approval_code": {
+      "type": "string"
+    },
+    "gateway_response_code": {
+      "type": "string"
+    },
+    "gateway_response_time": {
+      "type": "integer"
+    },
+    "gateway_response_values": {
+      "type": "object"
+    },
+    "cvv_check": {
+      "type": "string"
+    },
+    "avs_check": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "voided_at": {
+      "type": "string"
+    },
+    "collected_at": {
+      "type": "string"
+    }
+  }
+}

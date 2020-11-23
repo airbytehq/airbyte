@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "object": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "max_redemptions": {
+      "type": "integer"
+    },
+    "max_redemptions_per_account": {
+      "type": "integer"
+    },
+    "unique_coupon_codes_count": {
+      "type": "integer"
+    },
+    "unique_code_template": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "temporal_amount": {
+      "type": "integer"
+    },
+    "temporal_unit": {
+      "type": "string"
+    },
+    "free_trial_unit": {
+      "type": "string"
+    },
+    "free_trial_amount": {
+      "type": "integer"
+    },
+    "applies_to_all_plans": {
+      "type": "boolean"
+    },
+    "applies_to_all_items": {
+      "type": "boolean"
+    },
+    "applies_to_non_plan_charges": {
+      "type": "boolean"
+    },
+    "plans_names": {
+      "type": "array"
+    },
+    "plans": {
+      "type": "array"
+    },
+    "items": {
+      "type": "array"
+    },
+    "redemption_resource": {
+      "type": "string"
+    },
+    "discount": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "percent": {
+          "type": "integer"
+        },
+        "currencies": {
+          "type": "array"
+        },
+        "trial": {
+          "type": "object",
+          "properties": {
+            "unit": {
+              "type": "string"
+            },
+            "length": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "coupon_type": {
+      "type": "string"
+    },
+    "hosted_page_description": {
+      "type": "string"
+    },
+    "invoice_description": {
+      "type": "string"
+    },
+    "redeem_by": {
+      "type": "string"
+    },
+    "bulk_coupon_id": {
+      "type": "string"
+    },
+    "bulk_coupon_code": {
+      "type": "string"
+    },
+    "redeemed_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "expired_at": {
+      "type": "string"
+    }
+  }
+}

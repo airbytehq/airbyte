@@ -1,0 +1,203 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "object": {
+      "type": "string"
+    },
+    "uuid": {
+      "type": "string"
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "parent_account_id": {
+          "type": "string"
+        },
+        "bill_to": {
+          "type": "string"
+        }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "state": {
+      "type": "string"
+    },
+    "shipping": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "type": "string"
+        },
+        "address": {
+          "type": "object"
+        },
+        "method": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "object": {
+              "type": "string"
+            },
+            "code": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "amount": {
+          "type": "integer"
+        }
+      }
+    },
+    "coupon_redemptions": {
+      "type": "array"
+    },
+    "pending_change": {
+      "type": "object"
+    },
+    "current_period_started_at": {
+      "type": "string"
+    },
+    "current_period_ends_at": {
+      "type": "string"
+    },
+    "current_term_started_at": {
+      "type": "string"
+    },
+    "current_term_ends_at": {
+      "type": "string"
+    },
+    "trial_started_at": {
+      "type": "string"
+    },
+    "trial_ends_at": {
+      "type": "string"
+    },
+    "remaining_billing_cycles": {
+      "type": "integer"
+    },
+    "total_billing_cycles": {
+      "type": "integer"
+    },
+    "renewal_billing_cycles": {
+      "type": "integer"
+    },
+    "auto_renew": {
+      "type": "boolean"
+    },
+    "paused_at": {
+      "type": "string"
+    },
+    "remaining_pause_cycles": {
+      "type": "integer"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "revenue_schedule_type": {
+      "type": "string"
+    },
+    "unit_amount": {
+      "type": "integer"
+    },
+    "quantity": {
+      "type": "integer"
+    },
+    "add_ons": {
+      "type": "array"
+    },
+    "add_ons_total": {
+      "type": "integer"
+    },
+    "subtotal": {
+      "type": "integer"
+    },
+    "collection_method": {
+      "type": "string"
+    },
+    "po_number": {
+      "type": "string"
+    },
+    "net_terms": {
+      "type": "integer"
+    },
+    "terms_and_conditions": {
+      "type": "integer"
+    },
+    "customer_notes": {
+      "type": "integer"
+    },
+    "expiration_reason": {
+      "type": "integer"
+    },
+    "custom_fields": {
+      "type": "array"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "activated_at": {
+      "type": "string"
+    },
+    "canceled_at": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "bank_account_authorized_at": {
+      "type": "string"
+    },
+    "billing_info_id": {
+      "type": "string"
+    }
+  }
+}
