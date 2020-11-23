@@ -155,13 +155,13 @@ public abstract class AbstractJdbcSource implements Source {
     Stream<AirbyteMessage> resultStream = Stream.empty();
 
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
-      if (!tableNameToTable.containsKey(airbyteStream.getName())) {
+      if (!tableNameToTable.containsKey(airbyteStream.getStream().getName())) {
         continue;
       }
 
       final Set<String> selectedFields = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
 
-      final TableInfo table = tableNameToTable.get(airbyteStream.getName());
+      final TableInfo table = tableNameToTable.get(airbyteStream.getStream().getName());
       final List<Field> selectedDatabaseFields = table.getFields()
           .stream()
           .filter(field -> selectedFields.contains(field.getName()))
@@ -177,7 +177,7 @@ public abstract class AbstractJdbcSource implements Source {
               .map(r -> new AirbyteMessage()
                   .withType(Type.RECORD)
                   .withRecord(new AirbyteRecordMessage()
-                      .withStream(airbyteStream.getName())
+                      .withStream(airbyteStream.getStream().getName())
                       .withEmittedAt(now.toEpochMilli())
                       .withData(Jsons.deserialize(r.formatJSON(DB_JSON_FORMAT))))));
 

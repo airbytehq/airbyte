@@ -77,7 +77,7 @@ class DefaultSyncJobFactoryTest {
     when(schedulerPersistence
         .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage))
             .thenReturn(jobId);
-    when(configRepository.getStandardSource(sourceDefinitionId))
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionId))
         .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinitionId).withDockerRepository(srcDockerRepo)
             .withDockerImageTag(srcDockerTag));
 

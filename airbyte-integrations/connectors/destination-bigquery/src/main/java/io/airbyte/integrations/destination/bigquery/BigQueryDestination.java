@@ -193,8 +193,8 @@ public class BigQueryDestination implements Destination {
 
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String tableName = NamingHelper.getRawTableName(stream.getName());
-      final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
+      final String tableName = NamingHelper.getRawTableName(stream.getStream().getName());
+      final String tmpTableName = stream.getStream().getName() + "_" + Instant.now().toEpochMilli();
 
       createTable(bigquery, datasetId, tmpTableName);
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
@@ -206,7 +206,7 @@ public class BigQueryDestination implements Destination {
 
       final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
 
-      writeConfigs.put(stream.getName(), new WriteConfig(TableId.of(datasetId, tableName), TableId.of(datasetId, tmpTableName), writer));
+      writeConfigs.put(stream.getStream().getName(), new WriteConfig(TableId.of(datasetId, tableName), TableId.of(datasetId, tmpTableName), writer));
     }
 
     // write to tmp tables

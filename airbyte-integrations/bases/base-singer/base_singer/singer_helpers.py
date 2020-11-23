@@ -134,7 +134,8 @@ class SingerHelper:
         masked_singer_streams = []
 
         stream_to_airbyte_schema = {}
-        for stream in masked_airbyte_catalog["streams"]:
+        for configured_stream in masked_airbyte_catalog["streams"]:
+            stream = configured_stream["stream"]
             stream_to_airbyte_schema[stream.get("name")] = stream
 
         for singer_stream in discovered_singer_catalog.get("streams"):

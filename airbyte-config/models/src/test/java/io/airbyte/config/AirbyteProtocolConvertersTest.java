@@ -52,10 +52,12 @@ class AirbyteProtocolConvertersTest {
               Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER)))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = new ConfiguredAirbyteCatalog()
       .withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-          .withName(STREAM)
-          .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(
-              Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
-              Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER)))));
+          .withStream(
+              new AirbyteStream()
+                  .withName(STREAM)
+                  .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(
+                      Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
+                      Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER))))));
 
   private static final Schema SCHEMA = new Schema()
       .withStreams(Lists.newArrayList(new Stream()

@@ -97,6 +97,10 @@ class AirbyteStream(BaseModel):
     name: str = Field(..., description="Stream's name.")
     json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
     supported_sync_modes: Optional[List[SyncMode]] = None
+    source_defined_cursor: Optional[bool] = Field(
+        None,
+        description="If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used.",
+    )
     default_cursor_field: Optional[List[str]] = Field(
         None,
         description="Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.",
@@ -104,8 +108,7 @@ class AirbyteStream(BaseModel):
 
 
 class ConfiguredAirbyteStream(BaseModel):
-    name: str = Field(..., description="Stream's name.")
-    json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
+    stream: AirbyteStream
     sync_mode: Optional[SyncMode] = "full_refresh"
     cursor_field: Optional[List[str]] = Field(
         None,

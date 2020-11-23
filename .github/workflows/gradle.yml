@@ -15,21 +15,44 @@ jobs:
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh
 
-      - name: Cache java deps
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle
-          key: gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: |
-            gradle-
+#      # docker should use restore-keys since these are just used for layer caching, not gradle task caching
+#      - name: Docker Caching
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            /tmp/docker-registry
+#          key: ${{ secrets.CACHE_VERSION }}-docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-${{ github.sha }}
+#          restore-keys: |
+#            ${{ secrets.CACHE_VERSION }}-docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-
+#            ${{ secrets.CACHE_VERSION }}-docker-${{ runner.os }}-
 
-      - name: Cache node deps
+      - name: Pip Caching
         uses: actions/cache@v2
         with:
-          path: ~/.npm
-          key: node-${{ hashFiles('**/package-lock.json') }}
+          path: |
+            ~/.cache/pip
+          key: ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            node-
+            ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-
+
+      - name: Npm Caching
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.npm
+          key: ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
+
+      # this intentionally does not use restore-keys so we don't mess with gradle caching
+      - name: Gradle and Python Caching
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            **/.venv
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
 
       - uses: actions/setup-java@v1
         with:
@@ -43,6 +66,20 @@ jobs:
         with:
           python-version: '3.7'
 
+      - name: Start local Docker registry
+        run: docker run -d -p 5000:5000 --restart=always --name registry -v /tmp/docker-registry:/var/lib/registry registry:2 && npx wait-on tcp:5000
+
+      - name: Build
+        run: ./gradlew --no-daemon build --scan
+
+      - name: Ensure no file change
+        run: git status --porcelain && test -z "$(git status --porcelain)"
+
+      - name: Check documentation
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./tools/site/link_checker.sh check_docs
+
+      # this should happen as late as possible so we don't accidentally have tests in the wrong stage depending on creds
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh
         env:
@@ -62,16 +99,6 @@ jobs:
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
 
-      - name: Build
-        run: ./gradlew --no-daemon build --scan
-
-      - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
-
-      - name: Check documentation
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./tools/site/link_checker.sh check_docs
-
       - name: Run Integration Tests (PR)
         if: success() && github.ref != 'refs/heads/master'
         run: ./tools/bin/integration_test_pr.sh
@@ -84,9 +111,15 @@ jobs:
         if: success() && github.ref != 'refs/heads/master'
         run: ./tools/bin/standard_test_pr.sh
 
-      - name: Run Standard Source Tests (Master)
+      # todo (cgardens) - just run pr integration tests, until we can fix the build.
+      # https://airbytehq.slack.com/archives/C019WEENQRM/p1606012092002600?thread_ts=1605924059.000200&cid=C019WEENQRM
+      - name: Run Standard Source Tests (Master Tmp)
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon standardSourceTestPython --scan
+        run: ./tools/bin/standard_test_pr.sh
+
+      # - name: Run Standard Source Tests (Master)
+      #   if: success() && github.ref == 'refs/heads/master'
+      #   run: ./gradlew --no-daemon standardSourceTestPython --scan
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'

@@ -66,7 +66,7 @@ public class CatalogHelpers {
   }
 
   public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, List<Field> fields) {
-    return new ConfiguredAirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields));
+    return new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields)));
   }
 
   /**
@@ -86,8 +86,7 @@ public class CatalogHelpers {
 
   public static ConfiguredAirbyteStream toDefaultConfiguredStream(AirbyteStream stream) {
     return new ConfiguredAirbyteStream()
-        .withName(stream.getName())
-        .withJsonSchema(stream.getJsonSchema())
+        .withStream(stream)
         .withSyncMode(SyncMode.FULL_REFRESH)
         .withCursorField(new ArrayList<>());
   }
@@ -103,8 +102,7 @@ public class CatalogHelpers {
             .stream()
             .collect(Collectors.toMap(
                 Field::getName,
-                field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString()),
-                (a, b) -> a)))
+                field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString()))))
         .build());
   }
 
@@ -117,7 +115,7 @@ public class CatalogHelpers {
   @SuppressWarnings("unchecked")
   public static Set<String> getTopLevelFieldNames(final ConfiguredAirbyteStream stream) {
     // it is json, so the key has to be a string.
-    final Map<String, Object> object = Jsons.object(stream.getJsonSchema().get("properties"), Map.class);
+    final Map<String, Object> object = Jsons.object(stream.getStream().getJsonSchema().get("properties"), Map.class);
     return object.keySet();
   }
 
@@ -129,13 +127,16 @@ public class CatalogHelpers {
   protected static Set<String> getAllFieldNames(JsonNode node) {
     Set<String> allFieldNames = new HashSet<>();
 
-    Iterator<String> fieldNames = node.fieldNames();
-    while (fieldNames.hasNext()) {
-      String fieldName = fieldNames.next();
-      allFieldNames.add(fieldName);
-      JsonNode fieldValue = node.get(fieldName);
-      if (fieldValue.isObject()) {
-        allFieldNames.addAll(getAllFieldNames(fieldValue));
+    if (node.has("properties")) {
+      JsonNode properties = node.get("properties");
+      Iterator<String> fieldNames = properties.fieldNames();
+      while (fieldNames.hasNext()) {
+        String fieldName = fieldNames.next();
+        allFieldNames.add(fieldName);
+        JsonNode fieldValue = properties.get(fieldName);
+        if (fieldValue.isObject()) {
+          allFieldNames.addAll(getAllFieldNames(fieldValue));
+        }
       }
     }
 
@@ -147,7 +148,9 @@ public class CatalogHelpers {
    * @return if the identifier matches the alphanumeric+underscore requirement for identifiers
    */
   public static boolean isValidIdentifier(String identifier) {
-    return StringUtils.isAlphanumeric(identifier.replace("_", ""));
+    // todo (cgardens) - remove $ once mailchimp is fixed.
+    final String s = identifier.replaceAll("[-_.$]", "");
+    return StringUtils.isAlphanumeric(s);
   }
 
   /**
@@ -163,7 +166,7 @@ public class CatalogHelpers {
    * @return list of stream names in the catalog that are invalid
    */
   public static List<String> getInvalidStreamNames(ConfiguredAirbyteCatalog catalog) {
-    return getInvalidStreamNames(catalog.getStreams().stream().map(ConfiguredAirbyteStream::getName));
+    return getInvalidStreamNames(catalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).map(AirbyteStream::getName));
   }
 
   private static List<String> getInvalidStreamNames(Stream<String> names) {
@@ -197,7 +200,8 @@ public class CatalogHelpers {
   private static Map<String, JsonNode> getStreamNameToJsonSchema(ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams()
         .stream()
-        .collect(Collectors.toMap(ConfiguredAirbyteStream::getName, ConfiguredAirbyteStream::getJsonSchema));
+        .map(ConfiguredAirbyteStream::getStream)
+        .collect(Collectors.toMap(AirbyteStream::getName, AirbyteStream::getJsonSchema));
   }
 
   private static Multimap<String, String> getInvalidFieldNames(Map<String, JsonNode> streamNameToJsonSchema) {

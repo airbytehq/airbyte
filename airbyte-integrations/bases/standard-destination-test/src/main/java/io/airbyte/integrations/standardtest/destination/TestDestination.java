@@ -41,7 +41,6 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardGetSpecOutput;
-import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -49,6 +48,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.OutputAndStatus;
@@ -132,6 +132,16 @@ public abstract class TestDestination {
    * @return - a boolean.
    */
   protected boolean implementsBasicNormalization() {
+    return false;
+  }
+
+  /**
+   * Override to return true to if the destination implements incremental syncs and it should be
+   * tested here.
+   *
+   * @return - a boolean.
+   */
+  protected boolean implementsIncremental() {
     return false;
   }
 
@@ -252,6 +262,39 @@ public abstract class TestDestination {
   }
 
   /**
+   * Verify that the integration successfully writes records incrementally. The second run should
+   * append records to the datastore instead of overwriting the previous run.
+   */
+  @Test
+  public void testIncrementalSync() throws Exception {
+    if (!implementsIncremental()) {
+      return;
+    }
+
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    configuredCatalog.getStreams().forEach(s -> s.withSyncMode(SyncMode.INCREMENTAL));
+    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    runSync(getConfig(), firstSyncMessages, configuredCatalog);
+
+    final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(catalog.getStreams().get(0).getName())
+            .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("date", "2020-03-31T00:00:00Z")
+                .put("HKD", 10)
+                .put("NZD", 700)
+                .build()))));
+    runSync(getConfig(), secondSyncMessages, configuredCatalog);
+    final List<AirbyteMessage> expectedMessagesAfterSecondSync = new ArrayList<>();
+    expectedMessagesAfterSecondSync.addAll(firstSyncMessages);
+    expectedMessagesAfterSecondSync.addAll(secondSyncMessages);
+    assertSameMessages(expectedMessagesAfterSecondSync, retrieveRecordsForCatalog(catalog));
+  }
+
+  /**
    * Verify that the integration successfully writes records successfully both raw and normalized.
    * Tests a wide variety of messages an schemas (aspirationally, anyway).
    */
@@ -310,7 +353,6 @@ public abstract class TestDestination {
 
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
         .withConnectionId(UUID.randomUUID())
-        .withSyncMode(SyncMode.FULL_REFRESH)
         .withCatalog(catalog)
         .withDestinationConnectionConfiguration(config);
 
@@ -331,8 +373,7 @@ public abstract class TestDestination {
         pbf, targetConfig.getDestinationConnectionConfiguration());
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-    if (!runner.normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(),
-        targetConfig.getCatalog())) {
+    if (!runner.normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog())) {
       throw new WorkerException("Normalization Failed.");
     }
     runner.close();

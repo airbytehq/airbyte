@@ -37,10 +37,13 @@ import com.stripe.param.CustomerListParams;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
@@ -192,8 +195,9 @@ public class SingerStripeSourceTest {
 
   @Test
   public void testSync() throws IOException, InterruptedException, WorkerException {
-    String catalog = MoreResources.readResource(CATALOG);
-    IOs.writeFile(catalogPath.getParent(), catalogPath.getFileName().toString(), catalog);
+    final ConfiguredAirbyteCatalog catalog = CatalogHelpers
+        .toDefaultConfiguredCatalog(Jsons.deserialize(MoreResources.readResource(CATALOG), AirbyteCatalog.class));
+    IOs.writeFile(catalogPath.getParent(), catalogPath.getFileName().toString(), Jsons.serialize(catalog));
 
     // run syn process
     Path syncOutputPath = jobRoot.resolve("sync_output.txt");
@@ -203,6 +207,8 @@ public class SingerStripeSourceTest {
     assertEquals(0, process.exitValue());
 
     final Set<JsonNode> actualSyncOutput = IOs.readFile(jobRoot, syncOutputPath.toString()).lines()
+        // the runner in this test doesn't gracefully handle non message items in stdout.
+        .filter(s -> Jsons.tryDeserialize(s).isPresent())
         .map(Jsons::deserialize)
         .map(SingerStripeSourceTest::normalize)
         .collect(Collectors.toSet());

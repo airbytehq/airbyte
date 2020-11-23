@@ -50,6 +50,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -228,7 +229,11 @@ class BigQueryDestinationTest {
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
 
-    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getName).collect(Collectors.toList()));
+    assertTmpTablesNotPresent(CATALOG.getStreams()
+        .stream()
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(AirbyteStream::getName)
+        .collect(Collectors.toList()));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -244,8 +249,16 @@ class BigQueryDestinationTest {
     consumer.accept(MESSAGE_USERS2);
     consumer.close();
 
-    final List<String> tableNames = CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getName).collect(toList());
-    assertTmpTablesNotPresent(CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getName).collect(Collectors.toList()));
+    final List<String> tableNames = CATALOG.getStreams()
+        .stream()
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(AirbyteStream::getName)
+        .collect(toList());
+    assertTmpTablesNotPresent(CATALOG.getStreams()
+        .stream()
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(AirbyteStream::getName)
+        .collect(Collectors.toList()));
     // assert that no tables were created.
     assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tableNames.stream().anyMatch(tableName::startsWith)));
   }

@@ -2,7 +2,8 @@ plugins {
     id 'java'
     id 'airbyte-python'
     id 'airbyte-docker'
-    id 'airbyte-source-test'
+    // todo (cgardens) - bring back when we re-add this to the product.
+    // id 'airbyte-source-test'
 }
 
 airbytePython {
