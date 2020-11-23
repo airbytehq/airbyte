@@ -55,7 +55,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.NamingHelper;
+import io.airbyte.integrations.base.StandardSQLNaming;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -65,7 +65,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -74,7 +73,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryDestination implements Destination {
+public class BigQueryDestination extends StandardSQLNaming implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   static final String CONFIG_DATASET_ID = "dataset_id";
@@ -193,20 +192,23 @@ public class BigQueryDestination implements Destination {
 
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String tableName = NamingHelper.getRawTableName(stream.getStream().getName());
-      final String tmpTableName = stream.getStream().getName() + "_" + Instant.now().toEpochMilli();
+      final String streamName = stream.getStream().getName();
+      final String schemaName = getRawSchemaName(config, datasetId, streamName);
+      final String tableName = getRawTableName(config, streamName);
+      final String tmpTableName = getTmpTableName(config, streamName);
 
-      createTable(bigquery, datasetId, tmpTableName);
+      createTable(bigquery, schemaName, tmpTableName);
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
       final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
-          .newBuilder(TableId.of(datasetId, tmpTableName))
+          .newBuilder(TableId.of(schemaName, tmpTableName))
           .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
           .setSchema(SCHEMA)
           .setFormatOptions(FormatOptions.json()).build(); // new-line delimited json.
 
       final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
 
-      writeConfigs.put(stream.getStream().getName(), new WriteConfig(TableId.of(datasetId, tableName), TableId.of(datasetId, tmpTableName), writer));
+      writeConfigs.put(stream.getStream().getName(),
+          new WriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer));
     }
 
     // write to tmp tables

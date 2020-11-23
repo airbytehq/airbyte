@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.NamingHelper;
+import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -67,7 +67,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(env, NamingHelper.getRawTableName(streamName))
+    return retrieveRecordsFromTable(env, new ExtendedSQLNaming().getRawTableName(getConfig(), streamName))
         .stream()
         .map(j -> Jsons.deserialize(j.get(COLUMN_NAME).asText()))
         .collect(Collectors.toList());

@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.base.NamingHelper;
+import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.sql.SQLException;
 import java.util.List;
@@ -75,7 +75,7 @@ public class PostgresIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(NamingHelper.getRawTableName(streamName))
+    return retrieveRecordsFromTable(new ExtendedSQLNaming().getRawTableName(getConfig(), streamName))
         .stream()
         .map(r -> Jsons.deserialize(r.get(RAW_DATA_COLUMN).asText()))
         .collect(Collectors.toList());

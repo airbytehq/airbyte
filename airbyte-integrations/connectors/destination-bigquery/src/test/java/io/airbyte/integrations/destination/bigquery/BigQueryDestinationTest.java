@@ -44,7 +44,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -210,7 +209,8 @@ class BigQueryDestinationTest {
 
   // @Test
   void testWriteSuccess() throws Exception {
-    final DestinationConsumer<AirbyteMessage> consumer = new BigQueryDestination().write(config, CATALOG);
+    final BigQueryDestination destination = new BigQueryDestination();
+    final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, CATALOG);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -219,12 +219,12 @@ class BigQueryDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final List<JsonNode> usersActual = retrieveRecords(NamingHelper.getRawTableName(USERS_STREAM_NAME));
+    final List<JsonNode> usersActual = retrieveRecords(destination.getRawTableName(config, USERS_STREAM_NAME));
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson.size(), usersActual.size());
     assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
 
-    final List<JsonNode> tasksActual = retrieveRecords(NamingHelper.getRawTableName(TASKS_STREAM_NAME));
+    final List<JsonNode> tasksActual = retrieveRecords(destination.getRawTableName(config, TASKS_STREAM_NAME));
     final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));

@@ -38,9 +38,9 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -55,7 +55,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -74,7 +73,7 @@ import org.jooq.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresDestination implements Destination {
+public class PostgresDestination extends ExtendedSQLNaming implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
   static final String COLUMN_NAME = "data";
@@ -136,10 +135,10 @@ public class PostgresDestination implements Destination {
     final Set<String> schemaSet = new HashSet<>();
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String schemaName = getSchemaName(config);
       final String streamName = stream.getStream().getName();
-      final String tableName = NamingHelper.getRawTableName(streamName);
-      final String tmpTableName = streamName + "_" + Instant.now().toEpochMilli();
+      final String schemaName = getRawSchemaName(config, getConfigSchemaName(config), streamName);
+      final String tableName = getRawTableName(config, streamName);
+      final String tmpTableName = getTmpTableName(config, streamName);
       if (!schemaSet.contains(schemaName)) {
         database.query(ctx -> ctx.execute(createSchemaQuery(schemaName)));
         schemaSet.add(schemaName);
@@ -378,7 +377,7 @@ public class PostgresDestination implements Destination {
             config.get("database").asText()));
   }
 
-  private static String getSchemaName(JsonNode config) {
+  private static String getConfigSchemaName(JsonNode config) {
     if (config.has("schema")) {
       return config.get("schema").asText();
     } else {

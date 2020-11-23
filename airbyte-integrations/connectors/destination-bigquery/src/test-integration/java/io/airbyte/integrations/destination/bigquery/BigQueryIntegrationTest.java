@@ -43,7 +43,7 @@ import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.NamingHelper;
+import io.airbyte.integrations.base.StandardSQLNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
@@ -101,7 +101,7 @@ public class BigQueryIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(env, NamingHelper.getRawTableName(streamName))
+    return retrieveRecordsFromTable(env, new StandardSQLNaming().getRawTableName(getConfig(), streamName))
         .stream()
         .map(node -> node.get("data").asText())
         .map(Jsons::deserialize)

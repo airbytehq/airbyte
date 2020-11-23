@@ -29,8 +29,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -51,7 +50,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeDestination implements Destination {
+public class SnowflakeDestination extends ExtendedSQLNaming implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
 
@@ -110,10 +109,10 @@ public class SnowflakeDestination implements Destination {
     // create temporary tables if they do not exist
     // we don't use temporary/transient since we want to control the lifecycle
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String schemaName = config.get("schema").asText();
-      final String tableName = NamingHelper.getRawTableName(stream.getStream().getName());
-      final String tmpTableName = stream.getStream().getName() + "_" + Instant.now().toEpochMilli();
-
+      final String streamName = stream.getStream().getName();
+      final String schemaName = getRawSchemaName(config, config.get("schema").asText(), streamName);
+      final String tableName = getRawTableName(config, streamName);
+      final String tmpTableName = getTmpTableName(config, streamName);
       if (!schemaSet.contains(schemaName)) {
         final String query = String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName);
 

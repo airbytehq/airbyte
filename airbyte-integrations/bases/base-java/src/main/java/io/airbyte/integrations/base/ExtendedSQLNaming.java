@@ -24,10 +24,33 @@
 
 package io.airbyte.integrations.base;
 
-public class NamingHelper {
+import com.fasterxml.jackson.databind.JsonNode;
+import java.time.Instant;
 
-  public static String getRawTableName(String streamName) {
-    return streamName + "_raw";
+public class ExtendedSQLNaming extends StandardSQLNaming {
+
+  @Override
+  public String getRawSchemaName(JsonNode config, String schemaName, String streamName) {
+    // FIXME add quotes if necessary
+    return super.getRawSchemaName(config, schemaName, streamName);
+  }
+
+  @Override
+  public String getRawTableName(JsonNode config, String streamName) {
+    // FIXME add quotes if necessary
+    return super.getRawTableName(config, streamName);
+  }
+
+  @Override
+  public String getTmpTableName(JsonNode config, String streamName) {
+    // FIXME add quotes if necessary
+    return super.getTmpTableName(config, streamName);
+  }
+
+  @Override
+  protected  String convertStreamName(String streamName) {
+    // FIXME replace invalid characters by '_'
+    return streamName;
   }
 
 }

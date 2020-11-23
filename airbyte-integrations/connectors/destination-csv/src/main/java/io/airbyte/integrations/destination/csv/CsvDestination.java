@@ -32,6 +32,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.StandardSQLNaming;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -53,7 +54,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CsvDestination implements Destination {
+public class CsvDestination extends StandardSQLNaming implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
 
@@ -93,8 +94,11 @@ public class CsvDestination implements Destination {
     final long now = Instant.now().toEpochMilli();
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final Path tmpPath = destinationDir.resolve(stream.getStream().getName() + "_" + now + ".csv");
-      final Path finalPath = destinationDir.resolve(stream.getStream().getName() + ".csv");
+      final String streamName = stream.getStream().getName();
+      final String tableName = getRawTableName(config, streamName);
+      final String tmpTableName = getTmpTableName(config, streamName);
+      final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
+      final Path finalPath = destinationDir.resolve(tableName + ".csv");
       final FileWriter fileWriter = new FileWriter(tmpPath.toFile());
       final CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA));
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
