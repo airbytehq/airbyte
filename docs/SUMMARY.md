@@ -24,6 +24,7 @@
     * [Salesforce](integrations/sources/salesforce.md)
     * [Shopify](integrations/sources/shopify.md)
     * [Stripe](integrations/sources/stripe.md)
+    * [Recurly](integrations/sources/recurly.md)
   * [Destinations](integrations/destinations/README.md)
     * [BigQuery](integrations/destinations/bigquery.md)
     * [Local CSV](integrations/destinations/local-csv.md)

@@ -10,5 +10,5 @@ airbytePython {
 }
 
 dependencies {
-    implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
