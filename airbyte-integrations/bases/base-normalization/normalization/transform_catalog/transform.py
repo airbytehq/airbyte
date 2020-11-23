@@ -94,11 +94,6 @@ python3 main_dev_transform_catalog.py \
                 {
                     "name": schema,
                     "tables": tables,
-                    "quoting": {
-                        "database": True,
-                        "schema": True,
-                        "identifier": True,
-                    },
                 },
             ],
         }
