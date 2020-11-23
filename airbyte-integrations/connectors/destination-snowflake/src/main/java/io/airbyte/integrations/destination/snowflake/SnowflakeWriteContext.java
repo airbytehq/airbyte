@@ -28,14 +28,20 @@ import io.airbyte.commons.lang.CloseableQueue;
 
 public class SnowflakeWriteContext {
 
+  private final String schemaName;
   private final String tableName;
   private final String tmpTableName;
   private final CloseableQueue<byte[]> writeBuffer;
 
-  SnowflakeWriteContext(String tableName, String tmpTableName, CloseableQueue<byte[]> writeBuffer) {
+  SnowflakeWriteContext(String schemaName, String tableName, String tmpTableName, CloseableQueue<byte[]> writeBuffer) {
+    this.schemaName = schemaName;
     this.tableName = tableName;
     this.tmpTableName = tmpTableName;
     this.writeBuffer = writeBuffer;
+  }
+
+  public String getSchemaName() {
+    return schemaName;
   }
 
   public String getTableName() {

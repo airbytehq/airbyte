@@ -44,7 +44,9 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,26 +105,34 @@ public class SnowflakeDestination implements Destination {
     // connect to snowflake
     final Supplier<Connection> connectionFactory = SnowflakeDatabase.getConnectionFactory(config);
     Map<String, SnowflakeWriteContext> writeBuffers = new HashMap<>();
+    Set<String> schemaSet = new HashSet<>();
 
     // create temporary tables if they do not exist
     // we don't use temporary/transient since we want to control the lifecycle
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      final String schemaName = config.get("schema").asText();
       final String tableName = NamingHelper.getRawTableName(stream.getStream().getName());
       final String tmpTableName = stream.getStream().getName() + "_" + Instant.now().toEpochMilli();
 
+      if (!schemaSet.contains(schemaName)) {
+        final String query = String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName);
+
+        SnowflakeDatabase.executeSync(connectionFactory, query);
+        schemaSet.add(schemaName);
+      }
       final String query = String.format(
-          "CREATE TABLE IF NOT EXISTS \"%s\" ( \n"
-              + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
-              + "\"%s\" VARIANT,\n"
-              + "\"emitted_at\" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
+          "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+              + "ab_id VARCHAR PRIMARY KEY,\n"
+              + "%s VARIANT,\n"
+              + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
               + ") data_retention_time_in_days = 0;",
-          tmpTableName, COLUMN_NAME);
+          schemaName, tmpTableName, COLUMN_NAME);
 
       SnowflakeDatabase.executeSync(connectionFactory, query);
 
       final Path queueRoot = Files.createTempDirectory("queues");
       final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(stream.getStream().getName()), stream.getStream().getName());
-      writeBuffers.put(stream.getStream().getName(), new SnowflakeWriteContext(tableName, tmpTableName, writeBuffer));
+      writeBuffers.put(stream.getStream().getName(), new SnowflakeWriteContext(schemaName, tableName, tmpTableName, writeBuffer));
     }
 
     // write to transient tables

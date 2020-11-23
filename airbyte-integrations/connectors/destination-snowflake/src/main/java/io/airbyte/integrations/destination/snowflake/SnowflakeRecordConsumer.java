@@ -93,10 +93,11 @@ public class SnowflakeRecordConsumer extends FailureTrackingConsumer<AirbyteMess
                                                Map<String, SnowflakeWriteContext> writeBuffers,
                                                Supplier<Connection> connectionFactory) {
     for (final Map.Entry<String, SnowflakeWriteContext> entry : writeBuffers.entrySet()) {
+      final String schemaName = entry.getValue().getSchemaName();
       final String tmpTableName = entry.getValue().getTmpTableName();
       final CloseableQueue<byte[]> writeBuffer = entry.getValue().getWriteBuffer();
       while (writeBuffer.size() > minRecords) {
-        executeWriteQuery(connectionFactory, batchSize, writeBuffer, tmpTableName);
+        executeWriteQuery(connectionFactory, batchSize, writeBuffer, schemaName, tmpTableName);
       }
     }
   }
@@ -104,12 +105,13 @@ public class SnowflakeRecordConsumer extends FailureTrackingConsumer<AirbyteMess
   private static void executeWriteQuery(Supplier<Connection> connectionFactory,
                                         int batchSize,
                                         CloseableQueue<byte[]> writeBuffer,
+                                        String schemaName,
                                         String tmpTableName) {
     try (Connection conn = connectionFactory.get()) {
       conn.setAutoCommit(false);
 
       try (PreparedStatement statement = conn.prepareStatement(
-          String.format("INSERT INTO \"%s\" (\"ab_id\", \"%s\", \"emitted_at\") SELECT ?, parse_json(?), ?", tmpTableName,
+          String.format("INSERT INTO %s.%s (ab_id, %s, emitted_at) SELECT ?, parse_json(?), ?", schemaName, tmpTableName,
               SnowflakeDestination.COLUMN_NAME))) {
 
         for (int i = 0; i < batchSize; i++) {
@@ -170,8 +172,9 @@ public class SnowflakeRecordConsumer extends FailureTrackingConsumer<AirbyteMess
       final StringBuilder query = new StringBuilder();
       query.append("BEGIN;");
       for (final SnowflakeWriteContext writeContext : writeContexts.values()) {
-        query.append(String.format("DROP TABLE IF EXISTS \"%s\";\n", writeContext.getTableName()));
-        query.append(String.format("ALTER TABLE \"%s\" RENAME TO \"%s\";\n", writeContext.getTmpTableName(), writeContext.getTableName()));
+        query.append(String.format("DROP TABLE IF EXISTS %s.%s;\n", writeContext.getSchemaName(), writeContext.getTableName()));
+        query.append(String.format("ALTER TABLE %s.%s RENAME TO %s.%s;\n", writeContext.getSchemaName(), writeContext.getTmpTableName(),
+            writeContext.getSchemaName(), writeContext.getTableName()));
       }
       query.append("COMMIT;");
 
@@ -190,7 +193,8 @@ public class SnowflakeRecordConsumer extends FailureTrackingConsumer<AirbyteMess
   private static void cleanupTmpTables(Supplier<Connection> connectionFactory, Map<String, SnowflakeWriteContext> writeContexts) {
     for (SnowflakeWriteContext writeContext : writeContexts.values()) {
       try {
-        SnowflakeDatabase.executeSync(connectionFactory, String.format("DROP TABLE IF EXISTS \"%s\";", writeContext.getTmpTableName()));
+        SnowflakeDatabase.executeSync(connectionFactory,
+            String.format("DROP TABLE IF EXISTS %s.%s;", writeContext.getSchemaName(), writeContext.getTmpTableName()));
       } catch (SQLException | InterruptedException e) {
         throw new RuntimeException(e);
       }
