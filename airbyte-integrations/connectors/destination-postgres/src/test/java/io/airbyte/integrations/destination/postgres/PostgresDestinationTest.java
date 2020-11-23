@@ -219,7 +219,7 @@ class PostgresDestinationTest {
 
   @Test
   void testWriteNewSchema() throws Exception {
-    JsonNode newConfig =  Jsons.jsonNode(ImmutableMap.builder()
+    JsonNode newConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
