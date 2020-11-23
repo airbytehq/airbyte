@@ -132,8 +132,8 @@ public class PostgresDestination implements Destination {
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     // connect to db.
     final Database database = getDatabase(config);
-    Map<String, WriteConfig> writeBuffers = new HashMap<>();
-    Set<String> schemaSet = new HashSet<>();
+    final Map<String, WriteConfig> writeBuffers = new HashMap<>();
+    final Set<String> schemaSet = new HashSet<>();
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String schemaName = getSchemaName(config);
@@ -285,17 +285,12 @@ public class PostgresDestination implements Destination {
 
         // write anything that is left in the buffers.
         writeStreamsWithNRecords(0, 500, writeConfigs, database);
-        Set<String> schemaSet = new HashSet<>();
 
         database.transaction(ctx -> {
           final StringBuilder query = new StringBuilder();
           for (final WriteConfig writeConfig : writeConfigs.values()) {
             // create tables if not exist.
             final String schemaName = writeConfig.getSchemaName();
-            if (!schemaSet.contains(schemaName)) {
-              query.append(createSchemaQuery(schemaName));
-              schemaSet.add(schemaName);
-            }
             query.append(createRawTableQuery(writeConfig.getSchemaName(), writeConfig.getTableName()));
 
             switch (writeConfig.getSyncMode()) {
@@ -383,7 +378,7 @@ public class PostgresDestination implements Destination {
             config.get("database").asText()));
   }
 
-  private String getSchemaName(JsonNode config) {
+  private static String getSchemaName(JsonNode config) {
     if (config.has("schema")) {
       return config.get("schema").asText();
     } else {
