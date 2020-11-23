@@ -217,6 +217,39 @@ class PostgresDestinationTest {
         CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getStream).map(AirbyteStream::getName).collect(Collectors.toList()));
   }
 
+  @Test
+  void testWriteNewSchema() throws Exception {
+    JsonNode newConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", container.getHost())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
+        .put("schema", "new_schema")
+        .put("port", container.getFirstMappedPort())
+        .put("database", container.getDatabaseName())
+        .build());
+    final DestinationConsumer<AirbyteMessage> consumer = new PostgresDestination().write(newConfig, CATALOG);
+
+    consumer.accept(MESSAGE_USERS1);
+    consumer.accept(MESSAGE_TASKS1);
+    consumer.accept(MESSAGE_USERS2);
+    consumer.accept(MESSAGE_TASKS2);
+    consumer.accept(MESSAGE_STATE);
+    consumer.close();
+
+    Set<JsonNode> usersActual = recordRetriever(NamingHelper.getRawTableName("new_schema." + USERS_STREAM_NAME));
+    final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
+    assertEquals(expectedUsersJson, usersActual);
+
+    Set<JsonNode> tasksActual = recordRetriever(NamingHelper.getRawTableName("new_schema." + TASKS_STREAM_NAME));
+    final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
+    assertEquals(expectedTasksJson, tasksActual);
+
+    assertTmpTablesNotPresent(
+        CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getStream).map(AirbyteStream::getName).collect(Collectors.toList()));
+
+    assertThrows(RuntimeException.class, () -> recordRetriever(NamingHelper.getRawTableName(USERS_STREAM_NAME)));
+  }
+
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   void testWriteFailure() throws Exception {
