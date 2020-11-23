@@ -10,6 +10,8 @@ import { SyncSchema } from "../../../core/resources/Schema";
 import { SourceDefinition } from "../../../core/resources/SourceDefinition";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
 import { Source } from "../../../core/resources/Source";
+import { Routes } from "../../../pages/routes";
+import useRouter from "../useRouterHook";
 
 type ValuesProps = {
   frequency: string;
@@ -21,11 +23,15 @@ type CreateConnectionProps = {
   values: ValuesProps;
   source?: Source;
   destinationId: string;
-  sourceDefinition?: SourceDefinition;
+  sourceDefinition?:
+    | SourceDefinition
+    | { name: string; sourceDefinitionId: string };
   destinationDefinition?: { name: string; destinationDefinitionId: string };
 };
 
 const useConnection = () => {
+  const { push, history } = useRouter();
+
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
   const workspace = useResource(WorkspaceResource.detailShape(), {
@@ -35,6 +41,8 @@ const useConnection = () => {
   const updateStateConnectionResource = useFetcher(
     ConnectionResource.updateStateShape()
   );
+  const deleteConnectionResource = useFetcher(ConnectionResource.deleteShape());
+
   const createConnection = async ({
     values,
     source,
@@ -122,7 +130,7 @@ const useConnection = () => {
       timeUnit: string;
     } | null;
   }) => {
-    await updateConnectionResource(
+    return await updateConnectionResource(
       {},
       {
         connectionId,
@@ -134,12 +142,12 @@ const useConnection = () => {
   };
 
   const updateStateConnection = async ({
-    sourceData,
+    connection,
     sourceName,
     connectionConfiguration,
     schedule
   }: {
-    sourceData: Connection;
+    connection: Connection;
     sourceName: string;
     connectionConfiguration: any;
     schedule: {
@@ -150,10 +158,10 @@ const useConnection = () => {
     await updateStateConnectionResource(
       {},
       {
-        ...sourceData,
+        ...connection,
         schedule,
         source: {
-          ...sourceData.source,
+          ...connection.source,
           name: sourceName,
           connectionConfiguration: connectionConfiguration
         }
@@ -161,10 +169,21 @@ const useConnection = () => {
     );
   };
 
+  const deleteConnection = async ({
+    connectionId
+  }: {
+    connectionId: string;
+  }) => {
+    await deleteConnectionResource({ connectionId });
+
+    history.length > 2 ? history.goBack() : push(Routes.Source);
+  };
+
   return {
     createConnection,
     updateConnection,
-    updateStateConnection
+    updateStateConnection,
+    deleteConnection
   };
 };
 

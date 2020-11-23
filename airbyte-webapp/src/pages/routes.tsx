@@ -26,16 +26,23 @@ export enum Routes {
 
   Destination = "/destination",
   Source = "/source",
+  Connection = "/connection",
+  ConnectionNew = "/new-connection",
   SourceNew = "/new-source",
+  DestinationNew = "/new-destination",
   Admin = "/admin",
   Root = "/"
 }
 
 const getPageName = (pathname: string) => {
-  const itemPageRegex = new RegExp(`${Routes.Source}/.*`);
+  const itemSourcePageRegex = new RegExp(`${Routes.Source}/.*`);
+  const itemDestinationPageRegex = new RegExp(`${Routes.Destination}/.*`);
+  const itemSourceToDestinationPageRegex = new RegExp(
+    `(${Routes.Source}|${Routes.Destination})${Routes.Connection}/.*`
+  );
 
   if (pathname === Routes.Destination) {
-    return "Destination Page";
+    return "Destinations Page";
   }
   if (pathname === Routes.Root) {
     return "Sources Page";
@@ -43,7 +50,22 @@ const getPageName = (pathname: string) => {
   if (pathname === `${Routes.Source}${Routes.SourceNew}`) {
     return "Create Source Page";
   }
-  if (pathname.match(itemPageRegex)) {
+  if (pathname === `${Routes.Destination}${Routes.DestinationNew}`) {
+    return "Create Destination Page";
+  }
+  if (
+    pathname === `${Routes.Source}${Routes.ConnectionNew}` ||
+    pathname === `${Routes.Destination}${Routes.ConnectionNew}`
+  ) {
+    return "Create Connection Page";
+  }
+  if (pathname.match(itemSourceToDestinationPageRegex)) {
+    return "Source to Destination Page";
+  }
+  if (pathname.match(itemDestinationPageRegex)) {
+    return "Destination Item Page";
+  }
+  if (pathname.match(itemSourcePageRegex)) {
     return "Source Item Page";
   }
   if (pathname === Routes.Admin) {
@@ -66,7 +88,7 @@ const MainViewRoutes = () => {
     <MainView>
       <Suspense fallback={<LoadingPage />}>
         <Switch>
-          <Route exact path={Routes.Destination}>
+          <Route path={Routes.Destination}>
             <DestinationPage />
           </Route>
           <Route path={Routes.Source}>

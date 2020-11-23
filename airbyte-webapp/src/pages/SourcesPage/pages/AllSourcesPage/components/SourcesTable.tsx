@@ -1,204 +1,31 @@
-import React, { useCallback } from "react";
-import styled from "styled-components";
-import { FormattedMessage } from "react-intl";
-import { CellProps } from "react-table";
-import { useResource, useFetcher } from "rest-hooks";
+import React from "react";
+import { useResource } from "rest-hooks";
 
-import Table from "../../../../../components/Table";
-import FrequencyCell from "./FrequencyCell";
-import LastSyncCell from "./LastSyncCell";
-import StatusCell from "./StatusCell";
-import ConnectorCell from "./ConnectorCell";
-import NameCell from "./NameCell";
+import { ImplementationTable } from "../../../../../components/EntityTable";
 import { Routes } from "../../../../routes";
 import useRouter from "../../../../../components/hooks/useRouterHook";
-import ConnectionResource, {
-  Connection
-} from "../../../../../core/resources/Connection";
+import { Source } from "../../../../../core/resources/Source";
+import ConnectionResource from "../../../../../core/resources/Connection";
 import config from "../../../../../config";
-import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
-import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
-import DestinationResource from "../../../../../core/resources/Destination";
-import DestinationDefinitionResource from "../../../../../core/resources/DestinationDefinition";
-import useConnection from "../../../../../components/hooks/services/useConnectionHook";
-
-const Content = styled.div`
-  margin: 0 32px 0 27px;
-`;
+import { getEntityTableData } from "../../../../../components/EntityTable/utils";
 
 type IProps = {
-  connections: Connection[];
+  sources: Source[];
 };
 
-type ITableDataItem = {
-  connectionId: string;
-  sourceId: string;
-  name: string;
-  schedule: string;
-  lastSync: number;
-  enabled: boolean;
-  error: boolean;
-  isSyncing: boolean;
-};
-
-const SourcesTable: React.FC<IProps> = ({ connections }) => {
+const SourcesTable: React.FC<IProps> = ({ sources }) => {
   const { push } = useRouter();
 
-  const SyncConnection = useFetcher(ConnectionResource.syncShape());
-
-  const { updateConnection } = useConnection();
-  const { destinations } = useResource(DestinationResource.listShape(), {
+  const { connections } = useResource(ConnectionResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
-  const currentDestination = destinations[0]; // Now we have only one destination. If we support multiple destinations we will fix this line
-  const destination = useResource(DestinationDefinitionResource.detailShape(), {
-    destinationDefinitionId: currentDestination.destinationDefinitionId
-  });
 
-  const data = connections.map(item => ({
-    connectionId: item.connectionId,
-    name: item.source?.name,
-    enabled: item.status === "active",
-    sourceDefinitionId: item.source?.sourceDefinitionId,
-    sourceName: item.source?.sourceName,
-    schedule: item.schedule,
-    lastSync: item.lastSync,
-    isSyncing: item.isSyncing
-  }));
+  const data = getEntityTableData(sources, connections, "source");
 
-  const onChangeStatus = useCallback(
-    async (connectionId: string) => {
-      const connection = connections.find(
-        item => item.connectionId === connectionId
-      );
-
-      await updateConnection({
-        connectionId,
-        syncSchema: connection?.syncSchema,
-        schedule: connection?.schedule || null,
-        status: connection?.status === "active" ? "inactive" : "active"
-      });
-
-      const frequency = FrequencyConfig.find(
-        item =>
-          JSON.stringify(item.config) === JSON.stringify(connection?.schedule)
-      );
-
-      AnalyticsService.track("Source - Action", {
-        user_id: config.ui.workspaceId,
-        action:
-          connection?.status === "active"
-            ? "Disable connection"
-            : "Reenable connection",
-        connector_source: connection?.source?.sourceName,
-        connector_source_id: connection?.source?.sourceDefinitionId,
-        connector_destination: destination.name,
-        connector_destination_definition_id:
-          destination.destinationDefinitionId,
-        frequency: frequency?.text
-      });
-    },
-    [
-      connections,
-      destination.destinationDefinitionId,
-      destination.name,
-      updateConnection
-    ]
-  );
-
-  const onSync = useCallback(
-    (connectionId: string) => {
-      const connection = connections.find(
-        item => item.connectionId === connectionId
-      );
-
-      AnalyticsService.track("Source - Action", {
-        user_id: config.ui.workspaceId,
-        action: "Full refresh sync",
-        connector_source: connection?.source?.sourceName,
-        connector_source_id: connection?.source?.sourceDefinitionId,
-        connector_destination: destination.name,
-        connector_destination_definition_id:
-          destination.destinationDefinitionId,
-        frequency: "manual" // Only manual connections have this button
-      });
-      SyncConnection({
-        connectionId: connectionId
-      });
-    },
-    [
-      SyncConnection,
-      connections,
-      destination.destinationDefinitionId,
-      destination.name
-    ]
-  );
-
-  const columns = React.useMemo(
-    () => [
-      {
-        Header: <FormattedMessage id="sources.name" />,
-        headerHighlighted: true,
-        accessor: "name",
-        customWidth: 40,
-        Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <NameCell
-            value={cell.value}
-            error={row.original.error}
-            enabled={row.original.enabled}
-          />
-        )
-      },
-      {
-        Header: <FormattedMessage id="sources.connector" />,
-        accessor: "sourceName",
-        Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <ConnectorCell value={cell.value} enabled={row.original.enabled} />
-        )
-      },
-      {
-        Header: <FormattedMessage id="sources.frequency" />,
-        accessor: "schedule",
-        Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <FrequencyCell value={cell.value} enabled={row.original.enabled} />
-        )
-      },
-      {
-        Header: <FormattedMessage id="sources.lastSync" />,
-        accessor: "lastSync",
-        customWidth: 15,
-        Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <LastSyncCell
-            timeInSecond={cell.value}
-            enabled={row.original.enabled}
-          />
-        )
-      },
-      {
-        Header: <FormattedMessage id="sources.enabled" />,
-        accessor: "enabled",
-        Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <StatusCell
-            enabled={cell.value}
-            connectionId={row.original.connectionId}
-            isSyncing={row.original.isSyncing}
-            isManual={!row.original.schedule}
-            onChangeStatus={onChangeStatus}
-            onSync={onSync}
-          />
-        )
-      }
-    ],
-    [onChangeStatus, onSync]
-  );
-
-  const clickRow = (connection: any) =>
-    push(`${Routes.Source}/${connection.connectionId}`);
+  const clickRow = (source: any) => push(`${Routes.Source}/${source.entityId}`);
 
   return (
-    <Content>
-      <Table columns={columns} data={data} onClickRow={clickRow} erroredRows />
-    </Content>
+    <ImplementationTable data={data} onClickRow={clickRow} entity="source" />
   );
 };
 

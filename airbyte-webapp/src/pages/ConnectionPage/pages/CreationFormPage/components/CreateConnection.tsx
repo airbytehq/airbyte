@@ -5,20 +5,23 @@ import FrequencyForm from "../../../../../components/FrequencyForm";
 import SchemaResource, {
   SyncSchema
 } from "../../../../../core/resources/Schema";
+import { IDataItem } from "../../../../../components/DropDown/components/ListItem";
 import {
   constructInitialSchemaState,
   constructNewSchema
 } from "../../../../../core/helpers";
-import { IDataItem } from "../../../../../components/DropDown/components/ListItem";
+import { FormattedMessage } from "react-intl";
 
 type IProps = {
   onSubmit: (values: { frequency: string; syncSchema: SyncSchema }) => void;
+  errorStatus: number;
   sourceId: string;
   onSelectFrequency: (item: IDataItem) => void;
 };
 
-const ConnectionForm: React.FC<IProps> = ({
+const CreateConnection: React.FC<IProps> = ({
   onSubmit,
+  errorStatus,
   sourceId,
   onSelectFrequency
 }) => {
@@ -40,15 +43,23 @@ const ConnectionForm: React.FC<IProps> = ({
     await onSubmit({ ...values, syncSchema: newSchema });
   };
 
+  const errorMessage =
+    errorStatus === 0 ? null : errorStatus === 400 ? (
+      <FormattedMessage id="form.validationError" />
+    ) : (
+      <FormattedMessage id="form.someError" />
+    );
+
   return (
     <FrequencyForm
       allSchemaChecked={allSchemaChecked}
+      onDropDownSelect={onSelectFrequency}
       onSubmit={onSubmitForm}
+      errorMessage={errorMessage}
       schema={formSyncSchema}
       initialCheckedSchema={initialChecked}
-      onDropDownSelect={onSelectFrequency}
     />
   );
 };
 
-export default ConnectionForm;
+export default CreateConnection;
