@@ -15,13 +15,10 @@ import JobResource from "../../../../../core/resources/Job";
 import JobsList from "./JobsList";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import config from "../../../../../config";
-import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
-import EmptyResource from "../../../components/EmptyResource";
+import EmptyResource from "../../../../../components/EmptyResourceBlock";
 
 type IProps = {
-  sourceData: Connection;
-  onEnabledChange: () => void;
-  destinationDefinition: DestinationDefinition;
+  connection: Connection;
   frequencyText?: string;
 };
 
@@ -51,18 +48,13 @@ const SyncButton = styled(Button)`
   margin: -5px 0;
 `;
 
-const StatusView: React.FC<IProps> = ({
-  sourceData,
-  onEnabledChange,
-  destinationDefinition,
-  frequencyText
-}) => {
+const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const { jobs } = useResource(JobResource.listShape(), {
-    configId: sourceData.connectionId,
+    configId: connection.connectionId,
     configType: "sync"
   });
   useSubscription(JobResource.listShape(), {
-    configId: sourceData.connectionId,
+    configId: connection.connectionId,
     configType: "sync"
   });
 
@@ -72,26 +64,21 @@ const StatusView: React.FC<IProps> = ({
     AnalyticsService.track("Source - Action", {
       user_id: config.ui.workspaceId,
       action: "Full refresh sync",
-      connector_source: sourceData.source?.sourceName,
-      connector_source_id: sourceData.source?.sourceDefinitionId,
-      connector_destination: destinationDefinition.name,
+      connector_source: connection.source?.sourceName,
+      connector_source_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.name,
       connector_destination_definition_id:
-        destinationDefinition.destinationDefinitionId,
+        connection.destination?.destinationDefinitionId,
       frequency: frequencyText
     });
     SyncConnection({
-      connectionId: sourceData.connectionId
+      connectionId: connection.connectionId
     });
   };
 
   return (
     <Content>
-      <StatusMainInfo
-        sourceData={sourceData}
-        onEnabledChange={onEnabledChange}
-        destinationDefinition={destinationDefinition}
-        frequencyText={frequencyText}
-      />
+      <StatusMainInfo connection={connection} frequencyText={frequencyText} />
       <StyledContentCard
         title={
           <Title>

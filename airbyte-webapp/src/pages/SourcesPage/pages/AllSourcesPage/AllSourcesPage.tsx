@@ -1,17 +1,17 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { useResource, useSubscription } from "rest-hooks";
+import { useResource } from "rest-hooks";
 
 import Button from "../../../../components/Button";
 import { Routes } from "../../../routes";
 import PageTitle from "../../../../components/PageTitle";
 import useRouter from "../../../../components/hooks/useRouterHook";
 import SourcesTable from "./components/SourcesTable";
-import ConnectionResource from "../../../../core/resources/Connection";
 import config from "../../../../config";
 import ContentCard from "../../../../components/ContentCard";
-import EmptyResource from "../../components/EmptyResource";
+import EmptyResource from "../../../../components/EmptyResourceBlock";
+import SourceResource from "../../../../core/resources/Source";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -19,10 +19,8 @@ const Content = styled(ContentCard)`
 
 const AllSourcesPage: React.FC = () => {
   const { push } = useRouter();
-  const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId
-  });
-  useSubscription(ConnectionResource.listShape(), {
+
+  const { sources } = useResource(SourceResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
 
@@ -37,8 +35,8 @@ const AllSourcesPage: React.FC = () => {
           </Button>
         }
       />
-      {connections.length ? (
-        <SourcesTable connections={connections} />
+      {sources.length ? (
+        <SourcesTable sources={sources} />
       ) : (
         <Content>
           <EmptyResource text={<FormattedMessage id="sources.noSources" />} />

@@ -10,8 +10,10 @@ import {
   Cell
 } from "../../../../../components/SimpleTableComponents";
 import Toggle from "../../../../../components/Toggle";
-import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
 import { Connection } from "../../../../../core/resources/Connection";
+import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
+import config from "../../../../../config";
+import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
@@ -46,18 +48,36 @@ const ToggleLabel = styled.label`
 `;
 
 type IProps = {
-  sourceData: Connection;
-  onEnabledChange: () => void;
-  destinationDefinition: DestinationDefinition;
+  connection: Connection;
   frequencyText?: string;
 };
 
-const StatusMainInfo: React.FC<IProps> = ({
-  sourceData,
-  onEnabledChange,
-  destinationDefinition,
-  frequencyText
-}) => {
+const StatusMainInfo: React.FC<IProps> = ({ connection, frequencyText }) => {
+  const { updateConnection } = useConnection();
+
+  const onChangeStatus = async () => {
+    await updateConnection({
+      connectionId: connection.connectionId,
+      syncSchema: connection.syncSchema,
+      schedule: connection.schedule,
+      status: connection.status === "active" ? "inactive" : "active"
+    });
+
+    AnalyticsService.track("Source - Action", {
+      user_id: config.ui.workspaceId,
+      action:
+        connection.status === "active"
+          ? "Disable connection"
+          : "Reenable connection",
+      connector_source: connection.source?.sourceName,
+      connector_source_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.name,
+      connector_destination_definition_id:
+        connection.destination?.destinationDefinitionId,
+      frequency: frequencyText
+    });
+  };
+
   return (
     <MainInfo>
       <Header>
@@ -68,33 +88,33 @@ const StatusMainInfo: React.FC<IProps> = ({
           <FormattedMessage id="sidebar.destination" />
         </Cell>
         <Cell>
-          <FormattedMessage id="sources.frequency" />
+          <FormattedMessage id="tables.frequency" />
         </Cell>
         <Cell flex={1.1}></Cell>
       </Header>
       <Row>
         <SourceCell flex={2}>
           <Img />
-          {sourceData.source?.sourceName}
+          {connection.source?.sourceName}
         </SourceCell>
         <SourceCell flex={2}>
           <Img />
-          {destinationDefinition.name}
+          {connection.destination?.name}
         </SourceCell>
         <Cell>{frequencyText}</Cell>
         <EnabledCell flex={1.1}>
           <ToggleLabel htmlFor="toggle-enabled-source">
             <FormattedMessage
               id={
-                sourceData.status === "active"
-                  ? "sources.enabled"
-                  : "sources.disabled"
+                connection.status === "active"
+                  ? "tables.enabled"
+                  : "tables.disabled"
               }
             />
           </ToggleLabel>
           <Toggle
-            onChange={onEnabledChange}
-            checked={sourceData.status === "active"}
+            onChange={onChangeStatus}
+            checked={connection.status === "active"}
             id="toggle-enabled-source"
           />
         </EnabledCell>

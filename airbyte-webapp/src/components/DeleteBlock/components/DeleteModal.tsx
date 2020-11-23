@@ -2,12 +2,13 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Modal from "../../../../../components/Modal";
-import Button from "../../../../../components/Button";
+import Modal from "../../../components/Modal";
+import Button from "../../../components/Button";
 
 export type IProps = {
   onClose: () => void;
   onSubmit: () => void;
+  type: "source" | "destination" | "connection";
 };
 
 const Content = styled.div`
@@ -28,14 +29,14 @@ const ButtonWithMargin = styled(Button)`
   margin-right: 12px;
 `;
 
-const DeleteModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
+const DeleteModal: React.FC<IProps> = ({ onClose, onSubmit, type }) => {
   return (
     <Modal
       onClose={onClose}
-      title={<FormattedMessage id="sources.deleteConfirm" />}
+      title={<FormattedMessage id={`tables.${type}DeleteConfirm`} />}
     >
       <Content>
-        <FormattedMessage id="sources.deleteModalText" />
+        <FormattedMessage id={`tables.${type}DeleteModalText`} />
         <ButtonContent>
           <ButtonWithMargin onClick={onClose} type="button" secondary>
             <FormattedMessage id="form.cancel" />

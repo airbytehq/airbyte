@@ -6,6 +6,7 @@ import "react-widgets/dist/css/react-widgets.css";
 import { useIntl } from "react-intl";
 import ListItem, { IDataItem } from "./components/ListItem";
 import ValueInput from "./components/ValueInput";
+import WithButtonItem from "./components/WithButtonItem";
 
 export type IProps = {
   disabled?: boolean;
@@ -15,6 +16,8 @@ export type IProps = {
   value?: string;
   data: Array<IDataItem>;
   onSelect?: (item: IDataItem) => void;
+  withButton?: boolean;
+  textButton?: string;
 };
 
 const StyledDropdownList = styled(DropdownList)<{ disabled?: boolean }>`
@@ -101,6 +104,44 @@ const StyledDropdownList = styled(DropdownList)<{ disabled?: boolean }>`
       color: ${({ theme }) => theme.primaryColor};
     }
   }
+
+  & .withButton,
+  &.rw-state-focus .withButton {
+    border: 1px solid ${props => props.theme.primaryColor};
+    outline: none;
+    border-radius: 4px;
+    padding: 5px 10px 6px;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 15px;
+    text-align: center;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    color: ${props => props.theme.whiteColor};
+    background: ${props => props.theme.primaryColor};
+    text-decoration: none;
+    min-width: 130px;
+    height: 28px;
+
+    &:hover {
+      box-shadow: 0 1px 3px rgba(53, 53, 66, 0.2),
+        0 1px 2px rgba(53, 53, 66, 0.12), 0 1px 1px rgba(53, 53, 66, 0.14);
+      background: ${props => props.theme.primaryColor};
+      border: 1px solid ${props => props.theme.primaryColor};
+    }
+    & .rw-input,
+    & .rw-placeholder {
+      padding: 0;
+      color: ${props => props.theme.whiteColor};
+    }
+    & .rw-select {
+      display: none;
+    }
+    & ~ .rw-popup-container {
+      min-width: 260px;
+      left: auto;
+    }
+  }
 `;
 
 const DropDown: React.FC<IProps> = props => {
@@ -108,8 +149,11 @@ const DropDown: React.FC<IProps> = props => {
 
   return (
     <StyledDropdownList
+      containerClassName={props.withButton ? "withButton" : ""}
       filter={props.hasFilter ? "contains" : false}
-      placeholder={props.placeholder || "..."}
+      placeholder={
+        props.withButton ? props.textButton : props.placeholder || "..."
+      }
       data={props.data}
       messages={{
         filterPlaceholder: props.filterPlaceholder || "",
@@ -121,7 +165,13 @@ const DropDown: React.FC<IProps> = props => {
       valueField="value"
       value={props.value}
       disabled={props.disabled}
-      valueComponent={ValueInput}
+      valueComponent={({ item }: { item: IDataItem }) =>
+        props.withButton ? (
+          <WithButtonItem text={props.textButton} />
+        ) : (
+          <ValueInput item={item} />
+        )
+      }
       itemComponent={ListItem}
       onSelect={props.onSelect}
       // @ts-ignore
