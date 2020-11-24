@@ -31,6 +31,7 @@ import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.cache.SpecCache;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -42,15 +43,16 @@ import java.util.stream.Collectors;
 public class DestinationDefinitionsHandler {
 
   private final ConfigRepository configRepository;
-  private DockerImageValidator dockerImageValidator;
+  private final DockerImageValidator dockerImageValidator;
+  private final SpecCache specCache;
 
-  public DestinationDefinitionsHandler(final ConfigRepository configRepository, DockerImageValidator dockerImageValidator) {
+  public DestinationDefinitionsHandler(final ConfigRepository configRepository, DockerImageValidator dockerImageValidator, SpecCache specCache) {
     this.configRepository = configRepository;
     this.dockerImageValidator = dockerImageValidator;
+    this.specCache = specCache;
   }
 
-  public DestinationDefinitionReadList listDestinationDefinitions()
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  public DestinationDefinitionReadList listDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<DestinationDefinitionRead> reads = configRepository.listStandardDestinationDefinitions()
         .stream()
         .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead)
@@ -71,7 +73,7 @@ public class DestinationDefinitionsHandler {
         configRepository.getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
     dockerImageValidator.assertValidIntegrationImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag());
 
-    StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
+    final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
         .withDestinationDefinitionId(currentDestination.getDestinationDefinitionId())
         .withDockerImageTag(destinationDefinitionUpdate.getDockerImageTag())
         .withDockerRepository(currentDestination.getDockerRepository())
@@ -79,6 +81,8 @@ public class DestinationDefinitionsHandler {
         .withDocumentationUrl(currentDestination.getDocumentationUrl());
 
     configRepository.writeStandardDestinationDefinition(newDestination);
+    // we want to re-fetch the spec for updated definitions.
+    specCache.evict(currentDestination.getDockerRepository() + ":" + destinationDefinitionUpdate.getDockerImageTag());
     return buildDestinationDefinitionRead(newDestination);
   }
 

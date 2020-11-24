@@ -37,6 +37,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultSchedulerPersistence;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
+import io.airbyte.server.cache.DefaultSpecCache;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
@@ -79,6 +80,7 @@ public class ServerApp {
 
     ServletContextHandler handler = new ServletContextHandler();
 
+    ConfigurationApiFactory.setSpecCache(new DefaultSpecCache());
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setSchedulerPersistence(schedulerPersistence);
 
