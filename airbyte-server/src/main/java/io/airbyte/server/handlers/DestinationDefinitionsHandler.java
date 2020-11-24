@@ -82,7 +82,7 @@ public class DestinationDefinitionsHandler {
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     // we want to re-fetch the spec for updated definitions.
-    specCache.evict(destinationDefinitionUpdate.getDockerImageTag());
+    specCache.evict(currentDestination.getDockerRepository() + ":" + destinationDefinitionUpdate.getDockerImageTag());
     return buildDestinationDefinitionRead(newDestination);
   }
 

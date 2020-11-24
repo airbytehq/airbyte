@@ -69,7 +69,7 @@ public class SchedulerHandler {
 
   private final ConfigRepository configRepository;
   private final SchedulerPersistence schedulerPersistence;
-  private SpecCache specCache;
+  private final SpecCache specCache;
 
   public SchedulerHandler(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence, final SpecCache specCache) {
     this.specCache = specCache;

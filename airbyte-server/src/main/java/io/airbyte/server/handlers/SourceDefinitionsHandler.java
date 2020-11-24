@@ -115,7 +115,7 @@ public class SourceDefinitionsHandler {
 
     configRepository.writeStandardSource(newSource);
     // we want to re-fetch the spec for updated definitions.
-    specCache.evict(sourceDefinitionUpdate.getDockerImageTag());
+    specCache.evict(currentSourceDefinition.getDockerRepository() + ":" + sourceDefinitionUpdate.getDockerImageTag());
     return buildSourceDefinitionRead(newSource);
   }
 
