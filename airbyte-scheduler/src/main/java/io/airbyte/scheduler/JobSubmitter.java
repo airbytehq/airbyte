@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -35,6 +36,7 @@ import io.airbyte.scheduler.persistence.SchedulerPersistence;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -107,18 +109,18 @@ public class JobSubmitter implements Runnable {
   }
 
   private void trackSubmission(Job job) {
-    try {
-      TrackingClientSingleton.get().track("job", generateMetadata(job).build());
-    } catch (Exception e) {
-      LOGGER.error("failed while reporting usage.");
-    }
+    track("job", generateMetadata(job).build());
   }
 
   private void trackCompletion(Job job, JobStatus status) {
     final Builder<String, Object> metadataBuilder = generateMetadata(job);
     metadataBuilder.put("status", status);
+    track("job-completion", metadataBuilder.build());
+  }
+
+  private void track(String action, Map<String, Object> metadata) {
     try {
-      TrackingClientSingleton.get().track("job-completion", metadataBuilder.build());
+      TrackingClientSingleton.get().track(action, metadata);
     } catch (Exception e) {
       LOGGER.error("failed while reporting usage.");
     }
@@ -127,6 +129,14 @@ public class JobSubmitter implements Runnable {
   private ImmutableMap.Builder<String, Object> generateMetadata(Job job) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("job_type", job.getConfig().getConfigType());
+    metadata.put("job_id", job.getId());
+    metadata.put("attempt_id", job.getAttempts());
+    // build a deterministic job and attempt uuids based off of the scope,which should be unique across
+    // all instances of airbyte installed everywhere).
+    final UUID jobUuid = UUID.nameUUIDFromBytes((job.getScope() + job.getId() + job.getAttempts()).getBytes(Charsets.UTF_8));
+    final UUID attemptUuid = UUID.nameUUIDFromBytes((job.getScope() + job.getId() + job.getAttempts()).getBytes(Charsets.UTF_8));
+    metadata.put("jobUuid", jobUuid);
+    metadata.put("attempt_uuid", attemptUuid);
 
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION_SOURCE, DISCOVER_SCHEMA -> {
@@ -152,6 +162,7 @@ public class JobSubmitter implements Runnable {
         final StandardDestinationDefinition destinationDefinition = configRepository
             .getDestinationDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
 
+        metadata.put("connection_id", ScopeHelper.getConfigId(job.getScope()));
         metadata.put("source_definition_name", sourceDefinition.getName());
         metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
         metadata.put("destination_definition_name", destinationDefinition.getName());
@@ -161,15 +172,12 @@ public class JobSubmitter implements Runnable {
     return metadata;
   }
 
-  private JobStatus getStatus(OutputAndStatus<?> output) {
-    switch (output.getStatus()) {
-      case SUCCEEDED:
-        return JobStatus.COMPLETED;
-      case FAILED:
-        return JobStatus.FAILED;
-      default:
-        throw new RuntimeException("Unknown state " + output.getStatus());
-    }
+  private static JobStatus getStatus(OutputAndStatus<?> output) {
+    return switch (output.getStatus()) {
+      case SUCCEEDED -> JobStatus.COMPLETED;
+      case FAILED -> JobStatus.FAILED;
+      default -> throw new IllegalStateException("Unknown state " + output.getStatus());
+    };
   }
 
 }
