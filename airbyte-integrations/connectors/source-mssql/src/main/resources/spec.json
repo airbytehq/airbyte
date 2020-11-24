@@ -1,0 +1,37 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mssql",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MSSQL Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "username"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "description": "Hostname of the database.",
+        "type": "string"
+      },
+      "port": {
+        "description": "Port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "examples": ["1433"]
+      },
+      "database": {
+        "description": "Name of the database.",
+        "type": "string",
+        "examples": ["master"]
+      },
+      "username": {
+        "description": "Username to use to access the database.",
+        "type": "string"
+      },
+      "password": {
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true
+      }
+    }
+  }
+}

@@ -25,8 +25,8 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 
 public interface Destination extends Integration {
 
@@ -41,6 +41,6 @@ public interface Destination extends Integration {
    *         will always be called once regardless of success or failure.
    * @throws Exception - any exception.
    */
-  DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws Exception;
+  DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception;
 
 }

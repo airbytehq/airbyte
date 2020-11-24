@@ -44,14 +44,14 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -69,6 +69,7 @@ class MySqlSourceTest {
       STREAM_NAME,
       Field.of("id", JsonSchemaPrimitive.NUMBER),
       Field.of("name", JsonSchemaPrimitive.STRING));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> MESSAGES = Sets.newHashSet(
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")))),
@@ -159,7 +160,7 @@ class MySqlSourceTest {
 
   @Test
   void testReadSuccess() throws Exception {
-    final Set<AirbyteMessage> actualMessages = new MySqlSource().read(config, CATALOG, null).collect(Collectors.toSet());
+    final Set<AirbyteMessage> actualMessages = new MySqlSource().read(config, CONFIGURED_CATALOG, null).collect(Collectors.toSet());
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -173,13 +174,13 @@ class MySqlSourceTest {
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   void testReadFailure() throws Exception {
-    final AirbyteStream spiedAbStream = spy(CATALOG.getStreams().get(0));
-    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getName();
+    final ConfiguredAirbyteStream spiedAbStream = spy(CONFIGURED_CATALOG.getStreams().get(0));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
+    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getStream();
 
-    final Stream<AirbyteMessage> stream = new MySqlSource().read(config, catalog, null);
+    final MySqlSource source = new MySqlSource();
 
-    assertThrows(RuntimeException.class, () -> stream.collect(Collectors.toList()));
+    assertThrows(RuntimeException.class, () -> source.read(config, catalog, null));
   }
 
 }

@@ -32,8 +32,19 @@ from urllib.parse import urlparse
 
 import gcsfs
 import pandas as pd
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, AirbyteStream, Status, Type
+from airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
 from base_python import Source
+from botocore import UNSIGNED
+from botocore.config import Config
 from genson import SchemaBuilder
 from google.cloud.storage import Client
 from s3fs import S3FileSystem
@@ -160,7 +171,7 @@ class SourceFile(Source):
         url = SourceFile.get_simple_url(config["url"])
         name = SourceFile.get_stream_name(config)
         logger.info(f"Reading {name} ({storage}{url}, {catalog_path}, {state_path})...")
-        catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
         selection = SourceFile.parse_catalog(catalog)
         try:
             if "format" in config and config["format"] == "json":
@@ -189,8 +200,8 @@ class SourceFile(Source):
 
     @staticmethod
     def get_stream_name(config) -> str:
-        if "filename" in config:
-            name = config["filename"]
+        if "dataset_name" in config:
+            name = config["dataset_name"]
         else:
             reader_format = "csv"
             if "format" in config:
@@ -203,39 +214,48 @@ class SourceFile(Source):
         storage = SourceFile.get_storage_scheme(logger, config["provider"]["storage"], config["url"])
         url = SourceFile.get_simple_url(config["url"])
 
-        gcs_file = None
-        use_gcs_service_account = "service_account_json" in config["provider"] and storage == "gs://"
-        use_aws_account = "aws_access_key_id" in config["provider"] and "aws_secret_access_key" in config["provider"] and storage == "s3://"
-        # default reader impl
-        reader_impl = ""
-        if "reader_impl" in config["provider"]:
-            reader_impl = config["provider"]["reader_impl"]
+        file_to_close = None
+        if storage == "gs://":
+            result, file_to_close = SourceFile.open_gcs_url(config, logger, storage, url)
+        elif storage == "s3://":
+            result = SourceFile.open_aws_url(config, logger, storage, url)
+        elif storage == "webhdfs://":
+            host = config["provider"]["host"]
+            port = config["provider"]["port"]
+            result = open(f"webhdfs://{host}:{port}/{url}")
+        elif storage == "ssh://" or storage == "scp://" or storage == "sftp://":
+            user = config["provider"]["user"]
+            host = config["provider"]["host"]
+            if "password" in config["provider"]:
+                password = config["provider"]["password"]
+                # Explicitly turn off ssh keys stored in ~/.ssh
+                transport_params = {"connect_kwargs": {"look_for_keys": False}}
+                result = open(f"{storage}{user}:{password}@{host}/{url}", transport_params=transport_params)
+            else:
+                result = open(f"{storage}{user}@{host}/{url}")
+            file_to_close = result
+        else:
+            result = open(f"{storage}{url}")
+        return result, file_to_close
 
+    @staticmethod
+    def open_gcs_url(config, logger, storage, url):
+        reader_impl = SourceFile.extract_reader_impl(config)
+        use_gcs_service_account = "service_account_json" in config["provider"] and storage == "gs://"
+        file_to_close = None
         if reader_impl == "gcsfs":
             if use_gcs_service_account:
                 try:
                     token_dict = json.loads(config["provider"]["service_account_json"])
-                    fs = gcsfs.GCSFileSystem(token=token_dict)
-                    gcs_file = fs.open(f"gs://{url}")
-                    result = gcs_file
                 except json.decoder.JSONDecodeError as err:
                     logger.error(f"Failed to parse gcs service account json: {repr(err)}\n{traceback.format_exc()}")
                     raise err
             else:
-                result = open(f"{storage}{url}")
-        elif reader_impl == "s3fs":
-            if use_aws_account:
-                aws_access_key_id = None
-                if "aws_access_key_id" in config["provider"]:
-                    aws_access_key_id = config["provider"]["aws_access_key_id"]
-                aws_secret_access_key = None
-                if "aws_secret_access_key" in config["provider"]:
-                    aws_secret_access_key = config["provider"]["aws_secret_access_key"]
-                s3 = S3FileSystem(anon=False, key=aws_access_key_id, secret=aws_secret_access_key)
-                result = s3.open(f"s3://{url}", mode="r")
-            else:
-                result = open(f"{storage}{url}")
-        else:  # using smart_open
+                token_dict = "anon"
+            fs = gcsfs.GCSFileSystem(token=token_dict)
+            file_to_close = fs.open(f"gs://{url}")
+            result = file_to_close
+        else:
             if use_gcs_service_account:
                 try:
                     credentials = json.dumps(json.loads(config["provider"]["service_account_json"]))
@@ -249,7 +269,30 @@ class SourceFile(Source):
                 except json.decoder.JSONDecodeError as err:
                     logger.error(f"Failed to parse gcs service account json: {repr(err)}\n{traceback.format_exc()}")
                     raise err
-            elif use_aws_account:
+            else:
+                client = Client.create_anonymous_client()
+                result = open(f"{storage}{url}", transport_params=dict(client=client))
+        return result, file_to_close
+
+    @staticmethod
+    def open_aws_url(config, _, storage, url):
+        reader_impl = SourceFile.extract_reader_impl(config)
+        use_aws_account = "aws_access_key_id" in config["provider"] and "aws_secret_access_key" in config["provider"] and storage == "s3://"
+        if reader_impl == "s3fs":
+            if use_aws_account:
+                aws_access_key_id = None
+                if "aws_access_key_id" in config["provider"]:
+                    aws_access_key_id = config["provider"]["aws_access_key_id"]
+                aws_secret_access_key = None
+                if "aws_secret_access_key" in config["provider"]:
+                    aws_secret_access_key = config["provider"]["aws_secret_access_key"]
+                s3 = S3FileSystem(anon=False, key=aws_access_key_id, secret=aws_secret_access_key)
+                result = s3.open(f"s3://{url}", mode="r")
+            else:
+                s3 = S3FileSystem(anon=True)
+                result = s3.open(f"s3://{url}", mode="r")
+        else:
+            if use_aws_account:
                 aws_access_key_id = ""
                 if "aws_access_key_id" in config["provider"]:
                     aws_access_key_id = config["provider"]["aws_access_key_id"]
@@ -257,27 +300,25 @@ class SourceFile(Source):
                 if "aws_secret_access_key" in config["provider"]:
                     aws_secret_access_key = config["provider"]["aws_secret_access_key"]
                 result = open(f"s3://{aws_access_key_id}:{aws_secret_access_key}@{url}")
-            elif storage == "webhdfs://":
-                host = config["provider"]["host"]
-                port = config["provider"]["port"]
-                result = open(f"webhdfs://{host}:{port}/{url}")
-            elif storage == "ssh://" or storage == "scp://" or storage == "sftp://":
-                user = config["provider"]["user"]
-                host = config["provider"]["host"]
-                if "password" in config["provider"]:
-                    password = config["provider"]["password"]
-                    # Explicitly turn off ssh keys stored in ~/.ssh
-                    transport_params = {"connect_kwargs": {"look_for_keys": False}}
-                    result = open(f"{storage}{user}:{password}@{host}/{url}", transport_params=transport_params)
-                else:
-                    result = open(f"{storage}{user}@{host}/{url}")
             else:
-                result = open(f"{storage}{url}")
-        return result, gcs_file
+                config = Config(signature_version=UNSIGNED)
+                params = {
+                    "resource_kwargs": {"config": config},
+                }
+                result = open(f"{storage}{url}", transport_params=params)
+        return result
+
+    @staticmethod
+    def extract_reader_impl(config):
+        # default reader impl
+        reader_impl = ""
+        if "reader_impl" in config["provider"]:
+            reader_impl = config["provider"]["reader_impl"]
+        return reader_impl
 
     @staticmethod
     def load_nested_json_schema(config, logger) -> dict:
-        url, gcs_file = SourceFile.open_file_url(config, logger)
+        url, file_to_close = SourceFile.open_file_url(config, logger)
         try:
             # Use Genson Library to take JSON objects and generate schemas that describe them,
             builder = SchemaBuilder()
@@ -286,20 +327,20 @@ class SourceFile(Source):
             if "items" in result and "properties" in result["items"]:
                 result = result["items"]["properties"]
         finally:
-            if gcs_file:
-                gcs_file.close()
+            if file_to_close:
+                file_to_close.close()
         return result
 
     @staticmethod
     def load_nested_json(config, logger) -> list:
-        url, gcs_file = SourceFile.open_file_url(config, logger)
+        url, file_to_close = SourceFile.open_file_url(config, logger)
         try:
             result = json.load(url)
             if isinstance(result, dict):
                 result = [result]
         finally:
-            if gcs_file:
-                gcs_file.close()
+            if file_to_close:
+                file_to_close.close()
         return result
 
     @staticmethod
@@ -324,12 +365,12 @@ class SourceFile(Source):
         if skip_data and reader_format == "csv":
             reader_options["nrows"] = 0
             reader_options["index_col"] = 0
-        url, gcs_file = SourceFile.open_file_url(config, logger)
+        url, file_to_close = SourceFile.open_file_url(config, logger)
         try:
             result = SourceFile.parse_file(logger, reader_format, url, reader_options)
         finally:
-            if gcs_file:
-                gcs_file.close()
+            if file_to_close:
+                file_to_close.close()
         return result
 
     @staticmethod
@@ -420,9 +461,10 @@ class SourceFile(Source):
         return "string"
 
     @staticmethod
-    def parse_catalog(catalog: AirbyteCatalog) -> set:
+    def parse_catalog(catalog: ConfiguredAirbyteCatalog) -> set:
         columns = set()
-        for stream in catalog.streams:
+        for configured_stream in catalog.streams:
+            stream = configured_stream.stream
             for key in stream.json_schema["properties"].keys():
                 columns.add(key)
         return columns

@@ -38,6 +38,7 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobInfo.CreateDisposition;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDataWriteChannel;
@@ -55,11 +56,11 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.NamingHelper;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -68,6 +69,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,15 +186,15 @@ public class BigQueryDestination implements Destination {
    * @return consumer that writes singer messages to the database.
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) {
+  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     final BigQuery bigquery = getBigQuery(config);
     Map<String, WriteConfig> writeConfigs = new HashMap<>();
     final String datasetId = config.get(CONFIG_DATASET_ID).asText();
 
     // create tmp tables if not exist
-    for (final AirbyteStream stream : catalog.getStreams()) {
-      final String tableName = NamingHelper.getRawTableName(stream.getName());
-      final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      final String tableName = NamingHelper.getRawTableName(stream.getStream().getName());
+      final String tmpTableName = stream.getStream().getName() + "_" + Instant.now().toEpochMilli();
 
       createTable(bigquery, datasetId, tmpTableName);
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
@@ -204,7 +206,7 @@ public class BigQueryDestination implements Destination {
 
       final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
 
-      writeConfigs.put(stream.getName(), new WriteConfig(TableId.of(datasetId, tableName), TableId.of(datasetId, tmpTableName), writer));
+      writeConfigs.put(stream.getStream().getName(), new WriteConfig(TableId.of(datasetId, tableName), TableId.of(datasetId, tmpTableName), writer));
     }
 
     // write to tmp tables
@@ -249,9 +251,9 @@ public class BigQueryDestination implements Destination {
 
     private final BigQuery bigquery;
     private final Map<String, WriteConfig> writeConfigs;
-    private final AirbyteCatalog catalog;
+    private final ConfiguredAirbyteCatalog catalog;
 
-    public RecordConsumer(BigQuery bigquery, Map<String, WriteConfig> writeConfigs, AirbyteCatalog catalog) {
+    public RecordConsumer(BigQuery bigquery, Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
       this.bigquery = bigquery;
       this.writeConfigs = writeConfigs;
       this.catalog = catalog;
@@ -266,10 +268,16 @@ public class BigQueryDestination implements Destination {
               String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                   Jsons.serialize(catalog), Jsons.serialize(message)));
         }
+
+        // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
+        // use BQ helpers to string-format correctly.
+        long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(message.getRecord().getEmittedAt(), TimeUnit.MILLISECONDS);
+        String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
+
         final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
             COLUMN_AB_ID, UUID.randomUUID().toString(),
             COLUMN_DATA, Jsons.serialize(message.getRecord().getData()),
-            COLUMN_EMITTED_AT, message.getRecord().getEmittedAt()));
+            COLUMN_EMITTED_AT, formattedEmittedAt));
         try {
           writeConfigs.get(message.getRecord().getStream()).getWriter()
               .write(ByteBuffer.wrap((Jsons.serialize(data) + "\n").getBytes(Charsets.UTF_8)));

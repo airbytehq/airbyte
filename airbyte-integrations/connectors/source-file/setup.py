@@ -39,7 +39,7 @@ setup(
         "pandas>=0.24.1",
         "paramiko",
         "s3fs",
-        "smart-open",
+        "smart-open[all]",
     ],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],

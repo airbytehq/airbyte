@@ -170,7 +170,3 @@ CREATE TABLE "powertrain_specs" (
 );
 ```
 
-### Limitations
-
-Basic Normalization currently only works with streams that contain fewer than 100 fields.
-

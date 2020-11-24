@@ -30,7 +30,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import DefaultDict, Dict, Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream
+from airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+)
 
 
 def to_json(string):
@@ -70,9 +77,7 @@ class SingerHelper:
         return AirbyteCatalog(streams=airbyte_streams)
 
     @staticmethod
-    def get_catalogs(
-        logger, shell_command, singer_transform=(lambda catalog: catalog), airbyte_transform=(lambda catalog: catalog)
-    ) -> Catalogs:
+    def get_catalogs(logger, shell_command) -> Catalogs:
         completed_process = subprocess.run(
             shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
         )
@@ -80,8 +85,8 @@ class SingerHelper:
         for line in completed_process.stderr.splitlines():
             logger.log_by_prefix(line, "ERROR")
 
-        singer_catalog = singer_transform(json.loads(completed_process.stdout))
-        airbyte_catalog = airbyte_transform(SingerHelper.singer_catalog_to_airbyte_catalog(singer_catalog))
+        singer_catalog = json.loads(completed_process.stdout)
+        airbyte_catalog = SingerHelper.singer_catalog_to_airbyte_catalog(singer_catalog)
 
         return Catalogs(singer_catalog=singer_catalog, airbyte_catalog=airbyte_catalog)
 
@@ -124,12 +129,13 @@ class SingerHelper:
                         logger.log_by_prefix(line, "ERROR")
 
     @staticmethod
-    def create_singer_catalog_with_selection(masked_airbyte_catalog, discovered_singer_catalog) -> str:
+    def create_singer_catalog_with_selection(masked_airbyte_catalog: ConfiguredAirbyteCatalog, discovered_singer_catalog: object) -> str:
         combined_catalog_path = os.path.join("singer_rendered_catalog.json")
         masked_singer_streams = []
 
         stream_to_airbyte_schema = {}
-        for stream in masked_airbyte_catalog["streams"]:
+        for configured_stream in masked_airbyte_catalog["streams"]:
+            stream = configured_stream["stream"]
             stream_to_airbyte_schema[stream.get("name")] = stream
 
         for singer_stream in discovered_singer_catalog.get("streams"):
@@ -142,6 +148,7 @@ class SingerHelper:
                     for metadata in metadatas:
                         new_metadata = metadata
                         new_metadata["metadata"]["selected"] = True
+                        # todo (cgardens) - need to make changes here for singer sources to support incremental.
                         if not is_field_metadata(new_metadata):
                             new_metadata["metadata"]["forced-replication-method"] = "FULL_TABLE"
                             new_metadata["metadata"]["replication-method"] = "FULL_TABLE"

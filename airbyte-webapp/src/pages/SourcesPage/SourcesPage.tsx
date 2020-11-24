@@ -7,6 +7,7 @@ import LoadingPage from "../../components/LoadingPage";
 import AllSourcesPage from "./pages/AllSourcesPage";
 import CreateSourcePage from "./pages/CreateSourcePage";
 import SourceItemPage from "./pages/SourceItemPage";
+import ConnectionPage from "../ConnectionPage";
 
 const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
 
@@ -16,6 +17,14 @@ const SourcesPage: React.FC = () => {
       <Switch>
         <Route path={`${Routes.Source}${Routes.SourceNew}`}>
           <CreateSourcePage />
+        </Route>
+        <Route
+          path={[
+            `${Routes.Source}${Routes.ConnectionNew}`,
+            `${Routes.Source}${Routes.Connection}/:id`
+          ]}
+        >
+          <ConnectionPage />
         </Route>
         <Route path={`${Routes.Source}/:id`}>
           <ErrorBoundary fallbackComponent={FallbackRootRedirector}>

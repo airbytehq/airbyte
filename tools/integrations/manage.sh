@@ -17,8 +17,21 @@ cmd_build() {
   local path=$1
 
   echo "Building $path"
-  ./gradlew "$(_get_rule_base "$path"):clean"
-  ./gradlew "$(_get_rule_base "$path"):integrationTest"
+    ./gradlew "$(_get_rule_base "$path"):clean"
+    ./gradlew "$(_get_rule_base "$path"):build"
+
+    _execute_task_if_exists $path "integrationTest"
+    _execute_task_if_exists $path "standardSourceTestPython"
+}
+
+_execute_task_if_exists() {
+  local path=$1
+  local task=$2
+  echo "checking if $task exists."
+  if ./gradlew "$(_get_rule_base "$path"):tasks" --all | grep -qw "^$task"; then
+    echo "found $task exists. executing."
+    ./gradlew "$(_get_rule_base "$path"):$task"
+  fi
 }
 
 cmd_publish() {

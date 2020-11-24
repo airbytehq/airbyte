@@ -4,6 +4,7 @@ import BaseResource from "./BaseResource";
 export interface Source {
   sourceId: string;
   name: string;
+  sourceName: string;
   workspaceId: string;
   sourceDefinitionId: string;
   connectionConfiguration: any; // TODO: fix type
@@ -12,6 +13,7 @@ export interface Source {
 export default class SourceResource extends BaseResource implements Source {
   readonly sourceId: string = "";
   readonly name: string = "";
+  readonly sourceName: string = "";
   readonly sourceDefinitionId: string = "";
   readonly workspaceId: string = "";
   readonly connectionConfiguration: any = [];
@@ -58,6 +60,24 @@ export default class SourceResource extends BaseResource implements Source {
         };
       },
       schema: { source: this.asSchema(), status: "", message: "" }
+    };
+  }
+
+  static checkConnectionShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      getFetchKey: (params: { connectionId: string }) =>
+        "POST /v1/sources/check_connection" + JSON.stringify(params),
+      fetch: async (params: { sourceId: string }): Promise<any> => {
+        const checkConnectionResult = await this.fetch(
+          "post",
+          `${this.url(params)}/check_connection`,
+          params
+        );
+
+        return checkConnectionResult;
+      },
+      schema: { status: "", message: "" }
     };
   }
 

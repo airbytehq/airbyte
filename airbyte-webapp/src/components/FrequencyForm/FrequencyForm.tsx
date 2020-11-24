@@ -10,15 +10,19 @@ import BottomBlock from "./components/BottomBlock";
 import Label from "../Label";
 import TreeView, { INode } from "../TreeView/TreeView";
 import { IDataItem } from "../DropDown/components/ListItem";
+import EditControls from "../ServiceForm/components/EditControls";
 
 type IProps = {
   className?: string;
   schema: INode[];
   allSchemaChecked: string[];
   errorMessage?: React.ReactNode;
+  successMessage?: React.ReactNode;
   onSubmit: (values: { frequency: string }, checkedState: string[]) => void;
   onDropDownSelect?: (item: IDataItem) => void;
   initialCheckedSchema: Array<string>;
+  frequencyValue?: string;
+  isEditMode?: boolean;
 };
 
 const SmallLabeledDropDown = styled(LabeledDropDown)`
@@ -48,7 +52,10 @@ const FrequencyForm: React.FC<IProps> = ({
   schema,
   initialCheckedSchema,
   onDropDownSelect,
-  allSchemaChecked
+  allSchemaChecked,
+  frequencyValue,
+  isEditMode,
+  successMessage
 }) => {
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
@@ -76,7 +83,7 @@ const FrequencyForm: React.FC<IProps> = ({
   return (
     <Formik
       initialValues={{
-        frequency: ""
+        frequency: frequencyValue || ""
       }}
       validateOnBlur={true}
       validateOnChange={true}
@@ -86,7 +93,7 @@ const FrequencyForm: React.FC<IProps> = ({
         setSubmitting(false);
       }}
     >
-      {({ isSubmitting, setFieldValue, isValid, dirty }) => (
+      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
           <Label message={<FormattedMessage id="form.dataSync.message" />}>
             <FormattedMessage id="form.dataSync" />
@@ -123,12 +130,27 @@ const FrequencyForm: React.FC<IProps> = ({
               />
             )}
           </Field>
-          <BottomBlock
-            isSubmitting={isSubmitting}
-            isValid={isValid}
-            dirty={dirty}
-            errorMessage={errorMessage}
-          />
+          {isEditMode ? (
+            <EditControls
+              isSubmitting={isSubmitting}
+              isValid={isValid}
+              dirty={
+                dirty ||
+                JSON.stringify(checkedState) !==
+                  JSON.stringify(initialCheckedSchema)
+              }
+              resetForm={resetForm}
+              successMessage={successMessage}
+              errorMessage={errorMessage}
+            />
+          ) : (
+            <BottomBlock
+              isSubmitting={isSubmitting}
+              isValid={isValid}
+              dirty={dirty}
+              errorMessage={errorMessage}
+            />
+          )}
         </FormContainer>
       )}
     </Formik>

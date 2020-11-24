@@ -25,7 +25,7 @@ SOFTWARE.
 import unittest
 from unittest.mock import Mock
 
-from airbyte_protocol import AirbyteCatalog, AirbyteRecordMessage, AirbyteStream
+from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from google_sheets_source.helpers import Helpers
 from google_sheets_source.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
 
@@ -100,8 +100,11 @@ class TestHelpers(unittest.TestCase):
         sheet2_columns = frozenset(["gsw", "lakers"])
         sheet2_schema = {"properties": {c: {"type": "string"} for c in sheet2_columns}}
 
-        catalog = AirbyteCatalog(
-            streams=[AirbyteStream(name=sheet1, json_schema=sheet1_schema), AirbyteStream(name=sheet2, json_schema=sheet2_schema)]
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema)),
+                ConfiguredAirbyteStream(stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema)),
+            ]
         )
 
         actual = Helpers.parse_sheet_and_column_names_from_catalog(catalog)

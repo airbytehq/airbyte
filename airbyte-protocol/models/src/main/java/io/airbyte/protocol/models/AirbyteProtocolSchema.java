@@ -30,7 +30,7 @@ import java.nio.file.Path;
 
 public enum AirbyteProtocolSchema {
 
-  MESSAGE("airbyte_message.yaml");
+  PROTOCOL("airbyte_protocol.yaml");
 
   static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("airbyte_protocol", AirbyteProtocolSchema.class);
 

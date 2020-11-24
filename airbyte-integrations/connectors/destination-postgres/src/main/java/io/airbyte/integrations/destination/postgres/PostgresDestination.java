@@ -41,13 +41,14 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.NamingHelper;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.queue.BigQueue;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -59,7 +60,9 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -126,31 +129,46 @@ public class PostgresDestination implements Destination {
    * @throws Exception - anything could happen!
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws Exception {
+  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     // connect to db.
     final Database database = getDatabase(config);
-    Map<String, WriteConfig> writeBuffers = new HashMap<>();
-
+    final Map<String, WriteConfig> writeBuffers = new HashMap<>();
+    final Set<String> schemaSet = new HashSet<>();
     // create tmp tables if not exist
-    for (final AirbyteStream stream : catalog.getStreams()) {
-      final String tableName = NamingHelper.getRawTableName(stream.getName());
-      final String tmpTableName = stream.getName() + "_" + Instant.now().toEpochMilli();
-      database.query(ctx -> ctx.execute(String.format(
-          "CREATE TABLE \"%s\" ( \n"
-              + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
-              + "\"%s\" JSONB,\n"
-              + "\"emitted_at\" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
-              + ");",
-          tmpTableName, COLUMN_NAME)));
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      final String schemaName = getSchemaName(config);
+      final String streamName = stream.getStream().getName();
+      final String tableName = NamingHelper.getRawTableName(streamName);
+      final String tmpTableName = streamName + "_" + Instant.now().toEpochMilli();
+      if (!schemaSet.contains(schemaName)) {
+        database.query(ctx -> ctx.execute(createSchemaQuery(schemaName)));
+        schemaSet.add(schemaName);
+      }
+      database.query(ctx -> ctx.execute(createRawTableQuery(schemaName, tmpTableName)));
 
       final Path queueRoot = Files.createTempDirectory("queues");
-      final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(stream.getName()), stream.getName());
-      writeBuffers.put(stream.getName(), new WriteConfig(tableName, tmpTableName, writeBuffer));
+      final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(streamName), streamName);
+      final SyncMode syncMode = stream.getSyncMode() == null ? SyncMode.FULL_REFRESH : stream.getSyncMode();
+      writeBuffers.put(streamName, new WriteConfig(schemaName, tableName, tmpTableName, writeBuffer, syncMode));
     }
 
     // write to tmp tables
     // if success copy delete main table if exists. rename tmp tables to real tables.
     return new RecordConsumer(database, writeBuffers, catalog);
+  }
+
+  static String createSchemaQuery(String schemaName) {
+    return String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";\n", schemaName);
+  }
+
+  static String createRawTableQuery(String schemaName, String streamName) {
+    return String.format(
+        "CREATE TABLE IF NOT EXISTS \"%s\".\"%s\" ( \n"
+            + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
+            + "\"%s\" JSONB,\n"
+            + "\"emitted_at\" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
+            + ");\n",
+        schemaName, streamName, COLUMN_NAME);
   }
 
   public static class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
@@ -164,9 +182,9 @@ public class PostgresDestination implements Destination {
     private final ScheduledExecutorService writerPool;
     private final Database database;
     private final Map<String, WriteConfig> writeConfigs;
-    private final AirbyteCatalog catalog;
+    private final ConfiguredAirbyteCatalog catalog;
 
-    public RecordConsumer(Database database, Map<String, WriteConfig> writeConfigs, AirbyteCatalog catalog) {
+    public RecordConsumer(Database database, Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
       this.database = database;
       this.writeConfigs = writeConfigs;
       this.catalog = catalog;
@@ -195,11 +213,12 @@ public class PostgresDestination implements Destination {
                                                  Map<String, WriteConfig> writeBuffers,
                                                  Database database) {
       for (final Map.Entry<String, WriteConfig> entry : writeBuffers.entrySet()) {
+        final String schemaName = entry.getValue().getSchemaName();
         final String tmpTableName = entry.getValue().getTmpTableName();
         final CloseableQueue<byte[]> writeBuffer = entry.getValue().getWriteBuffer();
         while (writeBuffer.size() > minRecords) {
           try {
-            database.query(ctx -> buildWriteQuery(ctx, batchSize, writeBuffer, tmpTableName).execute());
+            database.query(ctx -> buildWriteQuery(ctx, batchSize, writeBuffer, schemaName, tmpTableName).execute());
           } catch (SQLException e) {
             throw new RuntimeException(e);
           }
@@ -208,16 +227,18 @@ public class PostgresDestination implements Destination {
     }
 
     // build the following query:
-    // INSERT INTO <tableName>(data)
+    // INSERT INTO <schemaName>.<tableName>(data)
     // VALUES
     // ({ "my": "data" }),
     // ({ "my": "data" });
     private static InsertValuesStep3<Record, String, JSONB, OffsetDateTime> buildWriteQuery(DSLContext ctx,
                                                                                             int batchSize,
                                                                                             CloseableQueue<byte[]> writeBuffer,
+                                                                                            String schemaName,
                                                                                             String tmpTableName) {
-      InsertValuesStep3<Record, String, JSONB, OffsetDateTime> step = ctx.insertInto(table(name(tmpTableName)), field("ab_id", String.class),
-          field(COLUMN_NAME, JSONB.class), field("emitted_at", OffsetDateTime.class));
+      InsertValuesStep3<Record, String, JSONB, OffsetDateTime> step =
+          ctx.insertInto(table(name(schemaName, tmpTableName)), field("ab_id", String.class),
+              field(COLUMN_NAME, JSONB.class), field("emitted_at", OffsetDateTime.class));
 
       for (int i = 0; i < batchSize; i++) {
         final byte[] record = writeBuffer.poll();
@@ -265,13 +286,24 @@ public class PostgresDestination implements Destination {
         // write anything that is left in the buffers.
         writeStreamsWithNRecords(0, 500, writeConfigs, database);
 
-        // delete tables if already exist. copy new tables into their place.
         database.transaction(ctx -> {
           final StringBuilder query = new StringBuilder();
           for (final WriteConfig writeConfig : writeConfigs.values()) {
-            query.append(String.format("DROP TABLE IF EXISTS \"%s\";\n", writeConfig.getTableName()));
+            // create tables if not exist.
+            final String schemaName = writeConfig.getSchemaName();
+            query.append(createRawTableQuery(writeConfig.getSchemaName(), writeConfig.getTableName()));
 
-            query.append(String.format("ALTER TABLE \"%s\" RENAME TO \"%s\";\n", writeConfig.getTmpTableName(), writeConfig.getTableName()));
+            switch (writeConfig.getSyncMode()) {
+              case FULL_REFRESH -> {
+                // truncate table if already exist.
+                query.append(String.format("TRUNCATE TABLE \"%s\".\"%s\";\n", writeConfig.getSchemaName(), writeConfig.getTableName()));
+              }
+              case INCREMENTAL -> {}
+              default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
+            }
+            // always copy data from tmp table into "main" table.
+            query.append(String.format("INSERT INTO \"%s\".\"%s\" SELECT * FROM \"%s\".\"%s\";\n", writeConfig.getSchemaName(),
+                writeConfig.getTableName(), writeConfig.getSchemaName(), writeConfig.getTmpTableName()));
           }
           return ctx.execute(query.toString());
         });
@@ -288,7 +320,8 @@ public class PostgresDestination implements Destination {
     private static void cleanupTmpTables(Database database, Map<String, WriteConfig> writeConfigs) {
       for (WriteConfig writeConfig : writeConfigs.values()) {
         try {
-          database.query(ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS \"%s\";", writeConfig.getTmpTableName())));
+          database.query(
+              ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS \"%s\".\"%s\";", writeConfig.getSchemaName(), writeConfig.getTmpTableName())));
         } catch (SQLException e) {
           throw new RuntimeException(e);
         }
@@ -299,14 +332,22 @@ public class PostgresDestination implements Destination {
 
   private static class WriteConfig {
 
+    private final String schemaName;
     private final String tableName;
     private final String tmpTableName;
     private final CloseableQueue<byte[]> writeBuffer;
+    private final SyncMode syncMode;
 
-    private WriteConfig(String tableName, String tmpTableName, CloseableQueue<byte[]> writeBuffer) {
+    private WriteConfig(String schemaName, String tableName, String tmpTableName, CloseableQueue<byte[]> writeBuffer, SyncMode syncMode) {
+      this.schemaName = schemaName;
       this.tableName = tableName;
       this.tmpTableName = tmpTableName;
       this.writeBuffer = writeBuffer;
+      this.syncMode = syncMode;
+    }
+
+    public String getSchemaName() {
+      return schemaName;
     }
 
     public String getTableName() {
@@ -321,6 +362,10 @@ public class PostgresDestination implements Destination {
       return writeBuffer;
     }
 
+    public SyncMode getSyncMode() {
+      return syncMode;
+    }
+
   }
 
   private Database getDatabase(JsonNode config) {
@@ -331,6 +376,14 @@ public class PostgresDestination implements Destination {
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()));
+  }
+
+  private static String getSchemaName(JsonNode config) {
+    if (config.has("schema")) {
+      return config.get("schema").asText();
+    } else {
+      return "public";
+    }
   }
 
   public static void main(String[] args) throws Exception {

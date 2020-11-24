@@ -32,11 +32,11 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -85,19 +85,19 @@ public class CsvDestination implements Destination {
    * @throws IOException - exception throw in manipulating the filesytem.
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, AirbyteCatalog catalog) throws IOException {
+  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
     FileUtils.forceMkdir(destinationDir.toFile());
 
     final long now = Instant.now().toEpochMilli();
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
-    for (final AirbyteStream stream : catalog.getStreams()) {
-      final Path tmpPath = destinationDir.resolve(stream.getName() + "_" + now + ".csv");
-      final Path finalPath = destinationDir.resolve(stream.getName() + ".csv");
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      final Path tmpPath = destinationDir.resolve(stream.getStream().getName() + "_" + now + ".csv");
+      final Path finalPath = destinationDir.resolve(stream.getStream().getName() + ".csv");
       final FileWriter fileWriter = new FileWriter(tmpPath.toFile());
       final CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA));
-      writeConfigs.put(stream.getName(), new WriteConfig(printer, tmpPath, finalPath));
+      writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
     }
 
     return new CsvConsumer(writeConfigs, catalog);
@@ -124,9 +124,9 @@ public class CsvDestination implements Destination {
   private static class CsvConsumer extends FailureTrackingConsumer<AirbyteMessage> {
 
     private final Map<String, WriteConfig> writeConfigs;
-    private final AirbyteCatalog catalog;
+    private final ConfiguredAirbyteCatalog catalog;
 
-    public CsvConsumer(Map<String, WriteConfig> writeConfigs, AirbyteCatalog catalog) {
+    public CsvConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
       this.catalog = catalog;
       LOGGER.info("initializing consumer.");
 

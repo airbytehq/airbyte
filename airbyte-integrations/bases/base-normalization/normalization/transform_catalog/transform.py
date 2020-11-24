@@ -299,7 +299,10 @@ def process_node(
     node_properties = extract_node_properties(path=path, json_col=json_col, properties=properties)
     node_columns = ",\n    ".join([sql for sql in node_properties.values()])
     hash_node_columns = ",\n        ".join([f"adapter.quote_as_configured('{column}', 'identifier')" for column in node_properties.keys()])
-    hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
+    # Disable dbt_utils.surrogate_key for own version to fix a bug with Postgres (#913).
+    # hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
+    # We should re-enable it when our PR to dbt_utils is merged
+    hash_node_columns = jinja_call(f"surrogate_key([\n        {hash_node_columns}\n    ])")
     hash_id = jinja_call(f"adapter.quote_as_configured('_{name}_hashid', 'identifier')")
     foreign_hash_id = jinja_call(f"adapter.quote_as_configured('_{name}_foreign_hashid', 'identifier')")
     emitted_col = "{},\n    {} as {}".format(
@@ -370,13 +373,18 @@ def process_node(
 def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict, Set[Union[str]]]:
     result = {}
     source_tables = set()
-    for obj in catalog["streams"]:
-        if "name" in obj:
-            name = obj["name"]
+    for configuredStream in catalog["streams"]:
+        if "stream" in configuredStream:
+            stream = configuredStream["stream"]
+        else:
+            stream = {}
+
+        if "name" in stream:
+            name = stream["name"]
         else:
             name = "undefined"  # todo: should this raise an exception?
-        if "json_schema" in obj and "properties" in obj["json_schema"]:
-            properties = obj["json_schema"]["properties"]
+        if "json_schema" in stream and "properties" in stream["json_schema"]:
+            properties = stream["json_schema"]["properties"]
         else:
             properties = {}
         # TODO Replace {name}_raw by an argument like we do for the json_blob column

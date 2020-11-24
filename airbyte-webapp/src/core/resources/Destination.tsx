@@ -4,6 +4,7 @@ import BaseResource from "./BaseResource";
 export interface Destination {
   destinationId: string;
   name: string;
+  destinationName: string;
   workspaceId: string;
   destinationDefinitionId: string;
   connectionConfiguration: any; // TODO: fix type
@@ -13,6 +14,7 @@ export default class DestinationResource extends BaseResource
   implements Destination {
   readonly destinationId: string = "";
   readonly name: string = "";
+  readonly destinationName: string = "";
   readonly workspaceId: string = "";
   readonly destinationDefinitionId: string = "";
   readonly connectionConfiguration: any = [];
@@ -80,6 +82,24 @@ export default class DestinationResource extends BaseResource
         return response;
       },
       schema: this.asSchema()
+    };
+  }
+
+  static checkConnectionShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      getFetchKey: (params: { connectionId: string }) =>
+        "POST /v1/destinations/check_connection" + JSON.stringify(params),
+      fetch: async (params: { destinationId: string }): Promise<any> => {
+        const checkConnectionResult = await this.fetch(
+          "post",
+          `${this.url(params)}/check_connection`,
+          params
+        );
+
+        return checkConnectionResult;
+      },
+      schema: { status: "", message: "" }
     };
   }
 

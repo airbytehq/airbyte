@@ -44,15 +44,15 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,6 +65,7 @@ class JdbcSourceTest {
       STREAM_NAME,
       Field.of("id", JsonSchemaPrimitive.NUMBER),
       Field.of("name", JsonSchemaPrimitive.STRING));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> MESSAGES = Sets.newHashSet(
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")))),
@@ -143,7 +144,7 @@ class JdbcSourceTest {
 
   @Test
   void testReadSuccess() throws Exception {
-    final Set<AirbyteMessage> actualMessages = new JdbcSource().read(config, CATALOG, null).collect(Collectors.toSet());
+    final Set<AirbyteMessage> actualMessages = new JdbcSource().read(config, CONFIGURED_CATALOG, null).collect(Collectors.toSet());
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -156,7 +157,7 @@ class JdbcSourceTest {
 
   @Test
   void testReadOneColumn() throws Exception {
-    final AirbyteCatalog catalog = CatalogHelpers.createAirbyteCatalog(STREAM_NAME, Field.of("id", JsonSchemaPrimitive.NUMBER));
+    final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM_NAME, Field.of("id", JsonSchemaPrimitive.NUMBER));
 
     final Set<AirbyteMessage> actualMessages = new JdbcSource().read(config, catalog, null).collect(Collectors.toSet());
 
@@ -183,9 +184,9 @@ class JdbcSourceTest {
       return null;
     });
 
-    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(
-        CATALOG.getStreams().get(0),
-        CatalogHelpers.createAirbyteStream(
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        CONFIGURED_CATALOG.getStreams().get(0),
+        CatalogHelpers.createConfiguredAirbyteStream(
             streamName2,
             Field.of("id", JsonSchemaPrimitive.NUMBER),
             Field.of("name", JsonSchemaPrimitive.STRING))));
@@ -209,14 +210,14 @@ class JdbcSourceTest {
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
-  void testReadFailure() throws Exception {
-    final AirbyteStream spiedAbStream = spy(CATALOG.getStreams().get(0));
-    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getName();
+  void testReadFailure() {
+    final ConfiguredAirbyteStream spiedAbStream = spy(CONFIGURED_CATALOG.getStreams().get(0));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
+    doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getStream();
 
-    final Stream<AirbyteMessage> stream = new JdbcSource().read(config, catalog, null);
+    final JdbcSource source = new JdbcSource();
 
-    assertThrows(RuntimeException.class, () -> stream.collect(Collectors.toList()));
+    assertThrows(RuntimeException.class, () -> source.read(config, catalog, null));
   }
 
 }

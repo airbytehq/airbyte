@@ -109,7 +109,7 @@ const TreeView: React.FC<IProps> = ({
 
   return (
     <Container>
-      <SelectButton onClick={onCheckAll}>
+      <SelectButton onClick={onCheckAll} type="button">
         {checked?.length ? (
           <FormattedMessage id="sources.schemaUnselectAll" />
         ) : (
