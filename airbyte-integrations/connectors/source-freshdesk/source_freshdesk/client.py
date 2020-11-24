@@ -19,7 +19,7 @@ SOFTWARE.
 """
 from functools import partial
 
-from base_python import Source, ConfigContainer, BaseClient
+from base_python import BaseClient
 
 from freshdesk.api import API
 

@@ -45,7 +45,7 @@ class URLSchemaLoader:
     """ JSONSchema loader from URL
     """
     def get_schema(self, name):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class BaseClient(ABC):
@@ -94,4 +94,4 @@ class BaseClient(ABC):
     def health_check(self) -> Tuple[bool, str]:
         """ Check if service is up and running
         """
-        raise NotImplemented
+        raise NotImplementedError
