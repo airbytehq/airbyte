@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -81,7 +82,8 @@ public class JobSubmitter implements Runnable {
     }
   }
 
-  private void submitJob(Job job) {
+  @VisibleForTesting
+  void submitJob(Job job) {
     final WorkerRun workerRun = workerRunFactory.create(job);
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
@@ -98,7 +100,7 @@ public class JobSubmitter implements Runnable {
             persistence.writeOutput(job.getId(), output.getOutput().get());
           }
           persistence.updateStatus(job.getId(), getStatus(output));
-          trackCompletion(job, io.airbyte.workers.JobStatus.SUCCEEDED);
+          trackCompletion(job, output.getStatus());
         })
         .setOnException(noop -> {
           persistence.updateStatus(job.getId(), JobStatus.FAILED);
@@ -108,13 +110,15 @@ public class JobSubmitter implements Runnable {
         .build());
   }
 
-  private void trackSubmission(Job job) {
+  @VisibleForTesting
+  void trackSubmission(Job job) {
     final Builder<String, Object> metadataBuilder = generateMetadata(job);
     metadataBuilder.put("attempt_completion", true);
     track(metadataBuilder.build());
   }
 
-  private void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
+  @VisibleForTesting
+  void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
     final Builder<String, Object> metadataBuilder = generateMetadata(job);
     metadataBuilder.put("attempt_completion", true);
     metadataBuilder.put("attempt_completion_status", status);
