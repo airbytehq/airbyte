@@ -29,8 +29,6 @@ import java.time.Instant;
 
 public class StandardSQLNaming implements SQLNamingResolvable {
 
-  public static String SCHEMA_FROM_SOURCE = "allowSchemaFromSource";
-
   @Override
   public String getIdentifier(String name) {
     return convertStreamName(name);
@@ -47,14 +45,15 @@ public class StandardSQLNaming implements SQLNamingResolvable {
   }
 
   protected String convertStreamName(String input) {
-    final String value = Normalizer.normalize(input, Normalizer.Form.NFD);
+    final String value = Normalizer.normalize(input, Normalizer.Form.NFKD);
     return value
+        .replaceAll("\\p{M}", "")
         .replaceAll("\\s+", "_")
         .replaceAll(getNonValidCharacterPattern(), "_");
   }
 
   protected String getNonValidCharacterPattern() {
-    return "[^\\p{ASCII}]";
+    return "[^\\p{Alnum}_]";
   }
 
 }

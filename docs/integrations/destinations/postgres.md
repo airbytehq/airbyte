@@ -56,3 +56,18 @@ You should now have all the requirements needed to configure Postgres as a desti
 * **Database**
   * This database needs to exist within the schema provided.
 
+## Notes about Postgres Naming Conventions
+
+From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
+
+- SQL identifiers and key words must begin with a letter (a-z, but also letters with diacritical marks and non-Latin letters) or an underscore (_).
+- Subsequent characters in an identifier or key word can be letters, underscores, digits (0-9), or dollar signs ($).
+
+  Note that dollar signs are not allowed in identifiers according to the letter of the SQL standard, so their use might render applications less portable. The SQL standard will not define a key word that contains digits or starts or ends with an underscore, so identifiers of this form are safe against possible conflict with future extensions of the standard.
+
+- The system uses no more than NAMEDATALEN-1 bytes of an identifier; longer names can be written in commands, but they will be truncated. By default, NAMEDATALEN is 64 so the maximum identifier length is 63 bytes
+- Quoted identifiers can contain any character, except the character with code zero. (To include a double quote, write two double quotes.) This allows constructing table or column names that would otherwise not be possible, such as ones containing spaces or ampersands. The length limitation still applies.
+- Quoting an identifier also makes it case-sensitive, whereas unquoted names are always folded to lower case.
+- If you want to write portable applications you are advised to always quote a particular name or never quote it.
+
+Therefore, Airbyte Postgres destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.

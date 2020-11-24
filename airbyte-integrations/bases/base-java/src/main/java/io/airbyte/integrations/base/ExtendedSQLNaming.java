@@ -41,9 +41,9 @@ public class ExtendedSQLNaming extends StandardSQLNaming {
 
   protected boolean useExtendedIdentifiers(String input) {
     boolean result = false;
-    if (input.matches("^[^\\p{Alpha}_]")) {
+    if (input.matches("[^\\p{Alpha}_].*")) {
       result = true;
-    } else if (input.matches("[^\\p{ASCII}]")) {
+    } else if (input.matches(".*[^\\p{Alnum}_].*")) {
       result = true;
     }
     return result;

@@ -30,6 +30,7 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.CopyJobConfiguration;
+import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
@@ -67,7 +68,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -107,14 +110,18 @@ public class BigQueryDestination implements Destination {
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
       final String datasetId = config.get(CONFIG_DATASET_ID).asText();
+      final BigQuery bigquery = getBigQuery(config);
 
+      if (!bigquery.getDataset(datasetId).exists()) {
+        final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
+        bigquery.create(datasetInfo);
+      }
       QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
           .setUseLegacySql(false)
           .build();
-      // TODO create dataset if not exists
 
-      final ImmutablePair<Job, String> result = executeQuery(getBigQuery(config), queryConfig);
+      final ImmutablePair<Job, String> result = executeQuery(bigquery, queryConfig);
       if (result.getLeft() != null) {
         return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
       } else {
@@ -202,6 +209,7 @@ public class BigQueryDestination implements Destination {
     final BigQuery bigquery = getBigQuery(config);
     Map<String, WriteConfig> writeConfigs = new HashMap<>();
     final String datasetId = config.get(CONFIG_DATASET_ID).asText();
+    Set<String> schemaSet = new HashSet<>();
 
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
@@ -209,7 +217,13 @@ public class BigQueryDestination implements Destination {
       final String schemaName = getNamingResolver().getIdentifier(datasetId);
       final String tableName = getNamingResolver().getRawTableName(streamName);
       final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
-
+      if (!schemaSet.contains(schemaName)) {
+        if (!bigquery.getDataset(schemaName).exists()) {
+          final DatasetInfo datasetInfo = DatasetInfo.newBuilder(schemaName).build();
+          bigquery.create(datasetInfo);
+        }
+        schemaSet.add(schemaName);
+      }
       createTable(bigquery, schemaName, tmpTableName);
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
       final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
