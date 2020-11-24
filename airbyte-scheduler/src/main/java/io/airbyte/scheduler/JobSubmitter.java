@@ -109,18 +109,21 @@ public class JobSubmitter implements Runnable {
   }
 
   private void trackSubmission(Job job) {
-    track("job", generateMetadata(job).build());
+    final Builder<String, Object> metadataBuilder = generateMetadata(job);
+    metadataBuilder.put("attempt_completion", true);
+    track(metadataBuilder.build());
   }
 
   private void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
     final Builder<String, Object> metadataBuilder = generateMetadata(job);
-    metadataBuilder.put("status", status);
-    track("job-completion", metadataBuilder.build());
+    metadataBuilder.put("attempt_completion", true);
+    metadataBuilder.put("attempt_completion_status", status);
+    track(metadataBuilder.build());
   }
 
-  private void track(String action, Map<String, Object> metadata) {
+  private void track(Map<String, Object> metadata) {
     try {
-      TrackingClientSingleton.get().track(action, metadata);
+      TrackingClientSingleton.get().track("Job", metadata);
     } catch (Exception e) {
       LOGGER.error("failed while reporting usage.");
     }
@@ -135,7 +138,7 @@ public class JobSubmitter implements Runnable {
     // all instances of airbyte installed everywhere).
     final UUID jobUuid = UUID.nameUUIDFromBytes((job.getScope() + job.getId() + job.getAttempts()).getBytes(Charsets.UTF_8));
     final UUID attemptUuid = UUID.nameUUIDFromBytes((job.getScope() + job.getId() + job.getAttempts()).getBytes(Charsets.UTF_8));
-    metadata.put("jobUuid", jobUuid);
+    metadata.put("job_uuid", jobUuid);
     metadata.put("attempt_uuid", attemptUuid);
 
     switch (job.getConfig().getConfigType()) {
