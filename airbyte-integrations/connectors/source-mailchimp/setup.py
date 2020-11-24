@@ -36,7 +36,7 @@ setup(
         "pydantic==1.6.1",
         "mailchimp3==3.0.14",
     ],
-    package_data={"": ["*.json"]},
+    package_data={"": ["*.json", "schemas/*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={
