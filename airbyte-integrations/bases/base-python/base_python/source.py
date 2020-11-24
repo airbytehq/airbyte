@@ -23,13 +23,11 @@ SOFTWARE.
 
 from typing import Type
 
-from airbyte_protocol import (
-    AirbyteLogger, AirbyteCatalog, ConfigContainer,
-    AirbyteConnectionStatus, Status
-)
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
 
+from .logger import AirbyteLogger
 from .client import BaseClient
-from .integration import Source
+from .integration import ConfigContainer, Source
 
 
 class BaseSource(Source):
