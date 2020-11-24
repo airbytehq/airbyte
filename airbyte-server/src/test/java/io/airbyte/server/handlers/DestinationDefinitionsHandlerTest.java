@@ -38,6 +38,7 @@ import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.cache.SpecCache.AlwaysMissCache;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -59,7 +60,7 @@ class DestinationDefinitionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
-    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator);
+    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, new AlwaysMissCache());
   }
 
   private StandardDestinationDefinition generateDestination() {

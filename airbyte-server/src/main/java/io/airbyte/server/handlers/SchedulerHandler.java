@@ -53,10 +53,12 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.server.cache.SpecCache;
 import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,10 +69,13 @@ public class SchedulerHandler {
 
   private final ConfigRepository configRepository;
   private final SchedulerPersistence schedulerPersistence;
+  private SpecCache specCache;
 
-  public SchedulerHandler(final ConfigRepository configRepository,
-                          final SchedulerPersistence schedulerPersistence) {
-
+  public SchedulerHandler(
+                          final ConfigRepository configRepository,
+                          final SchedulerPersistence schedulerPersistence,
+                          final SpecCache specCache) {
+    this.specCache = specCache;
     this.configRepository = configRepository;
     this.schedulerPersistence = schedulerPersistence;
   }
@@ -170,12 +175,22 @@ public class SchedulerHandler {
   }
 
   public ConnectorSpecification getConnectorSpecification(String imageName) throws IOException {
-    final long jobId = schedulerPersistence.createGetSpecJob(imageName);
-    LOGGER.debug("getSourceSpec jobId = {}", jobId);
+    final Optional<ConnectorSpecification> cachedSpec = specCache.get(imageName);
+    if (cachedSpec.isPresent()) {
+      LOGGER.debug("cache hit: " + imageName);
+      return cachedSpec.get();
+    } else {
 
-    Job job = waitUntilJobIsTerminalOrTimeout(jobId);
+      LOGGER.debug("cache miss: " + imageName);
+      final long jobId = schedulerPersistence.createGetSpecJob(imageName);
+      LOGGER.debug("getSourceSpec jobId = {}", jobId);
 
-    return job.getOutput().orElseThrow().getGetSpec().getSpecification();
+      final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
+
+      final ConnectorSpecification spec = job.getOutput().orElseThrow().getGetSpec().getSpecification();
+      specCache.put(imageName, spec);
+      return spec;
+    }
   }
 
   public DestinationDefinitionSpecificationRead getDestinationSpecification(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)

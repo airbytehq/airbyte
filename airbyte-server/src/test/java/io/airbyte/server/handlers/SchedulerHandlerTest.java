@@ -54,6 +54,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.server.cache.SpecCache.AlwaysMissCache;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
@@ -94,7 +95,7 @@ class SchedulerHandlerTest {
 
     configRepository = mock(ConfigRepository.class);
     schedulerPersistence = mock(SchedulerPersistence.class);
-    schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
+    schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence, new AlwaysMissCache());
   }
 
   @Test

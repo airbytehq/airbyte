@@ -69,6 +69,7 @@ import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.server.cache.SpecCache;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DebugInfoHandler;
@@ -105,16 +106,18 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WebBackendSourceHandler webBackendSourceHandler;
   private final WebBackendDestinationHandler webBackendDestinationHandler;
 
-  public ConfigurationApi(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence) {
+  public ConfigurationApi(
+                          final ConfigRepository configRepository,
+                          final SchedulerPersistence schedulerPersistence,
+                          final SpecCache specCache) {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence);
+    schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence, specCache);
     workspacesHandler = new WorkspacesHandler(configRepository);
-    DockerImageValidator dockerImageValidator = new DockerImageValidator(schedulerHandler);
-    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator);
+    final DockerImageValidator dockerImageValidator = new DockerImageValidator(schedulerHandler);
+    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, specCache);
     connectionsHandler = new ConnectionsHandler(configRepository);
-    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator);
-    destinationHandler =
-        new DestinationHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
+    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, specCache);
+    destinationHandler = new DestinationHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler);

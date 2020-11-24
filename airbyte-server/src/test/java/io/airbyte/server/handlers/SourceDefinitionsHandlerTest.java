@@ -39,6 +39,7 @@ import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.cache.SpecCache.AlwaysMissCache;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -65,7 +66,7 @@ class SourceDefinitionsHandlerTest {
     dockerImageValidator = mock(DockerImageValidator.class);
 
     source = generateSource();
-    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier);
+    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, new AlwaysMissCache());
   }
 
   private StandardSourceDefinition generateSource() {
