@@ -18,13 +18,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from functools import partial
+from typing import Tuple, Mapping
 
 from base_python import BaseClient
 
 from freshdesk.api import API
+from freshdesk.v2.errors import FreshdeskError
+
+DEFAULT_ITEMS_PER_PAGE = 100
 
 
-def paginator(request, params, page=None, per_page=100, **kwargs):
+def paginator(
+        request, params, page=None, per_page=DEFAULT_ITEMS_PER_PAGE, **kwargs
+):
     """ Split requests in multiple batches and return records as generator
     """
     read_all = page is None
@@ -36,7 +42,6 @@ def paginator(request, params, page=None, per_page=100, **kwargs):
         if len(rows) < per_page or not read_all:
             break
         page += 1
-    request(params=params)
 
 
 class Client(BaseClient):
@@ -53,17 +58,34 @@ class Client(BaseClient):
     ]
 
     def __init__(self, domain, apikey):
-        self._client = API(domain=domain, api_key=apikey)
+        self._client = API(domain=domain, api_key=apikey, version=2)
         super().__init__()
 
     def list(self, name, **kwargs):
         # for now exact matching
         url = name
-        request = partial(self._client._api._get, url=url)
+        request = partial(self._client._get, url=url)
         yield from paginator(request, params={}, **kwargs)
 
-    def _enumerate_methods(self):
+    def settings(self, **kwargs):
+        url = 'settings/helpdesk'
+        request = partial(self._client._get, url=url)
+        return list(paginator(request, params={}, **kwargs))
+
+    def _enumerate_methods(self) -> Mapping[str, callable]:
         return {
             entity: partial(self.list, name=entity)
             for entity in self.ENTITIES
         }
+
+    def health_check(self) -> Tuple[bool, str]:
+        alive = True
+        error_msg = None
+
+        try:
+            self.settings()
+        except FreshdeskError as error:
+            alive = False
+            error_msg = str(error)
+
+        return alive, error_msg

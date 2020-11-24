@@ -21,12 +21,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
-from source_freshdesk.client import Client
 import pytest
 
+from source_freshdesk.client import Client
 
-def test_client_wrong_credentials():
-    expected_error = 'The API key that you have entered is not valid'
-    with pytest.raises(ValueError, match=expected_error):
-        Client(domain='unknown_user', apikey='wrong_key')
+
+def test_client_wrong_domain():
+    not_freshdesk_domain = 'unknownaccount'
+    expected_error = (
+        'Freshdesk v2 API works only via Freshdesk'
+        'domains and not via custom CNAMEs'
+    )
+    with pytest.raises(AttributeError, match=expected_error):
+        Client(domain=not_freshdesk_domain, apikey='wrong_key')
+
+
+def test_client_wrong_account():
+    unknown_domain = 'unknownaccount.freshdesk.com'
+    client = Client(domain=unknown_domain, apikey='wrong_key')
+    alive, error = client.health_check()
+
+    assert not alive
+    assert error == 'Freshdesk Request Failed'
