@@ -4,28 +4,39 @@ This is the repository for the Recurly source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/recurly).
 
 ## Local development
-### Build
+
+### Prerequisites
+**To iterate on this connector, make sure to complete this prerequisites section.**
+
+#### Build & Activate Virtual Environment
 First, build the module by running the following from the `airbyte` project root directory: 
 ```
 ./gradlew :airbyte-integrations:connectors:source-recurly:build
 ```
 
-This should generate a virtualenv for this module in `source-recurly/.venv`. Make sure this venv is active in your
-development environment of choice. If you are on the terminal, run the following from the `source-recurly` directory:
+This will generate a virtualenv for this module in `source-recurly/.venv`. Make sure this venv is active in your
+development environment of choice. To activate the venv from the terminal, run:
 ```
 cd airbyte-integrations/connectors/source-recurly # cd into the connector directory
 source .venv/bin/activate
 ```
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv. 
+If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
-**All the instructions below assume you have correctly activated the virtualenv.**.
+#### Create credentials
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/recurly)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_recurly/spec.json` file.
+See `sample_files/sample_config.json` for a sample config file.
+
+**If you are an Airbyte core member**, copy the credentials in RPass under the secret name `source-recurly-integration-test-config`
+and place them into `secrets/config.json`.
+
 
 ### Locally running the connector
 ```
 python main_dev.py spec
 python main_dev.py check --config secrets/config.json
 python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog integration_tests/catalog.json
+python main_dev.py read --config secrets/config.json --catalog sample_files/sample_catalog.json
 ```
 
 ### Unit Tests
@@ -38,25 +49,16 @@ pytest unit_tests
 ```
 # in airbyte root directory
 ./gradlew :airbyte-integrations:connectors:source-recurly:airbyteDocker
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/sample_files:/sample_files airbyte/source-recurly:dev spec
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/sample_files:/sample_files airbyte/source-recurly:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/sample_files:/sample_files airbyte/source-recurly:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/sample_files:/sample_files airbyte/source-recurly:dev read --config /secrets/config.json --catalog /integration_tests/catalog.json
+docker run --rm airbyte/source-recurly:dev spec
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/secrets:/secrets airbyte/source-recurly:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/secrets:/secrets airbyte/source-recurly:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/secrets:/secrets -v $(pwd)/airbyte-integrations/connectors/source-recurly/sample_files:/sample_files airbyte/source-recurly:dev read --config /secrets/config.json --catalog /sample_files/sample_catalog.json
 ```
 
-### Integration Tests 
-1. Configure credentials as appropriate, described below.
+### Integration Tests
 1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-recurly:standardSourceTestPython` to run the standard integration test suite.
 1. To run additional integration tests, place your integration tests in the `integration_tests` directory and run them with `pytest integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
-
-## Configure credentials
-### Configuring credentials as a community contributor
-Follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/recurly) to generate credentials, then put those
-in `secrets/config.json`.
-
-### Airbyte Employee
-Credentials are available in RPass under the secret name `source-recurly-integration-test-creds`.

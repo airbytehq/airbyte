@@ -6,7 +6,15 @@ The Recurly source supports Full Refresh syncs. That is, every time a sync is ru
 
 ### Output schema
 
-Several output streams are available from this source (accounts, plans, invoices, transactions, etc.).
+Several output streams are available from this source:
+* [Accounts](https://docs.recurly.com/docs/accounts)
+* [Coupons](https://docs.recurly.com/docs/coupons)
+* Automated Exports
+* [Invoices](https://docs.recurly.com/docs/invoices)
+* Measured Units
+* [Plans](https://docs.recurly.com/docs/plans)
+* [Subscriptions](https://docs.recurly.com/docs/subscriptions)
+* [Transactions](https://docs.recurly.com/docs/transactions)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 

@@ -25,7 +25,15 @@ SOFTWARE.
 from datetime import datetime
 from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, Status, Type
+from airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
 from base_python import AirbyteLogger, ConfigContainer, Source
 
 from .client import Client
@@ -57,11 +65,14 @@ class SourceRecurly(Source):
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._client(config_container)
 
-        catalog = AirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        config = self.read_config(catalog_path)
+        catalog = ConfiguredAirbyteCatalog.parse_obj(config)
 
         logger.info("Starting syncing recurly")
-        for stream in catalog.streams:
-            if stream.name not in client.ENTITY_MAP:
+        for configured_stream in catalog.streams:
+            # TODO handle incremental syncs
+            stream = configured_stream.stream
+            if stream.name not in client.ENTITIES:
                 logger.warn(f"Stream '{stream}' not found in the recognized entities")
                 continue
             for record in self._read_record(client=client, stream=stream.name):
