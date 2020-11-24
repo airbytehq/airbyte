@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useField } from "formik";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import LabeledInput from "../../LabeledInput";
 import LabeledDropDown from "../../LabeledDropDown";
@@ -15,7 +15,7 @@ type IProps = {
 const PropertyField: React.FC<IProps> = ({ property }) => {
   const formatMessage = useIntl().formatMessage;
   const { fieldName, fieldKey } = property;
-  const [field, , form] = useField(fieldName);
+  const [field, meta, form] = useField(fieldName);
 
   const defaultLabel = formatMessage({
     id: `form.${fieldKey}`,
@@ -43,7 +43,26 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
       break;
   }
 
-  // const displayError = !!error && touched;
+  const displayError = !!meta.error && meta.touched;
+
+  const constructMessage = useMemo(() => {
+    const errorMessage =
+      displayError && meta.error === "form.pattern.error" ? (
+        <FormattedMessage
+          id={meta.error}
+          values={{ pattern: property.pattern }}
+        />
+      ) : null;
+
+    const message = property.description ? (
+      <TextWithHTML text={property.description} />
+    ) : null;
+    return (
+      <>
+        {message} {errorMessage}
+      </>
+    );
+  }, [displayError, meta.error, property.description, property.pattern]);
 
   if (property.type === "boolean") {
     return (
@@ -59,13 +78,9 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
     return (
       <LabeledDropDown
         {...field}
-        // error={displayError}
+        error={displayError}
         label={label}
-        message={
-          property.description ? (
-            <TextWithHTML text={property.description} />
-          ) : null
-        }
+        message={constructMessage}
         placeholder={placeholder}
         filterPlaceholder={formatMessage({
           id: "form.searchName"
@@ -82,14 +97,10 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
     return (
       <LabeledInput
         {...field}
-        // error={displayError}
+        error={displayError}
         autoComplete="off"
         label={label}
-        message={
-          property.description ? (
-            <TextWithHTML text={property.description} />
-          ) : null
-        }
+        message={constructMessage}
         placeholder={placeholder}
         type={property.type === "integer" ? "number" : "text"}
         value={field.value || property.default || ""}
