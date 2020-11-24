@@ -22,7 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import requests
+import json
+import pkgutil
+
 from airbyte_protocol import AirbyteStream
 from mailchimp3 import MailChimp
 from mailchimp3.mailchimpclient import MailChimpError
@@ -31,27 +33,11 @@ from .models import HealthCheckError
 
 
 class Client:
-    API_MAILCHIMP_URL = "https://api.mailchimp.com/schema/3.0/Definitions/{}/Response.json"
     PAGINATION = 100
 
     def __init__(self, username: str, apikey: str):
         self._client = MailChimp(mc_api=apikey, mc_user=username)
         self._entities = ["Lists", "Campaigns"]
-
-        """ TODO:
-        Authorized Apps
-        Automations
-        Campaign Folders
-        Chimp Chatter Activity
-        Connected Sites
-        Conversations
-        E-Commerce Stores
-        Facebook Ads
-        Files
-        Landing Pages
-        Ping
-        Reports
-        """
 
     def health_check(self):
         try:
@@ -62,9 +48,9 @@ class Client:
 
     def get_streams(self):
         streams = []
-        for entity in self._entities:
-            json_schema = requests.get(self.API_MAILCHIMP_URL.format(entity)).json()
-            streams.append(AirbyteStream(name=entity, json_schema=json_schema))
+        for schema in self._entities:
+            raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{schema}.json"))
+            streams.append(AirbyteStream(name=schema, json_schema=raw_schema))
         return streams
 
     def lists(self):

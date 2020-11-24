@@ -25,7 +25,7 @@ If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 python main_dev.py spec
 python main_dev.py check --config secrets/config.json
 python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/catalog.json
+python main_dev.py read --config secrets/config.json --catalog integration_tests/catalog.json
 ```
 
 ### Unit Tests
@@ -41,7 +41,7 @@ pytest unit_tests
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev read --config /secrets/config.json --catalog /sample_files/catalog.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-mailchimp/sample_files:/sample_files airbyte/source-mailchimp:dev read --config /secrets/config.json --catalog /integration_tests/catalog.json
 ```
 
 ### Integration Tests 
