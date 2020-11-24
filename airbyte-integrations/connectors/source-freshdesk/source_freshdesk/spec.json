@@ -13,7 +13,7 @@
       },
       "apikey": {
         "type": "string",
-        "description": "API Key, go to profile page to generate this key."
+        "description": "API Key, go to <a href=\"https://support.freshdesk.com/support/solutions/articles/215517\">profile</a>profile page to get this key."
       }
     }
   }
