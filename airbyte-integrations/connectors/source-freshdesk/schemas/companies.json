@@ -41,19 +41,5 @@
     "industry": {
       "type": ["string", "null"]
     }
-  },
-  "required": [
-    "account_tier",
-    "created_at",
-    "custom_fields",
-    "description",
-    "domains",
-    "health_score",
-    "id",
-    "industry",
-    "name",
-    "note",
-    "renewal_date",
-    "updated_at"
-  ]
+  }
 }

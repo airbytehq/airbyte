@@ -37,22 +37,8 @@
           "default": {
             "type": "boolean"
           }
-        },
-        "required": [
-          "accepted_ratings",
-          "default",
-          "id",
-          "label"
-        ]
+        }
       }
     }
-  },
-  "required": [
-    "active",
-    "created_at",
-    "id",
-    "questions",
-    "title",
-    "updated_at"
-  ]
+  }
 }

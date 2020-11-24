@@ -21,10 +21,16 @@
       "type": "boolean"
     },
     "email_config_id": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "group_id": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "priority": {
       "type": "integer"
@@ -39,7 +45,10 @@
       "type": "integer"
     },
     "company_id": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "status": {
       "type": "integer"
@@ -48,14 +57,25 @@
       "type": "string"
     },
     "association_type": {
-      "type": ["string", "integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
-    // TODO
     "to_emails": {
-      "type": "null"
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
     },
     "product_id": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "id": {
       "type": "integer"
@@ -82,49 +102,22 @@
       "type": "string"
     },
     "associated_tickets_count": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "tags": {
       "type": "array"
     },
-    // TODO
     "nr_due_by": {
-      "type": "null"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "nr_escalated": {
       "type": "boolean"
     }
-  },
-  "required": [
-    "associated_tickets_count",
-    "association_type",
-    "cc_emails",
-    "company_id",
-    "created_at",
-    "custom_fields",
-    "due_by",
-    "email_config_id",
-    "fr_due_by",
-    "fr_escalated",
-    "fwd_emails",
-    "group_id",
-    "id",
-    "is_escalated",
-    "nr_due_by",
-    "nr_escalated",
-    "priority",
-    "product_id",
-    "reply_cc_emails",
-    "requester_id",
-    "responder_id",
-    "source",
-    "spam",
-    "status",
-    "subject",
-    "tags",
-    "ticket_cc_emails",
-    "to_emails",
-    "type",
-    "updated_at"
-  ]
+  }
 }

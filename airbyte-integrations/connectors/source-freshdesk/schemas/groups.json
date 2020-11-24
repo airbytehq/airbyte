@@ -11,13 +11,11 @@
     "description": {
       "type": "string"
     },
-    // TODO
     "escalate_to": {
-      "type": "null"
+      "type": ["integer", "null"],
     },
-    // TODO
     "unassigned_for": {
-      "type": "null"
+      "type": ["string", "null"],
     },
     "business_hour_id": {
       "type": ["integer", "null"]
@@ -34,17 +32,5 @@
     "auto_ticket_assign": {
       "type": "boolean"
     }
-  },
-  "required": [
-    "auto_ticket_assign",
-    "business_hour_id",
-    "created_at",
-    "description",
-    "escalate_to",
-    "group_type",
-    "id",
-    "name",
-    "unassigned_for",
-    "updated_at"
-  ]
+  }
 }

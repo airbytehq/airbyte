@@ -25,10 +25,7 @@
           "id": {
             "type": "integer"
           }
-        },
-        "required": [
-          "id"
-        ]
+        }
       }
     },
     "match_type": {
@@ -54,24 +51,8 @@
               "type": "string"
             }
           }
-        },
-        "required": [
-          "field_name",
-          "operator",
-          "resource_type",
-          "value"
-        ]
+        }
       }
     }
-  },
-  "required": [
-    "agents",
-    "conditions",
-    "created_at",
-    "id",
-    "match_type",
-    "name",
-    "rank",
-    "updated_at"
-  ]
+  }
 }

@@ -68,33 +68,7 @@
         "updated_at": {
           "type": "string"
         }
-      },
-      "required": [
-        "active",
-        "created_at",
-        "email",
-        "job_title",
-        "language",
-        "last_login_at",
-        "mobile",
-        "name",
-        "phone",
-        "time_zone",
-        "updated_at"
-      ]
+      }
     }
-  },
-  "required": [
-    "available",
-    "available_since",
-    "contact",
-    "created_at",
-    "id",
-    "last_active_at",
-    "occasional",
-    "signature",
-    "ticket_scope",
-    "type",
-    "updated_at"
-  ]
+  }
 }

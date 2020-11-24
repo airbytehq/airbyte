@@ -38,19 +38,5 @@
     "updated_at": {
       "type": "string"
     }
-  },
-  "required": [
-    "agent_id",
-    "billable",
-    "company_id",
-    "created_at",
-    "executed_at",
-    "id",
-    "note",
-    "start_time",
-    "ticket_id",
-    "time_spent",
-    "timer_running",
-    "updated_at"
-  ]
+  }
 }

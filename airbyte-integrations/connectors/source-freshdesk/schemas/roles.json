@@ -20,13 +20,5 @@
     "updated_at": {
       "type": "string"
     }
-  },
-  "required": [
-    "created_at",
-    "default",
-    "description",
-    "id",
-    "name",
-    "updated_at"
-  ]
+  }
 }
