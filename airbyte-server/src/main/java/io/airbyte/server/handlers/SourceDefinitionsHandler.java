@@ -32,6 +32,7 @@ import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.cache.SpecCache;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -51,15 +52,24 @@ public class SourceDefinitionsHandler {
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
+  private final SpecCache specCache;
 
-  public SourceDefinitionsHandler(final ConfigRepository configRepository, DockerImageValidator imageValidator) {
-    this(configRepository, imageValidator, UUID::randomUUID);
+  public SourceDefinitionsHandler(
+                                  final ConfigRepository configRepository,
+                                  final DockerImageValidator imageValidator,
+                                  final SpecCache specCache) {
+    this(configRepository, imageValidator, UUID::randomUUID, specCache);
   }
 
-  public SourceDefinitionsHandler(final ConfigRepository configRepository, DockerImageValidator imageValidator, Supplier<UUID> uuidSupplier) {
+  public SourceDefinitionsHandler(
+                                  final ConfigRepository configRepository,
+                                  final DockerImageValidator imageValidator,
+                                  final Supplier<UUID> uuidSupplier,
+                                  final SpecCache specCache) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.imageValidator = imageValidator;
+    this.specCache = specCache;
   }
 
   public SourceDefinitionReadList listSourceDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -104,6 +114,8 @@ public class SourceDefinitionsHandler {
         .withName(currentSourceDefinition.getName());
 
     configRepository.writeStandardSource(newSource);
+    // we want to re-fetch the spec for updated definitions.
+    specCache.evict(currentSourceDefinition.getDockerRepository() + ":" + sourceDefinitionUpdate.getDockerImageTag());
     return buildSourceDefinitionRead(newSource);
   }
 
