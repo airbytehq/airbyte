@@ -21,9 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Type
+from typing import Type, Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
+from airbyte_protocol import (
+    AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage,
+    ConfiguredAirbyteCatalog, Status
+)
 
 from .logger import AirbyteLogger
 from .client import BaseClient
@@ -64,3 +67,17 @@ class BaseSource(Source):
             )
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
+    def read(
+            self, logger: AirbyteLogger, config_container: ConfigContainer,
+            catalog_path, state=None
+    ) -> Generator[AirbyteMessage, None, None]:
+        client = self._get_client(config_container)
+
+        config = self.read_config(catalog_path)
+        catalog = ConfiguredAirbyteCatalog.parse_obj(config)
+
+        logger.info(f"Starting syncing {self.__class__.__name__}")
+        for configured_stream in catalog.streams:
+            yield from client.read_stream(configured_stream.stream)
+        logger.info(f"Finished syncing {self.__class__.__name__}")

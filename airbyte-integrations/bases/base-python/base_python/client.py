@@ -73,7 +73,7 @@ class BaseClient(ABC):
     def read_stream(self, stream):
         """ Yield records from stream
         """
-        method = self._stream_methods.get(stream)
+        method = self._stream_methods.get(stream.name)
         if not method:
             raise ValueError(
                 f"Client does not know how to read stream `{stream.name}`")
