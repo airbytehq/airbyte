@@ -67,7 +67,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(env, new ExtendedSQLNaming().getRawTableName(getConfig(), streamName))
+    return retrieveRecordsFromTable(env, new ExtendedSQLNaming().getRawTableName(streamName))
         .stream()
         .map(j -> Jsons.deserialize(j.get(COLUMN_NAME).asText()))
         .collect(Collectors.toList());
@@ -86,7 +86,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws SQLException, InterruptedException {
     return SnowflakeDatabase.executeSync(
         SnowflakeDatabase.getConnectionFactory(getConfig()),
-        String.format("SELECT * FROM \"%s\" ORDER BY \"emitted_at\" ASC;", tableName),
+        String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", tableName),
         false,
         rs -> {
           try {

@@ -147,9 +147,9 @@ public class PostgresDestination implements Destination {
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = getNamingResolver().getRawSchemaName(config, getConfigSchemaName(config), streamName);
-      final String tableName = getNamingResolver().getRawTableName(config, streamName);
-      final String tmpTableName = getNamingResolver().getTmpTableName(config, streamName);
+      final String schemaName = getNamingResolver().getIdentifier(getConfigSchemaName(config));
+      final String tableName = getNamingResolver().getRawTableName(streamName);
+      final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
       if (!schemaSet.contains(schemaName)) {
         database.query(ctx -> ctx.execute(createSchemaQuery(schemaName)));
         schemaSet.add(schemaName);

@@ -75,7 +75,7 @@ public class PostgresIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(new ExtendedSQLNaming().getRawTableName(getConfig(), streamName))
+    return retrieveRecordsFromTable(new ExtendedSQLNaming().getRawTableName(streamName))
         .stream()
         .map(r -> Jsons.deserialize(r.get(RAW_DATA_COLUMN).asText()))
         .collect(Collectors.toList());
@@ -101,7 +101,7 @@ public class PostgresIntegrationTest extends TestDestination {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
             ctx -> ctx
-                .fetch(String.format("SELECT * FROM \"%s\" ORDER BY emitted_at ASC;", tableName))
+                .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", tableName))
                 .stream()
                 .map(r -> r.formatJSON(JSON_FORMAT))
                 .map(Jsons::deserialize)

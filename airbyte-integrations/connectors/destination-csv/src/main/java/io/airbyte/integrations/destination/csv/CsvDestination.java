@@ -107,8 +107,8 @@ public class CsvDestination implements Destination {
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String tableName = getNamingResolver().getRawTableName(config, streamName);
-      final String tmpTableName = getNamingResolver().getTmpTableName(config, streamName);
+      final String tableName = getNamingResolver().getRawTableName(streamName);
+      final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
       final FileWriter fileWriter = new FileWriter(tmpPath.toFile());

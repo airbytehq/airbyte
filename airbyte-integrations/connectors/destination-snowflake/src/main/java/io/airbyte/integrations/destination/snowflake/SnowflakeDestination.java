@@ -121,9 +121,9 @@ public class SnowflakeDestination implements Destination {
     // we don't use temporary/transient since we want to control the lifecycle
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = getNamingResolver().getRawSchemaName(config, config.get("schema").asText(), streamName);
-      final String tableName = getNamingResolver().getRawTableName(config, streamName);
-      final String tmpTableName = getNamingResolver().getTmpTableName(config, streamName);
+      final String schemaName = getNamingResolver().getIdentifier(config.get("schema").asText());
+      final String tableName = getNamingResolver().getRawTableName(streamName);
+      final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
       if (!schemaSet.contains(schemaName)) {
         final String query = String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName);
 

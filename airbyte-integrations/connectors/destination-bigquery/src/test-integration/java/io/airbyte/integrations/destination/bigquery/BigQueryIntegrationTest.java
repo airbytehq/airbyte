@@ -101,7 +101,7 @@ public class BigQueryIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(env, new StandardSQLNaming().getRawTableName(getConfig(), streamName))
+    return retrieveRecordsFromTable(env, new StandardSQLNaming().getRawTableName(streamName))
         .stream()
         .map(node -> node.get("data").asText())
         .map(Jsons::deserialize)

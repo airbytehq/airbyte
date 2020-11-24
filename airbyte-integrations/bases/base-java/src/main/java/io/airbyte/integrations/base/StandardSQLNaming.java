@@ -24,7 +24,6 @@
 
 package io.airbyte.integrations.base;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import java.text.Normalizer;
 import java.time.Instant;
 
@@ -33,58 +32,18 @@ public class StandardSQLNaming implements SQLNamingResolvable {
   public static String SCHEMA_FROM_SOURCE = "allowSchemaFromSource";
 
   @Override
-  public String getRawSchemaName(JsonNode config, String schemaName, String streamName) {
-    final boolean allowsSchemaOverride = getSchemaFromSourceConfig(config);
-    final int schemaIndex = streamName.indexOf(".");
-    if (allowsSchemaOverride && schemaIndex > -1) {
-      return convertStreamName(extractSchemaPart(streamName));
-    } else {
-      return convertStreamName(schemaName);
-    }
-  }
-
-  protected boolean getSchemaFromSourceConfig(JsonNode config) {
-    if (config.has(SCHEMA_FROM_SOURCE)) {
-      return config.get(SCHEMA_FROM_SOURCE).asBoolean();
-    } else {
-      return true;
-    }
+  public String getIdentifier(String name) {
+    return convertStreamName(name);
   }
 
   @Override
-  public String getRawTableName(JsonNode config, String streamName) {
-    if (getSchemaFromSourceConfig(config)) {
-      return convertStreamName(removeSchemaPart(streamName) + "_raw");
-    } else {
-      return convertStreamName(streamName + "_raw");
-    }
+  public String getRawTableName(String streamName) {
+    return convertStreamName(streamName + "_raw");
   }
 
   @Override
-  public String getTmpTableName(JsonNode config, String streamName) {
-    if (getSchemaFromSourceConfig(config)) {
-      return convertStreamName(removeSchemaPart(streamName) + "_" + Instant.now().toEpochMilli());
-    } else {
-      return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
-    }
-  }
-
-  static private String extractSchemaPart(String streamName) {
-    final int schemaIndex = streamName.indexOf(".");
-    if (schemaIndex > -1) {
-      return streamName.substring(0, schemaIndex);
-    } else {
-      return streamName;
-    }
-  }
-
-  static private String removeSchemaPart(String streamName) {
-    final int schemaIndex = streamName.indexOf(".");
-    if (schemaIndex > -1) {
-      return streamName.substring(schemaIndex + 1);
-    } else {
-      return streamName;
-    }
+  public String getTmpTableName(String streamName) {
+    return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
   }
 
   protected String convertStreamName(String input) {
