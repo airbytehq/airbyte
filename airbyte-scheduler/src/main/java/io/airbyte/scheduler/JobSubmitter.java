@@ -98,11 +98,11 @@ public class JobSubmitter implements Runnable {
             persistence.writeOutput(job.getId(), output.getOutput().get());
           }
           persistence.updateStatus(job.getId(), getStatus(output));
-          trackCompletion(job, getStatus(output));
+          trackCompletion(job, io.airbyte.workers.JobStatus.SUCCEEDED);
         })
         .setOnException(noop -> {
           persistence.updateStatus(job.getId(), JobStatus.FAILED);
-          trackCompletion(job, JobStatus.FAILED);
+          trackCompletion(job, io.airbyte.workers.JobStatus.FAILED);
         })
         .setOnFinish(MDC::clear)
         .build());
@@ -112,7 +112,7 @@ public class JobSubmitter implements Runnable {
     track("job", generateMetadata(job).build());
   }
 
-  private void trackCompletion(Job job, JobStatus status) {
+  private void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
     final Builder<String, Object> metadataBuilder = generateMetadata(job);
     metadataBuilder.put("status", status);
     track("job-completion", metadataBuilder.build());
