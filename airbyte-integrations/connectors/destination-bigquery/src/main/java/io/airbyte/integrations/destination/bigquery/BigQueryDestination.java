@@ -112,6 +112,7 @@ public class BigQueryDestination implements Destination {
           .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
           .setUseLegacySql(false)
           .build();
+      // TODO create dataset if not exists
 
       final ImmutablePair<Job, String> result = executeQuery(getBigQuery(config), queryConfig);
       if (result.getLeft() != null) {

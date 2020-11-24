@@ -29,7 +29,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.SQLNamingResolvable;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -60,7 +59,7 @@ public class SnowflakeDestination implements Destination {
   private final SQLNamingResolvable namingResolver;
 
   public SnowflakeDestination() {
-    namingResolver = new ExtendedSQLNaming();
+    namingResolver = new SnowflakeSQLNaming();
   }
 
   @Override

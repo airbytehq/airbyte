@@ -22,31 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination.postgres;
 
-public class ExtendedSQLNaming extends StandardSQLNaming {
+import io.airbyte.integrations.base.ExtendedSQLNaming;
+
+public class PostgresSQLNaming extends ExtendedSQLNaming {
 
   @Override
-  protected String convertStreamName(String input) {
-    if (useExtendedIdentifiers(input)) {
-      return "\"" + input + "\"";
-    } else {
-      return applyDefaultCase(input);
-    }
-  }
-
   protected String applyDefaultCase(String input) {
-    return input;
-  }
-
-  protected boolean useExtendedIdentifiers(String input) {
-    boolean result = false;
-    if (input.matches("^[^\\p{Alpha}_]")) {
-      result = true;
-    } else if (input.matches("[^\\p{ASCII}]")) {
-      result = true;
-    }
-    return result;
+    return input.toLowerCase();
   }
 
 }

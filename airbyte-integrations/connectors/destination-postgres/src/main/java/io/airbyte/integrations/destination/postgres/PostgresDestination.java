@@ -38,7 +38,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.SQLNamingResolvable;
@@ -82,7 +81,7 @@ public class PostgresDestination implements Destination {
   private final SQLNamingResolvable namingResolver;
 
   public PostgresDestination() {
-    namingResolver = new ExtendedSQLNaming();
+    namingResolver = new PostgresSQLNaming();
   }
 
   @Override

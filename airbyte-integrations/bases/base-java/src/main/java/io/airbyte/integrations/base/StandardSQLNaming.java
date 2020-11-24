@@ -25,40 +25,77 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.text.Normalizer;
 import java.time.Instant;
 
 public class StandardSQLNaming implements SQLNamingResolvable {
 
+  public static String SCHEMA_FROM_SOURCE = "allowSchemaFromSource";
+
   @Override
   public String getRawSchemaName(JsonNode config, String schemaName, String streamName) {
-    // FIXME based on config, allow schema override from stream name or not
-    extractSchemaPart(streamName);
-    return schemaName;
+    final boolean allowsSchemaOverride = getSchemaFromSourceConfig(config);
+    final int schemaIndex = streamName.indexOf(".");
+    if (allowsSchemaOverride && schemaIndex > -1) {
+      return convertStreamName(extractSchemaPart(streamName));
+    } else {
+      return convertStreamName(schemaName);
+    }
+  }
+
+  protected boolean getSchemaFromSourceConfig(JsonNode config) {
+    if (config.has(SCHEMA_FROM_SOURCE)) {
+      return config.get(SCHEMA_FROM_SOURCE).asBoolean();
+    } else {
+      return true;
+    }
   }
 
   @Override
   public String getRawTableName(JsonNode config, String streamName) {
-    return convertStreamName(removeSchemaPart(streamName)) + "_raw";
+    if (getSchemaFromSourceConfig(config)) {
+      return convertStreamName(removeSchemaPart(streamName) + "_raw");
+    } else {
+      return convertStreamName(streamName + "_raw");
+    }
   }
 
   @Override
   public String getTmpTableName(JsonNode config, String streamName) {
-    return convertStreamName(removeSchemaPart(streamName)) + "_" + Instant.now().toEpochMilli();
+    if (getSchemaFromSourceConfig(config)) {
+      return convertStreamName(removeSchemaPart(streamName) + "_" + Instant.now().toEpochMilli());
+    } else {
+      return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
+    }
   }
 
-  protected String extractSchemaPart(String streamName) {
-    // FIXME return substring before '.'
-    return streamName;
+  static private String extractSchemaPart(String streamName) {
+    final int schemaIndex = streamName.indexOf(".");
+    if (schemaIndex > -1) {
+      return streamName.substring(0, schemaIndex);
+    } else {
+      return streamName;
+    }
   }
 
-  protected String removeSchemaPart(String streamName) {
-    // FIXME remove substring before '.'
-    return streamName;
+  static private String removeSchemaPart(String streamName) {
+    final int schemaIndex = streamName.indexOf(".");
+    if (schemaIndex > -1) {
+      return streamName.substring(schemaIndex + 1);
+    } else {
+      return streamName;
+    }
   }
 
-  protected String convertStreamName(String streamName) {
-    // FIXME replace invalid characters by '_'
-    return streamName;
+  protected String convertStreamName(String input) {
+    final String value = Normalizer.normalize(input, Normalizer.Form.NFD);
+    return value
+        .replaceAll("\\s+", "_")
+        .replaceAll(getNonValidCharacterPattern(), "_");
+  }
+
+  protected String getNonValidCharacterPattern() {
+    return "[^\\p{ASCII}]";
   }
 
 }

@@ -238,11 +238,14 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    Set<JsonNode> usersActual = recordRetriever(destination.getNamingResolver().getRawTableName(config, "new_schema." + USERS_STREAM_NAME));
+    final String schemaName = destination.getNamingResolver().getRawSchemaName(config, "new_schema", "new_schema." + USERS_STREAM_NAME);
+    String streamName = schemaName + "." + destination.getNamingResolver().getRawTableName(config, "new_schema." + USERS_STREAM_NAME);
+    Set<JsonNode> usersActual = recordRetriever(streamName);
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(destination.getNamingResolver().getRawTableName(config, "new_schema." + TASKS_STREAM_NAME));
+    streamName = schemaName + "." + destination.getNamingResolver().getRawTableName(config, "new_schema." + TASKS_STREAM_NAME);
+    Set<JsonNode> tasksActual = recordRetriever(streamName);
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
