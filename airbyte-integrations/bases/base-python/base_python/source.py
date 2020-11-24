@@ -25,7 +25,7 @@ from typing import Type
 
 from airbyte_protocol import (
     AirbyteLogger, AirbyteCatalog, ConfigContainer,
-    AirbyteConnectionStatus, AirbyteRecordMessage, Status
+    AirbyteConnectionStatus, Status
 )
 
 from .client import BaseClient
