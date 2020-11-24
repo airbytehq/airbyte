@@ -69,7 +69,7 @@ public class JobSubmitter implements Runnable {
       Optional<Job> oldestPendingJob = persistence.getOldestPendingJob();
 
       oldestPendingJob.ifPresent(job -> {
-        track(job, configRepository);
+        trackSubmission(job);
         submitJob(job);
       });
 
@@ -96,50 +96,69 @@ public class JobSubmitter implements Runnable {
             persistence.writeOutput(job.getId(), output.getOutput().get());
           }
           persistence.updateStatus(job.getId(), getStatus(output));
+          trackCompletion(job, getStatus(output));
         })
-        .setOnException(noop -> persistence.updateStatus(job.getId(), JobStatus.FAILED))
+        .setOnException(noop -> {
+          persistence.updateStatus(job.getId(), JobStatus.FAILED);
+          trackCompletion(job, JobStatus.FAILED);
+        })
         .setOnFinish(MDC::clear)
         .build());
   }
 
-  private void track(Job job, ConfigRepository configRepository) {
+  private void trackSubmission(Job job) {
     try {
-      final Builder<String, Object> metadata = ImmutableMap.builder();
-      switch (job.getConfig().getConfigType()) {
-        case CHECK_CONNECTION_SOURCE, DISCOVER_SCHEMA -> {
-          final StandardSourceDefinition sourceDefinition = configRepository
-              .getSourceDefinitionFromSource(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
-
-          metadata.put("source_definition_name", sourceDefinition.getName());
-          metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
-        }
-        case CHECK_CONNECTION_DESTINATION -> {
-          final StandardDestinationDefinition destinationDefinition = configRepository
-              .getDestinationDefinitionFromDestination(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
-
-          metadata.put("destination_definition_name", destinationDefinition.getName());
-          metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
-        }
-        case GET_SPEC -> {
-          // no op because this will be noisy as heck.
-        }
-        case SYNC -> {
-          final StandardSourceDefinition sourceDefinition = configRepository
-              .getSourceDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
-          final StandardDestinationDefinition destinationDefinition = configRepository
-              .getDestinationDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
-
-          metadata.put("source_definition_name", sourceDefinition.getName());
-          metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
-          metadata.put("destination_definition_name", destinationDefinition.getName());
-          metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
-        }
-      }
-
-      TrackingClientSingleton.get().track("job", metadata.build());
+      TrackingClientSingleton.get().track("job", generateMetadata(job).build());
     } catch (Exception e) {
       LOGGER.error("failed while reporting usage.");
     }
+  }
+
+  private void trackCompletion(Job job, JobStatus status) {
+    final Builder<String, Object> metadataBuilder = generateMetadata(job);
+    metadataBuilder.put("status", status);
+    try {
+      TrackingClientSingleton.get().track("job-completion", metadataBuilder.build());
+    } catch (Exception e) {
+      LOGGER.error("failed while reporting usage.");
+    }
+  }
+
+  private ImmutableMap.Builder<String, Object> generateMetadata(Job job) {
+    final Builder<String, Object> metadata = ImmutableMap.builder();
+    metadata.put("job_type", job.getConfig().getConfigType());
+
+    switch (job.getConfig().getConfigType()) {
+      case CHECK_CONNECTION_SOURCE, DISCOVER_SCHEMA -> {
+        final StandardSourceDefinition sourceDefinition = configRepository
+            .getSourceDefinitionFromSource(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+
+        metadata.put("source_definition_name", sourceDefinition.getName());
+        metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
+      }
+      case CHECK_CONNECTION_DESTINATION -> {
+        final StandardDestinationDefinition destinationDefinition = configRepository
+            .getDestinationDefinitionFromDestination(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+
+        metadata.put("destination_definition_name", destinationDefinition.getName());
+        metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+      }
+      case GET_SPEC -> {
+        // no op because this will be noisy as heck.
+      }
+      case SYNC -> {
+        final StandardSourceDefinition sourceDefinition = configRepository
+            .getSourceDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+        final StandardDestinationDefinition destinationDefinition = configRepository
+            .getDestinationDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+
+        metadata.put("source_definition_name", sourceDefinition.getName());
+        metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
+        metadata.put("destination_definition_name", destinationDefinition.getName());
+        metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+      }
+    }
+    return metadata;
   }
 
   private JobStatus getStatus(OutputAndStatus<?> output) {
