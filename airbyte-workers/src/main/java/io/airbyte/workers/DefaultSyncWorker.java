@@ -122,6 +122,8 @@ public class DefaultSyncWorker implements SyncWorker {
         .withStartTime(startTime)
         .withEndTime(System.currentTimeMillis());
 
+    LOGGER.info("sync summary: {}", summary);
+
     final StandardSyncOutput output = new StandardSyncOutput().withStandardSyncSummary(summary);
     messageTracker.getOutputState().ifPresent(capturedState -> {
       final State state = new State()
