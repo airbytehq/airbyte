@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    // TODO
+    "escalate_to": {
+      "type": "null"
+    },
+    // TODO
+    "unassigned_for": {
+      "type": "null"
+    },
+    "business_hour_id": {
+      "type": ["integer", "null"]
+    },
+    "group_type": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "auto_ticket_assign": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "auto_ticket_assign",
+    "business_hour_id",
+    "created_at",
+    "description",
+    "escalate_to",
+    "group_type",
+    "id",
+    "name",
+    "unassigned_for",
+    "updated_at"
+  ]
+}

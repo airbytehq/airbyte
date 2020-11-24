@@ -22,22 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
-from .logger import AirbyteLogger
-from .client import BaseClient
-from .source import BaseSource
+import json
+import pkgutil
 
-# Must be the last one because the way we load the connector module creates a circular
-# dependency and models might not have been loaded yet
-from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
+from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from base_python_test import StandardSourceTestIface
 
-__all__ = [
-    "BaseClient",
-    "BaseSource",
-    "AirbyteSpec",
-    "ConfigContainer",
-    "Integration",
-    "Source",
-    "Destination",
-    "AirbyteLogger",
-]
+
+class SourceFreshdeskStandardTest(StandardSourceTestIface):
+    def get_spec(self) -> ConnectorSpecification:
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
+        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
+
+    def get_config(self) -> object:
+        return json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json"))
+
+    def get_catalog(self) -> AirbyteCatalog:
+        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
+        return AirbyteCatalog.parse_obj(json.loads(raw_catalog))
+
+    def setup(self) -> None:
+        pass
+
+    def teardown(self) -> None:
+        pass

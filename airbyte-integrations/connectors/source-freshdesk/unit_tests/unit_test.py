@@ -22,22 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
-from .logger import AirbyteLogger
-from .client import BaseClient
-from .source import BaseSource
+from source_freshdesk.client import Client
+import pytest
 
-# Must be the last one because the way we load the connector module creates a circular
-# dependency and models might not have been loaded yet
-from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
 
-__all__ = [
-    "BaseClient",
-    "BaseSource",
-    "AirbyteSpec",
-    "ConfigContainer",
-    "Integration",
-    "Source",
-    "Destination",
-    "AirbyteLogger",
-]
+def test_client_wrong_credentials():
+    expected_error = 'The API key that you have entered is not valid'
+    with pytest.raises(ValueError, match=expected_error):
+        Client(domain='unknown_user', apikey='wrong_key')

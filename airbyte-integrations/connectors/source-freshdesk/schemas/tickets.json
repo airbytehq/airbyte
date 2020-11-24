@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "cc_emails": {
+      "type": "array"
+    },
+    "fwd_emails": {
+      "type": "array"
+    },
+    "reply_cc_emails": {
+      "type": "array"
+    },
+    "ticket_cc_emails": {
+      "type": "array"
+    },
+    "fr_escalated": {
+      "type": "boolean"
+    },
+    "spam": {
+      "type": "boolean"
+    },
+    "email_config_id": {
+      "type": ["integer", "null"]
+    },
+    "group_id": {
+      "type": ["integer", "null"]
+    },
+    "priority": {
+      "type": "integer"
+    },
+    "requester_id": {
+      "type": "integer"
+    },
+    "responder_id": {
+      "type": "integer"
+    },
+    "source": {
+      "type": "integer"
+    },
+    "company_id": {
+      "type": ["integer", "null"]
+    },
+    "status": {
+      "type": "integer"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "association_type": {
+      "type": ["string", "integer", "null"]
+    },
+    // TODO
+    "to_emails": {
+      "type": "null"
+    },
+    "product_id": {
+      "type": ["integer", "null"]
+    },
+    "id": {
+      "type": "integer"
+    },
+    "type": {
+      "type": "string"
+    },
+    "due_by": {
+      "type": "string"
+    },
+    "fr_due_by": {
+      "type": "string"
+    },
+    "is_escalated": {
+      "type": "boolean"
+    },
+    "custom_fields": {
+      "type": "object"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "associated_tickets_count": {
+      "type": ["integer", "null"]
+    },
+    "tags": {
+      "type": "array"
+    },
+    // TODO
+    "nr_due_by": {
+      "type": "null"
+    },
+    "nr_escalated": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "associated_tickets_count",
+    "association_type",
+    "cc_emails",
+    "company_id",
+    "created_at",
+    "custom_fields",
+    "due_by",
+    "email_config_id",
+    "fr_due_by",
+    "fr_escalated",
+    "fwd_emails",
+    "group_id",
+    "id",
+    "is_escalated",
+    "nr_due_by",
+    "nr_escalated",
+    "priority",
+    "product_id",
+    "reply_cc_emails",
+    "requester_id",
+    "responder_id",
+    "source",
+    "spam",
+    "status",
+    "subject",
+    "tags",
+    "ticket_cc_emails",
+    "to_emails",
+    "type",
+    "updated_at"
+  ]
+}

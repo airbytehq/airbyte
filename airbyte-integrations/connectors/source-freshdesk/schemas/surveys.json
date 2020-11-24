@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "title": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "accepted_ratings": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "default": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "accepted_ratings",
+          "default",
+          "id",
+          "label"
+        ]
+      }
+    }
+  },
+  "required": [
+    "active",
+    "created_at",
+    "id",
+    "questions",
+    "title",
+    "updated_at"
+  ]
+}

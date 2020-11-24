@@ -22,22 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
-from .logger import AirbyteLogger
-from .client import BaseClient
-from .source import BaseSource
+from setuptools import find_packages, setup
 
-# Must be the last one because the way we load the connector module creates a circular
-# dependency and models might not have been loaded yet
-from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
-
-__all__ = [
-    "BaseClient",
-    "BaseSource",
-    "AirbyteSpec",
-    "ConfigContainer",
-    "Integration",
-    "Source",
-    "Destination",
-    "AirbyteLogger",
-]
+setup(
+    name="source_freshdesk",
+    description="Source implementation for Freshdesk.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=[
+        "airbyte-protocol",
+        "base-python",
+        "python_freshdesk==1.3.7",
+    ],
+    package_data={"": ["*.json", "schemas/*.json"]},
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
+    extras_require={
+        "main": [],
+        "tests": ["airbyte_python_test", "pytest"],
+    },
+)
