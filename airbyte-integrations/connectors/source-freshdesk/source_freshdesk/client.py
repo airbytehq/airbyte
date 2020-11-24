@@ -52,9 +52,8 @@ class Client(BaseClient):
         'time_entries'
     ]
 
-    def __init__(self, domain='newaccount1603334233301.freshdesk.com',
-                 api_key='LulyQWftBkRtJzuPjdt', version=None):
-        self._client = API(domain, api_key, version)
+    def __init__(self, domain, apikey):
+        self._client = API(domain=domain, api_key=apikey)
         super().__init__()
 
     def list(self, name, **kwargs):
@@ -68,4 +67,3 @@ class Client(BaseClient):
             entity: partial(self.list, name=entity)
             for entity in self.ENTITIES
         }
-

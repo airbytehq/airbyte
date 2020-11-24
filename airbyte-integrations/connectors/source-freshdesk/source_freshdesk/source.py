@@ -27,5 +27,5 @@ from base_python import BaseSource
 from .client import Client
 
 
-class FreshdeskSource(BaseSource):
+class SourceFreshdesk(BaseSource):
     client_class = Client
