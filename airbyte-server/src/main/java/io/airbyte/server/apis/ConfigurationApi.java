@@ -106,10 +106,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WebBackendSourceHandler webBackendSourceHandler;
   private final WebBackendDestinationHandler webBackendDestinationHandler;
 
-  public ConfigurationApi(
-                          final ConfigRepository configRepository,
-                          final SchedulerPersistence schedulerPersistence,
-                          final SpecCache specCache) {
+  public ConfigurationApi(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence, final SpecCache specCache) {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence, specCache);
     workspacesHandler = new WorkspacesHandler(configRepository);
