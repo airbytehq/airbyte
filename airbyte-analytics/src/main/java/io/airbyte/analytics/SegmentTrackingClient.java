@@ -30,12 +30,14 @@ import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
 public class SegmentTrackingClient implements TrackingClient {
 
   private static final String SEGMENT_WRITE_KEY = "7UDdp5K55CyiGgsauOr2pNNujGvmhaeu";
+  private static final String AIRBYTE_VERSION_KEY = "airbyte_version";
 
   // Analytics is threadsafe.
   private final Analytics analytics;
@@ -56,6 +58,7 @@ public class SegmentTrackingClient implements TrackingClient {
   public void identify() {
     final TrackingIdentity trackingIdentity = identitySupplier.get();
     final ImmutableMap.Builder<String, Object> identityMetadataBuilder = ImmutableMap.<String, Object>builder()
+        .put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion())
         .put("anonymized", trackingIdentity.isAnonymousDataCollection())
         .put("subscribed_newsletter", trackingIdentity.isNews())
         .put("subscribed_security", trackingIdentity.isSecurityUpdates());
@@ -73,9 +76,12 @@ public class SegmentTrackingClient implements TrackingClient {
 
   @Override
   public void track(String action, Map<String, Object> metadata) {
+    final Map<String, Object> mapCopy = new HashMap<>(metadata);
+    final TrackingIdentity trackingIdentity = identitySupplier.get();
+    mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
     analytics.enqueue(TrackMessage.builder(action)
-        .userId(identitySupplier.get().getCustomerId().toString())
-        .properties(metadata));
+        .userId(trackingIdentity.getCustomerId().toString())
+        .properties(mapCopy));
   }
 
 }

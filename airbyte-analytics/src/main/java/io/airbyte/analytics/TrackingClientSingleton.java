@@ -55,8 +55,8 @@ public class TrackingClientSingleton {
     }
   }
 
-  public static void initialize(Configs.TrackingStrategy trackingStrategy, ConfigRepository configRepository) {
-    initialize(createTrackingClient(trackingStrategy, () -> getTrackingIdentity(configRepository)));
+  public static void initialize(Configs.TrackingStrategy trackingStrategy, String airbyteVersion, ConfigRepository configRepository) {
+    initialize(createTrackingClient(trackingStrategy, () -> getTrackingIdentity(configRepository, airbyteVersion)));
   }
 
   // fallback on a logging client with an empty identity.
@@ -65,7 +65,7 @@ public class TrackingClientSingleton {
   }
 
   @VisibleForTesting
-  static TrackingIdentity getTrackingIdentity(ConfigRepository configRepository) {
+  static TrackingIdentity getTrackingIdentity(ConfigRepository configRepository, String airbyteVersion) {
     try {
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
       String email = null;
@@ -73,6 +73,7 @@ public class TrackingClientSingleton {
         email = workspace.getEmail();
       }
       return new TrackingIdentity(
+          airbyteVersion,
           workspace.getCustomerId(),
           email,
           workspace.getAnonymousDataCollection(),
@@ -96,15 +97,11 @@ public class TrackingClientSingleton {
    */
   @VisibleForTesting
   static TrackingClient createTrackingClient(Configs.TrackingStrategy trackingStrategy, Supplier<TrackingIdentity> trackingIdentitySupplier) {
-
-    switch (trackingStrategy) {
-      case SEGMENT:
-        return new SegmentTrackingClient(trackingIdentitySupplier);
-      case LOGGING:
-        return new LoggingTrackingClient(trackingIdentitySupplier);
-      default:
-        throw new RuntimeException("unrecognized tracking strategy");
-    }
+    return switch (trackingStrategy) {
+      case SEGMENT -> new SegmentTrackingClient(trackingIdentitySupplier);
+      case LOGGING -> new LoggingTrackingClient(trackingIdentitySupplier);
+      default -> throw new IllegalStateException("unrecognized tracking strategy");
+    };
   }
 
 }
