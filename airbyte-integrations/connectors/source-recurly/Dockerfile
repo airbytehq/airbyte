@@ -1,20 +1,16 @@
-FROM airbyte/integration-base-singer:dev
+FROM airbyte/integration-base-python:dev
 
-RUN apt-get update && apt-get install -y \
-    bash \
-    && rm -rf /var/lib/apt/lists/*
+# Bash is installed for more convenient debugging.
+RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 ENV CODE_PATH="source_recurly"
 ENV AIRBYTE_IMPL_MODULE="source_recurly"
 ENV AIRBYTE_IMPL_PATH="SourceRecurly"
-
-LABEL io.airbyte.version=0.1.0
-LABEL io.airbyte.name=airbyte/source-recurly
 
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
 RUN pip install ".[main]"
 
-WORKDIR /airbyte
-
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-recurly
