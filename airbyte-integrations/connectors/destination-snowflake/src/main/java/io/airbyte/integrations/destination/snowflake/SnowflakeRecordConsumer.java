@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
@@ -39,6 +40,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -105,33 +107,62 @@ public class SnowflakeRecordConsumer extends FailureTrackingConsumer<AirbyteMess
                                         int batchSize,
                                         CloseableQueue<byte[]> writeBuffer,
                                         String tmpTableName) {
-    try (Connection conn = connectionFactory.get()) {
-      conn.setAutoCommit(false);
+    final List<AirbyteRecordMessage> records = accumulateRecordsFromBuffer(writeBuffer, batchSize);
 
-      try (PreparedStatement statement = conn.prepareStatement(
-          String.format("INSERT INTO \"%s\" (\"ab_id\", \"%s\", \"emitted_at\") SELECT ?, parse_json(?), ?", tmpTableName,
-              SnowflakeDestination.COLUMN_NAME))) {
+    LOGGER.info("max size of batch: {}", batchSize);
+    LOGGER.info("actual size of batch: {}", records.size());
 
-        for (int i = 0; i < batchSize; i++) {
-          final byte[] record = writeBuffer.poll();
-          if (record == null) {
-            break;
-          }
-          final AirbyteRecordMessage message = Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteRecordMessage.class);
+    if (records.isEmpty()) {
+      return;
+    }
 
+    try (final Connection conn = connectionFactory.get()) {
+      // Strategy: We want to use PreparedStatement because it handles binding values to the SQL query
+      // (e.g. handling formatting timestamps). A PreparedStatement statement is created by supplying the
+      // full SQL string at creation time. Then subsequently specifying which values are bound to the
+      // string. Thus there will be two loops below.
+      // 1) Loop over records to build the full string.
+      // 2) Loop over the records and bind the appropriate values to the string.
+      final StringBuilder sql = new StringBuilder().append(String.format(
+          "INSERT INTO \"%s\" (\"ab_id\", \"%s\", \"emitted_at\") SELECT column1, parse_json(column2), column3 FROM VALUES\n",
+          tmpTableName,
+          SnowflakeDestination.COLUMN_NAME));
+
+      // first loop: build SQL string.
+      records.forEach(r -> sql.append("(?, ?, ?),\n"));
+      final String s = sql.toString();
+      final String s1 = s.substring(0, s.length() - 2) + ";";
+
+      try (final PreparedStatement statement = conn.prepareStatement(s1)) {
+        // second loop: bind values to the SQL string.
+        int i = 1;
+        for (final AirbyteRecordMessage message : records) {
           // 1-indexed
-          statement.setString(1, UUID.randomUUID().toString());
-          statement.setString(2, Jsons.serialize(message.getData()));
-          statement.setTimestamp(3, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
-          statement.addBatch();
+          statement.setString(i, UUID.randomUUID().toString());
+          statement.setString(i + 1, Jsons.serialize(message.getData()));
+          statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
+          i += 3;
         }
 
-        statement.executeBatch();
-        conn.commit();
+        statement.execute();
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static List<AirbyteRecordMessage> accumulateRecordsFromBuffer(CloseableQueue<byte[]> writeBuffer, int maxRecords) {
+    final List<AirbyteRecordMessage> records = Lists.newArrayList();
+    for (int i = 0; i < maxRecords; i++) {
+      final byte[] record = writeBuffer.poll();
+      if (record == null) {
+        break;
+      }
+      final AirbyteRecordMessage message = Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteRecordMessage.class);
+      records.add(message);
+    }
+
+    return records;
   }
 
   @Override
