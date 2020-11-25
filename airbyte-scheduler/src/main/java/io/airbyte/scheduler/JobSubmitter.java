@@ -140,6 +140,11 @@ public class JobSubmitter implements Runnable {
   }
 
   private void track(Map<String, Object> metadata) {
+    // do not track get spec. it is done frequently and not terribly interesting.
+    if(metadata.get("job_type").equals("GET_SPEC")) {
+      return;
+    }
+
     TrackingClientSingleton.get().track("Connector Jobs", metadata);
   }
 
