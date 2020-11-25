@@ -9,21 +9,25 @@
     "properties": {
       "project_id": {
         "type": "string",
-        "description": "The GCP project ID for the project containing the target BigQuery dataset."
+        "description": "The GCP project ID for the project containing the target BigQuery dataset.",
+        "title": "Dataset ID"
       },
       "dataset_id": {
         "type": "string",
-        "description": "The BigQuery dataset id that will house replicated tables."
+        "description": "The BigQuery dataset id that will house replicated tables.",
+        "title": "Dataset ID"
       },
       "credentials_json": {
         "type": "string",
         "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key.",
+        "title": "Credentials JSON",
         "airbyte_secret": true
       },
       "basic_normalization": {
         "type": "boolean",
         "default": false,
         "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization.md\">basic normalization</a> for more details.",
+        "title": "Basic Normalization",
         "examples": [true, false]
       }
     }

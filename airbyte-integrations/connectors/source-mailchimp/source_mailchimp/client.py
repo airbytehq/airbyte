@@ -30,6 +30,7 @@ from datetime import datetime
 
 from typing import Dict, Generator, Any, DefaultDict
 from airbyte_protocol import AirbyteStream, AirbyteMessage, AirbyteStateMessage, AirbyteRecordMessage, Type
+
 from mailchimp3 import MailChimp
 from mailchimp3.mailchimpclient import MailChimpError
 
@@ -37,7 +38,6 @@ from .models import HealthCheckError
 
 
 class Client:
-    API_MAILCHIMP_URL = "https://api.mailchimp.com/schema/3.0/Definitions/{}/Response.json"
     PAGINATION = 100
     _CAMPAIGNS = "Campaigns"
     _LISTS = "Lists"
@@ -45,21 +45,6 @@ class Client:
 
     def __init__(self, username: str, apikey: str):
         self._client = MailChimp(mc_api=apikey, mc_user=username)
-
-        """ TODO:
-        Authorized Apps
-        Automations
-        Campaign Folders
-        Chimp Chatter Activity
-        Connected Sites
-        Conversations
-        E-Commerce Stores
-        Facebook Ads
-        Files
-        Landing Pages
-        Ping
-        Reports
-        """
 
     def health_check(self):
         try:

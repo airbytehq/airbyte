@@ -41,6 +41,7 @@ import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.SourceSchema;
+import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
@@ -96,7 +97,7 @@ class ConnectionsHandlerTest {
         .destinationId(standardSync.getDestinationId())
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
-        .syncMode(ConnectionCreate.SyncModeEnum.FULL_REFRESH)
+        .syncMode(SyncMode.FULL_REFRESH)
         .schedule(ConnectionHelpers.generateBasicSchedule())
         .syncSchema(ConnectionHelpers.generateBasicApiSchema());
 
@@ -225,7 +226,7 @@ class ConnectionsHandlerTest {
   @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(ConnectionStatus.class, StandardSync.Status.class));
-    assertTrue(Enums.isCompatible(StandardSync.SyncMode.class, ConnectionRead.SyncModeEnum.class));
+    assertTrue(Enums.isCompatible(StandardSync.SyncMode.class, SyncMode.class));
     assertTrue(Enums.isCompatible(StandardSync.Status.class, ConnectionStatus.class));
     assertTrue(Enums.isCompatible(ConnectionSchedule.TimeUnitEnum.class, Schedule.TimeUnit.class));
     assertTrue(Enums.isCompatible(io.airbyte.api.model.DataType.class, DataType.class));

@@ -37,7 +37,7 @@ setup(
         "mailchimp3==3.0.14",
         "python-dateutil==2.8.1"
     ],
-    package_data={"": ["*.json"]},
+    package_data={"": ["*.json", "schemas/*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={

@@ -27,6 +27,7 @@ package io.airbyte.server.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +39,7 @@ import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.cache.SpecCache.AlwaysMissCache;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -53,13 +55,15 @@ class DestinationDefinitionsHandlerTest {
   private ConfigRepository configRepository;
   private StandardDestinationDefinition destination;
   private DestinationDefinitionsHandler destinationHandler;
+  private AlwaysMissCache specCache;
 
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
     dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
-    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator);
+    specCache = spy(new AlwaysMissCache());
+    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, specCache);
   }
 
   private StandardDestinationDefinition generateDestination() {
@@ -121,11 +125,10 @@ class DestinationDefinitionsHandlerTest {
   @Test
   void testUpdateDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId())).thenReturn(destination);
-    DestinationDefinitionRead currentDestination =
-        destinationHandler
-            .getDestinationDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destination.getDestinationDefinitionId()));
+    final DestinationDefinitionRead currentDestination = destinationHandler
+        .getDestinationDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destination.getDestinationDefinitionId()));
     final String currentTag = currentDestination.getDockerImageTag();
-    final String currentRepo = currentDestination.getDockerRepository();
+    final String dockerRepository = currentDestination.getDockerRepository();
     final String newDockerImageTag = "averydifferenttag";
     assertNotEquals(newDockerImageTag, currentTag);
 
@@ -133,7 +136,9 @@ class DestinationDefinitionsHandlerTest {
         new DestinationDefinitionUpdate().destinationDefinitionId(this.destination.getDestinationDefinitionId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
-    verify(dockerImageValidator).assertValidIntegrationImage(currentRepo, newDockerImageTag);
+    verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
+    verify(specCache).evict(dockerRepository + ":" + newDockerImageTag);
+
   }
 
 }

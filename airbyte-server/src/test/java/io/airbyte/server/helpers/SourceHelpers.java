@@ -37,12 +37,11 @@ import java.util.UUID;
 
 public class SourceHelpers {
 
-  public static SourceConnection generateSource(UUID sourceDefinitionId)
-      throws IOException {
+  public static SourceConnection generateSource(UUID sourceDefinitionId) throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
 
-    JsonNode implementationJson = getTestImplementationJson();
+    final JsonNode implementationJson = getTestImplementationJson();
 
     return new SourceConnection()
         .withName("my postgres db")
@@ -58,8 +57,7 @@ public class SourceHelpers {
     return Jsons.deserialize(Files.readString(path));
   }
 
-  public static SourceRead getSourceRead(SourceConnection source,
-                                         StandardSourceDefinition standardSourceDefinition) {
+  public static SourceRead getSourceRead(SourceConnection source, StandardSourceDefinition standardSourceDefinition) {
 
     return new SourceRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())

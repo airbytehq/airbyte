@@ -41,17 +41,17 @@ import org.apache.commons.io.IOUtils;
 
 public class DebugInfoHandler {
 
-  private ConfigRepository configRepository;
+  private final ConfigRepository configRepository;
 
   public DebugInfoHandler(ConfigRepository configRepository) {
     this.configRepository = configRepository;
   }
 
   public DebugRead getInfo() {
-    List<Map<String, String>> integrationImages = getIntegrationImages();
-    List<Map<String, String>> runningCoreImages = getRunningCoreImages();
+    final List<Map<String, String>> integrationImages = getIntegrationImages();
+    final List<Map<String, String>> runningCoreImages = getRunningCoreImages();
 
-    DebugRead result = new DebugRead();
+    final DebugRead result = new DebugRead();
     result.info(Map.of(
         "images", Map.of(
             "running", runningCoreImages,
@@ -61,7 +61,7 @@ public class DebugInfoHandler {
 
   private static List<Map<String, String>> getRunningCoreImages() {
     try {
-      String runningAirbyteContainers = runAndGetOutput(
+      final String runningAirbyteContainers = runAndGetOutput(
           Lists.newArrayList(
               "docker",
               "ps",
@@ -69,23 +69,23 @@ public class DebugInfoHandler {
               "name=airbyte",
               "-q"));
 
-      List<String> inspectCommand = Lists.newArrayList(
+      final List<String> inspectCommand = Lists.newArrayList(
           "docker",
           "inspect",
           "--format='{{.Image}} {{.Config.Image}}'");
 
       inspectCommand.addAll(Lists.newArrayList(runningAirbyteContainers.split("\n")));
 
-      String output = runAndGetOutput(inspectCommand).replaceAll("'", "");
+      final String output = runAndGetOutput(inspectCommand).replaceAll("'", "");
 
-      List<String> coreOutput = Lists.newArrayList(output.split("\n"));
+      final List<String> coreOutput = Lists.newArrayList(output.split("\n"));
 
       return coreOutput.stream().map(entry -> {
-        String[] elements = entry.split(" ");
-        String shortHash = getShortHash(elements[0]);
-        String taggedImage = elements[1];
+        final String[] elements = entry.split(" ");
+        final String shortHash = getShortHash(elements[0]);
+        final String taggedImage = elements[1];
 
-        Map<String, String> result = new HashMap<>();
+        final Map<String, String> result = new HashMap<>();
         result.put("hash", shortHash);
         result.put("image", taggedImage);
         return result;
@@ -97,11 +97,12 @@ public class DebugInfoHandler {
 
   private List<Map<String, String>> getIntegrationImages() {
     try {
-      Stream<String> sourceImages =
-          configRepository.listStandardSources().stream().map(s -> DockerUtils.getTaggedImageName(s.getDockerRepository(), s.getDockerImageTag()));
-      Stream<String> destinationImages =
-          configRepository.listStandardDestinationDefinitions().stream()
-              .map(d -> DockerUtils.getTaggedImageName(d.getDockerRepository(), d.getDockerImageTag()));
+      final Stream<String> sourceImages = configRepository.listStandardSources()
+          .stream()
+          .map(s -> DockerUtils.getTaggedImageName(s.getDockerRepository(), s.getDockerImageTag()));
+      final Stream<String> destinationImages = configRepository.listStandardDestinationDefinitions()
+          .stream()
+          .map(d -> DockerUtils.getTaggedImageName(d.getDockerRepository(), d.getDockerImageTag()));
       return Stream.concat(sourceImages, destinationImages)
           .map(image -> {
             try {
@@ -121,11 +122,11 @@ public class DebugInfoHandler {
   }
 
   protected static String runAndGetOutput(List<String> cmd) throws IOException, InterruptedException {
-    ProcessBuilder processBuilder = new ProcessBuilder(cmd);
-    Process process = processBuilder.start();
+    final ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+    final Process process = processBuilder.start();
     process.waitFor();
 
-    String output = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
+    final String output = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
 
     process.destroy();
 
@@ -137,7 +138,7 @@ public class DebugInfoHandler {
     if (sha256TaggedHash.isEmpty()) {
       return null;
     } else {
-      String fullHash = sha256TaggedHash.replace("sha256:", "");
+      final String fullHash = sha256TaggedHash.replace("sha256:", "");
       return fullHash.substring(0, Math.min(12, fullHash.length()));
     }
   }

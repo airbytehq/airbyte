@@ -27,6 +27,7 @@ package io.airbyte.server.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +40,7 @@ import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.cache.SpecCache.AlwaysMissCache;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -56,6 +58,7 @@ class SourceDefinitionsHandlerTest {
   private StandardSourceDefinition source;
   private SourceDefinitionsHandler sourceHandler;
   private Supplier<UUID> uuidSupplier;
+  private AlwaysMissCache specCache;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -63,9 +66,10 @@ class SourceDefinitionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
     dockerImageValidator = mock(DockerImageValidator.class);
+    specCache = spy(new AlwaysMissCache());
 
     source = generateSource();
-    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier);
+    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, specCache);
   }
 
   private StandardSourceDefinition generateSource() {
@@ -152,16 +156,18 @@ class SourceDefinitionsHandlerTest {
   void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId())).thenReturn(source);
     final String newDockerImageTag = "averydifferenttag";
-    final String currentTag =
-        sourceHandler.getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId())).getDockerImageTag();
+    final SourceDefinitionRead sourceDefinition = sourceHandler
+        .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId()));
+    final String dockerRepository = sourceDefinition.getDockerRepository();
+    final String currentTag = sourceDefinition.getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
-    SourceDefinitionRead sourceDefinitionRead =
-        sourceHandler.updateSourceDefinition(
-            new SourceDefinitionUpdate().sourceDefinitionId(source.getSourceDefinitionId()).dockerImageTag(newDockerImageTag));
+    final SourceDefinitionRead sourceDefinitionRead = sourceHandler
+        .updateSourceDefinition(new SourceDefinitionUpdate().sourceDefinitionId(source.getSourceDefinitionId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
-    verify(dockerImageValidator).assertValidIntegrationImage(source.getDockerRepository(), newDockerImageTag);
+    verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
+    verify(specCache).evict(dockerRepository + ":" + newDockerImageTag);
   }
 
 }

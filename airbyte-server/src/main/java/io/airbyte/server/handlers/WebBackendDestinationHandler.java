@@ -46,23 +46,20 @@ public class WebBackendDestinationHandler {
 
   private final SchedulerHandler schedulerHandler;
 
-  public WebBackendDestinationHandler(
-                                      final DestinationHandler destinationHandler,
-                                      final SchedulerHandler schedulerHandler) {
+  public WebBackendDestinationHandler(final DestinationHandler destinationHandler, final SchedulerHandler schedulerHandler) {
     this.destinationHandler = destinationHandler;
     this.schedulerHandler = schedulerHandler;
   }
 
-  public DestinationRead webBackendCreateDestinationAndCheck(
-                                                             DestinationCreate destinationCreate)
+  public DestinationRead webBackendCreateDestinationAndCheck(DestinationCreate destinationCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    DestinationRead destination = destinationHandler.createDestination(destinationCreate);
+    final DestinationRead destination = destinationHandler.createDestination(destinationCreate);
 
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody()
         .destinationId(destination.getDestinationId());
 
     try {
-      CheckConnectionRead checkConnectionRead = schedulerHandler.checkDestinationConnection(destinationIdRequestBody);
+      final CheckConnectionRead checkConnectionRead = schedulerHandler.checkDestinationConnection(destinationIdRequestBody);
       if (checkConnectionRead.getStatus() == SUCCEEDED) {
         return destination;
       }
@@ -74,22 +71,21 @@ public class WebBackendDestinationHandler {
     throw new KnownException(400, "Unable to connect to destination");
   }
 
-  public DestinationRead webBackendRecreateDestinationAndCheck(
-                                                               DestinationRecreate destinationRecreate)
+  public DestinationRead webBackendRecreateDestinationAndCheck(DestinationRecreate destinationRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    DestinationCreate destinationCreate = new DestinationCreate();
+    final DestinationCreate destinationCreate = new DestinationCreate();
     destinationCreate.setConnectionConfiguration(destinationRecreate.getConnectionConfiguration());
     destinationCreate.setName(destinationRecreate.getName());
     destinationCreate.setWorkspaceId(destinationRecreate.getWorkspaceId());
     destinationCreate.setDestinationDefinitionId(destinationRecreate.getDestinationDefinitionId());
 
-    DestinationRead destination = destinationHandler.createDestination(destinationCreate);
+    final DestinationRead destination = destinationHandler.createDestination(destinationCreate);
 
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody()
         .destinationId(destination.getDestinationId());
 
     try {
-      CheckConnectionRead checkConnectionRead = schedulerHandler
+      final CheckConnectionRead checkConnectionRead = schedulerHandler
           .checkDestinationConnection(destinationIdRequestBody);
       if (checkConnectionRead.getStatus() == SUCCEEDED) {
         final DestinationIdRequestBody destinationIdRequestBody1 = new DestinationIdRequestBody()
