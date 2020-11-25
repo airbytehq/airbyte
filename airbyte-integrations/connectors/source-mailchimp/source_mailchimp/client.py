@@ -28,7 +28,7 @@ from dateutil import parser
 
 from datetime import datetime
 
-from typing import Dict, Generator, Any, DefaultDict
+from typing import Dict, Generator, DefaultDict
 from airbyte_protocol import AirbyteStream, AirbyteMessage, AirbyteStateMessage, AirbyteRecordMessage, Type
 from mailchimp3 import MailChimp
 from mailchimp3.mailchimpclient import MailChimpError

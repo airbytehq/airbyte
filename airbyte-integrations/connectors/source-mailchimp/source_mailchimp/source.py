@@ -25,16 +25,14 @@ SOFTWARE.
 import json
 
 from collections import defaultdict
-from typing import Generator, Dict, DefaultDict
+from typing import Generator, DefaultDict
 
 from airbyte_protocol import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
-    AirbyteRecordMessage,
     ConfiguredAirbyteCatalog,
-    Status,
-    Type,
+    Status
 )
 from base_python import AirbyteLogger, ConfigContainer, Source
 
