@@ -1661,7 +1661,6 @@ components:
       type: string
       enum:
         - full_refresh
-        - incremental
   responses:
     InvalidInput:
       description: Invalid Input
