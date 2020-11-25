@@ -32,15 +32,21 @@ import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.helpers.ScheduleHelpers;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -112,28 +118,32 @@ public class JobSubmitter implements Runnable {
 
   @VisibleForTesting
   void trackSubmission(Job job) {
-    final Builder<String, Object> metadataBuilder = generateMetadata(job);
-    metadataBuilder.put("attempt_completion", true);
-    track(metadataBuilder.build());
-  }
-
-  @VisibleForTesting
-  void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
-    final Builder<String, Object> metadataBuilder = generateMetadata(job);
-    metadataBuilder.put("attempt_completion", true);
-    metadataBuilder.put("attempt_completion_status", status);
-    track(metadataBuilder.build());
-  }
-
-  private void track(Map<String, Object> metadata) {
     try {
-      TrackingClientSingleton.get().track("Job", metadata);
+      final Builder<String, Object> metadataBuilder = generateMetadata(job);
+      metadataBuilder.put("attempt_stage", "STARTED");
+      track(metadataBuilder.build());
     } catch (Exception e) {
       LOGGER.error("failed while reporting usage.");
     }
   }
 
-  private ImmutableMap.Builder<String, Object> generateMetadata(Job job) {
+  @VisibleForTesting
+  void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
+    try {
+      final Builder<String, Object> metadataBuilder = generateMetadata(job);
+      metadataBuilder.put("attempt_stage", "ENDED");
+      metadataBuilder.put("attempt_completion_status", status);
+      track(metadataBuilder.build());
+    } catch (Exception e) {
+      LOGGER.error("failed while reporting usage.");
+    }
+  }
+
+  private void track(Map<String, Object> metadata) {
+    TrackingClientSingleton.get().track("Connector Jobs", metadata);
+  }
+
+  private ImmutableMap.Builder<String, Object> generateMetadata(Job job) throws ConfigNotFoundException, IOException, JsonValidationException {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("job_type", job.getConfig().getConfigType());
     metadata.put("job_id", job.getId());
@@ -150,30 +160,41 @@ public class JobSubmitter implements Runnable {
         final StandardSourceDefinition sourceDefinition = configRepository
             .getSourceDefinitionFromSource(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
 
-        metadata.put("source_definition_name", sourceDefinition.getName());
-        metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
+        metadata.put("connector_source", sourceDefinition.getName());
+        metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
       }
       case CHECK_CONNECTION_DESTINATION -> {
         final StandardDestinationDefinition destinationDefinition = configRepository
             .getDestinationDefinitionFromDestination(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
 
-        metadata.put("destination_definition_name", destinationDefinition.getName());
-        metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+        metadata.put("connector_destination", destinationDefinition.getName());
+        metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
       }
       case GET_SPEC -> {
         // no op because this will be noisy as heck.
       }
       case SYNC -> {
+        final UUID connectionId = UUID.fromString(ScopeHelper.getConfigId(job.getScope()));
+        final StandardSyncSchedule schedule = configRepository.getStandardSyncSchedule(connectionId);
         final StandardSourceDefinition sourceDefinition = configRepository
-            .getSourceDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+            .getSourceDefinitionFromConnection(connectionId);
         final StandardDestinationDefinition destinationDefinition = configRepository
-            .getDestinationDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+            .getDestinationDefinitionFromConnection(connectionId);
 
-        metadata.put("connection_id", ScopeHelper.getConfigId(job.getScope()));
-        metadata.put("source_definition_name", sourceDefinition.getName());
-        metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
-        metadata.put("destination_definition_name", destinationDefinition.getName());
-        metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+        metadata.put("connection_id", connectionId);
+        metadata.put("connector_source", sourceDefinition.getName());
+        metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
+        metadata.put("connector_destination", destinationDefinition.getName());
+        metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+
+        String frequencyString;
+        if (schedule.getManual()) {
+          frequencyString = "manual";
+        } else {
+          final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(schedule.getSchedule()));
+          frequencyString = intervalInMinutes + " min";
+        }
+        metadata.put("frequency", frequencyString);
       }
     }
     return metadata;

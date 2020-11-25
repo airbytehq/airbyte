@@ -24,7 +24,6 @@
 
 package io.airbyte.scheduler;
 
-import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import java.time.Instant;
@@ -79,12 +78,8 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
     }
 
     final Job previousJob = previousJobOptional.get();
-    long nextRunStart = previousJob.getUpdatedAtInSecond() + getIntervalInSecond(standardSyncSchedule.getSchedule());
+    long nextRunStart = previousJob.getUpdatedAtInSecond() + ScheduleHelpers.getIntervalInSecond(standardSyncSchedule.getSchedule());
     return nextRunStart < timeSupplier.get().getEpochSecond();
-  }
-
-  private static Long getIntervalInSecond(Schedule schedule) {
-    return ScheduleHelpers.getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
   }
 
 }
