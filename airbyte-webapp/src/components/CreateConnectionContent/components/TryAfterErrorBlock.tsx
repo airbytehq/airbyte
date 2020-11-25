@@ -14,6 +14,10 @@ const Title = styled(H4)`
   padding: 16px 0 10px;
 `;
 
+const AgainButton = styled(Button)`
+  min-width: 239px;
+`;
+
 type IProps = {
   message?: React.ReactNode;
   onClick: () => void;
@@ -26,9 +30,9 @@ const TryAfterErrorBlock: React.FC<IProps> = ({ message, onClick }) => {
       <Title center>
         {message || <FormattedMessage id="form.schemaFailed" />}
       </Title>
-      <Button onClick={onClick} danger>
+      <AgainButton onClick={onClick} danger>
         <FormattedMessage id="form.tryAgain" />
-      </Button>
+      </AgainButton>
     </Block>
   );
 };

@@ -1,9 +1,8 @@
 import React from "react";
-import { useResource } from "rest-hooks";
 import { FormattedMessage } from "react-intl";
 
 import FrequencyForm from "../../FrequencyForm";
-import SchemaResource, { SyncSchema } from "../../../core/resources/Schema";
+import { SyncSchema } from "../../../core/resources/Schema";
 import { IDataItem } from "../../DropDown/components/ListItem";
 import {
   constructInitialSchemaState,
@@ -13,20 +12,16 @@ import {
 type IProps = {
   onSubmit: (values: { frequency: string; syncSchema: SyncSchema }) => void;
   errorStatus: number;
-  sourceId: string;
+  schema: SyncSchema;
   onSelectFrequency: (item: IDataItem) => void;
 };
 
 const CreateConnection: React.FC<IProps> = ({
   onSubmit,
   errorStatus,
-  sourceId,
+  schema,
   onSelectFrequency
 }) => {
-  const { schema } = useResource(SchemaResource.schemaShape(), {
-    sourceId
-  });
-
   const {
     formSyncSchema,
     initialChecked,

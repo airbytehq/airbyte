@@ -11,6 +11,8 @@ import { Source } from "../../core/resources/Source";
 import { Destination } from "../../core/resources/Destination";
 import { SyncSchema } from "../../core/resources/Schema";
 import useConnection from "../hooks/services/useConnectionHook";
+import { useDiscoverSchema } from "../hooks/services/useSchemaHook";
+import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
 type IProps = {
   source?: Source;
@@ -25,6 +27,12 @@ const CreateConnectionContent: React.FC<IProps> = ({
 }) => {
   const { createConnection } = useConnection();
   const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
+  const {
+    schema,
+    isLoading,
+    schemaErrorStatus,
+    onDiscoverSchema
+  } = useDiscoverSchema(source?.sourceId);
 
   const onSubmitConnectionStep = async (values: {
     frequency: string;
@@ -75,11 +83,27 @@ const CreateConnectionContent: React.FC<IProps> = ({
     });
   };
 
+  if (isLoading) {
+    return (
+      <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
+        <LoadingSchema />
+      </ContentCard>
+    );
+  }
+
+  if (schemaErrorStatus) {
+    return (
+      <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
+        <TryAfterErrorBlock onClick={() => onDiscoverSchema()} />
+      </ContentCard>
+    );
+  }
+
   return (
     <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
       <Suspense fallback={<LoadingSchema />}>
         <CreateConnection
-          sourceId={source?.sourceId || ""}
+          schema={schema}
           onSelectFrequency={onSelectFrequency}
           onSubmit={onSubmitStep}
           errorStatus={errorStatusRequest}
