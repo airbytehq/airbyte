@@ -12,6 +12,7 @@ import FrequencyConfig from "../../../data/FrequencyConfig.json";
 import { Source } from "../../../core/resources/Source";
 import { Routes } from "../../../pages/routes";
 import useRouter from "../useRouterHook";
+import { Destination } from "../../../core/resources/Destination";
 
 type ValuesProps = {
   frequency: string;
@@ -22,7 +23,7 @@ type ValuesProps = {
 type CreateConnectionProps = {
   values: ValuesProps;
   source?: Source;
-  destinationId: string;
+  destination?: Destination;
   sourceDefinition?:
     | SourceDefinition
     | { name: string; sourceDefinitionId: string };
@@ -46,7 +47,7 @@ const useConnection = () => {
   const createConnection = async ({
     values,
     source,
-    destinationId,
+    destination,
     sourceDefinition,
     destinationDefinition
   }: CreateConnectionProps) => {
@@ -57,13 +58,20 @@ const useConnection = () => {
     try {
       const result = await createConnectionResource(
         {
-          sourceId: values.source?.sourceId || "",
-          sourceName: values.source?.name || "",
-          name: source?.name || ""
+          source: {
+            sourceId: source?.sourceId || "",
+            sourceName: source?.sourceName || "",
+            name: source?.name || ""
+          },
+          destination: {
+            destinationId: destination?.destinationId || "",
+            destinationName: destination?.destinationName || "",
+            name: destination?.name || ""
+          }
         },
         {
           sourceId: source?.sourceId,
-          destinationId,
+          destinationId: destination?.destinationId,
           syncMode: "full_refresh",
           schedule: frequencyData?.config,
           status: "active",

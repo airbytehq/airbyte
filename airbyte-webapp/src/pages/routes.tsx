@@ -136,6 +136,14 @@ export const Routing = () => {
     workspaceId: config.ui.workspaceId
   });
 
+  useEffect(() => {
+    if (workspace) {
+      AnalyticsService.identify({
+        customerId: workspace.customerId
+      });
+    }
+  }, [workspace]);
+
   return (
     <Router>
       <Suspense fallback={<LoadingPage />}>
