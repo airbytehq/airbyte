@@ -13,6 +13,14 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 **New sources:** Hive, Recurly, Freshdesk, Intercom, Twilio, Sendgrid, Braintree, MongoDB, Mixpanel  
 **New destinations:** Redshift, S3, MySQL, Kafka, MongoDB
 
+## 11/25/2020
+
+**New source:** [Recurly](sources/recurly.md)
+
+## 11/23/2020
+
+**New source:** [Sendgrid](sources/sendgrid.md)
+
 ## 11/18/2020
 
 **New source:** [Mailchimp](sources/mailchimp.md)
