@@ -14,7 +14,7 @@
           },
           "column2": {
             "type": "number"
-          },
+          }
         }
       }
     },
@@ -31,7 +31,7 @@
           },
           "column2": {
             "type": "number"
-          },
+          }
         }
       }
     }
