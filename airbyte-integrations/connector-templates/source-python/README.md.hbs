@@ -36,7 +36,7 @@ and place them into `secrets/config.json`.
 python main_dev.py spec
 python main_dev.py check --config secrets/config.json
 python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/sample_catalog.json
+python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ### Unit Tests
@@ -52,7 +52,7 @@ pytest unit_tests
 docker run --rm airbyte/source-{{dashCase name}}:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/secrets:/secrets airbyte/source-{{dashCase name}}:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/secrets:/secrets airbyte/source-{{dashCase name}}:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/secrets:/secrets -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/sample_files:/sample_files airbyte/source-{{dashCase name}}:dev read --config /secrets/config.json --catalog /sample_files/sample_catalog.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/secrets:/secrets -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name}}/sample_files:/sample_files airbyte/source-{{dashCase name}}:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
 ```
 
 ### Integration Tests
