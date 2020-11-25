@@ -57,7 +57,7 @@ public class SourceHelpers {
     return Jsons.deserialize(Files.readString(path));
   }
 
-  public static SourceRead getSourceRead(SourceConnection source,    StandardSourceDefinition standardSourceDefinition) {
+  public static SourceRead getSourceRead(SourceConnection source, StandardSourceDefinition standardSourceDefinition) {
 
     return new SourceRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
