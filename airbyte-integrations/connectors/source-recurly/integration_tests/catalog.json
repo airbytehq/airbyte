@@ -94,7 +94,10 @@
             "type": "string"
           }
         }
-      }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ]
     }
   ]
 }
