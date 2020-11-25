@@ -76,7 +76,6 @@ class Client:
         return streams
 
     def lists(self, state: DefaultDict[str, any] = None) -> Generator[AirbyteMessage, None, None]:
-        # get current cursor field if it exists
         cursor_field = 'date_created'
         stream_name = self._LISTS
         date_created = self._get_cursor_or_none(state, stream_name, cursor_field)
@@ -88,12 +87,10 @@ class Client:
         while not done:
             lists_response = self._client.lists.all(dict(default_params, count=self.PAGINATION, offset=offset))["lists"]
             for mc_list in lists_response:
-                # for each response, update the cursor field
                 list_created_at = parser.isoparse(mc_list[cursor_field])
                 max_date_created = max(max_date_created, list_created_at) if max_date_created else list_created_at
                 yield self._record(stream=self._LISTS, data=mc_list)
 
-            # If there is a cursor value, output it as a state message
             if max_date_created:
                 state[self._LISTS][cursor_field] = max_date_created
                 yield self._state(state)
