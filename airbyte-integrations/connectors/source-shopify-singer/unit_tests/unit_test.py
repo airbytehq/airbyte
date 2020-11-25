@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import os
+
 
 def test_example_method():
-    assert True
+    assert os.path.commonpath(["/usr/lib", "/usr/local/lib"]) == "/usr"

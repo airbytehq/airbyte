@@ -101,3 +101,33 @@ You should now have all the requirements needed to configure Snowflake as a dest
 * **Username**
 * **Password**
 
+## Notes about Snowflake Naming Conventions
+
+From [Snowflake Identifiers syntax](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html):
+
+### Unquoted Identifiers:
+
+- Start with a letter (A-Z, a-z) or an underscore (“_”).
+- Contain only letters, underscores, decimal digits (0-9), and dollar signs (“$”).
+- Are case-insensitive.
+
+When an identifier is unquoted, it is stored and resolved in uppercase.
+
+### Quoted Identifiers:
+
+- The identifier is case-sensitive.
+- Delimited identifiers (i.e. identifiers enclosed in double quotes) can start with and contain any valid characters, including:
+    - Numbers
+    - Special characters (., ', !, @, #, $, %, ^, &, *, etc.)
+    - Extended ASCII and non-ASCII characters
+    - Blank spaces
+
+When an identifier is double-quoted, it is stored and resolved exactly as entered, including case.
+
+### Note
+- Regardless of whether an identifier is unquoted or double-quoted, the maximum number of characters allowed is 255 (including blank spaces).
+- Identifiers can also be specified using string literals, session variables or bind variables. For details, see SQL Variables.
+- If an object is created using a double-quoted identifier, when referenced in a query or any other SQL statement, the identifier must be specified exactly as created, including the double quotes. Failure to include the quotes might result in an Object does not exist error (or similar type of error).
+- Also, note that the entire identifier must be enclosed in quotes when referenced in a query/SQL statement. This is particularly important if periods (.) are used in identifiers because periods are also used in fully-qualified object names to separate each object.
+
+Therefore, Airbyte Snowflake destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing  special characters.

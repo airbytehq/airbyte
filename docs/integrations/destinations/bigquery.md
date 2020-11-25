@@ -59,7 +59,7 @@ Note that queries written in BigQueries can only reference Datasets in the same 
 
 #### Service account
 
-In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User" role, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata.We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions.
+In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User" and "BigQuery Data Editor" roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions.
 
 The easiest way to create a Service Account is to follow GCP's guide for [Creating a Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts). Once you've created the Service Account, make sure to keep its ID handy as you will need to reference it when granting roles. Service Account IDs typically take the form `<account-name>@<project-name>.iam.gserviceaccount.com`
 
@@ -84,3 +84,17 @@ You should now have all the requirements needed to configure BigQuery as a desti
 
 Once you've configured BigQuery as a destination, delete the Service Account Key from your computer.
 
+## Notes about BigQuery Naming Conventions
+
+From [BigQuery Datasets Naming](https://cloud.google.com/bigquery/docs/datasets#dataset-naming):
+
+When you create a dataset in BigQuery, the dataset name must be unique for each project. The dataset name can contain the following:
+- Up to 1,024 characters.
+- Letters (uppercase or lowercase), numbers, and underscores.
+
+    Note: In the Cloud Console, datasets that begin with an underscore are hidden from the navigation pane. You can query tables and views in these datasets even though these datasets aren't visible.
+
+- Dataset names are case-sensitive: mydataset and MyDataset can coexist in the same project.
+- Dataset names cannot contain spaces or special characters such as -, &, @, or %.
+
+Therefore, Airbyte BigQuery destination will convert any invalid characters into '_' characters when writing data.

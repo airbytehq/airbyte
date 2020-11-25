@@ -64,7 +64,9 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -178,6 +180,12 @@ public abstract class TestDestination {
    * @throws Exception - can throw any exception, test framework will handle.
    */
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
+
+  protected List<String> resolveIdentifier(String identifier) {
+    final List<String> result = new ArrayList<>();
+    result.add(identifier);
+    return result;
+  }
 
   @BeforeEach
   void setUpInternal() throws Exception {
@@ -311,7 +319,9 @@ public abstract class TestDestination {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(getConfigWithBasicNormalization(), messages, configuredCatalog);
 
+    LOGGER.info("Comparing retrieveRecordsForCatalog for {} and {}", messagesFilename, catalogFilename);
     assertSameMessages(messages, retrieveRecordsForCatalog(catalog));
+    LOGGER.info("Comparing retrieveNormalizedRecordsForCatalog for {} and {}", messagesFilename, catalogFilename);
     assertSameMessages(messages, retrieveNormalizedRecordsForCatalog(catalog), true);
   }
 
@@ -411,27 +421,52 @@ public abstract class TestDestination {
 
   // ignores emitted at.
   private void assertSameMessages(List<AirbyteMessage> expected, List<AirbyteRecordMessage> actual, boolean pruneAirbyteInternalFields) {
-    final List<AirbyteRecordMessage> expectedProcessed = expected.stream()
+    final List<JsonNode> expectedProcessed = expected.stream()
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)
         .peek(recordMessage -> recordMessage.setEmittedAt(null))
         .map(recordMessage -> pruneAirbyteInternalFields ? this.safePrune(recordMessage) : recordMessage)
+        .map(recordMessage -> recordMessage.getData())
         .collect(Collectors.toList());
 
-    final List<AirbyteRecordMessage> actualProcessed = actual.stream()
+    final List<JsonNode> actualProcessed = actual.stream()
         .map(recordMessage -> pruneAirbyteInternalFields ? this.safePrune(recordMessage) : recordMessage)
+        .map(recordMessage -> recordMessage.getData())
         .collect(Collectors.toList());
+
     assertSameData(expectedProcessed, actualProcessed);
   }
 
-  private void assertSameData(List<AirbyteRecordMessage> expected, List<AirbyteRecordMessage> actual) {
-    LOGGER.info("expected: {}", expected);
-    LOGGER.info("actual: {}", actual);
-
-    // we want to ignore order in this comparison.
+  private void assertSameData(List<JsonNode> expected, List<JsonNode> actual) {
+    LOGGER.info("Expected data {}", expected);
+    LOGGER.info("Actual data   {}", actual);
     assertEquals(expected.size(), actual.size());
-    assertTrue(expected.containsAll(actual));
-    assertTrue(actual.containsAll(expected));
+    final Iterator<JsonNode> expectedIterator = expected.iterator();
+    final Iterator<JsonNode> actualIterator = actual.iterator();
+    while (expectedIterator.hasNext() && actualIterator.hasNext()) {
+      final JsonNode expectedData = expectedIterator.next();
+      final JsonNode actualData = actualIterator.next();
+      final Iterator<Entry<String, JsonNode>> expectedDataIterator = expectedData.fields();
+      LOGGER.info("Expected row {}", expectedData);
+      LOGGER.info("Actual row   {}", actualData);
+      assertEquals(expectedData.size(), actualData.size());
+      while (expectedDataIterator.hasNext()) {
+        final Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
+        final JsonNode expectedValue = expectedEntry.getValue();
+        JsonNode actualValue = null;
+        String key = expectedEntry.getKey();
+        for (String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
+          actualValue = actualData.get(tmpKey);
+          if (actualValue != null) {
+            key = tmpKey;
+            break;
+          }
+        }
+        LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
+        assertTrue(actualData.has(key));
+        assertEquals(expectedValue, actualValue);
+      }
+    }
   }
 
   /**
@@ -469,7 +504,8 @@ public abstract class TestDestination {
       // likely did not exist in the original message. the most consistent thing to do is always remove
       // the null fields (this choice does decrease our ability to check that normalization creates
       // columns even if all the values in that column are null)
-      if (Sets.newHashSet("emitted_at", "ab_id", "normalized_at").contains(key) || key.matches("^_.*_hashid$") || json.get(key).isNull()) {
+      if (Sets.newHashSet("emitted_at", "ab_id", "normalized_at", "EMITTED_AT", "AB_ID", "NORMALIZED_AT").contains(key) || key.matches("^_.*_hashid$")
+          || json.get(key).isNull()) {
         ((ObjectNode) json).remove(key);
       }
     }
