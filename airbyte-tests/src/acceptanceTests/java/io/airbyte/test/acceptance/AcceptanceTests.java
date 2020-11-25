@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
@@ -43,6 +44,7 @@ import io.airbyte.api.client.model.ConnectionSchedule;
 import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.ConnectionSyncRead;
 import io.airbyte.api.client.model.ConnectionUpdate;
+import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
@@ -50,9 +52,10 @@ import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SourceSchema;
+import io.airbyte.api.client.model.SourceSchemaField;
+import io.airbyte.api.client.model.SourceSchemaStream;
 import io.airbyte.api.client.model.SyncMode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -63,6 +66,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,7 +76,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.jooq.Record;
@@ -94,6 +97,10 @@ import org.testcontainers.utility.MountableFile;
 // e.g. We test that we can create a destination before we test whether we can sync data to it.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
+
+  private static final String STREAM_NAME = "id_and_name";
+  private static final String COLUMN_ID = "id";
+  private static final String COLUMN_NAME = "name";
 
   private static final Path AIRBYTE_LOCAL_ROOT = Path.of("/tmp/airbyte_local");
   private static final Path RELATIVE_PATH = Path.of("destination_csv/test");
@@ -135,7 +142,7 @@ public class AcceptanceTests {
     relativeDir = outputRoot.getParent().relativize(outputDir);
 
     // seed database.
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), sourcePsql);
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
   }
 
   @AfterEach
@@ -222,12 +229,27 @@ public class AcceptanceTests {
 
   @Test
   @Order(5)
-  public void testDiscoverSourceSchema() throws ApiException, IOException {
-    UUID sourceId = createPostgresSource().getSourceId();
+  public void testDiscoverSourceSchema() throws ApiException {
+    final UUID sourceId = createPostgresSource().getSourceId();
 
-    SourceSchema actualSchema = discoverSourceSchema(sourceId);
+    final SourceSchema actualSchema = discoverSourceSchema(sourceId);
 
-    final SourceSchema expectedSchema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), SourceSchema.class);
+    final SourceSchema expectedSchema = new SourceSchema().streams(Lists.newArrayList(
+        new SourceSchemaStream()
+            .name(STREAM_NAME)
+            .fields(Lists.newArrayList(
+                new SourceSchemaField()
+                    .name(COLUMN_ID)
+                    .dataType(DataType.NUMBER)
+                    .selected(true),
+                new SourceSchemaField()
+                    .name(COLUMN_NAME)
+                    .dataType(DataType.STRING)
+                    .selected(true)))
+            .supportedSyncModes(Collections.emptyList())
+            .defaultCursorField(Collections.emptyList())
+            .cursorField(Collections.emptyList())));
+
     assertEquals(expectedSchema, actualSchema);
   }
 
@@ -261,16 +283,69 @@ public class AcceptanceTests {
     schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
 
-    final ConnectionRead createdConnection = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode);
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
     final ConnectionSyncRead connectionSyncRead = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(createdConnection.getConnectionId()));
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead.getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
   @Test
   @Order(8)
+  public void testIncrementalSync() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createCsvDestination().getDestinationId();
+    final SourceSchema schema = discoverSourceSchema(sourceId);
+
+    // todo (cgardens) - comment in when pg source supports incremental.
+    // assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+    // schema.getStreams().get(0).getSupportedSyncModes());
+    // assertEquals(false, schema.getStreams().get(0).getSourceDefinedCursor()); // instead of
+    // assertFalse to avoid NPE from unboxed.
+    // assertNull(schema.getStreams().get(0).getDefaultCursorField());
+
+    // update schema to use incremental
+    schema.getStreams().get(0)
+        .syncMode(SyncMode.INCREMENTAL)
+        .cursorField(Lists.newArrayList("id"));
+
+    schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
+    // todo (cgardens) - this enum as part of the enum is deprecated.
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
+
+    final ConnectionSyncRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead1.getStatus());
+    assertSourceAndTargetDbInSync(sourcePsql);
+
+    // add new records and run again.
+    final Database database = getDatabase(sourcePsql);
+    // get contents of source before mutating records.
+    final List<JsonNode> expectedRecords = retrievePgRecords(database, STREAM_NAME);
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
+    // add a new record
+    database.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
+    // todo (cgardens) - comment this in when both the source and destination here actually support
+    // incremental.
+    // mutate a record that was already synced with out updating its cursor value. if we are actually
+    // full refreshing, this record will appear in the output and cause the test to fail. if we are,
+    // correctly, doing incremental, we will not find this value in the destination.
+    // database.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
+    database.close();
+
+    final ConnectionSyncRead connectionSyncRead2 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead2.getStatus());
+    assertDestinationContains(expectedRecords, STREAM_NAME);
+    assertSourceAndTargetDbInSync(sourcePsql);
+  }
+
+  @Test
+  @Order(9)
   public void testScheduledSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -326,26 +401,21 @@ public class AcceptanceTests {
         .collect(Collectors.toSet());
   }
 
-  private void assertStreamsEquivalent(Database database, String table) throws Exception {
-    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveCsvRecords(table));
+  private void assertDestinationContains(List<JsonNode> sourceRecords, String streamName) throws Exception {
+    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveCsvRecords(streamName));
 
-    long sourceStreamCount = getStreamCount(database, table);
-    assertEquals(sourceStreamCount, destinationRecords.size());
-    final List<JsonNode> allRecords = retrievePgRecords(database, table);
+    assertEquals(sourceRecords.size(), destinationRecords.size(),
+        String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
 
-    for (JsonNode sourceStreamRecord : allRecords) {
-      assertTrue(destinationRecords.contains(sourceStreamRecord));
+    for (JsonNode sourceStreamRecord : sourceRecords) {
+      assertTrue(destinationRecords.contains(sourceStreamRecord),
+          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
     }
   }
 
-  @SuppressWarnings("OptionalGetWithoutIsPresent")
-  private long getStreamCount(Database database, String tableName) throws SQLException {
-    return database.query(
-        context -> {
-          Result<Record> record =
-              context.fetch(String.format("SELECT COUNT(*) FROM %s;", tableName));
-          return (long) record.stream().findFirst().get().get(0);
-        });
+  private void assertStreamsEquivalent(Database database, String table) throws Exception {
+    final List<JsonNode> allRecords = retrievePgRecords(database, table);
+    assertDestinationContains(allRecords, table);
   }
 
   private ConnectionRead createConnection(String name,

@@ -35,6 +35,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.protocols.Destination;
 import io.airbyte.workers.protocols.MessageTracker;
@@ -76,6 +77,10 @@ public class DefaultSyncWorker implements SyncWorker {
   @Override
   public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path jobRoot) {
     long startTime = System.currentTimeMillis();
+
+    LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
+        .stream()
+        .collect(Collectors.toMap(s -> s.getStream().getName(), s -> s.getSyncMode() != null ? s.getSyncMode() : SyncMode.FULL_REFRESH)));
 
     // clean catalog object
     removeInvalidStreams(syncInput.getCatalog());
