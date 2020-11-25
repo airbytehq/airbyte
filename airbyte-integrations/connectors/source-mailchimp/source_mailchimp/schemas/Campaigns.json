@@ -1,2298 +1,791 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "title": "Campaign",
-  "description": "A summary of an individual campaign's settings and content.",
-  "properties": {
-    "id": {
-      "type": "string",
-      "title": "Campaign ID",
-      "description": "A string that uniquely identifies this campaign.",
-      "readOnly": true
-    },
-    "web_id": {
-      "type": "integer",
-      "title": "Campaign Web ID",
-      "description": "The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `https://{dc}.admin.mailchimp.com/campaigns/show/?id={web_id}`.",
-      "readOnly": true
-    },
-    "parent_campaign_id": {
-      "type": "string",
-      "title": "Parent Campaign ID",
-      "description": "If this campaign is the child of another campaign, this identifies the parent campaign. For Example, for RSS or Automation children.",
-      "readOnly": true
-    },
-    "type": {
-      "type": "string",
-      "title": "Campaign Type",
-      "description": "There are four types of [campaigns](https://mailchimp.com/help/getting-started-with-campaigns/) you can create in Mailchimp. A/B Split campaigns have been deprecated and variate campaigns should be used instead.",
-      "enum": ["regular", "plaintext", "absplit", "rss", "variate"]
-    },
-    "create_time": {
-      "type": "string",
-      "format": "date-time",
-      "title": "Create Time",
-      "description": "The date and time the campaign was created in ISO 8601 format.",
-      "readOnly": true
-    },
-    "archive_url": {
-      "type": "string",
-      "title": "Archive URL",
-      "description": "The link to the campaign's archive version in ISO 8601 format.",
-      "readOnly": true
-    },
-    "long_archive_url": {
-      "type": "string",
-      "title": "Long Archive URL",
-      "description": "The original link to the campaign's archive version.",
-      "readOnly": true
-    },
-    "status": {
-      "type": "string",
-      "title": "Campaign Status",
-      "description": "The current status of the campaign.",
-      "readOnly": true
-    },
-    "emails_sent": {
-      "type": "integer",
-      "title": "Emails Sent",
-      "description": "The total number of emails sent for this campaign.",
-      "readOnly": true
-    },
-    "send_time": {
-      "type": "string",
-      "format": "date-time",
-      "title": "Send Time",
-      "description": "The date and time a campaign was sent.",
-      "readOnly": true
-    },
-    "content_type": {
-      "type": "string",
-      "title": "Content Type",
-      "description": "How the campaign's content is put together.",
-      "enum": ["template", "html", "url", "multichannel"]
-    },
-    "needs_block_refresh": {
-      "type": "boolean",
-      "title": "Needs Block Refresh",
-      "description": "Determines if the campaign needs its blocks refreshed by opening the web-based campaign editor. Deprecated and will always return false.",
-      "readOnly": true
-    },
-    "resendable": {
-      "type": "boolean",
-      "title": "Resendable",
-      "description": "Determines if the campaign qualifies to be resent to non-openers.",
-      "readOnly": true
-    },
-    "recipients": {
-      "type": "object",
-      "title": "List",
-      "description": "List settings for the campaign.",
-      "properties": {
-        "list_id": {
-          "type": "string",
-          "title": "List ID",
-          "description": "The unique list id."
-        },
-        "list_is_active": {
-          "type": "boolean",
-          "title": "List Status",
-          "description": "The status of the list used, namely if it's deleted or disabled.",
-          "readOnly": true
-        },
-        "list_name": {
-          "type": "string",
-          "title": "List Name",
-          "description": "The name of the list.",
-          "readOnly": true
-        },
-        "segment_text": {
-          "type": "string",
-          "title": "Segment Text",
-          "description": "A description of the [segment](https://mailchimp.com/help/create-and-send-to-a-segment/) used for the campaign. Formatted as a string marked up with HTML.",
-          "readOnly": true
-        },
-        "recipient_count": {
-          "type": "integer",
-          "title": "Recipient Count",
-          "description": "Count of the recipients on the associated list. Formatted as an integer.",
-          "readOnly": true
-        },
-        "segment_opts": {
-          "type": "object",
-          "title": "Segment Options",
-          "description": "An object representing all segmentation options. This object should contain a `saved_segment_id` to use an existing segment, or you can create a new segment by including both `match` and `conditions` options.",
-          "properties": {
-            "saved_segment_id": {
-              "type": "integer",
-              "title": "Saved Segment ID",
-              "description": "The id for an existing saved segment."
-            },
-            "prebuilt_segment_id": {
-              "type": "string",
-              "title": "Prebuilt Segment Id",
-              "description": "The prebuilt segment id, if a prebuilt segment has been designated for this campaign.",
-              "example": "subscribers-female"
-            },
-            "match": {
-              "type": "string",
-              "title": "Match Type",
-              "description": "Segment match type.",
-              "enum": ["any", "all"]
-            },
-            "conditions": {
-              "type": "array",
-              "title": "Segment Type",
-              "description": "Segment match conditions.",
-              "items": {
-                "x-discriminator": {
-                  "type": "string",
-                  "propertyName": "condition_type"
-                },
-                "x-oneOf": [
-                  {
-                    "type": "object",
-                    "title": "Aim Segment",
-                    "description": "An individual segment condition",
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "Aim",
-                        "enum": ["Aim"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["aim"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting subscribers who have/have not interacted with a specific campaign(s).",
-                        "example": "aim"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "open",
-                          "click",
-                          "sent",
-                          "noopen",
-                          "noclick",
-                          "nosent"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "The status of the member with regard to their campaign interaction. One of the following: opened, clicked, was sent, didn't open, didn't click, or was not sent.",
-                        "example": "open"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Data",
-                        "description": "Either the web id value for a specific campaign or 'any' to account for subscribers who have/have not interacted with any campaigns.",
-                        "example": "any"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Automation Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "Automation",
-                        "enum": ["Automation"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["automation"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting subscribers who have/have not interacted with an Automation workflow.",
-                        "example": "automation"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "started",
-                          "completed",
-                          "not_started",
-                          "not_completed"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "The status of the member with regard to the automation workflow. One of the following: has started the workflow, has completed the workflow, has not started the workflow, or has not completed the workflow.",
-                        "example": "started"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Data",
-                        "description": "The web id for the automation workflow to segment against.",
-                        "example": "2135217"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Poll Activity Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "CampaignPoll",
-                        "enum": ["CampaignPoll"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["poll"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting by Mandrill activity.",
-                        "example": "poll"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["member", "notmember"],
-                        "title": "Segment Operator",
-                        "description": "Members have/have not interacted with a specific poll in a Mailchimp email.",
-                        "example": "member"
-                      },
-                      "value": {
-                        "type": "number",
-                        "title": "Segment Operator",
-                        "description": "The id for the poll.",
-                        "example": 409
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Conversation Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "Conversation",
-                        "enum": ["Conversation"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["conversation"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting subscribers who have/have not interacted with a campaign via 'Converstaions'.",
-                        "example": "conversation"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["member", "notmember"],
-                        "title": "Segment Operator",
-                        "description": "The status of a member's interaction with a conversation. One of the following: has replied or has not replied.",
-                        "example": "member"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Data",
-                        "description": "The web id value for a specific campaign or 'any' to account for subscribers who have/have not interacted with any campaigns.",
-                        "example": "any"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Date Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "Date",
-                        "enum": ["Date"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["timestamp_opt", "info_changed", "ecomm_date"],
-                        "title": "Segment Field",
-                        "description": "The type of date field to segment on: The opt-in time for a signup, the date the subscriber was last updated, or the date of their last ecomm purchase.",
-                        "example": "timestamp_opt"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "greater",
-                          "less",
-                          "is",
-                          "not",
-                          "blank",
-                          "blank_not",
-                          "within",
-                          "notwithin"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "When the event took place:  Before, after, is a specific date, is not a specific date, is blank, or is not blank.",
-                        "example": "greater"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Data",
-                        "description": "What type of data to segment on: a specific date, a specific campaign, or the last campaign sent.",
-                        "example": "date"
-                      },
-                      "extra": {
-                        "type": "string",
-                        "title": "Segment Extra Value",
-                        "description": "When segmenting on 'date' or 'campaign', the date for the segment formatted as YYYY-MM-DD or the web id for the campaign.",
-                        "example": "2015-01-30"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Email Client Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "EmailClient",
-                        "enum": ["EmailClient"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["email_client"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting subscribers who have/have not interacted with a specific campaign(s).",
-                        "example": "email_client"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["client_is", "client_not"],
-                        "title": "Segment Operator",
-                        "description": "The status of the member with regard to their campaign interaction. One of the following: opened, clicked, was sent, didn't open, didn't click, or was not sent.",
-                        "example": "client_is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Data",
-                        "description": "The name of the email client.",
-                        "example": "Gmail"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Language Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "Language",
-                        "enum": ["Language"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["language"],
-                        "title": "Segment Field",
-                        "description": "Segmenting based off of a subscriber's language.",
-                        "example": "language"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["is", "not"],
-                        "title": "Segment Operator",
-                        "description": "Whether the member's language is or is not set to a specific language.",
-                        "example": "is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Data",
-                        "description": "A two-letter language identifier.",
-                        "example": "en"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Member Rating Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "MemberRating",
-                        "enum": ["MemberRating"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["rating"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting by member rating.",
-                        "example": "rating"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["is", "not", "greater", "less"],
-                        "title": "Segment Operator",
-                        "description": "Members who have have a rating that is/not exactly a given number or members who have a rating greater/less than a given number.",
-                        "example": "greater"
-                      },
-                      "value": {
-                        "type": "number",
-                        "title": "Segment Operator",
-                        "description": "The star rating number to segment against.",
-                        "example": 4
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Signup Source Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "condition_type", "op"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "enum": ["SignupSource"],
-                        "x-value": "SignupSource",
-                        "title": "Type"
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["source"],
-                        "title": "Segment Field",
-                        "example": "source"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["source_is", "source_not"],
-                        "title": "Segment Operator",
-                        "description": "Whether the member's signup source was/was not a particular value.",
-                        "example": "source_is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Data",
-                        "description": "The signup source.",
-                        "example": "List Import"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Survey Monkey Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "SurveyMonkey",
-                        "enum": ["SurveyMonkey"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["survey_monkey"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting subscribers who have/have not interacted with a survey monkey survey.",
-                        "example": "survey_monkey"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "started",
-                          "completed",
-                          "not_started",
-                          "not_completed"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "The status of the member with regard to the survey.One of the following: has started the survey, has completed the survey, has not started the survey, or has not completed the survey.",
-                        "example": "started"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Survey ID",
-                        "description": "The unique ID of the survey monkey survey.",
-                        "example": "32179586"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "VIP Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "VIP",
-                        "enum": ["VIP"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["gmonkey"],
-                        "title": "Segment Field",
-                        "description": "Segmenting based off of a subscriber's VIP status.",
-                        "example": "gmonkey"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["member", "notmember"],
-                        "title": "Segment Operator",
-                        "description": "Whether the member is or is not marked as VIP.",
-                        "example": "member"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Interests Segment",
-                    "description": "An individual segment condition",
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "Interests",
-                        "enum": ["Interests"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "title": "Segment Field",
-                        "description": "Segmenting based on interest group information. This should start with 'interests-' followed by the grouping id. Ex. 'interests-123'.",
-                        "example": "interests-123"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "interestcontains",
-                          "interestcontainsall",
-                          "interestnotcontains"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "Whether the member is a part of one, all, or none of the groups.",
-                        "example": "interestcontains"
-                      },
-                      "value": {
-                        "type": "array",
-                        "title": "Segment Value",
-                        "description": "An array containing strings, each representing a group id.",
-                        "items": {
-                          "type": "string",
-                          "example": ["44401", "44405", "44409"]
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Ecommerce Category Segment",
-                    "description": "An individual segment condition",
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "EcommCategory",
-                        "enum": ["EcommCategory"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["ecomm_cat", "ecomm_prod"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting subscribers who have/have not purchased specific items or categories.",
-                        "example": "ecomm_cat"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "is",
-                          "not",
-                          "contains",
-                          "notcontain",
-                          "starts",
-                          "ends"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "A member who has purchased from a category/specific item that is/is not a specific name, where the category/item name contains/doesn't contain a specific phrase or string, or a category/item name that starts/ends with a string.",
-                        "example": "is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Data",
-                        "description": "The ecommerce category/item information.",
-                        "example": "Product"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Ecommerce Number Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "EcommNumber",
-                        "enum": ["EcommNumber"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": [
-                          "ecomm_spent_avg",
-                          "ecomm_orders",
-                          "ecomm_prod_all",
-                          "ecomm_avg_ord"
-                        ],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting members have an average spent total, a total number of orders, total number of products purchased, or average number of products per order.",
-                        "example": "ecomm_orders"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["is", "not", "greater", "less"],
-                        "title": "Segment Operator",
-                        "description": "Members who have spent exactly, have not spent exactly, spent more, or spent less than the segment value.",
-                        "example": "greater"
-                      },
-                      "value": {
-                        "type": "number",
-                        "title": "Segment Operator",
-                        "description": "Members who have spent exactly, have not spent exactly, spent more, or spent less than this amount.",
-                        "example": 42
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Ecommerce Purchased Segment",
-                    "description": "An individual segment condition",
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "EcommPurchased",
-                        "enum": ["EcommPurchased"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["ecomm_purchased"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting members who have/have not purchased anything.",
-                        "example": "ecomm_purchased"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["member", "notmember"],
-                        "title": "Segment Operator",
-                        "description": "Members who have have ('member') or have not ('notmember') purchased.",
-                        "example": "member"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Ecommerce Spent Segment",
-                    "description": "An individual segment condition",
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "EcommSpent",
-                        "enum": ["EcommSpent"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["ecomm_spent_one", "ecomm_spent_all"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting members who have spent a specific amount on a single order or over their lifetime.",
-                        "example": "ecomm_spent_one"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["greater", "less"],
-                        "title": "Segment Operator",
-                        "description": "Members who have spent 'more' or 'less' than then specified value.",
-                        "example": "greater"
-                      },
-                      "value": {
-                        "type": "integer",
-                        "title": "Segment Data",
-                        "description": "The total amount a member spent.",
-                        "example": 42
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Ecommerce Purchased Store Segment",
-                    "description": "An individual segment condition",
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "EcommStore",
-                        "enum": ["EcommStore"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["ecomm_store"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting members have purchased from a specific store.",
-                        "example": "ecomm_store"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["is", "not"],
-                        "title": "Segment Operator",
-                        "description": "Members who have or have not purchased from a specific store.",
-                        "example": "is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Operator",
-                        "description": "The store id to segment against.",
-                        "example": "289"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Goal Activity Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "GoalActivity",
-                        "enum": ["GoalActivity"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["goal"],
-                        "title": "Segment Field",
-                        "description": "Segmenting based off of a subscriber's Goal activity.",
-                        "example": "goal"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "is",
-                          "goal_not",
-                          "contains",
-                          "goal_notcontain",
-                          "starts",
-                          "ends"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "Whether the website URL is/not exactly, contains/doesn't contain, starts with/ends with a string.",
-                        "example": "is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Value",
-                        "description": "The URL to check Goal activity against.",
-                        "example": "http://freddiesjokes.com/signup"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Goal Timestamp Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "GoalTimestamp",
-                        "enum": ["GoalTimestamp"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["goal_last_visited"],
-                        "title": "Segment Field",
-                        "description": "Segmenting based off of a subscriber's last interaction with a website.",
-                        "example": "goal_last_visited"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["greater", "less", "is"],
-                        "title": "Segment Operator",
-                        "description": "Whether the website activity happened after, before, or at a given timestamp.",
-                        "example": "greater"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Value",
-                        "description": "The date to check Goal activity against.",
-                        "example": "2015-07-20 19:45:21"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Similar Subscribers Segment Member Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "FuzzySegment",
-                        "enum": ["FuzzySegment"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["fuzzy_segment"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting by Mandrill activity.",
-                        "example": "fuzzy_segment"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["fuzzy_is", "fuzzy_not"],
-                        "title": "Segment Operator",
-                        "description": "Members who are/are not apart of a 'similar subscribers' segment.",
-                        "example": "fuzzy_is"
-                      },
-                      "value": {
-                        "type": "number",
-                        "title": "Segment Operator",
-                        "description": "The id for the 'similar subscribers' segment.",
-                        "example": 48433
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Static Segment Member Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "StaticSegment",
-                        "enum": ["StaticSegment"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["static_segment"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting by Mandrill activity.",
-                        "example": "static_segment"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["static_is", "static_not"],
-                        "title": "Segment Operator",
-                        "description": "Members who are/are not apart of a static segment.",
-                        "example": "static_is"
-                      },
-                      "value": {
-                        "type": "number",
-                        "title": "Segment Operator",
-                        "description": "The id for the static segment.",
-                        "example": 48433
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Location-Based Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "IPGeoCountryState",
-                        "enum": ["IPGeoCountryState"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["ipgeo"],
-                        "title": "Segment Field",
-                        "description": "Segmenting subscribers who are within a specific location.",
-                        "example": "ipgeo"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "ipgeocountry",
-                          "ipgeonotcountry",
-                          "ipgeostate",
-                          "ipgeonotstate"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "Segment members who are within a specific country or US state.",
-                        "example": "ipgeocountry"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Data",
-                        "description": "The two-letter country code or US state abbreviation.",
-                        "example": "US"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Geolocation Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value", "addr", "lat", "lng"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "IPGeoIn",
-                        "enum": ["IPGeoIn"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["ipgeo"],
-                        "title": "Segment Field",
-                        "description": "Segmenting subscribers who are within a specific location.",
-                        "example": "ipgeo"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["ipgeoin", "ipgeonotin"],
-                        "title": "Segment Operator",
-                        "description": "Segment members who are within a specific geographic region.",
-                        "example": "ipgeoin"
-                      },
-                      "value": {
-                        "type": "integer",
-                        "title": "Segment Data",
-                        "description": "The radius of the target location.",
-                        "example": 42
-                      },
-                      "addr": {
-                        "type": "string",
-                        "title": "Segment Location Address",
-                        "description": "The address of the target location.",
-                        "example": "Atlanta, GA, USA"
-                      },
-                      "lat": {
-                        "type": "string",
-                        "title": "Segment Location Latitude",
-                        "description": "The latitude of the target location.",
-                        "example": "33.7489954"
-                      },
-                      "lng": {
-                        "type": "string",
-                        "title": "Segment Location Longitude",
-                        "description": "The longitude of the target location.",
-                        "example": "-84.3879824"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "US Zip Code Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value", "extra"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "IPGeoInZip",
-                        "enum": ["IPGeoInZip"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["ipgeo"],
-                        "title": "Segment Field",
-                        "description": "Segmenting subscribers who are within a specific location.",
-                        "example": "ipgeo"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["ipgeoinzip"],
-                        "title": "Segment Operator",
-                        "description": "Segment members who are within a specific US zip code.",
-                        "example": "ipgeoinzip"
-                      },
-                      "value": {
-                        "type": "integer",
-                        "title": "Segment Data",
-                        "description": "The radius of the target location.",
-                        "example": 25
-                      },
-                      "extra": {
-                        "type": "integer",
-                        "title": "Extra Data",
-                        "description": "The zip code to segment against.",
-                        "example": 30318
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Unknown Location-Based Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "IPGeoUnknown",
-                        "enum": ["IPGeoUnknown"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["ipgeo"],
-                        "title": "Segment Field",
-                        "description": "Segmenting subscribers who are within a specific location.",
-                        "example": "ipgeo"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["ipgeounknown"],
-                        "title": "Segment Operator",
-                        "description": "Segment members for which locaiton information is unknown.",
-                        "example": "ipgeounknown"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Zip Code Location-Based Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "IPGeoZip",
-                        "enum": ["IPGeoZip"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["ipgeo"],
-                        "title": "Segment Field",
-                        "description": "Segmenting subscribers who are within a specific location.",
-                        "example": "ipgeo"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["ipgeoiszip", "ipgeonotzip"],
-                        "title": "Segment Operator",
-                        "description": "Segment members who are/are not within a specific US zip code.",
-                        "example": "ipgeonotzip"
-                      },
-                      "value": {
-                        "type": "integer",
-                        "title": "Segment Data",
-                        "description": "The 5-digit zip code.",
-                        "example": 30318
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Social Profiles Age Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "SocialAge",
-                        "enum": ["SocialAge"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["social_age"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting members based age ranges in Social Profiles data.",
-                        "example": "social_age"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["is", "not"],
-                        "title": "Segment Operator",
-                        "description": "Members who are/not the exact criteria listed.",
-                        "example": "is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "enum": ["18-24", "25-34", "35-54", "55+"],
-                        "title": "Segment Operator",
-                        "description": "The age range to segment.",
-                        "example": "35-54"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Social Profiles Gender Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "SocialGender",
-                        "enum": ["SocialGender"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["social_gender"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting members based on listed gender in Social Profiles data.",
-                        "example": "social_gender"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["is", "not"],
-                        "title": "Segment Operator",
-                        "description": "Members who are/not the exact criteria listed.",
-                        "example": "is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "enum": ["male", "female"],
-                        "title": "Segment Operator",
-                        "description": "The Social Profiles gender to segment.",
-                        "example": "female"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Social Profiles Influence Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "SocialInfluence",
-                        "enum": ["SocialInfluence"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["social_influence"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting members based on influence rating in Social Profiles data.",
-                        "example": "social_influence"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["is", "not", "greater", "less"],
-                        "title": "Segment Operator",
-                        "description": "Members who have a rating that is/not or greater/less than the rating provided.",
-                        "example": "greater"
-                      },
-                      "value": {
-                        "type": "number",
-                        "title": "Segment Operator",
-                        "description": "The Social Profiles influence rating to segment.",
-                        "example": 2
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Social Profiles Social Network Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "SocialNetworkMember",
-                        "enum": ["SocialNetworkMember"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["social_network"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting members based on social network in Social Profiles data.",
-                        "example": "social_network"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["member", "notmember"],
-                        "title": "Segment Operator",
-                        "description": "Members who are/not on a given social network.",
-                        "example": "member"
-                      },
-                      "value": {
-                        "type": "string",
-                        "enum": [
-                          "twitter",
-                          "facebook",
-                          "linkedin",
-                          "flickr",
-                          "foursquare",
-                          "lastfm",
-                          "myspace",
-                          "quora",
-                          "vimeo",
-                          "yelp",
-                          "youtube"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "The social network to segment against.",
-                        "example": "twitter"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Social Profiles Social Network Follow Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "SocialNetworkFollow",
-                        "enum": ["SocialNetworkFollow"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["social_network"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting members based on social network in Social Profiles data.",
-                        "example": "social_network"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["follow", "notfollow"],
-                        "title": "Segment Operator",
-                        "description": "Members who are/not following a linked account on a given social network.",
-                        "example": "follow"
-                      },
-                      "value": {
-                        "type": "string",
-                        "enum": ["twitter_follow"],
-                        "title": "Segment Operator",
-                        "description": "The social network to segment against.",
-                        "example": "twitter_follow"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Address Merge Field Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "AddressMerge",
-                        "enum": ["AddressMerge"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "title": "Segment Field",
-                        "description": "An address-type merge field to segment.",
-                        "example": "MMERGE3"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "contains",
-                          "notcontain",
-                          "blank",
-                          "blank_not"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "Whether the member's address merge field contains/does not contain a value or is/is not blank.",
-                        "example": "contains"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Value",
-                        "description": "The value to segment a text merge field with.",
-                        "example": "Atlanta"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Address/Zip Merge Field Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value", "extra"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "ZipMerge",
-                        "enum": ["ZipMerge"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "title": "Segment Field",
-                        "description": "An address or zip-type merge field to segment.",
-                        "example": "MMERGE2"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["geoin"],
-                        "title": "Segment Operator",
-                        "description": "Whether the member's address merge field is within a given distance from a city or zip.",
-                        "example": "geoin"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Value",
-                        "description": "The distance from the city/zip.",
-                        "example": "25"
-                      },
-                      "extra": {
-                        "type": "string",
-                        "title": "Segment Extra",
-                        "description": "The city or the zip being used to segment against.",
-                        "example": "30318"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Birthday Merge Field Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "BirthdayMerge",
-                        "enum": ["BirthdayMerge"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "title": "Segment Field",
-                        "description": "A date merge field to segment.",
-                        "example": "MMERGE4"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["is", "not", "blank", "blank_not"],
-                        "title": "Segment Operator",
-                        "description": "Whether the member's birthday merge information is/is not a certain date or is/is not blank.",
-                        "example": "is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Value",
-                        "description": "A date to segment against (mm/dd).",
-                        "example": "01/30"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Date Merge Field Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "DateMerge",
-                        "enum": ["DateMerge"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "title": "Segment Field",
-                        "description": "A date merge field to segment.",
-                        "example": "MMERGE5"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "is",
-                          "not",
-                          "less",
-                          "blank",
-                          "blank_not",
-                          "greater"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "Whether the member's merge information is/is not, is greater/less than a value or is/is not blank.",
-                        "example": "is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Value",
-                        "description": "A date to segment against.",
-                        "example": "01/30/2015"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Dropdown/Radio Merge Field Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "SelectMerge",
-                        "enum": ["SelectMerge"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "title": "Segment Field",
-                        "description": "A merge field to segment.",
-                        "example": "MMERGE6"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "is",
-                          "not",
-                          "blank",
-                          "blank_not",
-                          "notcontain",
-                          "contains"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "Whether the member's merge information is/is not a value or is/is not blank.",
-                        "example": "is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Value",
-                        "description": "The value to segment a text merge field with.",
-                        "example": "Second Choice"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Text or Number Merge Field Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "TextMerge",
-                        "enum": ["TextMerge"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "title": "Segment Field",
-                        "description": "A text or number merge field to segment.",
-                        "example": "MMERGE7"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "is",
-                          "not",
-                          "contains",
-                          "notcontain",
-                          "starts",
-                          "ends",
-                          "greater",
-                          "less",
-                          "blank",
-                          "blank_not"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "Whether the member's merge information is/is not, contains/does not contain, starts/ends with, or is greater/less than a value",
-                        "example": "contains"
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Value",
-                        "description": "The value to segment a text or number merge field with.",
-                        "example": "Freddie's Jokes"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Email Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "EmailAddress",
-                        "enum": ["EmailAddress"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["merge0", "EMAIL"],
-                        "title": "Segment Field",
-                        "description": "Segmenting based off of a subscriber's email address.",
-                        "example": "EMAIL"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": [
-                          "is",
-                          "not",
-                          "contains",
-                          "notcontain",
-                          "starts",
-                          "ends",
-                          "greater",
-                          "less"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "Whether the email address is/not exactly, contains/doesn't contain, starts/ends with a string."
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Value",
-                        "description": "The value to compare the email against.",
-                        "example": "urist.mcvankab@freddiesjokes.com"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Predicted Gender Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "PredictedGender",
-                        "enum": ["PredictedGender"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["predicted_gender"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting members based on predicted gender."
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["is", "not"],
-                        "title": "Segment Operator",
-                        "description": "Members who are/not the exact criteria listed.",
-                        "example": "is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "enum": ["male", "female"],
-                        "title": "Segment Operator",
-                        "description": "The predicted gender to segment.",
-                        "example": "female"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "Predicted Age Segment",
-                    "description": "An individual segment condition",
-                    "required": ["field", "op", "value"],
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "PredictedAge",
-                        "enum": ["PredictedAge"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["predicted_age_range"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting members based on predicted age"
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["is"],
-                        "title": "Segment Operator",
-                        "description": "Members who are/not the exact criteria listed.",
-                        "example": "is"
-                      },
-                      "value": {
-                        "type": "string",
-                        "enum": [
-                          "18-24",
-                          "25-34",
-                          "35-44",
-                          "45-54",
-                          "55-64",
-                          "65+"
-                        ],
-                        "title": "Segment Operator",
-                        "description": "The predicted age to segment.",
-                        "example": "female"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "title": "New Subscribers Prebuilt Segment",
-                    "description": "An individual segment condition",
-                    "properties": {
-                      "condition_type": {
-                        "type": "string",
-                        "x-value": "NewSubscribers",
-                        "enum": ["NewSubscribers"]
-                      },
-                      "field": {
-                        "type": "string",
-                        "enum": ["timestamp_opt"],
-                        "title": "Segment Field",
-                        "description": "Used for segmenting subscribers who have subscribed within a given time frame."
-                      },
-                      "op": {
-                        "type": "string",
-                        "enum": ["date_within"],
-                        "title": "Segment Operator",
-                        "description": "Whe the event took place, namely within a time frame."
-                      },
-                      "value": {
-                        "type": "string",
-                        "title": "Segment Data",
-                        "description": "What type of data to segment on: a specific date, a specific campaign, or the last campaign sent."
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    "settings": {
-      "type": "object",
-      "title": "Campaign Settings",
-      "description": "The settings for your campaign, including subject, from name, reply-to address, and more.",
-      "properties": {
-        "subject_line": {
-          "type": "string",
-          "title": "Campaign Subject Line",
-          "description": "The subject line for the campaign."
-        },
-        "preview_text": {
-          "type": "string",
-          "title": "Campaign Preview Text",
-          "description": "The preview text for the campaign."
-        },
-        "title": {
-          "type": "string",
-          "title": "Campaign Title",
-          "description": "The title of the campaign."
-        },
-        "from_name": {
-          "type": "string",
-          "title": "From Name",
-          "description": "The 'from' name on the campaign (not an email address)."
-        },
-        "reply_to": {
-          "type": "string",
-          "title": "Reply To Address",
-          "description": "The reply-to email address for the campaign."
-        },
-        "use_conversation": {
-          "type": "boolean",
-          "title": "Conversation",
-          "description": "Use Mailchimp Conversation feature to manage out-of-office replies."
-        },
-        "to_name": {
-          "type": "string",
-          "title": "To Name",
-          "description": "The campaign's custom 'To' name. Typically the first name [merge field](https://mailchimp.com/help/getting-started-with-merge-tags/)."
-        },
-        "folder_id": {
-          "type": "string",
-          "title": "Folder ID",
-          "description": "If the campaign is listed in a folder, the id for that folder."
-        },
-        "authenticate": {
-          "type": "boolean",
-          "title": "Authentication",
-          "description": "Whether Mailchimp [authenticated](https://mailchimp.com/help/about-email-authentication/) the campaign. Defaults to `true`."
-        },
-        "auto_footer": {
-          "type": "boolean",
-          "title": "Auto-Footer",
-          "description": "Automatically append Mailchimp's [default footer](https://mailchimp.com/help/about-campaign-footers/) to the campaign."
-        },
-        "inline_css": {
-          "type": "boolean",
-          "title": "Inline CSS",
-          "description": "Automatically inline the CSS included with the campaign content."
-        },
-        "auto_tweet": {
-          "type": "boolean",
-          "title": "Auto-Tweet",
-          "description": "Automatically tweet a link to the [campaign archive](https://mailchimp.com/help/about-email-campaign-archives-and-pages/) page when the campaign is sent."
-        },
-        "auto_fb_post": {
-          "type": "array",
-          "title": "Auto Post to Facebook",
-          "description": "An array of [Facebook](https://mailchimp.com/help/connect-or-disconnect-the-facebook-integration/) page ids to auto-post to.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "fb_comments": {
-          "type": "boolean",
-          "title": "Facebook Comments",
-          "description": "Allows Facebook comments on the campaign (also force-enables the Campaign Archive toolbar). Defaults to `true`."
-        },
-        "timewarp": {
-          "type": "boolean",
-          "title": "Timewarp Send",
-          "description": "Send this campaign using [Timewarp](https://mailchimp.com/help/use-timewarp/).",
-          "readOnly": true
-        },
-        "template_id": {
-          "type": "integer",
-          "title": "Template ID",
-          "description": "The id for the template used in this campaign.",
-          "readOnly": false
-        },
-        "drag_and_drop": {
-          "type": "boolean",
-          "title": "Drag And Drop Campaign",
-          "description": "Whether the campaign uses the drag-and-drop editor.",
-          "readOnly": true
-        }
-      }
-    },
-    "variate_settings": {
-      "type": "object",
-      "title": "A/B Test Options",
-      "description": "The settings specific to A/B test campaigns.",
-      "properties": {
-        "winning_combination_id": {
-          "type": "string",
-          "title": "Winning Combination ID",
-          "description": "ID for the winning combination.",
-          "readOnly": true
-        },
-        "winning_campaign_id": {
-          "type": "string",
-          "title": "Winning Campaign ID",
-          "description": "ID of the campaign that was sent to the remaining recipients based on the winning combination.",
-          "readOnly": true
-        },
-        "winner_criteria": {
-          "type": "string",
-          "title": "Winning Criteria",
-          "description": "The combination that performs the best. This may be determined automatically by click rate, open rate, or total revenue -- or you may choose manually based on the reporting data you find the most valuable. For Multivariate Campaigns testing send_time, winner_criteria is ignored. For Multivariate Campaigns with 'manual' as the winner_criteria, the winner must be chosen in the Mailchimp web application.",
-          "enum": ["opens", "clicks", "manual", "total_revenue"]
-        },
-        "wait_time": {
-          "type": "integer",
-          "title": "Wait Time",
-          "description": "The number of minutes to wait before choosing the winning campaign. The value of wait_time must be greater than 0 and in whole hours, specified in minutes."
-        },
-        "test_size": {
-          "type": "integer",
-          "title": "Test Size",
-          "description": "The percentage of recipients to send the test combinations to, must be a value between 10 and 100."
-        },
-        "subject_lines": {
-          "type": "array",
-          "title": "Subject Lines",
-          "description": "The possible subject lines to test. If no subject lines are provided, settings.subject_line will be used.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "send_times": {
-          "type": "array",
-          "title": "Send Times",
-          "description": "The possible send times to test. The times provided should be in the format YYYY-MM-DD HH:MM:SS. If send_times are provided to test, the test_size will be set to 100% and winner_criteria will be ignored.",
-          "items": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "from_names": {
-          "type": "array",
-          "title": "From Names",
-          "description": "The possible from names. The number of from_names provided must match the number of reply_to_addresses. If no from_names are provided, settings.from_name will be used.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "reply_to_addresses": {
-          "type": "array",
-          "title": "Reply To Addresses",
-          "description": "The possible reply-to addresses. The number of reply_to_addresses provided must match the number of from_names. If no reply_to_addresses are provided, settings.reply_to will be used.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "contents": {
-          "type": "array",
-          "title": "Content Descriptions",
-          "description": "Descriptions of possible email contents. To set campaign contents, make a PUT request to /campaigns/{campaign_id}/content with the field 'variate_contents'.",
-          "items": {
-            "type": "string"
-          },
-          "readOnly": true
-        },
-        "combinations": {
-          "type": "array",
-          "title": "Combinations",
-          "description": "Combinations of possible variables used to build emails.",
-          "readOnly": true,
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "title": "ID",
-                "description": "Unique ID for the combination."
-              },
-              "subject_line": {
-                "type": "integer",
-                "title": "Subject Line",
-                "description": "The index of `variate_settings.subject_lines` used."
-              },
-              "send_time": {
-                "type": "integer",
-                "title": "Send Time",
-                "description": "The index of `variate_settings.send_times` used."
-              },
-              "from_name": {
-                "type": "integer",
-                "title": "From Name",
-                "description": "The index of `variate_settings.from_names` used."
-              },
-              "reply_to": {
-                "type": "integer",
-                "title": "Reply To",
-                "description": "The index of `variate_settings.reply_to_addresses` used."
-              },
-              "content_description": {
-                "type": "integer",
-                "title": "Content Description",
-                "description": "The index of `variate_settings.contents` used."
-              },
-              "recipients": {
-                "type": "integer",
-                "title": "Recipients",
-                "description": "The number of recipients for this combination."
-              }
-            }
-          }
-        }
-      }
-    },
-    "tracking": {
-      "type": "object",
-      "title": "Campaign Tracking Options",
-      "description": "The tracking options for a campaign.",
-      "properties": {
-        "opens": {
-          "type": "boolean",
-          "title": "Opens",
-          "description": "Whether to [track opens](https://mailchimp.com/help/about-open-tracking/). Defaults to `true`. Cannot be set to false for variate campaigns."
-        },
-        "html_clicks": {
-          "type": "boolean",
-          "title": "HTML Click Tracking",
-          "description": "Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/) in the HTML version of the campaign. Defaults to `true`. Cannot be set to false for variate campaigns."
-        },
-        "text_clicks": {
-          "type": "boolean",
-          "title": "Plain-Text Click Tracking",
-          "description": "Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/) in the plain-text version of the campaign. Defaults to `true`. Cannot be set to false for variate campaigns."
-        },
-        "goal_tracking": {
-          "type": "boolean",
-          "title": "Mailchimp Goal Tracking",
-          "description": "Whether to enable [Goal](https://mailchimp.com/help/about-connected-sites/) tracking."
-        },
-        "ecomm360": {
-          "type": "boolean",
-          "title": "E-commerce Tracking",
-          "description": "Whether to enable [eCommerce360](https://mailchimp.com/help/connect-your-online-store-to-mailchimp/) tracking."
-        },
-        "google_analytics": {
-          "type": "string",
-          "title": "Google Analytics Tracking",
-          "description": "The custom slug for [Google Analytics](https://mailchimp.com/help/integrate-google-analytics-with-mailchimp/) tracking (max of 50 bytes)."
-        },
-        "clicktale": {
-          "type": "string",
-          "title": "ClickTale Analytics Tracking",
-          "description": "The custom slug for [ClickTale](https://mailchimp.com/help/additional-tracking-options-for-campaigns/) tracking (max of 50 bytes)."
-        },
-        "salesforce": {
-          "type": "object",
-          "title": "Salesforce CRM Tracking",
-          "description": "Salesforce tracking options for a campaign. Must be using Mailchimp's built-in [Salesforce integration](https://mailchimp.com/help/integrate-salesforce-with-mailchimp/).",
-          "properties": {
-            "campaign": {
-              "type": "boolean",
-              "title": "Salesforce Campaign",
-              "description": "Create a campaign in a connected Salesforce account."
-            },
-            "notes": {
-              "type": "boolean",
-              "title": "Salesforce Note",
-              "description": "Update contact notes for a campaign based on subscriber email addresses."
-            }
-          }
-        },
-        "capsule": {
-          "type": "object",
-          "title": "Capsule CRM Tracking",
-          "description": "Capsule tracking options for a campaign. Must be using Mailchimp's built-in Capsule integration.",
-          "properties": {
-            "notes": {
-              "type": "boolean",
-              "title": "Capsule Note",
-              "description": "Update contact notes for a campaign based on subscriber email addresses."
-            }
-          }
-        }
-      }
-    },
-    "rss_opts": {
-      "type": "object",
-      "title": "RSS Options",
-      "description": "[RSS](https://mailchimp.com/help/share-your-blog-posts-with-mailchimp/) options for a campaign.",
-      "properties": {
-        "feed_url": {
-          "type": "string",
-          "title": "Feed URL",
-          "format": "uri",
-          "description": "The URL for the RSS feed."
-        },
-        "frequency": {
-          "type": "string",
-          "title": "Frequency",
-          "description": "The frequency of the RSS Campaign.",
-          "enum": ["daily", "weekly", "monthly"]
-        },
-        "schedule": {
-          "type": "object",
-          "title": "Sending Schedule",
-          "description": "The schedule for sending the RSS Campaign.",
-          "properties": {
-            "hour": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 23,
-              "title": "Sending Hour",
-              "description": "The hour to send the campaign in local time. Acceptable hours are 0-23. For example, '4' would be 4am in [your account's default time zone](https://mailchimp.com/help/set-account-defaults/)."
-            },
-            "daily_send": {
-              "type": "object",
-              "title": "Daily Sending Days",
-              "description": "The days of the week to send a daily RSS Campaign.",
-              "properties": {
-                "sunday": {
-                  "type": "boolean",
-                  "title": "Sunday",
-                  "description": "Sends the daily RSS Campaign on Sundays."
-                },
-                "monday": {
-                  "type": "boolean",
-                  "title": "Monday",
-                  "description": "Sends the daily RSS Campaign on Mondays."
-                },
-                "tuesday": {
-                  "type": "boolean",
-                  "title": "tuesday",
-                  "description": "Sends the daily RSS Campaign on Tuesdays."
-                },
-                "wednesday": {
-                  "type": "boolean",
-                  "title": "Monday",
-                  "description": "Sends the daily RSS Campaign on Wednesdays."
-                },
-                "thursday": {
-                  "type": "boolean",
-                  "title": "Thursday",
-                  "description": "Sends the daily RSS Campaign on Thursdays."
-                },
-                "friday": {
-                  "type": "boolean",
-                  "title": "Friday",
-                  "description": "Sends the daily RSS Campaign on Fridays."
-                },
-                "saturday": {
-                  "type": "boolean",
-                  "title": "Saturday",
-                  "description": "Sends the daily RSS Campaign on Saturdays."
-                }
-              }
-            },
-            "weekly_send_day": {
-              "type": "string",
-              "enum": [
-                "sunday",
-                "monday",
-                "tuesday",
-                "wednesday",
-                "thursday",
-                "friday",
-                "saturday"
-              ],
-              "title": "Weekly Sending Day",
-              "description": "The day of the week to send a weekly RSS Campaign."
-            },
-            "monthly_send_date": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 31,
-              "title": "Monthly Sending Day",
-              "description": "The day of the month to send a monthly RSS Campaign. Acceptable days are 0-31, where '0' is always the last day of a month. Months with fewer than the selected number of days will not have an RSS campaign sent out that day. For example, RSS Campaigns set to send on the 30th will not go out in February."
-            }
-          }
-        },
-        "last_sent": {
-          "type": "string",
-          "format": "date-time",
-          "title": "Last Sent",
-          "description": "The date the campaign was last sent.",
-          "readOnly": true
-        },
-        "constrain_rss_img": {
-          "type": "boolean",
-          "title": "Constrain RSS Images",
-          "description": "Whether to add CSS to images in the RSS feed to constrain their width in campaigns."
-        }
-      }
-    },
-    "ab_split_opts": {
-      "type": "object",
-      "title": "A/B Testing Options",
-      "description": "[A/B Testing](https://mailchimp.com/help/about-ab-testing-campaigns/) options for a campaign.",
-      "readOnly": true,
-      "properties": {
-        "split_test": {
-          "type": "string",
-          "title": "Split Test",
-          "description": "The type of AB split to run.",
-          "enum": ["subject", "from_name", "schedule"]
-        },
-        "pick_winner": {
-          "type": "string",
-          "title": "Pick Winner",
-          "description": "How we should evaluate a winner. Based on 'opens', 'clicks', or 'manual'.",
-          "enum": ["opens", "clicks", "manual"]
-        },
-        "wait_units": {
-          "type": "string",
-          "title": "Wait Time",
-          "description": "How unit of time for measuring the winner ('hours' or 'days'). This cannot be changed after a campaign is sent.",
-          "enum": ["hours", "days"]
-        },
-        "wait_time": {
-          "type": "integer",
-          "title": "Wait Time",
-          "description": "The amount of time to wait before picking a winner. This cannot be changed after a campaign is sent."
-        },
-        "split_size": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 50,
-          "title": "Split Size",
-          "description": "The size of the split groups. Campaigns split based on 'schedule' are forced to have a 50/50 split. Valid split integers are between 1-50."
-        },
-        "from_name_a": {
-          "type": "string",
-          "title": "From Name Group A",
-          "description": "For campaigns split on 'From Name', the name for Group A."
-        },
-        "from_name_b": {
-          "type": "string",
-          "title": "From Name Group B",
-          "description": "For campaigns split on 'From Name', the name for Group B."
-        },
-        "reply_email_a": {
-          "type": "string",
-          "title": "Reply Email Group A",
-          "description": "For campaigns split on 'From Name', the reply-to address for Group A."
-        },
-        "reply_email_b": {
-          "type": "string",
-          "title": "Reply Email Group B",
-          "description": "For campaigns split on 'From Name', the reply-to address for Group B."
-        },
-        "subject_a": {
-          "type": "string",
-          "title": "Subject Line Group A",
-          "description": "For campaigns split on 'Subject Line', the subject line for Group A."
-        },
-        "subject_b": {
-          "type": "string",
-          "title": "Subject Line Group B",
-          "description": "For campaigns split on 'Subject Line', the subject line for Group B."
-        },
-        "send_time_a": {
-          "type": "string",
-          "format": "date-time",
-          "title": "Send Time Group A",
-          "description": "The send time for Group A."
-        },
-        "send_time_b": {
-          "type": "string",
-          "format": "date-time",
-          "title": "Send Time Group B",
-          "description": "The send time for Group B."
-        },
-        "send_time_winner": {
-          "type": "string",
-          "title": "Send Time Winner",
-          "description": "The send time for the winning version."
-        }
-      }
-    },
-    "social_card": {
-      "type": "object",
-      "title": "Campaign Social Card",
-      "description": "The preview for the campaign, rendered by social networks like Facebook and Twitter. [Learn more](https://mailchimp.com/help/enable-and-customize-social-cards/).",
-      "properties": {
-        "image_url": {
-          "type": "string",
-          "title": "Image URL",
-          "description": "The url for the header image for the card."
-        },
-        "description": {
-          "type": "string",
-          "title": "Campaign Description",
-          "description": "A short summary of the campaign to display."
-        },
-        "title": {
-          "type": "string",
-          "title": "Title",
-          "description": "The title for the card. Typically the subject line of the campaign."
-        }
-      }
-    },
-    "report_summary": {
-      "type": "object",
-      "title": "Campaign Report Summary",
-      "description": "For sent campaigns, a summary of opens, clicks, and e-commerce data.",
-      "properties": {
-        "opens": {
-          "type": "integer",
-          "title": "Automation Opens",
-          "description": "The total number of opens for a campaign.",
-          "readOnly": true
-        },
-        "unique_opens": {
-          "type": "integer",
-          "title": "Unique Opens",
-          "description": "The number of unique opens.",
-          "readOnly": true
-        },
-        "open_rate": {
-          "type": "number",
-          "title": "Open Rate",
-          "description": "The number of unique opens divided by the total number of successful deliveries.",
-          "readOnly": true
-        },
-        "clicks": {
-          "type": "integer",
-          "title": "Total Clicks",
-          "description": "The total number of clicks for an campaign.",
-          "readOnly": true
-        },
-        "subscriber_clicks": {
-          "type": "integer",
-          "title": "Unique Subscriber Clicks",
-          "description": "The number of unique clicks.",
-          "readOnly": true
-        },
-        "click_rate": {
-          "type": "number",
-          "title": "Click Rate",
-          "description": "The number of unique clicks divided by the total number of successful deliveries.",
-          "readOnly": true
-        },
-        "ecommerce": {
-          "type": "object",
-          "title": "E-Commerce Report",
-          "description": "E-Commerce stats for a campaign.",
-          "properties": {
-            "total_orders": {
-              "type": "integer",
-              "title": "Total Orders",
-              "description": "The total orders for a campaign.",
-              "readOnly": true
-            },
-            "total_spent": {
-              "type": "number",
-              "title": "Total Spent",
-              "description": "The total spent for a campaign. Calculated as the sum of all order totals with no deductions.",
-              "readOnly": true
-            },
-            "total_revenue": {
-              "type": "number",
-              "title": "Total Revenue",
-              "description": "The total revenue for a campaign. Calculated as the sum of all order totals minus shipping and tax totals.",
-              "readOnly": true
-            }
-          }
-        }
-      }
-    },
-    "delivery_status": {
-      "type": "object",
-      "title": "Campaign Delivery Status",
-      "description": "Updates on campaigns in the process of sending.",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "title": "Delivery Status Enabled",
-          "description": "Whether Campaign Delivery Status is enabled for this account and campaign.",
-          "readOnly": true
-        },
-        "can_cancel": {
-          "type": "boolean",
-          "title": "Campaign Cancelable",
-          "description": "Whether a campaign send can be canceled.",
-          "readOnly": true
-        },
-        "status": {
-          "type": "string",
-          "title": "Campaign Delivery Status",
-          "description": "The current state of a campaign delivery.",
-          "enum": ["delivering", "delivered", "canceling", "canceled"],
-          "readOnly": true
-        },
-        "emails_sent": {
-          "type": "integer",
-          "title": "Emails Sent",
-          "description": "The total number of emails confirmed sent for this campaign so far.",
-          "readOnly": true
-        },
-        "emails_canceled": {
-          "type": "integer",
-          "title": "Emails Canceled",
-          "description": "The total number of emails canceled for this campaign.",
-          "readOnly": true
-        }
-      }
-    },
-    "_links": {
-      "title": "Links",
-      "description": "A list of link types and descriptions for the API schema documents.",
-      "type": "array",
-      "items": {
+  "name": "Campaigns",
+  "supported_sync_modes": ["full_refresh", "incremental"],
+  "source_defined_cursor": true,
+  "default_cursor_field": ["create_time"],
+  "json_schema": {
+    "type": "object",
+    "title": "Campaign",
+    "description": "A summary of an individual campaign's settings and content.",
+    "properties": {
+      "id": {
+        "type": "string",
+        "title": "Campaign ID",
+        "description": "A string that uniquely identifies this campaign.",
+        "readOnly": true
+      },
+      "web_id": {
+        "type": "integer",
+        "title": "Campaign Web ID",
+        "description": "The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `https://{dc}.admin.mailchimp.com/campaigns/show/?id={web_id}`.",
+        "readOnly": true
+      },
+      "parent_campaign_id": {
+        "type": "string",
+        "title": "Parent Campaign ID",
+        "description": "If this campaign is the child of another campaign, this identifies the parent campaign. For Example, for RSS or Automation children.",
+        "readOnly": true
+      },
+      "type": {
+        "$ref": "https://us1.api.mailchimp.com/schema/3.0/Definitions/CampaignType.json"
+      },
+      "create_time": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Create Time",
+        "description": "The date and time the campaign was created in ISO 8601 format.",
+        "readOnly": true
+      },
+      "archive_url": {
+        "type": "string",
+        "title": "Archive URL",
+        "description": "The link to the campaign's archive version in ISO 8601 format.",
+        "readOnly": true
+      },
+      "long_archive_url": {
+        "type": "string",
+        "title": "Long Archive URL",
+        "description": "The original link to the campaign's archive version.",
+        "readOnly": true
+      },
+      "status": {
+        "$ref": "https://us1.api.mailchimp.com/schema/3.0/Definitions/CampaignStatus.json"
+      },
+      "emails_sent": {
+        "type": "integer",
+        "title": "Emails Sent",
+        "description": "The total number of emails sent for this campaign.",
+        "readOnly": true
+      },
+      "send_time": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Send Time",
+        "description": "The date and time a campaign was sent.",
+        "readOnly": true
+      },
+      "content_type": {
+        "type": "string",
+        "title": "Content Type",
+        "description": "How the campaign's content is put together.",
+        "enum": ["template", "html", "url", "multichannel"]
+      },
+      "needs_block_refresh": {
+        "type": "boolean",
+        "title": "Needs Block Refresh",
+        "description": "Determines if the campaign needs its blocks refreshed by opening the web-based campaign editor. Deprecated and will always return false.",
+        "readOnly": true
+      },
+      "resendable": {
+        "type": "boolean",
+        "title": "Resendable",
+        "description": "Determines if the campaign qualifies to be resent to non-openers.",
+        "readOnly": true
+      },
+      "recipients": {
         "type": "object",
-        "title": "Resource Link",
-        "description": "This object represents a link from the resource where it is found to another resource or action that may be performed.",
+        "title": "List",
+        "description": "List settings for the campaign.",
         "properties": {
-          "rel": {
+          "list_id": {
             "type": "string",
-            "title": "Rel",
-            "description": "As with an HTML 'rel' attribute, this describes the type of link.",
+            "title": "List ID",
+            "description": "The unique list id."
+          },
+          "list_is_active": {
+            "type": "boolean",
+            "title": "List Status",
+            "description": "The status of the list used, namely if it's deleted or disabled.",
             "readOnly": true
           },
-          "href": {
+          "list_name": {
             "type": "string",
-            "title": "Href",
-            "description": "This property contains a fully-qualified URL that can be called to retrieve the linked resource or perform the linked action.",
+            "title": "List Name",
+            "description": "The name of the list.",
             "readOnly": true
           },
-          "method": {
+          "segment_text": {
             "type": "string",
-            "title": "Method",
-            "description": "The HTTP method that should be used when accessing the URL defined in 'href'.",
-            "enum": [
-              "GET",
-              "POST",
-              "PUT",
-              "PATCH",
-              "DELETE",
-              "OPTIONS",
-              "HEAD"
-            ],
+            "title": "Segment Text",
+            "description": "A description of the [segment](https://mailchimp.com/help/create-and-send-to-a-segment/) used for the campaign. Formatted as a string marked up with HTML.",
             "readOnly": true
           },
-          "targetSchema": {
-            "type": "string",
-            "title": "Target Schema",
-            "description": "For GETs, this is a URL representing the schema that the response should conform to.",
+          "recipient_count": {
+            "type": "integer",
+            "title": "Recipient Count",
+            "description": "Count of the recipients on the associated list. Formatted as an integer.",
             "readOnly": true
           },
-          "schema": {
+          "segment_opts": {
+            "$ref": "https://us1.api.mailchimp.com/schema/3.0/Definitions/SegmentationOptions.json"
+          }
+        }
+      },
+      "settings": {
+        "type": "object",
+        "title": "Campaign Settings",
+        "description": "The settings for your campaign, including subject, from name, reply-to address, and more.",
+        "properties": {
+          "subject_line": {
             "type": "string",
-            "title": "Schema",
-            "description": "For HTTP methods that can receive bodies (POST and PUT), this is a URL representing the schema that the body should conform to.",
+            "title": "Campaign Subject Line",
+            "description": "The subject line for the campaign."
+          },
+          "preview_text": {
+            "type": "string",
+            "title": "Campaign Preview Text",
+            "description": "The preview text for the campaign."
+          },
+          "title": {
+            "type": "string",
+            "title": "Campaign Title",
+            "description": "The title of the campaign."
+          },
+          "from_name": {
+            "type": "string",
+            "title": "From Name",
+            "description": "The 'from' name on the campaign (not an email address)."
+          },
+          "reply_to": {
+            "type": "string",
+            "title": "Reply To Address",
+            "description": "The reply-to email address for the campaign."
+          },
+          "use_conversation": {
+            "type": "boolean",
+            "title": "Conversation",
+            "description": "Use Mailchimp Conversation feature to manage out-of-office replies."
+          },
+          "to_name": {
+            "type": "string",
+            "title": "To Name",
+            "description": "The campaign's custom 'To' name. Typically the first name [merge field](https://mailchimp.com/help/getting-started-with-merge-tags/)."
+          },
+          "folder_id": {
+            "type": "string",
+            "title": "Folder ID",
+            "description": "If the campaign is listed in a folder, the id for that folder."
+          },
+          "authenticate": {
+            "type": "boolean",
+            "title": "Authentication",
+            "description": "Whether Mailchimp [authenticated](https://mailchimp.com/help/about-email-authentication/) the campaign. Defaults to `true`."
+          },
+          "auto_footer": {
+            "type": "boolean",
+            "title": "Auto-Footer",
+            "description": "Automatically append Mailchimp's [default footer](https://mailchimp.com/help/about-campaign-footers/) to the campaign."
+          },
+          "inline_css": {
+            "type": "boolean",
+            "title": "Inline CSS",
+            "description": "Automatically inline the CSS included with the campaign content."
+          },
+          "auto_tweet": {
+            "type": "boolean",
+            "title": "Auto-Tweet",
+            "description": "Automatically tweet a link to the [campaign archive](https://mailchimp.com/help/about-email-campaign-archives-and-pages/) page when the campaign is sent."
+          },
+          "auto_fb_post": {
+            "type": "array",
+            "title": "Auto Post to Facebook",
+            "description": "An array of [Facebook](https://mailchimp.com/help/connect-or-disconnect-the-facebook-integration/) page ids to auto-post to.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fb_comments": {
+            "type": "boolean",
+            "title": "Facebook Comments",
+            "description": "Allows Facebook comments on the campaign (also force-enables the Campaign Archive toolbar). Defaults to `true`."
+          },
+          "timewarp": {
+            "type": "boolean",
+            "title": "Timewarp Send",
+            "description": "Send this campaign using [Timewarp](https://mailchimp.com/help/use-timewarp/).",
+            "readOnly": true
+          },
+          "template_id": {
+            "type": "integer",
+            "title": "Template ID",
+            "description": "The id for the template used in this campaign.",
+            "readOnly": false
+          },
+          "drag_and_drop": {
+            "type": "boolean",
+            "title": "Drag And Drop Campaign",
+            "description": "Whether the campaign uses the drag-and-drop editor.",
             "readOnly": true
           }
         }
       },
-      "readOnly": true
+      "variate_settings": {
+        "type": "object",
+        "title": "A/B Test Options",
+        "description": "The settings specific to A/B test campaigns.",
+        "properties": {
+          "winning_combination_id": {
+            "type": "string",
+            "title": "Winning Combination ID",
+            "description": "ID for the winning combination.",
+            "readOnly": true
+          },
+          "winning_campaign_id": {
+            "type": "string",
+            "title": "Winning Campaign ID",
+            "description": "ID of the campaign that was sent to the remaining recipients based on the winning combination.",
+            "readOnly": true
+          },
+          "winner_criteria": {
+            "type": "string",
+            "title": "Winning Criteria",
+            "description": "The combination that performs the best. This may be determined automatically by click rate, open rate, or total revenue -- or you may choose manually based on the reporting data you find the most valuable. For Multivariate Campaigns testing send_time, winner_criteria is ignored. For Multivariate Campaigns with 'manual' as the winner_criteria, the winner must be chosen in the Mailchimp web application.",
+            "enum": ["opens", "clicks", "manual", "total_revenue"]
+          },
+          "wait_time": {
+            "type": "integer",
+            "title": "Wait Time",
+            "description": "The number of minutes to wait before choosing the winning campaign. The value of wait_time must be greater than 0 and in whole hours, specified in minutes."
+          },
+          "test_size": {
+            "type": "integer",
+            "title": "Test Size",
+            "description": "The percentage of recipients to send the test combinations to, must be a value between 10 and 100."
+          },
+          "subject_lines": {
+            "type": "array",
+            "title": "Subject Lines",
+            "description": "The possible subject lines to test. If no subject lines are provided, settings.subject_line will be used.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "send_times": {
+            "type": "array",
+            "title": "Send Times",
+            "description": "The possible send times to test. The times provided should be in the format YYYY-MM-DD HH:MM:SS. If send_times are provided to test, the test_size will be set to 100% and winner_criteria will be ignored.",
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "from_names": {
+            "type": "array",
+            "title": "From Names",
+            "description": "The possible from names. The number of from_names provided must match the number of reply_to_addresses. If no from_names are provided, settings.from_name will be used.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reply_to_addresses": {
+            "type": "array",
+            "title": "Reply To Addresses",
+            "description": "The possible reply-to addresses. The number of reply_to_addresses provided must match the number of from_names. If no reply_to_addresses are provided, settings.reply_to will be used.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contents": {
+            "type": "array",
+            "title": "Content Descriptions",
+            "description": "Descriptions of possible email contents. To set campaign contents, make a PUT request to /campaigns/{campaign_id}/content with the field 'variate_contents'.",
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true
+          },
+          "combinations": {
+            "type": "array",
+            "title": "Combinations",
+            "description": "Combinations of possible variables used to build emails.",
+            "readOnly": true,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "title": "ID",
+                  "description": "Unique ID for the combination."
+                },
+                "subject_line": {
+                  "type": "integer",
+                  "title": "Subject Line",
+                  "description": "The index of `variate_settings.subject_lines` used."
+                },
+                "send_time": {
+                  "type": "integer",
+                  "title": "Send Time",
+                  "description": "The index of `variate_settings.send_times` used."
+                },
+                "from_name": {
+                  "type": "integer",
+                  "title": "From Name",
+                  "description": "The index of `variate_settings.from_names` used."
+                },
+                "reply_to": {
+                  "type": "integer",
+                  "title": "Reply To",
+                  "description": "The index of `variate_settings.reply_to_addresses` used."
+                },
+                "content_description": {
+                  "type": "integer",
+                  "title": "Content Description",
+                  "description": "The index of `variate_settings.contents` used."
+                },
+                "recipients": {
+                  "type": "integer",
+                  "title": "Recipients",
+                  "description": "The number of recipients for this combination."
+                }
+              }
+            }
+          }
+        }
+      },
+      "tracking": {
+        "type": "object",
+        "title": "Campaign Tracking Options",
+        "description": "The tracking options for a campaign.",
+        "properties": {
+          "opens": {
+            "type": "boolean",
+            "title": "Opens",
+            "description": "Whether to [track opens](https://mailchimp.com/help/about-open-tracking/). Defaults to `true`. Cannot be set to false for variate campaigns."
+          },
+          "html_clicks": {
+            "type": "boolean",
+            "title": "HTML Click Tracking",
+            "description": "Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/) in the HTML version of the campaign. Defaults to `true`. Cannot be set to false for variate campaigns."
+          },
+          "text_clicks": {
+            "type": "boolean",
+            "title": "Plain-Text Click Tracking",
+            "description": "Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/) in the plain-text version of the campaign. Defaults to `true`. Cannot be set to false for variate campaigns."
+          },
+          "goal_tracking": {
+            "type": "boolean",
+            "title": "Mailchimp Goal Tracking",
+            "description": "Whether to enable [Goal](https://mailchimp.com/help/about-connected-sites/) tracking."
+          },
+          "ecomm360": {
+            "type": "boolean",
+            "title": "E-commerce Tracking",
+            "description": "Whether to enable [eCommerce360](https://mailchimp.com/help/connect-your-online-store-to-mailchimp/) tracking."
+          },
+          "google_analytics": {
+            "type": "string",
+            "title": "Google Analytics Tracking",
+            "description": "The custom slug for [Google Analytics](https://mailchimp.com/help/integrate-google-analytics-with-mailchimp/) tracking (max of 50 bytes)."
+          },
+          "clicktale": {
+            "type": "string",
+            "title": "ClickTale Analytics Tracking",
+            "description": "The custom slug for [ClickTale](https://mailchimp.com/help/additional-tracking-options-for-campaigns/) tracking (max of 50 bytes)."
+          },
+          "salesforce": {
+            "type": "object",
+            "title": "Salesforce CRM Tracking",
+            "description": "Salesforce tracking options for a campaign. Must be using Mailchimp's built-in [Salesforce integration](https://mailchimp.com/help/integrate-salesforce-with-mailchimp/).",
+            "properties": {
+              "campaign": {
+                "type": "boolean",
+                "title": "Salesforce Campaign",
+                "description": "Create a campaign in a connected Salesforce account."
+              },
+              "notes": {
+                "type": "boolean",
+                "title": "Salesforce Note",
+                "description": "Update contact notes for a campaign based on subscriber email addresses."
+              }
+            }
+          },
+          "capsule": {
+            "type": "object",
+            "title": "Capsule CRM Tracking",
+            "description": "Capsule tracking options for a campaign. Must be using Mailchimp's built-in Capsule integration.",
+            "properties": {
+              "notes": {
+                "type": "boolean",
+                "title": "Capsule Note",
+                "description": "Update contact notes for a campaign based on subscriber email addresses."
+              }
+            }
+          }
+        }
+      },
+      "rss_opts": {
+        "type": "object",
+        "title": "RSS Options",
+        "description": "[RSS](https://mailchimp.com/help/share-your-blog-posts-with-mailchimp/) options for a campaign.",
+        "properties": {
+          "feed_url": {
+            "type": "string",
+            "title": "Feed URL",
+            "format": "uri",
+            "description": "The URL for the RSS feed."
+          },
+          "frequency": {
+            "type": "string",
+            "title": "Frequency",
+            "description": "The frequency of the RSS Campaign.",
+            "enum": ["daily", "weekly", "monthly"]
+          },
+          "schedule": {
+            "type": "object",
+            "title": "Sending Schedule",
+            "description": "The schedule for sending the RSS Campaign.",
+            "properties": {
+              "hour": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 23,
+                "title": "Sending Hour",
+                "description": "The hour to send the campaign in local time. Acceptable hours are 0-23. For example, '4' would be 4am in [your account's default time zone](https://mailchimp.com/help/set-account-defaults/)."
+              },
+              "daily_send": {
+                "type": "object",
+                "title": "Daily Sending Days",
+                "description": "The days of the week to send a daily RSS Campaign.",
+                "properties": {
+                  "sunday": {
+                    "type": "boolean",
+                    "title": "Sunday",
+                    "description": "Sends the daily RSS Campaign on Sundays."
+                  },
+                  "monday": {
+                    "type": "boolean",
+                    "title": "Monday",
+                    "description": "Sends the daily RSS Campaign on Mondays."
+                  },
+                  "tuesday": {
+                    "type": "boolean",
+                    "title": "tuesday",
+                    "description": "Sends the daily RSS Campaign on Tuesdays."
+                  },
+                  "wednesday": {
+                    "type": "boolean",
+                    "title": "Monday",
+                    "description": "Sends the daily RSS Campaign on Wednesdays."
+                  },
+                  "thursday": {
+                    "type": "boolean",
+                    "title": "Thursday",
+                    "description": "Sends the daily RSS Campaign on Thursdays."
+                  },
+                  "friday": {
+                    "type": "boolean",
+                    "title": "Friday",
+                    "description": "Sends the daily RSS Campaign on Fridays."
+                  },
+                  "saturday": {
+                    "type": "boolean",
+                    "title": "Saturday",
+                    "description": "Sends the daily RSS Campaign on Saturdays."
+                  }
+                }
+              },
+              "weekly_send_day": {
+                "type": "string",
+                "enum": [
+                  "sunday",
+                  "monday",
+                  "tuesday",
+                  "wednesday",
+                  "thursday",
+                  "friday",
+                  "saturday"
+                ],
+                "title": "Weekly Sending Day",
+                "description": "The day of the week to send a weekly RSS Campaign."
+              },
+              "monthly_send_date": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 31,
+                "title": "Monthly Sending Day",
+                "description": "The day of the month to send a monthly RSS Campaign. Acceptable days are 0-31, where '0' is always the last day of a month. Months with fewer than the selected number of days will not have an RSS campaign sent out that day. For example, RSS Campaigns set to send on the 30th will not go out in February."
+              }
+            }
+          },
+          "last_sent": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Sent",
+            "description": "The date the campaign was last sent.",
+            "readOnly": true
+          },
+          "constrain_rss_img": {
+            "type": "boolean",
+            "title": "Constrain RSS Images",
+            "description": "Whether to add CSS to images in the RSS feed to constrain their width in campaigns."
+          }
+        }
+      },
+      "ab_split_opts": {
+        "type": "object",
+        "title": "A/B Testing Options",
+        "description": "[A/B Testing](https://mailchimp.com/help/about-ab-testing-campaigns/) options for a campaign.",
+        "readOnly": true,
+        "properties": {
+          "split_test": {
+            "type": "string",
+            "title": "Split Test",
+            "description": "The type of AB split to run.",
+            "enum": ["subject", "from_name", "schedule"]
+          },
+          "pick_winner": {
+            "type": "string",
+            "title": "Pick Winner",
+            "description": "How we should evaluate a winner. Based on 'opens', 'clicks', or 'manual'.",
+            "enum": ["opens", "clicks", "manual"]
+          },
+          "wait_units": {
+            "type": "string",
+            "title": "Wait Time",
+            "description": "How unit of time for measuring the winner ('hours' or 'days'). This cannot be changed after a campaign is sent.",
+            "enum": ["hours", "days"]
+          },
+          "wait_time": {
+            "type": "integer",
+            "title": "Wait Time",
+            "description": "The amount of time to wait before picking a winner. This cannot be changed after a campaign is sent."
+          },
+          "split_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "title": "Split Size",
+            "description": "The size of the split groups. Campaigns split based on 'schedule' are forced to have a 50/50 split. Valid split integers are between 1-50."
+          },
+          "from_name_a": {
+            "type": "string",
+            "title": "From Name Group A",
+            "description": "For campaigns split on 'From Name', the name for Group A."
+          },
+          "from_name_b": {
+            "type": "string",
+            "title": "From Name Group B",
+            "description": "For campaigns split on 'From Name', the name for Group B."
+          },
+          "reply_email_a": {
+            "type": "string",
+            "title": "Reply Email Group A",
+            "description": "For campaigns split on 'From Name', the reply-to address for Group A."
+          },
+          "reply_email_b": {
+            "type": "string",
+            "title": "Reply Email Group B",
+            "description": "For campaigns split on 'From Name', the reply-to address for Group B."
+          },
+          "subject_a": {
+            "type": "string",
+            "title": "Subject Line Group A",
+            "description": "For campaigns split on 'Subject Line', the subject line for Group A."
+          },
+          "subject_b": {
+            "type": "string",
+            "title": "Subject Line Group B",
+            "description": "For campaigns split on 'Subject Line', the subject line for Group B."
+          },
+          "send_time_a": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Send Time Group A",
+            "description": "The send time for Group A."
+          },
+          "send_time_b": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Send Time Group B",
+            "description": "The send time for Group B."
+          },
+          "send_time_winner": {
+            "type": "string",
+            "title": "Send Time Winner",
+            "description": "The send time for the winning version."
+          }
+        }
+      },
+      "social_card": {
+        "type": "object",
+        "title": "Campaign Social Card",
+        "description": "The preview for the campaign, rendered by social networks like Facebook and Twitter. [Learn more](https://mailchimp.com/help/enable-and-customize-social-cards/).",
+        "properties": {
+          "image_url": {
+            "type": "string",
+            "title": "Image URL",
+            "description": "The url for the header image for the card."
+          },
+          "description": {
+            "type": "string",
+            "title": "Campaign Description",
+            "description": "A short summary of the campaign to display."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "The title for the card. Typically the subject line of the campaign."
+          }
+        }
+      },
+      "report_summary": {
+        "type": "object",
+        "title": "Campaign Report Summary",
+        "description": "For sent campaigns, a summary of opens, clicks, and e-commerce data.",
+        "properties": {
+          "opens": {
+            "type": "integer",
+            "title": "Automation Opens",
+            "description": "The total number of opens for a campaign.",
+            "readOnly": true
+          },
+          "unique_opens": {
+            "type": "integer",
+            "title": "Unique Opens",
+            "description": "The number of unique opens.",
+            "readOnly": true
+          },
+          "open_rate": {
+            "type": "number",
+            "title": "Open Rate",
+            "description": "The number of unique opens divided by the total number of successful deliveries.",
+            "readOnly": true
+          },
+          "clicks": {
+            "type": "integer",
+            "title": "Total Clicks",
+            "description": "The total number of clicks for an campaign.",
+            "readOnly": true
+          },
+          "subscriber_clicks": {
+            "type": "integer",
+            "title": "Unique Subscriber Clicks",
+            "description": "The number of unique clicks.",
+            "readOnly": true
+          },
+          "click_rate": {
+            "type": "number",
+            "title": "Click Rate",
+            "description": "The number of unique clicks divided by the total number of successful deliveries.",
+            "readOnly": true
+          },
+          "ecommerce": {
+            "type": "object",
+            "title": "E-Commerce Report",
+            "description": "E-Commerce stats for a campaign.",
+            "properties": {
+              "total_orders": {
+                "type": "integer",
+                "title": "Total Orders",
+                "description": "The total orders for a campaign.",
+                "readOnly": true
+              },
+              "total_spent": {
+                "type": "number",
+                "title": "Total Spent",
+                "description": "The total spent for a campaign. Calculated as the sum of all order totals with no deductions.",
+                "readOnly": true
+              },
+              "total_revenue": {
+                "type": "number",
+                "title": "Total Revenue",
+                "description": "The total revenue for a campaign. Calculated as the sum of all order totals minus shipping and tax totals.",
+                "readOnly": true
+              }
+            }
+          }
+        }
+      },
+      "delivery_status": {
+        "type": "object",
+        "title": "Campaign Delivery Status",
+        "description": "Updates on campaigns in the process of sending.",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Delivery Status Enabled",
+            "description": "Whether Campaign Delivery Status is enabled for this account and campaign.",
+            "readOnly": true
+          },
+          "can_cancel": {
+            "type": "boolean",
+            "title": "Campaign Cancelable",
+            "description": "Whether a campaign send can be canceled.",
+            "readOnly": true
+          },
+          "status": {
+            "type": "string",
+            "title": "Campaign Delivery Status",
+            "description": "The current state of a campaign delivery.",
+            "enum": ["delivering", "delivered", "canceling", "canceled"],
+            "readOnly": true
+          },
+          "emails_sent": {
+            "type": "integer",
+            "title": "Emails Sent",
+            "description": "The total number of emails confirmed sent for this campaign so far.",
+            "readOnly": true
+          },
+          "emails_canceled": {
+            "type": "integer",
+            "title": "Emails Canceled",
+            "description": "The total number of emails canceled for this campaign.",
+            "readOnly": true
+          }
+        }
+      },
+      "_links": {
+        "title": "Links",
+        "description": "A list of link types and descriptions for the API schema documents.",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "title": "Resource Link",
+          "description": "This object represents a link from the resource where it is found to another resource or action that may be performed.",
+          "properties": {
+            "rel": {
+              "type": "string",
+              "title": "Rel",
+              "description": "As with an HTML 'rel' attribute, this describes the type of link.",
+              "readOnly": true
+            },
+            "href": {
+              "type": "string",
+              "title": "Href",
+              "description": "This property contains a fully-qualified URL that can be called to retrieve the linked resource or perform the linked action.",
+              "readOnly": true
+            },
+            "method": {
+              "type": "string",
+              "title": "Method",
+              "description": "The HTTP method that should be used when accessing the URL defined in 'href'.",
+              "enum": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS",
+                "HEAD"
+              ],
+              "readOnly": true
+            },
+            "targetSchema": {
+              "type": "string",
+              "title": "Target Schema",
+              "description": "For GETs, this is a URL representing the schema that the response should conform to.",
+              "readOnly": true
+            },
+            "schema": {
+              "type": "string",
+              "title": "Schema",
+              "description": "For HTTP methods that can receive bodies (POST and PUT), this is a URL representing the schema that the body should conform to.",
+              "readOnly": true
+            }
+          }
+        },
+        "readOnly": true
+      }
     }
   }
 }
