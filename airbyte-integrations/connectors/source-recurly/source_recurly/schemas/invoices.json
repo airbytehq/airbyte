@@ -1,0 +1,256 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "object": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "parent_account_id": {
+          "type": "string"
+        },
+        "bill_to": {
+          "type": "string"
+        }
+      }
+    },
+    "billing_info_id": {
+      "type": "string"
+    },
+    "subscription_ids": {
+      "type": "array"
+    },
+    "previous_invoice_id": {
+      "type": "string"
+    },
+    "number": {
+      "type": "string"
+    },
+    "collection_method": {
+      "type": "string"
+    },
+    "po_number": {
+      "type": "string"
+    },
+    "net_terms": {
+      "type": "integer"
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "name_on_account": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "street1": {
+          "type": "string"
+        },
+        "street2": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "postal_code": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      }
+    },
+    "shipping_address": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "account_id": {
+          "type": "string"
+        },
+        "nickname": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "vat_number": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "street1": {
+          "type": "string"
+        },
+        "street2": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "postal_code": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      }
+    },
+    "currency": {
+      "type": "string"
+    },
+    "discount": {
+      "type": "integer"
+    },
+    "subtotal": {
+      "type": "integer"
+    },
+    "tax": {
+      "type": "integer"
+    },
+    "total": {
+      "type": "integer"
+    },
+    "refundable_amount": {
+      "type": "integer"
+    },
+    "paid": {
+      "type": "integer"
+    },
+    "balance": {
+      "type": "integer"
+    },
+    "tax_info": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "rate": {
+          "type": "integer"
+        }
+      }
+    },
+    "vat_number": {
+      "type": "string"
+    },
+    "vat_reverse_charge_notes": {
+      "type": "string"
+    },
+    "terms_and_conditions": {
+      "type": "string"
+    },
+    "customer_notes": {
+      "type": "string"
+    },
+    "line_items": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "type": "string"
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "next": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array"
+        }
+      }
+    },
+    "transactions": {
+      "type": "array"
+    },
+    "credit_payments": {
+      "type": "array"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "due_at": {
+      "type": "string"
+    },
+    "closed_at": {
+      "type": "string"
+    }
+  }
+}

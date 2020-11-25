@@ -23,6 +23,7 @@
     * [MySQL](integrations/sources/mysql.md)
     * [Microsoft SQL Server (MSSQL)](integrations/sources/mssql.md)
     * [Postgres](integrations/sources/postgres.md)
+    * [Recurly](integrations/sources/recurly.md)
     * [Rest API](integrations/sources/rest-api.md)
     * [Salesforce](integrations/sources/salesforce.md)
     * [Sendgrid](integrations/sources/sendgrid.md)
