@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "object": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "interval_unit": {
+      "type": "string"
+    },
+    "interval_length": {
+      "type": "integer"
+    },
+    "trial_unit": {
+      "type": "integer"
+    },
+    "trial_length": {
+      "type": "integer"
+    },
+    "trial_requires_billing_info": {
+      "type": "boolean"
+    },
+    "total_billing_cycles": {
+      "type": "integer"
+    },
+    "auto_renew": {
+      "type": "boolean"
+    },
+    "accounting_code": {
+      "type": "string"
+    },
+    "revenue_schedule_type": {
+      "type": "string"
+    },
+    "setup_fee_revenue_schedule_type": {
+      "type": "string"
+    },
+    "setup_fee_accounting_code": {
+      "type": "string"
+    },
+    "avalara_transaction_type": {
+      "type": "integer"
+    },
+    "avalara_service_type": {
+      "type": "integer"
+    },
+    "tax_code": {
+      "type": "string"
+    },
+    "tax_exempt": {
+      "type": "boolean"
+    },
+    "currencies": {
+      "type": "array"
+    },
+    "hosted_pages": {
+      "type": "object",
+      "properties": {
+        "success_url": {
+          "type": "string"
+        },
+        "cancel_url": {
+          "type": "string"
+        },
+        "bypass_confirmation": {
+          "type": "boolean"
+        },
+        "display_quantity": {
+          "type": "boolean"
+        }
+      }
+    },
+    "allow_any_item_on_subscriptions": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "deleted_at": {
+      "type": "string"
+    }
+  }
+}
