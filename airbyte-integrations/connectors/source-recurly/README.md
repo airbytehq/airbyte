@@ -36,7 +36,7 @@ and place them into `secrets/config.json`.
 python main_dev.py spec
 python main_dev.py check --config secrets/config.json
 python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/sample_catalog.json
+python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ### Unit Tests
@@ -52,7 +52,7 @@ pytest unit_tests
 docker run --rm airbyte/source-recurly:dev spec
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/secrets:/secrets airbyte/source-recurly:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/secrets:/secrets airbyte/source-recurly:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/secrets:/secrets -v $(pwd)/airbyte-integrations/connectors/source-recurly/sample_files:/sample_files airbyte/source-recurly:dev read --config /secrets/config.json --catalog /sample_files/sample_catalog.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/secrets:/secrets -v $(pwd)/airbyte-integrations/connectors/source-recurly/sample_files:/sample_files airbyte/source-recurly:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
 ```
 
 ### Integration Tests
@@ -62,3 +62,4 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-recurly/secrets
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
+
