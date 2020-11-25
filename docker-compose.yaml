@@ -82,6 +82,7 @@ services:
       - server
     environment:
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - AIRBYTE_VERSION=${VERSION}
 
 volumes:
   workspace:
