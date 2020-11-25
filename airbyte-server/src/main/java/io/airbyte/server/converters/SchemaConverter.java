@@ -40,67 +40,88 @@ public class SchemaConverter {
 
   public static Schema toPersistenceSchema(SourceSchema sourceSchema) {
     final List<Stream> persistenceStreams =
-        sourceSchema.getStreams().stream()
-            .map(
-                apiStream -> {
-                  final List<Field> persistenceFields =
-                      apiStream.getFields().stream()
-                          .map(
-                              apiField -> {
-                                final Field field = new Field()
-                                    .withName(apiField.getName())
-                                    .withSelected(apiField.getSelected());
-                                // todo (cgardens) - this is a hack to handle complex types (e.g. anyOf). they will not have a type
-                                // field set, so we just call them "object". we need to revisit this ASAP.
-                                if (apiField.getDataType() != null) {
-                                  field.withDataType(Enums.convertTo(apiField.getDataType(), DataType.class));
-                                } else {
-                                  field.withDataType(DataType.OBJECT);
-                                }
-                                return field;
-                              })
-                          .collect(Collectors.toList());
+        sourceSchema.getStreams()
+            .stream()
+            .map(apiStream -> {
+              final List<Field> persistenceFields = apiStream.getFields()
+                  .stream()
+                  .map(SchemaConverter::toPersistenceField)
+                  .collect(Collectors.toList());
 
-                  return new Stream()
-                      .withName(apiStream.getName())
-                      .withFields(persistenceFields)
-                      .withSelected(persistenceFields.stream().anyMatch(Field::getSelected));
-                })
+              return new Stream()
+                  // immutable
+                  // todo (cgardens) - not great that we just trust the API to not mutate these.
+                  .withName(apiStream.getName())
+                  .withFields(persistenceFields)
+                  .withSupportedSyncModes(apiStream.getSupportedSyncModes()
+                      .stream()
+                      .map(e -> Enums.convertTo(e, io.airbyte.config.StandardSync.SyncMode.class))
+                      .collect(Collectors.toList()))
+                  .withSourceDefinedCursor(apiStream.getSourceDefinedCursor())
+                  .withDefaultCursorField(apiStream.getDefaultCursorField())
+                  // configurable
+                  .withSyncMode(Enums.convertTo(apiStream.getSyncMode(), io.airbyte.config.StandardSync.SyncMode.class))
+                  .withCursorField(apiStream.getCursorField())
+                  .withSelected(persistenceFields.stream().anyMatch(Field::getSelected));
+            })
             .collect(Collectors.toList());
 
     return new Schema().withStreams(persistenceStreams);
   }
 
-  public static SourceSchema toApiSchema(Schema persistenceSchema) {
-    final List<SourceSchemaStream> persistenceStreams =
-        persistenceSchema.getStreams().stream()
-            .map(
-                persistenceStream -> {
-                  final List<SourceSchemaField> apiFields =
-                      persistenceStream.getFields().stream()
-                          .map(
-                              persistenceField -> {
-                                final SourceSchemaField field = new SourceSchemaField()
-                                    .name(persistenceField.getName())
-                                    .selected(persistenceField.getSelected());
-                                // todo (cgardens) - this is a hack to handle complex types (e.g. anyOf). they will not have a type
-                                // field set, so we just call them "object". we need to revisit this ASAP.
-                                if (persistenceField.getDataType() != null) {
-                                  field.dataType(Enums.convertTo(persistenceField.getDataType(), io.airbyte.api.model.DataType.class));
-                                } else {
-                                  field.dataType(io.airbyte.api.model.DataType.OBJECT);
-                                }
-                                return field;
-                              })
-                          .collect(Collectors.toList());
+  private static Field toPersistenceField(SourceSchemaField apiField) {
+    final Field field = new Field()
+        .withName(apiField.getName())
+        .withSelected(apiField.getSelected());
+    // todo (cgardens) - this is a hack to handle complex types (e.g. anyOf). they will not have a type
+    // field set, so we just call them "object". we need to revisit this ASAP.
+    if (apiField.getDataType() != null) {
+      field.withDataType(Enums.convertTo(apiField.getDataType(), DataType.class));
+    } else {
+      field.withDataType(DataType.OBJECT);
+    }
+    return field;
+  }
 
-                  return new SourceSchemaStream()
-                      .name(persistenceStream.getName())
-                      .fields(apiFields);
-                })
-            .collect(Collectors.toList());
+  public static SourceSchema toApiSchema(Schema persistenceSchema) {
+    final List<SourceSchemaStream> persistenceStreams = persistenceSchema.getStreams()
+        .stream()
+        .map(persistenceStream -> {
+          final List<SourceSchemaField> apiFields = persistenceStream.getFields()
+              .stream()
+              .map(SchemaConverter::toApiField)
+              .collect(Collectors.toList());
+
+          return new SourceSchemaStream()
+              // immutable
+              .name(persistenceStream.getName())
+              .fields(apiFields)
+              .supportedSyncModes(persistenceStream.getSupportedSyncModes()
+                  .stream().map(e -> Enums.convertTo(e, io.airbyte.api.model.SyncMode.class))
+                  .collect(Collectors.toList()))
+              .sourceDefinedCursor(persistenceStream.getSourceDefinedCursor())
+              .defaultCursorField(persistenceStream.getDefaultCursorField())
+              // configurable
+              .syncMode(Enums.convertTo(persistenceStream.getSyncMode(), io.airbyte.api.model.SyncMode.class))
+              .cursorField(persistenceStream.getCursorField());
+        })
+        .collect(Collectors.toList());
 
     return new SourceSchema().streams(persistenceStreams);
+  }
+
+  private static SourceSchemaField toApiField(Field persistenceField) {
+    final SourceSchemaField field = new SourceSchemaField()
+        .name(persistenceField.getName())
+        .selected(persistenceField.getSelected());
+    // todo (cgardens) - this is a hack to handle complex types (e.g. anyOf). they will not have a type
+    // field set, so we just call them "object". we need to revisit this ASAP.
+    if (persistenceField.getDataType() != null) {
+      field.dataType(Enums.convertTo(persistenceField.getDataType(), io.airbyte.api.model.DataType.class));
+    } else {
+      field.dataType(io.airbyte.api.model.DataType.OBJECT);
+    }
+    return field;
   }
 
 }

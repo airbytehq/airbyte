@@ -69,6 +69,7 @@ class SchemaConverterTest {
   @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(io.airbyte.api.model.DataType.class, DataType.class));
+    assertTrue(Enums.isCompatible(io.airbyte.config.StandardSync.SyncMode.class, io.airbyte.api.model.SyncMode.class));
   }
 
 }

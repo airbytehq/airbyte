@@ -25,8 +25,10 @@
 package io.airbyte.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Lists;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -151,6 +153,11 @@ class AirbyteProtocolConvertersTest {
 
     final AirbyteMessage message = Jsons.deserialize(testString, AirbyteMessage.class);
     assertEquals(schema, AirbyteProtocolConverters.toSchema(message.getCatalog()));
+  }
+
+  @Test
+  void testEnumConversion() {
+    assertTrue(Enums.isCompatible(io.airbyte.protocol.models.SyncMode.class, io.airbyte.config.StandardSync.SyncMode.class));
   }
 
 }

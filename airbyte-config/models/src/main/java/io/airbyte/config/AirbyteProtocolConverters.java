@@ -26,6 +26,7 @@ package io.airbyte.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -39,16 +40,27 @@ import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-// todo (cgardens) - update this before merging.
 // todo (cgardens) - hack, remove after we've gotten rid of Schema object.
 public class AirbyteProtocolConverters {
 
   public static ConfiguredAirbyteCatalog toConfiguredCatalog(Schema schema) {
-    List<ConfiguredAirbyteStream> airbyteStreams = schema.getStreams().stream()
+    final List<ConfiguredAirbyteStream> airbyteStreams = schema.getStreams().stream()
         .map(s -> new ConfiguredAirbyteStream()
+            // immutable
+            // todo (cgardens) - not great that we just trust the API to not mutate these.
             .withStream(new AirbyteStream()
                 .withName(s.getName())
-                .withJsonSchema(toJson(s.getFields()))))
+                .withJsonSchema(toJson(s.getFields()))
+                .withSupportedSyncModes(s.getSupportedSyncModes()
+                    .stream()
+                    .map(e -> Enums.convertTo(e, io.airbyte.protocol.models.SyncMode.class))
+                    .collect(Collectors.toList()))
+                .withSourceDefinedCursor(s.getSourceDefinedCursor())
+                .withDefaultCursorField(s.getDefaultCursorField()))
+            // configurable
+            .withSyncMode(Enums.convertTo(s.getSyncMode(), io.airbyte.protocol.models.SyncMode.class))
+            .withCursorField(s.getCursorField()))
+
         // perform selection based on the output of toJson, which keeps properties if selected=true
         .filter(s -> !s.getStream().getJsonSchema().get("properties").isEmpty())
         .collect(Collectors.toList());
@@ -77,21 +89,37 @@ public class AirbyteProtocolConverters {
   }
 
   public static Schema toSchema(AirbyteCatalog catalog) {
-    return new Schema().withStreams(catalog.getStreams().stream().map(airbyteStream -> {
-      final List<Entry<String, JsonNode>> list = new ArrayList<>();
-      // todo (cgardens) - assumes it is json schema type object with properties. not a stellar
-      // assumption.
-      final Iterator<Entry<String, JsonNode>> iterator = airbyteStream.getJsonSchema().get("properties").fields();
-      while (iterator.hasNext()) {
-        list.add(iterator.next());
-      }
-      return new Stream()
-          .withName(airbyteStream.getName())
-          .withFields(list.stream().map(item -> new Field()
-              .withName(item.getKey())
-              .withDataType(getDataType(item.getValue()))
-              .withSelected(true)).collect(Collectors.toList()));
-    }).collect(Collectors.toList()));
+    return new Schema().withStreams(catalog.getStreams()
+        .stream()
+        .map(airbyteStream -> new Stream()
+            // immutable
+            .withName(airbyteStream.getName())
+            .withFields(toFields(airbyteStream.getJsonSchema().get("properties")))
+            .withSupportedSyncModes(airbyteStream.getSupportedSyncModes()
+                .stream()
+                .map(e -> Enums.convertTo(e, StandardSync.SyncMode.class))
+                .collect(Collectors.toList()))
+            .withSourceDefinedCursor(airbyteStream.getSourceDefinedCursor())
+            .withDefaultCursorField(airbyteStream.getDefaultCursorField())
+            // configurable
+            .withSyncMode(null)
+            .withCursorField(null))
+        .collect(Collectors.toList()));
+  }
+
+  private static List<Field> toFields(JsonNode jsonSchemaPropertiesObject) {
+    final List<Entry<String, JsonNode>> list = new ArrayList<>();
+    // todo (cgardens) - assumes it is json schema type object with properties. not a stellar
+    // assumption.
+    final Iterator<Entry<String, JsonNode>> iterator = jsonSchemaPropertiesObject.fields();
+    while (iterator.hasNext()) {
+      list.add(iterator.next());
+    }
+
+    return list.stream().map(item -> new Field()
+        .withName(item.getKey())
+        .withDataType(getDataType(item.getValue()))
+        .withSelected(true)).collect(Collectors.toList());
   }
 
   // todo (cgardens) - add more robust handling for jsonschema types.
@@ -118,10 +146,11 @@ public class AirbyteProtocolConverters {
     }
   }
 
-  // TODO HACK: this defaults to OBJECT in the case of anyOf. May fail with anyOf: [int or string],
+  // TODO HACK (jrhizor): this defaults to OBJECT in the case of anyOf. May fail with anyOf: [int or
+  // string],
   // for example.
   private static DataType getDataType(JsonNode node) {
-    JsonNode type = node.get("type");
+    final JsonNode type = node.get("type");
 
     if (type == null) {
       return DataType.OBJECT;
@@ -130,7 +159,7 @@ public class AirbyteProtocolConverters {
     }
   }
 
-  // TODO HACK: convert Integer to Number until we have a more solid typing system
+  // TODO HACK (jrhizor): convert Integer to Number until we have a more solid typing system
   private static String convertToNumberIfInteger(String type) {
     if (type.toUpperCase().equals("INTEGER")) {
       return "NUMBER";

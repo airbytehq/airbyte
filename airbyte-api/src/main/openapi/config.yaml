@@ -1359,6 +1359,7 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+        # todo (cgardens) - remove this after we migrate to incremental schema
         syncMode:
           $ref: "#/components/schemas/SyncMode"
         syncSchema:
@@ -1401,6 +1402,7 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+        # todo (cgardens) - remove this after we migrate to incremental schema
         syncMode:
           $ref: "#/components/schemas/SyncMode"
         syncSchema:
@@ -1469,7 +1471,10 @@ components:
       required:
         - name
         - fields
+        # todo (cgardens) - make required once sources are migrated
+        # - supportedSyncModes
       properties:
+        # immutable
         name:
           type: string
         fields:
@@ -1480,12 +1485,15 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SyncMode"
-        userDefinedCursorField:
+        sourceDefinedCursor:
           type: boolean
         defaultCursorField:
           type: array
           items:
             type: string
+        # configurable
+        selected:
+          type: boolean
         syncMode:
           $ref: "#/components/schemas/SyncMode"
         cursorField:

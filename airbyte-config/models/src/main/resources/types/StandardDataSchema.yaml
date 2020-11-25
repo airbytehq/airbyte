@@ -20,6 +20,8 @@ definitions:
     required:
       - name
       - fields
+      # todo (cgardens) - make required once sources are migrated
+      # - supportedSyncModes
     additionalProperties: false
     properties:
       # immutable
@@ -33,7 +35,7 @@ definitions:
         type: array
         items:
           "$ref": SyncMode.yaml
-      sourceDefinedCursorField:
+      sourceDefinedCursor:
         type: boolean
       defaultCursorField:
         type: array
@@ -47,7 +49,7 @@ definitions:
       cursorField:
         type: array
         items:
-          "$ref": SyncMode.yaml
+          type: string
   field:
     type: object
     required:
