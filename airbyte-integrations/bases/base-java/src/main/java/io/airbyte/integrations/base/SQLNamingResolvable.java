@@ -22,38 +22,36 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.snowflake;
+package io.airbyte.integrations.base;
 
-import io.airbyte.commons.lang.CloseableQueue;
+public interface SQLNamingResolvable {
 
-public class SnowflakeWriteContext {
+  /**
+   * Handle Naming Conversions of an input name to output a valid identifier name for the desired SQL
+   * dialect.
+   *
+   * @param name of the identifier to check proper naming conventions
+   * @return modified name with invalid characters replaced by '_' and adapted for the chosen SQL
+   *         dialect.
+   */
+  String getIdentifier(String name);
 
-  private final String schemaName;
-  private final String tableName;
-  private final String tmpTableName;
-  private final CloseableQueue<byte[]> writeBuffer;
+  /**
+   * Same as getIdentifier but returns also the name of the table for storing raw data
+   *
+   * @param name of the identifier to check proper naming conventions
+   * @return modified name with invalid characters replaced by '_' and adapted for the chosen SQL
+   *         dialect.
+   */
+  String getRawTableName(String name);
 
-  SnowflakeWriteContext(String schemaName, String tableName, String tmpTableName, CloseableQueue<byte[]> writeBuffer) {
-    this.schemaName = schemaName;
-    this.tableName = tableName;
-    this.tmpTableName = tmpTableName;
-    this.writeBuffer = writeBuffer;
-  }
-
-  public String getSchemaName() {
-    return schemaName;
-  }
-
-  public String getTableName() {
-    return tableName;
-  }
-
-  public String getTmpTableName() {
-    return tmpTableName;
-  }
-
-  public CloseableQueue<byte[]> getWriteBuffer() {
-    return writeBuffer;
-  }
+  /**
+   * Same as getIdentifier but returns also the name of the table for storing tmp data
+   *
+   * @param name of the identifier to check proper naming conventions
+   * @return modified name with invalid characters replaced by '_' and adapted for the chosen SQL
+   *         dialect.
+   */
+  String getTmpTableName(String name);
 
 }

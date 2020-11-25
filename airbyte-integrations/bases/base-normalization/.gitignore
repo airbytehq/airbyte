@@ -1,0 +1,4 @@
+build/
+logs/
+dbt-project-template/models/generated/
+dbt_modules/

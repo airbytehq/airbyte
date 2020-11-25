@@ -22,38 +22,38 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.snowflake;
+package io.airbyte.integrations.base;
 
-import io.airbyte.commons.lang.CloseableQueue;
+import java.text.Normalizer;
+import java.time.Instant;
 
-public class SnowflakeWriteContext {
+public class StandardSQLNaming implements SQLNamingResolvable {
 
-  private final String schemaName;
-  private final String tableName;
-  private final String tmpTableName;
-  private final CloseableQueue<byte[]> writeBuffer;
-
-  SnowflakeWriteContext(String schemaName, String tableName, String tmpTableName, CloseableQueue<byte[]> writeBuffer) {
-    this.schemaName = schemaName;
-    this.tableName = tableName;
-    this.tmpTableName = tmpTableName;
-    this.writeBuffer = writeBuffer;
+  @Override
+  public String getIdentifier(String name) {
+    return convertStreamName(name);
   }
 
-  public String getSchemaName() {
-    return schemaName;
+  @Override
+  public String getRawTableName(String streamName) {
+    return convertStreamName(streamName + "_raw");
   }
 
-  public String getTableName() {
-    return tableName;
+  @Override
+  public String getTmpTableName(String streamName) {
+    return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
   }
 
-  public String getTmpTableName() {
-    return tmpTableName;
+  protected String convertStreamName(String input) {
+    final String value = Normalizer.normalize(input, Normalizer.Form.NFKD);
+    return value
+        .replaceAll("\\p{M}", "")
+        .replaceAll("\\s+", "_")
+        .replaceAll(getNonValidCharacterPattern(), "_");
   }
 
-  public CloseableQueue<byte[]> getWriteBuffer() {
-    return writeBuffer;
+  protected String getNonValidCharacterPattern() {
+    return "[^\\p{Alnum}_]";
   }
 
 }

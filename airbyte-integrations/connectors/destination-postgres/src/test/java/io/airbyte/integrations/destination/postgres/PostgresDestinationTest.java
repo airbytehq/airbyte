@@ -40,7 +40,6 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.NamingHelper;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -75,7 +74,7 @@ class PostgresDestinationTest {
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users";
-  private static final String TASKS_STREAM_NAME = "tasks";
+  private static final String TASKS_STREAM_NAME = "tasks-list";
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
@@ -158,7 +157,8 @@ class PostgresDestinationTest {
 
   @Test
   void testWriteSuccess() throws Exception {
-    final DestinationConsumer<AirbyteMessage> consumer = new PostgresDestination().write(config, CATALOG);
+    final PostgresDestination destination = new PostgresDestination();
+    final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, CATALOG);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -167,11 +167,11 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    Set<JsonNode> usersActual = recordRetriever(NamingHelper.getRawTableName(USERS_STREAM_NAME));
+    Set<JsonNode> usersActual = recordRetriever(destination.getNamingResolver().getRawTableName(USERS_STREAM_NAME));
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(NamingHelper.getRawTableName(TASKS_STREAM_NAME));
+    Set<JsonNode> tasksActual = recordRetriever(destination.getNamingResolver().getRawTableName(TASKS_STREAM_NAME));
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
@@ -184,7 +184,8 @@ class PostgresDestinationTest {
     final ConfiguredAirbyteCatalog catalog = Jsons.clone(CATALOG);
     catalog.getStreams().forEach(stream -> stream.withSyncMode(SyncMode.INCREMENTAL));
 
-    final DestinationConsumer<AirbyteMessage> consumer = new PostgresDestination().write(config, catalog);
+    final PostgresDestination destination = new PostgresDestination();
+    final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, catalog);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -193,7 +194,7 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final DestinationConsumer<AirbyteMessage> consumer2 = new PostgresDestination().write(config, catalog);
+    final DestinationConsumer<AirbyteMessage> consumer2 = destination.write(config, catalog);
 
     final AirbyteMessage messageUser3 = new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
@@ -202,14 +203,14 @@ class PostgresDestinationTest {
     consumer2.accept(messageUser3);
     consumer2.close();
 
-    Set<JsonNode> usersActual = recordRetriever(NamingHelper.getRawTableName(USERS_STREAM_NAME));
+    Set<JsonNode> usersActual = recordRetriever(destination.getNamingResolver().getRawTableName(USERS_STREAM_NAME));
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(
         MESSAGE_USERS1.getRecord().getData(),
         MESSAGE_USERS2.getRecord().getData(),
         messageUser3.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(NamingHelper.getRawTableName(TASKS_STREAM_NAME));
+    Set<JsonNode> tasksActual = recordRetriever(destination.getNamingResolver().getRawTableName(TASKS_STREAM_NAME));
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
@@ -227,7 +228,8 @@ class PostgresDestinationTest {
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
         .build());
-    final DestinationConsumer<AirbyteMessage> consumer = new PostgresDestination().write(newConfig, CATALOG);
+    final PostgresDestination destination = new PostgresDestination();
+    final DestinationConsumer<AirbyteMessage> consumer = destination.write(newConfig, CATALOG);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -236,18 +238,21 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    Set<JsonNode> usersActual = recordRetriever(NamingHelper.getRawTableName("new_schema." + USERS_STREAM_NAME));
+    final String schemaName = destination.getNamingResolver().getIdentifier("new_schema");
+    String streamName = schemaName + "." + destination.getNamingResolver().getRawTableName(USERS_STREAM_NAME);
+    Set<JsonNode> usersActual = recordRetriever(streamName);
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(NamingHelper.getRawTableName("new_schema." + TASKS_STREAM_NAME));
+    streamName = schemaName + "." + destination.getNamingResolver().getRawTableName(TASKS_STREAM_NAME);
+    Set<JsonNode> tasksActual = recordRetriever(streamName);
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
     assertTmpTablesNotPresent(
         CATALOG.getStreams().stream().map(ConfiguredAirbyteStream::getStream).map(AirbyteStream::getName).collect(Collectors.toList()));
 
-    assertThrows(RuntimeException.class, () -> recordRetriever(NamingHelper.getRawTableName(USERS_STREAM_NAME)));
+    assertThrows(RuntimeException.class, () -> recordRetriever(destination.getNamingResolver().getRawTableName(USERS_STREAM_NAME)));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -257,7 +262,8 @@ class PostgresDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final DestinationConsumer<AirbyteMessage> consumer = spy(new PostgresDestination().write(config, CATALOG));
+    final PostgresDestination destination = new PostgresDestination();
+    final DestinationConsumer<AirbyteMessage> consumer = spy(destination.write(config, CATALOG));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
@@ -266,7 +272,7 @@ class PostgresDestinationTest {
     final List<String> tableNames = CATALOG.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
-        .map(s -> NamingHelper.getRawTableName(s.getName()))
+        .map(s -> destination.getNamingResolver().getRawTableName(s.getName()))
         .collect(Collectors.toList());
     assertTmpTablesNotPresent(CATALOG.getStreams()
         .stream()

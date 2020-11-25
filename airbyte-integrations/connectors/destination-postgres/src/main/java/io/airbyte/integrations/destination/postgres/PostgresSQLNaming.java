@@ -22,12 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination.postgres;
 
-public class NamingHelper {
+import io.airbyte.integrations.base.ExtendedSQLNaming;
 
-  public static String getRawTableName(String streamName) {
-    return streamName + "_raw";
+public class PostgresSQLNaming extends ExtendedSQLNaming {
+
+  @Override
+  protected String applyDefaultCase(String input) {
+    return input.toLowerCase();
   }
 
 }

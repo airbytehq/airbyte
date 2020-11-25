@@ -68,8 +68,8 @@ class CsvDestinationTest {
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
-  private static final String USERS_FILE = USERS_STREAM_NAME + ".csv";
-  private static final String TASKS_FILE = TASKS_STREAM_NAME + ".csv";
+  private static final String USERS_FILE = USERS_STREAM_NAME + "_raw.csv";
+  private static final String TASKS_FILE = TASKS_STREAM_NAME + "_raw.csv";
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
