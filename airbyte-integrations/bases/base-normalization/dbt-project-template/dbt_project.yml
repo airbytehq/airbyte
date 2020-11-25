@@ -27,6 +27,11 @@ clean-targets:         # directories to be removed by `dbt clean`
     - "build"
     - "dbt_modules"
 
+quoting:
+  database: true
+  schema: true
+  identifier: true
+
 # You can define configurations for models in the `source-paths` directory here.
 # Using these configurations, you can enable or disable models, change how they
 # are materialized, and more!

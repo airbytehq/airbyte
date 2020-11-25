@@ -25,8 +25,8 @@
 package io.airbyte.integrations.destination.postgres;
 
 import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.table;
+import static org.jooq.impl.DSL.unquotedName;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
@@ -247,7 +247,7 @@ public class PostgresDestination implements Destination {
                                                                                             String schemaName,
                                                                                             String tmpTableName) {
       InsertValuesStep3<Record, String, JSONB, OffsetDateTime> step =
-          ctx.insertInto(table(name(schemaName, tmpTableName)), field("ab_id", String.class),
+          ctx.insertInto(table(unquotedName(schemaName, tmpTableName)), field("ab_id", String.class),
               field(COLUMN_NAME, JSONB.class), field("emitted_at", OffsetDateTime.class));
 
       for (int i = 0; i < batchSize; i++) {

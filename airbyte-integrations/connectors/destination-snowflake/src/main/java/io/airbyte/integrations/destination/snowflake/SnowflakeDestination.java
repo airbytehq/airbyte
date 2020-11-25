@@ -133,7 +133,7 @@ public class SnowflakeDestination implements Destination {
       final String query = String.format(
           "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
               + "ab_id VARCHAR PRIMARY KEY,\n"
-              + "%s VARIANT,\n"
+              + "\"%s\" VARIANT,\n"
               + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
               + ") data_retention_time_in_days = 0;",
           schemaName, tmpTableName, COLUMN_NAME);

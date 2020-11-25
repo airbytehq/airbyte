@@ -48,6 +48,7 @@ import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -72,6 +73,7 @@ public class BigQueryIntegrationTest extends TestDestination {
   private Dataset dataset;
   private boolean tornDown;
   private JsonNode config;
+  private StandardSQLNaming namingResolver = new StandardSQLNaming();
 
   @Override
   protected String getImageName() {
@@ -96,23 +98,32 @@ public class BigQueryIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
-    return retrieveRecordsFromTable(testEnv, streamName);
+    String tableName = namingResolver.getIdentifier(streamName);
+    return retrieveRecordsFromTable(testEnv, tableName);
   }
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(env, new StandardSQLNaming().getRawTableName(streamName))
+    return retrieveRecordsFromTable(env, namingResolver.getRawTableName(streamName))
         .stream()
         .map(node -> node.get("data").asText())
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }
 
+  @Override
+  protected List<String> resolveIdentifier(String identifier) {
+    final List<String> result = new ArrayList<>();
+    result.add(identifier);
+    result.add(namingResolver.getIdentifier(identifier));
+    return result;
+  }
+
   private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws InterruptedException {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
-                String.format("SELECT * FROM `%s`.`%s`;", dataset.getDatasetId().getDataset(), tableName))
+                String.format("SELECT * FROM `%s`.`%s` order by emitted_at asc;", dataset.getDatasetId().getDataset(), tableName))
             .setUseLegacySql(false).build();
 
     TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();

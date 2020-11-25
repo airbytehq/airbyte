@@ -126,7 +126,7 @@ public class SnowflakeRecordConsumer extends FailureTrackingConsumer<AirbyteMess
       // 1) Loop over records to build the full string.
       // 2) Loop over the records and bind the appropriate values to the string.
       final StringBuilder sql = new StringBuilder().append(String.format(
-          "INSERT INTO %s.%s (ab_id, %s, emitted_at) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
+          "INSERT INTO %s.%s (ab_id, \"%s\", emitted_at) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
           schemaName,
           tmpTableName,
           SnowflakeDestination.COLUMN_NAME));

@@ -29,9 +29,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.ExtendedSQLNaming;
+import io.airbyte.integrations.base.StandardSQLNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -43,6 +45,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
   private JsonNode config;
+  private StandardSQLNaming namingResolver = new ExtendedSQLNaming();
 
   @Override
   protected String getImageName() {
@@ -67,7 +70,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(env, new ExtendedSQLNaming().getRawTableName(streamName))
+    return retrieveRecordsFromTable(env, namingResolver.getRawTableName(streamName))
         .stream()
         .map(j -> Jsons.deserialize(j.get(COLUMN_NAME).asText()))
         .collect(Collectors.toList());
@@ -80,7 +83,25 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
-    return retrieveRecordsFromTable(testEnv, streamName);
+    String tableName = namingResolver.getIdentifier(streamName);
+    if (!tableName.startsWith("\"")) {
+      // Currently, Normalization always quote tables identifiers
+      tableName = "\"" + tableName + "\"";
+    }
+    return retrieveRecordsFromTable(testEnv, tableName);
+  }
+
+  @Override
+  protected List<String> resolveIdentifier(String identifier) {
+    final List<String> result = new ArrayList<>();
+    final String resolved = namingResolver.getIdentifier(identifier);
+    result.add(identifier);
+    result.add(resolved);
+    if (!resolved.startsWith("\"")) {
+      result.add(resolved.toLowerCase());
+      result.add(resolved.toUpperCase());
+    }
+    return result;
   }
 
   private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws SQLException, InterruptedException {
