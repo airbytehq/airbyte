@@ -63,19 +63,25 @@ class Client:
         stream_name = self._LISTS
         date_created = self._get_cursor_or_none(state, stream_name, cursor_field)
 
-        default_params = {"since_date_created": date_created, "sort_field": cursor_field, "sort_dir": "ASC"}
+        default_params = {"sort_field": cursor_field, "sort_dir": "ASC"}
+        if date_created:
+            default_params["since_date_created"] = date_created
+            max_date_created = parser.isoparse(date_created)
+        else:
+            max_date_created = None
+
         offset = 0
-        max_date_created = date_created
         done = False
         while not done:
-            lists_response = self._client.lists.all(dict(default_params, count=self.PAGINATION, offset=offset))["lists"]
+            params = dict(default_params, count=self.PAGINATION, offset=offset)
+            lists_response = self._client.lists.all(**params)["lists"]
             for mc_list in lists_response:
                 list_created_at = parser.isoparse(mc_list[cursor_field])
                 max_date_created = max(max_date_created, list_created_at) if max_date_created else list_created_at
                 yield self._record(stream=self._LISTS, data=mc_list)
 
             if max_date_created:
-                state[self._LISTS][cursor_field] = max_date_created
+                state[self._LISTS][cursor_field] = self._format_date_as_string(max_date_created)
                 yield self._state(state)
 
             done = len(lists_response) < self.PAGINATION
@@ -86,23 +92,33 @@ class Client:
         stream_name = self._CAMPAIGNS
         create_time = self._get_cursor_or_none(state, stream_name, cursor_field)
 
-        default_params = {"since_create_time": create_time, "sort_field": cursor_field, "sort_dir": "ASC"}
+        default_params = {"sort_field": cursor_field, "sort_dir": "ASC"}
+        if create_time:
+            default_params["since_create_time"] = create_time
+            max_create_time = parser.isoparse(create_time)
+        else:
+            max_create_time = None
+
         offset = 0
-        max_create_time = create_time
         done = False
         while not done:
-            campaigns_response = self._client.campaigns.all(dict(default_params, count=self.PAGINATION, offset=offset))
+            params = dict(default_params, count=self.PAGINATION, offset=offset)
+            campaigns_response = self._client.campaigns.all(**params)
             for campaign in campaigns_response["campaigns"]:
                 campaign_created_at = parser.isoparse(campaign[cursor_field])
                 max_create_time = max(max_create_time, campaign_created_at) if max_create_time else campaign_created_at
                 yield self._record(stream=stream_name, data=campaign)
 
             if max_create_time:
-                state[stream_name][cursor_field] = max_create_time
+                state[stream_name][cursor_field] = self._format_date_as_string(max_create_time)
                 yield self._state(state)
 
             done = len(campaigns_response) < self.PAGINATION
             offset += self.PAGINATION
+
+    @staticmethod
+    def _format_date_as_string(d: datetime) -> str:
+        return d.astimezone().replace(microsecond=0).isoformat()
 
     @staticmethod
     def _get_cursor_or_none(state: DefaultDict[str, any], stream_name: str, cursor_name: str) -> any:
