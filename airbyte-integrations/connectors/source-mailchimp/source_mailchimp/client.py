@@ -105,10 +105,15 @@ class Client:
             offset += self.PAGINATION
 
     @staticmethod
-    def _get_default_params_and_cursor(cursor_field: str, cursor_value: str) -> Tuple[Dict[str, str], datetime]:
-        default_params = {"sort_field": cursor_field, "sort_dir": "ASC"}
+    def _get_default_params_and_cursor(cursor_field_name: str, cursor_value: str) -> Tuple[Dict[str, str], datetime]:
+        """
+        :param cursor_field_name:
+        :param cursor_value: assumed to be a date represented as an ISO8601 string
+        :return:
+        """
+        default_params = {"sort_field": cursor_field_name, "sort_dir": "ASC"}
         if cursor_value:
-            default_params[f"since_{cursor_field}"] = cursor_value
+            default_params[f"since_{cursor_field_name}"] = cursor_value
             parsed_date_cursor = parser.isoparse(cursor_value)
         else:
             parsed_date_cursor = None
