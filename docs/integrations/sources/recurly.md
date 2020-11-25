@@ -7,6 +7,7 @@ The Recurly source supports Full Refresh syncs. That is, every time a sync is ru
 ### Output schema
 
 Several output streams are available from this source:
+
 * [Accounts](https://docs.recurly.com/docs/accounts)
 * [Coupons](https://docs.recurly.com/docs/coupons)
 * Automated Exports
@@ -43,3 +44,4 @@ The Recurly connector should not run into Recurly API limitations under normal u
 Generate a API key using the [Recurly documentation](https://docs.recurly.com/docs/api-keys#section-find-or-generate-your-api-key)
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+
