@@ -46,25 +46,21 @@ public class WebBackendSourceHandler {
 
   private final SchedulerHandler schedulerHandler;
 
-  public WebBackendSourceHandler(
-                                 final SourceHandler sourceHandler,
-                                 final SchedulerHandler schedulerHandler) {
+  public WebBackendSourceHandler(final SourceHandler sourceHandler, final SchedulerHandler schedulerHandler) {
     this.sourceHandler = sourceHandler;
     this.schedulerHandler = schedulerHandler;
   }
 
-  public SourceRead webBackendCreateSourceAndCheck(
-                                                   SourceCreate sourceCreate)
+  public SourceRead webBackendCreateSourceAndCheck(SourceCreate sourceCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    SourceRead source = sourceHandler
+    final SourceRead source = sourceHandler
         .createSource(sourceCreate);
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody()
         .sourceId(source.getSourceId());
 
     try {
-      CheckConnectionRead checkConnectionRead = schedulerHandler
-          .checkSourceConnection(sourceIdRequestBody);
+      final CheckConnectionRead checkConnectionRead = schedulerHandler.checkSourceConnection(sourceIdRequestBody);
       if (checkConnectionRead.getStatus() == CheckConnectionRead.StatusEnum.SUCCEEDED) {
         return source;
       }
@@ -78,18 +74,18 @@ public class WebBackendSourceHandler {
 
   public SourceRead webBackendRecreateSourceAndCheck(SourceRecreate sourceRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    SourceCreate sourceCreate = new SourceCreate();
+    final SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setConnectionConfiguration(sourceRecreate.getConnectionConfiguration());
     sourceCreate.setName(sourceRecreate.getName());
     sourceCreate.setWorkspaceId(sourceRecreate.getWorkspaceId());
     sourceCreate.setSourceDefinitionId(sourceRecreate.getSourceDefinitionId());
 
-    SourceRead source = sourceHandler.createSource(sourceCreate);
+    final SourceRead source = sourceHandler.createSource(sourceCreate);
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(source.getSourceId());
 
     try {
-      CheckConnectionRead checkConnectionRead = schedulerHandler
+      final CheckConnectionRead checkConnectionRead = schedulerHandler
           .checkSourceConnection(sourceIdRequestBody);
       if (checkConnectionRead.getStatus() == SUCCEEDED) {
         final SourceIdRequestBody sourceIdRequestBody1 = new SourceIdRequestBody().sourceId(sourceRecreate.getSourceId());
