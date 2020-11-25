@@ -45,6 +45,7 @@ services:
       - WORKSPACE_DOCKER_MOUNT=${WORKSPACE_DOCKER_MOUNT}
       - LOCAL_DOCKER_MOUNT=${LOCAL_DOCKER_MOUNT}
       - CONFIG_ROOT=${CONFIG_ROOT}
+      - AIRBYTE_VERSION=${VERSION}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
@@ -64,6 +65,7 @@ services:
       - WAIT_HOSTS=db:5432
       - CONFIG_ROOT=${CONFIG_ROOT}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - AIRBYTE_VERSION=${VERSION}
     ports:
       - 8001:8001
     volumes:
