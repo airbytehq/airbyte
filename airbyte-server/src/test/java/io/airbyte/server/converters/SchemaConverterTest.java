@@ -34,27 +34,40 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
+import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.Stream;
 import org.junit.jupiter.api.Test;
 
 class SchemaConverterTest {
 
+  private static final String STREAM_NAME = "users";
+  private static final String COLUMN_ID = "id";
   private static final Schema SCHEMA = new Schema()
       .withStreams(Lists.newArrayList(new Stream()
-          .withName("users")
+          .withName(STREAM_NAME)
           .withSelected(true)
           .withFields(Lists.newArrayList(new Field()
               .withDataType(DataType.STRING)
-              .withName("id")
-              .withSelected(true)))));
+              .withName(COLUMN_ID)
+              .withSelected(true)))
+          .withSourceDefinedCursor(false)
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withDefaultCursorField(Lists.newArrayList(COLUMN_ID))
+          .withSyncMode(SyncMode.INCREMENTAL)
+          .withCursorField(Lists.newArrayList(COLUMN_ID))));
 
   private static final SourceSchema API_SCHEMA = new SourceSchema()
       .streams(Lists.newArrayList(new SourceSchemaStream()
-          .name("users")
+          .name(STREAM_NAME)
           .fields(Lists.newArrayList(new SourceSchemaField()
               .dataType(io.airbyte.api.model.DataType.STRING)
-              .name("id")
-              .selected(true)))));
+              .name(COLUMN_ID)
+              .selected(true)))
+          .sourceDefinedCursor(false)
+          .supportedSyncModes(Lists.newArrayList(io.airbyte.api.model.SyncMode.FULL_REFRESH, io.airbyte.api.model.SyncMode.INCREMENTAL))
+          .defaultCursorField(Lists.newArrayList(COLUMN_ID))
+          .syncMode(io.airbyte.api.model.SyncMode.INCREMENTAL)
+          .cursorField(Lists.newArrayList(COLUMN_ID))));
 
   @Test
   void convertToPersistenceSchema() {
