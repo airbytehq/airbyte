@@ -158,10 +158,7 @@
       "visibility": {
         "type": "string",
         "title": "Visibility",
-        "enum": [
-          "pub",
-          "prv"
-        ],
+        "enum": ["pub", "prv"],
         "description": "Whether this list is [public or private](https://mailchimp.com/help/about-list-publicity/)."
       },
       "double_optin": {

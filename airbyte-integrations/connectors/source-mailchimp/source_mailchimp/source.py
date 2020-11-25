@@ -27,13 +27,7 @@ import json
 from collections import defaultdict
 from typing import Generator, DefaultDict
 
-from airbyte_protocol import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    ConfiguredAirbyteCatalog,
-    Status
-)
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from base_python import AirbyteLogger, ConfigContainer, Source
 
 from .client import Client
@@ -61,7 +55,7 @@ class SourceMailchimp(Source):
         return AirbyteCatalog(streams=client.get_streams())
 
     def read(
-            self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state_path: str = None
+        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state_path: str = None
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._client(config_container)
 

@@ -44,6 +44,7 @@ class Client:
 
     def __init__(self, username: str, apikey: str):
         self._client = MailChimp(mc_api=apikey, mc_user=username)
+
     def health_check(self):
         try:
             self._client.ping.get()
@@ -59,11 +60,11 @@ class Client:
         return streams
 
     def lists(self, state: DefaultDict[str, any] = None) -> Generator[AirbyteMessage, None, None]:
-        cursor_field = 'date_created'
+        cursor_field = "date_created"
         stream_name = self._LISTS
         date_created = self._get_cursor_or_none(state, stream_name, cursor_field)
 
-        default_params = {'since_date_created': date_created, 'sort_field': cursor_field, 'sort_dir': 'ASC'}
+        default_params = {"since_date_created": date_created, "sort_field": cursor_field, "sort_dir": "ASC"}
         offset = 0
         max_date_created = date_created
         done = False
@@ -82,11 +83,11 @@ class Client:
             offset += self.PAGINATION
 
     def campaigns(self, state: DefaultDict[str, any]) -> Generator[AirbyteMessage, None, None]:
-        cursor_field = 'create_time'
+        cursor_field = "create_time"
         stream_name = self._CAMPAIGNS
         create_time = self._get_cursor_or_none(state, stream_name, cursor_field)
 
-        default_params = {'since_create_time': create_time, 'sort_field': cursor_field, 'sort_dir': 'ASC'}
+        default_params = {"since_create_time": create_time, "sort_field": cursor_field, "sort_dir": "ASC"}
         offset = 0
         max_create_time = create_time
         done = False
