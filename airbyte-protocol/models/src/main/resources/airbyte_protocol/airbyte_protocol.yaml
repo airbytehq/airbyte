@@ -122,6 +122,8 @@ definitions:
     required:
       - name
       - json_schema
+      # todo (cgardens) - make required once sources are migrated
+      # - supported_sync_modes
     properties:
       name:
         type: string
