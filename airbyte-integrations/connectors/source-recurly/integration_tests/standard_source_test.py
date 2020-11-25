@@ -22,5 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-def test_example_method():
-    assert True
+import json
+import pkgutil
+
+from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from base_python_test import StandardSourceTestIface
+
+
+class RecurlyStandardSourceTest(StandardSourceTestIface):
+    def get_spec(self) -> ConnectorSpecification:
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
+        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
+
+    def get_config(self) -> object:
+        return json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json"))
+
+    def get_catalog(self) -> AirbyteCatalog:
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
+        return AirbyteCatalog.parse_obj(json.loads(raw_spec))
+
+    def setup(self) -> None:
+        pass
+
+    def teardown(self) -> None:
+        pass
