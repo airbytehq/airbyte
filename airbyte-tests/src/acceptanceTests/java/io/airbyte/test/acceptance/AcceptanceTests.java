@@ -44,6 +44,7 @@ import io.airbyte.api.client.model.ConnectionSchedule;
 import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.ConnectionSyncRead;
 import io.airbyte.api.client.model.ConnectionUpdate;
+import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
@@ -51,9 +52,10 @@ import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SourceSchema;
+import io.airbyte.api.client.model.SourceSchemaField;
+import io.airbyte.api.client.model.SourceSchemaStream;
 import io.airbyte.api.client.model.SyncMode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -95,6 +97,10 @@ import org.testcontainers.utility.MountableFile;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
+  private static final String STREAM_NAME = "id_and_name";
+  private static final String COLUMN_ID = "id";
+  private static final String COLUMN_NAME = "name";
+
   private static final Path AIRBYTE_LOCAL_ROOT = Path.of("/tmp/airbyte_local");
   private static final Path RELATIVE_PATH = Path.of("destination_csv/test");
 
@@ -135,7 +141,7 @@ public class AcceptanceTests {
     relativeDir = outputRoot.getParent().relativize(outputDir);
 
     // seed database.
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), sourcePsql);
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
   }
 
   @AfterEach
@@ -222,12 +228,24 @@ public class AcceptanceTests {
 
   @Test
   @Order(5)
-  public void testDiscoverSourceSchema() throws ApiException, IOException {
-    UUID sourceId = createPostgresSource().getSourceId();
+  public void testDiscoverSourceSchema() throws ApiException {
+    final UUID sourceId = createPostgresSource().getSourceId();
 
-    SourceSchema actualSchema = discoverSourceSchema(sourceId);
+    final SourceSchema actualSchema = discoverSourceSchema(sourceId);
 
-    final SourceSchema expectedSchema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), SourceSchema.class);
+    final SourceSchema expectedSchema = new SourceSchema().streams(Lists.newArrayList(
+        new SourceSchemaStream()
+            .name(STREAM_NAME)
+            .fields(Lists.newArrayList(
+                new SourceSchemaField()
+                    .name(COLUMN_ID)
+                    .dataType(DataType.NUMBER)
+                    .selected(true),
+                new SourceSchemaField()
+                    .name("name")
+                    .dataType(DataType.STRING)
+                    .selected(true)))));
+
     assertEquals(expectedSchema, actualSchema);
   }
 
@@ -303,8 +321,8 @@ public class AcceptanceTests {
     // add new records and run again.
     final Database database = getDatabase(sourcePsql);
     // get contents of source before mutating records.
-    final List<JsonNode> expectedRecords = retrievePgRecords(database, "id_and_name");
-    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put("id", 6).put("name", "geralt").build()));
+    final List<JsonNode> expectedRecords = retrievePgRecords(database, STREAM_NAME);
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
     // add a new record
     database.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     // todo (cgardens) - comment this in when both the source and destination here actually support
@@ -318,7 +336,7 @@ public class AcceptanceTests {
     final ConnectionSyncRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead2.getStatus());
-    assertDestinationContains(expectedRecords, "id_and_name");
+    assertDestinationContains(expectedRecords, STREAM_NAME);
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
