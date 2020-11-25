@@ -28,6 +28,7 @@
     * [Shopify](integrations/sources/shopify.md)
     * [Stripe](integrations/sources/stripe.md)
     * [Sendgrid](integrations/sources/sendgrid.md)
+    * [Twilio](integrations/sources/twilio.md)
   * [Destinations](integrations/destinations/README.md)
     * [BigQuery](integrations/destinations/bigquery.md)
     * [Local CSV](integrations/destinations/local-csv.md)

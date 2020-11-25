@@ -24,7 +24,8 @@
       },
       "user_agent": {
         "type": "string",
-        "description": "api_user_email@your_company.com"
+        "description": "The API user email for Twilio account",
+        "examples": ["api_user_email@your_company.com"]
       }
     }
   }
