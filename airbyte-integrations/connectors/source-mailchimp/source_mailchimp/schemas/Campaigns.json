@@ -5,7 +5,7 @@
     "incremental"
   ],
   "source_defined_cursor": true,
-  "default_cursor_field": "create_time",
+  "default_cursor_field": ["create_time"],
   "json_schema": {
     "type": "object",
     "title": "Campaign",

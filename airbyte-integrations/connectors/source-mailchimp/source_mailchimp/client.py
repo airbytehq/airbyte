@@ -24,9 +24,11 @@ SOFTWARE.
 
 import json
 import pkgutil
+from dateutil import parser
+
 from datetime import datetime
 
-from typing import Dict, Generator, Any
+from typing import Dict, Generator, Any, DefaultDict
 from airbyte_protocol import AirbyteStream, AirbyteMessage, AirbyteStateMessage, AirbyteRecordMessage, Type
 from mailchimp3 import MailChimp
 from mailchimp3.mailchimpclient import MailChimpError
@@ -70,30 +72,54 @@ class Client:
         streams = []
         for entity in self._ENTITIES:
             raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{entity}.json"))
-            streams.append(AirbyteStream(name=entity, json_schema=raw_schema))
+            streams.append(AirbyteStream.parse_obj(raw_schema))
         return streams
 
-    def lists(self):
-        limit = self._client.lists.all(count=1)["total_items"]
+    def lists(self, state: DefaultDict[str, any] = None) -> Generator[AirbyteMessage, None, None]:
+        cursor_field = 'date_created'
+        if state and self._LISTS in state and state[self._LISTS][cursor_field]:
+            date_created = state[self._LISTS][cursor_field]
+        else:
+            date_created = None
 
+        default_params = {'since_date_created': date_created, 'sort_field': cursor_field, 'sort_dir': 'ASC'}
+        limit = self._client.lists.all(dict(default_params, count=1))["total_items"]
         offset = 0
+        max_date_created = date_created
         while offset < limit:
-            for mc_list in self._client.lists.all(count=self.PAGINATION, offset=offset)["lists"]:
-                yield mc_list
+            lists_response = self._client.lists.all(dict(default_params, count=self.PAGINATION, offset=offset))["lists"]
+            for mc_list in lists_response:
+                list_created_at = parser.isoparse(mc_list[cursor_field])
+                max_date_created = max(max_date_created, list_created_at) if max_date_created else list_created_at
+                yield self._record(stream=self._LISTS, data=mc_list)
+
+            if max_date_created:
+                state[self._LISTS][cursor_field] = max_date_created
+                yield self._state(state)
             offset += self.PAGINATION
 
-    def campaigns(self, state: Dict[str, any]) -> Generator[AirbyteMessage, None, None]:
-        limit = self._client.campaigns.all(count=1)["total_items"]
-
-        if state and self._CAMPAIGNS in state and state[self._CAMPAIGNS]["create_time"]:
-            create_time = state[self._CAMPAIGNS]["create_time"]
+    def campaigns(self, state: DefaultDict[str, any]) -> Generator[AirbyteMessage, None, None]:
+        cursor_field = 'create_time'
+        if state and self._CAMPAIGNS in state and state[self._CAMPAIGNS][cursor_field]:
+            create_time = state[self._CAMPAIGNS][cursor_field]
         else:
             create_time = None
 
+        default_params = {'since_create_time': create_time, 'sort_field': cursor_field, 'sort_dir': 'ASC'}
+        limit = self._client.campaigns.all(dict(default_params, count=1))["total_items"]
         offset = 0
+        max_create_time = create_time
         while offset < limit:
-            for mc_campaigns in self._client.campaigns.all(count=self.PAGINATION, offset=offset, since_create_time=create_time)["campaigns"]:
-                yield self._record(stream=self._CAMPAIGNS, data=mc_campaigns)
+            campaigns_response = self._client.campaigns.all(dict(default_params, count=self.PAGINATION, offset=offset))
+            for campaign in campaigns_response["campaigns"]:
+                campaign_created_at = parser.isoparse(campaign[cursor_field])
+                max_create_time = max(max_create_time, campaign_created_at) if max_create_time else campaign_created_at
+                yield self._record(stream=self._CAMPAIGNS, data=campaign)
+
+            if max_create_time:
+                state[self._CAMPAIGNS][cursor_field] = max_create_time
+                yield self._state(state)
+
             offset += self.PAGINATION
 
     @staticmethod
@@ -102,5 +128,5 @@ class Client:
         return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=now))
 
     @staticmethod
-    def _state(stream: str, data: Dict[str, any]):
+    def _state(data: Dict[str, any]):
         return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))

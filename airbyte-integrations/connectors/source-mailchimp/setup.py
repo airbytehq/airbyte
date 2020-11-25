@@ -35,6 +35,7 @@ setup(
         "base-python",
         "pydantic==1.6.1",
         "mailchimp3==3.0.14",
+        "python-dateutil==2.8.1"
     ],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],

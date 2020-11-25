@@ -24,8 +24,8 @@ SOFTWARE.
 
 import json
 
-from datetime import datetime
-from typing import Generator
+from collections import defaultdict
+from typing import Generator, Dict, DefaultDict
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -66,14 +66,22 @@ class SourceMailchimp(Source):
             self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state_path: str = None
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._client(config_container)
-        state = json.loads(open(state_path, "r").read()) if state_path else None
+
+        if state_path:
+            logger.info("Starting sync with provided state file")
+            state_obj = json.loads(open(state_path, "r").read())
+        else:
+            logger.info("No state provided, starting fresh sync")
+            state_obj = {}
+
+        state = defaultdict(dict, state_obj)
         catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
 
         logger.info("Starting syncing mailchimp")
         for configured_stream in catalog.streams:
             stream = configured_stream.stream
             for record in self._read_record(client=client, stream=stream.name, state=state):
-                yield AirbyteMessage(type=Type.RECORD, record=record)
+                yield record
 
         logger.info("Finished syncing mailchimp")
 
@@ -83,12 +91,11 @@ class SourceMailchimp(Source):
 
         return client
 
-    def _read_record(self, client: Client, stream: str, state=state) -> AirbyteMessage:
+    def _read_record(self, client: Client, stream: str, state: DefaultDict[str, any] = None) -> Generator[AirbyteMessage, None, None]:
         entity_map = {
             "Lists": client.lists,
             "Campaigns": client.campaigns,
         }
 
-        for record in entity_map[stream]():
-            now = int(datetime.now().timestamp()) * 1000
-            yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)
+        for record in entity_map[stream](state=state):
+            yield record
