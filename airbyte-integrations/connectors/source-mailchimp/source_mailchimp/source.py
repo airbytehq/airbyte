@@ -23,9 +23,8 @@ SOFTWARE.
 """
 
 import json
-
 from collections import defaultdict
-from typing import Generator, DefaultDict
+from typing import DefaultDict, Generator
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from base_python import AirbyteLogger, ConfigContainer, Source

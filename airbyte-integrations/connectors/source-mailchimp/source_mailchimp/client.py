@@ -24,12 +24,11 @@ SOFTWARE.
 
 import json
 import pkgutil
-from dateutil import parser
-
 from datetime import datetime
+from typing import DefaultDict, Dict, Generator
 
-from typing import Dict, Generator, DefaultDict
-from airbyte_protocol import AirbyteStream, AirbyteMessage, AirbyteStateMessage, AirbyteRecordMessage, Type
+from airbyte_protocol import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream, Type
+from dateutil import parser
 from mailchimp3 import MailChimp
 from mailchimp3.mailchimpclient import MailChimpError
 
