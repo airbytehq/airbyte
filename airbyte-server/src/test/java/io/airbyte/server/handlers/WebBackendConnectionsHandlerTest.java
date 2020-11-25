@@ -42,7 +42,6 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -123,7 +122,7 @@ class WebBackendConnectionsHandlerTest {
     expected.setName(connectionRead.getName());
     expected.setSyncSchema(connectionRead.getSyncSchema());
     expected.setStatus(connectionRead.getStatus());
-    expected.setSyncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class));
+    expected.setSyncMode(connectionRead.getSyncMode());
     expected.setSchedule(connectionRead.getSchedule());
     expected.setSource(sourceRead);
     expected.setDestination(destinationRead);
@@ -155,11 +154,6 @@ class WebBackendConnectionsHandlerTest {
     final WbConnectionRead wbConnectionRead = wbHandler.webBackendGetConnection(connectionIdRequestBody);
 
     assertEquals(expected, wbConnectionRead);
-  }
-
-  @Test
-  public void testEnumConversion() {
-    assertTrue(Enums.isCompatible(ConnectionRead.SyncModeEnum.class, WbConnectionRead.SyncModeEnum.class));
   }
 
 }

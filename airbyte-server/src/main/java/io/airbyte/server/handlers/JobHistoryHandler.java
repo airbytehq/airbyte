@@ -52,10 +52,10 @@ public class JobHistoryHandler {
   }
 
   public JobReadList listJobsFor(JobListRequestBody request) throws IOException {
-    JobConfig.ConfigType configType = Enums.convertTo(request.getConfigType(), JobConfig.ConfigType.class);
-    String configId = request.getConfigId();
+    final JobConfig.ConfigType configType = Enums.convertTo(request.getConfigType(), JobConfig.ConfigType.class);
+    final String configId = request.getConfigId();
 
-    List<JobRead> jobReads = schedulerPersistence.listJobs(configType, configId)
+    final List<JobRead> jobReads = schedulerPersistence.listJobs(configType, configId)
         .stream()
         .map(JobHistoryHandler::getJobRead)
         .collect(Collectors.toList());
@@ -64,9 +64,9 @@ public class JobHistoryHandler {
   }
 
   public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
-    Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
+    final Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
 
-    LogRead logRead = new LogRead().logLines(IOs.getTail(LOG_TAIL_SIZE, job.getLogPath()));
+    final LogRead logRead = new LogRead().logLines(IOs.getTail(LOG_TAIL_SIZE, job.getLogPath()));
 
     return new JobInfoRead()
         .job(getJobRead(job))
@@ -75,10 +75,10 @@ public class JobHistoryHandler {
 
   @VisibleForTesting
   protected static JobRead getJobRead(Job job) {
-    String configId = ScopeHelper.getConfigId(job.getScope());
-    JobConfigType configType = Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
+    final String configId = ScopeHelper.getConfigId(job.getScope());
+    final JobConfigType configType = Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
 
-    JobRead jobRead = new JobRead();
+    final JobRead jobRead = new JobRead();
 
     jobRead.setId(job.getId());
     jobRead.setConfigId(configId);

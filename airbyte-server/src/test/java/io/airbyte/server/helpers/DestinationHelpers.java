@@ -44,12 +44,11 @@ public class DestinationHelpers {
     return Jsons.deserialize(Files.readString(path));
   }
 
-  public static DestinationConnection generateDestination(UUID destinationDefinitionId)
-      throws IOException {
+  public static DestinationConnection generateDestination(UUID destinationDefinitionId) throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
 
-    JsonNode implementationJson = getTestDestinationJson();
+    final JsonNode implementationJson = getTestDestinationJson();
 
     return new DestinationConnection()
         .withName("my db2 instance")
@@ -60,9 +59,7 @@ public class DestinationHelpers {
         .withTombstone(false);
   }
 
-  public static DestinationRead getDestinationRead(DestinationConnection destination,
-                                                   StandardDestinationDefinition standardDestinationDefinition) {
-
+  public static DestinationRead getDestinationRead(DestinationConnection destination, StandardDestinationDefinition standardDestinationDefinition) {
     return new DestinationRead()
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destination.getWorkspaceId())

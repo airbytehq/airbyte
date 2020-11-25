@@ -69,8 +69,8 @@ public class DestinationDefinitionsHandler {
 
   public DestinationDefinitionRead updateDestinationDefinition(DestinationDefinitionUpdate destinationDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    StandardDestinationDefinition currentDestination =
-        configRepository.getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
+    final StandardDestinationDefinition currentDestination = configRepository
+        .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
     dockerImageValidator.assertValidIntegrationImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag());
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
