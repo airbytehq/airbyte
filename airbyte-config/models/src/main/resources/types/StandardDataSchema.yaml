@@ -24,12 +24,24 @@ definitions:
     properties:
       name:
         type: string
-      selected:
-        type: boolean
       fields:
         type: array
         items:
           "$ref": "#/definitions/field"
+      supportedSyncModes:
+        type: array
+        items:
+          "$ref": SyncMode.yaml
+      userDefinedCursorField:
+        type: boolean
+      selected:
+        type: boolean
+      syncMode:
+        "$ref": SyncMode.yaml
+      cursorField:
+        type: array
+        items:
+          "$ref": SyncMode.yaml
   field:
     type: object
     required:

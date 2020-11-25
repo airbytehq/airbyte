@@ -35,6 +35,7 @@ import io.airbyte.config.Stream;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// todo (cgardens) - update this before merging.
 public class SchemaConverter {
 
   public static Schema toPersistenceSchema(SourceSchema sourceSchema) {
