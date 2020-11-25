@@ -153,7 +153,7 @@ public class JobSubmitter implements Runnable {
     metadata.put("job_type", job.getConfig().getConfigType());
     metadata.put("job_id", job.getId());
     metadata.put("attempt_id", job.getAttempts());
-    // build a deterministic job and attempt uuids based off of the scope,which should be unique across
+    // build deterministic job and attempt uuids based off of the scope,which should be unique across
     // all instances of airbyte installed everywhere).
     final UUID jobUuid = UUID.nameUUIDFromBytes((job.getScope() + job.getId() + job.getAttempts()).getBytes(Charsets.UTF_8));
     final UUID attemptUuid = UUID.nameUUIDFromBytes((job.getScope() + job.getId() + job.getAttempts()).getBytes(Charsets.UTF_8));
