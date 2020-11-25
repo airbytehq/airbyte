@@ -77,8 +77,7 @@ public class SourceHandler {
     this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID, new JsonSecretsProcessor());
   }
 
-  public SourceRead createSource(SourceCreate sourceCreate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  public SourceRead createSource(SourceCreate sourceCreate) throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
     SourceDefinitionSpecificationRead spec = getSpec(sourceCreate.getSourceDefinitionId());
     validateSource(spec, sourceCreate.getConnectionConfiguration());
@@ -97,8 +96,7 @@ public class SourceHandler {
     return buildSourceRead(sourceId, spec);
   }
 
-  public SourceRead updateSource(SourceUpdate sourceUpdate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  public SourceRead updateSource(SourceUpdate sourceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing source
     final SourceConnection persistedSource = configRepository.getSourceConnection(sourceUpdate.getSourceId());
 
@@ -128,8 +126,7 @@ public class SourceHandler {
     return buildSourceRead(sourceUpdate.getSourceId(), spec);
   }
 
-  public SourceRead getSource(SourceIdRequestBody sourceIdRequestBody)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public SourceRead getSource(SourceIdRequestBody sourceIdRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
@@ -151,8 +148,7 @@ public class SourceHandler {
     return new SourceReadList().sources(reads);
   }
 
-  public void deleteSource(SourceIdRequestBody sourceIdRequestBody)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public void deleteSource(SourceIdRequestBody sourceIdRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing source
     final SourceRead source = buildSourceRead(sourceIdRequestBody.getSourceId());
 

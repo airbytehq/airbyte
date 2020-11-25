@@ -68,11 +68,6 @@ public class ConnectionsHandler {
   public ConnectionRead createConnection(ConnectionCreate connectionCreate) throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID connectionId = uuidGenerator.get();
 
-    // todo (cgardens): for MVP we only support full refresh.
-    if (connectionCreate.getSyncMode() != SyncMode.FULL_REFRESH) {
-      throw new RuntimeException("Only FULL_REFRESH is currently supported!");
-    }
-
     // persist sync
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
