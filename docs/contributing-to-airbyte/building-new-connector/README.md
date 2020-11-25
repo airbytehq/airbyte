@@ -34,7 +34,7 @@ Follow the instructions generated in the `CHECKLIST.md` file to bootstrap the co
 The generated `README.md` will also contain instructions on how to iterate.
 
 ### Creating a Connector from a Singer Tap
-[Singer.io](http://singer.io/) is an established open source framework with a vibrant community and many available connectors (known as taps & targets). Airbyte makes it simple & easy to build an Airbyte connector from a Singer tap. The basic idea is to wrap the Singer tap in a shim Python package which makes the Singer tap compatible with the Airbyte protocols. 
+[Singer.io](http://singer.io/) is an established open source framework with a vibrant community and many available connectors (known as taps & targets). Airbyte makes it simple & easy to build an Airbyte connector from a Singer tap. The basic idea is to wrap the Singer tap in a shim Python package which makes the Singer tap compatible with the Airbyte protocols, then publishing that in a Docker image consumable by Airbyte. 
 
 To create an Airbyte connector from a Singer tap, run the connector generator as described above and choose the Singer generator. The generated package will contain the details about exactly what needs to be done. 
 
