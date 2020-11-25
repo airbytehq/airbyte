@@ -129,7 +129,7 @@ public class SchedulerHandler {
     final SourceConnection connectionImplementation =
         configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
 
-    StandardSourceDefinition source = configRepository.getStandardSourceDefinition(connectionImplementation.getSourceDefinitionId());
+    final StandardSourceDefinition source = configRepository.getStandardSourceDefinition(connectionImplementation.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final long jobId = schedulerPersistence.createDiscoverSchemaJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
@@ -154,8 +154,8 @@ public class SchedulerHandler {
 
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    UUID sourceDefinitionId = sourceDefinitionIdRequestBody.getSourceDefinitionId();
-    StandardSourceDefinition source = configRepository.getStandardSourceDefinition(sourceDefinitionId);
+    final UUID sourceDefinitionId = sourceDefinitionIdRequestBody.getSourceDefinitionId();
+    final StandardSourceDefinition source = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final ConnectorSpecification spec = getConnectorSpecification(imageName);
 
@@ -219,10 +219,11 @@ public class SchedulerHandler {
     final DestinationConnection destinationConnection =
         configRepository.getDestinationConnection(standardSync.getDestinationId());
 
-    StandardSourceDefinition source = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+    final StandardSourceDefinition source = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     final String sourceImageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
 
-    StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+    final StandardDestinationDefinition destination =
+        configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
     final String destinationImageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
 
     final long jobId = schedulerPersistence.createSyncJob(

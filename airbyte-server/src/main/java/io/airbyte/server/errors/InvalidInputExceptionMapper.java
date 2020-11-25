@@ -52,7 +52,7 @@ public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintVi
   }
 
   private String prepareMessage(ConstraintViolationException exception) {
-    StringBuilder message = new StringBuilder();
+    final StringBuilder message = new StringBuilder();
     for (ConstraintViolation<?> cv : exception.getConstraintViolations()) {
       message.append(
           "property: "
