@@ -31,6 +31,7 @@ import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.SourceSchema;
 import io.airbyte.api.model.SourceSchemaField;
 import io.airbyte.api.model.SourceSchemaStream;
+import io.airbyte.api.model.SyncMode;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schedule;
@@ -112,7 +113,7 @@ public class ConnectionHelpers {
         .destinationId(destinationId)
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
-        .syncMode(ConnectionRead.SyncModeEnum.FULL_REFRESH)
+        .syncMode(SyncMode.FULL_REFRESH)
         .schedule(generateBasicSchedule())
         .syncSchema(ConnectionHelpers.generateBasicApiSchema());
   }

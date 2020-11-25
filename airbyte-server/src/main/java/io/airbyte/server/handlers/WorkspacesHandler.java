@@ -52,8 +52,7 @@ public class WorkspacesHandler {
   }
 
   @SuppressWarnings("unused")
-  public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
     // for now we assume there is one workspace and it has a default uuid.
     return buildWorkspaceReadFromId(PersistenceConstants.DEFAULT_WORKSPACE_ID);
   }

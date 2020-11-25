@@ -80,7 +80,7 @@ public class DestinationHandler {
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
-    DestinationDefinitionSpecificationRead spec = getSpec(destinationCreate.getDestinationDefinitionId());
+    final DestinationDefinitionSpecificationRead spec = getSpec(destinationCreate.getDestinationDefinitionId());
     validateDestination(spec, destinationCreate.getConnectionConfiguration());
 
     // persist
@@ -100,8 +100,7 @@ public class DestinationHandler {
   public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing implementation
-    final DestinationRead destination =
-        buildDestinationRead(destinationIdRequestBody.getDestinationId());
+    final DestinationRead destination = buildDestinationRead(destinationIdRequestBody.getDestinationId());
 
     // disable all connections associated with this destination
     // Delete connections first in case it it fails in the middle, destination will still be visible
@@ -127,12 +126,11 @@ public class DestinationHandler {
   public DestinationRead updateDestination(final DestinationUpdate destinationUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing implementation
-    final DestinationConnection currentDci =
-        configRepository.getDestinationConnection(destinationUpdate.getDestinationId());
+    final DestinationConnection currentDci = configRepository.getDestinationConnection(destinationUpdate.getDestinationId());
 
     final DestinationDefinitionSpecificationRead spec = getSpec(currentDci.getDestinationDefinitionId());
 
-    JsonNode updateConfigurationWithSecrets = secretProcessor
+    final JsonNode updateConfigurationWithSecrets = secretProcessor
         .copySecrets(currentDci.getConfiguration(), destinationUpdate.getConnectionConfiguration(), spec.getConnectionSpecification());
     destinationUpdate.setConnectionConfiguration(updateConfigurationWithSecrets);
 
@@ -176,9 +174,7 @@ public class DestinationHandler {
     return new DestinationReadList().destinations(reads);
   }
 
-  private void validateDestination(final DestinationDefinitionSpecificationRead spec,
-                                   final JsonNode configuration)
-      throws JsonValidationException {
+  private void validateDestination(final DestinationDefinitionSpecificationRead spec, final JsonNode configuration) throws JsonValidationException {
     validator.ensure(spec.getConnectionSpecification(), configuration);
   }
 
@@ -206,7 +202,8 @@ public class DestinationHandler {
   }
 
   private DestinationRead buildDestinationRead(final UUID destinationId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    DestinationDefinitionSpecificationRead spec = getSpec(configRepository.getDestinationConnection(destinationId).getDestinationDefinitionId());
+    final DestinationDefinitionSpecificationRead spec =
+        getSpec(configRepository.getDestinationConnection(destinationId).getDestinationDefinitionId());
     return buildDestinationRead(destinationId, spec);
   }
 

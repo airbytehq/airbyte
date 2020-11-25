@@ -35,6 +35,7 @@ import io.airbyte.api.model.JobRead.StatusEnum;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -95,7 +96,7 @@ public class WebBackendConnectionsHandler {
         .name(connectionRead.getName())
         .syncSchema(connectionRead.getSyncSchema())
         .status(connectionRead.getStatus())
-        .syncMode(Enums.convertTo(connectionRead.getSyncMode(), WbConnectionRead.SyncModeEnum.class))
+        .syncMode(Enums.convertTo(connectionRead.getSyncMode(), SyncMode.class))
         .schedule(connectionRead.getSchedule())
         .source(source)
         .destination(destination);

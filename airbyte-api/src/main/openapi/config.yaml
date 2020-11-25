@@ -1360,9 +1360,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         syncMode:
-          type: string
-          enum:
-            - full_refresh
+          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1404,9 +1402,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         syncMode:
-          type: string
-          enum:
-            - full_refresh
+          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1635,9 +1631,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         syncMode:
-          type: string
-          enum:
-            - full_refresh
+          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1663,6 +1657,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WbConnectionRead"
+    SyncMode:
+      type: string
+      enum:
+        - full_refresh
+        - incremental
   responses:
     InvalidInput:
       description: Invalid Input
