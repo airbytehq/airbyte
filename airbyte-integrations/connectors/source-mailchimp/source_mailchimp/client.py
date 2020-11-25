@@ -102,5 +102,5 @@ class Client:
         return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=now))
 
     @staticmethod
-    def _state(stream: str):
-        return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=))
+    def _state(stream: str, data: Dict[str, any]):
+        return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
