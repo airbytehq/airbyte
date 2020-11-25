@@ -184,7 +184,7 @@ const OnboardingPage: React.FC = () => {
       await createConnection({
         values,
         source: sources[0],
-        destinationId: destinations[0].destinationId,
+        destination: destinations[0],
         sourceDefinition,
         destinationDefinition
       });
