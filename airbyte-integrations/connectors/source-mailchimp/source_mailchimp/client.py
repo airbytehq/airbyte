@@ -25,7 +25,7 @@ SOFTWARE.
 import json
 import pkgutil
 from datetime import datetime
-from typing import DefaultDict, Dict, Generator
+from typing import DefaultDict, Dict, Generator, Tuple
 
 from airbyte_protocol import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream, Type
 from dateutil import parser
@@ -62,13 +62,7 @@ class Client:
         cursor_field = "date_created"
         stream_name = self._LISTS
         date_created = self._get_cursor_or_none(state, stream_name, cursor_field)
-
-        default_params = {"sort_field": cursor_field, "sort_dir": "ASC"}
-        if date_created:
-            default_params["since_date_created"] = date_created
-            max_date_created = parser.isoparse(date_created)
-        else:
-            max_date_created = None
+        default_params, max_date_created = self._get_default_params_and_cursor(cursor_field, date_created)
 
         offset = 0
         done = False
@@ -91,13 +85,7 @@ class Client:
         cursor_field = "create_time"
         stream_name = self._CAMPAIGNS
         create_time = self._get_cursor_or_none(state, stream_name, cursor_field)
-
-        default_params = {"sort_field": cursor_field, "sort_dir": "ASC"}
-        if create_time:
-            default_params["since_create_time"] = create_time
-            max_create_time = parser.isoparse(create_time)
-        else:
-            max_create_time = None
+        default_params, max_create_time = self._get_default_params_and_cursor(cursor_field, create_time)
 
         offset = 0
         done = False
@@ -115,6 +103,17 @@ class Client:
 
             done = len(campaigns_response) < self.PAGINATION
             offset += self.PAGINATION
+
+    @staticmethod
+    def _get_default_params_and_cursor(cursor_field: str, cursor_value: str) -> Tuple[Dict[str, str], datetime]:
+        default_params = {"sort_field": cursor_field, "sort_dir": "ASC"}
+        if cursor_value:
+            default_params[f"since_{cursor_field}"] = cursor_value
+            parsed_date_cursor = parser.isoparse(cursor_value)
+        else:
+            parsed_date_cursor = None
+
+        return default_params, parsed_date_cursor
 
     @staticmethod
     def _format_date_as_string(d: datetime) -> str:
