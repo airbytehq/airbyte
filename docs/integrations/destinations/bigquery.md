@@ -89,12 +89,14 @@ Once you've configured BigQuery as a destination, delete the Service Account Key
 From [BigQuery Datasets Naming](https://cloud.google.com/bigquery/docs/datasets#dataset-naming):
 
 When you create a dataset in BigQuery, the dataset name must be unique for each project. The dataset name can contain the following:
-- Up to 1,024 characters.
-- Letters (uppercase or lowercase), numbers, and underscores.
 
-    Note: In the Cloud Console, datasets that begin with an underscore are hidden from the navigation pane. You can query tables and views in these datasets even though these datasets aren't visible.
+* Up to 1,024 characters.
+* Letters \(uppercase or lowercase\), numbers, and underscores.
 
-- Dataset names are case-sensitive: mydataset and MyDataset can coexist in the same project.
-- Dataset names cannot contain spaces or special characters such as -, &, @, or %.
+  Note: In the Cloud Console, datasets that begin with an underscore are hidden from the navigation pane. You can query tables and views in these datasets even though these datasets aren't visible.
 
-Therefore, Airbyte BigQuery destination will convert any invalid characters into '_' characters when writing data.
+* Dataset names are case-sensitive: mydataset and MyDataset can coexist in the same project.
+* Dataset names cannot contain spaces or special characters such as -, &, @, or %.
+
+Therefore, Airbyte BigQuery destination will convert any invalid characters into '\_' characters when writing data.
+
