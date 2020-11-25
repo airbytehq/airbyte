@@ -29,7 +29,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.ExtendedSQLNaming;
-import io.airbyte.integrations.base.StandardSQLNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,7 +44,7 @@ public class PostgresIntegrationTest extends TestDestination {
 
   private static final String RAW_DATA_COLUMN = "data";
   private PostgreSQLContainer<?> db;
-  private StandardSQLNaming namingResolver = new ExtendedSQLNaming();
+  private ExtendedSQLNaming namingResolver = new ExtendedSQLNaming();
 
   @Override
   protected String getImageName() {

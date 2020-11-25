@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.ExtendedSQLNaming;
-import io.airbyte.integrations.base.StandardSQLNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -45,7 +44,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
   private JsonNode config;
-  private StandardSQLNaming namingResolver = new ExtendedSQLNaming();
+  private ExtendedSQLNaming namingResolver = new ExtendedSQLNaming();
 
   @Override
   protected String getImageName() {
