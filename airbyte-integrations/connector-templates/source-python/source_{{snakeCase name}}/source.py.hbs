@@ -39,5 +39,5 @@ class Source{{properCase name}}(Source):
         # discover the schema with the provided config
         raise Exception("unimplemented")
 
-    def read(self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state=None) -> Generator[AirbyteMessage, None, None]:
+    def read(self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state: str = None) -> Generator[AirbyteMessage, None, None]:
         raise Exception("unimplemented")
