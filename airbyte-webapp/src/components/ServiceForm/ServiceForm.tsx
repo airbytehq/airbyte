@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Formik, Form } from "formik";
 import styled from "styled-components";
 import { JSONSchema7 } from "json-schema";
@@ -72,6 +72,16 @@ const ServiceForm: React.FC<IProps> = ({
     specifications
   );
 
+  const sortedDropDownData = useMemo(
+    () =>
+      dropDownData.sort((a, b) => {
+        if (a.text < b.text) return -1;
+        if (a.text > b.text) return 1;
+        return 0;
+      }),
+    [dropDownData]
+  );
+
   return (
     <Formik
       initialValues={initialValues}
@@ -89,7 +99,7 @@ const ServiceForm: React.FC<IProps> = ({
             {...formProps}
             allowChangeConnector={allowChangeConnector}
             schema={validationSchema}
-            dropDownData={dropDownData}
+            dropDownData={sortedDropDownData}
             formType={formType}
             formFields={formFields}
             widgetsInfo={uiWidgetsInfo}

@@ -106,14 +106,14 @@ export default class ConnectionResource extends BaseResource
       ...super.createShape(),
       schema: this.asSchema(),
       fetch: async (
-        params: Readonly<Record<string, string | number>>,
+        params: Readonly<object>,
         body: Readonly<object>
       ): Promise<any> =>
         await this.fetch("post", `${this.url(params)}/create`, body).then(
           response => ({
             ...response,
             // will remove it if BE returns resource in /web_backend/get format
-            source: params
+            ...params
           })
         )
     };

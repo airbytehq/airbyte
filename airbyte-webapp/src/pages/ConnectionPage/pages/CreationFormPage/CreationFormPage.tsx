@@ -11,8 +11,6 @@ import CreateEntityView from "./components/CreateEntityView";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";
 import ConnectionBlock from "../../../../components/ConnectionBlock";
-import { useSourceDetails } from "../../../../components/hooks/services/useSourceHook";
-import { useDestinationDetails } from "../../../../components/hooks/services/useDestinationHook";
 import CreateConnection from "./components/CreateConnection";
 import { IDataItem } from "../../../../components/DropDown/components/ListItem";
 import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
@@ -22,6 +20,9 @@ import { Routes } from "../../../routes";
 import useConnection from "../../../../components/hooks/services/useConnectionHook";
 import ContentCard from "../../../../components/ContentCard";
 import Spinner from "../../../../components/Spinner";
+import { useResource } from "rest-hooks/lib/react-integration/hooks";
+import SourceResource from "../../../../core/resources/Source";
+import DestinationResource from "../../../../core/resources/Destination";
 
 type IProps = {
   type: "source" | "destination";
@@ -53,9 +54,23 @@ const FetchMessage = styled.div`
 
 const CreationFormPage: React.FC<IProps> = ({ type }) => {
   const { location, push }: any = useRouter();
+  const source = useResource(
+    SourceResource.detailShape(),
+    location.state?.sourceId
+      ? {
+          sourceId: location.state.sourceId
+        }
+      : null
+  );
+  const destination = useResource(
+    DestinationResource.detailShape(),
+    location.state?.destinationId
+      ? {
+          destinationId: location.state.destinationId
+        }
+      : null
+  );
 
-  const { source } = useSourceDetails(location.state?.sourceId);
-  const { destination } = useDestinationDetails(location.state?.destinationId);
   const { createConnection } = useConnection();
   const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
 
@@ -145,7 +160,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         await createConnection({
           values,
           source: source || undefined,
-          destinationId: destination?.destinationId || "",
+          destination: destination || undefined,
           sourceDefinition: {
             name: source?.name || "",
             sourceDefinitionId: source?.sourceDefinitionId || ""

@@ -3,6 +3,7 @@ import BaseResource from "./BaseResource";
 
 export interface Workspace {
   workspaceId: string;
+  customerId: string;
   name: string;
   slug: string;
   initialSetupComplete: boolean;
@@ -15,6 +16,7 @@ export interface Workspace {
 export default class WorkspaceResource extends BaseResource
   implements Workspace {
   readonly workspaceId: string = "";
+  readonly customerId: string = "";
   readonly name: string = "";
   readonly slug: string = "";
   readonly initialSetupComplete: boolean = false;
