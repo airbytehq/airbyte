@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+
 from datetime import datetime
 from typing import Generator
 
@@ -61,16 +63,16 @@ class SourceMailchimp(Source):
         return AirbyteCatalog(streams=client.get_streams())
 
     def read(
-        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None
+            self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state_path: str = None
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._client(config_container)
-
+        state = json.loads(open(state_path, "r").read()) if state_path else None
         catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
 
         logger.info("Starting syncing mailchimp")
         for configured_stream in catalog.streams:
             stream = configured_stream.stream
-            for record in self._read_record(client=client, stream=stream.name):
+            for record in self._read_record(client=client, stream=stream.name, state=state):
                 yield AirbyteMessage(type=Type.RECORD, record=record)
 
         logger.info("Finished syncing mailchimp")
@@ -81,7 +83,7 @@ class SourceMailchimp(Source):
 
         return client
 
-    def _read_record(self, client: Client, stream: str):
+    def _read_record(self, client: Client, stream: str, state=state) -> AirbyteMessage:
         entity_map = {
             "Lists": client.lists,
             "Campaigns": client.campaigns,
