@@ -38,6 +38,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class AirbyteProtocolConvertersTest {
@@ -115,12 +116,8 @@ class AirbyteProtocolConvertersTest {
 
   @Test
   void testToSchemaWithMultipleJsonSchemaTypesAndFormats() {
-    // written as string because helper interface does not support building json schema with multiple
-    // types. (can add this functionliaty if these helpers stay)
-    final String testString =
-        "{\"type\":\"CATALOG\",\"catalog\":{\"streams\":[{\"name\":\"users\",\"json_schema\":{ \"properties\": {\"date\":{\"type\":\"string\",\"format\":\"date-time\"},\"age\":{\"type\":[\"null\",\"number\"]}}}}]}}";
-
-    Schema schema = new Schema()
+    final AirbyteCatalog catalog = CatalogHelpers.createAirbyteCatalog(STREAM, Field.of("date", JsonSchemaPrimitive.STRING), Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER));
+    final Schema schema = new Schema()
         .withStreams(Lists.newArrayList(new Stream()
             .withName(STREAM)
             .withFields(Lists.newArrayList(
@@ -133,14 +130,13 @@ class AirbyteProtocolConvertersTest {
                     .withDataType(DataType.NUMBER)
                     .withSelected(true)))));
 
-    final AirbyteMessage message = Jsons.deserialize(testString, AirbyteMessage.class);
-    assertEquals(schema, AirbyteProtocolConverters.toSchema(message.getCatalog()));
+    assertEquals(schema, AirbyteProtocolConverters.toSchema(catalog));
   }
 
   @Test
   void testAnyOfAsObject() {
     final String testString =
-        "{\"type\":\"CATALOG\",\"catalog\":{\"streams\":[{\"name\":\"users\",\"json_schema\":{\"properties\":{\"date\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"object\"}]}}}}]}}";
+        "{\"streams\":[{\"name\":\"users\",\"json_schema\":{\"properties\":{\"date\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"object\"}]}}}}]}";
 
     Schema schema = new Schema()
         .withStreams(Lists.newArrayList(new Stream()
@@ -149,10 +145,10 @@ class AirbyteProtocolConvertersTest {
                 new io.airbyte.config.Field()
                     .withName("date")
                     .withDataType(DataType.OBJECT)
-                    .withSelected(true)))));
+                    .withSelected(true)))            ));
 
-    final AirbyteMessage message = Jsons.deserialize(testString, AirbyteMessage.class);
-    assertEquals(schema, AirbyteProtocolConverters.toSchema(message.getCatalog()));
+    final AirbyteCatalog catalog = Jsons.deserialize(testString, AirbyteCatalog.class);
+    assertEquals(schema, AirbyteProtocolConverters.toSchema(catalog));
   }
 
   @Test

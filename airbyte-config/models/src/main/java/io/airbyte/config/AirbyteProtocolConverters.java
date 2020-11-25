@@ -100,10 +100,8 @@ public class AirbyteProtocolConverters {
                 .map(e -> Enums.convertTo(e, StandardSync.SyncMode.class))
                 .collect(Collectors.toList()))
             .withSourceDefinedCursor(airbyteStream.getSourceDefinedCursor())
-            .withDefaultCursorField(airbyteStream.getDefaultCursorField())
-            // configurable
-            .withSyncMode(null)
-            .withCursorField(null))
+            .withDefaultCursorField(airbyteStream.getDefaultCursorField()))
+            // configurable fields syncMode and cursorField are not set since they will never be defined in an AirbyteCatalog.
         .collect(Collectors.toList()));
   }
 
