@@ -66,6 +66,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -242,9 +243,12 @@ public class AcceptanceTests {
                     .dataType(DataType.NUMBER)
                     .selected(true),
                 new SourceSchemaField()
-                    .name("name")
+                    .name(COLUMN_NAME)
                     .dataType(DataType.STRING)
-                    .selected(true)))));
+                    .selected(true)))
+            .supportedSyncModes(Collections.emptyList())
+            .defaultCursorField(Collections.emptyList())
+            .cursorField(Collections.emptyList())));
 
     assertEquals(expectedSchema, actualSchema);
   }
@@ -412,16 +416,6 @@ public class AcceptanceTests {
   private void assertStreamsEquivalent(Database database, String table) throws Exception {
     final List<JsonNode> allRecords = retrievePgRecords(database, table);
     assertDestinationContains(allRecords, table);
-  }
-
-  @SuppressWarnings("OptionalGetWithoutIsPresent")
-  private long getStreamCount(Database database, String tableName) throws SQLException {
-    return database.query(
-        context -> {
-          Result<Record> record =
-              context.fetch(String.format("SELECT COUNT(*) FROM %s;", tableName));
-          return (long) record.stream().findFirst().get().get(0);
-        });
   }
 
   private ConnectionRead createConnection(String name,
