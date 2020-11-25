@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
@@ -72,7 +73,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.jooq.Record;
@@ -261,16 +261,69 @@ public class AcceptanceTests {
     schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
 
-    final ConnectionRead createdConnection = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode);
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
     final ConnectionSyncRead connectionSyncRead = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(createdConnection.getConnectionId()));
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead.getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
   @Test
   @Order(8)
+  public void testIncrementalSync() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createCsvDestination().getDestinationId();
+    final SourceSchema schema = discoverSourceSchema(sourceId);
+
+    // todo (cgardens) - comment in when pg source supports incremental.
+    // assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+    // schema.getStreams().get(0).getSupportedSyncModes());
+    // assertEquals(false, schema.getStreams().get(0).getSourceDefinedCursor()); // instead of
+    // assertFalse to avoid NPE from unboxed.
+    // assertNull(schema.getStreams().get(0).getDefaultCursorField());
+
+    // update schema to use incremental
+    schema.getStreams().get(0)
+        .syncMode(SyncMode.INCREMENTAL)
+        .cursorField(Lists.newArrayList("id"));
+
+    schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
+    // todo (cgardens) - this enum as part of the enum is deprecated.
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
+
+    final ConnectionSyncRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead1.getStatus());
+    assertSourceAndTargetDbInSync(sourcePsql);
+
+    // add new records and run again.
+    final Database database = getDatabase(sourcePsql);
+    // get contents of source before mutating records.
+    final List<JsonNode> expectedRecords = retrievePgRecords(database, "id_and_name");
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put("id", 6).put("name", "geralt").build()));
+    // add a new record
+    database.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
+    // todo (cgardens) - comment this in when both the source and destination here actually support
+    // incremental.
+    // mutate a record that was already synced with out updating its cursor value. if we are actually
+    // full refreshing, this record will appear in the output and cause the test to fail. if we are,
+    // correctly, doing incremental, we will not find this value in the destination.
+    // database.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
+    database.close();
+
+    final ConnectionSyncRead connectionSyncRead2 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead2.getStatus());
+    assertDestinationContains(expectedRecords, "id_and_name");
+    assertSourceAndTargetDbInSync(sourcePsql);
+  }
+
+  @Test
+  @Order(9)
   public void testScheduledSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -326,16 +379,21 @@ public class AcceptanceTests {
         .collect(Collectors.toSet());
   }
 
-  private void assertStreamsEquivalent(Database database, String table) throws Exception {
-    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveCsvRecords(table));
+  private void assertDestinationContains(List<JsonNode> sourceRecords, String streamName) throws Exception {
+    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveCsvRecords(streamName));
 
-    long sourceStreamCount = getStreamCount(database, table);
-    assertEquals(sourceStreamCount, destinationRecords.size());
-    final List<JsonNode> allRecords = retrievePgRecords(database, table);
+    assertEquals(sourceRecords.size(), destinationRecords.size(),
+        String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
 
-    for (JsonNode sourceStreamRecord : allRecords) {
-      assertTrue(destinationRecords.contains(sourceStreamRecord));
+    for (JsonNode sourceStreamRecord : sourceRecords) {
+      assertTrue(destinationRecords.contains(sourceStreamRecord),
+          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
     }
+  }
+
+  private void assertStreamsEquivalent(Database database, String table) throws Exception {
+    final List<JsonNode> allRecords = retrievePgRecords(database, table);
+    assertDestinationContains(allRecords, table);
   }
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")
