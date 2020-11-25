@@ -25,8 +25,8 @@
 package io.airbyte.integrations.destination.postgres;
 
 import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.table;
+import static org.jooq.impl.DSL.unquotedName;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
@@ -40,7 +40,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.NamingHelper;
+import io.airbyte.integrations.base.SQLNamingResolvable;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -55,7 +55,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -79,6 +78,12 @@ public class PostgresDestination implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
   static final String COLUMN_NAME = "data";
 
+  private final SQLNamingResolvable namingResolver;
+
+  public PostgresDestination() {
+    namingResolver = new PostgresSQLNaming();
+  }
+
   @Override
   public ConnectorSpecification spec() throws IOException {
     // return a jsonschema representation of the spec for the integration.
@@ -99,6 +104,11 @@ public class PostgresDestination implements Destination {
       // todo (cgardens) - better error messaging for common cases. e.g. wrong password.
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Can't connect with provided configuration.");
     }
+  }
+
+  @Override
+  public SQLNamingResolvable getNamingResolver() {
+    return namingResolver;
   }
 
   /**
@@ -136,10 +146,10 @@ public class PostgresDestination implements Destination {
     final Set<String> schemaSet = new HashSet<>();
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String schemaName = getSchemaName(config);
       final String streamName = stream.getStream().getName();
-      final String tableName = NamingHelper.getRawTableName(streamName);
-      final String tmpTableName = streamName + "_" + Instant.now().toEpochMilli();
+      final String schemaName = getNamingResolver().getIdentifier(getConfigSchemaName(config));
+      final String tableName = getNamingResolver().getRawTableName(streamName);
+      final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
       if (!schemaSet.contains(schemaName)) {
         database.query(ctx -> ctx.execute(createSchemaQuery(schemaName)));
         schemaSet.add(schemaName);
@@ -158,15 +168,15 @@ public class PostgresDestination implements Destination {
   }
 
   static String createSchemaQuery(String schemaName) {
-    return String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";\n", schemaName);
+    return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
   }
 
   static String createRawTableQuery(String schemaName, String streamName) {
     return String.format(
-        "CREATE TABLE IF NOT EXISTS \"%s\".\"%s\" ( \n"
-            + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
-            + "\"%s\" JSONB,\n"
-            + "\"emitted_at\" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
+        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+            + "ab_id VARCHAR PRIMARY KEY,\n"
+            + "%s JSONB,\n"
+            + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
             + ");\n",
         schemaName, streamName, COLUMN_NAME);
   }
@@ -237,7 +247,7 @@ public class PostgresDestination implements Destination {
                                                                                             String schemaName,
                                                                                             String tmpTableName) {
       InsertValuesStep3<Record, String, JSONB, OffsetDateTime> step =
-          ctx.insertInto(table(name(schemaName, tmpTableName)), field("ab_id", String.class),
+          ctx.insertInto(table(unquotedName(schemaName, tmpTableName)), field("ab_id", String.class),
               field(COLUMN_NAME, JSONB.class), field("emitted_at", OffsetDateTime.class));
 
       for (int i = 0; i < batchSize; i++) {
@@ -296,13 +306,13 @@ public class PostgresDestination implements Destination {
             switch (writeConfig.getSyncMode()) {
               case FULL_REFRESH -> {
                 // truncate table if already exist.
-                query.append(String.format("TRUNCATE TABLE \"%s\".\"%s\";\n", writeConfig.getSchemaName(), writeConfig.getTableName()));
+                query.append(String.format("TRUNCATE TABLE %s.%s;\n", writeConfig.getSchemaName(), writeConfig.getTableName()));
               }
               case INCREMENTAL -> {}
               default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
             }
             // always copy data from tmp table into "main" table.
-            query.append(String.format("INSERT INTO \"%s\".\"%s\" SELECT * FROM \"%s\".\"%s\";\n", writeConfig.getSchemaName(),
+            query.append(String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", writeConfig.getSchemaName(),
                 writeConfig.getTableName(), writeConfig.getSchemaName(), writeConfig.getTmpTableName()));
           }
           return ctx.execute(query.toString());
@@ -321,7 +331,7 @@ public class PostgresDestination implements Destination {
       for (WriteConfig writeConfig : writeConfigs.values()) {
         try {
           database.query(
-              ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS \"%s\".\"%s\";", writeConfig.getSchemaName(), writeConfig.getTmpTableName())));
+              ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS %s.%s;", writeConfig.getSchemaName(), writeConfig.getTmpTableName())));
         } catch (SQLException e) {
           throw new RuntimeException(e);
         }
@@ -378,7 +388,7 @@ public class PostgresDestination implements Destination {
             config.get("database").asText()));
   }
 
-  private static String getSchemaName(JsonNode config) {
+  private static String getConfigSchemaName(JsonNode config) {
     if (config.has("schema")) {
       return config.get("schema").asText();
     } else {

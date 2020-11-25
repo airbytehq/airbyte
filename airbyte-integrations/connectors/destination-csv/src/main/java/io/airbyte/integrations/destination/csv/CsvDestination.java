@@ -30,8 +30,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.SQLNamingResolvable;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -62,6 +64,12 @@ public class CsvDestination implements Destination {
   static final String COLUMN_EMITTED_AT = "emitted_at"; // we output all data as a blob to a single column.
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
+  private final SQLNamingResolvable namingResolver;
+
+  public CsvDestination() {
+    namingResolver = new ExtendedSQLNaming();
+  }
+
   @Override
   public ConnectorSpecification spec() throws IOException {
     final String resourceString = MoreResources.readResource("spec.json");
@@ -76,6 +84,11 @@ public class CsvDestination implements Destination {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+  }
+
+  @Override
+  public SQLNamingResolvable getNamingResolver() {
+    return namingResolver;
   }
 
   /**
@@ -93,8 +106,11 @@ public class CsvDestination implements Destination {
     final long now = Instant.now().toEpochMilli();
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final Path tmpPath = destinationDir.resolve(stream.getStream().getName() + "_" + now + ".csv");
-      final Path finalPath = destinationDir.resolve(stream.getStream().getName() + ".csv");
+      final String streamName = stream.getStream().getName();
+      final String tableName = getNamingResolver().getRawTableName(streamName);
+      final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
+      final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
+      final Path finalPath = destinationDir.resolve(tableName + ".csv");
       final FileWriter fileWriter = new FileWriter(tmpPath.toFile());
       final CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA));
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));

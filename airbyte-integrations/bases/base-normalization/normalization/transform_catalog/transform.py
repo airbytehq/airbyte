@@ -25,6 +25,8 @@ SOFTWARE.
 import argparse
 import json
 import os
+import unicodedata as ud
+from re import match, sub
 from typing import List, Optional, Set, Tuple, Union
 
 import yaml
@@ -50,6 +52,7 @@ python3 main_dev_transform_catalog.py \
 
     def parse(self, args) -> None:
         parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument("--integration-type", type=str, required=True, help="type of integration dialect to use")
         parser.add_argument("--profile-config-dir", type=str, required=True, help="path to directory containing DBT profiles.yml")
         parser.add_argument("--catalog", nargs="+", type=str, required=True, help="path to Catalog (JSON Schema) file")
         parser.add_argument("--out", type=str, required=True, help="path to output generated DBT Models to")
@@ -57,6 +60,7 @@ python3 main_dev_transform_catalog.py \
         parsed_args = parser.parse_args(args)
         profiles_yml = read_profiles_yml(parsed_args.profile_config_dir)
         self.config = {
+            "integration_type": parsed_args.integration_type,
             "schema": extract_schema(profiles_yml),
             "catalog": parsed_args.catalog,
             "output_path": parsed_args.out,
@@ -65,15 +69,18 @@ python3 main_dev_transform_catalog.py \
 
     def process_catalog(self) -> None:
         source_tables: set = set()
+        integration_type = self.config["integration_type"]
         schema = self.config["schema"]
         output = self.config["output_path"]
         for catalog_file in self.config["catalog"]:
             print(f"Processing {catalog_file}...")
             catalog = read_json_catalog(catalog_file)
-            result, tables = generate_dbt_model(catalog=catalog, json_col=self.config["json_column"], schema=schema)
+            result, tables = generate_dbt_model(
+                integration_type=integration_type, catalog=catalog, json_col=self.config["json_column"], schema=schema
+            )
             self.output_sql_models(output, result)
             source_tables = source_tables.union(tables)
-        self.write_yaml_sources(output, schema, source_tables)
+        self.write_yaml_sources(output, schema, source_tables, integration_type)
 
     @staticmethod
     def output_sql_models(output: str, result: dict) -> None:
@@ -86,25 +93,30 @@ python3 main_dev_transform_catalog.py \
                     f.write(sql)
 
     @staticmethod
-    def write_yaml_sources(output: str, schema: str, sources: set) -> None:
-        tables = [{"name": source} for source in sources]
+    def write_yaml_sources(output: str, schema: str, sources: set, integration_type: str) -> None:
+        quoted_schema = schema[0] == '"'
+        tables = [
+            {
+                "name": source,
+                "quoting": {"identifier": True},
+            }
+            for source in sources
+            if table_name(source, integration_type)[0] == '"'
+        ] + [{"name": source} for source in sources if table_name(source, integration_type)[0] != '"']
         source_config = {
             "version": 2,
             "sources": [
                 {
                     "name": schema,
-                    "tables": tables,
                     "quoting": {
                         "database": True,
-                        "schema": True,
-                        "identifier": True,
+                        "schema": quoted_schema,
+                        "identifier": False,
                     },
+                    "tables": tables,
                 },
             ],
         }
-        # Quoting options are hardcoded and passed down to the sources instead of
-        # inheriting them from dbt_project.yml (does not work well for some reasons?)
-        # Apparently, Snowflake needs this quoting configuration to work properly...
         source_path = os.path.join(output, "sources.yml")
         if not os.path.exists(source_path):
             with open(source_path, "w") as fh:
@@ -163,7 +175,43 @@ def jinja_call(command: str) -> str:
     return "{{ " + command + "  }}"
 
 
-def json_extract_base_property(path: List[str], json_col: str, name: str, definition: dict) -> Optional[str]:
+def strip_accents(s):
+    return "".join(c for c in ud.normalize("NFD", s) if ud.category(c) != "Mn")
+
+
+def resolve_identifier(input_name: str, integration_type: str) -> str:
+    if integration_type == "bigquery":
+        input_name = strip_accents(input_name)
+        input_name = sub(r"\s+", "_", input_name)
+        return sub(r"[^a-zA-Z0-9_]", "_", input_name)
+    else:
+        return input_name
+
+
+def table_name(input_name: str, integration_type) -> str:
+    if integration_type == "bigquery":
+        return resolve_identifier(input_name, integration_type)
+    elif match("[^A-Za-z_]", input_name[0]) or match(".*[^A-Za-z0-9_].*", input_name):
+        return '"' + input_name + '"'
+    else:
+        return input_name
+
+
+def quote(input_name: str, integration_type: str, in_jinja=False) -> str:
+    if integration_type == "bigquery":
+        input_name = resolve_identifier(input_name, integration_type)
+    if match("[^A-Za-z_]", input_name[0]) or match(".*[^A-Za-z0-9_].*", input_name):
+        result = f"adapter.quote('{input_name}')"
+    elif in_jinja:
+        result = f"'{input_name}'"
+    else:
+        return input_name
+    if not in_jinja:
+        return jinja_call(result)
+    return result
+
+
+def json_extract_base_property(path: List[str], json_col: str, name: str, definition: dict, integration_type: str) -> Optional[str]:
     current = path + [name]
     if "type" not in definition:
         return None
@@ -171,30 +219,32 @@ def json_extract_base_property(path: List[str], json_col: str, name: str, defini
         return "cast({} as {}) as {}".format(
             jinja_call(f"json_extract_scalar('{json_col}', {current})"),
             jinja_call("dbt_utils.type_string()"),
-            jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
+            quote(name, integration_type),
         )
     elif is_integer(definition["type"]):
         return "cast({} as {}) as {}".format(
             jinja_call(f"json_extract_scalar('{json_col}', {current})"),
             jinja_call("dbt_utils.type_int()"),
-            jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
+            quote(name, integration_type),
         )
     elif is_number(definition["type"]):
         return "cast({} as {}) as {}".format(
             jinja_call(f"json_extract_scalar('{json_col}', {current})"),
             jinja_call("dbt_utils.type_float()"),
-            jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
+            quote(name, integration_type),
         )
     elif is_boolean(definition["type"]):
         return "cast({} as boolean) as {}".format(
             jinja_call(f"json_extract_scalar('{json_col}', {current})"),
-            jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
+            quote(name, integration_type),
         )
     else:
         return None
 
 
-def json_extract_nested_property(path: List[str], json_col: str, name: str, definition: dict) -> Union[Tuple[None, None], Tuple[str, str]]:
+def json_extract_nested_property(
+    path: List[str], json_col: str, name: str, definition: dict, integration_type: str
+) -> Union[Tuple[None, None], Tuple[str, str]]:
     current = path + [name]
     if definition is None or "type" not in definition:
         return None, None
@@ -202,17 +252,15 @@ def json_extract_nested_property(path: List[str], json_col: str, name: str, defi
         return (
             "{} as {}".format(
                 jinja_call(f"json_extract_array('{json_col}', {current})"),
-                jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
+                quote(name, integration_type),
             ),
-            "cross join {} as {}".format(
-                jinja_call(f"unnest('{name}')"), jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')")
-            ),
+            "cross join {} as {}".format(jinja_call(f"unnest('{name}')"), quote(name, integration_type)),
         )
     elif is_object(definition["type"]):
         return (
             "{} as {}".format(
                 jinja_call(f"json_extract('{json_col}', {current})"),
-                jinja_call(f"adapter.quote_as_configured('{name}', 'identifier')"),
+                quote(name, integration_type),
             ),
             "",
         )
@@ -220,47 +268,51 @@ def json_extract_nested_property(path: List[str], json_col: str, name: str, defi
         return None, None
 
 
-def select_table(table: str, columns="*"):
-    return f"""\nselect {columns} from {jinja_call(f"adapter.quote_as_configured('{table}', 'identifier')")}"""
+def select_table(table: str, integration_type: str, columns="*"):
+    return f"""\nselect {columns} from {table_name(table, integration_type)}"""
 
 
-def extract_node_properties(path: List[str], json_col: str, properties: dict) -> dict:
+def extract_node_properties(path: List[str], json_col: str, properties: dict, integration_type: str) -> dict:
     result = {}
     if properties:
         for field in properties.keys():
-            sql_field = json_extract_base_property(path=path, json_col=json_col, name=field, definition=properties[field])
+            sql_field = json_extract_base_property(
+                path=path, json_col=json_col, name=field, definition=properties[field], integration_type=integration_type
+            )
             if sql_field:
                 result[field] = sql_field
     return result
 
 
-def find_properties_object(path: List[str], field: str, properties) -> dict:
+def find_properties_object(path: List[str], field: str, properties, integration_type: str) -> dict:
     if isinstance(properties, str) or isinstance(properties, int):
         return {}
     else:
         if "items" in properties:
-            return find_properties_object(path, field, properties["items"])
+            return find_properties_object(path, field, properties["items"], integration_type=integration_type)
         elif "properties" in properties:
             # we found a properties object
             return {field: properties["properties"]}
-        elif "type" in properties and json_extract_base_property(path=path, json_col="", name="", definition=properties):
+        elif "type" in properties and json_extract_base_property(
+            path=path, json_col="", name="", definition=properties, integration_type=integration_type
+        ):
             # we found a basic type
             return {field: None}
         elif isinstance(properties, dict):
             for key in properties.keys():
-                if not json_extract_base_property(path, "", key, properties[key]):
-                    child = find_properties_object(path, key, properties[key])
+                if not json_extract_base_property(path, "", key, properties[key], integration_type=integration_type):
+                    child = find_properties_object(path, key, properties[key], integration_type=integration_type)
                     if child:
                         return child
         elif isinstance(properties, list):
             for item in properties:
-                child = find_properties_object(path=path, field=field, properties=item)
+                child = find_properties_object(path=path, field=field, properties=item, integration_type=integration_type)
                 if child:
                     return child
     return {}
 
 
-def extract_nested_properties(path: List[str], field: str, properties: dict) -> dict:
+def extract_nested_properties(path: List[str], field: str, properties: dict, integration_type: str) -> dict:
     result = {}
     if properties:
         for key in properties.keys():
@@ -268,7 +320,9 @@ def extract_nested_properties(path: List[str], field: str, properties: dict) -> 
             if combining:
                 # skip combining schemas
                 for combo in combining:
-                    found = find_properties_object(path=path + [field, key], field=key, properties=properties[key][combo])
+                    found = find_properties_object(
+                        path=path + [field, key], field=key, properties=properties[key][combo], integration_type=integration_type
+                    )
                     result.update(found)
             elif "type" not in properties[key]:
                 pass
@@ -277,74 +331,87 @@ def extract_nested_properties(path: List[str], field: str, properties: dict) -> 
                 if combining:
                     # skip combining schemas
                     for combo in combining:
-                        found = find_properties_object(path=path + [field, key], field=key, properties=properties[key]["items"][combo])
+                        found = find_properties_object(
+                            path=path + [field, key],
+                            field=key,
+                            properties=properties[key]["items"][combo],
+                            integration_type=integration_type,
+                        )
                         result.update(found)
                 else:
-                    found = find_properties_object(path=path + [field, key], field=key, properties=properties[key]["items"])
+                    found = find_properties_object(
+                        path=path + [field, key], field=key, properties=properties[key]["items"], integration_type=integration_type
+                    )
                     result.update(found)
             elif is_object(properties[key]["type"]):
-                found = find_properties_object(path=path + [field, key], field=key, properties=properties[key])
+                found = find_properties_object(
+                    path=path + [field, key], field=key, properties=properties[key], integration_type=integration_type
+                )
                 result.update(found)
     return result
 
 
 def process_node(
-    path: List[str], json_col: str, name: str, properties: dict, from_table: str = "", previous="with ", inject_cols=""
+    path: List[str],
+    json_col: str,
+    name: str,
+    properties: dict,
+    integration_type: str,
+    from_table: str = "",
+    previous="with ",
+    inject_cols="",
 ) -> dict:
     result = {}
     if previous == "with ":
         prefix = previous
     else:
         prefix = previous + ","
-    node_properties = extract_node_properties(path=path, json_col=json_col, properties=properties)
+    node_properties = extract_node_properties(path=path, json_col=json_col, properties=properties, integration_type=integration_type)
     node_columns = ",\n    ".join([sql for sql in node_properties.values()])
-    hash_node_columns = ",\n        ".join([f"adapter.quote_as_configured('{column}', 'identifier')" for column in node_properties.keys()])
-    # Disable dbt_utils.surrogate_key for own version to fix a bug with Postgres (#913).
-    # hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
-    # We should re-enable it when our PR to dbt_utils is merged
-    hash_node_columns = jinja_call(f"surrogate_key([\n        {hash_node_columns}\n    ])")
-    hash_id = jinja_call(f"adapter.quote_as_configured('_{name}_hashid', 'identifier')")
-    foreign_hash_id = jinja_call(f"adapter.quote_as_configured('_{name}_foreign_hashid', 'identifier')")
-    emitted_col = "{},\n    {} as {}".format(
-        jinja_call("adapter.quote_as_configured('emitted_at', 'identifier')"),
+    hash_node_columns = ",\n        ".join([quote(column, integration_type, in_jinja=True) for column in node_properties.keys()])
+    hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
+    hash_id = quote(f"_{name}_hashid", integration_type)
+    foreign_hash_id = quote(f"_{name}_foreign_hashid", integration_type)
+    emitted_col = "emitted_at,\n    {} as normalized_at".format(
         jinja_call("dbt_utils.current_timestamp_in_utc()"),
-        jinja_call("adapter.quote_as_configured('normalized_at', 'identifier')"),
     )
     node_sql = f"""{prefix}
-{jinja_call(f"adapter.quote_as_configured('{name}_node', 'identifier')")} as (
+{table_name(f"{name}_node", integration_type)} as (
   select {inject_cols}
     {emitted_col},
     {node_columns}
   from {from_table}
 ),
-{jinja_call(f"adapter.quote_as_configured('{name}_with_id', 'identifier')")} as (
+{table_name(f"{name}_with_id", integration_type)} as (
   select
     *,
     {hash_node_columns} as {hash_id}
-    from {jinja_call(f"adapter.quote_as_configured('{name}_node', 'identifier')")}
+    from {table_name(f"{name}_node", integration_type)}
 )"""
     # SQL Query for current node's basic properties
-    result[name] = node_sql + select_table(f"{name}_with_id")
+    result[resolve_identifier(name, integration_type)] = node_sql + select_table(f"{name}_with_id", integration_type)
 
-    children_columns = extract_nested_properties(path=path, field=name, properties=properties)
+    children_columns = extract_nested_properties(path=path, field=name, properties=properties, integration_type=integration_type)
     if children_columns:
         for col in children_columns.keys():
-            child_col, join_child_table = json_extract_nested_property(path=path, json_col=json_col, name=col, definition=properties[col])
-            column_name = jinja_call(f"adapter.quote_as_configured('{col}', 'identifier')")
+            child_col, join_child_table = json_extract_nested_property(
+                path=path, json_col=json_col, name=col, definition=properties[col], integration_type=integration_type
+            )
+            column_name = quote(col, integration_type)
             child_sql = f"""{prefix}
 
-{jinja_call(f"adapter.quote_as_configured('{name}_node', 'identifier')")} as (
+{table_name(f"{name}_node", integration_type)} as (
   select
     {emitted_col},
     {child_col},
     {node_columns}
   from {from_table}
 ),
-{jinja_call(f"adapter.quote_as_configured('{name}_with_id', 'identifier')")} as (
+{table_name(f"{name}_with_id", integration_type)} as (
   select
     {hash_node_columns} as {hash_id},
     {column_name}
-  from {jinja_call(f"adapter.quote_as_configured('{name}_node', 'identifier')")}
+  from {table_name(f"{name}_node", integration_type)}
   {join_child_table}
 )"""
             if children_columns[col]:
@@ -360,8 +427,9 @@ def process_node(
                 result.update(children)
             else:
                 # SQL Query for current node's basic properties
-                result[f"{name}_{col}"] = child_sql + select_table(
+                result[resolve_identifier(f"{name}_{col}", integration_type)] = child_sql + select_table(
                     f"{name}_with_id",
+                    integration_type,
                     columns=f"""
   {hash_id} as {foreign_hash_id},
   {col}
@@ -370,7 +438,7 @@ def process_node(
     return result
 
 
-def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict, Set[Union[str]]]:
+def generate_dbt_model(integration_type: str, catalog: dict, json_col: str, schema: str) -> Tuple[dict, Set[Union[str]]]:
     result = {}
     source_tables = set()
     for configuredStream in catalog["streams"]:
@@ -390,9 +458,13 @@ def generate_dbt_model(catalog: dict, json_col: str, schema: str) -> Tuple[dict,
         # TODO Replace {name}_raw by an argument like we do for the json_blob column
         # This would enable destination to freely choose where to store intermediate data before notifying
         # normalization step
-        table = jinja_call(f"source('{schema}', '{name}_raw')")
-        result.update(process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table))
-        source_tables.add(f"{name}_raw")
+        table = jinja_call(
+            f"source('{resolve_identifier(schema, integration_type)}', '{resolve_identifier(name + '_raw', integration_type)}')"
+        )
+        result.update(
+            process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table, integration_type=integration_type)
+        )
+        source_tables.add(resolve_identifier(name + "_raw", integration_type))
     return result, source_tables
 
 

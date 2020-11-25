@@ -22,38 +22,13 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.snowflake;
+package io.airbyte.integrations.base;
 
-import io.airbyte.commons.lang.CloseableQueue;
+public class RedshiftSQLNaming extends ExtendedSQLNaming {
 
-public class SnowflakeWriteContext {
-
-  private final String schemaName;
-  private final String tableName;
-  private final String tmpTableName;
-  private final CloseableQueue<byte[]> writeBuffer;
-
-  SnowflakeWriteContext(String schemaName, String tableName, String tmpTableName, CloseableQueue<byte[]> writeBuffer) {
-    this.schemaName = schemaName;
-    this.tableName = tableName;
-    this.tmpTableName = tmpTableName;
-    this.writeBuffer = writeBuffer;
-  }
-
-  public String getSchemaName() {
-    return schemaName;
-  }
-
-  public String getTableName() {
-    return tableName;
-  }
-
-  public String getTmpTableName() {
-    return tmpTableName;
-  }
-
-  public CloseableQueue<byte[]> getWriteBuffer() {
-    return writeBuffer;
+  @Override
+  protected String convertStreamName(String input) {
+    return super.convertStreamName(input).toLowerCase();
   }
 
 }
