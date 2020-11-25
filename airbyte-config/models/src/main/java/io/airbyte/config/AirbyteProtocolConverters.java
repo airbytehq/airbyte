@@ -101,7 +101,8 @@ public class AirbyteProtocolConverters {
                 .collect(Collectors.toList()))
             .withSourceDefinedCursor(airbyteStream.getSourceDefinedCursor())
             .withDefaultCursorField(airbyteStream.getDefaultCursorField()))
-            // configurable fields syncMode and cursorField are not set since they will never be defined in an AirbyteCatalog.
+        // configurable fields syncMode and cursorField are not set since they will never be defined in an
+        // AirbyteCatalog.
         .collect(Collectors.toList()));
   }
 
