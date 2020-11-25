@@ -1,16 +1,14 @@
 import React from "react";
 import { useResource } from "rest-hooks";
+import { FormattedMessage } from "react-intl";
 
-import FrequencyForm from "../../../../../components/FrequencyForm";
-import SchemaResource, {
-  SyncSchema
-} from "../../../../../core/resources/Schema";
-import { IDataItem } from "../../../../../components/DropDown/components/ListItem";
+import FrequencyForm from "../../FrequencyForm";
+import SchemaResource, { SyncSchema } from "../../../core/resources/Schema";
+import { IDataItem } from "../../DropDown/components/ListItem";
 import {
   constructInitialSchemaState,
   constructNewSchema
-} from "../../../../../core/helpers";
-import { FormattedMessage } from "react-intl";
+} from "../../../core/helpers";
 
 type IProps = {
   onSubmit: (values: { frequency: string; syncSchema: SyncSchema }) => void;
