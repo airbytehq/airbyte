@@ -30,7 +30,6 @@ from datetime import datetime
 
 from typing import Dict, Generator, Any, DefaultDict
 from airbyte_protocol import AirbyteStream, AirbyteMessage, AirbyteStateMessage, AirbyteRecordMessage, Type
-
 from mailchimp3 import MailChimp
 from mailchimp3.mailchimpclient import MailChimpError
 
@@ -45,7 +44,6 @@ class Client:
 
     def __init__(self, username: str, apikey: str):
         self._client = MailChimp(mc_api=apikey, mc_user=username)
-
     def health_check(self):
         try:
             self._client.ping.get()
