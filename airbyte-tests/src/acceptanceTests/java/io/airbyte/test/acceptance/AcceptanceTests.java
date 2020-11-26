@@ -98,7 +98,8 @@ import org.testcontainers.utility.MountableFile;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
-  private static final String STREAM_NAME = "id_and_name";
+  private static final String TABLE_NAME = "id_and_name";
+  private static final String STREAM_NAME = "public." + TABLE_NAME;
   private static final String COLUMN_ID = "id";
   private static final String COLUMN_NAME = "name";
 
@@ -340,7 +341,7 @@ public class AcceptanceTests {
     final ConnectionSyncRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead2.getStatus());
-    assertDestinationContains(expectedRecords, STREAM_NAME);
+    assertDestinationContains(expectedRecords, TABLE_NAME);
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
@@ -397,7 +398,7 @@ public class AcceptanceTests {
 
   private Set<String> listCsvStreams() throws IOException {
     return Files.list(outputDir)
-        .map(file -> file.getFileName().toString().replaceAll(".csv", ""))
+        .map(file -> file.getFileName().toString().replaceAll("_raw\\.csv", "").replaceAll("public_", ""))
         .collect(Collectors.toSet());
   }
 
