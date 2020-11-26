@@ -22,47 +22,35 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.AbstractJooqSource;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresSource extends AbstractJooqSource implements Source {
+// for ease of testing testing purposes only
+public class JooqSource extends AbstractJooqSource implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(JooqSource.class);
 
-  public PostgresSource() {
+  public JooqSource() {
     super("org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
+  // no-op for JooqSource since the config it receives is designed to be use for JDBC.
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
-    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()));
-
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
-    }
-
-    return Jsons.jsonNode(configBuilder.build());
+    return config;
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new PostgresSource();
-    LOGGER.info("starting source: {}", PostgresSource.class);
+    final Source source = new JooqSource();
+    LOGGER.info("starting source: {}", JooqSource.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", PostgresSource.class);
+    LOGGER.info("completed source: {}", JooqSource.class);
   }
 
 }

@@ -29,7 +29,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -100,10 +99,8 @@ public class IntegrationRunner {
       case READ -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        // todo (cgardens) - should we should only send the contents of the state field to the integration,
-        // not the whole struct. this runner obfuscates everything but the contents.
-        final Optional<State> stateOptional = parsed.getStatePath().map(path -> parseConfig(path, State.class));
-        final Stream<AirbyteMessage> messageStream = source.read(config, catalog, stateOptional.map(State::getState).orElse(null));
+        final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
+        final Stream<AirbyteMessage> messageStream = source.read(config, catalog, stateOptional.orElse(null));
         messageStream.map(Jsons::serialize).forEach(stdoutConsumer);
         messageStream.close();
       }

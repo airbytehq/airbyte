@@ -26,6 +26,7 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
@@ -35,6 +36,8 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -102,10 +105,15 @@ public class PostgresIntegrationTests extends TestSource {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return CatalogHelpers.createConfiguredAirbyteCatalog(
+    final ConfiguredAirbyteCatalog configuredAirbyteCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         STREAM_NAME,
-        Field.of("id", Field.JsonSchemaPrimitive.NUMBER),
-        Field.of("name", Field.JsonSchemaPrimitive.STRING));
+        Field.of("id", JsonSchemaPrimitive.NUMBER),
+        Field.of("name", JsonSchemaPrimitive.STRING));
+
+    configuredAirbyteCatalog.getStreams().forEach(
+        configuredStream -> configuredStream.getStream().withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
+
+    return configuredAirbyteCatalog;
   }
 
   @Override
