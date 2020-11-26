@@ -23,6 +23,7 @@ from typing import Tuple, Mapping
 from base_python import BaseClient
 
 from grnhse import Harvest
+from grnhse.exceptions import HTTPError
 
 DEFAULT_ITEMS_PER_PAGE = 100
 
@@ -62,12 +63,7 @@ class Client(BaseClient):
         super().__init__()
 
     def list(self, name, **kwargs):
-        yield from paginator(getattr(self.client, name), **kwargs)
-
-    # def settings(self, **kwargs):
-    #     url = 'settings/helpdesk'
-    #     request = partial(self._client._get, url=url)
-    #     return list(paginator(request, **kwargs))
+        yield from paginator(getattr(self._client, name), **kwargs)
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
         return {
@@ -76,13 +72,14 @@ class Client(BaseClient):
         }
 
     def health_check(self) -> Tuple[bool, str]:
-        # TODO
         alive = True
         error_msg = None
 
         try:
-            self.settings()
-        except FreshdeskError as error:
+            # because there is no good candidate to try our connection
+            # we use users endpoint as potentially smallest dataset
+            self._client.users.get()
+        except HTTPError as error:
             alive = False
             error_msg = str(error)
 

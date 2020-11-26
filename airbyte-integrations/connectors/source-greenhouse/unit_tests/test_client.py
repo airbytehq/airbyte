@@ -21,25 +21,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import pytest
-
 from source_greenhouse.client import Client
 
 
-def test_client_wrong_domain():
-    not_greenhouse_domain = 'unknownaccount'
-    expected_error = (
-        'Freshdesk v2 API works only via Freshdesk'
-        'domains and not via custom CNAMEs'
-    )
-    with pytest.raises(AttributeError, match=expected_error):
-        Client(domain=not_greenhouse_domain, apikey='wrong_key')
-
-
-def test_client_wrong_account():
-    unknown_domain = 'unknownaccount.freshdesk.com'
-    client = Client(domain=unknown_domain, apikey='wrong_key')
+def test_client_wrong_api_key():
+    client = Client(api_key='wrong_key')
     alive, error = client.health_check()
 
     assert not alive
-    assert error == 'Freshdesk Request Failed'
+    assert error == 'Greenhouse Request Failed'
+
+
+def test_client_wrong_endpoint():
+    client = Client(api_key='wrong_key')
+    next(client.list('unknown_endpoint'))
+
+
+def test_client_custom_fields():
+    client = Client(api_key='')
+    list(client.list('custom_fields'))
