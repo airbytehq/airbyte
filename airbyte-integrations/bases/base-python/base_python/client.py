@@ -24,9 +24,9 @@ SOFTWARE.
 import inspect
 import json
 import pkgutil
-from abc import ABC
+from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Generator
 
 from airbyte_protocol import AirbyteStream, AirbyteRecordMessage
 
@@ -34,6 +34,7 @@ from airbyte_protocol import AirbyteStream, AirbyteRecordMessage
 class ResourceSchemaLoader:
     """ JSONSchema loader from package resources
     """
+
     def get_schema(self, name):
         raw_schema = json.loads(
             pkgutil.get_data(self.__class__.__module__.split(".")[0],
@@ -41,19 +42,12 @@ class ResourceSchemaLoader:
         return raw_schema
 
 
-class URLSchemaLoader:
-    """ JSONSchema loader from URL
-    """
-    def get_schema(self, name):
-        raise NotImplementedError
-
-
 class BaseClient(ABC):
     """ Base client for API
     """
     schema_loader_class = ResourceSchemaLoader
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         self._schema_loader = self.schema_loader_class()
         self._stream_methods = self._enumerate_methods()
 
@@ -70,7 +64,8 @@ class BaseClient(ABC):
 
         return mapping
 
-    def read_stream(self, stream):
+    def read_stream(self, stream: AirbyteStream) -> Generator[
+        AirbyteRecordMessage, None, None]:
         """ Yield records from stream
         """
         method = self._stream_methods.get(stream.name)
@@ -84,14 +79,14 @@ class BaseClient(ABC):
                                        emitted_at=now)
 
     @property
-    def streams(self):
+    def streams(self) -> Generator[AirbyteStream, None, None]:
         """ List of available streams
         """
         for name, method in self._stream_methods.items():
             yield AirbyteStream(name,
                                 schema=self._schema_loader.get_schema(name))
 
+    @abstractmethod
     def health_check(self) -> Tuple[bool, str]:
         """ Check if service is up and running
         """
-        raise NotImplementedError

@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from functools import partial
-from typing import Tuple, Mapping
+from typing import Tuple, Mapping, Callable, Dict
 
 from base_python import BaseClient
 
@@ -29,7 +29,8 @@ DEFAULT_ITEMS_PER_PAGE = 100
 
 
 def paginator(
-        request, params, page=None, per_page=DEFAULT_ITEMS_PER_PAGE, **kwargs
+        request: Callable, params: Dict, page: int = None,
+        per_page: int = DEFAULT_ITEMS_PER_PAGE, **kwargs
 ):
     """ Split requests in multiple batches and return records as generator
     """
@@ -57,8 +58,8 @@ class Client(BaseClient):
         'time_entries'
     ]
 
-    def __init__(self, domain, apikey):
-        self._client = API(domain=domain, api_key=apikey, version=2)
+    def __init__(self, domain, api_key):
+        self._client = API(domain=domain, api_key=api_key, version=2)
         super().__init__()
 
     def list(self, name, **kwargs):

@@ -33,12 +33,12 @@ def test_client_wrong_domain():
         'domains and not via custom CNAMEs'
     )
     with pytest.raises(AttributeError, match=expected_error):
-        Client(domain=not_freshdesk_domain, apikey='wrong_key')
+        Client(domain=not_freshdesk_domain, api_key='wrong_key')
 
 
 def test_client_wrong_account():
     unknown_domain = 'unknownaccount.freshdesk.com'
-    client = Client(domain=unknown_domain, apikey='wrong_key')
+    client = Client(domain=unknown_domain, api_key='wrong_key')
     alive, error = client.health_check()
 
     assert not alive
