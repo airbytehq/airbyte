@@ -50,6 +50,7 @@ class SourceHttpRequest(Source):
             "additionalProperties": True,
             "type": "object",
             # todo (cgardens) - remove data column. added to handle UI bug where streams without fields cannot be selected.
+            # issue: https://github.com/airbytehq/airbyte/issues/1104
             "properties": {"data": {"type": "object"}},
         }
 
