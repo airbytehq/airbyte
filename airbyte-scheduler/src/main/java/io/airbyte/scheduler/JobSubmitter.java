@@ -24,20 +24,29 @@
 
 package io.airbyte.scheduler;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.helpers.ScheduleHelpers;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -69,7 +78,7 @@ public class JobSubmitter implements Runnable {
       Optional<Job> oldestPendingJob = persistence.getOldestPendingJob();
 
       oldestPendingJob.ifPresent(job -> {
-        track(job, configRepository);
+        trackSubmission(job);
         submitJob(job);
       });
 
@@ -79,7 +88,8 @@ public class JobSubmitter implements Runnable {
     }
   }
 
-  private void submitJob(Job job) {
+  @VisibleForTesting
+  void submitJob(Job job) {
     final WorkerRun workerRun = workerRunFactory.create(job);
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
@@ -96,61 +106,111 @@ public class JobSubmitter implements Runnable {
             persistence.writeOutput(job.getId(), output.getOutput().get());
           }
           persistence.updateStatus(job.getId(), getStatus(output));
+          trackCompletion(job, output.getStatus());
         })
-        .setOnException(noop -> persistence.updateStatus(job.getId(), JobStatus.FAILED))
+        .setOnException(noop -> {
+          persistence.updateStatus(job.getId(), JobStatus.FAILED);
+          trackCompletion(job, io.airbyte.workers.JobStatus.FAILED);
+        })
         .setOnFinish(MDC::clear)
         .build());
   }
 
-  private void track(Job job, ConfigRepository configRepository) {
+  @VisibleForTesting
+  void trackSubmission(Job job) {
     try {
-      final Builder<String, Object> metadata = ImmutableMap.builder();
-      switch (job.getConfig().getConfigType()) {
-        case CHECK_CONNECTION_SOURCE, DISCOVER_SCHEMA -> {
-          final StandardSourceDefinition sourceDefinition = configRepository
-              .getSourceDefinitionFromSource(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
-
-          metadata.put("source_definition_name", sourceDefinition.getName());
-          metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
-        }
-        case CHECK_CONNECTION_DESTINATION -> {
-          final StandardDestinationDefinition destinationDefinition = configRepository
-              .getDestinationDefinitionFromDestination(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
-
-          metadata.put("destination_definition_name", destinationDefinition.getName());
-          metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
-        }
-        case GET_SPEC -> {
-          // no op because this will be noisy as heck.
-        }
-        case SYNC -> {
-          final StandardSourceDefinition sourceDefinition = configRepository
-              .getSourceDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
-          final StandardDestinationDefinition destinationDefinition = configRepository
-              .getDestinationDefinitionFromConnection(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
-
-          metadata.put("source_definition_name", sourceDefinition.getName());
-          metadata.put("source_definition_id", sourceDefinition.getSourceDefinitionId());
-          metadata.put("destination_definition_name", destinationDefinition.getName());
-          metadata.put("destination_definition_id", destinationDefinition.getDestinationDefinitionId());
-        }
-      }
-
-      TrackingClientSingleton.get().track("job", metadata.build());
+      final Builder<String, Object> metadataBuilder = generateMetadata(job);
+      metadataBuilder.put("attempt_stage", "STARTED");
+      track(metadataBuilder.build());
     } catch (Exception e) {
       LOGGER.error("failed while reporting usage.");
     }
   }
 
-  private JobStatus getStatus(OutputAndStatus<?> output) {
-    switch (output.getStatus()) {
-      case SUCCEEDED:
-        return JobStatus.COMPLETED;
-      case FAILED:
-        return JobStatus.FAILED;
-      default:
-        throw new RuntimeException("Unknown state " + output.getStatus());
+  @VisibleForTesting
+  void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
+    try {
+      final Builder<String, Object> metadataBuilder = generateMetadata(job);
+      metadataBuilder.put("attempt_stage", "ENDED");
+      metadataBuilder.put("attempt_completion_status", status);
+      track(metadataBuilder.build());
+    } catch (Exception e) {
+      LOGGER.error("failed while reporting usage.");
     }
+  }
+
+  private void track(Map<String, Object> metadata) {
+    // do not track get spec. it is done frequently and not terribly interesting.
+    if (metadata.get("job_type").equals("GET_SPEC")) {
+      return;
+    }
+
+    TrackingClientSingleton.get().track("Connector Jobs", metadata);
+  }
+
+  private ImmutableMap.Builder<String, Object> generateMetadata(Job job) throws ConfigNotFoundException, IOException, JsonValidationException {
+    final Builder<String, Object> metadata = ImmutableMap.builder();
+    metadata.put("job_type", job.getConfig().getConfigType());
+    metadata.put("job_id", job.getId());
+    metadata.put("attempt_id", job.getAttempts());
+    // build deterministic job and attempt uuids based off of the scope,which should be unique across
+    // all instances of airbyte installed everywhere).
+    final UUID jobUuid = UUID.nameUUIDFromBytes((job.getScope() + job.getId() + job.getAttempts()).getBytes(Charsets.UTF_8));
+    final UUID attemptUuid = UUID.nameUUIDFromBytes((job.getScope() + job.getId() + job.getAttempts()).getBytes(Charsets.UTF_8));
+    metadata.put("job_uuid", jobUuid);
+    metadata.put("attempt_uuid", attemptUuid);
+
+    switch (job.getConfig().getConfigType()) {
+      case CHECK_CONNECTION_SOURCE, DISCOVER_SCHEMA -> {
+        final StandardSourceDefinition sourceDefinition = configRepository
+            .getSourceDefinitionFromSource(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+
+        metadata.put("connector_source", sourceDefinition.getName());
+        metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
+      }
+      case CHECK_CONNECTION_DESTINATION -> {
+        final StandardDestinationDefinition destinationDefinition = configRepository
+            .getDestinationDefinitionFromDestination(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+
+        metadata.put("connector_destination", destinationDefinition.getName());
+        metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+      }
+      case GET_SPEC -> {
+        // no op because this will be noisy as heck.
+      }
+      case SYNC -> {
+        final UUID connectionId = UUID.fromString(ScopeHelper.getConfigId(job.getScope()));
+        final StandardSyncSchedule schedule = configRepository.getStandardSyncSchedule(connectionId);
+        final StandardSourceDefinition sourceDefinition = configRepository
+            .getSourceDefinitionFromConnection(connectionId);
+        final StandardDestinationDefinition destinationDefinition = configRepository
+            .getDestinationDefinitionFromConnection(connectionId);
+
+        metadata.put("connection_id", connectionId);
+        metadata.put("connector_source", sourceDefinition.getName());
+        metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
+        metadata.put("connector_destination", destinationDefinition.getName());
+        metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+
+        String frequencyString;
+        if (schedule.getManual()) {
+          frequencyString = "manual";
+        } else {
+          final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(schedule.getSchedule()));
+          frequencyString = intervalInMinutes + " min";
+        }
+        metadata.put("frequency", frequencyString);
+      }
+    }
+    return metadata;
+  }
+
+  private static JobStatus getStatus(OutputAndStatus<?> output) {
+    return switch (output.getStatus()) {
+      case SUCCEEDED -> JobStatus.COMPLETED;
+      case FAILED -> JobStatus.FAILED;
+      default -> throw new IllegalStateException("Unknown state " + output.getStatus());
+    };
   }
 
 }
