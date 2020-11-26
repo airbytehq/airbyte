@@ -96,36 +96,81 @@
                 "updated_at": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "active",
-                "created_at",
-                "email",
-                "job_title",
-                "language",
-                "last_login_at",
-                "mobile",
-                "name",
-                "phone",
-                "time_zone",
-                "updated_at"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      }
+    },
+    {
+      "stream": {
+        "name": "companies",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "domains": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "custom_fields": {
+              "type": "object"
+            },
+            "health_score": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "account_tier": {
+              "type": "string"
+            },
+            "renewal_date": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "industry": {
+              "type": [
+                "string",
+                "null"
               ]
             }
-          },
-          "required": [
-            "available",
-            "available_since",
-            "contact",
-            "created_at",
-            "id",
-            "last_active_at",
-            "occasional",
-            "signature",
-            "ticket_scope",
-            "type",
-            "updated_at"
-          ]
-        }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       }
     }
   ]
