@@ -70,7 +70,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
     IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(input.getSourceConnectionConfiguration()));
     IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(input.getCatalog()));
-    if (input.getState() != null){
+    if (input.getState() != null) {
       IOs.writeFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME, Jsons.serialize(input.getState().getState()));
     }
 
