@@ -62,6 +62,7 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
 
   const onSync = () => {
     AnalyticsService.track("Source - Action", {
+      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       action: "Full refresh sync",
       connector_source: connection.source?.sourceName,

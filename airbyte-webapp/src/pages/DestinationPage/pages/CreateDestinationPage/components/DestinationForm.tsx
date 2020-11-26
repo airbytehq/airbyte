@@ -42,6 +42,7 @@ const DestinationForm: React.FC<IProps> = ({
     );
 
     AnalyticsService.track("New Destination - Action", {
+      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       action: "Select a connector",
       connector_destination_definition: connector?.text,

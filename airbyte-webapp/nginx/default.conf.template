@@ -11,6 +11,7 @@ server {
         try_files $uri $uri/ /index.html;
 
         sub_filter '__SERVER_TRACKING_STRATEGY__' $TRACKING_STRATEGY;
+        sub_filter '__SERVER_AIRBYTE_VERSION__' $AIRBYTE_VERSION;
         sub_filter_once off;
     }
 

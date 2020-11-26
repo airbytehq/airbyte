@@ -16,6 +16,10 @@
       const strategyEnv = "__SERVER_TRACKING_STRATEGY__";
       const strategy = strategyEnv.startsWith("__SERVER_TRACKING_STRATEGY") ? "" : strategyEnv;
       window.TRACKING_STRATEGY = strategy;
+
+      const versionEnv = "__SERVER_AIRBYTE_VERSION__";
+      const version = versionEnv.startsWith("__SERVER_AIRBYTE_VERSION") ? "" : versionEnv;
+      window.AIRBYTE_VERSION = version;
     </script>
   </head>
   <body>

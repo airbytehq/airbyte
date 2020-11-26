@@ -94,6 +94,7 @@ const useConnection = () => {
         ]
       );
       AnalyticsService.track("New Connection - Action", {
+        airbyte_version: config.version,
         user_id: config.ui.workspaceId,
         action: "Set up connection",
         frequency: frequencyData?.text,

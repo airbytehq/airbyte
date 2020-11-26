@@ -80,6 +80,7 @@ const DestinationStep: React.FC<IProps> = ({
   const onDropDownSelect = (sourceId: string) => {
     const destinationConnector = getDestinationDefinitionById(sourceId);
     AnalyticsService.track("New Destination - Action", {
+      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       action: "Select a connector",
       connector_destination: destinationConnector?.name,

@@ -26,6 +26,7 @@ const useSyncActions = () => {
     );
 
     AnalyticsService.track("Source - Action", {
+      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       action:
         connection.status === "active"
@@ -42,6 +43,7 @@ const useSyncActions = () => {
 
   const syncManualConnection = (connection: Connection) => {
     AnalyticsService.track("Source - Action", {
+      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       action: "Full refresh sync",
       connector_source: connection.source?.sourceName,

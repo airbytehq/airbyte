@@ -70,6 +70,7 @@ const SourceStep: React.FC<IProps> = ({
     const sourceDefinition = getSourceDefinitionById(sourceId);
 
     AnalyticsService.track("New Source - Action", {
+      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       action: "Select a connector",
       connector_source: sourceDefinition?.name,

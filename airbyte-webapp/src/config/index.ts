@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
+    AIRBYTE_VERSION?: string;
   }
 }
 
@@ -13,6 +14,7 @@ const config: {
   };
   segment: { token: string };
   apiUrl: string;
+  version?: string;
 } = {
   ui: {
     helpLink: "https://airbyte.io/community",
@@ -28,6 +30,7 @@ const config: {
           "6cxNSmQyGSKcATLdJ2pL6WsawkzEMDAN"
         : ""
   },
+  version: window.AIRBYTE_VERSION,
   apiUrl:
     process.env.REACT_APP_API_URL ||
     `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`

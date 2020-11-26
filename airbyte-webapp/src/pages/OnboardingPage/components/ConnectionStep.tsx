@@ -63,6 +63,7 @@ const ConnectionStep: React.FC<IProps> = ({
 
   const onSelectFrequency = (item: IDataItem) => {
     AnalyticsService.track("New Connection - Action", {
+      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       action: "Select a frequency",
       frequency: item?.text,
