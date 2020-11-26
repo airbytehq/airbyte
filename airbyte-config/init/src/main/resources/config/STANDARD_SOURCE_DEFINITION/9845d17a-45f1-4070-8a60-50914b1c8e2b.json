@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "9845d17a-45f1-4070-8a60-50914b1c8e2b",
+  "name": "REST API",
+  "dockerRepository": "airbyte/source-rest-api",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-rest-api"
+}
