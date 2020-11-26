@@ -22,6 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .standard_source_test import SourceRestApiStandardTest
+import sys
 
-__all__ = ["SourceRestApiStandardTest"]
+from base_python.entrypoint import launch
+from source_http_request import SourceHttpRequest
+
+if __name__ == "__main__":
+    source = SourceHttpRequest()
+    launch(source, sys.argv[1:])
