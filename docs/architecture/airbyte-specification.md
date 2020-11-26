@@ -162,7 +162,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
         }
       ```
 
-**Note:** Airbyte only supports stream and field names that contain only Unicode alphabet characters, numbers, or underscores. The discovery process will fail if any stream names or field names are invalid. Syncs will filter out any stream that has an invalid name or any invalid fields.
+**Note:** Airbyte only supports stream and field names can be any UTF8 string. Destinations are responsible for cleaning these names to make them valid table and column names in their respective data stores.
 
 #### Read
 
