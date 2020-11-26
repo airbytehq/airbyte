@@ -140,7 +140,7 @@ class MySqlSourceTest {
   }
 
   @Test
-  void testDiscover() throws Exception { ;
+  void testDiscover() throws Exception {
     final AirbyteCatalog allStreams = new MySqlSource().discover(config);
     // Filter out streams not related to this test case (from other tests running in parallel)
     final AirbyteCatalog actual = new AirbyteCatalog()
@@ -201,4 +201,5 @@ class MySqlSourceTest {
   private String getStreamName() {
     return String.format("%s.%s", config.get("database").asText(), STREAM_NAME);
   }
+
 }

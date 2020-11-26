@@ -137,12 +137,12 @@ public abstract class AbstractJdbcSource implements Source {
 
   private List<Table<?>> discoverInternal(final Database database) throws Exception {
     return database.query(context -> {
-        final List<Schema> schemas = context.meta().getSchemas();
-        final List<Table<?>> tables = schemas.stream()
-            .filter(schema -> !getExcludedInternalSchemas().contains(schema.getName()))
-            .flatMap(schema -> context.meta(schema).getTables().stream())
-            .collect(Collectors.toList());
-        return tables;
+      final List<Schema> schemas = context.meta().getSchemas();
+      final List<Table<?>> tables = schemas.stream()
+          .filter(schema -> !getExcludedInternalSchemas().contains(schema.getName()))
+          .flatMap(schema -> context.meta(schema).getTables().stream())
+          .collect(Collectors.toList());
+      return tables;
     });
   }
 
