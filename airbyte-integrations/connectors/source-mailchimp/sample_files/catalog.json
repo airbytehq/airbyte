@@ -2,8 +2,6 @@
   "streams": [
     {
       "name": "Campaigns",
-      "json_schema": {
-        "name": "Campaigns",
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": "create_time",
@@ -792,10 +790,15 @@
             }
           }
         }
-      }
     },
     {
       "name": "Lists",
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
+      "source_defined_cursor": true,
+      "default_cursor_field": "date_created",
       "json_schema": {
         "type": "object",
         "title": "Subscriber List",
