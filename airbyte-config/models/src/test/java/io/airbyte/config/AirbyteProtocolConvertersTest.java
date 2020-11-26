@@ -27,6 +27,7 @@ package io.airbyte.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
@@ -38,6 +39,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class AirbyteProtocolConvertersTest {
@@ -66,32 +68,30 @@ class AirbyteProtocolConvertersTest {
 
   private static final Schema SCHEMA = new Schema()
       .withStreams(Lists.newArrayList(new Stream()
+          .withSelected(true)
           .withName(STREAM)
           .withFields(Lists.newArrayList(
               new io.airbyte.config.Field()
                   .withName(COLUMN_NAME)
-                  .withDataType(DataType.STRING)
-                  .withSelected(true),
+                  .withDataType(DataType.STRING),
               new io.airbyte.config.Field()
                   .withName(COLUMN_AGE)
-                  .withDataType(DataType.NUMBER)
-                  .withSelected(true)))
+                  .withDataType(DataType.NUMBER)))
           .withSourceDefinedCursor(false)
           .withSupportedSyncModes(Lists.newArrayList(StandardSync.SyncMode.FULL_REFRESH, StandardSync.SyncMode.INCREMENTAL))
           .withDefaultCursorField(Lists.newArrayList(COLUMN_AGE))));
 
   private static final Schema SCHEMA_WITH_UNSELECTED = new Schema()
       .withStreams(Lists.newArrayList(new Stream()
+          .withSelected(true)
           .withName(STREAM)
           .withFields(Lists.newArrayList(
               new io.airbyte.config.Field()
                   .withName(COLUMN_NAME)
-                  .withDataType(DataType.STRING)
-                  .withSelected(true),
+                  .withDataType(DataType.STRING),
               new io.airbyte.config.Field()
                   .withName(COLUMN_AGE)
-                  .withDataType(DataType.NUMBER)
-                  .withSelected(true)))
+                  .withDataType(DataType.NUMBER)))
           .withSourceDefinedCursor(false)
           .withSupportedSyncModes(Lists.newArrayList(StandardSync.SyncMode.FULL_REFRESH, StandardSync.SyncMode.INCREMENTAL))
           .withDefaultCursorField(Lists.newArrayList(COLUMN_AGE)),
@@ -100,12 +100,10 @@ class AirbyteProtocolConvertersTest {
               .withFields(Lists.newArrayList(
                   new io.airbyte.config.Field()
                       .withName(COLUMN_NAME)
-                      .withDataType(DataType.STRING)
-                      .withSelected(false),
+                      .withDataType(DataType.STRING),
                   new io.airbyte.config.Field()
                       .withName(COLUMN_AGE)
-                      .withDataType(DataType.NUMBER)
-                      .withSelected(false)))));
+                      .withDataType(DataType.NUMBER)))));
 
   @Test
   void testToConfiguredCatalog() {
@@ -140,12 +138,11 @@ class AirbyteProtocolConvertersTest {
             .withFields(Lists.newArrayList(
                 new io.airbyte.config.Field()
                     .withName("date")
-                    .withDataType(DataType.STRING)
-                    .withSelected(true),
+                    .withDataType(DataType.STRING),
                 new io.airbyte.config.Field()
                     .withName(COLUMN_AGE)
-                    .withDataType(DataType.NUMBER)
-                    .withSelected(true)))));
+                    .withDataType(DataType.NUMBER)))
+            .withSelected(true)));
 
     assertEquals(schema, AirbyteProtocolConverters.toSchema(catalog));
   }
@@ -161,11 +158,25 @@ class AirbyteProtocolConvertersTest {
             .withFields(Lists.newArrayList(
                 new io.airbyte.config.Field()
                     .withName("date")
-                    .withDataType(DataType.OBJECT)
-                    .withSelected(true)))));
+                    .withDataType(DataType.OBJECT)))
+            .withSelected(true)));
 
     final AirbyteCatalog catalog = Jsons.deserialize(testString, AirbyteCatalog.class);
     assertEquals(schema, AirbyteProtocolConverters.toSchema(catalog));
+  }
+
+  @Test
+  void testStreamWithNoFields() {
+    final Schema schema = Jsons.clone(SCHEMA);
+    schema.getStreams().get(0).withCursorField(Lists.newArrayList(COLUMN_NAME));
+    schema.getStreams().get(0).withSyncMode(StandardSync.SyncMode.INCREMENTAL);
+    schema.getStreams().get(0).setFields(Lists.newArrayList());
+    final ConfiguredAirbyteCatalog actualCatalog = AirbyteProtocolConverters.toConfiguredCatalog(schema);
+
+    final ConfiguredAirbyteCatalog expectedCatalog = Jsons.clone(CONFIGURED_CATALOG);
+    ((ObjectNode) expectedCatalog.getStreams().get(0).getStream().getJsonSchema()).set("properties", Jsons.jsonNode(Collections.emptyMap()));
+
+    assertEquals(expectedCatalog, actualCatalog);
   }
 
   @Test
