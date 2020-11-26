@@ -23,8 +23,9 @@
         "airbyte_secret": true
       },
       "user_agent": {
+        "title": "Twilio Email",
         "type": "string",
-        "description": "The API user email for Twilio account",
+        "description": "The user email for your Twilio account",
         "examples": ["api_user_email@your_company.com"]
       }
     }
