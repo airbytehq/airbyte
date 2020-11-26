@@ -46,4 +46,8 @@ public class ScheduleHelpers {
     }
   }
 
+  public static Long getIntervalInSecond(Schedule schedule) {
+    return getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
+  }
+
 }
