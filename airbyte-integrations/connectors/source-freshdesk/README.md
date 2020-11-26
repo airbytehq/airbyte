@@ -23,11 +23,11 @@ source .venv/bin/activate
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/{{dashCase name}})
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_{{snakeCase name}}/spec.json` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/freshdesk)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_freshdesk/spec.json` file.
 See `sample_files/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in RPass under the secret name `source-{{dashCase name}}-integration-test-config`
+**If you are an Airbyte core member**, copy the credentials in RPass under the secret name `source-freshdesk-integration-test-config`
 and place them into `secrets/config.json`.
 
 
