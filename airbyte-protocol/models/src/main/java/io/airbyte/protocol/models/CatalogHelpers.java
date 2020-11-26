@@ -28,20 +28,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import io.airbyte.commons.json.Jsons;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 
 public class CatalogHelpers {
 
@@ -141,82 +136,6 @@ public class CatalogHelpers {
     }
 
     return allFieldNames;
-  }
-
-  /**
-   * @param identifier stream name or field name
-   * @return if the identifier matches the alphanumeric+underscore requirement for identifiers
-   */
-  public static boolean isValidIdentifier(String identifier) {
-    // todo (cgardens) - remove $ once mailchimp is fixed.
-    final String s = identifier.replaceAll("[-_.$]", "");
-    return StringUtils.isAlphanumeric(s);
-  }
-
-  /**
-   * @param catalog airbyte catalog
-   * @return list of stream names in the catalog that are invalid
-   */
-  public static List<String> getInvalidStreamNames(AirbyteCatalog catalog) {
-    return getInvalidStreamNames(catalog.getStreams().stream().map(AirbyteStream::getName));
-  }
-
-  /**
-   * @param catalog configured airbyte catalog
-   * @return list of stream names in the catalog that are invalid
-   */
-  public static List<String> getInvalidStreamNames(ConfiguredAirbyteCatalog catalog) {
-    return getInvalidStreamNames(catalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).map(AirbyteStream::getName));
-  }
-
-  private static List<String> getInvalidStreamNames(Stream<String> names) {
-    return names
-        .filter(streamName -> !isValidIdentifier(streamName))
-        .collect(Collectors.toList());
-  }
-
-  /**
-   * @param catalog airbyte catalog
-   * @return multimap of stream names to all invalid field names in that stream
-   */
-  public static Multimap<String, String> getInvalidFieldNames(AirbyteCatalog catalog) {
-    return getInvalidFieldNames(getStreamNameToJsonSchema(catalog));
-  }
-
-  /**
-   * @param catalog configured airbyte catalog
-   * @return multimap of stream names to all invalid field names in that stream
-   */
-  public static Multimap<String, String> getInvalidFieldNames(ConfiguredAirbyteCatalog catalog) {
-    return getInvalidFieldNames(getStreamNameToJsonSchema(catalog));
-  }
-
-  private static Map<String, JsonNode> getStreamNameToJsonSchema(AirbyteCatalog catalog) {
-    return catalog.getStreams()
-        .stream()
-        .collect(Collectors.toMap(AirbyteStream::getName, AirbyteStream::getJsonSchema));
-  }
-
-  private static Map<String, JsonNode> getStreamNameToJsonSchema(ConfiguredAirbyteCatalog catalog) {
-    return catalog.getStreams()
-        .stream()
-        .map(ConfiguredAirbyteStream::getStream)
-        .collect(Collectors.toMap(AirbyteStream::getName, AirbyteStream::getJsonSchema));
-  }
-
-  private static Multimap<String, String> getInvalidFieldNames(Map<String, JsonNode> streamNameToJsonSchema) {
-    final Multimap<String, String> streamNameToInvalidFieldNames = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
-
-    for (final Map.Entry<String, JsonNode> entry : streamNameToJsonSchema.entrySet()) {
-      final Set<String> invalidFieldNames = getAllFieldNames(entry.getValue())
-          .stream()
-          .filter(streamName -> !isValidIdentifier(streamName))
-          .collect(Collectors.toSet());
-
-      streamNameToInvalidFieldNames.putAll(entry.getKey(), invalidFieldNames);
-    }
-
-    return streamNameToInvalidFieldNames;
   }
 
 }

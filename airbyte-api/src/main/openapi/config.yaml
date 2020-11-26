@@ -1359,10 +1359,9 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+        # todo (cgardens) - remove this after we migrate to incremental schema
         syncMode:
-          type: string
-          enum:
-            - full_refresh
+          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1403,10 +1402,9 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+        # todo (cgardens) - remove this after we migrate to incremental schema
         syncMode:
-          type: string
-          enum:
-            - full_refresh
+          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1473,13 +1471,35 @@ components:
       required:
         - name
         - fields
+        # todo (cgardens) - make required once sources are migrated
+        # - supportedSyncModes
       properties:
+        # immutable
         name:
           type: string
         fields:
           type: array
           items:
             $ref: "#/components/schemas/SourceSchemaField"
+        supportedSyncModes:
+          type: array
+          items:
+            $ref: "#/components/schemas/SyncMode"
+        sourceDefinedCursor:
+          type: boolean
+        defaultCursorField:
+          type: array
+          items:
+            type: string
+        # configurable
+        selected:
+          type: boolean
+        syncMode:
+          $ref: "#/components/schemas/SyncMode"
+        cursorField:
+          type: array
+          items:
+            type: string
     SourceSchemaField:
       type: object
       required:
@@ -1635,9 +1655,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         syncMode:
-          type: string
-          enum:
-            - full_refresh
+          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1663,6 +1681,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WbConnectionRead"
+    SyncMode:
+      type: string
+      enum:
+        - full_refresh
+        - incremental
   responses:
     InvalidInput:
       description: Invalid Input

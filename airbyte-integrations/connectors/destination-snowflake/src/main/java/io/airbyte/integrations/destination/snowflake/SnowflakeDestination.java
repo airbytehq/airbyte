@@ -30,7 +30,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.NamingHelper;
+import io.airbyte.integrations.base.SQLNamingResolvable;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -42,9 +42,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,12 @@ public class SnowflakeDestination implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
 
   protected static final String COLUMN_NAME = "data";
+
+  private final SQLNamingResolvable namingResolver;
+
+  public SnowflakeDestination() {
+    namingResolver = new SnowflakeSQLNaming();
+  }
 
   @Override
   public ConnectorSpecification spec() throws IOException {
@@ -70,6 +77,11 @@ public class SnowflakeDestination implements Destination {
     } catch (Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
+  }
+
+  @Override
+  public SQLNamingResolvable getNamingResolver() {
+    return namingResolver;
   }
 
   /**
@@ -103,26 +115,34 @@ public class SnowflakeDestination implements Destination {
     // connect to snowflake
     final Supplier<Connection> connectionFactory = SnowflakeDatabase.getConnectionFactory(config);
     Map<String, SnowflakeWriteContext> writeBuffers = new HashMap<>();
+    Set<String> schemaSet = new HashSet<>();
 
     // create temporary tables if they do not exist
     // we don't use temporary/transient since we want to control the lifecycle
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String tableName = NamingHelper.getRawTableName(stream.getStream().getName());
-      final String tmpTableName = stream.getStream().getName() + "_" + Instant.now().toEpochMilli();
+      final String streamName = stream.getStream().getName();
+      final String schemaName = getNamingResolver().getIdentifier(config.get("schema").asText());
+      final String tableName = getNamingResolver().getRawTableName(streamName);
+      final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
+      if (!schemaSet.contains(schemaName)) {
+        final String query = String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName);
 
+        SnowflakeDatabase.executeSync(connectionFactory, query);
+        schemaSet.add(schemaName);
+      }
       final String query = String.format(
-          "CREATE TABLE IF NOT EXISTS \"%s\" ( \n"
-              + "\"ab_id\" VARCHAR PRIMARY KEY,\n"
+          "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+              + "ab_id VARCHAR PRIMARY KEY,\n"
               + "\"%s\" VARIANT,\n"
-              + "\"emitted_at\" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
+              + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
               + ") data_retention_time_in_days = 0;",
-          tmpTableName, COLUMN_NAME);
+          schemaName, tmpTableName, COLUMN_NAME);
 
       SnowflakeDatabase.executeSync(connectionFactory, query);
 
       final Path queueRoot = Files.createTempDirectory("queues");
       final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(stream.getStream().getName()), stream.getStream().getName());
-      writeBuffers.put(stream.getStream().getName(), new SnowflakeWriteContext(tableName, tmpTableName, writeBuffer));
+      writeBuffers.put(stream.getStream().getName(), new SnowflakeWriteContext(schemaName, tableName, tmpTableName, writeBuffer));
     }
 
     // write to transient tables

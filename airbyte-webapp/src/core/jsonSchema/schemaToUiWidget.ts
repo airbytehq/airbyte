@@ -88,6 +88,7 @@ const pickDefaultFields = (schema: JSONSchema7): Partial<JSONSchema7> => ({
   default: schema.default,
   examples: schema.examples,
   description: schema.description,
+  pattern: schema.pattern,
   title: schema.title,
   enum: schema.enum
 });

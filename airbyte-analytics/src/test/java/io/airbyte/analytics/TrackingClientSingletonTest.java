@@ -42,6 +42,8 @@ import org.junit.jupiter.api.Test;
 
 class TrackingClientSingletonTest {
 
+  private static final String AIRBYTE_VERSION = "dev";
+
   private ConfigRepository configRepository;
 
   @BeforeEach
@@ -81,8 +83,8 @@ class TrackingClientSingletonTest {
 
     when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
 
-    final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository);
-    final TrackingIdentity expected = new TrackingIdentity(workspace.getCustomerId(), null, null, null, null);
+    final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository, AIRBYTE_VERSION);
+    final TrackingIdentity expected = new TrackingIdentity(AIRBYTE_VERSION, workspace.getCustomerId(), null, null, null, null);
 
     assertEquals(expected, actual);
   }
@@ -98,8 +100,8 @@ class TrackingClientSingletonTest {
 
     when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
 
-    final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository);
-    final TrackingIdentity expected = new TrackingIdentity(workspace.getCustomerId(), workspace.getEmail(), false, true, true);
+    final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository, AIRBYTE_VERSION);
+    final TrackingIdentity expected = new TrackingIdentity(AIRBYTE_VERSION, workspace.getCustomerId(), workspace.getEmail(), false, true, true);
 
     assertEquals(expected, actual);
   }
@@ -115,8 +117,8 @@ class TrackingClientSingletonTest {
 
     when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
 
-    final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository);
-    final TrackingIdentity expected = new TrackingIdentity(workspace.getCustomerId(), null, true, true, true);
+    final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository, AIRBYTE_VERSION);
+    final TrackingIdentity expected = new TrackingIdentity(AIRBYTE_VERSION, workspace.getCustomerId(), null, true, true, true);
 
     assertEquals(expected, actual);
   }

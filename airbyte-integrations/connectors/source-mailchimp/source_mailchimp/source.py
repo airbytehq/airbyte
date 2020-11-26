@@ -22,18 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from datetime import datetime
-from typing import Generator
+import json
+from collections import defaultdict
+from typing import DefaultDict, Generator
 
-from airbyte_protocol import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    ConfiguredAirbyteCatalog,
-    Status,
-    Type,
-)
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from base_python import AirbyteLogger, ConfigContainer, Source
 
 from .client import Client
@@ -61,17 +54,25 @@ class SourceMailchimp(Source):
         return AirbyteCatalog(streams=client.get_streams())
 
     def read(
-        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None
+        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state_path: str = None
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._client(config_container)
 
+        if state_path:
+            logger.info("Starting sync with provided state file")
+            state_obj = json.loads(open(state_path, "r").read())
+        else:
+            logger.info("No state provided, starting fresh sync")
+            state_obj = {}
+
+        state = defaultdict(dict, state_obj)
         catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
 
         logger.info("Starting syncing mailchimp")
         for configured_stream in catalog.streams:
             stream = configured_stream.stream
-            for record in self._read_record(client=client, stream=stream.name):
-                yield AirbyteMessage(type=Type.RECORD, record=record)
+            for record in self._read_record(client=client, stream=stream.name, state=state):
+                yield record
 
         logger.info("Finished syncing mailchimp")
 
@@ -81,12 +82,11 @@ class SourceMailchimp(Source):
 
         return client
 
-    def _read_record(self, client: Client, stream: str):
+    def _read_record(self, client: Client, stream: str, state: DefaultDict[str, any] = None) -> Generator[AirbyteMessage, None, None]:
         entity_map = {
             "Lists": client.lists,
             "Campaigns": client.campaigns,
         }
 
-        for record in entity_map[stream]():
-            now = int(datetime.now().timestamp()) * 1000
-            yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)
+        for record in entity_map[stream](state=state):
+            yield record

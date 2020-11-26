@@ -1,4 +1,5 @@
 {"type": "RECORD", "record": {"stream": "streamWithCamelCase", "emitted_at": 1602637589000, "data": { "data" : "one" }}}
-{"type": "RECORD", "record": {"stream": "stream_with_underscores", "emitted_at": 1602637589000, "data": { "data" : "one" }}}
-{"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589000, "data": { "fieldWithCamelCase" : "one" }}}
-{"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589000, "data": { "field_with_underscore" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream_with_underscores", "emitted_at": 1602637589100, "data": { "data" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589200, "data": { "fieldWithCamelCase" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589300, "data": { "field_with_underscore" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream-with:spécial:character_names", "emitted_at": 1602637589400, "data": { "field_with_spécial_character" : "one" }}}

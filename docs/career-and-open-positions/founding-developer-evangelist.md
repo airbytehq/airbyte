@@ -2,11 +2,11 @@
 
 ## **About Airbyte**
 
-[Airbyte](http://airbyte.io) is the upcoming open-source standard for EL\(T\). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe only an open-source approach can solve the problem of data integration, as it enables us to cover the long tail of integrations while enabling teams to adapt prebuilt connectors to their needs. 
+[Airbyte](http://airbyte.io) is the upcoming open-source standard for EL\(T\). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe only an open-source approach can solve the problem of data integration, as it enables us to cover the long tail of integrations while enabling teams to adapt prebuilt connectors to their needs.
 
 Airbyte is remote friendly, with most of the team still based in the Silicon Valley. We’re fully open as a company. Our [company handbook](../company-handbook/), [culture & values](../company-handbook/culture-and-values.md), [strategy](../company-handbook/strategy.md) and [roadmap](../roadmap.md) are open to all.
 
-We're backed by some of the world's [top investors](./#our-investors) and believe in product-led growth
+We're backed by some of the world's [top investors](./#our-investors) and believe in product-led growth, where we build something awesome and let our product bring the users, rather than an outbound sales engine with cold calls.
 
 ## **Description**
 
@@ -37,11 +37,11 @@ As the first member of our developer evangelism team, you will work closely with
 
 ## **Location**
 
-North America. 
+North America.
 
 ## **Applying**
 
-Email  us at [join-us@airbyte.io](mailto:join-us@airbyte.io) with a link to your LinkedIn / Resume / GitHub \(optional\).
+Email us at [join-us@airbyte.io](mailto:join-us@airbyte.io) with a link to your LinkedIn / Resume / GitHub \(optional\).
 
 You don't need to include a cover letter, but just a paragraph how you found us and what makes you a great person to join our founding team!
 

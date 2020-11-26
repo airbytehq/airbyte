@@ -52,7 +52,7 @@ public class SourceHandler {
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
-  private SchedulerHandler schedulerHandler;
+  private final SchedulerHandler schedulerHandler;
   private final ConnectionsHandler connectionsHandler;
   private final JsonSecretsProcessor secretsProcessor;
 
@@ -77,8 +77,7 @@ public class SourceHandler {
     this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID, new JsonSecretsProcessor());
   }
 
-  public SourceRead createSource(SourceCreate sourceCreate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  public SourceRead createSource(SourceCreate sourceCreate) throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
     SourceDefinitionSpecificationRead spec = getSpec(sourceCreate.getSourceDefinitionId());
     validateSource(spec, sourceCreate.getConnectionConfiguration());
@@ -97,18 +96,16 @@ public class SourceHandler {
     return buildSourceRead(sourceId, spec);
   }
 
-  public SourceRead updateSource(SourceUpdate sourceUpdate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  public SourceRead updateSource(SourceUpdate sourceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing source
-    final SourceConnection persistedSource =
-        configRepository.getSourceConnection(sourceUpdate.getSourceId());
+    final SourceConnection persistedSource = configRepository.getSourceConnection(sourceUpdate.getSourceId());
 
-    StandardSourceDefinition standardSource = configRepository.getSourceDefinitionFromSource(sourceUpdate.getSourceId());
-    SourceDefinitionSpecificationRead spec = schedulerHandler
+    final StandardSourceDefinition standardSource = configRepository.getSourceDefinitionFromSource(sourceUpdate.getSourceId());
+    final SourceDefinitionSpecificationRead spec = schedulerHandler
         .getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(standardSource.getSourceDefinitionId()));
 
     // Copy any necessary secrets from the current source to the incoming update source
-    JsonNode updatedConfiguration = secretsProcessor
+    final JsonNode updatedConfiguration = secretsProcessor
         .copySecrets(persistedSource.getConfiguration(), sourceUpdate.getConnectionConfiguration(), spec.getConnectionSpecification());
     sourceUpdate.setConnectionConfiguration(updatedConfiguration);
 
@@ -129,8 +126,7 @@ public class SourceHandler {
     return buildSourceRead(sourceUpdate.getSourceId(), spec);
   }
 
-  public SourceRead getSource(SourceIdRequestBody sourceIdRequestBody)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public SourceRead getSource(SourceIdRequestBody sourceIdRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
@@ -152,8 +148,7 @@ public class SourceHandler {
     return new SourceReadList().sources(reads);
   }
 
-  public void deleteSource(SourceIdRequestBody sourceIdRequestBody)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public void deleteSource(SourceIdRequestBody sourceIdRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing source
     final SourceRead source = buildSourceRead(sourceIdRequestBody.getSourceId());
 
@@ -180,9 +175,9 @@ public class SourceHandler {
 
   private SourceRead buildSourceRead(UUID sourceId) throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
+    final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
         new SourceDefinitionIdRequestBody().sourceDefinitionId(configRepository.getSourceDefinitionFromSource(sourceId).getSourceDefinitionId());
-    SourceDefinitionSpecificationRead spec = schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody);
+    final SourceDefinitionSpecificationRead spec = schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody);
     return buildSourceRead(sourceId, spec);
   }
 

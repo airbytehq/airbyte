@@ -28,10 +28,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -62,12 +65,13 @@ public class JobSubmitterTest {
   private SchedulerPersistence persistence;
   private WorkerRunFactory workerRunFactory;
   private WorkerRun workerRun;
+  private Job job;
 
   private JobSubmitter jobSubmitter;
 
   @BeforeEach
   public void setup() throws IOException {
-    Job job = mock(Job.class);
+    job = mock(Job.class);
     when(job.getId()).thenReturn(1L);
     persistence = mock(SchedulerPersistence.class);
     when(persistence.getOldestPendingJob()).thenReturn(Optional.of(job));
@@ -79,11 +83,25 @@ public class JobSubmitterTest {
     workerRunFactory = mock(WorkerRunFactory.class);
     when(workerRunFactory.create(job)).thenReturn(workerRun);
 
-    jobSubmitter = new JobSubmitter(
+    jobSubmitter = spy(new JobSubmitter(
         MoreExecutors.newDirectExecutorService(),
         persistence,
         configRepository,
-        workerRunFactory);
+        workerRunFactory));
+
+    // by default, turn off the internals of the tracking code. we will test it separate below.
+    doNothing().when(jobSubmitter).trackSubmission(any());
+    doNothing().when(jobSubmitter).trackCompletion(any(), any());
+  }
+
+  @Test
+  public void testRun() {
+    doNothing().when(jobSubmitter).submitJob(any());
+
+    jobSubmitter.run();
+
+    verify(jobSubmitter).trackSubmission(job);
+    verify(jobSubmitter).submitJob(job);
   }
 
   @Test
@@ -93,6 +111,7 @@ public class JobSubmitterTest {
     jobSubmitter.run();
 
     verifyNoInteractions(workerRunFactory);
+    verify(jobSubmitter, never()).trackSubmission(any());
   }
 
   @Test
@@ -101,10 +120,11 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence);
+    InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
     inOrder.verify(persistence).writeOutput(1L, new JobOutput());
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.COMPLETED);
+    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.SUCCEEDED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -114,9 +134,10 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence);
+    InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
+    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -126,10 +147,11 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence);
+    InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
     inOrder.verify(persistence).incrementAttempts(1L);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
+    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -139,7 +161,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence);
+    InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
@@ -151,10 +173,11 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence);
+    InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
     inOrder.verify(persistence).incrementAttempts(1L);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
+    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 

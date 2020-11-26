@@ -22,17 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server;
+package io.airbyte.integrations.destination.postgres;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import io.airbyte.integrations.base.ExtendedSQLNaming;
 
-import org.junit.jupiter.api.Test;
+public class PostgresSQLNaming extends ExtendedSQLNaming {
 
-class ServerAppTest {
-
-  @Test
-  void name() {
-    assertEquals(1, 1);
+  @Override
+  protected String applyDefaultCase(String input) {
+    return input.toLowerCase();
   }
 
 }

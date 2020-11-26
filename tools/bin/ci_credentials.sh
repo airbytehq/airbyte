@@ -51,3 +51,7 @@ echo "$AWS_S3_INTEGRATION_TEST_CREDS" > "${SOURCEFILE_DIR}/aws.json"
 MAILCHIMP_SECRETS_DIR=airbyte-integrations/connectors/source-mailchimp/secrets
 mkdir $MAILCHIMP_SECRETS_DIR
 echo "$MAILCHIMP_TEST_CREDS" > "${MAILCHIMP_SECRETS_DIR}/config.json"
+
+RECURLY_SECRETS_DIR=airbyte-integrations/connectors/source-recurly/secrets
+mkdir $RECURLY_SECRETS_DIR
+echo "$SOURCE_RECURLY_INTEGRATION_TEST_CREDS" > "${RECURLY_SECRETS_DIR}/config.json"

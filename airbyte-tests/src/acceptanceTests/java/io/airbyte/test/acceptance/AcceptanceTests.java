@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
@@ -43,6 +44,7 @@ import io.airbyte.api.client.model.ConnectionSchedule;
 import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.ConnectionSyncRead;
 import io.airbyte.api.client.model.ConnectionUpdate;
+import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
@@ -50,8 +52,10 @@ import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SourceSchema;
+import io.airbyte.api.client.model.SourceSchemaField;
+import io.airbyte.api.client.model.SourceSchemaStream;
+import io.airbyte.api.client.model.SyncMode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -62,6 +66,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -71,7 +76,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.jooq.Record;
@@ -93,6 +97,10 @@ import org.testcontainers.utility.MountableFile;
 // e.g. We test that we can create a destination before we test whether we can sync data to it.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
+
+  private static final String STREAM_NAME = "id_and_name";
+  private static final String COLUMN_ID = "id";
+  private static final String COLUMN_NAME = "name";
 
   private static final Path AIRBYTE_LOCAL_ROOT = Path.of("/tmp/airbyte_local");
   private static final Path RELATIVE_PATH = Path.of("destination_csv/test");
@@ -134,7 +142,7 @@ public class AcceptanceTests {
     relativeDir = outputRoot.getParent().relativize(outputDir);
 
     // seed database.
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("simple_postgres_init.sql"), sourcePsql);
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
   }
 
   @AfterEach
@@ -177,11 +185,10 @@ public class AcceptanceTests {
   @Test
   @Order(2)
   public void testDestinationCheckConnection() throws ApiException {
-    UUID destinationId = createCsvDestination().getDestinationId();
+    final UUID destinationId = createCsvDestination().getDestinationId();
 
-    CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationApi()
-        .checkConnectionToDestination(
-            new DestinationIdRequestBody().destinationId(destinationId))
+    final CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationApi()
+        .checkConnectionToDestination(new DestinationIdRequestBody().destinationId(destinationId))
         .getStatus();
 
     assertEquals(CheckConnectionRead.StatusEnum.SUCCEEDED, checkOperationStatus);
@@ -190,12 +197,12 @@ public class AcceptanceTests {
   @Test
   @Order(3)
   public void testCreateSource() throws ApiException {
-    String dbName = "acc-test-db";
-    UUID postgresSourceDefinitionId = getPostgresSourceDefinitionId();
-    UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
-    Map<Object, Object> sourceDbConfig = getSourceDbConfig();
+    final String dbName = "acc-test-db";
+    final UUID postgresSourceDefinitionId = getPostgresSourceDefinitionId();
+    final UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
+    final Map<Object, Object> sourceDbConfig = getSourceDbConfig();
 
-    SourceRead response = createSource(
+    final SourceRead response = createSource(
         dbName,
         defaultWorkspaceId,
         postgresSourceDefinitionId,
@@ -213,40 +220,54 @@ public class AcceptanceTests {
   @Test
   @Order(4)
   public void testSourceCheckConnection() throws ApiException {
-    UUID sourceId = createPostgresSource().getSourceId();
+    final UUID sourceId = createPostgresSource().getSourceId();
 
-    CheckConnectionRead checkConnectionRead = apiClient.getSourceApi()
-        .checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
+    final CheckConnectionRead checkConnectionRead = apiClient.getSourceApi().checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
 
     assertEquals(CheckConnectionRead.StatusEnum.SUCCEEDED, checkConnectionRead.getStatus());
   }
 
   @Test
   @Order(5)
-  public void testDiscoverSourceSchema() throws ApiException, IOException {
-    UUID sourceId = createPostgresSource().getSourceId();
+  public void testDiscoverSourceSchema() throws ApiException {
+    final UUID sourceId = createPostgresSource().getSourceId();
 
-    SourceSchema actualSchema = discoverSourceSchema(sourceId);
+    final SourceSchema actualSchema = discoverSourceSchema(sourceId);
 
-    final SourceSchema expectedSchema = Jsons.deserialize(MoreResources.readResource("simple_postgres_source_schema.json"), SourceSchema.class);
+    final SourceSchema expectedSchema = new SourceSchema().streams(Lists.newArrayList(
+        new SourceSchemaStream()
+            .name(STREAM_NAME)
+            .fields(Lists.newArrayList(
+                new SourceSchemaField()
+                    .name(COLUMN_ID)
+                    .dataType(DataType.NUMBER)
+                    .selected(true),
+                new SourceSchemaField()
+                    .name(COLUMN_NAME)
+                    .dataType(DataType.STRING)
+                    .selected(true)))
+            .supportedSyncModes(Collections.emptyList())
+            .defaultCursorField(Collections.emptyList())
+            .cursorField(Collections.emptyList())));
+
     assertEquals(expectedSchema, actualSchema);
   }
 
   @Test
   @Order(6)
   public void testCreateConnection() throws ApiException {
-    UUID sourceId = createPostgresSource().getSourceId();
-    SourceSchema schema = discoverSourceSchema(sourceId);
-    UUID destinationId = createCsvDestination().getDestinationId();
-    String name = "test-connection-" + UUID.randomUUID().toString();
-    ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
-    ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final SourceSchema schema = discoverSourceSchema(sourceId);
+    final UUID destinationId = createCsvDestination().getDestinationId();
+    final String name = "test-connection-" + UUID.randomUUID().toString();
+    final ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
 
-    ConnectionRead createdConnection = createConnection(name, sourceId, destinationId, schema, schedule, syncMode);
+    final ConnectionRead createdConnection = createConnection(name, sourceId, destinationId, schema, schedule, syncMode);
 
     assertEquals(sourceId, createdConnection.getSourceId());
     assertEquals(destinationId, createdConnection.getDestinationId());
-    assertEquals(ConnectionRead.SyncModeEnum.FULL_REFRESH, createdConnection.getSyncMode());
+    assertEquals(SyncMode.FULL_REFRESH, createdConnection.getSyncMode());
     assertEquals(schema, createdConnection.getSyncSchema());
     assertEquals(schedule, createdConnection.getSchedule());
     assertEquals(name, createdConnection.getName());
@@ -255,32 +276,84 @@ public class AcceptanceTests {
   @Test
   @Order(7)
   public void testManualSync() throws Exception {
-    String connectionName = "test-connection";
-    UUID sourceId = createPostgresSource().getSourceId();
-    UUID destinationId = createCsvDestination().getDestinationId();
-    SourceSchema schema = discoverSourceSchema(sourceId);
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createCsvDestination().getDestinationId();
+    final SourceSchema schema = discoverSourceSchema(sourceId);
     schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
-    ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(100L).timeUnit(MINUTES);
-    ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
 
-    ConnectionRead createdConnection = createConnection(connectionName, sourceId, destinationId, schema, connectionSchedule, syncMode);
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
-    ConnectionSyncRead connectionSyncRead =
-        apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(createdConnection.getConnectionId()));
+    final ConnectionSyncRead connectionSyncRead = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead.getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
   @Test
   @Order(8)
-  public void testScheduledSync() throws Exception {
-    String connectionName = "test-connection";
-    UUID sourceId = createPostgresSource().getSourceId();
-    UUID destinationId = createCsvDestination().getDestinationId();
-    SourceSchema schema = discoverSourceSchema(sourceId);
+  public void testIncrementalSync() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createCsvDestination().getDestinationId();
+    final SourceSchema schema = discoverSourceSchema(sourceId);
+
+    // todo (cgardens) - comment in when pg source supports incremental.
+    // assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+    // schema.getStreams().get(0).getSupportedSyncModes());
+    // assertEquals(false, schema.getStreams().get(0).getSourceDefinedCursor()); // instead of
+    // assertFalse to avoid NPE from unboxed.
+    // assertNull(schema.getStreams().get(0).getDefaultCursorField());
+
+    // update schema to use incremental
+    schema.getStreams().get(0)
+        .syncMode(SyncMode.INCREMENTAL)
+        .cursorField(Lists.newArrayList("id"));
+
     schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
-    ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
-    ConnectionCreate.SyncModeEnum syncMode = ConnectionCreate.SyncModeEnum.FULL_REFRESH;
+    // todo (cgardens) - this enum as part of the enum is deprecated.
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
+
+    final ConnectionSyncRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead1.getStatus());
+    assertSourceAndTargetDbInSync(sourcePsql);
+
+    // add new records and run again.
+    final Database database = getDatabase(sourcePsql);
+    // get contents of source before mutating records.
+    final List<JsonNode> expectedRecords = retrievePgRecords(database, STREAM_NAME);
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
+    // add a new record
+    database.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
+    // todo (cgardens) - comment this in when both the source and destination here actually support
+    // incremental.
+    // mutate a record that was already synced with out updating its cursor value. if we are actually
+    // full refreshing, this record will appear in the output and cause the test to fail. if we are,
+    // correctly, doing incremental, we will not find this value in the destination.
+    // database.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
+    database.close();
+
+    final ConnectionSyncRead connectionSyncRead2 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead2.getStatus());
+    assertDestinationContains(expectedRecords, STREAM_NAME);
+    assertSourceAndTargetDbInSync(sourcePsql);
+  }
+
+  @Test
+  @Order(9)
+  public void testScheduledSync() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createCsvDestination().getDestinationId();
+    final SourceSchema schema = discoverSourceSchema(sourceId);
+    schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
+    final ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
 
     createConnection(connectionName, sourceId, destinationId, schema, connectionSchedule, syncMode);
 
@@ -291,15 +364,14 @@ public class AcceptanceTests {
   }
 
   private SourceSchema discoverSourceSchema(UUID sourceId) throws ApiException {
-    return apiClient.getSourceApi().discoverSchemaForSource(
-        new SourceIdRequestBody().sourceId(sourceId)).getSchema();
+    return apiClient.getSourceApi().discoverSchemaForSource(new SourceIdRequestBody().sourceId(sourceId)).getSchema();
   }
 
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb) throws Exception {
-    Database database = getDatabase(sourceDb);
+    final Database database = getDatabase(sourceDb);
 
-    Set<String> sourceStreams = listStreams(database);
-    Set<String> targetStreams = listCsvStreams();
+    final Set<String> sourceStreams = listStreams(database);
+    final Set<String> targetStreams = listCsvStreams();
     assertEquals(sourceStreams, targetStreams);
 
     for (String table : sourceStreams) {
@@ -308,8 +380,7 @@ public class AcceptanceTests {
   }
 
   private Database getDatabase(PostgreSQLContainer db) {
-    return Databases.createPostgresDatabase(
-        db.getUsername(), db.getPassword(), db.getJdbcUrl());
+    return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
   private Set<String> listStreams(Database database) throws SQLException {
@@ -330,26 +401,21 @@ public class AcceptanceTests {
         .collect(Collectors.toSet());
   }
 
-  private void assertStreamsEquivalent(Database database, String table) throws Exception {
-    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveCsvRecords(table));
+  private void assertDestinationContains(List<JsonNode> sourceRecords, String streamName) throws Exception {
+    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveCsvRecords(streamName));
 
-    long sourceStreamCount = getStreamCount(database, table);
-    assertEquals(sourceStreamCount, destinationRecords.size());
-    final List<JsonNode> allRecords = retrievePgRecords(database, table);
+    assertEquals(sourceRecords.size(), destinationRecords.size(),
+        String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
 
-    for (JsonNode sourceStreamRecord : allRecords) {
-      assertTrue(destinationRecords.contains(sourceStreamRecord));
+    for (JsonNode sourceStreamRecord : sourceRecords) {
+      assertTrue(destinationRecords.contains(sourceStreamRecord),
+          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
     }
   }
 
-  @SuppressWarnings("OptionalGetWithoutIsPresent")
-  private long getStreamCount(Database database, String tableName) throws SQLException {
-    return database.query(
-        context -> {
-          Result<Record> record =
-              context.fetch(String.format("SELECT COUNT(*) FROM %s;", tableName));
-          return (long) record.stream().findFirst().get().get(0);
-        });
+  private void assertStreamsEquivalent(Database database, String table) throws Exception {
+    final List<JsonNode> allRecords = retrievePgRecords(database, table);
+    assertDestinationContains(allRecords, table);
   }
 
   private ConnectionRead createConnection(String name,
@@ -357,9 +423,9 @@ public class AcceptanceTests {
                                           UUID destinationId,
                                           SourceSchema schema,
                                           ConnectionSchedule schedule,
-                                          ConnectionCreate.SyncModeEnum syncMode)
+                                          SyncMode syncMode)
       throws ApiException {
-    ConnectionRead connection = apiClient.getConnectionApi().createConnection(
+    final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
             .status(ConnectionStatus.ACTIVE)
             .sourceId(sourceId)
@@ -380,9 +446,8 @@ public class AcceptanceTests {
         getDestinationConfig());
   }
 
-  private DestinationRead createDestination(String name, UUID workspaceId, UUID destinationId, JsonNode destinationConfig)
-      throws ApiException {
-    DestinationRead destination =
+  private DestinationRead createDestination(String name, UUID workspaceId, UUID destinationId, JsonNode destinationConfig) throws ApiException {
+    final DestinationRead destination =
         apiClient.getDestinationApi().createDestination(new DestinationCreate()
             .name(name)
             .connectionConfiguration(Jsons.jsonNode(destinationConfig))
@@ -431,7 +496,7 @@ public class AcceptanceTests {
   }
 
   private Map<Object, Object> getSourceDbConfig() {
-    Map<Object, Object> dbConfig = new HashMap<>();
+    final Map<Object, Object> dbConfig = new HashMap<>();
     dbConfig.put("host", sourcePsql.getHost());
     dbConfig.put("password", sourcePsql.getPassword());
     dbConfig.put("port", sourcePsql.getFirstMappedPort());
@@ -448,9 +513,8 @@ public class AcceptanceTests {
         getSourceDbConfig());
   }
 
-  private SourceRead createSource(String name, UUID workspaceId, UUID sourceDefId, Map<Object, Object> sourceConfig)
-      throws ApiException {
-    SourceRead source = apiClient.getSourceApi().createSource(new SourceCreate()
+  private SourceRead createSource(String name, UUID workspaceId, UUID sourceDefId, Map<Object, Object> sourceConfig) throws ApiException {
+    final SourceRead source = apiClient.getSourceApi().createSource(new SourceCreate()
         .name(name)
         .sourceDefinitionId(sourceDefId)
         .workspaceId(workspaceId)
@@ -481,8 +545,8 @@ public class AcceptanceTests {
   }
 
   private void disableConnection(UUID connectionId) throws ApiException {
-    ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    ConnectionUpdate connectionUpdate =
+    final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final ConnectionUpdate connectionUpdate =
         new ConnectionUpdate()
             .connectionId(connectionId)
             .status(ConnectionStatus.DEPRECATED)
@@ -492,8 +556,7 @@ public class AcceptanceTests {
   }
 
   private void deleteDestination(UUID destinationId) throws ApiException {
-    apiClient.getDestinationApi()
-        .deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
+    apiClient.getDestinationApi().deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
   }
 
 }

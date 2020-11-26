@@ -136,7 +136,7 @@ class DefaultAirbyteSourceTest {
         Jsons.jsonNode(TAP_CONFIG.getSourceConnectionConfiguration()),
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
     assertEquals(
-        Jsons.jsonNode(TAP_CONFIG.getState()),
+        Jsons.jsonNode(TAP_CONFIG.getState().getState()),
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME)));
     assertEquals(
         Jsons.jsonNode(CATALOG),

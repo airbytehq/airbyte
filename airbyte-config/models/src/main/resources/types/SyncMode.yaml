@@ -6,3 +6,4 @@ description: sync modes.
 type: string
 enum:
   - full_refresh
+  - incremental

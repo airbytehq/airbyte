@@ -25,17 +25,19 @@
 package io.airbyte.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Lists;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
 import org.junit.jupiter.api.Test;
 
 class AirbyteProtocolConvertersTest {
@@ -44,20 +46,23 @@ class AirbyteProtocolConvertersTest {
   private static final String STREAM_2 = "users2";
   private static final String COLUMN_NAME = "name";
   private static final String COLUMN_AGE = "age";
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
-      .withStreams(Lists.newArrayList(new AirbyteStream()
-          .withName(STREAM)
-          .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(
-              Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
-              Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER)))));
+
+  private static final AirbyteStream AB_STREAM = new AirbyteStream()
+      .withName(STREAM)
+      .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(
+          Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
+          Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER)))
+      .withSourceDefinedCursor(false)
+      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+      .withDefaultCursorField(Lists.newArrayList(COLUMN_AGE));
+
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(AB_STREAM));
+
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = new ConfiguredAirbyteCatalog()
       .withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-          .withStream(
-              new AirbyteStream()
-                  .withName(STREAM)
-                  .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(
-                      Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
-                      Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER))))));
+          .withStream(AB_STREAM)
+          .withSyncMode(SyncMode.INCREMENTAL)
+          .withCursorField(Lists.newArrayList(COLUMN_NAME))));
 
   private static final Schema SCHEMA = new Schema()
       .withStreams(Lists.newArrayList(new Stream()
@@ -70,7 +75,10 @@ class AirbyteProtocolConvertersTest {
               new io.airbyte.config.Field()
                   .withName(COLUMN_AGE)
                   .withDataType(DataType.NUMBER)
-                  .withSelected(true)))));
+                  .withSelected(true)))
+          .withSourceDefinedCursor(false)
+          .withSupportedSyncModes(Lists.newArrayList(StandardSync.SyncMode.FULL_REFRESH, StandardSync.SyncMode.INCREMENTAL))
+          .withDefaultCursorField(Lists.newArrayList(COLUMN_AGE))));
 
   private static final Schema SCHEMA_WITH_UNSELECTED = new Schema()
       .withStreams(Lists.newArrayList(new Stream()
@@ -83,7 +91,10 @@ class AirbyteProtocolConvertersTest {
               new io.airbyte.config.Field()
                   .withName(COLUMN_AGE)
                   .withDataType(DataType.NUMBER)
-                  .withSelected(true))),
+                  .withSelected(true)))
+          .withSourceDefinedCursor(false)
+          .withSupportedSyncModes(Lists.newArrayList(StandardSync.SyncMode.FULL_REFRESH, StandardSync.SyncMode.INCREMENTAL))
+          .withDefaultCursorField(Lists.newArrayList(COLUMN_AGE)),
           new Stream()
               .withName(STREAM_2)
               .withFields(Lists.newArrayList(
@@ -98,12 +109,20 @@ class AirbyteProtocolConvertersTest {
 
   @Test
   void testToConfiguredCatalog() {
-    assertEquals(CONFIGURED_CATALOG, AirbyteProtocolConverters.toConfiguredCatalog(SCHEMA));
+    final Schema schema = Jsons.clone(SCHEMA);
+    schema.getStreams().get(0).withCursorField(Lists.newArrayList(COLUMN_NAME));
+    schema.getStreams().get(0).withSyncMode(StandardSync.SyncMode.INCREMENTAL);
+    assertEquals(CONFIGURED_CATALOG, AirbyteProtocolConverters.toConfiguredCatalog(schema));
   }
 
+  // the stream that is input is a schema with 2 streams, but only one is selected. so the expected
+  // output is the same the case for the schema with just one selected stream.
   @Test
-  void testToConfiguredCatalogWithUnselected() {
-    assertEquals(CONFIGURED_CATALOG, AirbyteProtocolConverters.toConfiguredCatalog(SCHEMA_WITH_UNSELECTED));
+  void testToConfiguredCatalogWithUnselectedStream() {
+    final Schema schema = Jsons.clone(SCHEMA_WITH_UNSELECTED);
+    schema.getStreams().get(0).withCursorField(Lists.newArrayList(COLUMN_NAME));
+    schema.getStreams().get(0).withSyncMode(StandardSync.SyncMode.INCREMENTAL);
+    assertEquals(CONFIGURED_CATALOG, AirbyteProtocolConverters.toConfiguredCatalog(schema));
   }
 
   @Test
@@ -113,12 +132,9 @@ class AirbyteProtocolConvertersTest {
 
   @Test
   void testToSchemaWithMultipleJsonSchemaTypesAndFormats() {
-    // written as string because helper interface does not support building json schema with multiple
-    // types. (can add this functionliaty if these helpers stay)
-    final String testString =
-        "{\"type\":\"CATALOG\",\"catalog\":{\"streams\":[{\"name\":\"users\",\"json_schema\":{ \"properties\": {\"date\":{\"type\":\"string\",\"format\":\"date-time\"},\"age\":{\"type\":[\"null\",\"number\"]}}}}]}}";
-
-    Schema schema = new Schema()
+    final AirbyteCatalog catalog =
+        CatalogHelpers.createAirbyteCatalog(STREAM, Field.of("date", JsonSchemaPrimitive.STRING), Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER));
+    final Schema schema = new Schema()
         .withStreams(Lists.newArrayList(new Stream()
             .withName(STREAM)
             .withFields(Lists.newArrayList(
@@ -131,16 +147,15 @@ class AirbyteProtocolConvertersTest {
                     .withDataType(DataType.NUMBER)
                     .withSelected(true)))));
 
-    final AirbyteMessage message = Jsons.deserialize(testString, AirbyteMessage.class);
-    assertEquals(schema, AirbyteProtocolConverters.toSchema(message.getCatalog()));
+    assertEquals(schema, AirbyteProtocolConverters.toSchema(catalog));
   }
 
   @Test
   void testAnyOfAsObject() {
     final String testString =
-        "{\"type\":\"CATALOG\",\"catalog\":{\"streams\":[{\"name\":\"users\",\"json_schema\":{\"properties\":{\"date\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"object\"}]}}}}]}}";
+        "{\"streams\":[{\"name\":\"users\",\"json_schema\":{\"properties\":{\"date\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"object\"}]}}}}]}";
 
-    Schema schema = new Schema()
+    final Schema schema = new Schema()
         .withStreams(Lists.newArrayList(new Stream()
             .withName(STREAM)
             .withFields(Lists.newArrayList(
@@ -149,8 +164,13 @@ class AirbyteProtocolConvertersTest {
                     .withDataType(DataType.OBJECT)
                     .withSelected(true)))));
 
-    final AirbyteMessage message = Jsons.deserialize(testString, AirbyteMessage.class);
-    assertEquals(schema, AirbyteProtocolConverters.toSchema(message.getCatalog()));
+    final AirbyteCatalog catalog = Jsons.deserialize(testString, AirbyteCatalog.class);
+    assertEquals(schema, AirbyteProtocolConverters.toSchema(catalog));
+  }
+
+  @Test
+  void testEnumConversion() {
+    assertTrue(Enums.isCompatible(io.airbyte.protocol.models.SyncMode.class, io.airbyte.config.StandardSync.SyncMode.class));
   }
 
 }

@@ -33,6 +33,7 @@ import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.Schedule;
@@ -55,8 +56,7 @@ public class ConnectionsHandler {
   private final Supplier<UUID> uuidGenerator;
 
   @VisibleForTesting
-  ConnectionsHandler(final ConfigRepository configRepository,
-                     final Supplier<UUID> uuidGenerator) {
+  ConnectionsHandler(final ConfigRepository configRepository, final Supplier<UUID> uuidGenerator) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
   }
@@ -65,14 +65,8 @@ public class ConnectionsHandler {
     this(configRepository, UUID::randomUUID);
   }
 
-  public ConnectionRead createConnection(ConnectionCreate connectionCreate)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public ConnectionRead createConnection(ConnectionCreate connectionCreate) throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID connectionId = uuidGenerator.get();
-
-    // todo (cgardens): for MVP we only support full refresh.
-    if (connectionCreate.getSyncMode() != ConnectionCreate.SyncModeEnum.FULL_REFRESH) {
-      throw new RuntimeException("Only FULL_REFRESH is currently supported!");
-    }
 
     // persist sync
     final StandardSync standardSync = new StandardSync()
@@ -109,8 +103,7 @@ public class ConnectionsHandler {
     return buildConnectionRead(connectionId);
   }
 
-  public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID connectionId = connectionUpdate.getConnectionId();
 
     // retrieve sync
@@ -219,8 +212,8 @@ public class ConnectionsHandler {
     return Enums.convertTo(apiStatus, StandardSync.Status.class);
   }
 
-  private ConnectionRead.SyncModeEnum toApiSyncMode(StandardSync.SyncMode persistenceStatus) {
-    return Enums.convertTo(persistenceStatus, ConnectionRead.SyncModeEnum.class);
+  private SyncMode toApiSyncMode(StandardSync.SyncMode persistenceStatus) {
+    return Enums.convertTo(persistenceStatus, SyncMode.class);
   }
 
   private ConnectionStatus toApiStatus(StandardSync.Status status) {
