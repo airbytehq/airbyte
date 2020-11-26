@@ -87,7 +87,6 @@ class MySqlSourceTest {
         .put("database", "db_" + RandomStringUtils.randomAlphabetic(10))
         .put("username", TEST_USER)
         .put("password", TEST_PASSWORD)
-        .put("schemaFocus", true)
         .build());
 
     final Database database = Databases.createDatabase(
@@ -141,8 +140,14 @@ class MySqlSourceTest {
   }
 
   @Test
-  void testDiscover() throws Exception {
-    final AirbyteCatalog actual = new MySqlSource().discover(config);
+  void testDiscover() throws Exception { ;
+    final AirbyteCatalog allStreams = new MySqlSource().discover(config);
+    // Filter out streams not related to this test case (from other tests running in parallel)
+    final AirbyteCatalog actual = new AirbyteCatalog()
+        .withStreams(allStreams.getStreams()
+            .stream()
+            .filter(s -> s.getName().equals(getStreamName()))
+            .collect(Collectors.toList()));
     assertEquals(generateExpectedCatalog(), actual);
   }
 
@@ -173,7 +178,7 @@ class MySqlSourceTest {
 
   private AirbyteCatalog generateExpectedCatalog() {
     return CatalogHelpers.createAirbyteCatalog(
-        String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
+        getStreamName(),
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING));
   }
@@ -183,7 +188,7 @@ class MySqlSourceTest {
   }
 
   private java.util.HashSet<AirbyteMessage> generateExpectedMessages() {
-    final String streamName = String.format("%s.%s", config.get("database").asText(), STREAM_NAME);
+    final String streamName = getStreamName();
     return Sets.newHashSet(
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")))),
@@ -193,4 +198,7 @@ class MySqlSourceTest {
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")))));
   }
 
+  private String getStreamName() {
+    return String.format("%s.%s", config.get("database").asText(), STREAM_NAME);
+  }
 }

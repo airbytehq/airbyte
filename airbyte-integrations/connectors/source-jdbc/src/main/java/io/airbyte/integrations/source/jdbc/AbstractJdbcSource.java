@@ -72,12 +72,10 @@ public abstract class AbstractJdbcSource implements Source {
 
   private final String driverClass;
   private final SQLDialect dialect;
-  private boolean schemaFocus;
 
   public AbstractJdbcSource(final String driverClass, final SQLDialect dialect) {
     this.driverClass = driverClass;
     this.dialect = dialect;
-    this.schemaFocus = true;
   }
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
@@ -112,7 +110,6 @@ public abstract class AbstractJdbcSource implements Source {
 
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
-    updateSchemaFocus(config);
     try (final Database database = createDatabase(config)) {
       return new AirbyteCatalog()
           .withStreams(getTables(database)
@@ -120,18 +117,6 @@ public abstract class AbstractJdbcSource implements Source {
               .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields()))
               .collect(Collectors.toList()));
     }
-  }
-
-  protected void updateSchemaFocus(JsonNode config) {
-    if (config.has("schemaFocus")) {
-      this.schemaFocus = config.get("schemaFocus").asBoolean();
-    } else {
-      this.schemaFocus = false;
-    }
-  }
-
-  protected boolean getSchemaFocus() {
-    return this.schemaFocus;
   }
 
   protected List<String> getExcludedInternalSchemas() {
@@ -152,22 +137,12 @@ public abstract class AbstractJdbcSource implements Source {
 
   private List<Table<?>> discoverInternal(final Database database) throws Exception {
     return database.query(context -> {
-      if (getSchemaFocus()) {
-        final String databaseName = getCurrentDatabaseName(context);
-        final List<Schema> schemas = context.meta().getSchemas(databaseName);
-        if (schemas.size() > 1) {
-          throw new IllegalStateException("found multiple databases with the same name.");
-        }
-        final Schema schema = schemas.get(0);
-        return context.meta(schema).getTables();
-      } else {
         final List<Schema> schemas = context.meta().getSchemas();
         final List<Table<?>> tables = schemas.stream()
             .filter(schema -> !getExcludedInternalSchemas().contains(schema.getName()))
             .flatMap(schema -> context.meta(schema).getTables().stream())
             .collect(Collectors.toList());
         return tables;
-      }
     });
   }
 
