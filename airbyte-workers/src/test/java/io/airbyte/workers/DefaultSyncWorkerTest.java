@@ -88,8 +88,7 @@ class DefaultSyncWorkerTest {
 
   @Test
   void test() throws Exception {
-    final DefaultSyncWorker<AirbyteMessage> defaultSyncWorker =
-        new DefaultSyncWorker<>(tap, target, new AirbyteMessageTracker(), normalizationRunner);
+    final DefaultSyncWorker defaultSyncWorker = new DefaultSyncWorker(tap, target, new AirbyteMessageTracker(), normalizationRunner);
     final OutputAndStatus<StandardSyncOutput> run = defaultSyncWorker.run(syncInput, jobRoot);
 
     assertEquals(JobStatus.SUCCEEDED, run.getStatus());
