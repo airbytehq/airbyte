@@ -12,10 +12,10 @@
       "type": "string"
     },
     "escalate_to": {
-      "type": ["integer", "null"],
+      "type": ["integer", "null"]
     },
     "unassigned_for": {
-      "type": ["string", "null"],
+      "type": ["string", "null"]
     },
     "business_hour_id": {
       "type": ["integer", "null"]

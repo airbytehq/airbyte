@@ -27,7 +27,7 @@
       "type": "string"
     },
     "mobile": {
-      "type": ["string", "integer","null"]
+      "type": ["string", "integer", "null"]
     },
     "name": {
       "type": "string"

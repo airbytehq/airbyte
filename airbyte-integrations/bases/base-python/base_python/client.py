@@ -1,4 +1,5 @@
-""" MIT License
+"""
+MIT License
 
 Copyright (c) 2020 Airbyte
 
@@ -26,25 +27,22 @@ import json
 import pkgutil
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Tuple, Dict, Generator
+from typing import Dict, Generator, Tuple
 
-from airbyte_protocol import AirbyteStream, AirbyteRecordMessage
+from airbyte_protocol import AirbyteRecordMessage, AirbyteStream
 
 
 class ResourceSchemaLoader:
-    """ JSONSchema loader from package resources
-    """
+    """JSONSchema loader from package resources"""
 
     def get_schema(self, name):
-        raw_schema = json.loads(
-            pkgutil.get_data(self.__class__.__module__.split(".")[0],
-                             f"schemas/{name}.json"))
+        raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{name}.json"))
         return raw_schema
 
 
 class BaseClient(ABC):
-    """ Base client for API
-    """
+    """Base client for API"""
+
     schema_loader_class = ResourceSchemaLoader
 
     def __init__(self):
@@ -52,41 +50,32 @@ class BaseClient(ABC):
         self._stream_methods = self._enumerate_methods()
 
     def _enumerate_methods(self) -> Dict[str, callable]:
-        """ Detect available streams and return mapping
-        """
-        prefix = 'stream__'
+        """Detect available streams and return mapping"""
+        prefix = "stream__"
         mapping = {}
-        methods = inspect.getmembers(self.__class__,
-                                     predicate=inspect.isfunction)
+        methods = inspect.getmembers(self.__class__, predicate=inspect.isfunction)
         for name, method in methods:
             if name.startswith(prefix):
-                mapping[name[len(prefix):]] = method
+                mapping[name[len(prefix) :]] = method
 
         return mapping
 
-    def read_stream(self, stream: AirbyteStream) -> Generator[
-        AirbyteRecordMessage, None, None]:
-        """ Yield records from stream
-        """
+    def read_stream(self, stream: AirbyteStream) -> Generator[AirbyteRecordMessage, None, None]:
+        """Yield records from stream"""
         method = self._stream_methods.get(stream.name)
         if not method:
-            raise ValueError(
-                f"Client does not know how to read stream `{stream.name}`")
+            raise ValueError(f"Client does not know how to read stream `{stream.name}`")
 
         for message in method():
             now = int(datetime.now().timestamp()) * 1000
-            yield AirbyteRecordMessage(stream=stream.name, data=message,
-                                       emitted_at=now)
+            yield AirbyteRecordMessage(stream=stream.name, data=message, emitted_at=now)
 
     @property
     def streams(self) -> Generator[AirbyteStream, None, None]:
-        """ List of available streams
-        """
+        """List of available streams"""
         for name, method in self._stream_methods.items():
-            yield AirbyteStream(name,
-                                schema=self._schema_loader.get_schema(name))
+            yield AirbyteStream(name, schema=self._schema_loader.get_schema(name))
 
     @abstractmethod
     def health_check(self) -> Tuple[bool, str]:
-        """ Check if service is up and running
-        """
+        """Check if service is up and running"""

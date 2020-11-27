@@ -21,16 +21,10 @@
       "type": "boolean"
     },
     "email_config_id": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "group_id": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "priority": {
       "type": "integer"
@@ -45,10 +39,7 @@
       "type": "integer"
     },
     "company_id": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "status": {
       "type": "integer"
@@ -57,25 +48,16 @@
       "type": "string"
     },
     "association_type": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "to_emails": {
-      "type": [
-        "array",
-        "null"
-      ],
+      "type": ["array", "null"],
       "items": {
         "type": "string"
       }
     },
     "product_id": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "id": {
       "type": "integer"
@@ -102,19 +84,13 @@
       "type": "string"
     },
     "associated_tickets_count": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "tags": {
       "type": "array"
     },
     "nr_due_by": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "nr_escalated": {
       "type": "boolean"
