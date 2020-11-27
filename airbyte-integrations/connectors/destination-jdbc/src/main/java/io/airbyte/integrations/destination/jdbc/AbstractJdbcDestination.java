@@ -71,7 +71,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractJdbcDestination extends AbstractJdbcIntegration implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
-  static final String COLUMN_NAME = "data";
+  protected static final String COLUMN_NAME = "data";
 
   private final SQLNamingResolvable namingResolver;
 
@@ -83,6 +83,19 @@ public abstract class AbstractJdbcDestination extends AbstractJdbcIntegration im
   @Override
   public SQLNamingResolvable getNamingResolver() {
     return namingResolver;
+  }
+
+  /**
+   * Return the default schema where to data in the destination if the catalog doesn't specify any location
+   * @param config The destination configuration
+   * @return default schema name where to save data
+   */
+  protected String getDefaultSchemaName(JsonNode config) {
+    if (config.has("schema")) {
+      return config.get("schema").asText();
+    } else {
+      return "public";
+    }
   }
 
   /**
@@ -121,7 +134,7 @@ public abstract class AbstractJdbcDestination extends AbstractJdbcIntegration im
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = getNamingResolver().getIdentifier(getConfigSchemaName(config));
+      final String schemaName = getNamingResolver().getIdentifier(getDefaultSchemaName(config));
       final String tableName = getNamingResolver().getRawTableName(streamName);
       final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
       if (!schemaSet.contains(schemaName)) {
@@ -350,13 +363,4 @@ public abstract class AbstractJdbcDestination extends AbstractJdbcIntegration im
     }
 
   }
-
-  private static String getConfigSchemaName(JsonNode config) {
-    if (config.has("schema")) {
-      return config.get("schema").asText();
-    } else {
-      return "public";
-    }
-  }
-
 }
