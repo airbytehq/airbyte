@@ -25,7 +25,6 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -96,7 +95,8 @@ public abstract class AbstractDestination implements Destination, DestinationCon
 
   protected abstract void connectDatabase(JsonNode config);
 
-  protected abstract void queryDatabase(String query) throws Exception;
+  @Override
+  public abstract void queryDatabase(String query) throws Exception;
 
   protected String getDefaultSchemaName(JsonNode config) {
     if (config.has("schema")) {
@@ -110,12 +110,7 @@ public abstract class AbstractDestination implements Destination, DestinationCon
     return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
   }
 
-  protected abstract String createRawTableQuery(String schemaName, String streamName);
-
-  public abstract void writeQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName);
-
-  public abstract void commitRawTables(Map<String, WriteConfig> writeConfigs) throws Exception;
-
-  public abstract void cleanupTmpTables(Map<String, WriteConfig> writeConfigs);
+  @Override
+  public abstract String createRawTableQuery(String schemaName, String streamName);
 
 }

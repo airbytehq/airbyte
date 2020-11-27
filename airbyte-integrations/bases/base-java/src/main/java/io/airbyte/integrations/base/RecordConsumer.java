@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -85,7 +86,7 @@ public class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> impl
       final String tmpTableName = entry.getValue().getTmpTableName();
       final CloseableQueue<byte[]> writeBuffer = entry.getValue().getWriteBuffer();
       while (writeBuffer.size() > minRecords) {
-        destination.writeQuery(batchSize, writeBuffer, schemaName, tmpTableName);
+        destination.writeBufferedRecords(batchSize, writeBuffer, schemaName, tmpTableName);
       }
     }
   }
@@ -121,14 +122,38 @@ public class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> impl
       // write anything that is left in the buffers.
       writeStreamsWithNRecords(0, 500, writeConfigs, destination);
 
-      destination.commitRawTables(writeConfigs);
+      commitRawTable();
     }
 
     // close buffers.
     for (final WriteConfig writeContext : writeConfigs.values()) {
       writeContext.getWriteBuffer().close();
     }
-    destination.cleanupTmpTables(writeConfigs);
+    for (WriteConfig writeContext : writeConfigs.values()) {
+      try {
+        destination.queryDatabase(String.format("DROP TABLE IF EXISTS %s.%s;", writeContext.getSchemaName(), writeContext.getTmpTableName()));
+      } catch (SQLException | InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  private void commitRawTable() throws Exception {
+    final StringBuilder query = new StringBuilder();
+    for (final WriteConfig writeConfig : writeConfigs.values()) {
+      // create tables if not exist.
+      query.append(destination.createRawTableQuery(writeConfig.getSchemaName(), writeConfig.getTableName()));
+
+      switch (writeConfig.getSyncMode()) {
+        case FULL_REFRESH -> query.append(String.format("TRUNCATE TABLE %s.%s;\n", writeConfig.getSchemaName(), writeConfig.getTableName()));
+        case INCREMENTAL -> {}
+        default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
+      }
+      // always copy data from tmp table into "main" table.
+      query.append(String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", writeConfig.getSchemaName(),
+          writeConfig.getTableName(), writeConfig.getSchemaName(), writeConfig.getTmpTableName()));
+    }
+    destination.queryDatabaseInTransaction(query.toString());
   }
 
 }

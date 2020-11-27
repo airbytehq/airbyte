@@ -39,7 +39,6 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.AbstractDestination;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.SQLNamingResolvable;
-import io.airbyte.integrations.base.WriteConfig;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -49,7 +48,6 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.Map;
 import java.util.UUID;
 import org.jooq.DSLContext;
 import org.jooq.InsertValuesStep3;
@@ -143,17 +141,17 @@ public abstract class AbstractJdbcDestination extends AbstractDestination implem
   }
 
   @Override
-  protected void queryDatabase(String query) throws SQLException {
+  public void queryDatabase(String query) throws SQLException {
     databaseConnection.query(ctx -> ctx.execute(query));
   }
 
   @Override
-  protected String createSchemaQuery(String schemaName) {
-    return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
+  public void queryDatabaseInTransaction(String queries) throws Exception {
+    databaseConnection.transaction(ctx -> ctx.execute(queries));
   }
 
   @Override
-  protected String createRawTableQuery(String schemaName, String streamName) {
+  public String createRawTableQuery(String schemaName, String streamName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "ab_id VARCHAR PRIMARY KEY,\n"
@@ -164,7 +162,7 @@ public abstract class AbstractJdbcDestination extends AbstractDestination implem
   }
 
   @Override
-  public void writeQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) {
+  public void writeBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) {
     try {
       databaseConnection.query(ctx -> buildWriteQuery(ctx, batchSize, writeBuffer, schemaName, tmpTableName).execute());
     } catch (SQLException e) {
@@ -198,39 +196,6 @@ public abstract class AbstractJdbcDestination extends AbstractDestination implem
     }
 
     return step;
-  }
-
-  @Override
-  public void commitRawTables(Map<String, WriteConfig> writeConfigs) throws SQLException {
-    databaseConnection.transaction(ctx -> {
-      final StringBuilder query = new StringBuilder();
-      for (final WriteConfig writeConfig : writeConfigs.values()) {
-        // create tables if not exist.
-        query.append(createRawTableQuery(writeConfig.getSchemaName(), writeConfig.getTableName()));
-
-        switch (writeConfig.getSyncMode()) {
-          case FULL_REFRESH -> query.append(String.format("TRUNCATE TABLE %s.%s;\n", writeConfig.getSchemaName(), writeConfig.getTableName()));
-          case INCREMENTAL -> {}
-          default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
-        }
-        // always copy data from tmp table into "main" table.
-        query.append(String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", writeConfig.getSchemaName(),
-            writeConfig.getTableName(), writeConfig.getSchemaName(), writeConfig.getTmpTableName()));
-      }
-      return ctx.execute(query.toString());
-    });
-  }
-
-  @Override
-  public void cleanupTmpTables(Map<String, WriteConfig> writeConfigs) {
-    for (WriteConfig writeConfig : writeConfigs.values()) {
-      try {
-        databaseConnection.query(
-            ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS %s.%s;", writeConfig.getSchemaName(), writeConfig.getTmpTableName())));
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
-    }
   }
 
 }

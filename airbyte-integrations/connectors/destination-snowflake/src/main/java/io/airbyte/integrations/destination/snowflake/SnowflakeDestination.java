@@ -32,31 +32,19 @@ import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AbstractDestination;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.SQLNamingResolvable;
-import io.airbyte.integrations.base.WriteConfig;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.queue.BigQueue;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -103,12 +91,18 @@ public class SnowflakeDestination extends AbstractDestination implements Destina
   }
 
   @Override
-  protected void queryDatabase(String query) throws Exception {
+  public void queryDatabase(String query) throws Exception {
     SnowflakeDatabase.executeSync(connectionFactory, query);
   }
 
   @Override
-  protected String createRawTableQuery(String schemaName, String streamName) {
+  public void queryDatabaseInTransaction(String queries) throws Exception {
+    String query = "BEGIN; " + queries + " COMMIT;";
+    SnowflakeDatabase.executeSync(connectionFactory, query, true, rs -> null);
+  }
+
+  @Override
+  public String createRawTableQuery(String schemaName, String streamName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "ab_id VARCHAR PRIMARY KEY,\n"
@@ -119,7 +113,7 @@ public class SnowflakeDestination extends AbstractDestination implements Destina
   }
 
   @Override
-  public void writeQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) {
+  public void writeBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) {
     final List<AirbyteRecordMessage> records = accumulateRecordsFromBuffer(writeBuffer, batchSize);
 
     LOGGER.info("max size of batch: {}", batchSize);
@@ -175,36 +169,7 @@ public class SnowflakeDestination extends AbstractDestination implements Destina
       final AirbyteRecordMessage message = Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteRecordMessage.class);
       records.add(message);
     }
-
     return records;
-  }
-
-  @Override
-  public void commitRawTables(Map<String, WriteConfig> writeConfigs) throws Exception {
-    final StringBuilder query = new StringBuilder();
-    query.append("BEGIN;");
-    for (final WriteConfig writeContext : writeConfigs.values()) {
-      query.append(String.format("DROP TABLE IF EXISTS %s.%s;\n", writeContext.getSchemaName(), writeContext.getTableName()));
-      query.append(String.format("ALTER TABLE %s.%s RENAME TO %s.%s;\n", writeContext.getSchemaName(), writeContext.getTmpTableName(),
-          writeContext.getSchemaName(), writeContext.getTableName()));
-    }
-    query.append("COMMIT;");
-
-    final String renameQuery = query.toString();
-
-    SnowflakeDatabase.executeSync(connectionFactory, renameQuery, true, rs -> null);
-  }
-
-  @Override
-  public void cleanupTmpTables(Map<String, WriteConfig> writeConfigs) {
-    for (WriteConfig writeContext : writeConfigs.values()) {
-      try {
-        SnowflakeDatabase.executeSync(connectionFactory,
-            String.format("DROP TABLE IF EXISTS %s.%s;", writeContext.getSchemaName(), writeContext.getTmpTableName()));
-      } catch (SQLException | InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-    }
   }
 
   public static void main(String[] args) throws Exception {

@@ -25,14 +25,15 @@
 package io.airbyte.integrations.base;
 
 import io.airbyte.commons.lang.CloseableQueue;
-import java.util.Map;
 
 public interface DestinationConsumerCallback {
 
-  void writeQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName);
+  void queryDatabase(String query) throws Exception;
 
-  void commitRawTables(Map<String, WriteConfig> writeConfigs) throws Exception;
+  void queryDatabaseInTransaction(String queries) throws Exception;
 
-  void cleanupTmpTables(Map<String, WriteConfig> writeConfigs);
+  void writeBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName);
+
+  String createRawTableQuery(String schemaName, String streamName);
 
 }
