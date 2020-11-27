@@ -21,22 +21,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+import pytest
+from grnhse.exceptions import EndpointNotFound, HTTPError
 from source_greenhouse.client import Client
 
 
-def test_client_wrong_api_key():
-    client = Client(api_key='wrong_key')
+def test__heal_check_with_wrong_api_key():
+    client = Client(api_key="wrong_key")
     alive, error = client.health_check()
 
     assert not alive
-    assert error == 'Greenhouse Request Failed'
+    assert error == '401 {"message":"Invalid Basic Auth credentials"}'
+
+
+def test__custom_fields_with_wrong_api_key():
+    client = Client(api_key="wrong_key")
+    with pytest.raises(HTTPError, match='401 {"message":"Invalid Basic Auth credentials"}'):
+        list(client.list("custom_fields"))
 
 
 def test_client_wrong_endpoint():
-    client = Client(api_key='wrong_key')
-    next(client.list('unknown_endpoint'))
-
-
-def test_client_custom_fields():
-    client = Client(api_key='')
-    list(client.list('custom_fields'))
+    client = Client(api_key="wrong_key")
+    with pytest.raises(EndpointNotFound, match="unknown_endpoint"):
+        next(client.list("unknown_endpoint"))

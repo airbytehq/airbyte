@@ -72,10 +72,7 @@
         "type": "object",
         "properties": {
           "required": {
-            "type": [
-              "boolean",
-              "null"
-            ]
+            "type": ["boolean", "null"]
           },
           "private": {
             "type": "boolean"

@@ -17,10 +17,7 @@
               "type": "integer"
             },
             "signature": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ticket_scope": {
               "type": "integer"
@@ -32,16 +29,10 @@
               "type": "string"
             },
             "last_active_at": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "available_since": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "type": {
               "type": "string"
@@ -56,36 +47,22 @@
                   "type": "string"
                 },
                 "job_title": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "language": {
                   "type": "string"
                 },
                 "last_login_at": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "mobile": {
-                  "type": [
-                    "string",
-                    "integer",
-                    "null"
-                  ]
+                  "type": ["string", "integer", "null"]
                 },
                 "name": {
                   "type": "string"
                 },
                 "phone": {
-                  "type": [
-                    "string",
-                    "integer",
-                    "null"
-                  ]
+                  "type": ["string", "integer", "null"]
                 },
                 "time_zone": {
                   "type": "string"

@@ -33,7 +33,7 @@ setup(
     install_requires=[
         "airbyte-protocol",
         "base-python",
-        "https://github.com/alecraso/grnhse-api/archive/master.zip",
+        "grnhse-api==0.1.0",
     ],
     package_data={"": ["*.json", "schemas/*.json"]},
     setup_requires=["pytest-runner"],
