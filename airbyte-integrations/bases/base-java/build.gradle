@@ -9,6 +9,7 @@ dependencies {
     implementation project(':airbyte-db')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-queue')
 
     implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
 }
