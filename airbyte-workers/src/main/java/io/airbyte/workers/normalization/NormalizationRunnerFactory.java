@@ -37,6 +37,7 @@ public class NormalizationRunnerFactory {
   private static final Map<String, DefaultNormalizationRunner.DestinationType> NORMALIZATION_MAPPING =
       ImmutableMap.<String, DefaultNormalizationRunner.DestinationType>builder()
           .put("airbyte/destination-bigquery", DefaultNormalizationRunner.DestinationType.BIGQUERY)
+          .put("airbyte/destination-jdbc", DefaultNormalizationRunner.DestinationType.JDBC_POSTGRES)
           .put("airbyte/destination-postgres", DefaultNormalizationRunner.DestinationType.POSTGRES)
           .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .build();

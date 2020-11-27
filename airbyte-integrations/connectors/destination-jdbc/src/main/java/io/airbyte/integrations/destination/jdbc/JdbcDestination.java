@@ -22,21 +22,22 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JdbcSource extends AbstractJdbcSource implements Source {
+public class JdbcDestination extends AbstractJdbcDestination implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDestination.class);
 
-  public JdbcSource() {
-    super("org.postgresql.Driver", SQLDialect.POSTGRES);
+  public JdbcDestination() {
+    super("org.postgresql.Driver", SQLDialect.POSTGRES, new ExtendedSQLNaming());
   }
 
   // no-op for JdbcIntegration since the config it receives is designed to be use for JDBC.
@@ -46,10 +47,10 @@ public class JdbcSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new JdbcSource();
-    LOGGER.info("starting source: {}", JdbcSource.class);
-    new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", JdbcSource.class);
+    final Destination destination = new JdbcDestination();
+    LOGGER.info("starting destination: {}", JdbcDestination.class);
+    new IntegrationRunner(destination).run(args);
+    LOGGER.info("completed destination: {}", JdbcDestination.class);
   }
 
 }

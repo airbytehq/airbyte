@@ -26,6 +26,7 @@ import argparse
 import json
 import os
 import pkgutil
+import re
 from enum import Enum
 
 import yaml
@@ -33,6 +34,7 @@ import yaml
 
 class DestinationType(Enum):
     bigquery = "bigquery"
+    jdbc_postgres = "jdbc_postgres"
     postgres = "postgres"
     snowflake = "snowflake"
 
@@ -69,6 +71,7 @@ class TransformConfig:
 
         transformed_integration_config = {
             DestinationType.bigquery: self.transform_bigquery,
+            DestinationType.jdbc_postgres: self.transform_jdbc_postgres,
             DestinationType.postgres: self.transform_postgres,
             DestinationType.snowflake: self.transform_snowflake,
         }[integration_type](config)
@@ -94,6 +97,24 @@ class TransformConfig:
         dbt_config["keyfile"] = keyfile_path
         dbt_config["threads"] = 32
         dbt_config["retries"] = 1
+
+        return dbt_config
+
+    def transform_jdbc_postgres(self, config: dict):
+        print("transform_jdbc_postgres")
+        dbt_config = dict()
+
+        # https://docs.getdbt.com/reference/warehouse-profiles/postgres-profile
+        dbt_config["type"] = "postgres"
+        dbt_config["user"] = config["username"]
+        dbt_config["pass"] = config["password"]
+        dbt_config["schema"] = config["schema"]
+        dbt_config["threads"] = 32
+        pattern = re.compile(r"jdbc:postgresql://(.*):(.*)/(.*)")
+        match_results = pattern.match(config["jdbc_url"])
+        dbt_config["host"] = match_results.group(1)
+        dbt_config["port"] = int(match_results.group(2))
+        dbt_config["dbname"] = match_results.group(3)
 
         return dbt_config
 
