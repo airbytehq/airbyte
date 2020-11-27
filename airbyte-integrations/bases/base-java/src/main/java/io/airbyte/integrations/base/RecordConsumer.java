@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.base;
 
 import com.google.common.base.Charsets;
@@ -29,7 +53,6 @@ public class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> impl
   private final ConfiguredAirbyteCatalog catalog;
   private final ScheduledExecutorService writerPool;
 
-
   public RecordConsumer(DestinationConsumerCallback destination, Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
     this.destination = destination;
     this.writeConfigs = writeConfigs;
@@ -53,9 +76,10 @@ public class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> impl
    * @param writeBuffers - map of stream name to its respective buffer.
    * @param destination - Connection to destination
    */
-  private static void writeStreamsWithNRecords(int minRecords, int batchSize,
-      Map<String, WriteConfig> writeBuffers,
-      DestinationConsumerCallback destination) {
+  private static void writeStreamsWithNRecords(int minRecords,
+                                               int batchSize,
+                                               Map<String, WriteConfig> writeBuffers,
+                                               DestinationConsumerCallback destination) {
     for (final Map.Entry<String, WriteConfig> entry : writeBuffers.entrySet()) {
       final String schemaName = entry.getValue().getSchemaName();
       final String tmpTableName = entry.getValue().getTmpTableName();
@@ -106,4 +130,5 @@ public class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> impl
     }
     destination.cleanupTmpTables(writeConfigs);
   }
+
 }
