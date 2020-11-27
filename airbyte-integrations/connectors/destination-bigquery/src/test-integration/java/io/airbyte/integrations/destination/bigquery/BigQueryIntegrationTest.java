@@ -97,6 +97,11 @@ public class BigQueryIntegrationTest extends TestDestination {
   }
 
   @Override
+  protected boolean implementsIncremental() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(testEnv, tableName);
