@@ -125,7 +125,10 @@ class AirbyteProtocolConvertersTest {
 
   @Test
   void testToSchema() {
-    assertEquals(SCHEMA, AirbyteProtocolConverters.toSchema(CATALOG));
+    final Schema schema = Jsons.clone(SCHEMA);
+    schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
+
+    assertEquals(schema, AirbyteProtocolConverters.toSchema(CATALOG));
   }
 
   @Test
@@ -138,10 +141,12 @@ class AirbyteProtocolConvertersTest {
             .withFields(Lists.newArrayList(
                 new io.airbyte.config.Field()
                     .withName("date")
-                    .withDataType(DataType.STRING),
+                    .withDataType(DataType.STRING)
+                    .withSelected(true),
                 new io.airbyte.config.Field()
                     .withName(COLUMN_AGE)
-                    .withDataType(DataType.NUMBER)))
+                    .withDataType(DataType.NUMBER)
+                    .withSelected(true)))
             .withSelected(true)));
 
     assertEquals(schema, AirbyteProtocolConverters.toSchema(catalog));
@@ -158,7 +163,8 @@ class AirbyteProtocolConvertersTest {
             .withFields(Lists.newArrayList(
                 new io.airbyte.config.Field()
                     .withName("date")
-                    .withDataType(DataType.OBJECT)))
+                    .withDataType(DataType.OBJECT)
+                    .withSelected(true)))
             .withSelected(true)));
 
     final AirbyteCatalog catalog = Jsons.deserialize(testString, AirbyteCatalog.class);

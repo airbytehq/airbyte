@@ -118,7 +118,8 @@ public class AirbyteProtocolConverters {
         .stream()
         .map(item -> new Field()
             .withName(item.getKey())
-            .withDataType(getDataType(item.getValue())))
+            .withDataType(getDataType(item.getValue()))
+            .withSelected(true))
         .collect(Collectors.toList());
   }
 
