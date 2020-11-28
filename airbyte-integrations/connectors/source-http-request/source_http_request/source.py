@@ -31,7 +31,7 @@ from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMes
 from base_python import AirbyteLogger, Source
 
 
-class SourceRestApi(Source):
+class SourceHttpRequest(Source):
     STREAM_NAME = "data"
 
     def __init__(self):
@@ -49,11 +49,13 @@ class SourceRestApi(Source):
             "$schema": "http://json-schema.org/draft-07/schema#",
             "additionalProperties": True,
             "type": "object",
-            "properties": {},
+            # todo (cgardens) - remove data column. added to handle UI bug where streams without fields cannot be selected.
+            # issue: https://github.com/airbytehq/airbyte/issues/1104
+            "properties": {"data": {"type": "object"}},
         }
 
         # json body will be returned as the "data" stream". we can't know its schema ahead of time, so we assume it's object (i.e. valid json).
-        return AirbyteCatalog(streams=[AirbyteStream(name=SourceRestApi.STREAM_NAME, json_schema=json_schema)])
+        return AirbyteCatalog(streams=[AirbyteStream(name=SourceHttpRequest.STREAM_NAME, json_schema=json_schema)])
 
     def read(self, logger: AirbyteLogger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
         r = self._make_request(config_container.rendered_config)
@@ -63,8 +65,11 @@ class SourceRestApi(Source):
         # need to eagerly fetch the json.
         message = AirbyteMessage(
             type=Type.RECORD,
-            record=AirbyteRecordMessage(stream=SourceRestApi.STREAM_NAME, data=r.json(), emitted_at=int(datetime.now().timestamp()) * 1000),
+            record=AirbyteRecordMessage(
+                stream=SourceHttpRequest.STREAM_NAME, data=r.json(), emitted_at=int(datetime.now().timestamp()) * 1000
+            ),
         )
+
         return (m for m in [message])
 
     def _make_request(self, config):
