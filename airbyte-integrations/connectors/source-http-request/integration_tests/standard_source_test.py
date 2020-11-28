@@ -22,20 +22,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import json
+import pkgutil
 
-setup(
-    name="source_rest_api",
-    description="Source implementation for Rest Api.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-protocol", "requests"],
-    package_data={"": ["*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        "main": ["base-python"],
-        "tests": ["airbyte-python-test", "pytest"],
-    },
-)
+from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from base_python_test import StandardSourceTestIface
+
+
+class SourceHttpRequestStandardTest(StandardSourceTestIface):
+    def __init__(self):
+        pass
+
+    def get_spec(self) -> ConnectorSpecification:
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
+        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
+
+    def get_config(self) -> object:
+        return {
+            "http_method": "get",
+            "url": "http://api.bart.gov/api/route.aspx?cmd=routes&key=MW9S-E7SL-26DU-VV8V&json=y",
+            "headers": '{"Content-Type": "application/json"}',
+        }
+
+    def get_catalog(self) -> AirbyteCatalog:
+        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
+        return AirbyteCatalog.parse_obj(json.loads(raw_catalog))
+
+    def setup(self) -> None:
+        pass
+
+    def teardown(self) -> None:
+        pass
