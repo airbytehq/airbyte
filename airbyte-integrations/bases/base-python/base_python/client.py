@@ -32,11 +32,20 @@ from typing import Dict, Generator, Tuple
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream
 
 
+def package_name_from_class(cls: object) -> str:
+    """Find the package name given a class name"""
+    module = inspect.getmodule(cls)
+    return module.__name__.split(".")[0]
+
+
 class ResourceSchemaLoader:
     """JSONSchema loader from package resources"""
 
-    def get_schema(self, name):
-        raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{name}.json"))
+    def __init__(self, package_name: str):
+        self.package_name = package_name
+
+    def get_schema(self, name: str) -> dict:
+        raw_schema = json.loads(pkgutil.get_data(self.package_name, f"schemas/{name}.json"))
         return raw_schema
 
 
@@ -46,7 +55,8 @@ class BaseClient(ABC):
     schema_loader_class = ResourceSchemaLoader
 
     def __init__(self):
-        self._schema_loader = self.schema_loader_class()
+        package_name = package_name_from_class(self.__class__)
+        self._schema_loader = self.schema_loader_class(package_name)
         self._stream_methods = self._enumerate_methods()
 
     def _enumerate_methods(self) -> Dict[str, callable]:
@@ -74,7 +84,7 @@ class BaseClient(ABC):
     def streams(self) -> Generator[AirbyteStream, None, None]:
         """List of available streams"""
         for name, method in self._stream_methods.items():
-            yield AirbyteStream(name, schema=self._schema_loader.get_schema(name))
+            yield AirbyteStream(name=name, json_schema=self._schema_loader.get_schema(name))
 
     @abstractmethod
     def health_check(self) -> Tuple[bool, str]:
