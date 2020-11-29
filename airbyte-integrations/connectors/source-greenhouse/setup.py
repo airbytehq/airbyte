@@ -33,13 +33,13 @@ setup(
     install_requires=[
         "airbyte-protocol",
         "base-python",
+        "six==1.15.0",
         "grnhse-api==0.1.0",
     ],
     package_data={"": ["*.json", "schemas/*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={
-        "main": [],
         "tests": ["airbyte_python_test", "pytest"],
     },
 )

@@ -12,6 +12,7 @@ LABEL io.airbyte.name=airbyte/source-greenhouse-standard-test
 WORKDIR /airbyte/integration_code
 COPY source_greenhouse source_greenhouse
 COPY $CODE_PATH $CODE_PATH
+COPY sample_files/*.json $CODE_PATH
 COPY secrets/* $CODE_PATH
 COPY source_greenhouse/*.json $CODE_PATH
 COPY setup.py ./
