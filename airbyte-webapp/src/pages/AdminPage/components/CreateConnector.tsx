@@ -8,23 +8,37 @@ import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
 import config from "../../../config";
 import useRouter from "../../../components/hooks/useRouterHook";
 import { Routes } from "../../routes";
+import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
 
-const CreateConnector: React.FC = () => {
+type IProps = {
+  type: string;
+};
+
+type ICreateProps = {
+  name: string;
+  documentationUrl: string;
+  dockerImageTag: string;
+  dockerRepository: string;
+};
+
+const CreateConnector: React.FC<IProps> = ({ type }) => {
   const { push } = useRouter();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const onChangeModalState = () => setIsModalOpen(!isModalOpen);
+  const onChangeModalState = () => {
+    setIsModalOpen(!isModalOpen);
+    setErrorMessage("");
+  };
 
   const createSourceDefinition = useFetcher(
     SourceDefinitionResource.createShape()
   );
-  const onSubmit = async (sourceDefinition: {
-    name: string;
-    documentationUrl: string;
-    dockerImageTag: string;
-    dockerRepository: string;
-  }) => {
+
+  const createDestinationDefinition = useFetcher(
+    DestinationDefinitionResource.createShape()
+  );
+  const onSubmitSource = async (sourceDefinition: ICreateProps) => {
     setErrorMessage("");
     try {
       const result = await createSourceDefinition({}, sourceDefinition, [
@@ -51,6 +65,41 @@ const CreateConnector: React.FC = () => {
       setErrorMessage("form.validationError");
     }
   };
+
+  const onSubmitDestination = async (destinationDefinition: ICreateProps) => {
+    setErrorMessage("");
+    try {
+      const result = await createDestinationDefinition(
+        {},
+        destinationDefinition,
+        [
+          [
+            DestinationDefinitionResource.listShape(),
+            { workspaceId: config.ui.workspaceId },
+            (
+              newDestinationDefinitionId: string,
+              sourceDefinitionIds: { sourceDefinitions: string[] }
+            ) => ({
+              destinationDefinitions: [
+                ...sourceDefinitionIds.sourceDefinitions,
+                newDestinationDefinitionId
+              ]
+            })
+          ]
+        ]
+      );
+
+      push({
+        pathname: `${Routes.Destination}${Routes.DestinationNew}`,
+        state: { destinationDefinitionId: result.destinationDefinitionId }
+      });
+    } catch (e) {
+      setErrorMessage("form.validationError");
+    }
+  };
+
+  const onSubmit = (values: ICreateProps) =>
+    type === "sources" ? onSubmitSource(values) : onSubmitDestination(values);
 
   return (
     <>
