@@ -572,4 +572,5 @@ public class AcceptanceTests {
   private String adaptToCsvName(String streamName) {
     return streamName.replaceAll("public\\.", "public_");
   }
+
 }
