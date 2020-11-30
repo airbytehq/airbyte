@@ -51,6 +51,15 @@ class EnvConfigsTest {
   }
 
   @Test
+  void testAirbyteVersion() {
+    when(function.apply(EnvConfigs.AIRBYTE_VERSION)).thenReturn(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> config.getAirbyteVersion());
+
+    when(function.apply(EnvConfigs.AIRBYTE_VERSION)).thenReturn("dev");
+    Assertions.assertEquals("dev", config.getAirbyteVersion());
+  }
+
+  @Test
   void testWorkspaceRoot() {
     when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
     Assertions.assertThrows(IllegalArgumentException.class, () -> config.getWorkspaceRoot());

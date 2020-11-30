@@ -2,7 +2,7 @@
 
 ## **Who we are**
 
-[Airbyte](http://airbyte.io) is the upcoming open-source standard for EL\(T\). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe only an open-source approach can solve the problem of data integration, as it enables us to cover the long tail of integrations while enabling teams to adapt prebuilt connectors to their needs. 
+[Airbyte](http://airbyte.io) is the upcoming open-source standard for EL\(T\). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe only an open-source approach can solve the problem of data integration, as it enables us to cover the long tail of integrations while enabling teams to adapt prebuilt connectors to their needs.
 
 Airbyte is remote friendly, with most of the team still based in the Silicon Valley. We’re fully open as a company. Our [company handbook](../company-handbook/), [culture & values](../company-handbook/culture-and-values.md), [strategy](../company-handbook/strategy.md) and [roadmap](../roadmap.md) are open to all.
 
@@ -10,7 +10,7 @@ We're backed by some of the world's [top investors](./#our-investors) and believ
 
 ## **Our Culture**
 
-We believe that a company culture needs to be opinionated to be effective and attract the right people. It cannot be right for every person, or it would mean we don’t have a culture. And that’s perfectly fine. Culture is also a living creature that will grow and evolve with the team and company. It is something we deeply care about. 
+We believe that a company culture needs to be opinionated to be effective and attract the right people. It cannot be right for every person, or it would mean we don’t have a culture. And that’s perfectly fine. Culture is also a living creature that will grow and evolve with the team and company. It is something we deeply care about.
 
 Here are the values we deeply believe in:
 
@@ -33,20 +33,22 @@ Here are the values we deeply believe in:
 
 ## **Our Investors**
 
-We have raised a pre-seed round and a seed one for a total of $1.8M. Our investors include YCombinator, 8VC, and a few leaders in the data industry. 
+We have raised a pre-seed round and a seed one for a total of $1.8M. Our investors include YCombinator, 8VC, and a few leaders in the data industry.
 
 We have a lot of capital, but [we're a lean, strong team](../company-handbook/team.md) - so you've got the opportunity to have a huge impact.
 
 ## **Our Recruiting Process**
 
-We will schedule 2 to 3 short calls with our founders and team. These will focus on two key areas:
+We will schedule one first call with our founders or team. It will focus on two key areas:
 
 * Ensuring you will be a great cultural fit
 * Aptitude for the role
 
-If you succeed with the above, we will set you up with 1 or 2 more in-depth hour-long interviews to test how you actually think and work on some potentially real tasks for the position. It will also be an opportunity for you to see how we work. The team will be here to support you, as we want you to succeed. 
+If you succeed with the above, we may do a written interview. Here are [several reasons](https://www.safegraph.com/blog/why-safegraph-does-written-interviews-and-why-your-company-should-do-them-too) why we're big fans of this kind of interview. The main argument is that it removes a lot of the bias people might have during live interviews. Plus, we mostly work asynchronously nowadays, don't we?
 
-Once all of this done, we will discuss the process internally and get back to you very fast (velocity is everything here)!
+If the written interview is a success, we might set you up with one or 2 additional calls, to test how you actually think and work, but also so you meet the rest of the team.
+
+Once all of this done, we will discuss the process internally and get back to you very fast \(velocity is everything here\)! So about 2-3 calls and one written interview, that's it!
 
 ## **Our Benefits**
 
@@ -54,3 +56,4 @@ Once all of this done, we will discuss the process internally and get back to yo
 * Health insurance: we let you choose the insurance of your choice and cover $500 for you + $200 for any dependents. This will evolve with time, especially after our Series A.
 * We'll give you a corporate card for expenses. Our philosophy is Freedom & Responsibiility. We trust you, just do what's best for the company.
 * We're strong believers in growth, as individuals and as a team. So anything that can help you grow can be expensed - for instance, free books.
+

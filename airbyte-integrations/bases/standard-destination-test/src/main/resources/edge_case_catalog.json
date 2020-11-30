@@ -45,6 +45,16 @@
           }
         }
       }
+    },
+    {
+      "name": "stream-with:spécial:character_names",
+      "json_schema": {
+        "properties": {
+          "field_with_spécial_character": {
+            "type": "string"
+          }
+        }
+      }
     }
   ]
 }

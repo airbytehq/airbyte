@@ -1,4 +1,0 @@
-build/
-logs/
-models/generated/
-dbt_modules/

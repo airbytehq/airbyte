@@ -142,24 +142,21 @@ public class ConfigRepository {
         destinationDefinition);
   }
 
-  public SourceConnection getSourceConnection(final UUID sourceId)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(
         ConfigSchema.SOURCE_CONNECTION,
         sourceId.toString(),
         SourceConnection.class);
   }
 
-  public void writeSourceConnection(final SourceConnection source)
-      throws JsonValidationException, IOException {
+  public void writeSourceConnection(final SourceConnection source) throws JsonValidationException, IOException {
     persistence.writeConfig(
         ConfigSchema.SOURCE_CONNECTION,
         source.getSourceId().toString(),
         source);
   }
 
-  public List<SourceConnection> listSourceConnection()
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public List<SourceConnection> listSourceConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.listConfigs(
         ConfigSchema.SOURCE_CONNECTION,
         SourceConnection.class);
@@ -173,44 +170,38 @@ public class ConfigRepository {
         DestinationConnection.class);
   }
 
-  public void writeDestinationConnection(DestinationConnection destinationConnection)
-      throws JsonValidationException, IOException {
+  public void writeDestinationConnection(DestinationConnection destinationConnection) throws JsonValidationException, IOException {
     persistence.writeConfig(
         ConfigSchema.DESTINATION_CONNECTION,
         destinationConnection.getDestinationId().toString(),
         destinationConnection);
   }
 
-  public List<DestinationConnection> listDestinationConnection()
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public List<DestinationConnection> listDestinationConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.listConfigs(
         ConfigSchema.DESTINATION_CONNECTION,
         DestinationConnection.class);
   }
 
-  public StandardSync getStandardSync(final UUID connectionId)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(
         ConfigSchema.STANDARD_SYNC,
         connectionId.toString(),
         StandardSync.class);
   }
 
-  public void writeStandardSync(final StandardSync standardSync)
-      throws JsonValidationException, IOException {
+  public void writeStandardSync(final StandardSync standardSync) throws JsonValidationException, IOException {
     persistence.writeConfig(
         ConfigSchema.STANDARD_SYNC,
         standardSync.getConnectionId().toString(),
         standardSync);
   }
 
-  public List<StandardSync> listStandardSyncs()
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  public List<StandardSync> listStandardSyncs() throws ConfigNotFoundException, IOException, JsonValidationException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
   }
 
-  public StandardSyncSchedule getStandardSyncSchedule(final UUID connectionId)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public StandardSyncSchedule getStandardSyncSchedule(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(
         ConfigSchema.STANDARD_SYNC_SCHEDULE,
         connectionId.toString(),

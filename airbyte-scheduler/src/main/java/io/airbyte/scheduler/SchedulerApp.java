@@ -28,7 +28,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.config.Configs;
-import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -65,34 +64,25 @@ public class SchedulerApp {
   private static final long JOB_SUBMITTER_DELAY_MILLIS = 5000L;
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
 
-  private final Database database;
-  private final Path configRoot;
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
-  private final TrackingStrategy trackingStrategy;
+  private final SchedulerPersistence schedulerPersistence;
+  private final ConfigRepository configRepository;
 
-  public SchedulerApp(Database database,
-                      Path configRoot,
-                      Path workspaceRoot,
+  public SchedulerApp(Path workspaceRoot,
                       ProcessBuilderFactory pbf,
-                      TrackingStrategy trackingStrategy) {
-    this.database = database;
-    this.configRoot = configRoot;
+                      SchedulerPersistence schedulerPersistence,
+                      ConfigRepository configRepository) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
-    this.trackingStrategy = trackingStrategy;
+    this.schedulerPersistence = schedulerPersistence;
+    this.configRepository = configRepository;
   }
 
   public void start() {
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(database);
-    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
-
     final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
-
-    TrackingClientSingleton.initialize(trackingStrategy, configRepository);
 
     final JobRetrier jobRetrier = new JobRetrier(schedulerPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, configRepository);
@@ -132,8 +122,14 @@ public class SchedulerApp {
         configs.getLocalDockerMount(),
         configs.getDockerNetwork());
 
+    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(database);
+    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+
+    TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configs.getAirbyteVersion(), configRepository);
+
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(database, configRoot, workspaceRoot, pbf, configs.getTrackingStrategy()).start();
+    new SchedulerApp(workspaceRoot, pbf, schedulerPersistence, configRepository).start();
   }
 
 }

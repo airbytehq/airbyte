@@ -31,6 +31,14 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 public interface Destination extends Integration {
 
   /**
+   * Return which Naming Conventions this destination is using in order to handle invalid characters
+   * in identifiers.
+   *
+   * @return SQLNamingResolvable conventions used when creating tables.
+   */
+  SQLNamingResolvable getNamingResolver();
+
+  /**
    * Return a consumer that writes messages to the destination.
    *
    * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",

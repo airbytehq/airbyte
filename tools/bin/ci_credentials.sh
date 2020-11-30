@@ -48,6 +48,10 @@ mkdir $SOURCEFILE_DIR
 echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > "${SOURCEFILE_DIR}/gcs.json"
 echo "$AWS_S3_INTEGRATION_TEST_CREDS" > "${SOURCEFILE_DIR}/aws.json"
 
+REDSHIFT_DIR=airbyte-integrations/connectors/source-redshift/secrets
+mkdir REDSHIFT_DIR
+echo "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" > "${REDSHIFT_DIR}/config.json"
+
 MAILCHIMP_SECRETS_DIR=airbyte-integrations/connectors/source-mailchimp/secrets
 mkdir $MAILCHIMP_SECRETS_DIR
 echo "$MAILCHIMP_TEST_CREDS" > "${MAILCHIMP_SECRETS_DIR}/config.json"

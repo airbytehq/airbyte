@@ -34,6 +34,7 @@ public class EnvConfigs implements Configs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
 
+  public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
   public static final String LOCAL_ROOT = "LOCAL_ROOT";
@@ -55,6 +56,11 @@ public class EnvConfigs implements Configs {
 
   EnvConfigs(final Function<String, String> getEnv) {
     this.getEnv = getEnv;
+  }
+
+  @Override
+  public String getAirbyteVersion() {
+    return getEnsureEnv(AIRBYTE_VERSION);
   }
 
   @Override

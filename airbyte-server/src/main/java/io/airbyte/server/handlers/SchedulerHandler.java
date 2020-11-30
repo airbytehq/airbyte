@@ -159,12 +159,6 @@ public class SchedulerHandler {
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final ConnectorSpecification spec = getConnectorSpecification(imageName);
 
-    TrackingClientSingleton.get().track("get_source_spec", ImmutableMap.<String, Object>builder()
-        .put("source_id", source.getSourceDefinitionId())
-        .put("source_name", source.getName())
-        .put("image_name", imageName)
-        .build());
-
     return new SourceDefinitionSpecificationRead()
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
@@ -196,12 +190,6 @@ public class SchedulerHandler {
     StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationId);
     final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
     final ConnectorSpecification spec = getConnectorSpecification(imageName);
-
-    TrackingClientSingleton.get().track("get_destination_spec", ImmutableMap.<String, Object>builder()
-        .put("image_name", imageName)
-        .put("destination_name", destination.getName())
-        .put("destination_id", destination.getDestinationDefinitionId())
-        .build());
 
     return new DestinationDefinitionSpecificationRead()
         .connectionSpecification(spec.getConnectionSpecification())

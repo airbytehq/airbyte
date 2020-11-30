@@ -116,13 +116,12 @@ docker-compose stop scheduler
 
 ### Connector Specification Caching
 
-The Configuration API caches connector specifications. This is done to avoid needing to run docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and you need to clear this cache so the API / UI pick up the change. You have two options:
-1. Go to the Admin page in the UI and update the version of the connector. Updating to the same version will for the cache to clear for that connector.
-1. Restart the server
-     ```bash
+The Configuration API caches connector specifications. This is done to avoid needing to run docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and you need to clear this cache so the API / UI pick up the change. You have two options: 1. Go to the Admin page in the UI and update the version of the connector. Updating to the same version will for the cache to clear for that connector. 1. Restart the server
+
+```bash
         docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml down -v
         docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up
-      ```
+```
 
 ### Resetting the Airbyte developer environment
 

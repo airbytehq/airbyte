@@ -103,7 +103,7 @@ public class MySqlIntegrationTest extends TestSource {
   @Override
   protected AirbyteCatalog getCatalog() {
     return CatalogHelpers.createAirbyteCatalog(
-        STREAM_NAME,
+        String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING));
   }

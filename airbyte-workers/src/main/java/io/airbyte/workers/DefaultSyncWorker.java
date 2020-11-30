@@ -24,7 +24,6 @@
 
 package io.airbyte.workers;
 
-import com.google.common.collect.Sets;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -32,19 +31,14 @@ import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.protocols.Destination;
 import io.airbyte.workers.protocols.MessageTracker;
 import io.airbyte.workers.protocols.Source;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -77,8 +71,9 @@ public class DefaultSyncWorker implements SyncWorker {
   public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path jobRoot) {
     long startTime = System.currentTimeMillis();
 
-    // clean catalog object
-    removeInvalidStreams(syncInput.getCatalog());
+    LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
+        .stream()
+        .collect(Collectors.toMap(s -> s.getStream().getName(), s -> s.getSyncMode() != null ? s.getSyncMode() : SyncMode.FULL_REFRESH)));
 
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
     final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
@@ -92,12 +87,8 @@ public class DefaultSyncWorker implements SyncWorker {
         if (maybeMessage.isPresent()) {
           final AirbyteMessage message = maybeMessage.get();
 
-          if (message.getType().equals(AirbyteMessage.Type.RECORD) && !CatalogHelpers.isValidIdentifier(message.getRecord().getStream())) {
-            LOGGER.error("Filtered out record for invalid stream: " + message.getRecord().getStream());
-          } else {
-            messageTracker.accept(message);
-            destination.accept(message);
-          }
+          messageTracker.accept(message);
+          destination.accept(message);
         }
       }
 
@@ -138,18 +129,6 @@ public class DefaultSyncWorker implements SyncWorker {
   @Override
   public void cancel() {
     cancelled.set(true);
-  }
-
-  private void removeInvalidStreams(ConfiguredAirbyteCatalog catalog) {
-    final Set<String> invalidStreams = Sets.union(
-        new HashSet<>(CatalogHelpers.getInvalidStreamNames(catalog)),
-        CatalogHelpers.getInvalidFieldNames(catalog).keySet());
-
-    final List<ConfiguredAirbyteStream> streams = catalog.getStreams().stream()
-        .filter(stream -> !invalidStreams.contains(stream.getStream().getName()))
-        .collect(Collectors.toList());
-
-    catalog.setStreams(streams);
   }
 
 }

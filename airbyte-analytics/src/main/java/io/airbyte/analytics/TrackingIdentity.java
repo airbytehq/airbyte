@@ -30,6 +30,7 @@ import java.util.UUID;
 
 public class TrackingIdentity {
 
+  private final String airbyteVersion;
   private final UUID customerId;
   private final String email;
   private final Boolean anonymousDataCollection;
@@ -37,15 +38,26 @@ public class TrackingIdentity {
   private final Boolean securityUpdates;
 
   public static TrackingIdentity empty() {
-    return new TrackingIdentity(null, null, null, null, null);
+    return new TrackingIdentity(null, null, null, null, null, null);
   }
 
-  public TrackingIdentity(UUID customerId, String email, Boolean anonymousDataCollection, Boolean news, Boolean securityUpdates) {
+  public TrackingIdentity(
+                          final String airbyteVersion,
+                          final UUID customerId,
+                          final String email,
+                          final Boolean anonymousDataCollection,
+                          final Boolean news,
+                          final Boolean securityUpdates) {
+    this.airbyteVersion = airbyteVersion;
     this.customerId = customerId;
     this.email = email;
     this.anonymousDataCollection = anonymousDataCollection;
     this.news = news;
     this.securityUpdates = securityUpdates;
+  }
+
+  public String getAirbyteVersion() {
+    return airbyteVersion;
   }
 
   public UUID getCustomerId() {

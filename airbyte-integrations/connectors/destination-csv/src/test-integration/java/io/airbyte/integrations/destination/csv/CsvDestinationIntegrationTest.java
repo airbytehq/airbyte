@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.StandardSQLNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.io.FileReader;
 import java.nio.file.Files;
@@ -75,7 +76,8 @@ public class CsvDestinationIntegrationTest extends TestDestination {
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
     final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
-    final Optional<Path> streamOutput = allOutputs.stream().filter(path -> path.getFileName().toString().contains(streamName)).findFirst();
+    final Optional<Path> streamOutput =
+        allOutputs.stream().filter(path -> path.getFileName().toString().contains(new StandardSQLNaming().getRawTableName(streamName))).findFirst();
 
     assertTrue(streamOutput.isPresent(), "could not find output file for stream: " + streamName);
 

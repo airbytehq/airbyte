@@ -10,7 +10,7 @@
       "project_id": {
         "type": "string",
         "description": "The GCP project ID for the project containing the target BigQuery dataset.",
-        "title": "Dataset ID"
+        "title": "Project ID"
       },
       "dataset_id": {
         "type": "string",
