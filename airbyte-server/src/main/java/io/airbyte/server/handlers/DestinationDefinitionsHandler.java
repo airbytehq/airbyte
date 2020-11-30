@@ -24,6 +24,7 @@
 
 package io.airbyte.server.handlers;
 
+import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
@@ -38,17 +39,28 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class DestinationDefinitionsHandler {
 
+  private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
-  private final DockerImageValidator dockerImageValidator;
+  private final Supplier<UUID> uuidSupplier;
   private final SpecCache specCache;
 
-  public DestinationDefinitionsHandler(final ConfigRepository configRepository, DockerImageValidator dockerImageValidator, SpecCache specCache) {
+  public DestinationDefinitionsHandler(final ConfigRepository configRepository, DockerImageValidator imageValidator, SpecCache specCache) {
+    this(configRepository, imageValidator, UUID::randomUUID, specCache);
+  }
+
+  public DestinationDefinitionsHandler(final ConfigRepository configRepository,
+                                       DockerImageValidator imageValidator,
+                                       final Supplier<UUID> uuidSupplier,
+                                       SpecCache specCache) {
     this.configRepository = configRepository;
-    this.dockerImageValidator = dockerImageValidator;
+    this.imageValidator = imageValidator;
+    this.uuidSupplier = uuidSupplier;
     this.specCache = specCache;
   }
 
@@ -67,11 +79,28 @@ public class DestinationDefinitionsHandler {
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
+  public DestinationDefinitionRead createDestinationDefinition(DestinationDefinitionCreate destinationDefinitionCreate)
+      throws JsonValidationException, IOException {
+    imageValidator.assertValidIntegrationImage(destinationDefinitionCreate.getDockerRepository(), destinationDefinitionCreate.getDockerImageTag());
+
+    final UUID id = uuidSupplier.get();
+    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+        .withDestinationDefinitionId(id)
+        .withDockerRepository(destinationDefinitionCreate.getDockerRepository())
+        .withDockerImageTag(destinationDefinitionCreate.getDockerImageTag())
+        .withDocumentationUrl(destinationDefinitionCreate.getDocumentationUrl().toString())
+        .withName(destinationDefinitionCreate.getName());
+
+    configRepository.writeStandardDestinationDefinition(destinationDefinition);
+
+    return buildDestinationDefinitionRead(destinationDefinition);
+  }
+
   public DestinationDefinitionRead updateDestinationDefinition(DestinationDefinitionUpdate destinationDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition currentDestination = configRepository
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
-    dockerImageValidator.assertValidIntegrationImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag());
+    imageValidator.assertValidIntegrationImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag());
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
         .withDestinationDefinitionId(currentDestination.getDestinationDefinitionId())
