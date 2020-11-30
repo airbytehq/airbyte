@@ -1,3 +1,2 @@
 -e ../airbyte-protocol
 -e .
-dbt==0.18.1

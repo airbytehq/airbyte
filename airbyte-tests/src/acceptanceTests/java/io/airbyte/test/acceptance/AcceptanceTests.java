@@ -372,8 +372,9 @@ public class AcceptanceTests {
     final Database database = getDatabase(sourceDb);
 
     final Set<String> sourceStreams = listStreams(database);
-    final Set<String> targetStreams = listCsvStreams();
-    assertEquals(sourceStreams, targetStreams);
+    final Set<String> destinationStreams = listCsvStreams();
+    assertEquals(sourceStreams, destinationStreams,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
 
     for (String table : sourceStreams) {
       assertStreamsEquivalent(database, table);
@@ -389,9 +390,13 @@ public class AcceptanceTests {
         context -> {
           Result<Record> fetch =
               context.fetch(
-                  "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
+                  "SELECT tablename, schemaname FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
           return fetch.stream()
-              .map(record -> (String) record.get("tablename"))
+              .map(record -> {
+                final String schemaName = (String) record.get("schemaname");
+                final String tableName = (String) record.get("tablename");
+                return schemaName + "." + tableName;
+              })
               .collect(Collectors.toSet());
         });
   }

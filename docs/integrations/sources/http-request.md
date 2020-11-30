@@ -1,4 +1,4 @@
-# Rest API
+# HTTP Request
 
 ## Overview
 
