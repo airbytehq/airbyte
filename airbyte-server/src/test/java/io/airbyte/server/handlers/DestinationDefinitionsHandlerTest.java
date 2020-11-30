@@ -128,7 +128,7 @@ class DestinationDefinitionsHandlerTest {
   }
 
   @Test
-  void testCreateSourceDefinition() throws URISyntaxException, ConfigNotFoundException, IOException, JsonValidationException {
+  void testCreateDestinationDefinition() throws URISyntaxException, ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destination = generateDestination();
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
     final DestinationDefinitionCreate create = new DestinationDefinitionCreate()
