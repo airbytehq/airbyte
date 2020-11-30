@@ -57,16 +57,6 @@ class SourceShopifySinger(SingerSource):
                 status=Status.FAILED, message="Unable to connect to the Shopify API with the provided credentials."
             )
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
-
-        filtered_streams = []
-        for stream in catalog.streams:
-            filtered_streams.append(stream)
-
-        catalog.streams = filtered_streams
-        return catalog
-
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         return f"{TAP_CMD} -c {config_path} --discover"
 
