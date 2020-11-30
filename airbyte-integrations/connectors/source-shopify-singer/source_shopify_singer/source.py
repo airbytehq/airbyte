@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import shopify
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
+from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_python import AirbyteLogger, ConfigContainer
 from base_singer import SingerSource
 
