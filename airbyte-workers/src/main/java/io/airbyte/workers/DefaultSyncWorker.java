@@ -108,8 +108,9 @@ public class DefaultSyncWorker implements SyncWorker {
       return new OutputAndStatus<>(JobStatus.FAILED, null);
     }
 
-    StandardSyncSummary summary = new StandardSyncSummary()
+    final StandardSyncSummary summary = new StandardSyncSummary()
         .withRecordsSynced(messageTracker.getRecordCount())
+        .withBytesSynced(messageTracker.getRecordCount())
         .withStartTime(startTime)
         .withEndTime(System.currentTimeMillis());
 
