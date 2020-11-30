@@ -1,3 +1,5 @@
+import config from "../../config";
+
 interface SegmentAnalytics {
   page: (name?: string) => void;
   reset: () => void;
@@ -19,7 +21,10 @@ export class AnalyticsService {
   static reset = () => AnalyticsService.getAnalytics()?.reset?.();
 
   static track = (name: string, properties: any) =>
-    AnalyticsService.getAnalytics()?.track?.(name, properties);
+    AnalyticsService.getAnalytics()?.track?.(name, {
+      ...properties,
+      airbyte_version: config.version
+    });
 
   static identify = (traits: any = {}, userId?: string) =>
     AnalyticsService.getAnalytics()?.identify?.(traits, userId);
