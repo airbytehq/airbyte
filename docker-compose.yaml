@@ -84,6 +84,7 @@ services:
     environment:
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - AIRBYTE_VERSION=${VERSION}
+      - API_URL=${API_URL}
 
 volumes:
   workspace:
