@@ -40,5 +40,7 @@ task generateSeed {
     }
 }
 
-jar.dependsOn(generateSeed)
-testClasses.dependsOn(generateSeed)
+// we only want to attempt generateSeed if tests have passed.
+generateSeed.dependsOn(check)
+generateSeed.dependsOn(assemble)
+build.dependsOn(generateSeed)

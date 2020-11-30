@@ -1,31 +1,41 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.config.script;
 
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.base.Charsets;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 public class GenerateYaml {
 
@@ -48,55 +58,56 @@ public class GenerateYaml {
         .collect(Collectors.toList());
 
     ArrayNode nodes = new ObjectMapper().createArrayNode();
-    for(Path path : collect) {
+    for (Path path : collect) {
       nodes.add(Jsons.deserialize(IOs.readFile(path)));
     }
 
     final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
-    IOs.writeFile(Path.of("/Users/charles/code/airbyte/airbyte-config/init/src/main/resources/seed/source_definitions.yaml"), mapper.writeValueAsString(nodes));
+    IOs.writeFile(Path.of("/Users/charles/code/airbyte/airbyte-config/init/src/main/resources/seed/source_definitions.yaml"),
+        mapper.writeValueAsString(nodes));
 
-//    final JsonNode jsonNode = mapper.readTree(input.toFile());
-//    final Iterator<JsonNode> elements = jsonNode.elements();
-//    final Set<String> names = new HashSet<>();
-//
-//    while (elements.hasNext()) {
-//      final JsonNode element = Jsons.clone(elements.next());
-//      final String name = element.get("name").asText();
-//
-//      // validate the name is unique.
-//      if (names.contains(name)) {
-//        throw new IllegalArgumentException("Multiple records have the name: " + name);
-//      }
-//      names.add(name);
-//
-//      final UUID uuid = UUID.nameUUIDFromBytes(name.getBytes(Charsets.UTF_8));
-//      ((ObjectNode) element).put(idName, uuid.toString());
-//
-//      IOs.writeFile(
-//          output,
-//          uuid.toString() + ".json",
-//          element.toPrettyString()); // todo (cgardens) - adds obnoxious space in front of ":".
-//    }
+    // final JsonNode jsonNode = mapper.readTree(input.toFile());
+    // final Iterator<JsonNode> elements = jsonNode.elements();
+    // final Set<String> names = new HashSet<>();
+    //
+    // while (elements.hasNext()) {
+    // final JsonNode element = Jsons.clone(elements.next());
+    // final String name = element.get("name").asText();
+    //
+    // // validate the name is unique.
+    // if (names.contains(name)) {
+    // throw new IllegalArgumentException("Multiple records have the name: " + name);
+    // }
+    // names.add(name);
+    //
+    // final UUID uuid = UUID.nameUUIDFromBytes(name.getBytes(Charsets.UTF_8));
+    // ((ObjectNode) element).put(idName, uuid.toString());
+    //
+    // IOs.writeFile(
+    // output,
+    // uuid.toString() + ".json",
+    // element.toPrettyString()); // todo (cgardens) - adds obnoxious space in front of ":".
+    // }
   }
 
-//  private static CommandLine parse(String[] args) {
-//    final CommandLineParser parser = new DefaultParser();
-//    final HelpFormatter helpFormatter = new HelpFormatter();
-//
-//    try {
-//      return parser.parse(OPTIONS, args);
-//    } catch (ParseException e) {
-//      helpFormatter.printHelp("", OPTIONS);
-//      throw new IllegalArgumentException(e);
-//    }
-//  }
+  // private static CommandLine parse(String[] args) {
+  // final CommandLineParser parser = new DefaultParser();
+  // final HelpFormatter helpFormatter = new HelpFormatter();
+  //
+  // try {
+  // return parser.parse(OPTIONS, args);
+  // } catch (ParseException e) {
+  // helpFormatter.printHelp("", OPTIONS);
+  // throw new IllegalArgumentException(e);
+  // }
+  // }
 
   public static void main(String[] args) throws IOException {
-//    final CommandLine parsed = parse(args);
-//    final String idName = parsed.getOptionValue(ID_NAME_OPTION.getOpt());
-//    final Path inputPath = Path.of(parsed.getOptionValue(INPUT_PATH_OPTION.getOpt()));
-//    final Path outputPath = Path.of(parsed.getOptionValue(OUTPUT_PATH_OPTION.getOpt()));
+    // final CommandLine parsed = parse(args);
+    // final String idName = parsed.getOptionValue(ID_NAME_OPTION.getOpt());
+    // final Path inputPath = Path.of(parsed.getOptionValue(INPUT_PATH_OPTION.getOpt()));
+    // final Path outputPath = Path.of(parsed.getOptionValue(OUTPUT_PATH_OPTION.getOpt()));
 
     new GenerateYaml().run();
   }

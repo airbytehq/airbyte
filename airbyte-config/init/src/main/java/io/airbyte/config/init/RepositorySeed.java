@@ -25,18 +25,17 @@
 package io.airbyte.config.init;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.base.Charsets;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.yaml.Yamls;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -70,14 +69,21 @@ public class RepositorySeed {
   }
 
   public void run(String idName, Path input, Path output) throws IOException {
-    final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-    final JsonNode jsonNode = mapper.readTree(input.toFile());
-    final Iterator<JsonNode> elements = jsonNode.elements();
+    final JsonNode seedList = Yamls.deserialize(IOs.readFile(input));;
+    final Iterator<JsonNode> elements = seedList.elements();
     final Set<String> names = new HashSet<>();
+    final Set<UUID> ids = new HashSet<>();
 
+    // clean output directory.
+    for (Path file : Files.list(output).collect(Collectors.toList())) {
+      Files.delete(file);
+    }
+
+    // write to output directory.
     while (elements.hasNext()) {
       final JsonNode element = Jsons.clone(elements.next());
       final String name = element.get("name").asText();
+      final UUID id = UUID.fromString(element.get(idName).asText());
 
       // validate the name is unique.
       if (names.contains(name)) {
@@ -85,13 +91,16 @@ public class RepositorySeed {
       }
       names.add(name);
 
-      final UUID uuid = UUID.nameUUIDFromBytes(name.getBytes(Charsets.UTF_8));
-      ((ObjectNode) element).put(idName, uuid.toString());
+      // validate the id is unique.
+      if (ids.contains(id)) {
+        throw new IllegalArgumentException("Multiple records have the id: " + id);
+      }
+      ids.add(id);
 
       IOs.writeFile(
           output,
-          uuid.toString() + ".json",
-          element.toPrettyString()); // todo (cgardens) - adds obnoxious space in front of ":".
+          element.get(idName).asText() + ".json",
+          Jsons.toPrettyString(element));
     }
   }
 
