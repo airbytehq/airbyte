@@ -28,7 +28,7 @@ import selectors
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
-from typing import DefaultDict, Dict, Generator
+from typing import DefaultDict, Dict, Generator, List, Optional
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -37,7 +37,13 @@ from airbyte_protocol import (
     AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
+    SyncMode,
+    Type,
 )
+
+
+_INCREMENTAL = "INCREMENTAL"
+_FULL_TABLE = "FULL_TABLE"
 
 
 def to_json(string):
@@ -52,6 +58,19 @@ def is_field_metadata(metadata):
         return False
     else:
         return metadata.get("breadcrumb")[0] != "property"
+
+
+def supports_incremental(metadata: Dict[str, any]) -> bool:
+    # TODO unclear from the singer spec what behavior should be if there are no valid replication keys, but forced-replication-method is INCREMENTAL.
+    #  For now requiring replication keys for a stream to be considered incremetnal.
+    return len(metadata.get("valid-replication-keys", [])) > 0
+
+
+def get_stream_level_metadata(metadatas: List[Dict[str, any]]) -> Optional[Dict[str, any]]:
+    for metadata in metadatas:
+        if not is_field_metadata(metadata):
+            return metadata
+    return None
 
 
 @dataclass
@@ -73,7 +92,20 @@ class SingerHelper:
         for stream in singer_catalog.get("streams"):
             name = stream.get("stream")
             schema = stream.get("schema")
-            airbyte_streams += [AirbyteStream(name=name, json_schema=schema)]
+            airbyte_stream = AirbyteStream(name=name, json_schema=schema)
+
+            metadatas = stream.get("metadata")
+            stream_metadata_container = get_stream_level_metadata(metadatas) if metadatas else None
+            stream_metadata = stream_metadata_container.get("metadata")
+            if stream_metadata:
+                replication_keys = stream_metadata.get("valid-replication-keys", [])
+                if len(replication_keys) > 0:
+                    airbyte_stream.source_defined_cursor = True
+                    airbyte_stream.supported_sync_modes = [SyncMode.full_refresh, SyncMode.incremental]
+                    # TODO if there are multiple replication keys, allow configuring which one is used. For now we deterministically take the first
+                    airbyte_stream.default_cursor_field = [sorted(replication_keys)[0]]
+
+            airbyte_streams += [airbyte_stream]
         return AirbyteCatalog(streams=airbyte_streams)
 
     @staticmethod
@@ -111,7 +143,7 @@ class SingerHelper:
                                     pass
                                 elif transformed_json.get("type") == "STATE":
                                     out_record = AirbyteStateMessage(data=transformed_json["value"])
-                                    out_message = AirbyteMessage(type="STATE", state=out_record)
+                                    out_message = AirbyteMessage(type=Type.STATE, state=out_record)
                                     yield transform(out_message)
                                 else:
                                     # todo: check that messages match the discovered schema
@@ -121,7 +153,7 @@ class SingerHelper:
                                         data=transformed_json["record"],
                                         emitted_at=int(datetime.now().timestamp()) * 1000,
                                     )
-                                    out_message = AirbyteMessage(type="RECORD", record=out_record)
+                                    out_message = AirbyteMessage(type=Type.RECORD, record=out_record)
                                     yield transform(out_message)
                         else:
                             logger.log_by_prefix(line, "INFO")
@@ -148,10 +180,11 @@ class SingerHelper:
                     for metadata in metadatas:
                         new_metadata = metadata
                         new_metadata["metadata"]["selected"] = True
-                        # todo (cgardens) - need to make changes here for singer sources to support incremental.
                         if not is_field_metadata(new_metadata):
-                            new_metadata["metadata"]["forced-replication-method"] = "FULL_TABLE"
-                            new_metadata["metadata"]["replication-method"] = "FULL_TABLE"
+                            replication_method = _INCREMENTAL if supports_incremental(new_metadata) else _FULL_TABLE
+                            print("metadata or no: " + replication_method)
+                            new_metadata["metadata"]["forced-replication-method"] = replication_method
+                            new_metadata["metadata"]["replication-method"] = replication_method
                         new_metadatas += [new_metadata]
                     singer_stream["metadata"] = new_metadatas
 
