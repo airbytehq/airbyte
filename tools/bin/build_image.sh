@@ -27,7 +27,6 @@ else
     -f "$DOCKERFILE" . \
     -t "$TAGGED_IMAGE" \
     --iidfile "$ID_FILE" \
-    
     --cache-from localhost:5000/"$TAGGED_IMAGE" \
     --build-arg BUILDKIT_INLINE_CACHE=1
   docker tag "$TAGGED_IMAGE" localhost:5000/"$TAGGED_IMAGE"
