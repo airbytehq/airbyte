@@ -39,14 +39,16 @@ We have a lot of capital, but [we're a lean, strong team](../company-handbook/te
 
 ## **Our Recruiting Process**
 
-We will schedule 2 to 3 short calls with our founders and team. These will focus on two key areas:
+We will schedule one first call with our founders or team. It will focus on two key areas:
 
 * Ensuring you will be a great cultural fit
 * Aptitude for the role
 
-If you succeed with the above, we will set you up with 1 or 2 more in-depth hour-long interviews to test how you actually think and work on some potentially real tasks for the position. It will also be an opportunity for you to see how we work. The team will be here to support you, as we want you to succeed.
+If you succeed with the above, we may do a written interview. Here are [several reasons](https://www.safegraph.com/blog/why-safegraph-does-written-interviews-and-why-your-company-should-do-them-too) why we're big fans of this kind of interview. The main argument is that it removes a lot of the bias people might have during live interviews. Plus, we mostly work asynchronously nowadays, don't we?
 
-Once all of this done, we will discuss the process internally and get back to you very fast \(velocity is everything here\)!
+If the written interview is a success, we might set you up with one or 2 additional calls, to test how you actually think and work, but also so you meet the rest of the team.
+
+Once all of this done, we will discuss the process internally and get back to you very fast \(velocity is everything here\)! So about 2-3 calls and one written interview, that's it!
 
 ## **Our Benefits**
 
