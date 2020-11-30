@@ -123,9 +123,8 @@ const SourcesView: React.FC = () => {
         source => source.sourceDefinitionId === item.source?.sourceDefinitionId
       );
       return {
-        id: item.source?.sourceId || "1",
         name: item.source?.sourceName,
-        sourceDefinitionId: item.source?.sourceDefinitionId,
+        sourceDefinitionId: item.source?.sourceDefinitionId || "",
         dockerRepository: sourceInfo?.dockerRepository,
         dockerImageTag: sourceInfo?.dockerImageTag,
         documentationUrl: sourceInfo?.documentationUrl,
@@ -134,7 +133,7 @@ const SourcesView: React.FC = () => {
     });
 
     const uniqSources = allSources.reduce(
-      (map, item) => ({ ...map, [item.id]: item }),
+      (map, item) => ({ ...map, [item.sourceDefinitionId]: item }),
       {}
     );
 

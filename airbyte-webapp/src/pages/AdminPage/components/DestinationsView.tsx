@@ -139,9 +139,9 @@ const DestinationsView: React.FC = () => {
           item.destination?.destinationDefinitionId
       );
       return {
-        id: item.destination?.destinationId || "1",
         name: item.destination?.destinationName,
-        destinationDefinitionId: item.destination?.destinationDefinitionId,
+        destinationDefinitionId:
+          item.destination?.destinationDefinitionId || "",
         dockerRepository: destinationInfo?.dockerRepository,
         dockerImageTag: destinationInfo?.dockerImageTag,
         documentationUrl: destinationInfo?.documentationUrl,
@@ -150,7 +150,7 @@ const DestinationsView: React.FC = () => {
     });
 
     const uniqDestination = allDestination.reduce(
-      (map, item) => ({ ...map, [item.id]: item }),
+      (map, item) => ({ ...map, [item.destinationDefinitionId]: item }),
       {}
     );
 
