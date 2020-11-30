@@ -27,7 +27,7 @@ task generateSeed {
         task "$taskName"(type: JavaExec) {
             classpath = sourceSets.main.runtimeClasspath
 
-            main = 'io.airbyte.config.init.RepositorySeed'
+            main = 'io.airbyte.config.init.SeedRepository'
 
             // arguments to pass to the application
             args '--id-name'

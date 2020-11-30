@@ -53,7 +53,7 @@ import org.apache.commons.cli.ParseException;
  * compatible with our file system database (config persistence). It also checks that each name is
  * unique in the set it is outputting to avoid duplicates clobbering each other.
  */
-public class RepositorySeed {
+public class SeedRepository {
 
   private static final Options OPTIONS = new Options();
   private static final Option ID_NAME_OPTION = new Option("id", "id-name", true, "field name of the id");
@@ -122,7 +122,7 @@ public class RepositorySeed {
     final Path inputPath = Path.of(parsed.getOptionValue(INPUT_PATH_OPTION.getOpt()));
     final Path outputPath = Path.of(parsed.getOptionValue(OUTPUT_PATH_OPTION.getOpt()));
 
-    new RepositorySeed().run(idName, inputPath, outputPath);
+    new SeedRepository().run(idName, inputPath, outputPath);
   }
 
 }
