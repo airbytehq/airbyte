@@ -26,8 +26,11 @@ package io.airbyte.commons.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.core.util.Separators;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Charsets;
 import java.io.IOException;
 import java.util.HashSet;
@@ -39,6 +42,7 @@ public class Jsons {
 
   // Object Mapper is thread-safe
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER.writer(new JsonPrettyPrinter());
 
   public static <T> String serialize(T object) {
     try {
@@ -123,6 +127,37 @@ public class Jsons {
     } else {
       return new HashSet<>();
     }
+  }
+
+  public static String toPrettyString(JsonNode jsonNode) {
+    try {
+      return OBJECT_WRITER.writeValueAsString(jsonNode) + "\n";
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * By the Jackson DefaultPrettyPrinter prints objects with an extra space as follows: {"name" :
+   * "airbyte"}. We prefer {"name": "airbyte"}.
+   */
+  private static class JsonPrettyPrinter extends DefaultPrettyPrinter {
+
+    // this method has to be overridden because in the superclass it checks that it is an instance of
+    // DefaultPrettyPrinter (which is no longer the case in this inherited class).
+    @Override
+    public DefaultPrettyPrinter createInstance() {
+      return new DefaultPrettyPrinter(this);
+    }
+
+    // override the method that inserts the extra space.
+    @Override
+    public DefaultPrettyPrinter withSeparators(Separators separators) {
+      _separators = separators;
+      _objectFieldValueSeparatorWithSpaces = separators.getObjectFieldValueSeparator() + " ";
+      return this;
+    }
+
   }
 
 }
