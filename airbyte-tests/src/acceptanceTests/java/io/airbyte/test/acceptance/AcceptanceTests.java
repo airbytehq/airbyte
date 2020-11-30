@@ -98,7 +98,8 @@ import org.testcontainers.utility.MountableFile;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
-  private static final String STREAM_NAME = "id_and_name";
+  private static final String TABLE_NAME = "id_and_name";
+  private static final String STREAM_NAME = "public." + TABLE_NAME;
   private static final String COLUMN_ID = "id";
   private static final String COLUMN_NAME = "name";
 
@@ -340,7 +341,7 @@ public class AcceptanceTests {
     final ConnectionSyncRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead2.getStatus());
-    assertDestinationContains(expectedRecords, STREAM_NAME);
+    assertDestinationContains(expectedRecords, TABLE_NAME);
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
@@ -371,8 +372,9 @@ public class AcceptanceTests {
     final Database database = getDatabase(sourceDb);
 
     final Set<String> sourceStreams = listStreams(database);
-    final Set<String> targetStreams = listCsvStreams();
-    assertEquals(sourceStreams, targetStreams);
+    final Set<String> destinationStreams = listCsvStreams();
+    assertEquals(sourceStreams, destinationStreams,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
 
     for (String table : sourceStreams) {
       assertStreamsEquivalent(database, table);
@@ -388,16 +390,20 @@ public class AcceptanceTests {
         context -> {
           Result<Record> fetch =
               context.fetch(
-                  "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
+                  "SELECT tablename, schemaname FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
           return fetch.stream()
-              .map(record -> (String) record.get("tablename"))
+              .map(record -> {
+                final String schemaName = (String) record.get("schemaname");
+                final String tableName = (String) record.get("tablename");
+                return schemaName + "." + tableName;
+              })
               .collect(Collectors.toSet());
         });
   }
 
   private Set<String> listCsvStreams() throws IOException {
     return Files.list(outputDir)
-        .map(file -> file.getFileName().toString().replaceAll(".csv", ""))
+        .map(file -> adaptCsvName(file.getFileName().toString()))
         .collect(Collectors.toSet());
   }
 
@@ -480,7 +486,7 @@ public class AcceptanceTests {
 
   private List<JsonNode> retrieveCsvRecords(String streamName) throws Exception {
     final Optional<Path> stream = Files.list(outputDir)
-        .filter(path -> path.getFileName().toString().toLowerCase().contains(streamName))
+        .filter(path -> path.getFileName().toString().toLowerCase().contains(adaptToCsvName(streamName)))
         .findFirst();
     assertTrue(stream.isPresent());
 
@@ -557,6 +563,14 @@ public class AcceptanceTests {
 
   private void deleteDestination(UUID destinationId) throws ApiException {
     apiClient.getDestinationApi().deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
+  }
+
+  private String adaptCsvName(String streamName) {
+    return streamName.replaceAll("_raw\\.csv", "").replaceAll("public_", "public.");
+  }
+
+  private String adaptToCsvName(String streamName) {
+    return streamName.replaceAll("public\\.", "public_");
   }
 
 }
