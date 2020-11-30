@@ -53,7 +53,7 @@ class HealthCheckHandlerTest {
     when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(null);
     assertEquals(new HealthCheckRead().db(false), healthCheckHandler.health());
 
-    doThrow(IOException.class).when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID));
+    doThrow(IOException.class).when(configRepository).getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
     assertEquals(new HealthCheckRead().db(false), healthCheckHandler.health());
   }
 
