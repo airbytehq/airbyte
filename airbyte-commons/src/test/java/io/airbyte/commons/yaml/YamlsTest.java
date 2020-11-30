@@ -77,9 +77,9 @@ class YamlsTest {
         new ToClass("abc", 999, 888L),
         Yamls.deserialize(
             "---\n"
-            + "str: \"abc\"\n"
-            + "num: \"999\"\n"
-            + "numLong: \"888\"\n",
+                + "str: \"abc\"\n"
+                + "num: \"999\"\n"
+                + "numLong: \"888\"\n",
             ToClass.class));
   }
 
