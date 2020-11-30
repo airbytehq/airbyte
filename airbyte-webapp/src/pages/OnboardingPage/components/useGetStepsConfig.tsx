@@ -7,7 +7,7 @@ export enum StepsTypes {
   SET_UP_CONNECTION = "set-up-connection"
 }
 
-const StepsConfig = (
+const UseGetStepsConfig = (
   hasSources: boolean,
   hasDestinations: boolean,
   afterUpdateStep?: () => void
@@ -39,14 +39,14 @@ const StepsConfig = (
     () => [
       {
         id: StepsTypes.CREATE_SOURCE,
-        name: <FormattedMessage id={"onboarding.createSource"} />,
+        name: <FormattedMessage id="onboarding.createSource" />,
         onSelect: hasSources
           ? () => updateStep(StepsTypes.CREATE_SOURCE)
           : undefined
       },
       {
         id: StepsTypes.CREATE_DESTINATION,
-        name: <FormattedMessage id={"onboarding.createDestination"} />,
+        name: <FormattedMessage id="onboarding.createDestination" />,
         onSelect:
           hasSources || hasDestinations
             ? () => updateStep(StepsTypes.CREATE_DESTINATION)
@@ -54,7 +54,7 @@ const StepsConfig = (
       },
       {
         id: StepsTypes.SET_UP_CONNECTION,
-        name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+        name: <FormattedMessage id="onboarding.setUpConnection" />,
         onSelect:
           hasSources && hasDestinations
             ? () => updateStep(StepsTypes.SET_UP_CONNECTION)
@@ -71,4 +71,4 @@ const StepsConfig = (
   };
 };
 
-export default StepsConfig;
+export default UseGetStepsConfig;

@@ -13,8 +13,8 @@ import ConnectionStep from "./components/ConnectionStep";
 import SourceResource from "../../core/resources/Source";
 import DestinationResource from "../../core/resources/Destination";
 import config from "../../config";
-import StepsConfig, { StepsTypes } from "./components/StepsConfig";
-import PrepareDropDownLists from "./components/PrepareDropDownLists";
+import UseGetStepsConfig, { StepsTypes } from "./components/useGetStepsConfig";
+import usePrepareDropdownLists from "./components/usePrepareDropdownLists";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import useSource from "../../components/hooks/services/useSourceHook";
 import useDestination from "../../components/hooks/services/useDestinationHook";
@@ -86,7 +86,7 @@ const OnboardingPage: React.FC = () => {
     setErrorStatusRequest(0);
   };
 
-  const { currentStep, steps, setCurrentStep } = StepsConfig(
+  const { currentStep, steps, setCurrentStep } = UseGetStepsConfig(
     !!sources.length,
     !!destinations.length,
     afterUpdateStep
@@ -97,7 +97,7 @@ const OnboardingPage: React.FC = () => {
     destinationsDropDownData,
     getSourceDefinitionById,
     getDestinationDefinitionById
-  } = PrepareDropDownLists();
+  } = usePrepareDropdownLists();
 
   const onSubmitSourceStep = async (values: {
     name: string;

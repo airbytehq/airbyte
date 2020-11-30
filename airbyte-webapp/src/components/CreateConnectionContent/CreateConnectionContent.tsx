@@ -3,16 +3,17 @@ import { FormattedMessage } from "react-intl";
 
 import LoadingSchema from "./components/LoadingSchema";
 import CreateConnection from "./components/CreateConnection";
+import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import ContentCard from "../ContentCard";
 import { IDataItem } from "../DropDown/components/ListItem";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
-import config from "../../config";
 import { Source } from "../../core/resources/Source";
 import { Destination } from "../../core/resources/Destination";
 import { SyncSchema } from "../../core/resources/Schema";
 import useConnection from "../hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "../hooks/services/useSchemaHook";
-import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
+
+import config from "../../config";
 
 type IProps = {
   source?: Source;
@@ -42,15 +43,15 @@ const CreateConnectionContent: React.FC<IProps> = ({
     try {
       await createConnection({
         values,
-        source: source || undefined,
-        destination: destination || undefined,
+        source: source,
+        destination: destination,
         sourceDefinition: {
-          name: source?.name || "",
-          sourceDefinitionId: source?.sourceDefinitionId || ""
+          name: source?.name ?? "",
+          sourceDefinitionId: source?.sourceDefinitionId ?? ""
         },
         destinationDefinition: {
-          name: destination?.name || "",
-          destinationDefinitionId: destination?.destinationDefinitionId || ""
+          name: destination?.name ?? "",
+          destinationDefinitionId: destination?.destinationDefinitionId ?? ""
         }
       });
 
@@ -60,15 +61,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
     } catch (e) {
       setErrorStatusRequest(e.status);
     }
-  };
-
-  const onSubmitStep = async (values: {
-    frequency: string;
-    syncSchema: SyncSchema;
-  }) => {
-    await onSubmitConnectionStep({
-      ...values
-    });
   };
 
   const onSelectFrequency = (item: IDataItem) => {
@@ -94,7 +86,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   if (schemaErrorStatus) {
     return (
       <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
-        <TryAfterErrorBlock onClick={() => onDiscoverSchema()} />
+        <TryAfterErrorBlock onClick={onDiscoverSchema} />
       </ContentCard>
     );
   }
@@ -105,7 +97,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
         <CreateConnection
           schema={schema}
           onSelectFrequency={onSelectFrequency}
-          onSubmit={onSubmitStep}
+          onSubmit={onSubmitConnectionStep}
           errorStatus={errorStatusRequest}
         />
       </Suspense>
