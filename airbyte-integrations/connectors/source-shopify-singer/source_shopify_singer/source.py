@@ -62,8 +62,6 @@ class SourceShopifySinger(SingerSource):
 
         filtered_streams = []
         for stream in catalog.streams:
-            if stream.name == "transactions":
-                continue
             filtered_streams.append(stream)
 
         catalog.streams = filtered_streams
