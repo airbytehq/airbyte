@@ -39,6 +39,7 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-bigquery", DefaultNormalizationRunner.DestinationType.BIGQUERY)
           .put("airbyte/destination-jdbc", DefaultNormalizationRunner.DestinationType.JDBC_POSTGRES)
           .put("airbyte/destination-postgres", DefaultNormalizationRunner.DestinationType.POSTGRES)
+          .put("airbyte/destination-redshift", DefaultNormalizationRunner.DestinationType.REDSHIFT)
           .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .build();
 

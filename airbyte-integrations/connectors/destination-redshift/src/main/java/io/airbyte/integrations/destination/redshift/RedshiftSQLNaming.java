@@ -22,7 +22,9 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination.redshift;
+
+import io.airbyte.integrations.base.ExtendedSQLNaming;
 
 public class RedshiftSQLNaming extends ExtendedSQLNaming {
 

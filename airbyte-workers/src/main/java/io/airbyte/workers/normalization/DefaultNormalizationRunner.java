@@ -54,6 +54,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     BIGQUERY,
     JDBC_POSTGRES,
     POSTGRES,
+    REDSHIFT,
     SNOWFLAKE
   }
 

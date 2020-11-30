@@ -36,6 +36,7 @@ class DestinationType(Enum):
     bigquery = "bigquery"
     jdbc_postgres = "jdbc_postgres"
     postgres = "postgres"
+    redshift = "redshift"
     snowflake = "snowflake"
 
 
@@ -73,6 +74,7 @@ class TransformConfig:
             DestinationType.bigquery: self.transform_bigquery,
             DestinationType.jdbc_postgres: self.transform_jdbc_postgres,
             DestinationType.postgres: self.transform_postgres,
+            DestinationType.redshift: self.transform_redshift,
             DestinationType.snowflake: self.transform_snowflake,
         }[integration_type](config)
 
@@ -124,6 +126,22 @@ class TransformConfig:
 
         # https://docs.getdbt.com/reference/warehouse-profiles/postgres-profile
         dbt_config["type"] = "postgres"
+        dbt_config["host"] = config["host"]
+        dbt_config["user"] = config["username"]
+        dbt_config["pass"] = config["password"]
+        dbt_config["port"] = config["port"]
+        dbt_config["dbname"] = config["database"]
+        dbt_config["schema"] = config["schema"]
+        dbt_config["threads"] = 32
+
+        return dbt_config
+
+    def transform_redshift(self, config: dict):
+        print("transform_redshift")
+        dbt_config = dict()
+
+        # https://docs.getdbt.com/reference/warehouse-profiles/redshift-profile
+        dbt_config["type"] = "redshift"
         dbt_config["host"] = config["host"]
         dbt_config["user"] = config["username"]
         dbt_config["pass"] = config["password"]

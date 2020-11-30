@@ -140,14 +140,18 @@ public abstract class AbstractJdbcDestination extends AbstractDestination implem
     databaseConnection = getDatabase(config);
   }
 
+  protected Database getDatabaseConnection() {
+    return databaseConnection;
+  }
+
   @Override
   public void queryDatabase(String query) throws SQLException {
-    databaseConnection.query(ctx -> ctx.execute(query));
+    getDatabaseConnection().query(ctx -> ctx.execute(query));
   }
 
   @Override
   public void queryDatabaseInTransaction(String queries) throws Exception {
-    databaseConnection.transaction(ctx -> ctx.execute(queries));
+    getDatabaseConnection().transaction(ctx -> ctx.execute(queries));
   }
 
   @Override
@@ -164,7 +168,7 @@ public abstract class AbstractJdbcDestination extends AbstractDestination implem
   @Override
   public void writeBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) {
     try {
-      databaseConnection.query(ctx -> buildWriteQuery(ctx, batchSize, writeBuffer, schemaName, tmpTableName).execute());
+      getDatabaseConnection().query(ctx -> buildWriteQuery(ctx, batchSize, writeBuffer, schemaName, tmpTableName).execute());
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

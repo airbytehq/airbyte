@@ -142,7 +142,7 @@ public class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> impl
     final StringBuilder query = new StringBuilder();
     for (final WriteConfig writeConfig : writeConfigs.values()) {
       // create tables if not exist.
-      query.append(destination.createRawTableQuery(writeConfig.getSchemaName(), writeConfig.getTableName()));
+      destination.queryDatabase(destination.createRawTableQuery(writeConfig.getSchemaName(), writeConfig.getTableName()));
 
       switch (writeConfig.getSyncMode()) {
         case FULL_REFRESH -> query.append(String.format("TRUNCATE TABLE %s.%s;\n", writeConfig.getSchemaName(), writeConfig.getTableName()));
