@@ -718,7 +718,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JobRead"
+                $ref: "#/components/schemas/JobStatusRead"
         "404":
           description: Connection not found
         "422":
@@ -741,7 +741,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JobRead"
+                $ref: "#/components/schemas/JobStatusRead"
         "404":
           description: Connection not found
         "422":
@@ -1468,16 +1468,18 @@ components:
             - days
             - weeks
             - months
-    JobRead:
+    JobStatusRead:
       type: object
       required:
         - status
       properties:
         status:
-          type: string
-          enum:
-            - succeeded
-            - failed
+          $ref: "#/components/schemas/JobStatus"
+    JobStatus:
+      type: string
+      enum:
+        - succeeded
+        - failed
     # SCHEMA
     SourceSchema:
       description: describes the available schema.

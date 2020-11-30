@@ -29,7 +29,6 @@ import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.ConnectionSyncRead;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DebugRead;
 import io.airbyte.api.model.DestinationCreate;
@@ -47,6 +46,7 @@ import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
+import io.airbyte.api.model.JobStatusRead;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;
@@ -309,8 +309,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public ConnectionSyncRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+  public JobStatusRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
+  }
+
+  @Override
+  public JobStatusRead resetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+    return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
 
   // JOB HISTORY
