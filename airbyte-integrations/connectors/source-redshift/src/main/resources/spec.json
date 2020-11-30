@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Redshift Source Spec",
     "type": "object",
-    "required": ["host", "port", "database", "username"],
+    "required": ["host", "port", "database", "username", "password"],
     "additionalProperties": false,
     "properties": {
       "host": {
@@ -16,6 +16,7 @@
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
+        "default": 5439,
         "examples": ["5439"]
       },
       "database": {
@@ -29,7 +30,8 @@
       },
       "password": {
         "description": "Password associated with the username.",
-        "type": "string"
+        "type": "string",
+        "airbyte_secret": true
       }
     }
   }
