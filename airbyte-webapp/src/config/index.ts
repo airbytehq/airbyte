@@ -2,6 +2,7 @@ declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
     AIRBYTE_VERSION?: string;
+    API_URL?: string;
   }
 }
 
@@ -32,6 +33,7 @@ const config: {
   },
   version: window.AIRBYTE_VERSION,
   apiUrl:
+    window.API_URL ||
     process.env.REACT_APP_API_URL ||
     `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`
 };
