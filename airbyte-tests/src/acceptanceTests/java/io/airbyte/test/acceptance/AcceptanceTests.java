@@ -56,6 +56,7 @@ import io.airbyte.api.client.model.SourceSchemaField;
 import io.airbyte.api.client.model.SourceSchemaStream;
 import io.airbyte.api.client.model.SyncMode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.text.Names;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -238,13 +239,16 @@ public class AcceptanceTests {
     final SourceSchema expectedSchema = new SourceSchema().streams(Lists.newArrayList(
         new SourceSchemaStream()
             .name(STREAM_NAME)
+            .cleanedName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
             .fields(Lists.newArrayList(
                 new SourceSchemaField()
                     .name(COLUMN_ID)
+                    .cleanedName(COLUMN_ID)
                     .dataType(DataType.NUMBER)
                     .selected(true),
                 new SourceSchemaField()
                     .name(COLUMN_NAME)
+                    .cleanedName(COLUMN_NAME)
                     .dataType(DataType.STRING)
                     .selected(true)))
             .supportedSyncModes(Collections.emptyList())
