@@ -112,7 +112,7 @@ public class BigQueryDestination implements Destination {
       final String datasetId = config.get(CONFIG_DATASET_ID).asText();
       final BigQuery bigquery = getBigQuery(config);
 
-      if (!bigquery.getDataset(datasetId).exists()) {
+      if (bigquery.getDataset(datasetId) == null || !bigquery.getDataset(datasetId).exists()) {
         final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
         bigquery.create(datasetInfo);
       }

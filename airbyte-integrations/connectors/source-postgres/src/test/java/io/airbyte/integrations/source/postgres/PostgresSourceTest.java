@@ -51,6 +51,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -64,12 +65,20 @@ import org.testcontainers.utility.MountableFile;
 
 class PostgresSourceTest {
 
-  private static final String STREAM_NAME = "id_and_name";
-  private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
+  private static final String STREAM_NAME = "public.id_and_name";
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
+      CatalogHelpers.createAirbyteStream(
+          STREAM_NAME,
+          Field.of("id", JsonSchemaPrimitive.NUMBER),
+          Field.of("name", JsonSchemaPrimitive.STRING)),
+      CatalogHelpers.createAirbyteStream(
+          "test_another_schema.id_and_name",
+          Field.of("id", JsonSchemaPrimitive.NUMBER),
+          Field.of("name", JsonSchemaPrimitive.STRING))));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
       STREAM_NAME,
       Field.of("id", JsonSchemaPrimitive.NUMBER),
       Field.of("name", JsonSchemaPrimitive.STRING));
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "goku")))),
@@ -110,6 +119,9 @@ class PostgresSourceTest {
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'goku'),  (2, 'vegeta'), (3, 'piccolo');");
+      ctx.fetch("CREATE SCHEMA test_another_schema;");
+      ctx.fetch("CREATE TABLE test_another_schema.id_and_name(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO test_another_schema.id_and_name (id, name) VALUES (1,'tom'),  (2, 'jerry');");
       return null;
     });
     database.close();

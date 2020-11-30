@@ -43,7 +43,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 public class JdbcIntegrationTest extends TestSource {
 
-  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME = "public.id_and_name";
   private PostgreSQLContainer<?> container;
   private Database database;
   private JsonNode config;

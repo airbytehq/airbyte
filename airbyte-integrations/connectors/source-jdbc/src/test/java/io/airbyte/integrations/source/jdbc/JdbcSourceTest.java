@@ -60,7 +60,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 class JdbcSourceTest {
 
-  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME = "public.id_and_name";
   private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
       STREAM_NAME,
       Field.of("id", JsonSchemaPrimitive.NUMBER),
