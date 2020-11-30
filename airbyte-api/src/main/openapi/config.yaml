@@ -379,6 +379,26 @@ paths:
           description: Source not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/destination_definitions/create:
+    post:
+      tags:
+        - destination_definition
+      summary: Creates a destinationsDefinition
+      operationId: createDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionCreate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/destination_definitions/update:
     post:
       tags:
@@ -1186,6 +1206,23 @@ components:
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
+    DestinationDefinitionCreate:
+      type: object
+      required:
+        - name
+        - dockerRepository
+        - dockerImageTag
+        - documentationUrl
+      properties:
+        name:
+          type: string
+        dockerRepository:
+          type: string
+        dockerImageTag:
+          type: string
+        documentationUrl:
+          type: string
+          format: uri
     DestinationDefinitionUpdate:
       type: object
       required:

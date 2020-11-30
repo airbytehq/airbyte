@@ -88,8 +88,8 @@ public class SourceDefinitionsHandler {
   public SourceDefinitionRead createSourceDefinition(SourceDefinitionCreate sourceDefinitionCreate) throws JsonValidationException, IOException {
     imageValidator.assertValidIntegrationImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
 
-    UUID id = uuidSupplier.get();
-    StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+    final UUID id = uuidSupplier.get();
+    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withSourceDefinitionId(id)
         .withDockerRepository(sourceDefinitionCreate.getDockerRepository())
         .withDockerImageTag(sourceDefinitionCreate.getDockerImageTag())
@@ -103,10 +103,11 @@ public class SourceDefinitionsHandler {
 
   public SourceDefinitionRead updateSourceDefinition(SourceDefinitionUpdate sourceDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    StandardSourceDefinition currentSourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
+    final StandardSourceDefinition currentSourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
     imageValidator.assertValidIntegrationImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag());
 
-    StandardSourceDefinition newSource = new StandardSourceDefinition()
+    final StandardSourceDefinition newSource = new StandardSourceDefinition()
         .withSourceDefinitionId(currentSourceDefinition.getSourceDefinitionId())
         .withDockerImageTag(sourceDefinitionUpdate.getDockerImageTag())
         .withDockerRepository(currentSourceDefinition.getDockerRepository())
