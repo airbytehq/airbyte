@@ -44,7 +44,7 @@ public class GenerateYaml {
 
   public void run() throws IOException {
     final List<Path> collect = Files
-        .list(Path.of("/Users/charles/code/airbyte/airbyte-config/init/src/main/resources/config/STANDARD_DESTINATION_DEFINITION"))
+        .list(Path.of("/Users/charles/code/airbyte/airbyte-config/init/src/main/resources/config/STANDARD_SOURCE_DEFINITION"))
         .collect(Collectors.toList());
 
     ArrayNode nodes = new ObjectMapper().createArrayNode();
