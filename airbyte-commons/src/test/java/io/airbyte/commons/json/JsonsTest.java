@@ -225,6 +225,16 @@ class JsonsTest {
     assertEquals(Collections.emptySet(), Jsons.keys(arrayJsonNode));
   }
 
+  @Test
+  void testToPrettyString() {
+    final JsonNode jsonNode = Jsons.jsonNode(ImmutableMap.of("test", "abc"));
+    final String expectedOutput = ""
+        + "{\n"
+        + "  \"test\": \"abc\"\n"
+        + "}\n";
+    assertEquals(expectedOutput, Jsons.toPrettyString(jsonNode));
+  }
+
   private static class ToClass {
 
     @JsonProperty("str")
