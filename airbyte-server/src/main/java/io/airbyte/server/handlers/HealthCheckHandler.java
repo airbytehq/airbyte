@@ -40,6 +40,7 @@ public class HealthCheckHandler {
     this.configRepository = configRepository;
   }
 
+  // todo (cgardens) - add more checks as we go.
   public HealthCheckRead health() {
     boolean databaseHealth = false;
     try {
