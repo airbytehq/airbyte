@@ -33,7 +33,6 @@ const PreferencesPage: React.FC = () => {
     );
 
     AnalyticsService.track("Specified Preferences", {
-      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       email: data.email,
       anonymized: data.anonymousDataCollection,

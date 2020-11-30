@@ -64,7 +64,6 @@ const StatusMainInfo: React.FC<IProps> = ({ connection, frequencyText }) => {
     });
 
     AnalyticsService.track("Source - Action", {
-      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       action:
         connection.status === "active"

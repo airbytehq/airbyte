@@ -106,7 +106,6 @@ const useDestination = () => {
     destinationConnector?: ConnectorProps;
   }) => {
     AnalyticsService.track("New Destination - Action", {
-      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       action: "Test a connector",
       connector_destination: destinationConnector?.name,
@@ -142,7 +141,6 @@ const useDestination = () => {
       );
 
       AnalyticsService.track("New Destination - Action", {
-        airbyte_version: config.version,
         user_id: config.ui.workspaceId,
         action: "Tested connector - success",
         connector_destination: destinationConnector?.name,
@@ -153,7 +151,6 @@ const useDestination = () => {
       return result;
     } catch (e) {
       AnalyticsService.track("New Destination - Action", {
-        airbyte_version: config.version,
         user_id: config.ui.workspaceId,
         action: "Tested connector - failure",
         connector_destination: destinationConnector?.name,

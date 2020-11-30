@@ -99,7 +99,6 @@ const useSource = () => {
     sourceConnector?: ConnectorProps;
   }) => {
     AnalyticsService.track("New Source - Action", {
-      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       action: "Test a connector",
       connector_source: sourceConnector?.name,
@@ -126,7 +125,6 @@ const useSource = () => {
         ]
       );
       AnalyticsService.track("New Source - Action", {
-        airbyte_version: config.version,
         user_id: config.ui.workspaceId,
         action: "Tested connector - success",
         connector_source: sourceConnector?.name,
@@ -136,7 +134,6 @@ const useSource = () => {
       return result;
     } catch (e) {
       AnalyticsService.track("New Source - Action", {
-        airbyte_version: config.version,
         user_id: config.ui.workspaceId,
         action: "Tested connector - failure",
         connector_source: sourceConnector?.name,
@@ -218,7 +215,6 @@ const useSource = () => {
     });
 
     AnalyticsService.track("Source - Action", {
-      airbyte_version: config.version,
       user_id: config.ui.workspaceId,
       action: "Delete source",
       connector_source: source.sourceName,
