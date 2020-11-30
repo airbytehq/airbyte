@@ -403,7 +403,7 @@ public class AcceptanceTests {
 
   private Set<String> listCsvStreams() throws IOException {
     return Files.list(outputDir)
-        .map(file -> file.getFileName().toString().replaceAll("_raw\\.csv", "").replaceAll("public_", ""))
+        .map(file -> adaptCsvName(file.getFileName().toString()))
         .collect(Collectors.toSet());
   }
 
@@ -486,7 +486,7 @@ public class AcceptanceTests {
 
   private List<JsonNode> retrieveCsvRecords(String streamName) throws Exception {
     final Optional<Path> stream = Files.list(outputDir)
-        .filter(path -> path.getFileName().toString().toLowerCase().contains(streamName))
+        .filter(path -> path.getFileName().toString().toLowerCase().contains(adaptToCsvName(streamName)))
         .findFirst();
     assertTrue(stream.isPresent());
 
@@ -565,4 +565,11 @@ public class AcceptanceTests {
     apiClient.getDestinationApi().deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
   }
 
+  private String adaptCsvName(String streamName) {
+    return streamName.replaceAll("_raw\\.csv", "").replaceAll("public_", "public.");
+  }
+
+  private String adaptToCsvName(String streamName) {
+    return streamName.replaceAll("public\\.", "public_");
+  }
 }
