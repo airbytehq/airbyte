@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import java.util.List;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,15 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  @Override
+  protected List<String> getExcludedInternalSchemas() {
+    return List.of(
+        "information_schema",
+        "mysql",
+        "performance_schema",
+        "sys");
   }
 
   public static void main(String[] args) throws Exception {

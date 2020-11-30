@@ -65,19 +65,6 @@ class MySqlSourceTest {
   private static final String TEST_USER = "test";
   private static final String TEST_PASSWORD = "test";
   private static final String STREAM_NAME = "id_and_name";
-  private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
-      STREAM_NAME,
-      Field.of("id", JsonSchemaPrimitive.NUMBER),
-      Field.of("name", JsonSchemaPrimitive.STRING));
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
-  private static final Set<AirbyteMessage> MESSAGES = Sets.newHashSet(
-      new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")))),
-      new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")))),
-      new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")))));
-
   private static MySQLContainer<?> container;
 
   private JsonNode config;
@@ -154,13 +141,19 @@ class MySqlSourceTest {
 
   @Test
   void testDiscover() throws Exception {
-    final AirbyteCatalog actual = new MySqlSource().discover(config);
-    assertEquals(CATALOG, actual);
+    final AirbyteCatalog allStreams = new MySqlSource().discover(config);
+    // Filter out streams not related to this test case (from other tests running in parallel)
+    final AirbyteCatalog actual = new AirbyteCatalog()
+        .withStreams(allStreams.getStreams()
+            .stream()
+            .filter(s -> s.getName().equals(getStreamName()))
+            .collect(Collectors.toList()));
+    assertEquals(generateExpectedCatalog(), actual);
   }
 
   @Test
   void testReadSuccess() throws Exception {
-    final Set<AirbyteMessage> actualMessages = new MySqlSource().read(config, CONFIGURED_CATALOG, null).collect(Collectors.toSet());
+    final Set<AirbyteMessage> actualMessages = new MySqlSource().read(config, generateConfiguredCatalog(), null).collect(Collectors.toSet());
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -168,19 +161,45 @@ class MySqlSourceTest {
       }
     });
 
-    assertEquals(MESSAGES, actualMessages);
+    assertEquals(generateExpectedMessages(), actualMessages);
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   void testReadFailure() throws Exception {
-    final ConfiguredAirbyteStream spiedAbStream = spy(CONFIGURED_CATALOG.getStreams().get(0));
+    final ConfiguredAirbyteStream spiedAbStream = spy(generateConfiguredCatalog().getStreams().get(0));
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
     doCallRealMethod().doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getStream();
 
     final MySqlSource source = new MySqlSource();
 
     assertThrows(RuntimeException.class, () -> source.read(config, catalog, null));
+  }
+
+  private AirbyteCatalog generateExpectedCatalog() {
+    return CatalogHelpers.createAirbyteCatalog(
+        getStreamName(),
+        Field.of("id", JsonSchemaPrimitive.NUMBER),
+        Field.of("name", JsonSchemaPrimitive.STRING));
+  }
+
+  private ConfiguredAirbyteCatalog generateConfiguredCatalog() {
+    return CatalogHelpers.toDefaultConfiguredCatalog(generateExpectedCatalog());
+  }
+
+  private java.util.HashSet<AirbyteMessage> generateExpectedMessages() {
+    final String streamName = getStreamName();
+    return Sets.newHashSet(
+        new AirbyteMessage().withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")))),
+        new AirbyteMessage().withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")))),
+        new AirbyteMessage().withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")))));
+  }
+
+  private String getStreamName() {
+    return String.format("%s.%s", config.get("database").asText(), STREAM_NAME);
   }
 
 }
