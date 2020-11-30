@@ -43,6 +43,7 @@ import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationRecreate;
 import io.airbyte.api.model.DestinationUpdate;
+import io.airbyte.api.model.HealthCheckRead;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
@@ -331,6 +332,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   public DebugRead getDebuggingInfo() {
     return execute(debugInfoHandler::getInfo);
   }
+
+  // HEALTH
+  @Override
+  public HealthCheckRead getHealthCheck() {
+    return null;
+  }
+
 
   // WEB BACKEND
 
