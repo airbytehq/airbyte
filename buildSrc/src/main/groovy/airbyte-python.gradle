@@ -42,10 +42,19 @@ class AirbytePythonPlugin implements Plugin<Project> {
             command = ". --config ${project.rootProject.file('tools/python/.flake8').absolutePath}"
         }
 
-        project.task('installReqs', type: PythonTask) {
+        // attempt to install anything in requirements.txt. by convention this should only be dependencies whose source is located in the project.
+        project.task('installLocalReqs', type: PythonTask) {
             module = "pip"
             command = "install -r requirements.txt"
             inputs.file('requirements.txt')
+            outputs.file('build/installedlocalreqs.txt')
+            outputs.cacheIf { true }
+        }
+
+        project.task('installReqs', type: PythonTask, dependsOn: project.installLocalReqs) {
+            module = "pip"
+            command = "install .[main]"
+            inputs.file('setup.py')
             outputs.file('build/installedreqs.txt')
             outputs.cacheIf { true }
         }
