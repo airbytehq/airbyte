@@ -15,11 +15,11 @@
     "properties": {
       "merchant_id": {
         "type": "string",
-        "description": "<a href=\"https://articles.braintreepayments.com/control-panel/important-gateway-credentials#merchant-id\">Merchant ID</a> is the unique identifier for entire gateway account."
+        "description": "<a href=\"https://docs.airbyte.io/integrations/sources/braintree\">Merchant ID</a> is the unique identifier for entire gateway account."
       },
       "public_key": {
         "type": "string",
-        "description": "This is your user-specific <a href=\"https://articles.braintreepayments.com/control-panel/important-gateway-credentials#public-key\">public identifier</a> for Braintree"
+        "description": "This is your user-specific public identifier for Braintree."
       },
       "start_date": {
         "type": "string",
@@ -29,7 +29,7 @@
       },
       "private_key": {
         "type": "string",
-        "description": "This is your user-specific <a href=\"https://articles.braintreepayments.com/control-panel/important-gateway-credentials#private-key\">private identifier</a>.",
+        "description": "This is your user-specific private identifier.",
         "airbyte_secret": true
       },
       "environment": {

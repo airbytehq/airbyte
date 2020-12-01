@@ -18,121 +18,64 @@
               "format": "date-time"
             },
             "settlement_batch_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "amount": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "payment_instrument_type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "service_fee_amount": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "order_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "plan_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "gateway_rejection_reason": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "processor_authorization_code": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "processor_response_code": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "processor_response_text": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "recurring": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "refunded_transaction_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "currency_iso_code": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "merchant_account_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "subscription_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "customer_details": {
               "type": "object",
               "properties": {
                 "id": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "email": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 }
               }
             },
@@ -140,16 +83,10 @@
               "type": "object",
               "properties": {
                 "customer_location": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "card_type": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 }
               }
             },
@@ -197,10 +134,7 @@
                       ]
                     },
                     "success": {
-                      "type": [
-                        "null",
-                        "boolean"
-                      ]
+                      "type": ["null", "boolean"]
                     }
                   }
                 },
@@ -215,76 +149,40 @@
                   "type": "object",
                   "properties": {
                     "authorization_id": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "capture_id": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "payer_email": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "payer_id": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "payer_status": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "payment_id": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "refund_id": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "seller_protection_status": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "tax_id": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "tax_id_type": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "transaction_fee_amount": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "transaction_fee_currency_iso_code": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 },

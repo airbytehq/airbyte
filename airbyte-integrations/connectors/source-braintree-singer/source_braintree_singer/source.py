@@ -64,7 +64,8 @@ class SourceBraintreeSinger(SingerSource):
         except AuthenticationError:
             logger.error("Exception while connecting to the Braintree API")
             return AirbyteConnectionStatus(
-                status=Status.FAILED, message="Unable to connect to the Braintree API with the provided credentials."
+                status=Status.FAILED,
+                message="Unable to connect to the Braintree API with the provided credentials. Please make sure the input credentials and environment are correct.",
             )
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
@@ -83,4 +84,4 @@ class SourceBraintreeSinger(SingerSource):
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
         state_flag = f"--state {state_path}" if state_path else ""
-        return f'{TAP_CMD} -c {config_path} -p {catalog_path} {state_flag} | grep "RECORD"'
+        return f"{TAP_CMD} -c {config_path} -p {catalog_path} {state_flag}"
