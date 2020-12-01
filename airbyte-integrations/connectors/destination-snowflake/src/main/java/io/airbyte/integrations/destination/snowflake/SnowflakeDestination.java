@@ -102,18 +102,18 @@ public class SnowflakeDestination extends AbstractDestination implements Destina
   }
 
   @Override
-  public String createTableQuery(String schemaName, String streamName) {
-    return String.format(
+  public void createTableQuery(String schemaName, String tableName) throws Exception {
+    queryDatabase(String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "ab_id VARCHAR PRIMARY KEY,\n"
             + "\"%s\" VARIANT,\n"
             + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
             + ") data_retention_time_in_days = 0;",
-        schemaName, streamName, COLUMN_NAME);
+        schemaName, tableName, COLUMN_NAME));
   }
 
   @Override
-  public void writeBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) {
+  public void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) {
     final List<AirbyteRecordMessage> records = accumulateRecordsFromBuffer(writeBuffer, batchSize);
 
     LOGGER.info("max size of batch: {}", batchSize);

@@ -37,7 +37,6 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -71,36 +70,22 @@ public class RedshiftDestination extends AbstractJdbcDestination implements Dest
   }
 
   @Override
-  public String createTableQuery(String schemaName, String streamName) {
-    final String result = String.format(
+  public void createTableQuery(String schemaName, String tableName) throws Exception {
+    queryDatabase(String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "ab_id VARCHAR PRIMARY KEY,\n"
             + "%s VARCHAR(max),\n"
             + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
             + ");\n",
-        schemaName, streamName, COLUMN_NAME);
-    return result;
+        schemaName, tableName, COLUMN_NAME));
   }
 
   @Override
-  public void writeBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) {
-    try {
-      getDatabaseConnection().query(ctx -> ctx.execute(buildWriteQuery(ctx, batchSize, writeBuffer, schemaName, tmpTableName)));
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  // build the following query:
-  // INSERT INTO <schemaName>.<tableName>(data)
-  // VALUES
-  // ({ "my": "data" }),
-  // ({ "my": "data" });
-  private static String buildWriteQuery(DSLContext ctx,
-                                        int batchSize,
-                                        CloseableQueue<byte[]> writeBuffer,
-                                        String schemaName,
-                                        String tmpTableName) {
+  protected String buildInsertQuery(DSLContext ctx,
+                                    int batchSize,
+                                    CloseableQueue<byte[]> writeBuffer,
+                                    String schemaName,
+                                    String tmpTableName) {
     InsertValuesStep3<Record, String, String, OffsetDateTime> step = ctx.insertInto(
         table(unquotedName(schemaName, tmpTableName)),
         field("ab_id", String.class),

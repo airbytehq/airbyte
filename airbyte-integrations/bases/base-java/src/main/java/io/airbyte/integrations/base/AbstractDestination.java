@@ -37,7 +37,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class AbstractDestination implements Destination, DestinationConsumerCallback {
+public abstract class AbstractDestination implements Destination, DestinationWriteOperations {
 
   /**
    * Strategy:
@@ -78,10 +78,10 @@ public abstract class AbstractDestination implements Destination, DestinationCon
       final String tableName = getNamingResolver().getRawTableName(streamName);
       final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
       if (!schemaSet.contains(schemaName)) {
-        queryDatabase(createSchemaQuery(schemaName));
+        createSchemaQuery(schemaName);
         schemaSet.add(schemaName);
       }
-      queryDatabase(createTableQuery(schemaName, tmpTableName));
+      createTableQuery(schemaName, tmpTableName);
 
       final Path queueRoot = Files.createTempDirectory("queues");
       final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(streamName), streamName);
@@ -93,10 +93,40 @@ public abstract class AbstractDestination implements Destination, DestinationCon
     return new BufferedRecordConsumer(this, writeBuffers, catalog);
   }
 
-  protected abstract void connectDatabase(JsonNode config);
+  @Override
+  public void createSchemaQuery(String schemaName) throws Exception {
+    queryDatabase(String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName));
+  }
 
   @Override
-  public abstract void queryDatabase(String query) throws Exception;
+  public void commitFinalTables(Map<String, BufferedWriteConfig> writeConfigs) throws Exception {
+    final StringBuilder query = new StringBuilder();
+    for (final BufferedWriteConfig writeConfig : writeConfigs.values()) {
+      // create tables if not exist.
+      createTableQuery(writeConfig.getSchemaName(), writeConfig.getTableName());
+
+      switch (writeConfig.getSyncMode()) {
+        case FULL_REFRESH -> query.append(String.format("TRUNCATE TABLE %s.%s;\n", writeConfig.getSchemaName(), writeConfig.getTableName()));
+        case INCREMENTAL -> {}
+        default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
+      }
+      // always copy data from tmp table into "main" table.
+      query.append(String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", writeConfig.getSchemaName(),
+          writeConfig.getTableName(), writeConfig.getSchemaName(), writeConfig.getTmpTableName()));
+    }
+    queryDatabaseInTransaction(query.toString());
+  }
+
+  @Override
+  public void dropTable(String schemaName, String tableName) throws Exception {
+    queryDatabase(String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName));
+  }
+
+  protected abstract void connectDatabase(JsonNode config);
+
+  protected abstract void queryDatabase(String query) throws Exception;
+
+  protected abstract void queryDatabaseInTransaction(String queries) throws Exception;
 
   protected String getDefaultSchemaName(JsonNode config) {
     if (config.has("schema")) {
@@ -105,12 +135,5 @@ public abstract class AbstractDestination implements Destination, DestinationCon
       return "public";
     }
   }
-
-  protected String createSchemaQuery(String schemaName) {
-    return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
-  }
-
-  @Override
-  public abstract String createTableQuery(String schemaName, String streamName);
 
 }

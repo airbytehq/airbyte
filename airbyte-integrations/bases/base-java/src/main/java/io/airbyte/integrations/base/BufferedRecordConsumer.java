@@ -39,6 +39,19 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class is responsible for accumulating record messages in a buffer. One buffer per stream. It
+ * is configured with a minimum numbers of records before writing to avoid wasteful record-wise
+ * writes.
+ *
+ * Once all records have been written to the buffer, flush the buffer and write any remaining
+ * records to the database (regardless of how few are left).
+ *
+ * In order to finalize the write operation, in a single transaction, delete the target tables if
+ * they exist and rename the temp tables to the final table name.
+ *
+ * This class is using
+ */
 public class BufferedRecordConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedRecordConsumer.class);
@@ -49,12 +62,12 @@ public class BufferedRecordConsumer extends FailureTrackingConsumer<AirbyteMessa
   private static final int MIN_RECORDS = 500;
   private static final int BATCH_SIZE = 500;
 
-  private final DestinationConsumerCallback destination;
+  private final DestinationWriteOperations destination;
   private final Map<String, BufferedWriteConfig> writeConfigs;
   private final ConfiguredAirbyteCatalog catalog;
   private final ScheduledExecutorService writerPool;
 
-  public BufferedRecordConsumer(DestinationConsumerCallback destination,
+  public BufferedRecordConsumer(DestinationWriteOperations destination,
                                 Map<String, BufferedWriteConfig> writeConfigs,
                                 ConfiguredAirbyteCatalog catalog) {
     this.destination = destination;
@@ -82,13 +95,13 @@ public class BufferedRecordConsumer extends FailureTrackingConsumer<AirbyteMessa
   private static void writeStreamsWithNRecords(int minRecords,
                                                int batchSize,
                                                Map<String, BufferedWriteConfig> writeBuffers,
-                                               DestinationConsumerCallback destination) {
+                                               DestinationWriteOperations destination) {
     for (final Map.Entry<String, BufferedWriteConfig> entry : writeBuffers.entrySet()) {
       final String schemaName = entry.getValue().getSchemaName();
       final String tmpTableName = entry.getValue().getTmpTableName();
       final CloseableQueue<byte[]> writeBuffer = entry.getValue().getWriteBuffer();
       while (writeBuffer.size() > minRecords) {
-        destination.writeBufferedRecords(batchSize, writeBuffer, schemaName, tmpTableName);
+        destination.insertBufferedRecords(batchSize, writeBuffer, schemaName, tmpTableName);
       }
     }
   }
@@ -124,7 +137,7 @@ public class BufferedRecordConsumer extends FailureTrackingConsumer<AirbyteMessa
       // write anything that is left in the buffers.
       writeStreamsWithNRecords(0, 500, writeConfigs, destination);
 
-      commitRawTable();
+      destination.commitFinalTables(writeConfigs);
     }
 
     // close buffers.
@@ -133,29 +146,11 @@ public class BufferedRecordConsumer extends FailureTrackingConsumer<AirbyteMessa
     }
     for (BufferedWriteConfig writeContext : writeConfigs.values()) {
       try {
-        destination.queryDatabase(String.format("DROP TABLE IF EXISTS %s.%s;", writeContext.getSchemaName(), writeContext.getTmpTableName()));
+        destination.dropTable(writeContext.getSchemaName(), writeContext.getTmpTableName());
       } catch (SQLException | InterruptedException e) {
         throw new RuntimeException(e);
       }
     }
-  }
-
-  private void commitRawTable() throws Exception {
-    final StringBuilder query = new StringBuilder();
-    for (final BufferedWriteConfig writeConfig : writeConfigs.values()) {
-      // create tables if not exist.
-      destination.queryDatabase(destination.createTableQuery(writeConfig.getSchemaName(), writeConfig.getTableName()));
-
-      switch (writeConfig.getSyncMode()) {
-        case FULL_REFRESH -> query.append(String.format("TRUNCATE TABLE %s.%s;\n", writeConfig.getSchemaName(), writeConfig.getTableName()));
-        case INCREMENTAL -> {}
-        default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
-      }
-      // always copy data from tmp table into "main" table.
-      query.append(String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", writeConfig.getSchemaName(),
-          writeConfig.getTableName(), writeConfig.getSchemaName(), writeConfig.getTmpTableName()));
-    }
-    destination.queryDatabaseInTransaction(query.toString());
   }
 
 }

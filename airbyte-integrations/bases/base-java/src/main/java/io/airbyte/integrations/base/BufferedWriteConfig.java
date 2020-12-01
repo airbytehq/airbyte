@@ -27,6 +27,10 @@ package io.airbyte.integrations.base;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.protocol.models.SyncMode;
 
+/**
+ * Associate a Stream Buffer with informations on where and how this data should be written while
+ * buffering or when reaching end of streams.
+ */
 public class BufferedWriteConfig {
 
   private final String schemaName;
