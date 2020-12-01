@@ -122,7 +122,7 @@ public class JobSubmitterTest {
 
     InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
-    inOrder.verify(persistence).writeOutput(1L, new JobOutput());
+    inOrder.verify(persistence).writeOutput(1L, 0L, new JobOutput()); // todo ???
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.COMPLETED);
     inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.SUCCEEDED);
     inOrder.verifyNoMoreInteractions();
@@ -149,7 +149,6 @@ public class JobSubmitterTest {
 
     InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
-    inOrder.verify(persistence).incrementAttempts(1L);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
     inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
@@ -169,13 +168,12 @@ public class JobSubmitterTest {
   @Test
   public void testPersistenceExceptionOutput() throws Exception {
     doReturn(SUCCESS_OUTPUT).when(workerRun).call();
-    doThrow(new RuntimeException()).when(persistence).writeOutput(anyLong(), any());
+    doThrow(new RuntimeException()).when(persistence).writeOutput(anyLong(), anyLong(), any());
 
     jobSubmitter.run();
 
     InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
-    inOrder.verify(persistence).incrementAttempts(1L);
     inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
     inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();

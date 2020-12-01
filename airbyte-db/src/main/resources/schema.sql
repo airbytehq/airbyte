@@ -18,6 +18,13 @@
         'cancelled'
     );
 
+CREATE
+    TYPE ATTEMPT_STATUS AS ENUM(
+        'running',
+        'failed',
+        'completed'
+    );
+
 -- tables
  CREATE
     TABLE
@@ -32,13 +39,30 @@ CREATE
             id BIGSERIAL PRIMARY KEY,
             SCOPE VARCHAR(255),
             config JSONB,
-            log_path VARCHAR(255),
-            OUTPUT JSONB,
-            attempts INTEGER,
-            status JOB_STATUS,
+            --             log_path VARCHAR(255),
+ --             OUTPUT JSONB,
+ --             attempts INTEGER,
+ status JOB_STATUS,
             started_at TIMESTAMPTZ,
             created_at TIMESTAMPTZ,
             updated_at TIMESTAMPTZ
+        );
+
+CREATE
+    TABLE
+        ATTEMPTS(
+            id BIGSERIAL PRIMARY KEY,
+            job_id BIGSERIAL,
+            attempt_id BIGSERIAL,
+            --             SCOPE VARCHAR(255),
+ --             config JSONB,
+ log_path VARCHAR(255),
+            OUTPUT JSONB,
+            --             attempts INTEGER,
+ status ATTEMPT_STATUS,
+            started_at TIMESTAMPTZ,
+            created_at TIMESTAMPTZ,
+            updated_at TIMESTAMPTZ -- todo auto update
         );
 
 -- entries

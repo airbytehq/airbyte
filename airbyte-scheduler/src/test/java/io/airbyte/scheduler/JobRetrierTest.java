@@ -56,7 +56,7 @@ class JobRetrierTest {
 
   @Test
   void testTimeToRetry() throws IOException {
-    when(job.getAttempts()).thenReturn(1);
+    when(job.getNumAttempts()).thenReturn(1);
     when(job.getStatus()).thenReturn(JobStatus.FAILED);
     when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
 
@@ -73,7 +73,7 @@ class JobRetrierTest {
 
   @Test
   void testToSoonToRetry() throws IOException {
-    when(job.getAttempts()).thenReturn(1);
+    when(job.getNumAttempts()).thenReturn(1);
     when(job.getStatus()).thenReturn(JobStatus.FAILED);
     when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofSeconds(10)).getEpochSecond());
 
@@ -88,7 +88,7 @@ class JobRetrierTest {
 
   @Test
   void testTooManyFailures() throws IOException {
-    when(job.getAttempts()).thenReturn(5);
+    when(job.getNumAttempts()).thenReturn(5);
     when(job.getStatus()).thenReturn(JobStatus.FAILED);
     when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
 

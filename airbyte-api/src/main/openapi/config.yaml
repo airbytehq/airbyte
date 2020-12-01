@@ -1651,9 +1651,6 @@ components:
         createdAt:
           type: integer
           format: int64
-        startedAt:
-          type: integer
-          format: int64
         updatedAt:
           type: integer
           format: int64
@@ -1665,6 +1662,25 @@ components:
             - failed
             - completed
             - cancelled
+        attempts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptRead"
+    AttemptRead:
+      type: object
+      properties:
+        startedAt:
+          type: integer
+          format: int64
+        endedAt:
+          type: integer
+          format: int64
+        bytesSynced:
+          type: integer
+          format: int64
+        recordsSync:
+          type: integer
+          format: int64
     JobReadList:
       type: object
       required:
@@ -1678,19 +1694,21 @@ components:
       type: object
       required:
         - job
-        - logs
+        - attempts
       properties:
         job:
           $ref: "#/components/schemas/JobRead"
-        logs:
-          $ref: "#/components/schemas/LogRead"
-    DebugRead:
+        attempts:
+          $ref: "#/components/schemas/AttemptInfoRead"
+    AttemptInfoRead:
       type: object
       required:
-        - info
+        - logs
       properties:
-        info:
-          type: object
+        attempt:
+          $ref: "#/components/schemas/AttemptRead"
+        logs:
+          $ref: "#/components/schemas/LogRead"
     LogRead:
       type: object
       required:
@@ -1708,6 +1726,13 @@ components:
       properties:
         db:
           type: boolean
+    DebugRead:
+      type: object
+      required:
+        - info
+      properties:
+        info:
+          type: object
     # General
     CheckConnectionRead:
       type: object

@@ -70,7 +70,8 @@ public class JobHistoryHandler {
 
     return new JobInfoRead()
         .job(getJobRead(job))
-        .logs(logRead);
+        // todo (cgardens) - fix
+        .attempts(null);
   }
 
   @VisibleForTesting
@@ -86,7 +87,7 @@ public class JobHistoryHandler {
     jobRead.setCreatedAt(job.getCreatedAtInSecond());
 
     if (job.getStartedAtInSecond().isPresent()) {
-      jobRead.setStartedAt(job.getStartedAtInSecond().get());
+      // jobRead.setStartedAt(job.getStartedAtInSecond().get());
     }
 
     jobRead.setUpdatedAt(job.getUpdatedAtInSecond());

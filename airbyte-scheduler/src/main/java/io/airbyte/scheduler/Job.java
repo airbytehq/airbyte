@@ -25,7 +25,7 @@
 package io.airbyte.scheduler;
 
 import io.airbyte.config.JobConfig;
-import io.airbyte.config.JobOutput;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -35,20 +35,16 @@ public class Job {
   private final long id;
   private final String scope;
   private final JobConfig config;
-  private final String logPath;
-  private final JobOutput output;
-  private final int attempts;
   private final JobStatus status;
   private final Long startedAtInSecond;
   private final long createdAtInSecond;
   private final long updatedAtInSecond;
+  private final List<Attempt> attempts;
 
   public Job(final long id,
              final String scope,
              final JobConfig config,
-             final String logPath,
-             final @Nullable JobOutput output,
-             final int attempts,
+             final List<Attempt> attempts,
              final JobStatus status,
              final @Nullable Long startedAtInSecond,
              final long createdAtInSecond,
@@ -56,8 +52,6 @@ public class Job {
     this.id = id;
     this.scope = scope;
     this.config = config;
-    this.logPath = logPath;
-    this.output = output;
     this.attempts = attempts;
     this.status = status;
     this.startedAtInSecond = startedAtInSecond;
@@ -77,16 +71,12 @@ public class Job {
     return config;
   }
 
-  public String getLogPath() {
-    return logPath;
-  }
-
-  public Optional<JobOutput> getOutput() {
-    return Optional.ofNullable(output);
-  }
-
-  public int getAttempts() {
+  public List<Attempt> getAttempts() {
     return attempts;
+  }
+
+  public int getNumAttempts() {
+    return attempts.size();
   }
 
   public JobStatus getStatus() {
@@ -117,8 +107,6 @@ public class Job {
     return id == job.id &&
         Objects.equals(scope, job.scope) &&
         Objects.equals(config, job.config) &&
-        Objects.equals(logPath, job.logPath) &&
-        Objects.equals(output, job.output) &&
         attempts == job.attempts &&
         status == job.status &&
         Objects.equals(startedAtInSecond, job.startedAtInSecond) &&
@@ -128,7 +116,7 @@ public class Job {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, scope, config, logPath, output, attempts, status, startedAtInSecond, createdAtInSecond, updatedAtInSecond);
+    return Objects.hash(id, scope, config, attempts, status, startedAtInSecond, createdAtInSecond, updatedAtInSecond);
   }
 
   @Override
@@ -137,8 +125,6 @@ public class Job {
         "id=" + id +
         ", scope='" + scope + '\'' +
         ", config=" + config +
-        ", logPath='" + logPath + '\'' +
-        ", output=" + output +
         ", attempts=" + attempts +
         ", status=" + status +
         ", startedAtInSecond=" + startedAtInSecond +

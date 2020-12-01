@@ -47,6 +47,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -75,7 +76,7 @@ public class JobSubmitter implements Runnable {
     try {
       LOGGER.info("Running job-submitter...");
 
-      Optional<Job> oldestPendingJob = persistence.getOldestPendingJob();
+      final Optional<Job> oldestPendingJob = persistence.getOldestPendingJob();
 
       oldestPendingJob.ifPresent(job -> {
         trackSubmission(job);
@@ -91,19 +92,19 @@ public class JobSubmitter implements Runnable {
   @VisibleForTesting
   void submitJob(Job job) {
     final WorkerRun workerRun = workerRunFactory.create(job);
+    final AtomicLong attemptId = new AtomicLong();
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
-          persistence.updateStatus(job.getId(), JobStatus.RUNNING);
           final Path logFilePath = workerRun.getJobRoot().resolve(WorkerConstants.LOG_FILENAME);
-          persistence.updateLogPath(job.getId(), logFilePath);
-          persistence.incrementAttempts(job.getId());
+          attemptId.set(persistence.createAttempt(job.getId(), logFilePath));
+          persistence.updateStatus(job.getId(), JobStatus.RUNNING);
           MDC.put("job_id", String.valueOf(job.getId()));
           MDC.put("job_root", logFilePath.getParent().toString());
           MDC.put("job_log_filename", logFilePath.getFileName().toString());
         })
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {
-            persistence.writeOutput(job.getId(), output.getOutput().get());
+            persistence.writeOutput(job.getId(), attemptId.get(), output.getOutput().get());
           }
           persistence.updateStatus(job.getId(), getStatus(output));
           trackCompletion(job, output.getStatus());

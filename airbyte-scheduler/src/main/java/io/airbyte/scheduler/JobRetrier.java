@@ -76,7 +76,7 @@ public class JobRetrier implements Runnable {
   }
 
   private boolean shouldCancel(Job job) {
-    return job.getAttempts() >= MAX_ATTEMPTS;
+    return job.getNumAttempts() >= MAX_ATTEMPTS;
   }
 
   private boolean shouldRetry(Job job) {

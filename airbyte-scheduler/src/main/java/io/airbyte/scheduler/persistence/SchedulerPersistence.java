@@ -57,11 +57,9 @@ public interface SchedulerPersistence {
 
   void updateStatus(long jobId, JobStatus status) throws IOException;
 
-  void updateLogPath(long jobId, Path logPath) throws IOException;
+  long createAttempt(long jobId, Path logPath) throws IOException;
 
-  void incrementAttempts(long jobId) throws IOException;
-
-  <T> void writeOutput(long jobId, T output) throws IOException;
+  <T> void writeOutput(long jobId, long attemptId, T output) throws IOException;
 
   /**
    * @param configType - type of config, e.g. sync
