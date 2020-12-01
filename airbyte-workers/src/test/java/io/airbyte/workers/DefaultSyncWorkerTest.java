@@ -143,7 +143,6 @@ class DefaultSyncWorkerTest {
     actual.getOutput().get().getStandardSyncSummary().withEndTime(null);
 
     assertEquals(expected, actual);
-
   }
 
 }
