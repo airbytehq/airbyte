@@ -10,8 +10,13 @@ server {
         root   /usr/share/nginx/html;
         try_files $uri $uri/ /index.html;
 
-        sub_filter '__SERVER_TRACKING_STRATEGY__' $TRACKING_STRATEGY;
-        sub_filter_once off;
+        sub_filter </head>
+                '</head><script language="javascript"\>
+                window.TRACKING_STRATEGY = "$TRACKING_STRATEGY";
+                window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
+                window.API_URL = "$API_URL";
+                </script>';
+        sub_filter_once on;
     }
 
     #error_page  404              /404.html;

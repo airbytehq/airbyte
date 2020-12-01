@@ -32,6 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
@@ -46,6 +47,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,15 +57,18 @@ class DestinationDefinitionsHandlerTest {
   private ConfigRepository configRepository;
   private StandardDestinationDefinition destination;
   private DestinationDefinitionsHandler destinationHandler;
+  private Supplier<UUID> uuidSupplier;
   private AlwaysMissCache specCache;
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
+    uuidSupplier = mock(Supplier.class);
     dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
     specCache = spy(new AlwaysMissCache());
-    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, specCache);
+    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, specCache);
   }
 
   private StandardDestinationDefinition generateDestination() {
@@ -120,6 +125,29 @@ class DestinationDefinitionsHandlerTest {
     final DestinationDefinitionRead actualDestinationDefinitionRead = destinationHandler.getDestinationDefinition(destinationDefinitionIdRequestBody);
 
     assertEquals(expectedDestinationDefinitionRead, actualDestinationDefinitionRead);
+  }
+
+  @Test
+  void testCreateDestinationDefinition() throws URISyntaxException, ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardDestinationDefinition destination = generateDestination();
+    when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
+    final DestinationDefinitionCreate create = new DestinationDefinitionCreate()
+        .name(destination.getName())
+        .dockerRepository(destination.getDockerRepository())
+        .dockerImageTag(destination.getDockerImageTag())
+        .documentationUrl(new URI(destination.getDocumentationUrl()));
+
+    final DestinationDefinitionRead expectedRead = new DestinationDefinitionRead()
+        .name(destination.getName())
+        .dockerRepository(destination.getDockerRepository())
+        .dockerImageTag(destination.getDockerImageTag())
+        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .destinationDefinitionId(destination.getDestinationDefinitionId());
+
+    final DestinationDefinitionRead actualRead = destinationHandler.createDestinationDefinition(create);
+
+    assertEquals(expectedRead, actualRead);
+    verify(dockerImageValidator).assertValidIntegrationImage(destination.getDockerRepository(), destination.getDockerImageTag());
   }
 
   @Test
