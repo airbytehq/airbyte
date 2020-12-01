@@ -24,6 +24,7 @@ SOFTWARE.
 
 from typing import Generator, Type
 
+import airbyte_protocol
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 
 from .client import BaseClient
@@ -47,7 +48,7 @@ class BaseSource(Source):
         """Discover streams"""
         client = self._get_client(config_container)
 
-        return AirbyteCatalog(streams=client.streams)
+        return AirbyteCatalog(streams=[stream for stream in client.streams])
 
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         """Check connection"""
@@ -68,5 +69,6 @@ class BaseSource(Source):
 
         logger.info(f"Starting syncing {self.__class__.__name__}")
         for configured_stream in catalog.streams:
-            yield from client.read_stream(configured_stream.stream)
+            for record in client.read_stream(configured_stream.stream):
+                yield AirbyteMessage(type=airbyte_protocol.Type.RECORD, record=record)
         logger.info(f"Finished syncing {self.__class__.__name__}")
