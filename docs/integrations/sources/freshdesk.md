@@ -7,6 +7,7 @@ The Freshdesk source supports Full Refresh syncs. That is, every time a sync is 
 ### Output schema
 
 Several output streams are available from this source:
+
 * [Agents](https://developers.freshdesk.com/api/#agents)
 * [Companies](https://developers.freshdesk.com/api/#companies)
 * [Contacts](https://developers.freshdesk.com/api/#contacts)
@@ -41,4 +42,5 @@ The Freshdesk connector should not run into Freshdesk API limitations under norm
 
 ### Setup guide
 
-Please read [How to find your API key](https://support.freshdesk.com/support/solutions/articles/215517). 
+Please read [How to find your API key](https://support.freshdesk.com/support/solutions/articles/215517).
+
