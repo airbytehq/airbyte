@@ -59,3 +59,11 @@ echo "$MAILCHIMP_TEST_CREDS" > "${MAILCHIMP_SECRETS_DIR}/config.json"
 RECURLY_SECRETS_DIR=airbyte-integrations/connectors/source-recurly/secrets
 mkdir $RECURLY_SECRETS_DIR
 echo "$SOURCE_RECURLY_INTEGRATION_TEST_CREDS" > "${RECURLY_SECRETS_DIR}/config.json"
+
+FRESHDESK_SECRETS_DIR=airbyte-integrations/connectors/source-freshdesk/secrets
+MKDIR $FRESHDESK_SECRETS_DIR
+echo "$FRESHDESK_TEST_CREDS" > "${FRESHDESK_SECRETS_DIR}/config.json"
+
+TWILIO_SECRETS_DIR=airbyte-integrations/connectors/source-twilio/secrets
+mkdir $TWILIO_SECRETS_DIR
+echo "$TWILIO_TEST_CREDS" > "${TWILIO_SECRETS_DIR}/config.json"
