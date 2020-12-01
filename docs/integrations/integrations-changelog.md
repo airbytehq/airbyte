@@ -10,8 +10,12 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## Currently under construction
 
-**New sources:** Hive, Freshdesk, Intercom, Twilio, Braintree, MongoDB, Mixpanel  
+**New sources:** Hive, Intercom, Braintree, MongoDB, Mixpanel, Mailgun  
 **New destinations:** Redshift, S3, MySQL, Kafka, MongoDB
+
+## 11/30/2020
+
+**New sources:** [Freshdesk](sources/freshdesk.md), [Twilio](sources/twilio.md)
 
 ## 11/25/2020
 
