@@ -42,12 +42,13 @@ import io.airbyte.api.client.model.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.ConnectionRead;
 import io.airbyte.api.client.model.ConnectionSchedule;
 import io.airbyte.api.client.model.ConnectionStatus;
-import io.airbyte.api.client.model.ConnectionSyncRead;
 import io.airbyte.api.client.model.ConnectionUpdate;
 import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
+import io.airbyte.api.client.model.JobStatus;
+import io.airbyte.api.client.model.JobStatusRead;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
@@ -290,9 +291,9 @@ public class AcceptanceTests {
 
     final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
-    final ConnectionSyncRead connectionSyncRead = apiClient.getConnectionApi()
+    final JobStatusRead connectionSyncRead = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead.getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
@@ -322,9 +323,9 @@ public class AcceptanceTests {
 
     final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
-    final ConnectionSyncRead connectionSyncRead1 = apiClient.getConnectionApi()
+    final JobStatusRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead1.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead1.getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
 
     // add new records and run again.
@@ -342,9 +343,9 @@ public class AcceptanceTests {
     // database.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
     database.close();
 
-    final ConnectionSyncRead connectionSyncRead2 = apiClient.getConnectionApi()
+    final JobStatusRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead2.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead2.getStatus());
     assertDestinationContains(expectedRecords, TABLE_NAME);
     assertSourceAndTargetDbInSync(sourcePsql);
   }

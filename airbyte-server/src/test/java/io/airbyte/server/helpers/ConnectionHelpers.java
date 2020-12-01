@@ -88,9 +88,11 @@ public class ConnectionHelpers {
     final SourceSchemaField field = new SourceSchemaField()
         .dataType(io.airbyte.api.model.DataType.STRING)
         .name("id")
+        .cleanedName("id")
         .selected(true);
 
     final SourceSchemaStream stream = new SourceSchemaStream()
+        .cleanedName("users")
         .name("users")
         .fields(Lists.newArrayList(field));
 
