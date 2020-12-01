@@ -21,23 +21,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import pytest
 
-from .client import BaseClient
-from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
-from .logger import AirbyteLogger
-from .source import BaseSource
+from source_freshdesk.client import Client
 
-# Must be the last one because the way we load the connector module creates a circular
-# dependency and models might not have been loaded yet
-from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
 
-__all__ = [
-    "BaseClient",
-    "BaseSource",
-    "AirbyteSpec",
-    "ConfigContainer",
-    "Integration",
-    "Source",
-    "Destination",
-    "AirbyteLogger",
-]
+def test_client_wrong_domain():
+    not_freshdesk_domain = 'unknownaccount'
+    expected_error = (
+        'Freshdesk v2 API works only via Freshdesk'
+        'domains and not via custom CNAMEs'
+    )
+    with pytest.raises(AttributeError, match=expected_error):
+        Client(domain=not_freshdesk_domain, api_key='wrong_key')
+
+
+def test_client_wrong_account():
+    unknown_domain = 'unknownaccount.freshdesk.com'
+    client = Client(domain=unknown_domain, api_key='wrong_key')
+    alive, error = client.health_check()
+
+    assert not alive
+    assert error == 'Freshdesk Request Failed'
