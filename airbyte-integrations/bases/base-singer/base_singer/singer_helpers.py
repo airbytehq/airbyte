@@ -38,9 +38,8 @@ from airbyte_protocol import (
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     SyncMode,
-    Type,
+    Type, ConfiguredAirbyteStream,
 )
-
 
 _INCREMENTAL = "INCREMENTAL"
 _FULL_TABLE = "FULL_TABLE"
@@ -60,10 +59,14 @@ def is_field_metadata(metadata):
         return metadata.get("breadcrumb")[0] != "property"
 
 
-def supports_incremental(metadata: Dict[str, any]) -> bool:
+def supports_incremental(singer_metadata: Dict[str, any]) -> bool:
     # TODO unclear from the singer spec what behavior should be if there are no valid replication keys, but forced-replication-method is INCREMENTAL.
     #  For now requiring replication keys for a stream to be considered incremetnal.
-    return len(metadata.get("valid-replication-keys", [])) > 0
+    return len(singer_metadata.get("valid-replication-keys", [])) > 0
+
+
+def configured_for_incremental(configured_stream: ConfiguredAirbyteStream):
+    return configured_stream.sync_mode and configured_stream.sync_mode == SyncMode.incremental
 
 
 def get_stream_level_metadata(metadatas: List[Dict[str, any]]) -> Optional[Dict[str, any]]:
@@ -165,13 +168,11 @@ class SingerHelper:
         combined_catalog_path = os.path.join("singer_rendered_catalog.json")
         masked_singer_streams = []
 
-        stream_to_airbyte_schema = {}
-        for configured_stream in masked_airbyte_catalog["streams"]:
-            stream = configured_stream["stream"]
-            stream_to_airbyte_schema[stream.get("name")] = stream
+        stream_name_to_configured_stream = {configured_stream.stream.name: configured_stream for configured_stream in masked_airbyte_catalog.streams}
 
         for singer_stream in discovered_singer_catalog.get("streams"):
-            if singer_stream.get("stream") in stream_to_airbyte_schema:
+            stream_name = singer_stream.get("stream")
+            if stream_name in stream_name_to_configured_stream:
                 new_metadatas = []
                 # support old style catalog.
                 singer_stream["schema"]["selected"] = True
@@ -181,8 +182,12 @@ class SingerHelper:
                         new_metadata = metadata
                         new_metadata["metadata"]["selected"] = True
                         if not is_field_metadata(new_metadata):
-                            replication_method = _INCREMENTAL if supports_incremental(new_metadata) else _FULL_TABLE
-                            print("metadata or no: " + replication_method)
+                            configured_stream = stream_name_to_configured_stream[stream_name]
+                            if configured_for_incremental(configured_stream):
+                                replication_method = _INCREMENTAL
+                                new_metadata["metadata"]["replication-key"] = configured_stream.cursor_field[0]
+                            else:
+                                replication_method = _FULL_TABLE
                             new_metadata["metadata"]["forced-replication-method"] = replication_method
                             new_metadata["metadata"]["replication-method"] = replication_method
                         new_metadatas += [new_metadata]
