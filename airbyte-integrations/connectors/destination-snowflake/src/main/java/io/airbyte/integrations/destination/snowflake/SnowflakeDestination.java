@@ -102,14 +102,14 @@ public class SnowflakeDestination extends AbstractDestination implements Destina
   }
 
   @Override
-  public void createTableQuery(String schemaName, String tableName) throws Exception {
-    queryDatabase(String.format(
+  public String createTableQuery(String schemaName, String tableName) {
+    return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "ab_id VARCHAR PRIMARY KEY,\n"
             + "\"%s\" VARIANT,\n"
             + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
             + ") data_retention_time_in_days = 0;",
-        schemaName, tableName, COLUMN_NAME));
+        schemaName, tableName, COLUMN_NAME);
   }
 
   @Override

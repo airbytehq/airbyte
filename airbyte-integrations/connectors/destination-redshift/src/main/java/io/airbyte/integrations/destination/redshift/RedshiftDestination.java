@@ -41,9 +41,9 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.UUID;
-import org.jooq.DSLContext;
 import org.jooq.InsertValuesStep3;
 import org.jooq.Record;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,23 +70,22 @@ public class RedshiftDestination extends AbstractJdbcDestination implements Dest
   }
 
   @Override
-  public void createTableQuery(String schemaName, String tableName) throws Exception {
-    queryDatabase(String.format(
+  protected String createTableQuery(String schemaName, String tableName) {
+    return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "ab_id VARCHAR PRIMARY KEY,\n"
             + "%s VARCHAR(max),\n"
             + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
             + ");\n",
-        schemaName, tableName, COLUMN_NAME));
+        schemaName, tableName, COLUMN_NAME);
   }
 
   @Override
-  protected String buildInsertQuery(DSLContext ctx,
-                                    int batchSize,
-                                    CloseableQueue<byte[]> writeBuffer,
-                                    String schemaName,
-                                    String tmpTableName) {
-    InsertValuesStep3<Record, String, String, OffsetDateTime> step = ctx.insertInto(
+  protected String insertBufferedRecordsQuery(int batchSize,
+                                              CloseableQueue<byte[]> writeBuffer,
+                                              String schemaName,
+                                              String tmpTableName) {
+    InsertValuesStep3<Record, String, String, OffsetDateTime> step = DSL.insertInto(
         table(unquotedName(schemaName, tmpTableName)),
         field("ab_id", String.class),
         field(COLUMN_NAME, String.class),

@@ -40,11 +40,11 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.UUID;
-import org.jooq.DSLContext;
 import org.jooq.InsertValuesStep3;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,24 +63,23 @@ public class JdbcDestination extends AbstractJdbcDestination implements Destinat
   }
 
   @Override
-  public void createTableQuery(String schemaName, String tableName) throws Exception {
-    queryDatabase(String.format(
+  protected String createTableQuery(String schemaName, String tableName) {
+    return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "ab_id VARCHAR PRIMARY KEY,\n"
             + "%s JSONB,\n"
             + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
             + ");\n",
-        schemaName, tableName, COLUMN_NAME));
+        schemaName, tableName, COLUMN_NAME);
   }
 
   @Override
-  protected String buildInsertQuery(DSLContext ctx,
-                                    int batchSize,
-                                    CloseableQueue<byte[]> writeBuffer,
-                                    String schemaName,
-                                    String tmpTableName) {
+  public String insertBufferedRecordsQuery(int batchSize,
+                                           CloseableQueue<byte[]> writeBuffer,
+                                           String schemaName,
+                                           String tmpTableName) {
     InsertValuesStep3<Record, String, JSONB, OffsetDateTime> step =
-        ctx.insertInto(table(unquotedName(schemaName, tmpTableName)), field("ab_id", String.class),
+        DSL.insertInto(table(unquotedName(schemaName, tmpTableName)), field("ab_id", String.class),
             field(COLUMN_NAME, JSONB.class), field("emitted_at", OffsetDateTime.class));
 
     for (int i = 0; i < batchSize; i++) {
@@ -93,7 +92,6 @@ public class JdbcDestination extends AbstractJdbcDestination implements Destinat
       step = step.values(UUID.randomUUID().toString(), JSONB.valueOf(Jsons.serialize(message.getData())),
           OffsetDateTime.of(LocalDateTime.ofEpochSecond(message.getEmittedAt() / 1000, 0, ZoneOffset.UTC), ZoneOffset.UTC));
     }
-
     return step.toString();
   }
 

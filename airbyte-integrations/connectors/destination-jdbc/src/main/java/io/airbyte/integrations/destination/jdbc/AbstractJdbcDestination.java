@@ -64,8 +64,6 @@ public abstract class AbstractJdbcDestination extends AbstractDestination implem
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
-  public abstract void createTableQuery(String schemaName, String tableName) throws Exception;
-
   @Override
   public ConnectorSpecification spec() throws IOException {
     // return a JsonSchema representation of the spec for the integration.
@@ -138,26 +136,19 @@ public abstract class AbstractJdbcDestination extends AbstractDestination implem
     getDatabaseConnection().query(ctx -> ctx.execute(query));
   }
 
+  public void queryDatabaseInTransaction(String queries) throws Exception {
+    getDatabaseConnection().transaction(ctx -> ctx.execute(queries));
+  }
+
   @Override
   public void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) {
     try {
-      getDatabaseConnection().query(ctx -> ctx.execute(buildInsertQuery(ctx, batchSize, writeBuffer, schemaName, tmpTableName)));
-    } catch (SQLException e) {
+      queryDatabase(insertBufferedRecordsQuery(batchSize, writeBuffer, schemaName, tmpTableName));
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  /**
-   * Build the corresponding insertQuery with a batch of records values
-   */
-  protected abstract String buildInsertQuery(DSLContext ctx,
-                                             int batchSize,
-                                             CloseableQueue<byte[]> writeBuffer,
-                                             String schemaName,
-                                             String tmpTableName);
-
-  public void queryDatabaseInTransaction(String queries) throws Exception {
-    getDatabaseConnection().transaction(ctx -> ctx.execute(queries));
-  }
+  protected abstract String insertBufferedRecordsQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName);
 
 }

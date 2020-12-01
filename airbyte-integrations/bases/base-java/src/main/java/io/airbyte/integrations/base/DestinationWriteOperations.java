@@ -32,9 +32,9 @@ import java.util.Map;
  */
 interface DestinationWriteOperations {
 
-  void createSchemaQuery(String schemaName) throws Exception;
+  void createSchema(String schemaName) throws Exception;
 
-  void createTableQuery(String schemaName, String tableName) throws Exception;
+  void createTable(String schemaName, String tableName) throws Exception;
 
   void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName);
 
