@@ -29,7 +29,6 @@ import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.ConnectionSyncRead;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DebugRead;
 import io.airbyte.api.model.DestinationCreate;
@@ -44,10 +43,12 @@ import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationRecreate;
 import io.airbyte.api.model.DestinationUpdate;
+import io.airbyte.api.model.HealthCheckRead;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
+import io.airbyte.api.model.JobStatusRead;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;
@@ -76,6 +77,7 @@ import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DebugInfoHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
+import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
@@ -106,6 +108,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
   private final WebBackendSourceHandler webBackendSourceHandler;
   private final WebBackendDestinationHandler webBackendDestinationHandler;
+  private final HealthCheckHandler healthCheckHandler;
 
   public ConfigurationApi(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence, final SpecCache specCache) {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
@@ -122,6 +125,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
     debugInfoHandler = new DebugInfoHandler(configRepository);
+    healthCheckHandler = new HealthCheckHandler(configRepository);
   }
 
   // WORKSPACE
@@ -315,8 +319,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public ConnectionSyncRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+  public JobStatusRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
+  }
+
+  @Override
+  public JobStatusRead resetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+    return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
 
   // JOB HISTORY
@@ -336,6 +345,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public DebugRead getDebuggingInfo() {
     return execute(debugInfoHandler::getInfo);
+  }
+
+  // HEALTH
+  @Override
+  public HealthCheckRead getHealthCheck() {
+    return healthCheckHandler.health();
   }
 
   // WEB BACKEND

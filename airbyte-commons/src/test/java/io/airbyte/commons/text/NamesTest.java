@@ -22,21 +22,20 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols;
+package io.airbyte.commons.text;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import java.util.Optional;
-import java.util.function.Consumer;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public interface MessageTracker<T> extends Consumer<T> {
+import org.junit.jupiter.api.Test;
 
-  @Override
-  public void accept(T message);
+public class NamesTest {
 
-  long getRecordCount();
-
-  long getBytesCount();
-
-  Optional<JsonNode> getOutputState();
+  @Test
+  void testToAlphanumericAndUnderscore() {
+    assertEquals("users", Names.toAlphanumericAndUnderscore("users"));
+    assertEquals("users123", Names.toAlphanumericAndUnderscore("users123"));
+    assertEquals("UsErS", Names.toAlphanumericAndUnderscore("UsErS"));
+    assertEquals("users_USE_special_____", Names.toAlphanumericAndUnderscore("users USE special !@#$"));
+  }
 
 }

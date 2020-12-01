@@ -22,21 +22,34 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols;
+package io.airbyte.server.handlers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import java.util.Optional;
-import java.util.function.Consumer;
+import io.airbyte.api.model.HealthCheckRead;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.PersistenceConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public interface MessageTracker<T> extends Consumer<T> {
+public class HealthCheckHandler {
 
-  @Override
-  public void accept(T message);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HealthCheckHandler.class);
 
-  long getRecordCount();
+  private final ConfigRepository configRepository;
 
-  long getBytesCount();
+  public HealthCheckHandler(ConfigRepository configRepository) {
+    this.configRepository = configRepository;
+  }
 
-  Optional<JsonNode> getOutputState();
+  // todo (cgardens) - add more checks as we go.
+  public HealthCheckRead health() {
+    boolean databaseHealth = false;
+    try {
+      databaseHealth = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID) != null;
+    } catch (Exception e) {
+      LOGGER.error("database health check failed.");
+    }
+
+    return new HealthCheckRead().db(databaseHealth);
+  }
 
 }

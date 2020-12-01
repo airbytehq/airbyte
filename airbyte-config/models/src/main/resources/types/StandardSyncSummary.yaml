@@ -9,6 +9,7 @@ type: object
 required:
   - jobId
   - recordsSynced
+  - bytesSynced
   - status
   - startTime
   - endTime
@@ -21,6 +22,9 @@ properties:
       - failed
       - cancelled
   recordsSynced:
+    type: integer
+    minValue: 0
+  bytesSynced:
     type: integer
     minValue: 0
   startTime:

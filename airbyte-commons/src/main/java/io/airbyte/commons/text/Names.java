@@ -22,21 +22,25 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.protocols;
+package io.airbyte.commons.text;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import java.util.Optional;
-import java.util.function.Consumer;
+import java.text.Normalizer;
 
-public interface MessageTracker<T> extends Consumer<T> {
+public class Names {
 
-  @Override
-  public void accept(T message);
+  public static final String NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN = "[^\\p{Alnum}_]";
 
-  long getRecordCount();
-
-  long getBytesCount();
-
-  Optional<JsonNode> getOutputState();
+  /**
+   * Converts any UTF8 string to a string with only alphanumeric and _ characters.
+   *
+   * @param s string to convert
+   * @return cleaned string
+   */
+  public static String toAlphanumericAndUnderscore(String s) {
+    return Normalizer.normalize(s, Normalizer.Form.NFKD)
+        .replaceAll("\\p{M}", "")
+        .replaceAll("\\s+", "_")
+        .replaceAll(NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN, "_");
+  }
 
 }

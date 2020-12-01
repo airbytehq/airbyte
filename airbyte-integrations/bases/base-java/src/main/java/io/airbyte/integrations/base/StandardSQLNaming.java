@@ -24,7 +24,7 @@
 
 package io.airbyte.integrations.base;
 
-import java.text.Normalizer;
+import io.airbyte.commons.text.Names;
 import java.time.Instant;
 
 public class StandardSQLNaming implements SQLNamingResolvable {
@@ -45,15 +45,7 @@ public class StandardSQLNaming implements SQLNamingResolvable {
   }
 
   protected String convertStreamName(String input) {
-    final String value = Normalizer.normalize(input, Normalizer.Form.NFKD);
-    return value
-        .replaceAll("\\p{M}", "")
-        .replaceAll("\\s+", "_")
-        .replaceAll(getNonValidCharacterPattern(), "_");
-  }
-
-  protected String getNonValidCharacterPattern() {
-    return "[^\\p{Alnum}_]";
+    return Names.toAlphanumericAndUnderscore(input);
   }
 
 }
