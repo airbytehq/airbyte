@@ -1527,8 +1527,8 @@ components:
         - status
       properties:
         status:
-          $ref: "#/components/schemas/JobStatus"
-    JobStatus:
+          $ref: "#/components/schemas/JobStatusReadStatus"
+    JobStatusReadStatus:
       type: string
       enum:
         - succeeded
@@ -1658,13 +1658,15 @@ components:
           type: integer
           format: int64
         status:
-          type: string
-          enum:
-            - pending
-            - running
-            - failed
-            - completed
-            - cancelled
+          $ref: "#/components/schemas/JobStatus"
+    JobStatus:
+      type: string
+      enum:
+        - pending
+        - running
+        - failed
+        - completed
+        - cancelled
     JobReadList:
       type: object
       required:
