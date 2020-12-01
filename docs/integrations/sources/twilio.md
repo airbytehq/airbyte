@@ -65,3 +65,4 @@ The Twilio connector should not run into Twilio API limitations under normal usa
 Generate a API access token using the [Twilio documentation](https://support.twilio.com/hc/en-us/articles/223136027-Auth-Tokens-and-How-to-Change-Them)
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+
