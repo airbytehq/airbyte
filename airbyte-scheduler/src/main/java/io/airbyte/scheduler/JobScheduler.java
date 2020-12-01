@@ -31,7 +31,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.job_factory.SyncJobFactory;
-import io.airbyte.scheduler.persistence.DefaultSchedulerHandlerPersistence;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -68,7 +68,7 @@ public class JobScheduler implements Runnable {
         jobPersistence,
         configRepository,
         new ScheduleJobPredicate(Instant::now),
-        new DefaultSyncJobFactory(new DefaultSchedulerHandlerPersistence(jobPersistence), configRepository));
+        new DefaultSyncJobFactory(new DefaultJobCreator(jobPersistence), configRepository));
   }
 
   @Override

@@ -52,7 +52,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DefaultSchedulerHandlerPersistenceTest {
+public class DefaultJobCreatorTest {
 
   private static final String SOURCE_IMAGE_NAME = "daxtarity/sourceimagename";
   private static final String DESTINATION_IMAGE_NAME = "daxtarity/destinationimagename";
@@ -61,8 +61,8 @@ public class DefaultSchedulerHandlerPersistenceTest {
   private static final StandardSync STANDARD_SYNC;
   private static final long JOB_ID = 12L;
 
-  private SchedulerHandlerPersistence schedulerPersistence;
   private JobPersistence jobPersistence;
+  private JobCreator jobCreator;
 
   static {
     final UUID workspaceId = UUID.randomUUID();
@@ -119,7 +119,7 @@ public class DefaultSchedulerHandlerPersistenceTest {
   @BeforeEach
   void setup() {
     jobPersistence = mock(JobPersistence.class);
-    schedulerPersistence = new DefaultSchedulerHandlerPersistence(jobPersistence);
+    jobCreator = new DefaultJobCreator(jobPersistence);
   }
 
   @Test
@@ -135,7 +135,7 @@ public class DefaultSchedulerHandlerPersistenceTest {
     final String expectedScope = ScopeHelper.createScope(ConfigType.CHECK_CONNECTION_SOURCE, SOURCE_CONNECTION.getSourceId().toString());
     when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
 
-    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
+    final long jobId = jobCreator.createSourceCheckConnectionJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
     assertEquals(JOB_ID, jobId);
   }
 
@@ -153,7 +153,7 @@ public class DefaultSchedulerHandlerPersistenceTest {
         ScopeHelper.createScope(ConfigType.CHECK_CONNECTION_DESTINATION, DESTINATION_CONNECTION.getDestinationId().toString());
     when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
 
-    final long jobId = schedulerPersistence.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DESTINATION_IMAGE_NAME);
+    final long jobId = jobCreator.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DESTINATION_IMAGE_NAME);
     assertEquals(JOB_ID, jobId);
   }
 
@@ -170,7 +170,7 @@ public class DefaultSchedulerHandlerPersistenceTest {
     final String expectedScope = ScopeHelper.createScope(ConfigType.DISCOVER_SCHEMA, SOURCE_CONNECTION.getSourceId().toString());
     when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
 
-    final long jobId = schedulerPersistence.createDiscoverSchemaJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
+    final long jobId = jobCreator.createDiscoverSchemaJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
     assertEquals(JOB_ID, jobId);
   }
 
@@ -185,7 +185,7 @@ public class DefaultSchedulerHandlerPersistenceTest {
     final String expectedScope = ScopeHelper.createScope(ConfigType.GET_SPEC, integrationImage);
     when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
 
-    final long jobId = schedulerPersistence.createGetSpecJob(integrationImage);
+    final long jobId = jobCreator.createGetSpecJob(integrationImage);
     assertEquals(JOB_ID, jobId);
   }
 
@@ -205,7 +205,7 @@ public class DefaultSchedulerHandlerPersistenceTest {
     final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
     when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
 
-    final long jobId = schedulerPersistence.createSyncJob(
+    final long jobId = jobCreator.createSyncJob(
         SOURCE_CONNECTION,
         DESTINATION_CONNECTION,
         STANDARD_SYNC,

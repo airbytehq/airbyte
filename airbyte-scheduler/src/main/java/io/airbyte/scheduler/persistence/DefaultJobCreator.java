@@ -46,11 +46,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class DefaultSchedulerHandlerPersistence implements SchedulerHandlerPersistence {
+public class DefaultJobCreator implements JobCreator {
 
   private JobPersistence jobPersistence;
 
-  public DefaultSchedulerHandlerPersistence(JobPersistence jobPersistence) {
+  public DefaultJobCreator(JobPersistence jobPersistence) {
     this.jobPersistence = jobPersistence;
   }
 

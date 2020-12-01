@@ -52,17 +52,17 @@ import java.util.stream.Collectors;
 public class JobHistoryHandler {
 
   private static final int LOG_TAIL_SIZE = 100;
-  private final JobPersistence schedulerPersistence;
+  private final JobPersistence jobPersistence;
 
-  public JobHistoryHandler(JobPersistence schedulerPersistence) {
-    this.schedulerPersistence = schedulerPersistence;
+  public JobHistoryHandler(JobPersistence jobPersistence) {
+    this.jobPersistence = jobPersistence;
   }
 
   public JobReadList listJobsFor(JobListRequestBody request) throws IOException {
     final JobConfig.ConfigType configType = Enums.convertTo(request.getConfigType(), JobConfig.ConfigType.class);
     final String configId = request.getConfigId();
 
-    final List<JobRead> jobReads = schedulerPersistence.listJobs(configType, configId)
+    final List<JobRead> jobReads = jobPersistence.listJobs(configType, configId)
         .stream()
         .map(JobHistoryHandler::getJobRead)
         .collect(Collectors.toList());
@@ -71,7 +71,7 @@ public class JobHistoryHandler {
   }
 
   public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
-    final Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
+    final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
 
     return new JobInfoRead()
         .job(getJobRead(job))

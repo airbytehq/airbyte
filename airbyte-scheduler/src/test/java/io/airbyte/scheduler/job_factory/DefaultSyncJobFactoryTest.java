@@ -37,7 +37,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.DefaultSchedulerHandlerPersistence;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
@@ -52,7 +52,7 @@ class DefaultSyncJobFactoryTest {
     final UUID connectionId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
-    final DefaultSchedulerHandlerPersistence jobCreator = mock(DefaultSchedulerHandlerPersistence.class);
+    final DefaultJobCreator jobCreator = mock(DefaultJobCreator.class);
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final long jobId = 11L;
 

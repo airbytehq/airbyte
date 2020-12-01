@@ -32,17 +32,17 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.DefaultSchedulerHandlerPersistence;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
 
 public class DefaultSyncJobFactory implements SyncJobFactory {
 
-  private final DefaultSchedulerHandlerPersistence jobCreator;
+  private final DefaultJobCreator jobCreator;
   private final ConfigRepository configRepository;
 
-  public DefaultSyncJobFactory(final DefaultSchedulerHandlerPersistence jobCreator,
+  public DefaultSyncJobFactory(final DefaultJobCreator jobCreator,
                                final ConfigRepository configRepository) {
 
     this.jobCreator = jobCreator;

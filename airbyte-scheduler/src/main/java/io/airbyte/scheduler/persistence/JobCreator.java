@@ -29,7 +29,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import java.io.IOException;
 
-public interface SchedulerHandlerPersistence {
+public interface JobCreator {
 
   long createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
 

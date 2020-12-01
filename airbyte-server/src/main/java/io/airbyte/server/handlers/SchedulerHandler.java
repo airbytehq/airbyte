@@ -53,8 +53,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
+import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.SchedulerHandlerPersistence;
 import io.airbyte.server.cache.SpecCache;
 import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.validation.json.JsonValidationException;
@@ -72,12 +72,12 @@ public class SchedulerHandler {
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
   private final SpecCache specCache;
-  private final SchedulerHandlerPersistence jobCreator;
+  private final JobCreator jobCreator;
 
   public SchedulerHandler(
                           final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
-                          final SchedulerHandlerPersistence jobCreator,
+                          final JobCreator jobCreator,
                           final SpecCache specCache) {
     this.specCache = specCache;
     this.configRepository = configRepository;

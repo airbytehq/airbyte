@@ -70,7 +70,7 @@ import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.DefaultSchedulerHandlerPersistence;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.cache.SpecCache;
 import io.airbyte.server.errors.KnownException;
@@ -113,7 +113,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   public ConfigurationApi(final ConfigRepository configRepository, final JobPersistence jobPersistence, final SpecCache specCache) {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    schedulerHandler = new SchedulerHandler(configRepository, jobPersistence, new DefaultSchedulerHandlerPersistence(jobPersistence), specCache);
+    schedulerHandler = new SchedulerHandler(configRepository, jobPersistence, new DefaultJobCreator(jobPersistence), specCache);
     workspacesHandler = new WorkspacesHandler(configRepository);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(schedulerHandler);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, specCache);

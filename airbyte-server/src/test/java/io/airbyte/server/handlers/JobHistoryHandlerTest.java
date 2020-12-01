@@ -76,7 +76,7 @@ public class JobHistoryHandlerTest {
               .updatedAt(CREATED_AT))
           .attempts(new ArrayList<>());
 
-  private JobPersistence schedulerPersistence;
+  private JobPersistence jobPersistence;
   private JobHistoryHandler jobHistoryHandler;
 
   @BeforeEach
@@ -90,13 +90,13 @@ public class JobHistoryHandlerTest {
     when(job.getCreatedAtInSecond()).thenReturn(CREATED_AT);
     when(job.getUpdatedAtInSecond()).thenReturn(CREATED_AT);
 
-    schedulerPersistence = mock(JobPersistence.class);
-    jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
+    jobPersistence = mock(JobPersistence.class);
+    jobHistoryHandler = new JobHistoryHandler(jobPersistence);
   }
 
   @Test
   public void testListJobsFor() throws IOException {
-    when(schedulerPersistence.listJobs(CONFIG_TYPE, JOB_CONFIG_ID)).thenReturn(Collections.singletonList(job));
+    when(jobPersistence.listJobs(CONFIG_TYPE, JOB_CONFIG_ID)).thenReturn(Collections.singletonList(job));
 
     JobListRequestBody requestBody = new JobListRequestBody().configType(CONFIG_TYPE_FOR_API).configId(JOB_CONFIG_ID);
     JobReadList jobReadList = jobHistoryHandler.listJobsFor(requestBody);
@@ -108,7 +108,7 @@ public class JobHistoryHandlerTest {
 
   @Test
   public void testGetJobInfo() throws IOException {
-    when(schedulerPersistence.getJob(JOB_ID)).thenReturn(job);
+    when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
 
     JobIdRequestBody requestBody = new JobIdRequestBody().id(JOB_ID);
     JobInfoRead jobInfoActual = jobHistoryHandler.getJobInfo(requestBody);

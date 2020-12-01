@@ -62,7 +62,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-class DefaultSchedulerPersistenceTest {
+class DefaultJobPersistenceTest {
 
   @SuppressWarnings("rawtypes")
   private static PostgreSQLContainer container;
