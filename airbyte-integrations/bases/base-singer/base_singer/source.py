@@ -24,7 +24,7 @@ SOFTWARE.
 
 from typing import Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteMessage
+from airbyte_protocol import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog
 from base_python import AirbyteLogger, ConfigContainer, Source
 
 from .singer_helpers import SingerHelper
@@ -63,7 +63,7 @@ class SingerSource(Source):
         """
         discover_cmd = self.discover_cmd(logger, config_container.rendered_config_path)
         catalogs = SingerHelper.get_catalogs(logger, discover_cmd)
-        masked_airbyte_catalog = self.read_config(catalog_path)
+        masked_airbyte_catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
         selected_singer_catalog_path = SingerHelper.create_singer_catalog_with_selection(masked_airbyte_catalog, catalogs.singer_catalog)
 
         read_cmd = self.read_cmd(logger, config_container.rendered_config_path, selected_singer_catalog_path, state_path)
