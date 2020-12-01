@@ -1555,6 +1555,8 @@ components:
         # immutable
         name:
           type: string
+        cleanedName:
+          type: string
         fields:
           type: array
           items:
@@ -1586,6 +1588,8 @@ components:
         - selected
       properties:
         name:
+          type: string
+        cleanedName:
           type: string
         dataType:
           $ref: "#/components/schemas/DataType"
