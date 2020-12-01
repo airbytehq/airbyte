@@ -14,7 +14,7 @@ assert_root
 
 cd "$PROJECT_DIR"
 
-DOCKER_BUILDKIT=1 docker build \
+docker build \
   -f "$DOCKERFILE" . \
   -t "$TAGGED_IMAGE" \
   --iidfile "$ID_FILE"
