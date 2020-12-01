@@ -27,4 +27,3 @@ import os
 
 def test_example_method():
     assert os.path.commonpath(["/usr/lib", "/usr/local/lib"]) == "/usr"
-
