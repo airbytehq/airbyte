@@ -59,12 +59,6 @@ def is_field_metadata(metadata):
         return metadata.get("breadcrumb")[0] != "property"
 
 
-def supports_incremental(singer_metadata: Dict[str, any]) -> bool:
-    # TODO unclear from the singer spec what behavior should be if there are no valid replication keys, but forced-replication-method is INCREMENTAL.
-    #  For now requiring replication keys for a stream to be considered incremetnal.
-    return len(singer_metadata.get("valid-replication-keys", [])) > 0
-
-
 def configured_for_incremental(configured_stream: ConfiguredAirbyteStream):
     return configured_stream.sync_mode and configured_stream.sync_mode == SyncMode.incremental
 
@@ -101,6 +95,8 @@ class SingerHelper:
             stream_metadata_container = get_stream_level_metadata(metadatas) if metadatas else None
             stream_metadata = stream_metadata_container.get("metadata")
             if stream_metadata:
+                # TODO unclear from the singer spec what behavior should be if there are no valid replication keys, but forced-replication-method is INCREMENTAL.
+                #  For now requiring replication keys for a stream to be considered incremental.
                 replication_keys = stream_metadata.get("valid-replication-keys", [])
                 if len(replication_keys) > 0:
                     airbyte_stream.source_defined_cursor = True
