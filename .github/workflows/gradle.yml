@@ -66,6 +66,9 @@ jobs:
         with:
           python-version: '3.7'
 
+      - name: check connectivity
+        run: curl https://repository.mulesoft.org/nexus/content/repositories/public/com/amazon/redshift/redshift-jdbc42/1.2.43.1067/redshift-jdbc42-1.2.43.1067.pom
+
       - name: Start local Docker registry
         run: docker run -d -p 5000:5000 --restart=always --name registry -v /tmp/docker-registry:/var/lib/registry registry:2 && npx wait-on tcp:5000
 
