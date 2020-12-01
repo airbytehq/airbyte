@@ -37,8 +37,9 @@ from airbyte_protocol import (
     AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
     SyncMode,
-    Type, ConfiguredAirbyteStream,
+    Type,
 )
 
 _INCREMENTAL = "INCREMENTAL"
@@ -164,7 +165,9 @@ class SingerHelper:
         combined_catalog_path = os.path.join("singer_rendered_catalog.json")
         masked_singer_streams = []
 
-        stream_name_to_configured_stream = {configured_stream.stream.name: configured_stream for configured_stream in masked_airbyte_catalog.streams}
+        stream_name_to_configured_stream = {
+            configured_stream.stream.name: configured_stream for configured_stream in masked_airbyte_catalog.streams
+        }
 
         for singer_stream in discovered_singer_catalog.get("streams"):
             stream_name = singer_stream.get("stream")
