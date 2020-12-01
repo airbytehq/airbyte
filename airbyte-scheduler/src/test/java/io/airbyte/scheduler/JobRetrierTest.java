@@ -30,7 +30,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.config.JobConfig;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence.CancellationReason;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -42,13 +43,13 @@ class JobRetrierTest {
 
   private static final Instant NOW = Instant.now();
 
-  private SchedulerPersistence persistence;
+  private JobPersistence persistence;
   private JobRetrier jobRetrier;
   private Job job;
 
   @BeforeEach
   void setup() {
-    persistence = mock(SchedulerPersistence.class);
+    persistence = mock(JobPersistence.class);
     jobRetrier = new JobRetrier(persistence, () -> NOW);
     job = mock(Job.class);
     when(job.getId()).thenReturn(12L);
@@ -66,7 +67,7 @@ class JobRetrierTest {
     jobRetrier.run();
 
     verify(persistence).listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED);
-    verify(persistence).updateStatus(12L, JobStatus.PENDING);
+    verify(persistence).resetJob(12L);
     verifyNoMoreInteractions(persistence);
 
   }
@@ -98,7 +99,7 @@ class JobRetrierTest {
     jobRetrier.run();
 
     verify(persistence).listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.FAILED);
-    verify(persistence).updateStatus(12L, JobStatus.CANCELLED);
+    verify(persistence).cancelJob(12L, CancellationReason.TOO_MANY_FAILURES);
     verifyNoMoreInteractions(persistence);
   }
 

@@ -24,10 +24,7 @@
 
 package io.airbyte.scheduler.persistence;
 
-import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardSync;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import java.io.IOException;
@@ -36,30 +33,33 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface SchedulerPersistence {
-
-  long createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
-
-  long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException;
-
-  long createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
-
-  long createGetSpecJob(String integrationImage) throws IOException;
-
-  long createSyncJob(SourceConnection source,
-                     DestinationConnection destination,
-                     StandardSync standardSync,
-                     String sourceDockerImage,
-                     String destinationDockerImage)
-      throws IOException;
+public interface JobPersistence {
 
   Job getJob(long jobId) throws IOException;
 
-  void updateStatus(long jobId, JobStatus status) throws IOException;
+  // job lifecycle
+  long createJob(String scope, JobConfig jobConfig) throws IOException;
 
+  // => pending
+  void resetJob(long jobId) throws IOException;
+
+  void cancelJob(long jobId, CancellationReason cancellationReason) throws IOException;
+
+  enum CancellationReason {
+    TOO_MANY_FAILURES,
+    USER_REQUESTED;
+  }
+
+  // attemptlife cycle
   long createAttempt(long jobId, Path logPath) throws IOException;
 
+  void completeAttemptFailed(long jobId, long attemptId) throws IOException;
+
+  void completeAttemptSuccess(long jobId, long attemptId) throws IOException;
+
   <T> void writeOutput(long jobId, long attemptId, T output) throws IOException;
+
+  // end lifecycle
 
   /**
    * @param configType - type of config, e.g. sync

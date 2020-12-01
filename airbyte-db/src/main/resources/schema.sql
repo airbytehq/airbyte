@@ -19,6 +19,12 @@
     );
 
 CREATE
+    TYPE CANCELLATION_REASON AS ENUM(
+        'too_many_failures',
+        'user_requested'
+    );
+
+CREATE
     TYPE ATTEMPT_STATUS AS ENUM(
         'running',
         'failed',
@@ -39,10 +45,8 @@ CREATE
             id BIGSERIAL PRIMARY KEY,
             SCOPE VARCHAR(255),
             config JSONB,
-            --             log_path VARCHAR(255),
- --             OUTPUT JSONB,
- --             attempts INTEGER,
- status JOB_STATUS,
+            status JOB_STATUS,
+            cancellation_reason CANCELLATION_REASON,
             started_at TIMESTAMPTZ,
             created_at TIMESTAMPTZ,
             updated_at TIMESTAMPTZ
@@ -54,15 +58,13 @@ CREATE
             id BIGSERIAL PRIMARY KEY,
             job_id BIGSERIAL,
             attempt_id BIGSERIAL,
-            --             SCOPE VARCHAR(255),
- --             config JSONB,
- log_path VARCHAR(255),
+            log_path VARCHAR(255),
             OUTPUT JSONB,
-            --             attempts INTEGER,
- status ATTEMPT_STATUS,
-            started_at TIMESTAMPTZ,
+            status ATTEMPT_STATUS,
             created_at TIMESTAMPTZ,
-            updated_at TIMESTAMPTZ -- todo auto update
+            updated_at TIMESTAMPTZ,
+            -- todo auto update
+ ended_at TIMESTAMPTZ
         );
 
 -- entries

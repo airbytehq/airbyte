@@ -25,7 +25,8 @@
 package io.airbyte.scheduler;
 
 import io.airbyte.config.JobConfig;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence.CancellationReason;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -40,11 +41,11 @@ public class JobRetrier implements Runnable {
   private static final int MAX_ATTEMPTS = 5;
   private static final int RETRY_WAIT_MINUTES = 1;
 
-  private final SchedulerPersistence persistence;
+  private final JobPersistence persistence;
   private final Supplier<Instant> timeSupplier;
 
-  public JobRetrier(SchedulerPersistence schedulerPersistence, Supplier<Instant> timeSupplier) {
-    this.persistence = schedulerPersistence;
+  public JobRetrier(JobPersistence jobPersistence, Supplier<Instant> timeSupplier) {
+    this.persistence = jobPersistence;
     this.timeSupplier = timeSupplier;
   }
 
@@ -55,12 +56,12 @@ public class JobRetrier implements Runnable {
     listFailedJobs()
         .forEach(job -> {
           if (shouldCancel(job)) {
-            setSetStatusTo(job, JobStatus.CANCELLED);
+            cancelJob(job);
             return;
           }
 
           if (shouldRetry(job)) {
-            setSetStatusTo(job, JobStatus.PENDING);
+            resetJob(job);
           }
         });
 
@@ -85,9 +86,17 @@ public class JobRetrier implements Runnable {
     return lastRun < timeSupplier.get().getEpochSecond() - TimeUnit.MINUTES.toSeconds(RETRY_WAIT_MINUTES);
   }
 
-  private void setSetStatusTo(Job job, JobStatus status) {
+  private void cancelJob(Job job) {
     try {
-      persistence.updateStatus(job.getId(), status);
+      persistence.cancelJob(job.getId(), CancellationReason.TOO_MANY_FAILURES);
+    } catch (IOException e) {
+      throw new RuntimeException("failed to update status for job: " + job.getId(), e);
+    }
+  }
+
+  private void resetJob(Job job) {
+    try {
+      persistence.resetJob(job.getId());
     } catch (IOException e) {
       throw new RuntimeException("failed to update status for job: " + job.getId(), e);
     }

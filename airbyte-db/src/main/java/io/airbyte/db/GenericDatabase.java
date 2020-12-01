@@ -22,17 +22,41 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.db;
 
-import com.google.common.collect.Sets;
-import java.util.Set;
+import java.io.IOException;
+import java.sql.SQLException;
 
-public enum AttemptStatus {
+/**
+ * Wraps a {@link Database} object and throwing IOExceptions instead of SQLExceptions.
+ */
+public class GenericDatabase implements AutoCloseable {
 
-  RUNNING,
-  FAILED,
-  COMPLETED;
+  private final Database database;
 
-  public static Set<AttemptStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, COMPLETED);
+  public GenericDatabase(Database database) {
+    this.database = database;
+  }
+
+  public <T> T query(ContextQueryFunction<T> transform) throws IOException {
+    try {
+      return database.query(transform);
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  public <T> T transaction(ContextQueryFunction<T> transform) throws IOException {
+    try {
+      return database.transaction(transform);
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public void close() throws Exception {
+    database.close();
+  }
 
 }

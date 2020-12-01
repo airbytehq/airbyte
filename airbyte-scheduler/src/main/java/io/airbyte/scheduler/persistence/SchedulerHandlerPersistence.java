@@ -22,17 +22,28 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.scheduler.persistence;
 
-import com.google.common.collect.Sets;
-import java.util.Set;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSync;
+import java.io.IOException;
 
-public enum AttemptStatus {
+public interface SchedulerHandlerPersistence {
 
-  RUNNING,
-  FAILED,
-  COMPLETED;
+  long createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
 
-  public static Set<AttemptStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, COMPLETED);
+  long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException;
+
+  long createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
+
+  long createGetSpecJob(String integrationImage) throws IOException;
+
+  long createSyncJob(SourceConnection source,
+                     DestinationConnection destination,
+                     StandardSync standardSync,
+                     String sourceDockerImage,
+                     String destinationDockerImage)
+      throws IOException;
 
 }

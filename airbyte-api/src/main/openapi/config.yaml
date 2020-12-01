@@ -1527,8 +1527,8 @@ components:
         - status
       properties:
         status:
-          $ref: "#/components/schemas/JobStatus"
-    JobStatus:
+          $ref: "#/components/schemas/JobStatusReadStatus"
+    JobStatusReadStatus:
       type: string
       enum:
         - succeeded
@@ -1641,6 +1641,7 @@ components:
         - createdAt
         - updatedAt
         - status
+        - attempts
       properties:
         id:
           $ref: "#/components/schemas/JobId"
@@ -1655,21 +1656,36 @@ components:
           type: integer
           format: int64
         status:
-          type: string
-          enum:
-            - pending
-            - running
-            - failed
-            - completed
-            - cancelled
+          $ref: "#/components/schemas/JobStatus"
         attempts:
           type: array
           items:
             $ref: "#/components/schemas/AttemptRead"
+    JobStatus:
+      type: string
+      enum:
+        - pending
+        - running
+        - failed
+        - completed
+        - cancelled
     AttemptRead:
       type: object
+      required:
+        - id
+        - status
+        - createdAt
+        - updatedAt
       properties:
-        startedAt:
+        id:
+          type: integer
+          format: int64
+        status:
+          $ref: "#/components/schemas/AttemptStatus"
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
           type: integer
           format: int64
         endedAt:
@@ -1681,6 +1697,12 @@ components:
         recordsSync:
           type: integer
           format: int64
+    AttemptStatus:
+      type: string
+      enum:
+        - running
+        - failed
+        - completed
     JobReadList:
       type: object
       required:
@@ -1699,10 +1721,13 @@ components:
         job:
           $ref: "#/components/schemas/JobRead"
         attempts:
-          $ref: "#/components/schemas/AttemptInfoRead"
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptInfoRead"
     AttemptInfoRead:
       type: object
       required:
+        - attempt
         - logs
       properties:
         attempt:

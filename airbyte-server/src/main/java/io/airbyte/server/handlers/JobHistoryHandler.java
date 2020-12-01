@@ -25,19 +25,26 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.model.AttemptInfoRead;
+import io.airbyte.api.model.AttemptRead;
+import io.airbyte.api.model.AttemptStatus;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
+import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.LogRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.ScopeHelper;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,9 +52,9 @@ import java.util.stream.Collectors;
 public class JobHistoryHandler {
 
   private static final int LOG_TAIL_SIZE = 100;
-  private final SchedulerPersistence schedulerPersistence;
+  private final JobPersistence schedulerPersistence;
 
-  public JobHistoryHandler(SchedulerPersistence schedulerPersistence) {
+  public JobHistoryHandler(JobPersistence schedulerPersistence) {
     this.schedulerPersistence = schedulerPersistence;
   }
 
@@ -66,12 +73,40 @@ public class JobHistoryHandler {
   public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = schedulerPersistence.getJob(jobIdRequestBody.getId());
 
-    final LogRead logRead = new LogRead().logLines(IOs.getTail(LOG_TAIL_SIZE, job.getLogPath()));
-
     return new JobInfoRead()
         .job(getJobRead(job))
-        // todo (cgardens) - fix
-        .attempts(null);
+        .attempts(job.getAttempts().stream().map(JobHistoryHandler::getAttemptInfoRead).collect(Collectors.toList()));
+  }
+
+  private static AttemptInfoRead getAttemptInfoRead(Attempt attempt) {
+    return new AttemptInfoRead()
+        .attempt(getAttemptRead(attempt))
+        .logs(getLogRead(attempt));
+  }
+
+  private static LogRead getLogRead(Attempt attempt) {
+    try {
+      return new LogRead().logLines(IOs.getTail(LOG_TAIL_SIZE, attempt.getLogPath()));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static AttemptRead getAttemptRead(Attempt attempt) {
+    final AttemptRead attemptRead = new AttemptRead()
+        .id(attempt.getId())
+        .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
+        .createdAt(attempt.getCreatedAtInSecond())
+        .updatedAt(attempt.getUpdatedAtInSecond());
+
+    attempt.getEndedAtInSecond().ifPresent(attemptRead::endedAt);
+
+    attempt.getOutput().map(JobOutput::getSync).map(StandardSyncOutput::getStandardSyncSummary).ifPresent(summary -> {
+      attemptRead.recordsSync(summary.getRecordsSynced());
+      attemptRead.bytesSynced(summary.getBytesSynced());
+    });
+
+    return attemptRead;
   }
 
   @VisibleForTesting
@@ -79,21 +114,14 @@ public class JobHistoryHandler {
     final String configId = ScopeHelper.getConfigId(job.getScope());
     final JobConfigType configType = Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
 
-    final JobRead jobRead = new JobRead();
-
-    jobRead.setId(job.getId());
-    jobRead.setConfigId(configId);
-    jobRead.setConfigType(configType);
-    jobRead.setCreatedAt(job.getCreatedAtInSecond());
-
-    if (job.getStartedAtInSecond().isPresent()) {
-      // jobRead.setStartedAt(job.getStartedAtInSecond().get());
-    }
-
-    jobRead.setUpdatedAt(job.getUpdatedAtInSecond());
-    jobRead.setStatus(Enums.convertTo(job.getStatus(), JobRead.StatusEnum.class));
-
-    return jobRead;
+    return new JobRead()
+        .id(job.getId())
+        .configId(configId)
+        .configType(configType)
+        .createdAt(job.getCreatedAtInSecond())
+        .updatedAt(job.getUpdatedAtInSecond())
+        .status(Enums.convertTo(job.getStatus(), JobStatus.class))
+        .attempts(job.getAttempts().stream().map(JobHistoryHandler::getAttemptRead).collect(Collectors.toList()));
   }
 
 }

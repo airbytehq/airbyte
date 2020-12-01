@@ -37,6 +37,7 @@ import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
+import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WbConnectionRead;
@@ -98,14 +99,13 @@ class WebBackendConnectionsHandlerTest {
     destinationIdRequestBody.setDestinationId(connectionRead.getDestinationId());
     when(destinationHandler.getDestination(destinationIdRequestBody)).thenReturn(destinationRead);
 
-    Instant now = Instant.now();
+    final Instant now = Instant.now();
     final JobRead jobRead = new JobRead();
     jobRead.setConfigId(connectionRead.getConnectionId().toString());
     jobRead.setConfigType(JobConfigType.SYNC);
     jobRead.setId(10L);
-    jobRead.setStatus(JobRead.StatusEnum.COMPLETED);
+    jobRead.setStatus(JobStatus.COMPLETED);
     jobRead.setCreatedAt(now.getEpochSecond());
-    jobRead.setStartedAt(now.getEpochSecond());
     jobRead.setUpdatedAt(now.getEpochSecond());
 
     final JobReadList jobReadList = new JobReadList();

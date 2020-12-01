@@ -36,7 +36,7 @@ import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
@@ -47,7 +47,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -57,12 +56,12 @@ public class JobSubmitter implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitter.class);
 
   private final ExecutorService threadPool;
-  private final SchedulerPersistence persistence;
+  private final JobPersistence persistence;
   private final ConfigRepository configRepository;
   private final WorkerRunFactory workerRunFactory;
 
   public JobSubmitter(final ExecutorService threadPool,
-                      final SchedulerPersistence persistence,
+                      final JobPersistence persistence,
                       final ConfigRepository configRepository,
                       final WorkerRunFactory workerRunFactory) {
     this.threadPool = threadPool;
@@ -92,29 +91,42 @@ public class JobSubmitter implements Runnable {
   @VisibleForTesting
   void submitJob(Job job) {
     final WorkerRun workerRun = workerRunFactory.create(job);
-    final AtomicLong attemptId = new AtomicLong();
+    // todo - woof.
+    final long attemptId = job.getAttempts().size() + 1;
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
           final Path logFilePath = workerRun.getJobRoot().resolve(WorkerConstants.LOG_FILENAME);
-          attemptId.set(persistence.createAttempt(job.getId(), logFilePath));
-          persistence.updateStatus(job.getId(), JobStatus.RUNNING);
+          final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
+          assertThatIdsAreTheSame(attemptId, persistedAttemptId);
+
           MDC.put("job_id", String.valueOf(job.getId()));
           MDC.put("job_root", logFilePath.getParent().toString());
           MDC.put("job_log_filename", logFilePath.getFileName().toString());
         })
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {
-            persistence.writeOutput(job.getId(), attemptId.get(), output.getOutput().get());
+            persistence.writeOutput(job.getId(), attemptId, output.getOutput().get());
           }
-          persistence.updateStatus(job.getId(), getStatus(output));
+
+          if (output.getStatus() == io.airbyte.workers.JobStatus.SUCCEEDED) {
+            persistence.completeAttemptSuccess(job.getId(), attemptId);
+          } else {
+            persistence.completeAttemptFailed(job.getId(), attemptId);
+          }
           trackCompletion(job, output.getStatus());
         })
         .setOnException(noop -> {
-          persistence.updateStatus(job.getId(), JobStatus.FAILED);
+          persistence.completeAttemptFailed(job.getId(), attemptId);
           trackCompletion(job, io.airbyte.workers.JobStatus.FAILED);
         })
         .setOnFinish(MDC::clear)
         .build());
+  }
+
+  private void assertThatIdsAreTheSame(long expectedAttemptId, long actualAttemptId) {
+    if (expectedAttemptId != actualAttemptId) {
+      throw new IllegalStateException("Created attempt was not the expected attempt");
+    }
   }
 
   @VisibleForTesting
