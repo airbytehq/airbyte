@@ -11,3 +11,5 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:airbyte-protocol').airbyteDocker.outputs)
     implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
 }
+
+airbytePythonApply.dependsOn(":airbyte-integrations:bases:airbyte-protocol:airbytePythonApply")
