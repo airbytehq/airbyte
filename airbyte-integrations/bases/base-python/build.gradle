@@ -12,4 +12,4 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
 }
 
-airbytePythonApply.dependsOn(":airbyte-integrations:bases:airbyte-protocol:airbytePythonApply")
+installReqs.dependsOn(installLocalReqs, ":airbyte-integrations:bases:airbyte-protocol:installReqs")

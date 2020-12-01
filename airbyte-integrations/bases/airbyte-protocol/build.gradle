@@ -17,4 +17,4 @@ task generateProtocolClassFilesWithoutLicense(type: Exec) {
 task generateProtocolClassFiles(dependsOn: [generateProtocolClassFilesWithoutLicense, rootProject.spotlessPython])
 rootProject.spotlessPython.mustRunAfter(generateProtocolClassFilesWithoutLicense)
 rootProject.build.dependsOn generateProtocolClassFiles
-airbytePythonApply.dependsOn(generateProtocolClassFiles)
+installReqs.dependsOn(installLocalReqs, generateProtocolClassFiles)
