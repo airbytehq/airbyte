@@ -31,15 +31,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.com.google.common.base.Charsets;
 
 class AirbyteMessageTrackerTest {
 
   @Test
   public void testIncrementsWhenRecord() {
-    final AirbyteMessage message = new AirbyteMessage();
-    message.withType(AirbyteMessage.Type.RECORD);
+    final AirbyteMessage message = new AirbyteMessage()
+        .withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("name", "rudolph"))));
 
     final AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
     messageTracker.accept(message);
@@ -47,6 +50,7 @@ class AirbyteMessageTrackerTest {
     messageTracker.accept(message);
 
     assertEquals(3, messageTracker.getRecordCount());
+    assertEquals(3 * Jsons.serialize(message.getRecord().getData()).getBytes(Charsets.UTF_8).length, messageTracker.getBytesCount());
   }
 
   @Test
