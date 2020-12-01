@@ -22,22 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .client import BaseClient
-from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
-from .logger import AirbyteLogger
-from .source import BaseSource
+import sys
 
-# Must be the last one because the way we load the connector module creates a circular
-# dependency and models might not have been loaded yet
-from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
+from base_python.entrypoint import launch
+from source_freshdesk import SourceFreshdesk
 
-__all__ = [
-    "BaseClient",
-    "BaseSource",
-    "AirbyteSpec",
-    "ConfigContainer",
-    "Integration",
-    "Source",
-    "Destination",
-    "AirbyteLogger",
-]
+if __name__ == "__main__":
+    source = SourceFreshdesk()
+    launch(source, sys.argv[1:])
