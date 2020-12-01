@@ -50,6 +50,8 @@ tags:
     description: Connection between sources and destinations.
   - name: web_backend
     description: Connection between sources and destinations.
+  - name: health
+    description: Healthchecks
 
 paths:
   /v1/workspaces/get:
@@ -957,7 +959,21 @@ paths:
                 $ref: "#/components/schemas/DebugRead"
         "404":
           description: Debug info not found
-
+  /v1/health:
+    get:
+      tags:
+        - health
+      summary: Health Check
+      operationId: getHealthCheck
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthCheckRead"
+        "404":
+          description: Debug info not found
 components:
   securitySchemes:
     bearerAuth:
@@ -1680,6 +1696,14 @@ components:
           type: array
           items:
             type: string
+    # Health
+    HealthCheckRead:
+      type: object
+      required:
+        - db
+      properties:
+        db:
+          type: boolean
     # General
     CheckConnectionRead:
       type: object
