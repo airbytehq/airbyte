@@ -22,30 +22,20 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.commons.text;
 
-import io.airbyte.commons.text.Names;
-import java.time.Instant;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class StandardSQLNaming implements SQLNamingResolvable {
+import org.junit.jupiter.api.Test;
 
-  @Override
-  public String getIdentifier(String name) {
-    return convertStreamName(name);
-  }
+public class NamesTest {
 
-  @Override
-  public String getRawTableName(String streamName) {
-    return convertStreamName(streamName + "_raw");
-  }
-
-  @Override
-  public String getTmpTableName(String streamName) {
-    return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
-  }
-
-  protected String convertStreamName(String input) {
-    return Names.toAlphanumericAndUnderscore(input);
+  @Test
+  void testToAlphanumericAndUnderscore() {
+    assertEquals("users", Names.toAlphanumericAndUnderscore("users"));
+    assertEquals("users123", Names.toAlphanumericAndUnderscore("users123"));
+    assertEquals("UsErS", Names.toAlphanumericAndUnderscore("UsErS"));
+    assertEquals("users_USE_special_____", Names.toAlphanumericAndUnderscore("users USE special !@#$"));
   }
 
 }

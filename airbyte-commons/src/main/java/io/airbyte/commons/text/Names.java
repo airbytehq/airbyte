@@ -22,30 +22,25 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.commons.text;
 
-import io.airbyte.commons.text.Names;
-import java.time.Instant;
+import java.text.Normalizer;
 
-public class StandardSQLNaming implements SQLNamingResolvable {
+public class Names {
 
-  @Override
-  public String getIdentifier(String name) {
-    return convertStreamName(name);
-  }
+  public static final String NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN = "[^\\p{Alnum}_]";
 
-  @Override
-  public String getRawTableName(String streamName) {
-    return convertStreamName(streamName + "_raw");
-  }
-
-  @Override
-  public String getTmpTableName(String streamName) {
-    return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
-  }
-
-  protected String convertStreamName(String input) {
-    return Names.toAlphanumericAndUnderscore(input);
+  /**
+   * Converts any UTF8 string to a string with only alphanumeric and _ characters.
+   *
+   * @param s string to convert
+   * @return cleaned string
+   */
+  public static String toAlphanumericAndUnderscore(String s) {
+    return Normalizer.normalize(s, Normalizer.Form.NFKD)
+        .replaceAll("\\p{M}", "")
+        .replaceAll("\\s+", "_")
+        .replaceAll(NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN, "_");
   }
 
 }
