@@ -69,7 +69,7 @@ public abstract class AbstractDestination implements Destination, DestinationCon
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     connectDatabase(config);
-    final Map<String, WriteConfig> writeBuffers = new HashMap<>();
+    final Map<String, BufferedWriteConfig> writeBuffers = new HashMap<>();
     final Set<String> schemaSet = new HashSet<>();
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
@@ -81,16 +81,16 @@ public abstract class AbstractDestination implements Destination, DestinationCon
         queryDatabase(createSchemaQuery(schemaName));
         schemaSet.add(schemaName);
       }
-      queryDatabase(createRawTableQuery(schemaName, tmpTableName));
+      queryDatabase(createTableQuery(schemaName, tmpTableName));
 
       final Path queueRoot = Files.createTempDirectory("queues");
       final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(streamName), streamName);
       final SyncMode syncMode = stream.getSyncMode() == null ? SyncMode.FULL_REFRESH : stream.getSyncMode();
-      writeBuffers.put(streamName, new WriteConfig(schemaName, tableName, tmpTableName, writeBuffer, syncMode));
+      writeBuffers.put(streamName, new BufferedWriteConfig(schemaName, tableName, tmpTableName, writeBuffer, syncMode));
     }
     // write to tmp tables
     // if success copy delete main table if exists. rename tmp tables to real tables.
-    return new RecordConsumer(this, writeBuffers, catalog);
+    return new BufferedRecordConsumer(this, writeBuffers, catalog);
   }
 
   protected abstract void connectDatabase(JsonNode config);
@@ -111,6 +111,6 @@ public abstract class AbstractDestination implements Destination, DestinationCon
   }
 
   @Override
-  public abstract String createRawTableQuery(String schemaName, String streamName);
+  public abstract String createTableQuery(String schemaName, String streamName);
 
 }

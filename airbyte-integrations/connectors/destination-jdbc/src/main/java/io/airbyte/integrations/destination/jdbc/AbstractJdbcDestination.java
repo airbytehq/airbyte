@@ -77,6 +77,9 @@ public abstract class AbstractJdbcDestination extends AbstractDestination implem
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
+  public abstract String createTableQuery(String schemaName, String streamName);
+
+  @Override
   public ConnectorSpecification spec() throws IOException {
     // return a JsonSchema representation of the spec for the integration.
     final String resourceString = MoreResources.readResource("spec.json");
@@ -152,17 +155,6 @@ public abstract class AbstractJdbcDestination extends AbstractDestination implem
   @Override
   public void queryDatabaseInTransaction(String queries) throws Exception {
     getDatabaseConnection().transaction(ctx -> ctx.execute(queries));
-  }
-
-  @Override
-  public String createRawTableQuery(String schemaName, String streamName) {
-    return String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "ab_id VARCHAR PRIMARY KEY,\n"
-            + "%s JSONB,\n"
-            + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
-            + ");\n",
-        schemaName, streamName, COLUMN_NAME);
   }
 
   @Override

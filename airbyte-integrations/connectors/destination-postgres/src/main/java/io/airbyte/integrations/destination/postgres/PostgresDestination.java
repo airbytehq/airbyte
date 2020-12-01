@@ -59,6 +59,17 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  @Override
+  public String createTableQuery(String schemaName, String streamName) {
+    return String.format(
+        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+            + "ab_id VARCHAR PRIMARY KEY,\n"
+            + "%s JSONB,\n"
+            + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
+            + ");\n",
+        schemaName, streamName, COLUMN_NAME);
+  }
+
   public static void main(String[] args) throws Exception {
     final Destination destination = new PostgresDestination();
     LOGGER.info("starting destination: {}", PostgresDestination.class);

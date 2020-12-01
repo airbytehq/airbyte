@@ -34,6 +34,6 @@ public interface DestinationConsumerCallback {
 
   void writeBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName);
 
-  String createRawTableQuery(String schemaName, String streamName);
+  String createTableQuery(String schemaName, String streamName);
 
 }

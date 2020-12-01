@@ -69,6 +69,7 @@ public abstract class AbstractJdbcSource implements Source {
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
+
   private final String driverClass;
   private final SQLDialect dialect;
 
@@ -88,7 +89,7 @@ public abstract class AbstractJdbcSource implements Source {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    try (final Database database = getDatabase(config)) {
+    try (final Database database = createDatabase(config)) {
       // attempt to get current schema. this is a cheap query to sanity check that we can connect to the
       // database. `currentSchema()` is a jooq method that will run the appropriate query based on which
       // database it is connected to.
@@ -103,24 +104,13 @@ public abstract class AbstractJdbcSource implements Source {
     }
   }
 
-  protected Database getDatabase(JsonNode config) {
-    final JsonNode jdbcConfig = toJdbcConfig(config);
-
-    return Databases.createDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        driverClass,
-        dialect);
-  }
-
   protected String getCurrentDatabaseName(DSLContext ctx) {
     return ctx.select(currentSchema()).fetch().get(0).getValue(0, String.class);
   }
 
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
-    try (final Database database = getDatabase(config)) {
+    try (final Database database = createDatabase(config)) {
       return new AirbyteCatalog()
           .withStreams(getTables(database)
               .stream()
@@ -160,7 +150,7 @@ public abstract class AbstractJdbcSource implements Source {
   public Stream<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
     final Instant now = Instant.now();
 
-    final Database database = getDatabase(config);
+    final Database database = createDatabase(config);
 
     final Map<String, TableInfo> tableNameToTable = getTables(database).stream()
         .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
@@ -198,6 +188,17 @@ public abstract class AbstractJdbcSource implements Source {
     }
 
     return resultStream.onClose(() -> Exceptions.toRuntime(database::close));
+  }
+
+  private Database createDatabase(JsonNode config) {
+    final JsonNode jdbcConfig = toJdbcConfig(config);
+
+    return Databases.createDatabase(
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get("jdbc_url").asText(),
+        driverClass,
+        dialect);
   }
 
   protected static class TableInfo {

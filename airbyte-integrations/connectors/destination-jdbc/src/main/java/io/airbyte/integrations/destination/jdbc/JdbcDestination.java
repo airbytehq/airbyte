@@ -46,6 +46,17 @@ public class JdbcDestination extends AbstractJdbcDestination implements Destinat
     return config;
   }
 
+  @Override
+  public String createTableQuery(String schemaName, String streamName) {
+    return String.format(
+        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+            + "ab_id VARCHAR PRIMARY KEY,\n"
+            + "%s JSONB,\n"
+            + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
+            + ");\n",
+        schemaName, streamName, COLUMN_NAME);
+  }
+
   public static void main(String[] args) throws Exception {
     final Destination destination = new JdbcDestination();
     LOGGER.info("starting destination: {}", JdbcDestination.class);

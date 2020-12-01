@@ -39,9 +39,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
+public class BufferedRecordConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RecordConsumer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BufferedRecordConsumer.class);
 
   private static final long THREAD_DELAY_MILLIS = 500L;
 
@@ -50,11 +50,13 @@ public class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> impl
   private static final int BATCH_SIZE = 500;
 
   private final DestinationConsumerCallback destination;
-  private final Map<String, WriteConfig> writeConfigs;
+  private final Map<String, BufferedWriteConfig> writeConfigs;
   private final ConfiguredAirbyteCatalog catalog;
   private final ScheduledExecutorService writerPool;
 
-  public RecordConsumer(DestinationConsumerCallback destination, Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
+  public BufferedRecordConsumer(DestinationConsumerCallback destination,
+                                Map<String, BufferedWriteConfig> writeConfigs,
+                                ConfiguredAirbyteCatalog catalog) {
     this.destination = destination;
     this.writeConfigs = writeConfigs;
     this.catalog = catalog;
@@ -79,9 +81,9 @@ public class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> impl
    */
   private static void writeStreamsWithNRecords(int minRecords,
                                                int batchSize,
-                                               Map<String, WriteConfig> writeBuffers,
+                                               Map<String, BufferedWriteConfig> writeBuffers,
                                                DestinationConsumerCallback destination) {
-    for (final Map.Entry<String, WriteConfig> entry : writeBuffers.entrySet()) {
+    for (final Map.Entry<String, BufferedWriteConfig> entry : writeBuffers.entrySet()) {
       final String schemaName = entry.getValue().getSchemaName();
       final String tmpTableName = entry.getValue().getTmpTableName();
       final CloseableQueue<byte[]> writeBuffer = entry.getValue().getWriteBuffer();
@@ -126,10 +128,10 @@ public class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> impl
     }
 
     // close buffers.
-    for (final WriteConfig writeContext : writeConfigs.values()) {
+    for (final BufferedWriteConfig writeContext : writeConfigs.values()) {
       writeContext.getWriteBuffer().close();
     }
-    for (WriteConfig writeContext : writeConfigs.values()) {
+    for (BufferedWriteConfig writeContext : writeConfigs.values()) {
       try {
         destination.queryDatabase(String.format("DROP TABLE IF EXISTS %s.%s;", writeContext.getSchemaName(), writeContext.getTmpTableName()));
       } catch (SQLException | InterruptedException e) {
@@ -140,9 +142,9 @@ public class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> impl
 
   private void commitRawTable() throws Exception {
     final StringBuilder query = new StringBuilder();
-    for (final WriteConfig writeConfig : writeConfigs.values()) {
+    for (final BufferedWriteConfig writeConfig : writeConfigs.values()) {
       // create tables if not exist.
-      destination.queryDatabase(destination.createRawTableQuery(writeConfig.getSchemaName(), writeConfig.getTableName()));
+      destination.queryDatabase(destination.createTableQuery(writeConfig.getSchemaName(), writeConfig.getTableName()));
 
       switch (writeConfig.getSyncMode()) {
         case FULL_REFRESH -> query.append(String.format("TRUNCATE TABLE %s.%s;\n", writeConfig.getSchemaName(), writeConfig.getTableName()));

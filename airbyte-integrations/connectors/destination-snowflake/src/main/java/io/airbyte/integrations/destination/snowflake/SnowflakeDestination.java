@@ -102,7 +102,7 @@ public class SnowflakeDestination extends AbstractDestination implements Destina
   }
 
   @Override
-  public String createRawTableQuery(String schemaName, String streamName) {
+  public String createTableQuery(String schemaName, String streamName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "ab_id VARCHAR PRIMARY KEY,\n"

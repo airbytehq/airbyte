@@ -39,7 +39,7 @@ public class JdbcSource extends AbstractJdbcSource implements Source {
     super("org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
-  // no-op for JdbcIntegration since the config it receives is designed to be use for JDBC.
+  // no-op for JdbcSource since the config it receives is designed to be use for JDBC.
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
     return config;

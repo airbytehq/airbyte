@@ -27,7 +27,7 @@ package io.airbyte.integrations.base;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.protocol.models.SyncMode;
 
-public class WriteConfig {
+public class BufferedWriteConfig {
 
   private final String schemaName;
   private final String tableName;
@@ -35,7 +35,7 @@ public class WriteConfig {
   private final CloseableQueue<byte[]> writeBuffer;
   private final SyncMode syncMode;
 
-  public WriteConfig(String schemaName, String tableName, String tmpTableName, CloseableQueue<byte[]> writeBuffer, SyncMode syncMode) {
+  public BufferedWriteConfig(String schemaName, String tableName, String tmpTableName, CloseableQueue<byte[]> writeBuffer, SyncMode syncMode) {
     this.schemaName = schemaName;
     this.tableName = tableName;
     this.tmpTableName = tmpTableName;
