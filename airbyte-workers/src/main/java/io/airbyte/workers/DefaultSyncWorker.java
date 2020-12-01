@@ -27,6 +27,7 @@ package io.airbyte.workers;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StandardSyncSummary.Status;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
@@ -109,8 +110,9 @@ public class DefaultSyncWorker implements SyncWorker {
     }
 
     final StandardSyncSummary summary = new StandardSyncSummary()
+        .withStatus(cancelled.get() ? Status.FAILED : Status.COMPLETED)
         .withRecordsSynced(messageTracker.getRecordCount())
-        .withBytesSynced(messageTracker.getRecordCount())
+        .withBytesSynced(messageTracker.getBytesCount())
         .withStartTime(startTime)
         .withEndTime(System.currentTimeMillis());
 

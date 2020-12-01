@@ -25,17 +25,26 @@
 package io.airbyte.workers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StandardSyncSummary.Status;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.normalization.NormalizationRunner;
+import io.airbyte.workers.protocols.MessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
@@ -102,6 +111,39 @@ class DefaultSyncWorkerTest {
     verify(normalizationRunner).close();
     verify(tap).close();
     verify(target).close();
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testPopulatesSyncSummary() {
+    final MessageTracker<AirbyteMessage> messageTracker = mock(MessageTracker.class);
+    final JsonNode expectedState = Jsons.jsonNode(ImmutableMap.of("updated_at", 10L));
+    when(messageTracker.getRecordCount()).thenReturn(12L);
+    when(messageTracker.getBytesCount()).thenReturn(100L);
+    when(messageTracker.getOutputState()).thenReturn(Optional.of(expectedState));
+
+    final DefaultSyncWorker defaultSyncWorker = new DefaultSyncWorker(tap, target, messageTracker, normalizationRunner);
+    final OutputAndStatus<StandardSyncOutput> actual = defaultSyncWorker.run(syncInput, jobRoot);
+    final StandardSyncOutput expectedSyncOutput = new StandardSyncOutput()
+        .withStandardSyncSummary(new StandardSyncSummary()
+            .withRecordsSynced(12L)
+            .withBytesSynced(100L)
+            .withStatus(Status.COMPLETED))
+        .withState(new State()
+            .withConnectionId(syncInput.getConnectionId())
+            .withState(expectedState));
+    final OutputAndStatus<StandardSyncOutput> expected = new OutputAndStatus<>(JobStatus.SUCCEEDED, expectedSyncOutput);
+
+    // good enough to verify that times are present.
+    assertTrue(actual.getOutput().isPresent());
+    assertNotNull(actual.getOutput().get().getStandardSyncSummary().getStartTime());
+    assertNotNull(actual.getOutput().get().getStandardSyncSummary().getEndTime());
+    // remove times so we can do the rest of the object <> object comparison.
+    actual.getOutput().get().getStandardSyncSummary().withStartTime(null);
+    actual.getOutput().get().getStandardSyncSummary().withEndTime(null);
+
+    assertEquals(expected, actual);
+
   }
 
 }
