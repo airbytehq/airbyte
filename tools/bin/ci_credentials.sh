@@ -64,6 +64,6 @@ FRESHDESK_SECRETS_DIR=airbyte-integrations/connectors/source-freshdesk/secrets
 mkdir $FRESHDESK_SECRETS_DIR
 echo "$FRESHDESK_TEST_CREDS" > "${FRESHDESK_SECRETS_DIR}/config.json"
 
-TWILIO_SECRETS_DIR=airbyte-integrations/connectors/source-twilio-secrets/secrets
+TWILIO_SECRETS_DIR=airbyte-integrations/connectors/source-twilio-singer/secrets
 mkdir $TWILIO_SECRETS_DIR
 echo "$TWILIO_TEST_CREDS" > "${TWILIO_SECRETS_DIR}/config.json"
