@@ -1641,7 +1641,6 @@ components:
         - createdAt
         - updatedAt
         - status
-        - attempts
       properties:
         id:
           $ref: "#/components/schemas/JobId"
@@ -1657,10 +1656,16 @@ components:
           format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
+    JobWithAttemptsRead:
+      type: object
+      properties:
+        job:
+          $ref: "#/components/schemas/JobRead"
         attempts:
           type: array
           items:
             $ref: "#/components/schemas/AttemptRead"
+
     JobStatus:
       type: string
       enum:
@@ -1711,7 +1716,7 @@ components:
         jobs:
           type: array
           items:
-            $ref: "#/components/schemas/JobRead"
+            $ref: "#/components/schemas/JobWithAttemptsRead"
     JobInfoRead:
       type: object
       required:

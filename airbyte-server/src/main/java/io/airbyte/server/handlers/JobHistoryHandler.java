@@ -32,6 +32,7 @@ import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobStatus;
+import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.LogRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.IOs;
@@ -58,9 +59,9 @@ public class JobHistoryHandler {
     final JobConfig.ConfigType configType = Enums.convertTo(request.getConfigType(), JobConfig.ConfigType.class);
     final String configId = request.getConfigId();
 
-    final List<JobRead> jobReads = jobPersistence.listJobs(configType, configId)
+    final List<JobWithAttemptsRead> jobReads = jobPersistence.listJobs(configType, configId)
         .stream()
-        .map(JobHistoryHandler::getJobRead)
+        .map(JobHistoryHandler::getJobWithAttemptsRead)
         .collect(Collectors.toList());
 
     return new JobReadList().jobs(jobReads);
@@ -70,7 +71,7 @@ public class JobHistoryHandler {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
 
     return new JobInfoRead()
-        .job(getJobRead(job))
+        .job(getJobWithAttemptsRead(job).getJob())
         .attempts(job.getAttempts().stream().map(JobHistoryHandler::getAttemptInfoRead).collect(Collectors.toList()));
   }
 
@@ -89,17 +90,18 @@ public class JobHistoryHandler {
   }
 
   @VisibleForTesting
-  protected static JobRead getJobRead(Job job) {
+  protected static JobWithAttemptsRead getJobWithAttemptsRead(Job job) {
     final String configId = ScopeHelper.getConfigId(job.getScope());
     final JobConfigType configType = Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
 
-    return new JobRead()
-        .id(job.getId())
-        .configId(configId)
-        .configType(configType)
-        .createdAt(job.getCreatedAtInSecond())
-        .updatedAt(job.getUpdatedAtInSecond())
-        .status(Enums.convertTo(job.getStatus(), JobStatus.class))
+    return new JobWithAttemptsRead()
+        .job(new JobRead()
+            .id(job.getId())
+            .configId(configId)
+            .configType(configType)
+            .createdAt(job.getCreatedAtInSecond())
+            .updatedAt(job.getUpdatedAtInSecond())
+            .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
         .attempts(job.getAttempts().stream().map(JobHistoryHandler::getAttemptRead).collect(Collectors.toList()));
   }
 
