@@ -11,3 +11,10 @@ airbytePython {
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
 }
+
+// used to allow local iteration to work
+task('installSingerTap', type: PythonTask) {
+    module = "pip"
+    command = "install tap-shopify==1.2.6"
+}
+installReqs.dependsOn installSingerTap

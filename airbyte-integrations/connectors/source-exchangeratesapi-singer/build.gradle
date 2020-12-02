@@ -16,3 +16,5 @@ dependencies {
     integrationTestImplementation project(':airbyte-protocol:models')
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
+
+integrationTest.dependsOn airbyteDocker
