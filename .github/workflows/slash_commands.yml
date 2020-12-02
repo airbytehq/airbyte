@@ -14,6 +14,5 @@ jobs:
             integration-test
           static-args: |
             ref=${{ github.event.pull_request.head.sha }}
-          issue-type: pull-request
           dispatch-type: workflow
           event-type-suffix: ""
