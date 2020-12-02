@@ -12,8 +12,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh
+#      - name: Check images exist
+#        run: ./tools/bin/check_images_exist.sh
 
       - name: Pip Caching
         uses: actions/cache@v2
