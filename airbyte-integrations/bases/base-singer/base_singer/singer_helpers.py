@@ -91,7 +91,6 @@ class SingerHelper:
             name = stream.get("stream")
             schema = stream.get("schema")
             airbyte_stream = AirbyteStream(name=name, json_schema=schema)
-
             metadatas = stream.get("metadata")
             stream_metadata_container = get_stream_level_metadata(metadatas) if metadatas else None
             stream_metadata = stream_metadata_container.get("metadata")
