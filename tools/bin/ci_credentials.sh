@@ -49,7 +49,7 @@ echo "$BIGQUERY_INTEGRATION_TEST_CREDS" > "${SOURCEFILE_DIR}/gcs.json"
 echo "$AWS_S3_INTEGRATION_TEST_CREDS" > "${SOURCEFILE_DIR}/aws.json"
 
 REDSHIFT_DIR=airbyte-integrations/connectors/source-redshift/secrets
-mkdir REDSHIFT_DIR
+mkdir $REDSHIFT_DIR
 echo "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" > "${REDSHIFT_DIR}/config.json"
 
 MAILCHIMP_SECRETS_DIR=airbyte-integrations/connectors/source-mailchimp/secrets
@@ -59,3 +59,11 @@ echo "$MAILCHIMP_TEST_CREDS" > "${MAILCHIMP_SECRETS_DIR}/config.json"
 RECURLY_SECRETS_DIR=airbyte-integrations/connectors/source-recurly/secrets
 mkdir $RECURLY_SECRETS_DIR
 echo "$SOURCE_RECURLY_INTEGRATION_TEST_CREDS" > "${RECURLY_SECRETS_DIR}/config.json"
+
+FRESHDESK_SECRETS_DIR=airbyte-integrations/connectors/source-freshdesk/secrets
+mkdir $FRESHDESK_SECRETS_DIR
+echo "$FRESHDESK_TEST_CREDS" > "${FRESHDESK_SECRETS_DIR}/config.json"
+
+TWILIO_SECRETS_DIR=airbyte-integrations/connectors/source-twilio/secrets
+mkdir $TWILIO_SECRETS_DIR
+echo "$TWILIO_TEST_CREDS" > "${TWILIO_SECRETS_DIR}/config.json"
