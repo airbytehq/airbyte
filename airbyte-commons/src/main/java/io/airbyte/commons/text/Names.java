@@ -44,7 +44,11 @@ public class Names {
   }
 
   public static String concatNames(String name, String s) {
-    return name + s;
+    if (name.endsWith("\"")) {
+      return name.substring(0, name.length() - 1) + s + "\"";
+    } else {
+      return name + s;
+    }
   }
 
 }

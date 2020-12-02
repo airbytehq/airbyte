@@ -24,9 +24,6 @@
 
 package io.airbyte.integrations.base;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-
 public interface SQLNamingResolvable {
 
   /**
@@ -57,7 +54,8 @@ public interface SQLNamingResolvable {
    */
   String getTmpTableName(String name);
 
-  String getSchemaName(JsonNode config, ConfiguredAirbyteStream stream);
+  String getSchemaName(String schemaName);
 
   String getTableName(String streamName);
+
 }

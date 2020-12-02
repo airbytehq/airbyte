@@ -24,19 +24,12 @@
 
 package io.airbyte.integrations.base;
 
-import io.airbyte.protocol.models.SyncMode;
+public interface TableCreationOperations {
 
-public class DestinationCopyContext extends DestinationWriteContext {
+  void createSchema(String schemaName) throws Exception;
 
-  private final String inputTableName;
+  void createDestinationTable(String schemaName, String tmpTableName) throws Exception;
 
-  DestinationCopyContext(String outputNamespaceName, String inputTableName, String outputTableName, SyncMode syncMode) {
-    super(outputNamespaceName, outputTableName, syncMode);
-    this.inputTableName = inputTableName;
-  }
-
-  public String getInputTableName() {
-    return inputTableName;
-  }
+  void dropDestinationTable(String schemaName, String tmpTableName) throws Exception;
 
 }

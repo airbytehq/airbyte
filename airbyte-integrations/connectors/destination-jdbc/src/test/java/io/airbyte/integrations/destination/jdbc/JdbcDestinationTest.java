@@ -300,7 +300,7 @@ class JdbcDestinationTest {
         .map(r -> Jsons.deserialize(r.get(JdbcDestination.COLUMN_NAME).asText()))
         .collect(Collectors.toSet()));
   }
-  
+
   private JsonNode createConfig(String schemaName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("username", container.getUsername())

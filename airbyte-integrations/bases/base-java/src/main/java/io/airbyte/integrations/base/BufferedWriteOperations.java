@@ -24,19 +24,10 @@
 
 package io.airbyte.integrations.base;
 
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.commons.lang.CloseableQueue;
 
-public class DestinationCopyContext extends DestinationWriteContext {
+public interface BufferedWriteOperations {
 
-  private final String inputTableName;
-
-  DestinationCopyContext(String outputNamespaceName, String inputTableName, String outputTableName, SyncMode syncMode) {
-    super(outputNamespaceName, outputTableName, syncMode);
-    this.inputTableName = inputTableName;
-  }
-
-  public String getInputTableName() {
-    return inputTableName;
-  }
+  void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tableName) throws Exception;
 
 }
