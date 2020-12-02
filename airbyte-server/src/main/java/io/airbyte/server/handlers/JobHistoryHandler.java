@@ -71,12 +71,13 @@ public class JobHistoryHandler {
 
     return new JobInfoRead()
         .job(getJobRead(job))
-        .logs(job.getAttempts()
-            .stream()
-            .sorted(Comparator.comparingLong(Attempt::getCreatedAtInSecond).reversed())
-            .map(JobHistoryHandler::getLogRead)
-            .findFirst()
-            .orElse(null));
+        .attempts(job.getAttempts().stream().map(JobHistoryHandler::getAttemptInfoRead).collect(Collectors.toList()));
+  }
+
+  private static AttemptInfoRead getAttemptInfoRead(Attempt attempt) {
+    return new AttemptInfoRead()
+        .attempt(getAttemptRead(attempt))
+        .logs(getLogRead(attempt));
   }
 
   private static LogRead getLogRead(Attempt attempt) {
@@ -98,7 +99,8 @@ public class JobHistoryHandler {
         .configType(configType)
         .createdAt(job.getCreatedAtInSecond())
         .updatedAt(job.getUpdatedAtInSecond())
-        .status(toApiJobStatus(job.getStatus()));
+        .status(Enums.convertTo(job.getStatus(), JobStatus.class))
+        .attempts(job.getAttempts().stream().map(JobHistoryHandler::getAttemptRead).collect(Collectors.toList()));
   }
 
   // todo (cgardens) - temporary to maintain backwards compatibility. will be removed in the next PR.
