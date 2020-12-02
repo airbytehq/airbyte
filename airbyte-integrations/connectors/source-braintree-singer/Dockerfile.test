@@ -16,7 +16,7 @@ COPY $CODE_PATH ./$CODE_PATH
 # copy all resources to the code path.
 COPY secrets ./$CODE_PATH
 COPY source_braintree_singer/*.json ./$CODE_PATH
-COPY sample_files/*.json ./$CODE_PATH
+COPY sample_files/*.json ./$CODE_PATH/
 
 COPY setup.py ./
 RUN pip install -v ".[integration_tests]"
