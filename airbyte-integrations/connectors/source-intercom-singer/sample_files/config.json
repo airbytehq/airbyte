@@ -1,0 +1,5 @@
+{
+    "access_token": "YOUR_API_ACCESS_TOKEN",
+    "start_date": "2019-01-01T00:00:00Z",
+    "user_agent": "tap-intercom <api_user_email@your_company.com>"
+}
