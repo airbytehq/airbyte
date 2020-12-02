@@ -31,6 +31,8 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 exceptionFormat "full"
             }
 
+            outputs.upToDateWhen { false }
+
             dependsOn project.airbyteDocker
             mustRunAfter project.test
         }
