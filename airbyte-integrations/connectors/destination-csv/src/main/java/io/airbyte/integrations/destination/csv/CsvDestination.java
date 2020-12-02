@@ -30,10 +30,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.SQLNamingResolvable;
+import io.airbyte.integrations.base.StandardSQLNaming;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -67,7 +67,7 @@ public class CsvDestination implements Destination {
   private final SQLNamingResolvable namingResolver;
 
   public CsvDestination() {
-    namingResolver = new ExtendedSQLNaming();
+    namingResolver = new StandardSQLNaming();
   }
 
   @Override

@@ -12,19 +12,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh
-
-#      # docker should use restore-keys since these are just used for layer caching, not gradle task caching
-#      - name: Docker Caching
-#        uses: actions/cache@v2
-#        with:
-#          path: |
-#            /tmp/docker-registry
-#          key: ${{ secrets.CACHE_VERSION }}-docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-${{ github.sha }}
-#          restore-keys: |
-#            ${{ secrets.CACHE_VERSION }}-docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-
-#            ${{ secrets.CACHE_VERSION }}-docker-${{ runner.os }}-
+#      - name: Check images exist
+#        run: ./tools/bin/check_images_exist.sh
 
       - name: Pip Caching
         uses: actions/cache@v2
@@ -66,9 +55,6 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Start local Docker registry
-        run: docker run -d -p 5000:5000 --restart=always --name registry -v /tmp/docker-registry:/var/lib/registry registry:2 && npx wait-on tcp:5000
-
       - name: Build
         run: ./gradlew --no-daemon build --scan
 
@@ -97,6 +83,7 @@ jobs:
           SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG: ${{ secrets.SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG }}
           SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
           MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
 
       - name: Run Integration Tests (PR)

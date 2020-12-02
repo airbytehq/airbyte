@@ -35,6 +35,8 @@ public interface MessageTracker<T> extends Consumer<T> {
 
   long getRecordCount();
 
+  long getBytesCount();
+
   Optional<JsonNode> getOutputState();
 
 }

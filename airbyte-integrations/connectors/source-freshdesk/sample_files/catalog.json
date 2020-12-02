@@ -1,0 +1,129 @@
+{
+  "streams": [
+    {
+      "name": "agents",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "occasional": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "signature": {
+            "type": ["string", "null"]
+          },
+          "ticket_scope": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "last_active_at": {
+            "type": ["string", "null"]
+          },
+          "available_since": {
+            "type": ["string", "null"]
+          },
+          "type": {
+            "type": "string"
+          },
+          "contact": {
+            "type": "object",
+            "properties": {
+              "active": {
+                "type": "boolean"
+              },
+              "email": {
+                "type": "string"
+              },
+              "job_title": {
+                "type": ["string", "null"]
+              },
+              "language": {
+                "type": "string"
+              },
+              "last_login_at": {
+                "type": ["string", "null"]
+              },
+              "mobile": {
+                "type": ["string", "integer", "null"]
+              },
+              "name": {
+                "type": "string"
+              },
+              "phone": {
+                "type": ["string", "integer", "null"]
+              },
+              "time_zone": {
+                "type": "string"
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "companies",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": ["string", "null"]
+          },
+          "note": {
+            "type": ["string", "null"]
+          },
+          "domains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "custom_fields": {
+            "type": "object"
+          },
+          "health_score": {
+            "type": ["number", "null"]
+          },
+          "account_tier": {
+            "type": "string"
+          },
+          "renewal_date": {
+            "type": ["string", "null"]
+          },
+          "industry": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    }
+  ]
+}

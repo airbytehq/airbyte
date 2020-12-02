@@ -28,10 +28,10 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionSyncRead;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
+import io.airbyte.api.model.JobStatusRead;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
@@ -197,7 +197,7 @@ public class SchedulerHandler {
         .destinationDefinitionId(destinationId);
   }
 
-  public ConnectionSyncRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
+  public JobStatusRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
@@ -233,8 +233,14 @@ public class SchedulerHandler {
         .put("job_id", jobId)
         .build());
 
-    return new ConnectionSyncRead()
-        .status(job.getStatus().equals(JobStatus.COMPLETED) ? ConnectionSyncRead.StatusEnum.SUCCEEDED : ConnectionSyncRead.StatusEnum.FAILED);
+    return new JobStatusRead()
+        .status(job.getStatus().equals(JobStatus.COMPLETED) ? io.airbyte.api.model.JobStatus.SUCCEEDED : io.airbyte.api.model.JobStatus.FAILED);
+  }
+
+  // todo (cgardens) - can be a no op while UI is being developed. need to figure out the
+  // implementation here.
+  public JobStatusRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
+    return new JobStatusRead().status(io.airbyte.api.model.JobStatus.SUCCEEDED);
   }
 
   private Job waitUntilJobIsTerminalOrTimeout(final long jobId) throws IOException {

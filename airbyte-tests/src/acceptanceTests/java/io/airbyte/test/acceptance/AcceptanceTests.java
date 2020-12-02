@@ -42,12 +42,13 @@ import io.airbyte.api.client.model.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.ConnectionRead;
 import io.airbyte.api.client.model.ConnectionSchedule;
 import io.airbyte.api.client.model.ConnectionStatus;
-import io.airbyte.api.client.model.ConnectionSyncRead;
 import io.airbyte.api.client.model.ConnectionUpdate;
 import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
+import io.airbyte.api.client.model.JobStatus;
+import io.airbyte.api.client.model.JobStatusRead;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
@@ -56,6 +57,7 @@ import io.airbyte.api.client.model.SourceSchemaField;
 import io.airbyte.api.client.model.SourceSchemaStream;
 import io.airbyte.api.client.model.SyncMode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.text.Names;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -98,7 +100,8 @@ import org.testcontainers.utility.MountableFile;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
-  private static final String STREAM_NAME = "id_and_name";
+  private static final String TABLE_NAME = "id_and_name";
+  private static final String STREAM_NAME = "public." + TABLE_NAME;
   private static final String COLUMN_ID = "id";
   private static final String COLUMN_NAME = "name";
 
@@ -237,13 +240,16 @@ public class AcceptanceTests {
     final SourceSchema expectedSchema = new SourceSchema().streams(Lists.newArrayList(
         new SourceSchemaStream()
             .name(STREAM_NAME)
+            .cleanedName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
             .fields(Lists.newArrayList(
                 new SourceSchemaField()
                     .name(COLUMN_ID)
+                    .cleanedName(COLUMN_ID)
                     .dataType(DataType.NUMBER)
                     .selected(true),
                 new SourceSchemaField()
                     .name(COLUMN_NAME)
+                    .cleanedName(COLUMN_NAME)
                     .dataType(DataType.STRING)
                     .selected(true)))
             .supportedSyncModes(Collections.emptyList())
@@ -285,9 +291,9 @@ public class AcceptanceTests {
 
     final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
-    final ConnectionSyncRead connectionSyncRead = apiClient.getConnectionApi()
+    final JobStatusRead connectionSyncRead = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead.getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
@@ -317,9 +323,9 @@ public class AcceptanceTests {
 
     final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
-    final ConnectionSyncRead connectionSyncRead1 = apiClient.getConnectionApi()
+    final JobStatusRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead1.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead1.getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
 
     // add new records and run again.
@@ -337,10 +343,10 @@ public class AcceptanceTests {
     // database.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
     database.close();
 
-    final ConnectionSyncRead connectionSyncRead2 = apiClient.getConnectionApi()
+    final JobStatusRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(ConnectionSyncRead.StatusEnum.SUCCEEDED, connectionSyncRead2.getStatus());
-    assertDestinationContains(expectedRecords, STREAM_NAME);
+    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead2.getStatus());
+    assertDestinationContains(expectedRecords, TABLE_NAME);
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
@@ -371,8 +377,9 @@ public class AcceptanceTests {
     final Database database = getDatabase(sourceDb);
 
     final Set<String> sourceStreams = listStreams(database);
-    final Set<String> targetStreams = listCsvStreams();
-    assertEquals(sourceStreams, targetStreams);
+    final Set<String> destinationStreams = listCsvStreams();
+    assertEquals(sourceStreams, destinationStreams,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
 
     for (String table : sourceStreams) {
       assertStreamsEquivalent(database, table);
@@ -388,16 +395,20 @@ public class AcceptanceTests {
         context -> {
           Result<Record> fetch =
               context.fetch(
-                  "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
+                  "SELECT tablename, schemaname FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
           return fetch.stream()
-              .map(record -> (String) record.get("tablename"))
+              .map(record -> {
+                final String schemaName = (String) record.get("schemaname");
+                final String tableName = (String) record.get("tablename");
+                return schemaName + "." + tableName;
+              })
               .collect(Collectors.toSet());
         });
   }
 
   private Set<String> listCsvStreams() throws IOException {
     return Files.list(outputDir)
-        .map(file -> file.getFileName().toString().replaceAll(".csv", ""))
+        .map(file -> adaptCsvName(file.getFileName().toString()))
         .collect(Collectors.toSet());
   }
 
@@ -480,7 +491,7 @@ public class AcceptanceTests {
 
   private List<JsonNode> retrieveCsvRecords(String streamName) throws Exception {
     final Optional<Path> stream = Files.list(outputDir)
-        .filter(path -> path.getFileName().toString().toLowerCase().contains(streamName))
+        .filter(path -> path.getFileName().toString().toLowerCase().contains(adaptToCsvName(streamName)))
         .findFirst();
     assertTrue(stream.isPresent());
 
@@ -557,6 +568,14 @@ public class AcceptanceTests {
 
   private void deleteDestination(UUID destinationId) throws ApiException {
     apiClient.getDestinationApi().deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
+  }
+
+  private String adaptCsvName(String streamName) {
+    return streamName.replaceAll("_raw\\.csv", "").replaceAll("public_", "public.");
+  }
+
+  private String adaptToCsvName(String streamName) {
+    return streamName.replaceAll("public\\.", "public_");
   }
 
 }

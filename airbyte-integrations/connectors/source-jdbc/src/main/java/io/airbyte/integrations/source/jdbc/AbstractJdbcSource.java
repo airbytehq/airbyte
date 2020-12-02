@@ -119,6 +119,10 @@ public abstract class AbstractJdbcSource implements Source {
     }
   }
 
+  protected List<String> getExcludedInternalSchemas() {
+    return List.of();
+  }
+
   protected List<TableInfo> getTables(final Database database) throws Exception {
     return discoverInternal(database).stream()
         .map(t -> {
@@ -126,20 +130,19 @@ public abstract class AbstractJdbcSource implements Source {
               .map(f -> Field.of(f.getName(), jooqDataTypeToJsonSchemaType(f.getDataType())))
               .collect(Collectors.toList());
 
-          return new TableInfo(t.getName(), fields);
+          return new TableInfo(String.format("%s.%s", t.getSchema().getName(), t.getName()), fields);
         })
         .collect(Collectors.toList());
   }
 
   private List<Table<?>> discoverInternal(final Database database) throws Exception {
     return database.query(context -> {
-      final String databaseName = getCurrentDatabaseName(context);
-      final List<Schema> schemas = context.meta().getSchemas(databaseName);
-      if (schemas.size() > 1) {
-        throw new IllegalStateException("found multiple databases with the same name.");
-      }
-      final Schema schema = schemas.get(0);
-      return context.meta(schema).getTables();
+      final List<Schema> schemas = context.meta().getSchemas();
+      final List<Table<?>> tables = schemas.stream()
+          .filter(schema -> !getExcludedInternalSchemas().contains(schema.getName()))
+          .flatMap(schema -> context.meta(schema).getTables().stream())
+          .collect(Collectors.toList());
+      return tables;
     });
   }
 
