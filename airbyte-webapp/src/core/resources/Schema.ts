@@ -3,14 +3,23 @@ import BaseResource from "./BaseResource";
 
 export type SyncSchemaField = {
   name: string;
+  cleanedName: string;
   selected: boolean;
   type: string;
+  dataType: string;
 };
 
 export type SyncSchema = {
   streams: {
     name: string;
+    cleanedName: string;
     fields: SyncSchemaField[];
+    supportedSyncModes: string[];
+    sourceDefinedCursor: boolean | null;
+    defaultCursorField: string[];
+    selected: boolean | null;
+    syncMode: string | null;
+    cursorField: string[];
   }[];
 };
 

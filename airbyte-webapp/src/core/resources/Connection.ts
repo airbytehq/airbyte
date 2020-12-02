@@ -1,22 +1,10 @@
 import { FetchOptions, Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
+import { SyncSchema } from "./Schema";
 
 export type ScheduleProperties = {
   units: number;
   timeUnit: string;
-};
-
-export type SyncSchemaField = {
-  name: string;
-  selected: boolean;
-  type: string;
-};
-
-export type SyncSchema = {
-  streams: {
-    name: string;
-    fields: SyncSchemaField[];
-  }[];
 };
 
 type SourceInformation = {

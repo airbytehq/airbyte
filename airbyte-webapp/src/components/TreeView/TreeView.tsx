@@ -11,7 +11,7 @@ import "react-checkbox-tree/lib/react-checkbox-tree.css";
 
 export type INode = {
   value: string;
-  label: string;
+  label: string | React.ReactElement;
   showCheckbox?: boolean;
   children?: Array<INode>;
 };

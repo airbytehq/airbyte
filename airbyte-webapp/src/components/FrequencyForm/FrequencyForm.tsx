@@ -8,7 +8,8 @@ import LabeledDropDown from "../LabeledDropDown";
 import FrequencyConfig from "../../data/FrequencyConfig.json";
 import BottomBlock from "./components/BottomBlock";
 import Label from "../Label";
-import TreeView, { INode } from "../TreeView/TreeView";
+import { INode } from "../TreeView/TreeView";
+import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
 import EditControls from "../ServiceForm/components/EditControls";
 
@@ -33,12 +34,8 @@ const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
 `;
 
-const TreeViewContainer = styled.div`
-  width: 100%;
-  background: ${({ theme }) => theme.greyColor0};
-  margin-bottom: 29px;
-  border-radius: 4px;
-  overflow: hidden;
+const EditLaterMessage = styled(Label)`
+  margin: -20px 0 29px;
 `;
 
 const connectionValidationSchema = yup.object().shape({
@@ -95,17 +92,17 @@ const FrequencyForm: React.FC<IProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
-          <Label message={<FormattedMessage id="form.dataSync.message" />}>
-            <FormattedMessage id="form.dataSync" />
-          </Label>
-          <TreeViewContainer>
-            <TreeView
-              checkedAll={allSchemaChecked}
-              nodes={schema}
-              onCheck={onCheckAction}
-              checked={checkedState}
+          <SchemaView
+            onCheckAction={onCheckAction}
+            checkedState={checkedState}
+            schema={schema}
+            allSchemaChecked={allSchemaChecked}
+          />
+          {!isEditMode ? (
+            <EditLaterMessage
+              message={<FormattedMessage id="form.dataSync.message" />}
             />
-          </TreeViewContainer>
+          ) : null}
           <Field name="frequency">
             {({ field }: FieldProps<string>) => (
               <SmallLabeledDropDown

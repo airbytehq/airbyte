@@ -19,7 +19,7 @@ type IProps = {
 };
 
 const Content = styled.div`
-  max-width: 639px;
+  max-width: 813px;
   margin: 18px auto;
 `;
 

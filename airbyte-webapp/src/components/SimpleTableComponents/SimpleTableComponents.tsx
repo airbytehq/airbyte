@@ -29,3 +29,8 @@ export const Cell = styled.div<{ flex?: number }>`
     text-align: right;
   }
 `;
+
+export const LightCell = styled(Cell)`
+  color: ${({ theme }) => theme.greyColor60};
+  font-weight: normal;
+`;
